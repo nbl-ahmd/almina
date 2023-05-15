@@ -1,0 +1,94 @@
+
+import './client/styles/App.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Navbar from './client/components/navbar';
+import React, { useEffect, useState } from 'react';
+import Home from './client/pages/Home';
+import About from './client/pages/About';
+import Products from './client/pages/Products';
+import Categories from './client/pages/Categories'
+import FilesUpload from './admin/components/ProductUpload';
+import BannerForm from './admin/components/BannerForm';
+import BannerCard from './client/components/BannerCard';
+import axios from 'axios';
+import Dashboard from './admin/pages/dashboard';
+import NotFound from './client/pages/NotFound'
+import Product from './admin/components/product';
+import ProductUpload from './admin/components/ProductUpload';
+import CategoryUpload from './admin/components/CategoryUpload';
+
+
+
+
+
+const DashboardContext = React.createContext()
+const DashProvider =  DashboardContext.Provider
+export const DashConsumer =  DashboardContext.Consumer
+
+const App = () => {
+
+  return (
+    <BrowserRouter>
+
+
+
+
+
+      <main>
+        <Routes>
+          <Route path='/' element={
+            <>
+              <Navbar />
+              <Home />
+            </>} />
+          <Route path='products' element={
+            <>
+            <Navbar />
+            <Products />
+            </>
+          } />
+          <Route path='categories' element={
+            <>
+            <Navbar />
+            <Categories />
+            </>
+          } />
+          <Route path='about' element={
+            <>
+            <Navbar />
+            <About />
+            </>
+          } />
+          <Route path='admin' element={
+            <>
+            <DashProvider value= {<BannerForm />}>
+              <Dashboard />
+            </DashProvider>
+            </>
+          } />
+          <Route path='admin/uploadproduct' element={
+            <>
+            <DashProvider value= {<>
+              <ProductUpload />
+           <CategoryUpload />
+            </>}>
+              <Dashboard />
+            </DashProvider>
+            </>
+          } />
+          <Route path='upload' element={<FilesUpload />} />
+          <Route path='uploadbanner' element={<BannerForm />} />
+          {/* <Route path='admin' element={<Dashboard/>} /> */}
+          <Route path="*" element={<NotFound/>} />
+
+        </Routes>
+      </main>
+    </BrowserRouter>
+
+
+
+
+  );
+}
+
+export default App;
