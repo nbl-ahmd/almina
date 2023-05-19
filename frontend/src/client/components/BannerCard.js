@@ -29,7 +29,7 @@ const BannerCard = ({ banners }) => {
     <Swiper {...swiperParams}>
       {banners.map((banner) => (
         <SwiperSlide key={banner._id}>
-                 <img className=' slide-img' src={`http://localhost:4000/api/banners/images/${banner.image}`} alt={banner.name} />
+                 <img className=' slide-img' src={`http://192.168.70.104:4000/api/banners/images/${banner.image}`} alt={banner.name} />
         </SwiperSlide>
       ))}
       <div className="swiper-pagination"></div>

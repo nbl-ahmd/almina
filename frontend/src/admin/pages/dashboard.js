@@ -36,10 +36,19 @@ products
     
     </li>
     <li className="nav-item mt-2"> 
-    <a className='nav-link py-2'>
+    
+    <Link to='/admin/banner' className='nav-link py-2'>
     <i className="bi bi-columns-gap me-3"></i>
 Promotion
-    </a>
+    </Link>
+    
+    </li>
+    <li className="nav-item mt-2"> 
+    
+    <Link to='/admin/categories' className='nav-link py-2'>
+    <i className="bi bi-columns-gap me-3"></i>
+Categories
+    </Link>
     
     </li>
     

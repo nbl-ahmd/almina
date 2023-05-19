@@ -3,7 +3,7 @@ let express = require('express'),
     cors = require('cors'),
     bodyParser = require('body-parser'),
     dbConfig = require('./database/db');
-
+const uri= "mongodb+srv://nbl:rs4DvQ6YHteb1Kwt@almina-cluster.ovx7dwd.mongodb.net/?retryWrites=true&w=majority";
 
 const bannersRouter = require('./routes/banners.js');
 const productsRouter = require('./routes/products');
@@ -12,7 +12,7 @@ const categoryRouter = require('./routes/categories')
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
-mongoose.connect(dbConfig.db, {
+mongoose.connect(uri, {
     useNewUrlParser: true
 }).then(() => {
     console.log('Database sucessfully connected')

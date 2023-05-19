@@ -71,9 +71,10 @@ const sharp = require('sharp');
 
 const router = express.Router();
 const uploadDir = path.join(__dirname, '..', 'public/banner');
-const resizedDir = path.join(__dirname, '..', 'public/banner/resized'); // specify destination folder for resized image
+// const uploadDir = path.join(__dirname, '..', 'public/banner/resized'); // specify destination folder for resized image
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const fs = require('fs');
 
 router.post('/', upload.single('image'), async (req, res) => {
   const { name, link } = req.body;
@@ -102,7 +103,7 @@ router.post('/', upload.single('image'), async (req, res) => {
   const resizedFilename = uuidv4() + '.webp';
 
   // save the resized image to the resized directory
-  await sharp(croppedImage).toFile(path.join(resizedDir, resizedFilename));
+  await sharp(croppedImage).toFile(path.join(uploadDir, resizedFilename));
 
   const banner = new Banner({ name, image: resizedFilename, link }); // save the resized filename to the database
   banner.save()
@@ -128,7 +129,29 @@ router.get('/', (req, res) => {
 
 router.get('/images/:filename', (req, res) => {
   const { filename } = req.params;
-  res.sendFile(path.join(resizedDir, filename)); // serve the resized image instead of the original image
+  res.sendFile(path.join(uploadDir, filename)); // serve the resized image instead of the original image
 });
 
+router.delete('/:id', (req, res) => {
+  Banner.findByIdAndRemove(req.params.id)
+      .then(Banner => {
+          if(Banner) {
+              fs.unlink(path.join(uploadDir, Banner.image), (error) => {
+                  if (error) {
+                    console.log('Error deleting image file:', error);
+                  }
+                 
+                });
+              return res.status(200).json({success: true, message: 'the Banner is deleted!'})
+          } else{
+              return res.status(404).json({success: false, message: "Banner not found!"})
+          }
+  }).catch(err=>{
+      return res.status(400).json({success: false, error: err})
+  })
+
+
+    // If applicable, delete the image file from the server's file system
+  
+})
 module.exports = router;

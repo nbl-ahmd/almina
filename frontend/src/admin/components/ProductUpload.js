@@ -17,7 +17,7 @@ const ProductUpload = () => {
   const [file, setFile] = useState();
 
   useEffect(() => {
-    axios.get('http://localhost:4000/api/category')
+    axios.get('http://192.168.70.104:4000/api/category')
       .then(response => {
         setCategoryList(response.data);
       })
@@ -51,7 +51,7 @@ const ProductUpload = () => {
     formData.append('vat', vat);
     formData.append('stock', stock);
     formData.append('sale', sale);
-    axios.post('http://localhost:4000/api/products', formData)
+    axios.post('http://192.168.70.104:4000/api/products', formData)
     .then(response => {
         console.log(response.data);
         setMessage('product created successfully');
@@ -112,9 +112,10 @@ const ProductUpload = () => {
 
   <input type="radio" className="btn-check"  id="vat2" name="vat" value='false' checked={!vat} onChange={ () => setVat(false)}/>
   <label className="btn btn-secondary" htmlFor="vat2">no vat</label>
+ 
+</div>
+</div>
 
-</div>
-</div>
 </div>
 
 <div className="col-4">
@@ -143,9 +144,12 @@ const ProductUpload = () => {
 </div>
 </div>
 <button className='btn btn-primary' type='submit'>Upload</button>
+<span className='d-block'>
+{message}
+</span>
   </form>
 
- 
+  
 
 </div>
 

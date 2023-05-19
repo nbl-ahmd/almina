@@ -30,12 +30,12 @@ export default function navbar() {
                 
             </div>
         </header>
-        <nav className="container mt-0 d-flex justify-content-center justify-content-lg-start">
+        <nav className="container mt-2 d-flex justify-content-center justify-content-lg-start">
         <ul className="nav  justify-content-center mb-md-0 gap-2 ms-md-5">
-                        <li><Link to='/' className="nav-link px-2 ">Home</Link></li>
-                        <li><Link to='products' className="nav-link px-2 ">PRODUCTS</Link></li>
-                        <li><Link to="categories" className="nav-link px-2 ">CATEGORIES</Link></li>
-                        <li><Link to="about" className="nav-link px-2 ">ABOUT US</Link></li>
+                        <li><Link to='/' className=" px-2 ">Home</Link></li>
+                        <li><Link to='products' className=" px-2 ">Products</Link></li>
+                        <li><Link to="categories" className=" px-2 ">Categories</Link></li>
+                        <li><Link to="about" className=" px-2 ">About us</Link></li>
                     </ul>
         </nav>
         </nav>

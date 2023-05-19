@@ -16,6 +16,9 @@ import NotFound from './client/pages/NotFound'
 import Product from './admin/components/product';
 import ProductUpload from './admin/components/ProductUpload';
 import CategoryUpload from './admin/components/CategoryUpload';
+import Products_list from './admin/pages/Products_list';
+import Categoryupdate from './admin/components/Categoryupdate';
+import ProductUpdate from './admin/components/ProductUpdate';
 
 
 
@@ -61,7 +64,7 @@ const App = () => {
           } />
           <Route path='admin' element={
             <>
-            <DashProvider value= {<BannerForm />}>
+            <DashProvider value= {<Products_list />}>
               <Dashboard />
             </DashProvider>
             </>
@@ -76,7 +79,27 @@ const App = () => {
             </DashProvider>
             </>
           } />
+          <Route path='admin/banner' element={
+            <>
+            <DashProvider value= {<>
+              <BannerForm />
+            </>}>
+              <Dashboard />
+            </DashProvider>
+            </>
+          } />
+          <Route path='admin/categories' element={
+            <>
+            <DashProvider value= {<>
+              <CategoryUpload />
+            </>}>
+              <Dashboard />
+            </DashProvider>
+            </>
+          } />
           <Route path='upload' element={<FilesUpload />} />
+          <Route path='/admin/categories/update/:id' element={<Categoryupdate />} />
+          <Route path='/admin/product/update/:id' element={<ProductUpdate />} />
           <Route path='uploadbanner' element={<BannerForm />} />
           {/* <Route path='admin' element={<Dashboard/>} /> */}
           <Route path="*" element={<NotFound/>} />

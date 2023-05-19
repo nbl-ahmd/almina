@@ -10,7 +10,7 @@ const Home = () => {
    const [product, setProduct] = useState([]);
 
    useEffect(() => {
-     axios.get('http://localhost:4000/api/banners')
+     axios.get('http://192.168.70.104:4000/api/banners')
        .then(response => {
          console.log(response.data);
          setBanners(response.data);
@@ -20,7 +20,7 @@ const Home = () => {
 
 
    useEffect(() => {
-    axios.get('http://localhost:4000/api/products')
+    axios.get('http://192.168.70.104:4000/api/products')
     .then(response => {
       console.log(response.data);
       setProduct(response.data);
@@ -89,13 +89,16 @@ const Home = () => {
       </div>
 
 
-<div className="container">
-<div className="row g-3 row-cols-lg-5 row-cols-2 row-cols-md-3 mt-3">
+<div className="container mb-5">
+<div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3">
 {product.map(product => (
   <ProductCard key={product.id} product={product} />
 ))}
 </div>
 </div>
+<footer className=' bg-dark text-center mb-0 p-5'>
+<p className=' text-light'>Almina Pharmacy</p>
+</footer>
     </main>
   )
 }
