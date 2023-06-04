@@ -3,7 +3,15 @@ let express = require('express'),
     cors = require('cors'),
     bodyParser = require('body-parser'),
     dbConfig = require('./database/db');
-const uri= "mongodb+srv://nbl:rs4DvQ6YHteb1Kwt@almina-cluster.ovx7dwd.mongodb.net/?retryWrites=true&w=majority";
+
+
+
+    const dotenv = require('dotenv');
+
+dotenv.config(); // Load environment variables from .env file
+
+
+const uri = process.env.MONGODB_URI;
 
 const bannersRouter = require('./routes/banners.js');
 const productsRouter = require('./routes/products');
@@ -12,7 +20,6 @@ const orderRouter = require('./routes/Orderrouter');
 const batchProductRouter = require('./routes/batchProductRouter'); // Import the batchProductRouter
 
 const fs = require('fs');
-const https = require('https');
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
@@ -46,7 +53,7 @@ const options = {
     cert: fs.readFileSync('server.cert')
 };
 
-const server = https.createServer(options, app).listen(port, () => {
+app.listen(port, () => {
     console.log('Connected to port ' + port);
 });
 
