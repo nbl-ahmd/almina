@@ -48,10 +48,7 @@ app.use('/api/orders', orderRouter);
 app.use('/api/upload', batchProductRouter);
 
 const port = process.env.PORT || 4000;
-const options = {
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-};
+
 
 app.listen(port, () => {
     console.log('Connected to port ' + port);
