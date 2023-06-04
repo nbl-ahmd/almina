@@ -3,11 +3,29 @@ const Orderrouter = express.Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 
+// Function to generate a unique order ID
+async function generateOrderID() {
+  try {
+    const existingOrders = await Order.find();
+    let maxID = 0;
+    for (const order of existingOrders) {
+      const orderID = parseInt(order.orderId.substring(2));
+      if (orderID > maxID) {
+        maxID = orderID;
+      }
+    }
+    return `OD${String(maxID + 1).padStart(4, '0')}`;
+  } catch (error) {
+    console.error('Error generating order ID:', error);
+    throw error;
+  }
+}
 
 // POST /api/orders
 Orderrouter.post('/', async (req, res) => {
   try {
-    const order = await Order.create(req.body);
+    const orderID = await generateOrderID();
+    const order = await Order.create({ ...req.body, orderId: orderID });
 
     // Update the stock of the ordered products
     const orderedItems = order.cartItems;
@@ -22,7 +40,6 @@ Orderrouter.post('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to create order' });
   }
 });
-
 
 Orderrouter.get('/', (req, res) => {
   Order.find().populate('cartItems._id')

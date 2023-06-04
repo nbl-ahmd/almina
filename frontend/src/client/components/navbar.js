@@ -43,7 +43,7 @@ const Navbar = () => {
                     </a>
 
                    
-                    <Link to='/cart'>
+                    <Link className='order-0 order-lg-1' to='/cart'>
                     <div className='order-lg-2 icon-wrapper'>
                    
                     {cartItems.length > 0 && (
@@ -57,7 +57,7 @@ const Navbar = () => {
 
 
 
-                    <form className="col-12 col-lg-6 mb-lg-0 me-lg-3 mt-3 mt-lg-0"  role="search" onSubmit={handleSearch}>
+                    <form className="col-12 col-lg-6 mb-lg-0 me-lg-3 mt-3 mt-lg-0 order-1 order-lg-0"  role="search" onSubmit={handleSearch}>
                        <div className="input-group">
                        <input
                          type="search"

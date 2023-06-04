@@ -30,7 +30,23 @@ const drive = google.drive({ version: 'v3', auth });
 // Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
 const FOLDER_ID = '1I8HpwJ_iaOx_r7ZsOOETYcQbpMFpLUH6';
 
-
+// Function to generate a unique product ID
+async function generateProductID() {
+  try {
+    const existingProducts = await Product.find();
+    let maxID = 0;
+    for (const product of existingProducts) {
+      const productID = parseInt(product.product_id.substring(2));
+      if (productID > maxID) {
+        maxID = productID;
+      }
+    }
+    return `PD${String(maxID + 1).padStart(4, '0')}`;
+  } catch (error) {
+    console.error('Error generating product ID:', error);
+    throw error;
+  }
+}
 
 
 productRouter.post('/', upload.single('image'), async (req, res) => {
@@ -44,8 +60,7 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
     const sale = req.body.sale == 'true';
     const featured = req.body.featured == 'true';
     const image = req.file;
-    // const product_id = generateProductId(); 
-    // Extract the EXIF orientation
+    const product_id = await generateProductID();
     let orientation = 1;
     try {
       const exifData = await sharp(image.buffer).metadata();
@@ -67,7 +82,7 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
    
 
     const product = new Product({
-        product_id: 'a',
+        product_id,
         name,
          image: Filename,
          category,

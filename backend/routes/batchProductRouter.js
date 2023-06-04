@@ -12,6 +12,23 @@ const uploadDir = path.join(__dirname, '../public/csv');
 
 
 
+// Function to generate a unique product ID
+async function generateProductID() {
+  try {
+    const existingProducts = await Product.find();
+    let maxID = 0;
+    for (const product of existingProducts) {
+      const productID = parseInt(product.product_id.substring(2));
+      if (productID > maxID) {
+        maxID = productID;
+      }
+    }
+    return `PD${String(maxID + 1).padStart(4, '0')}`;
+  } catch (error) {
+    console.error('Error generating product ID:', error);
+    throw error;
+  }
+}
 
 const randomColor = () => {
     // Generate random RGB values between 0 and 255
@@ -68,7 +85,7 @@ try {
             console.log('Category found:', category);
   
             const product = new Product({
-              product_id: data.product_id,
+              product_id: generateProductID(),
               name: data.name,
               category: categoryId,
               featured: data.featured === 'TRUE',

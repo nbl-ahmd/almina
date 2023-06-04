@@ -15,6 +15,7 @@ export const CartProvider = ({ children }) => {
   const [totalVatPrice, setTotalVatPrice] = useState(0);
   const [totalVat, setTotalVat] = useState(0);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [ordermodal, setOrderModal] = useState('');
 
   useEffect(() => {
     calculateTotalPrice();
@@ -65,7 +66,10 @@ export const CartProvider = ({ children }) => {
     address: '',
     buildingname: '',
     flatno: '',
-    total: ''
+    total: '',
+    note: '',
+    payment: '',
+    totalprice: totalPrice
   });
 
   const handleQuantityChange = async (event, item) => {
@@ -167,7 +171,17 @@ export const CartProvider = ({ children }) => {
         name: customerInfo.name,
         mobile: customerInfo.mobile,
         email: customerInfo.email,
-        address: customerInfo.address
+        emirate: customerInfo.emirate,
+        city: customerInfo.city,
+        address: customerInfo.address,
+        buildingname: customerInfo.buildingname,
+        flatno: customerInfo.flatno,
+        note: customerInfo.note,
+        payment: customerInfo.payment,
+        totalprice: totalPrice
+
+
+
       },
       cartItems: cartItems
     };
@@ -179,18 +193,21 @@ export const CartProvider = ({ children }) => {
       .then((response) => {
         // Handle the response if needed
         console.log('Order saved successfully:', response.data);
+        const orderId = response.data.orderId;
 
-        // Clear the cart and customer information after successful upload
-        setCartItems([]);
-        setCustomerInfo({
-          name: '',
-          mobile: '',
-          email: '',
-          address: ''
-        });
-
-        // Clear the cart items from local storage
-        localStorage.removeItem('cartItems');
+        // Set the order ID in the orderModal state
+        setOrderModal(orderId);
+        console.log('id' +ordermodal);
+        // // Clear the cart and customer information after successful upload
+         setCartItems([]);
+         setCustomerInfo({
+           name: '',
+           mobile: '',
+           email: '',
+           address: ''
+         });
+         localStorage.removeItem('cartItems');
+        
       })
       .catch((error) => {
         // Handle the error if needed
@@ -214,6 +231,43 @@ export const CartProvider = ({ children }) => {
         setCustomerInfo
       }}
     >
+{}
+{ordermodal && (
+ <>
+  
+ <div className="model-bg">
+   <div id="myModal" className="model">
+			<div className="modal-header justify-content-end">
+			<button type="button" className="btn close" data-dismiss="modal" aria-hidden="true"
+      onClick={()=>{
+        
+        setOrderModal('');
+
+      }}
+      >&times;</button>
+			</div>
+	<div className="modal-icon d-flex justify-content-center">
+  <i className="fa-regular fa-circle-check"></i>
+		</div>
+    <div className="modal-content">
+			<div className="modal-body text-center">
+				<h5 className='mb-3'>Order Placed Successfully!</h5>	
+				<p className='fw-300'>Your order with ID <span className='fw-400 text-pg'>{ordermodal}</span> has been placed successfully.
+        
+        <br />
+        Thank you for choosing our Almina Pharmacy
+        </p>
+       
+				
+			</div>
+	</div>
+</div> 
+ </div>
+
+ 
+
+ </>   
+)}
       {alertVisible && (
       <div className=" alert alert-danger alert-dismissible fade show" role="alert">
           <span className='me-2'>
@@ -227,8 +281,13 @@ export const CartProvider = ({ children }) => {
           </button>
           
           </div>
+
       )}
       {children}
     </CartContext.Provider>
   );
 };
+
+
+ //Clear the cart items from local storage
+ localStorage.removeItem('cartItems');

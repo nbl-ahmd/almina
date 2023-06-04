@@ -588,8 +588,20 @@ input::-webkit-outer-spin-button,
               .icon-btn{
                 background-color: var(--secondary-green);
                 color: white;
+                border: 1px solid var(--secondary-green) !important;
+              }
+              .icon-btn:hover{
+                background-color: var(--secondary-green);
+                color: white;
+                border: 1px solid var(--secondary-green) !important;
               }
 
+              .icon-btn[disabled=disabled], button:disabled {
+                background-color: #3ec68b !important;
+                color: white;
+                border: none !important;
+
+            }
               .alert{
                 position: fixed;
                 right: 1rem;
@@ -658,4 +670,80 @@ input::-webkit-outer-spin-button,
               }
 
 
-           
+              .payment-card{
+                display: flex;
+                border: 1px solid;
+                border-color: #dfdada ;
+                padding: 1rem;
+                border-radius: 10px;
+              }
+              .payment-card:hover{
+                border:1px solid !important;
+                border-color: #dfdada !important ;
+              }
+            
+              .payment-card .bi{
+                color: var(--li-grey);
+              }
+              input[type="radio"].btn-check:checked + label.btn.payment-card {
+                background-color: #5257f4 !important; /* Change the background color as desired */
+                border-color: #5257f4;
+                color: #fff;
+              
+              }
+              input[type="radio"].btn-check:checked + label.btn.payment-card i {
+                color: #fff;
+              
+              }
+            
+
+              .fa-circle-notch {
+               
+                
+                animation: spin 1s infinite linear;
+              }
+              
+              @keyframes spin {
+                0% {
+                  transform: rotate(0deg);
+                }
+                100% {
+                  transform:rotate(360deg);
+                }
+              }
+
+            .model{
+              z-index: 5;
+              padding: 2rem;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              
+             
+              
+              -webkit-transform: translate(-50%, -50%);
+              -moz-transform: translate(-50%, -50%);
+              -ms-transform: translate(-50%, -50%);
+              -o-transform: translate(-50%, -50%);
+              transform: translate(-50%, -50%);
+background-color: #fff;
+border-radius: 1rem;
+box-shadow: 0px 3px 15px rgba(0,0,0,0.2);
+            }
+
+            .modal-icon i{
+              font-size: 5rem;
+              color: var(--secondary-green);
+              margin-bottom: 2rem;
+            }
+
+            .model-bg{
+
+              background-color: rgba(111, 114, 117, 0.9);
+              width: 100vw;
+              height: 100vh;
+              overflow: hidden;
+              position: fixed;
+              z-index: 4;
+
+            }
