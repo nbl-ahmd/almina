@@ -47,7 +47,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/upload', batchProductRouter);
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3000;
 
 
 app.listen(port, () => {
