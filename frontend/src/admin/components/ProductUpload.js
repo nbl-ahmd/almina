@@ -1,5 +1,6 @@
 import React, { useEffect, useState} from 'react';
 import axios from 'axios';
+import baseURL from '../../axiosConfig';
 
 
 
@@ -17,7 +18,7 @@ const ProductUpload = () => {
   const [file, setFile] = useState();
 
   useEffect(() => {
-    axios.get('http://192.168.70.104:4000/api/category')
+    axios.get(`${baseURL}/api/category`)
       .then(response => {
         setCategoryList(response.data);
       })
@@ -51,7 +52,7 @@ const ProductUpload = () => {
     formData.append('vat', vat);
     formData.append('stock', stock);
     formData.append('sale', sale);
-    axios.post('http://192.168.70.104:4000/api/products', formData)
+    axios.post(`${baseURL}/api/products`, formData)
     .then(response => {
         console.log(response.data);
         setMessage('product created successfully');

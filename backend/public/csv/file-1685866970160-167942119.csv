@@ -1,0 +1,11 @@
+gdriveFileId,product_id,name,image,category,featured,price,vat,stock,sale,disabled
+gdrive1,product1,Product 1,image1.jpg,category1,true,10.99,false,100,false,false
+gdrive2,product2,Product 2,image2.jpg,category2,false,19.99,true,50,true,false
+gdrive3,product3,Product 3,image3.jpg,category1,true,5.99,false,200,false,false
+gdrive4,product4,Product 4,image4.jpg,category3,false,8.99,true,150,true,false
+gdrive5,product5,Product 5,image5.jpg,category2,true,12.99,false,80,false,false
+gdrive6,product6,Product 6,image6.jpg,category1,false,9.99,true,120,true,false
+gdrive7,product7,Product 7,image7.jpg,category3,true,15.99,false,60,false,false
+gdrive8,product8,Product 8,image8.jpg,category2,false,11.99,true,90,true,false
+gdrive9,product9,Product 9,image9.jpg,category1,true,7.99,false,180,false,false
+gdrive10,product10,Product 10,image10.jpg,category3,false,14.99,true,40,true,false

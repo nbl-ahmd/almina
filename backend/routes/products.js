@@ -12,23 +12,23 @@ const uploadDir = path.join(__dirname, '..', 'public/products');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const fs = require('fs');
-// Load dependencies
-// const { nanoid } = require('nanoid');
 
-// Define the prefix for product IDs
-const PRODUCT_ID_PREFIX = 'PD';
+//google
+const { Readable } = require('stream');
+const { google } = require('googleapis');
+// Load the JSON key file
+const keyFile = path.join(__dirname, '/cred.json');
 
-// Keep track of the last used product number
-let lastProductNumber = 0;
+// Create a new instance of the drive API
+const auth = new google.auth.GoogleAuth({
+  keyFile,
+  scopes: ['https://www.googleapis.com/auth/drive.file'],
+});
 
-// Generate a new product ID
-function generateProductId() {
-    // Increment the last used product number
-    lastProductNumber++;
+const drive = google.drive({ version: 'v3', auth });
 
-    // Combine the prefix and the number to form the product ID
-    return `${PRODUCT_ID_PREFIX}-${lastProductNumber.toString().padStart(4, '0')}`;
-}
+// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const FOLDER_ID = '1I8HpwJ_iaOx_r7ZsOOETYcQbpMFpLUH6';
 
 
 
@@ -64,8 +64,7 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
 
     // generate a new filename for the resized image
     const Filename = uuidv4() + '.webp';
-    // save the resized image to the resized directory
-    await sharp(croppedImage).toFile(path.join(uploadDir, Filename));
+   
 
     const product = new Product({
         product_id: 'a',
@@ -79,30 +78,92 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
          sale
 
     }); // save the resized filename to the database
-    product.save()
-        .then(() => {
-            res.status(201).json({ message: 'Product added successfully' });
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({ error: 'Internal server error' });
-        });
+    
+    try {
+      const fileMetadata = {
+        name: Filename,
+        parents: [FOLDER_ID], // Set the parent folder ID
+      };
+  
+      const media = {
+        mimeType: 'image/webp',
+        body: Readable.from(croppedImage),
+      };
+  
+      const response = await drive.files.create({
+        resource: fileMetadata,
+        media: media,
+        fields: 'id',
+      });
+  
+      product.gdriveFileId = response.data.id; // Save the Google Drive file ID to the product document
+  
+      // Save the product document to the database
+      await product.save();
+  
+      res.status(201).json({ message: 'product created successfully' });
+    } catch (error) {
+      console.error('Error uploading file to Google Drive:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
 });
+
+// productRouter.get('/', (req, res) => {
+//     Product.find().populate('category')
+//         .then(products => {
+//             res.status(200).json(products);
+//         })
+//         .catch(error => {
+//             console.log(error);
+//             res.status(500).json({ error: 'Internal server error' });
+//         });
+// });
 
 productRouter.get('/', (req, res) => {
-    Product.find().populate('category')
-        .then(products => {
-            res.status(200).json(products);
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({ error: 'Internal server error' });
-        });
+  const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
+  const limit = Number(req.query.limit) || 10; // Default limit is 10 if not provided
+  const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
+
+  Product.find(filter)
+    .skip(offset)
+    .limit(limit)
+    .populate('category')
+    .then(products => {
+      res.status(200).json(products);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: 'Internal server error' });
+    });
 });
 
-productRouter.get('/images/:filename', (req, res) => {
-    const { filename } = req.params;
-    res.sendFile(path.join(uploadDir, filename)); // serve the resized image instead of the original image
+
+
+productRouter.get('/images/:filename', async(req, res) => {
+  const { filename } = req.params;
+
+  try {
+    // Retrieve the product by filename from the database
+    const product = await Product.findOne({ image: filename });
+    if (!product) {
+      return res.status(404).json({ error: 'product not found' });
+    }
+
+    // Retrieve the image file from Google Drive
+    const response = await drive.files.get(
+      { fileId: product.gdriveFileId, alt: 'media' },
+      { responseType: 'stream' }
+    );
+
+    // Set the appropriate Content-Type header for the image
+    res.set('Content-Type', 'image/webp');
+
+    // Pipe the image stream from Google Drive to the response stream
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('Error retrieving image from Google Drive:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 productRouter.get('/:id', async(req,res)=>{
@@ -114,133 +175,107 @@ productRouter.get('/:id', async(req,res)=>{
     res.status(200).send(product);
 })
 
-productRouter.delete('/:id', (req, res) => {
-    Product.findByIdAndRemove(req.params.id)
-        .then(Product => {
-            if(Product) {
-                fs.unlink(path.join(uploadDir, Product.image), (error) => {
-                    if (error) {
-                      console.log('Error deleting image file:', error);
-                    }
-                   
-                  });
-                return res.status(200).json({success: true, message: 'the Banner is deleted!'})
-            } else{
-                return res.status(404).json({success: false, message: "Banner not found!"})
-            }
-    }).catch(err=>{
-        return res.status(400).json({success: false, error: err})
-    })
+productRouter.get('/category/:categoryId', async (req, res) => {
+  const { categoryId } = req.params;
+
+  try {
+    const products = await Product.find({ 'category': categoryId }).populate('category');
+    res.json(products);
+    console.log(products._id);
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+productRouter.delete('/:id', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    // Find the product by ID
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'product not found!' });
+    }
+
+    // Delete the product from the database
+    await Product.findByIdAndRemove(productId);
+
+    // If applicable, delete the image file from Google Drive
+    if (product.gdriveFileId) {
+      await drive.files.delete({ fileId: product.gdriveFileId });
+    }
+
+    // Delete the image file from the server's file system
+    fs.unlink(path.join(uploadDir, product.image), (error) => {
+      if (error) {
+        console.log('Error deleting image file:', error);
+      }
+    });
+
+    return res.status(200).json({ success: true, message: 'The product and image are deleted!' });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
 
 
-      // If applicable, delete the image file from the server's file system
-    
-  })
-
-
-//   categoryRouter.put('/:id', upload.single('image') async (req, res)=> {
-//     const category = await Category.findByIdAndUpdate(
-//         req.params.id,
-//         {
-//             name: req.body.name,
-//             // image: req.body.image
-//         },
-//         {new: true}
-//     )
-//     if (!category)
-//         return res.status(400).send('the category cannot be created!')
-
-//     res.send(category);
-// })
-// productRouter.put('/:id', async (req, res)=> {
-//     const category = await Category.findById(req.body.category);
-//     const {
-//         name,
-//         price,
-//         stock
-//     } = req.body;
-//     const vat = req.body.vat == 'true';
-//     const sale = req.body.sale == 'true';
-//     const featured = req.body.featured == 'true';
-//     const image = req.file;
-//     // const product_id = generateProductId(); 
-//     // Extract the EXIF orientation
-//     let orientation = 1;
-//     try {
-//       const exifData = await sharp(image.buffer).metadata();
-//       orientation = exifData.orientation || 1;
-//     } catch (error) {
-//       console.error('Error reading EXIF data:', error);
-//     }
-    
-//     // if (!category) return res.status(400).send('Invalid Category')
-//     // crop the image into a square
-//     const croppedImage = await sharp(image.buffer)
-//         .resize({ width: 500, height: 500, fit: 'cover' })
-//         .rotate()
-//         .webp()
-//         .toBuffer();
-
-//     // generate a new filename for the resized image
-//     const Filename = uuidv4() + '.webp';
-//     // save the resized image to the resized directory
-//     await sharp(croppedImage).toFile(path.join(uploadDir, Filename));
-//     const product = await Category.findByIdAndUpdate(
-//         req.params.id,
-//         {
-//         name,
-//          image,
-//          category,
-//          featured,
-//          price,
-//          vat,
-//          stock,
-//          sale
-//         },
-//         {new: true}
-//     )
-//     if (!product)
-//         return res.status(400).send('the product cannot be updated!')
-
-//     res.send(product);
-// })
+  
 
 productRouter.put('/:id', upload.single('image'), async (req, res) => {
-    const { id } = req.params;
-    const updateFields = {};
-    
+  const { id } = req.params;
+  const updateFields = {};
+
+  try {
+    // Retrieve the previous image filename from the database
+    const prevProduct = await Product.findById(id);
+    const prevImage = prevProduct.image;
+    const prevGdriveFileId = prevProduct.gdriveFileId;
+
     // Check if each field is present in the request body and update the corresponding field
     if (req.body.name) {
       updateFields.name = req.body.name;
-      console.log(req.body);
     }
-    
+
     if (req.body.price) {
       updateFields.price = req.body.price;
     }
+
     if (req.body.category) {
-        updateFields.category = req.body.category;
-      }
-    
+      updateFields.category = req.body.category;
+    }
+
     if (req.body.stock) {
       updateFields.stock = req.body.stock;
     }
-    
+
     if (req.body.vat) {
       updateFields.vat = req.body.vat === 'true';
     }
-    
+
     if (req.body.sale) {
       updateFields.sale = req.body.sale === 'true';
     }
-    
+
     if (req.body.featured) {
       updateFields.featured = req.body.featured === 'true';
     }
-    
+    if (req.body.disabled) {
+      updateFields.disabled = req.body.disabled === 'true';
+    }
+
     if (req.file) {
       const image = req.file;
-      console.log(req.file);
+
+     // Delete the previous image from Google Drive
+     if (prevGdriveFileId) {
+      await drive.files.delete({
+        fileId: prevGdriveFileId,
+      });
+    }
+
+
       // Extract the EXIF orientation
       let orientation = 1;
       try {
@@ -249,38 +284,52 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
       } catch (error) {
         console.error('Error reading EXIF data:', error);
       }
-      
+
       // Crop the image into a square
       const croppedImage = await sharp(image.buffer)
         .resize({ width: 500, height: 500, fit: 'cover' })
         .rotate()
         .webp()
         .toBuffer();
-      
+
       // Generate a new filename for the resized image
-      const filename = uuidv4() + '.webp'; // Replace with the actual path to your upload directory
-      const resizedImagePath = path.join(uploadDir, filename);
-      
-      // Save the resized image to the resized directory
-      await sharp(croppedImage).toFile(resizedImagePath);
-      
+      const filename = uuidv4() + '.webp'; // 
+
+       // Save the updated image to Google Drive
+       const fileMetadata = {
+        name: filename,
+        parents: [FOLDER_ID], // Set the parent folder ID
+      };
+
+      const media = {
+        mimeType: 'image/webp',
+        body: Readable.from(croppedImage),
+      };
+
+      const response = await drive.files.create({
+        resource: fileMetadata,
+        media: media,
+        fields: 'id',
+      });
+
       updateFields.image = filename;
+      updateFields.gdriveFileId = response.data.id; // Save the updated Google Drive file ID to the product document
+    
     }
-  
-    try {
-      const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
-      
-      if (!product) {
-        return res.status(400).send('The product cannot be updated!');
-      }
-      
-      res.send(product);
-    } catch (error) {
-      console.error('Error updating product:', error);
-      res.status(500).send('An error occurred while updating the product');
+
+    const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+
+    if (!product) {
+      return res.status(400).send('The product cannot be updated!');
     }
-  });
-  
+
+    res.send(product);
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).send('An error occurred while updating the product');
+  }
+});
+
 module.exports = productRouter;
 
 

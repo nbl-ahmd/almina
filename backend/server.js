@@ -8,7 +8,11 @@ const uri= "mongodb+srv://nbl:rs4DvQ6YHteb1Kwt@almina-cluster.ovx7dwd.mongodb.ne
 const bannersRouter = require('./routes/banners.js');
 const productsRouter = require('./routes/products');
 const categoryRouter = require('./routes/categories')
+const orderRouter = require('./routes/Orderrouter');
+const batchProductRouter = require('./routes/batchProductRouter'); // Import the batchProductRouter
 
+const fs = require('fs');
+const https = require('https');
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
@@ -33,11 +37,18 @@ app.use('/public', express.static('public'));
 app.use('/api/category', categoryRouter);
 app.use('/api/banners', bannersRouter);
 app.use('/api/products', productsRouter);
+app.use('/api/orders', orderRouter);
+app.use('/api/upload', batchProductRouter);
 
 const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
-    console.log('Connected to port ' + port)
-})
+const options = {
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+};
+
+const server = https.createServer(options, app).listen(port, () => {
+    console.log('Connected to port ' + port);
+});
 
 app.use((req, res, next) => {
     // Error goes via `next()` method

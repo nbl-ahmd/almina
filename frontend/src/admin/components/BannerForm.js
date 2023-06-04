@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import BannerList from './BannerList';
+import baseURL from '../../axiosConfig';
 
 const BannerForm = () => {
 
   const [banners, setBanners] = useState([]);
 
    useEffect(() => {
-     axios.get('http://192.168.70.104:4000/api/banners')
+     axios.get(`${baseURL}/api/banners`)
        .then(response => {
          console.log(response.data);
          setBanners(response.data);
@@ -31,7 +32,7 @@ const BannerForm = () => {
     formData.append('name', name);
     formData.append('link', link);
     formData.append('image', image);
-    axios.post('http://192.168.70.104:4000/api/banners', formData)
+    axios.post(`${baseURL}/api/banners`, formData)
       .then(response => {
         console.log(response.data);
         setMessage('Banner created successfully');

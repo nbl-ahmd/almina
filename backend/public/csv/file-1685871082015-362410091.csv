@@ -1,0 +1,11 @@
+product_id,name,category,featured,price,vat,stock,sale,disabled
+product1,Product 1,category1,TRUE,10.99,FALSE,100,FALSE,FALSE
+product2,Product 2,category2,FALSE,19.99,TRUE,50,TRUE,FALSE
+product3,Product 3,category1,TRUE,5.99,FALSE,200,FALSE,FALSE
+product4,Product 4,category3,FALSE,8.99,TRUE,150,TRUE,FALSE
+product5,Product 5,category2,TRUE,12.99,FALSE,80,FALSE,FALSE
+product6,Product 6,category1,FALSE,9.99,TRUE,120,TRUE,FALSE
+product7,Product 7,category3,TRUE,15.99,FALSE,60,FALSE,FALSE
+product8,Product 8,category2,FALSE,11.99,TRUE,90,TRUE,FALSE
+product9,Product 9,category1,TRUE,7.99,FALSE,180,FALSE,FALSE
+product10,Product 10,category3,FALSE,14.99,TRUE,40,TRUE,FALSE

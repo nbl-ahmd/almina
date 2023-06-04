@@ -2,12 +2,13 @@ import axios from 'axios';
 import React, { useState } from 'react'
 import product from './product';
 import { Link } from 'react-router-dom';
+import baseURL from '../../axiosConfig';
 
 const ProductCard_admin = ({product}) => {
     const [productFilter, setProductFilter] = useState();
     const deleteProduct = () => {
         axios
-        .delete(`http://192.168.70.104:4000/api/products/${product._id}`)
+        .delete(`${baseURL}/api/products/${product._id}`)
         .then((res) => {
         })
         .catch((error) => console.log(error));
@@ -25,7 +26,7 @@ const ProductCard_admin = ({product}) => {
                 
 
                 </div>
-            <img src={`http://192.168.70.104:4000/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid product-image" />
+            <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid product-image" />
               <div className="px-2 pt-3">
                
                 <div className="mb-1"><span className='category-name text-pb fw-400 text-small'>{product.category.name}</span>

@@ -25,7 +25,7 @@
 // const {id} = useParams();
     
 // useEffect(() => {
-//     axios.get('http://192.168.70.104:4000/api/category')
+//     axios.get('${baseURL}/api/category')
 //       .then(response => {
 //         setCategoryList(response.data);
 //       })
@@ -37,7 +37,7 @@
 
 //     useEffect(() => {
 //         console.log(id);
-//         axios.get(`http://192.168.70.104:4000/api/products/${id}`)
+//         axios.get(`${baseURL}/api/products/${id}`)
 //           .then((response) => {
 //             console.log(response.data);
 //             setProduct(response.data);
@@ -53,7 +53,7 @@
 //         e.preventDefault();
         
     
-//         axios.put(`http://192.168.70.104:4000/api/products/${id}`, product)
+//         axios.put(`${baseURL}/api/products/${id}`, product)
 //         .then(response => {
 //           console.log(response.data );
 //           setMessage('product updated successfully');
@@ -94,7 +94,7 @@
 //         //    formData.append('vat', vat);
 //         //    formData.append('stock', stock);
 //         //    formData.append('sale', sale);
-//         //    axios.post('http://192.168.70.104:4000/api/products', formData)
+//         //    axios.post('${baseURL}/api/products', formData)
 //         //    .then(response => {
 //         //        console.log(response.data);
 //         //        setMessage('product created successfully');
@@ -216,6 +216,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import baseURL from '../../axiosConfig';
 
 
 const ProductUpdate = () => {
@@ -223,7 +224,7 @@ const ProductUpdate = () => {
     const {id} = useParams();
   const [product, setProduct] = useState({});
   const [formData, setFormData] = useState({});
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFile, setImageFile] = useState([]);
   
   const [categoryList, setCategoryList] = useState([]);
 const [message, setMessage] = useState('');
@@ -233,7 +234,7 @@ const [file, setFile] = useState('');
 useEffect(() => {
   
   console.log(file);
-         axios.get('http://192.168.70.104:4000/api/category')
+         axios.get(`${baseURL}/api/category`)
            .then(response => {
              setCategoryList(response.data);
            })
@@ -244,7 +245,7 @@ useEffect(() => {
 
   useEffect(() => {
     // Fetch the product data using the id
-    axios.get(`http://192.168.70.104:4000/api/products/${id}`)
+    axios.get(`${baseURL}/api/products/${id}`)
       .then(response => {
         setProduct(response.data);
         setFormData({
@@ -256,9 +257,10 @@ useEffect(() => {
           featured: String(response.data.featured),
           category: response.data.category,
           image: response.data.image,
-          images : []
+          disabled: String(response.data.disabled)
+          
         });
-        setFile(`http://192.168.70.104:4000/api/products/images/${response.data.image}`);
+        setFile(`${baseURL}/api/products/images/${response.data.image}`);
       })
       .catch(error => {
         console.error('Error fetching product:', error);
@@ -291,16 +293,16 @@ useEffect(() => {
     formDataWithImage.append('vat', formData.vat);
     formDataWithImage.append('sale', formData.sale);
     formDataWithImage.append('featured', formData.featured);
+    formDataWithImage.append('disabled', formData.disabled);
     if (imageFile) {
       console.log(imageFile);
-       formDataWithImage.append('images', imageFile);
+       formDataWithImage.append('image', imageFile);
       console.log(imageFile);
     }
 
-    axios.put(`http://192.168.70.104:4000/api/products/${id}`, formDataWithImage)
+    axios.put(`${baseURL}/api/products/${id}`, formDataWithImage)
       .then(response => {
-        console.log(formData.image);
-        console.log()
+        console.log('formdata image: ' + formData.image);
         console.log('formdata: ' + formData.category);
         console.log('Product updated:', response.data);
         setMessage('Product updated successfully');
@@ -312,7 +314,12 @@ useEffect(() => {
         // Handle the error
       });
   };
-
+  console.log('Rendering ProductUpdate component');
+  console.log('categoryList:', categoryList);
+  console.log('product:', product);
+  console.log('formData:', formData);
+  console.log('imageFile:', imageFile);
+  console.log('file:', file);
   return (
 
     <div>
@@ -326,7 +333,7 @@ useEffect(() => {
             <img src={file} className="img-preview" alt="" />
           ) : (
             <img
-              src={`http://192.168.70.104:4000/api/products/images/${formData.image}`}
+              src={`${baseURL}/api/products/images/${formData.image}`}
               className="img-preview"
               alt=""
             />
@@ -362,6 +369,9 @@ useEffect(() => {
     <input type="number" className="form-control" name="price" placeholder="Price" value={formData.price || ''} onChange={handleFormChange}/>
     </div>
     </div>
+<div className="col-12">
+  <div className="container">
+    <div className="row">
     <div className="col-4">
     <div className="input-group">
     <div className="btn-group">
@@ -411,6 +421,29 @@ useEffect(() => {
     </div>
     </div>
     </div>
+
+
+    <div className="col-4">
+    
+    <div className="input-group">
+    <div className="btn-group">
+    <label htmlFor="disabled" className='me-1'>disabled</label>
+          <div>
+            <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value="true" checked={formData.disabled === 'true'} onChange={handleFormChange} />
+            <label htmlFor="disabled-yes" className="btn btn-outline-primary me-1">Yes</label>
+          </div>
+          <div>
+            <input type="radio" className="btn-check" id="disabled-no" name="disabled" value="false" checked={formData.disabled === 'false'} onChange={handleFormChange} />
+            <label htmlFor="disabled-no" className="btn btn-outline-primary">No</label>
+          </div>
+    </div>
+    </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+   
     </div>
     <div className="d-flex align-items-center">
     <button className='btn btn-primary me-5' type='submit'>Upload</button>

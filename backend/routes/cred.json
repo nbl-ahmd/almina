@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "alminaecommerce",
+  "private_key_id": "7a72652905218e925da68a8509988ff05a3937b6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCzDg4vWfNf/0t4\nBukdymAHEPIoycPORB58xeHSZh5+A91FBYkCLuLoG3cLVzp/+nICnRADE/i/oP71\nQ5rLalowP0k49ds0mvJdFRr8LbxZZ43kHRH68o98s8VmpqaiBW0PAFITM+qIVMw9\nGIQ2cwLKEtwcmNjC0kqLmTYM9jmFkXryuLZNC/wZbgznbWEiSmocu5WVcelLFRs8\nzrNVEWWeQc9zWXw9VVeL4hhKXiCQCe7cBNAUJIHX67p4WY32piec8rALgFtJQ7cf\n7TEp2wjwKuPRj/A0XV4g3cSzcufqT7QFkgE3oveUqYR8vGNWb+HIvqPaX0FVCfj3\n+5IO3Kv3AgMBAAECggEAUdiZ6VEfq4Dh+XKHOqPYM0KuvrBDvdRrbzNw3yDozUds\n7HD0SLgv5lMvnlJ4HinX1ZP/zrhhWw73nBsT9emeYjF7gfr4AVrWcHAGTsGFOATa\n2ivjnSclKaZvFFYXEzaRvGq0Ga0AhuLkHQVI4i6+Vqo6TSQc6SkBBEC7cT9X2dJ7\nXqKrqsLhGFbrGQUpp9oGRiawT9h6g0YrgqVWx9E6rl6JvK0cg3Xn8nEzOyt3+yk2\ndUUTMEA7Kjqs+oOHIoWgLHZY+zjUmu2ZOyOIWTyA5Cm+yBgS3+CNtvyPIzmhmOWZ\neVXXqSWVoIsZJBWXeB2tCjAN96/4YWdXGfQG9ij9+QKBgQDdW72z41WuF5yHymJ4\nJDIu7/gRjUaIv3xwFFlpwg+OebntGZIHEjUp3+Cde0iVavatY8Gb3ouooYhEx3bB\ngyYsjsnC2IDa71lYDHJsWYoYifVVXSokMg+LhnCmXiQZ3iMHkTznUqNUu2Tt/p5J\nSrAsR/IMMPmD6O2WK9V9EkyxswKBgQDPE4PSVPES68veG4/fpMDZ/AUiIRCD6uY/\nSepXVM/20OkQSjgLStfjScXnGGqWfxwcumr4nkSwI3G/BNvp9Wly1oYPog7b+HFf\nhdAb/2uxtjLu9hhdm+psh7nmRHvKU2IWwxPHXIPWlSLnZGFtepnVadp+qNetduo1\n405iOE4SrQKBgED3Bcvfsmuvnk70BMZByUChSOrNzZ+go0K5lixFug8Uho6hbIwK\nufOaMu/FGN5RUCg/GLlILTDGh5m3+JB+jxuQpII8zER07oG61XIbLT5abtgoyY9p\n6coHINSS2IGHAjzcUUWKqUja3ppCme3kr6OvUchmLzSZjfD+2F8mmb+lAoGAcd5j\nUJfQ8Pyk4H/7f5mTSssg74GLGV9kOU0mBdvnd+utHX4Sj3MagCujHc75XcSL6ug/\nxnMRhmIXPFkprN98mt+IXLRaw288uLBWne64g8KTA4BkKaWBJSkFerAR+lIb0DR5\nfdlLzgW4adFzGcafLRHGSnwCDaskY3mZMr2PgQkCgYAvuba+W44qRis19V0zncHL\npaBTHV5gk/CbI3sFv28oZnSEkBrtR7JP3CDRdSnQzbVURUV61CNpJ3zTzV9Fzj7F\nVQfmUnNFJf9m0Lgb/gsI7wZZLDzvYl7Db1z/ouOmHcv5JRAJAPalXEADmLgeRulQ\nPdI5TASpAp23Uw/t++E6Ww==\n-----END PRIVATE KEY-----\n",
+  "client_email": "nbl-784@alminaecommerce.iam.gserviceaccount.com",
+  "client_id": "111767910470919057016",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nbl-784%40alminaecommerce.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

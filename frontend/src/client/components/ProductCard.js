@@ -1,40 +1,83 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react';
+import { CartContext } from '../../context/cartcontext';
+import { Link } from 'react-router-dom';
+import baseURL from '../../axiosConfig';
 
-function ProductCard({product}) {
+function ProductCard({ product }) {
+  const { addToCart } = useContext(CartContext);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    const image = new Image();
+    image.src = `${baseURL}/api/products/images/${product.image}`;
+    image.onload = () => {
+      setImageLoaded(true);
+    };
+  }, [product.image]);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+  };
+
   return (
-   <>
-    <div className="col products d-flex p-2">
-            <div className="card card-product">
+    <>
+      <div className="p-1 p-md-2">
+        <div className="products p-2">
+          <div className="card card-product">
             <div className="text-center position-relative">
-                  <div className=" position-absolute top-0 start-0">
-                    <span className="badge">Sale</span>
-                  </div>
-                  
-                
+              <div className="position-absolute top-0 start-0">
+                {product.sale && <span className="badge">Sale</span>}
+              </div>
+            </div>
+            {imageLoaded ? (
+              <img
+                src={`${baseURL}/api/products/images/${product.image}`}
+                alt="Product image"
+                className="card-img img-fluid product-image"
+              />
+            ) : (
+              <div className="skeleton-image skeleton "></div>
+            )}
+            <div className="px-2 pt-2">
+              <div className="mb-1">
+                <Link className="category-name text-pb d-block fw-300 text-sm" to="/">
+                  {product.category.name}
+                </Link>
+                <h6 className="fw-500 fs-sm overflow text-small">{product.name}</h6>
+              </div>
+              <div className="d-flex justify-content-between align-items-center mt-2 pb-1">
 
-                </div>
-            <img src={`http://192.168.70.104:4000/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid product-image" />
-              <div className="px-2 pt-3">
-               
-                <div className="mb-1"><span className='category-name text-pb fw-400 text-small'>{product.category.name}</span>
-                <h6 className="fw-600 mt-1 overflow">{product.name}</h6>
-                </div>
-               
-                <div className="d-flex justify-content-between align-items-center mt-2">
-                  <div className="fs-6">
-                  <span className='product-price'>AED</span>
-                <span className="product-price fs-4"> {product.price}
-               </span>
-                  </div>
-                  <div className=' d-flex add-to-cart-btn'><a href="#!" className="btn  btn-sm text-white d-flex"><i className="bi bi-plus fs-5"></i>
-                      </a></div>
-                </div>
+
+              {product.stock === 0 ? (
+                    <span className=" text-or mx-auto">Out of Stock</span>
+                  ) : (
+               <>
+                <div className="">
+                 
+                  
+                  
+                 <span className="product-price">AED {product.vat ? (parseFloat((product.price + ((product.price / 100) * 5)).toFixed(2))) : product.price}</span>
+
+               </div>
+               <button
+                 className="btn btn-sm d-flex add-to-cart-btn"
+                 onClick={handleAddToCart}
+                 disabled={isAddingToCart}
+                 >
+       <i className="bi bi-bag"></i>
+               </button>
+               </>
+                    
+                  )}
+
               </div>
             </div>
           </div>
- 
-   </>
-  )
+        </div>
+      </div>
+    </>
+  );
 }
 
-export default ProductCard
+export default ProductCard;

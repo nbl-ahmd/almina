@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import ProductCard_admin from '../components/ProductCard_admin';
+import baseURL from '../../axiosConfig';
 
 const  Products_list = () => {
 
@@ -9,7 +10,7 @@ const  Products_list = () => {
    const [productFilter, setProductFilter] = useState();
 
    useEffect(() => {
-    axios.get('http://192.168.70.104:4000/api/products')
+    axios.get(`${baseURL}/api/products`)
     .then(response => {
       console.log(response.data);
       setProduct(response.data);

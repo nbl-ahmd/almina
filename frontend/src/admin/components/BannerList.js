@@ -1,11 +1,12 @@
 import axios from 'axios';
 import React from 'react'
+import baseURL from '../../axiosConfig';
 
 export default function BannerList({banners}) {
 
     const deleteBanner = () => {
         axios
-        .delete(`http://192.168.70.104:4000/api/banners/${banners._id}`)
+        .delete(`${baseURL}/api/banners/${banners._id}`)
         .then((res) => {
         })
         .catch((error) => console.log(error));
@@ -14,7 +15,7 @@ export default function BannerList({banners}) {
     <div>
       <tr className="border-bottom border-200 d-flex justify-content-between">
                           <td>
-                            <div className="d-flex align-items-center position-relative"><img className="rounded-1 border border-200" src={`http://192.168.70.104:4000/api/banners/images/${banners.image}`} width="60" alt="" />
+                            <div className="d-flex align-items-center position-relative"><img className="rounded-1 border border-200" src={`${baseURL}/api/banners/images/${banners.image}`} width="60" alt="" />
                               <div className="flex-1 ms-3">
                                 <h6 className="mb-1 fw-semi-bold"><a className="text-dark stretched-link" href="#!">{banners.name}</a></h6>
                                 

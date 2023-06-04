@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import baseURL from '../../axiosConfig';
 
 
 export default function Categoryupdate() {
@@ -10,7 +11,7 @@ const navigate = useNavigate();
 const {id} = useParams();
     useEffect(() => {
         console.log(id);
-        axios.get(`http://192.168.70.104:4000/api/category/${id}`)
+        axios.get(`${baseURL}/api/category/${id}`)
           .then((response) => {
             console.log(response.data);
             setCategory(response.data);
@@ -25,7 +26,7 @@ const {id} = useParams();
         e.preventDefault();
         
     
-        axios.put(`http://192.168.70.104:4000/api/category/${id}`, category)
+        axios.put(`${baseURL}/api/category/${id}`, category)
         .then(response => {
           console.log(response.data );
           setMessage('category updated successfully');

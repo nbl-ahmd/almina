@@ -2,12 +2,13 @@ import axios from 'axios';
 import React, { useEffect } from 'react'
 import Categoryupdate from './Categoryupdate';
 import { Link } from 'react-router-dom';
+import baseURL from '../../axiosConfig';
 
 function Categorylist({category}) {
 
     const deleteCategory = () => {
         axios
-        .delete(`http://192.168.70.104:4000/api/category/${category._id}`)
+        .delete(`${baseURL}/api/category/${category._id}`)
         .then((res) => {
         })
         .catch((error) => console.log(error));
@@ -18,7 +19,15 @@ function Categorylist({category}) {
                           <td>
                             <div className="d-flex align-items-center position-relative">
                             <div className="flex-1 ms-3">
+                                <img src={`${baseURL}/api/category/images/${category.image}`} width="60"alt="" />
+                                
+                              </div>
+                            <div className="flex-1 ms-3">
                                 <h6 className="mb-1 fw-semi-bold"><a className="text-dark stretched-link" href="#!">{category.name}</a></h6>
+                                
+                              </div>
+                            <div className="flex-1 ms-3 rounded-2" style={{width:'30px', height: '30px', backgroundColor: `${category.color}`, opacity:.09}}>
+                                
                                 
                               </div>
                             </div>
