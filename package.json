@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/nbl-ahmd/almina"
   },
-  "homepage": "https://github.com/nbl-ahmd/almina"
+  "homepage": "https://github.com/nbl-ahmd/almina",
+  "dependencies": {
+    "pm2": "^5.3.0"
+  }
 }
