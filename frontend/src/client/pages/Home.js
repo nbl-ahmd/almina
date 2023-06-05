@@ -5,6 +5,7 @@
  import axios from 'axios'
  import ProductCard from '../components/ProductCard'
 import baseURL from '../../axiosConfig'
+import Productskeleton from '../components/Productskeleton'
 
  const Home = () => {
    const [banners, setBanners] = useState([]);
@@ -135,7 +136,9 @@ import baseURL from '../../axiosConfig'
              </div>
              <div className="col-xxl-9 order-0 order-xxl-1">
                <div className="hero-slider">
-                 <BannerCard key={banners._id} banners={banners} />
+
+               {banners.length===0 ? (<div className="skeleton-banner skeleton"></div>):(<BannerCard key={banners._id} banners={banners} />)}
+                 
                </div>
              </div>
            </div>
@@ -177,6 +180,12 @@ import baseURL from '../../axiosConfig'
 
        <div className="container mb-5">
          <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3 px-2">
+
+      {product.length === 0 && Array.from({ length: 10 }).map((_, index) => (
+        <Productskeleton key={index} />
+      ))}
+    
+
            {product.map(product => (
              <ProductCard key={product._id} product={product} />
            ))}

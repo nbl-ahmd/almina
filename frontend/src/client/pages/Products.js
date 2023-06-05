@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import baseURL from '../../axiosConfig';
+import Productskeleton from '../components/Productskeleton';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -47,6 +48,9 @@ const Products = () => {
           <h3>Products</h3>
         </div>
         <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3">
+        {products.length === 0 && Array.from({ length: 10 }).map((_, index) => (
+        <Productskeleton key={index} />
+      ))}
         {searchedProducts.map(product => (
           <ProductCard key={product._id} product={product} />
         ))}

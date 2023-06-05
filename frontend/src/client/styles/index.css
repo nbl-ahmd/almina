@@ -411,14 +411,25 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 .skeleton-image{
  height: 200px;
- width: 100%;
+ width: 200;
+}
+
+.skeleton-text-sm{
+  width: 40%;
+  height: 20px;
+  border-radius: .2rem !important;
+}
+.skeleton-text{
+  width: 90%;
+  height: 20px;
+  border-radius: .2rem !important;
 }
 .skeleton {
  
   animation: skeleton-loading 1s linear infinite alternate;
 background-size: 200px 100%;
 
-border-radius: 1rem;
+border-radius: .5rem;
 }
 @keyframes skeleton-loading {
   0% {
