@@ -288,6 +288,3 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-
- //Clear the cart items from local storage
- localStorage.removeItem('cartItems');

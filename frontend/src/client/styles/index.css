@@ -501,7 +501,6 @@ input::-webkit-outer-spin-button,
         -webkit-transform: translateX(-50%);
         transform: translateX(-50%);
         z-index: 2;
-        max-width: 600px;
         height: auto;
         display: -webkit-box;
         display: -ms-flexbox;
@@ -509,10 +508,11 @@ input::-webkit-outer-spin-button,
         -webkit-box-align: center;
         -ms-flex-align: center;
         align-items: center;
-        padding: 12px 20px;
+        padding: 12px 30px;
         background-color: rgb(255, 255, 255);
         -webkit-box-shadow: 0px 4px 24px rgba(var(--black), 0.13);
         box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.13);
+        justify-content: space-between;
         }
 
         .pay-popup .pay-btn {
@@ -524,7 +524,6 @@ input::-webkit-outer-spin-button,
           -ms-flex-align: center;
           align-items: center;
           padding: 12px 20px;
-          margin-left: auto;
             background-color: rgb(18, 38, 54);
             color: rgb(255, 255, 255);
             font-weight: 400;
@@ -597,8 +596,7 @@ input::-webkit-outer-spin-button,
               }
 
               .icon-btn[disabled=disabled], button:disabled {
-                background-color: #3ec68b !important;
-                color: white;
+                
                 border: none !important;
 
             }

@@ -190,7 +190,7 @@ const Checkout = () => {
           </div>
         </section>
 
-        <div className="container">
+        <div className="container mb-5">
           <div className="row">
             <div className="col-lg-7 mb-4">
               <div className="checkout-wrapper">
@@ -399,7 +399,7 @@ const Checkout = () => {
                     <div className="col-12">
                       <div className="form-group mt-3">
                         <label className="form-label" htmlFor="card">
-                          Payment Method
+                          Payment Method <span className='text-danger'>*</span>
                         </label>
                         <div className="d-flex">
                           <div className="d-flex me-3">
@@ -411,7 +411,7 @@ const Checkout = () => {
                               value="card"
                               checked={customerInfo.payment === 'card'}
                               onChange={e => setCustomerInfo({ ...customerInfo, payment: e.target.value })}
-                              defaultChecked
+                              required
                             />
                             <label
                               className="btn payment-card" htmlFor="card">
@@ -428,6 +428,7 @@ const Checkout = () => {
                               value="cash"
                               checked={customerInfo.payment === 'cash'}
                               onChange={e => setCustomerInfo({ ...customerInfo, payment: e.target.value })}
+                              required
                             />
                             <label className="btn payment-card" htmlFor="cash">
                               <i className="pe-2 pe-md-4 bi bi-wallet2"></i>
@@ -477,7 +478,7 @@ const Checkout = () => {
                     <span className="col-9 fw-200 text-small text-start overflow-wrap">{item.name} <span className='fw-500'>x {item.quantity}</span></span>
 
 
-                    <span className="col-3 fw-200 text-small text-end">AED {item.vat ? (parseFloat((item.price + ((item.price / 100) * 5)).toFixed(2))) : item.price}</span>
+                    <span className="col-3 fw-200 text-small text-end">AED {item.quantity *(item.vat ? (parseFloat((item.price + ((item.price / 100) * 5)).toFixed(2))) : item.price)}</span>
 
                   </div>
                 ))}
