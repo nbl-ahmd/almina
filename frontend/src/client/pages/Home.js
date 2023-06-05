@@ -64,14 +64,14 @@ import Productskeleton from '../components/Productskeleton'
                <div className="d-flex align-items-center rounded-3 pt-2 ps-2 mb-0 me-2 me-xl-0">
                <div className=" banner-small flex-xxl-fill overflow-wrap
                d-flex align-items-center bg-faded-success rounded-3 pt-2    me-xl-0 pb-0 pb-md-0 " >
-                  <img src={require('../assets/banner-sm02.png')} height="120" alt="Banner" />
+                  <img src={require('../assets/b1.png')} height="120" alt="Banner" />
                   <div className="py-1 px-2 py-md-0 py-lg-0 py-xxl-0">
                     <h6 className="mb-2">
-                      <span className="fw-100">Supplements</span>
-                      <br />Vitamins
+                      <span className="fw-100">Cosmetics</span>
+                      <br />Body
                       <span className="fw-100"> and</span>
                       <br />
-                      Suplements
+                      Bath
                       </h6>
                       <Link to='/products' className="text-pg fw-300">
                         <span>
@@ -87,7 +87,7 @@ import Productskeleton from '../components/Productskeleton'
                <div className="d-flex align-items-center rounded-3 pt-2 ps-2 mb-0 me-2 me-xl-0">
                <div className=" banner-small flex-xxl-fill overflow-wrap
                d-flex align-items-center bg-faded-info rounded-3 pt-2    me-xl-0 pb-0 pb-md-0 " >
-                  <img src={require('../assets/banner-sm01.png')} height="120" alt="Banner" />
+                  <img src={require('../assets/b2.png')} height="120" alt="Banner" />
                   <div className="py-1 px-2 py-md-0 py-lg-0 py-xxl-0">
                     <h6 className="mb-2">
                       <span className="fw-100">Supplements</span>
@@ -110,14 +110,14 @@ import Productskeleton from '../components/Productskeleton'
                <div className="d-flex align-items-center rounded-3 pt-2 ps-2 mb-0 me-2 me-xl-0">
                <div className=" banner-small flex-xxl-fill overflow-wrap
                d-flex align-items-center bg-faded-warning rounded-3 pt-2    me-xl-0 pb-0 pb-md-0 " >
-                  <img src={require('../assets/banner-sm03.png')} height="120" alt="Banner" />
+                  <img src={require('../assets/b3.png')} height="120" alt="Banner" />
                   <div className="py-1 px-2 py-md-0 py-lg-0 py-xxl-0">
                     <h6 className="mb-2">
-                      <span className="fw-100">Supplements</span>
-                      <br />Vitamins
+                      <span className="fw-100">Monitors</span>
+                      <br />Blood
                       <span className="fw-100"> and</span>
                       <br />
-                      Suplements
+                      Pressure
                       </h6>
                       <Link to='/products' className="text-or fw-300">
                         <span>
