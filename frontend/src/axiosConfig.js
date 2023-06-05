@@ -1,5 +1,5 @@
 
 
-const baseURL = 'https://localhost:4000';
+const baseURL = 'https://almina-shop.onrender.com';
 
 export default baseURL;
