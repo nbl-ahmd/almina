@@ -54,7 +54,8 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
   const {
     name,
     price,
-    stock
+    stock,
+    barcode
   } = req.body;
   const vat = req.body.vat == 'true';
   const sale = req.body.sale == 'true';
@@ -89,7 +90,8 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
       price,
       vat,
       stock,
-      sale
+      sale,
+      barcode
     }); // save the resized filename to the database
 
     try {
@@ -128,7 +130,8 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
       price,
       vat,
       stock,
-      sale
+      sale,
+      barcode
     });
 
     try {
@@ -269,6 +272,9 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
 
     if (req.body.price) {
       updateFields.price = req.body.price;
+    }
+    if (req.body.barcode) {
+      updateFields.barcode = req.body.barcode;
     }
 
     if (req.body.category) {

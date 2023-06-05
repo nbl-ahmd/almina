@@ -93,7 +93,8 @@ try {
               vat: data.vat === 'TRUE',
               stock: parseInt(data.stock),
               sale: data.sale === 'TRUE',
-              disabled: data.disabled === 'TRUE'
+              disabled: data.disabled === 'TRUE',
+              barcode: data.barcode
             });
             log('prdct :' + product);
             await product.save();

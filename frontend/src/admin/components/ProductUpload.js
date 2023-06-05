@@ -16,6 +16,7 @@ const ProductUpload = () => {
   const [sale, setSale] = useState(false);
   const [message, setMessage] = useState('');
   const [file, setFile] = useState();
+  const [barcode, setBarcode] = useState('')
 
   useEffect(() => {
     axios.get(`${baseURL}/api/category`)
@@ -36,6 +37,10 @@ const ProductUpload = () => {
   const onCategoryChange = e => setCategory(e.target.value);
   // const onFeaturedChange = e => setFeatured(e.target.value);
   const onPriceChange = e => setPrice(e.target.value);
+
+  const onBarcodeChange = e => setBarcode(e.target.value);
+
+
   // const onVatChange = e => setVat(e.target.value);
   const onStockChange = e => setStock(e.target.value);
   // const onSaleChange = e => setSale(e.target.value);
@@ -103,6 +108,12 @@ const ProductUpload = () => {
 <div className="input-group">
 <span className="input-group-text">AED</span>
 <input type="number" className="form-control" placeholder="Price" value={price} onChange={onPriceChange}/>
+</div>
+</div>
+<div className="col-6">
+<div className="input-group">
+<span className="input-group-text">barcode</span>
+<input type="text" className="form-control" placeholder="barcode" value={barcode} onChange={onBarcodeChange}/>
 </div>
 </div>
 <div className="col-4">
