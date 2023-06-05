@@ -10,7 +10,9 @@ function ProductCard({ product }) {
 
   useEffect(() => {
     const image = new Image();
-    image.src = `${baseURL}/api/products/images/${product.image}`;
+    const defaultImage = "fb634ad3-7062-4baf-a08d-4f8f04abb459.webp";
+image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
+   
     image.onload = () => {
       setImageLoaded(true);
     };

@@ -50,78 +50,99 @@ async function generateProductID() {
 
 
 productRouter.post('/', upload.single('image'), async (req, res) => {
-     const category = await Category.findById(req.body.category);
-    const {
-        name,
-        price,
-        stock
-    } = req.body;
-    const vat = req.body.vat == 'true';
-    const sale = req.body.sale == 'true';
-    const featured = req.body.featured == 'true';
-    const image = req.file;
-    const product_id = await generateProductID();
-    let orientation = 1;
+  const category = await Category.findById(req.body.category);
+  const {
+    name,
+    price,
+    stock
+  } = req.body;
+  const vat = req.body.vat == 'true';
+  const sale = req.body.sale == 'true';
+  const featured = req.body.featured == 'true';
+  const image = req.file;
+  const product_id = await generateProductID();
+  let orientation = 1;
+  if (image) {
     try {
       const exifData = await sharp(image.buffer).metadata();
       orientation = exifData.orientation || 1;
     } catch (error) {
       console.error('Error reading EXIF data:', error);
     }
-    
-    // if (!category) return res.status(400).send('Invalid Category')
+
     // crop the image into a square
     const croppedImage = await sharp(image.buffer)
-        .resize({ width: 500, height: 500, fit: 'cover' })
-        .rotate()
-        .webp()
-        .toBuffer();
+      .resize({ width: 500, height: 500, fit: 'cover' })
+      .rotate()
+      .webp()
+      .toBuffer();
 
     // generate a new filename for the resized image
     const Filename = uuidv4() + '.webp';
-   
 
     const product = new Product({
-        product_id,
-        name,
-         image: Filename,
-         category,
-         featured,
-         price,
-         vat,
-         stock,
-         sale
-
+      product_id,
+      name,
+      image: Filename,
+      category,
+      featured,
+      price,
+      vat,
+      stock,
+      sale
     }); // save the resized filename to the database
-    
+
     try {
       const fileMetadata = {
         name: Filename,
         parents: [FOLDER_ID], // Set the parent folder ID
       };
-  
+
       const media = {
         mimeType: 'image/webp',
         body: Readable.from(croppedImage),
       };
-  
+
       const response = await drive.files.create({
         resource: fileMetadata,
         media: media,
         fields: 'id',
       });
-  
+
       product.gdriveFileId = response.data.id; // Save the Google Drive file ID to the product document
-  
+
       // Save the product document to the database
       await product.save();
-  
+
       res.status(201).json({ message: 'product created successfully' });
     } catch (error) {
       console.error('Error uploading file to Google Drive:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
+  } else {
+    const product = new Product({
+      product_id,
+      name,
+      category,
+      featured,
+      price,
+      vat,
+      stock,
+      sale
+    });
+
+    try {
+      // Save the product document to the database without an image
+      await product.save();
+
+      res.status(201).json({ message: 'product created successfully' });
+    } catch (error) {
+      console.error('Error saving product:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 });
+
 
 // productRouter.get('/', (req, res) => {
 //     Product.find().populate('category')
@@ -217,16 +238,9 @@ productRouter.delete('/:id', async (req, res) => {
     await Product.findByIdAndRemove(productId);
 
     // If applicable, delete the image file from Google Drive
-    if (product.gdriveFileId) {
+    if (product.gdriveFileId &&  product.gdriveFileId!== '1Ru3bJPvlSfkEJ74gEjdgO9jSQtJNFtCu') {
       await drive.files.delete({ fileId: product.gdriveFileId });
     }
-
-    // Delete the image file from the server's file system
-    fs.unlink(path.join(uploadDir, product.image), (error) => {
-      if (error) {
-        console.log('Error deleting image file:', error);
-      }
-    });
 
     return res.status(200).json({ success: true, message: 'The product and image are deleted!' });
   } catch (error) {
@@ -284,7 +298,7 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
       const image = req.file;
 
      // Delete the previous image from Google Drive
-     if (prevGdriveFileId) {
+     if (prevGdriveFileId && prevGdriveFileId !== '1Ru3bJPvlSfkEJ74gEjdgO9jSQtJNFtCu') {
       await drive.files.delete({
         fileId: prevGdriveFileId,
       });

@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    gdriveFileId:{ type: String, required: true, default: '1ON-zKEP9L5OEM_Adh5Q-NWajkgLdvmWu'  },
+    gdriveFileId:{ type: String, required: true, default: '1Ru3bJPvlSfkEJ74gEjdgO9jSQtJNFtCu'},
     product_id: { type: String, required: true },
     name: { type: String, required: true,  },
-    image: { type: String, required: true, default:'ba8b0d0f-86c7-4242-8133-4480e722860c.webp' },
+    image: { type: String, default: '6ac0f6cd-aec0-4484-af8f-27c627b5d1a4.webp' },
      category: { type: mongoose.Schema.Types.ObjectId,
           ref:'Category',
       required: true },

@@ -7,7 +7,7 @@ const Product = require('../models/Product');
 async function generateOrderID() {
   try {
     const existingOrders = await Order.find();
-    let maxID = 0;
+    let maxID = 5000;
     for (const order of existingOrders) {
       const orderID = parseInt(order.orderId.substring(2));
       if (orderID > maxID) {

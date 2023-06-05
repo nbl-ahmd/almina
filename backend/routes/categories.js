@@ -44,45 +44,65 @@ const fs = require('fs');
 
 
 categoryRouter.post('/', upload.single('image'), async (req, res) => {
-    const { name } = req.body;
-    const image = req.file;
-    const color = randomColor();
-     // Upload the file to Google Drive
-     try {
+  const { name } = req.body;
+  const image = req.file;
+  const color = randomColor();
+
+  if (image) {
+    try {
       const fileMetadata = {
         name: image.originalname,
         parents: [FOLDER_ID], // Set the parent folder ID
       };
-  
+
       const media = {
         mimeType: 'application/octet-stream', // Set the media type as 'application/octet-stream'
         body: Readable.from(image.buffer),
       };
-  
+
       const response = await drive.files.create({
         resource: fileMetadata,
         media: media,
         fields: 'id',
       });
-  
+
       const gdriveFileId = response.data.id; // Save the Google Drive file ID to the category document
-  
-     // Create a new category document with the Google Drive file ID
-     const Filename = uuidv4() + '.webp';
-    const category = new Category({ 
+
+      // Create a new category document with the Google Drive file ID
+      const Filename = uuidv4() + '.webp';
+      const category = new Category({
         name,
-         color,
+        color,
         gdriveFileId,
-        image: Filename,  });
-  
-    // Save the category document to the database
-    await category.save();
+        image: Filename,
+      });
+
+      // Save the category document to the database
+      await category.save();
+
       res.status(201).json({ message: 'category created successfully' });
     } catch (error) {
       console.error('Error uploading file to Google Drive:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
-  });
+  } else {
+    try {
+      // Create a new category document without an image
+      const category = new Category({
+        name,
+        color,
+      });
+
+      // Save the category document to the database
+      await category.save();
+
+      res.status(201).json({ message: 'category created successfully' });
+    } catch (error) {
+      console.error('Error saving category:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+});
 
 
 categoryRouter.get('/', async (req, res) => {
@@ -161,7 +181,7 @@ categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
         const image = req.file;
   
        // Delete the previous image from Google Drive
-       if (prevGdriveFileId) {
+       if (prevGdriveFileId && prevGdriveFileId !== '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL') {
         await drive.files.delete({
           fileId: prevGdriveFileId,
         });
@@ -228,7 +248,7 @@ categoryRouter.delete('/:id', async (req, res) => {
       await Category.findByIdAndRemove(categoryId);
   
       // If applicable, delete the image file from Google Drive
-      if (category.gdriveFileId) {
+      if (category.gdriveFileId && category.gdriveFileId !== '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL') {
         await drive.files.delete({ fileId: category.gdriveFileId });
       }
   

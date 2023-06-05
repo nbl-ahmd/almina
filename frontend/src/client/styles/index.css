@@ -727,7 +727,8 @@ input::-webkit-outer-spin-button,
               position: absolute;
               top: 50%;
               left: 50%;
-              
+              width: 90vw;
+max-width: 500px;          
              
               
               -webkit-transform: translate(-50%, -50%);

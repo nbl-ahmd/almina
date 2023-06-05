@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema({
-    gdriveFileId:{ type: String, required: true, default: '16Buy69mXW2r0DMijaGZqtydQZcCdhjni' },
+    gdriveFileId:{ type: String, required: true, default: '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL' },
     name: { type: String, required: true },
-    image: { type: String, required: true, default:'f0d05b80-3bc2-4cbc-89d4-175659562162.webp' },
+    image: { type: String, required: true, default:'305dd291-e32e-4d7f-9abb-aae212c434a4.webp' },
     color:{
          type: String, required: true }
     

@@ -69,6 +69,7 @@ export const CartProvider = ({ children }) => {
     total: '',
     note: '',
     payment: '',
+    maplink: '',
     totalprice: totalPrice
   });
 
@@ -178,7 +179,8 @@ export const CartProvider = ({ children }) => {
         flatno: customerInfo.flatno,
         note: customerInfo.note,
         payment: customerInfo.payment,
-        totalprice: totalPrice
+        totalprice: totalPrice,
+        maplink: customerInfo.maplink
 
 
 
