@@ -20,6 +20,7 @@ const orderRouter = require('./routes/Orderrouter');
 const batchProductRouter = require('./routes/batchProductRouter'); // Import the batchProductRouter
 
 const fs = require('fs');
+const loginRouter = require('./routes/Login');
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
@@ -45,7 +46,8 @@ app.use('/api/category', categoryRouter);
 app.use('/api/banners', bannersRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', orderRouter);
-app.use('/api/upload', batchProductRouter);
+app.use('/api/auth', loginRouter);
+app.use('/api/batch', batchProductRouter);
 
 const port = process.env.PORT || 4000;
 

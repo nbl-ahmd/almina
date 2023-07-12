@@ -44,30 +44,32 @@ const BannerForm = () => {
   };
 
   return (
-    <div>
-   <div className="container">
+    <div className='mt-5 '>
+   <div className="container mb-5">
    {banners.map(banners => (
   <BannerList key={banners._id} banners={banners} />
 ))}
 
    </div>
-   <h4>Create a new banner</h4>
-      <form onSubmit={handleSubmit}>
-        <div>
+  <div className="container">
+     <h4>Create a new banner</h4>
+      <form className='mt-3' onSubmit={handleSubmit}>
+        <div className='mb-2'>
           <label htmlFor="name">Name:</label>
-          <input type="text" id="name" value={name} onChange={handleNameChange} />
+          <input className='form-control w-50' type="text" id="name" value={name} onChange={handleNameChange} />
         </div>
-        <div>
+        <div className='mb-2'>
           <label htmlFor="link">Link:</label>
-          <input type="text" id="link" value={link} onChange={handleLinkChange} />
+          <input className='form-control w-50' type="text" id="link" value={link} onChange={handleLinkChange} />
         </div>
-        <div>
+        <div className='mb-2'>
           <label htmlFor="image">Image:</label>
-          <input type="file" id="image" onChange={handleImageChange} />
+          <input className='form-control w-25' type="file" id="image" onChange={handleImageChange} />
         </div>
-        <button type="submit">Create Banner</button>
+        <button className='btn btn-p mt-2' type="submit">Create Banner</button>
       </form>
       <p>{message}</p>
+  </div>
     </div>
   );
 };

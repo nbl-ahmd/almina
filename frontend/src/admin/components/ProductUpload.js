@@ -57,6 +57,8 @@ const ProductUpload = () => {
     formData.append('vat', vat);
     formData.append('stock', stock);
     formData.append('sale', sale);
+    formData.append('barcode', barcode);
+
     axios.post(`${baseURL}/api/products`, formData)
     .then(response => {
         console.log(response.data);
@@ -78,13 +80,17 @@ const ProductUpload = () => {
     <label htmlFor='uploadbtn' className="img-preview-wrapper mb-3 d-flex">
    
     <input type="file" id='uploadbtn' onChange={onImageChange} hidden/>
+    <div className="img-container">
     <img src={file} className='img-preview' alt="" />
-    <span className='preview-text'>Upload Image</span>
+    <span className="alt-text">Upload Image</span>
+  </div>
+    
     </label>
 
     <div className="row g-3 form-row form-group">
 <div className="col-6">
 <div className="form-holder">
+
 <input type="text" className="form-control" placeholder="Name" value={name} onChange={onNameChange}/>
 </div>
 </div>

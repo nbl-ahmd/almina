@@ -19,8 +19,10 @@
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",
+    "react-dynamic-virtual-scroll": "^1.4.0",
     "react-image-crop": "^10.0.9",
     "react-image-file-resizer": "^0.4.8",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.8.2",
     "react-scripts": "5.0.1",
@@ -29,7 +31,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "PORT=4000 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

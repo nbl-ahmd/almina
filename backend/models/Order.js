@@ -5,6 +5,9 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  dispatched: {
+    type: Boolean,
+  },
   customer: {
    
     name: {

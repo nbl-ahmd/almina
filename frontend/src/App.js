@@ -1,6 +1,6 @@
 
 import './client/styles/App.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Navbar from './client/components/navbar';
 import React, { useEffect, useState } from 'react';
 import Home from './client/pages/Home';
@@ -27,6 +27,11 @@ import CategoryPage from './client/pages/Categoryproduct';
 import Footer from './client/components/footer';
 import Batchproduct from './admin/components/Batchproduct';
 
+import Login from './admin/login/Login'
+import Admindash from './admin/pages/Admindash';
+import Adduser from './admin/pages/Adduser';
+import Openstreet from './client/components/Openstreet';
+
 
 
 
@@ -34,6 +39,34 @@ import Batchproduct from './admin/components/Batchproduct';
 const DashboardContext = React.createContext()
 const DashProvider =  DashboardContext.Provider
 export const DashConsumer =  DashboardContext.Consumer
+
+const AdminDashboardContext = React.createContext()
+const AdminDashProvider =  AdminDashboardContext.Provider
+export const AdminDashConsumer =  AdminDashboardContext.Consumer
+
+
+const Adminroutes = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (!isAuthenticated || role !== 'user') {
+    return <Navigate to="/admin/login" />;
+  }
+
+  return children;
+};
+
+const AdminProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (!isAuthenticated || role !== 'admin') {
+    return <Navigate to="/admin/login" />;
+  }
+
+  return children;
+};
+
 
 const App = () => {
 
@@ -108,58 +141,130 @@ const App = () => {
             <Footer />
            </CartProvider>
           } />
+<Route path='admin/login' element={
+            <Login />
+          } />
+
+
+
           <Route path='admin' element={
-            <>
+            <Adminroutes>
+            <DashProvider value= {<Orderlist />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          
+          <Route path='/admin/productlist' element={
+            <Adminroutes>
             <DashProvider value= {<Products_list />}>
               <Dashboard />
             </DashProvider>
-            </>
+            </Adminroutes>
           } />
-          <Route path='admin/uploadproduct' element={
-            <>
-            <DashProvider value= {<>
+          <Route path='/admin/productlist/search' element={
+            <Adminroutes>
+            <DashProvider value= {<Products_list />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+
+
+          <Route path='admindash' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <ProductUpload />
+             <CategoryUpload />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+          <Route path='admindash/uploadproduct' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<>
               <ProductUpload />
            <CategoryUpload />
             </>}>
-              <Dashboard />
-            </DashProvider>
-            </>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
           } />
-          <Route path='admin/banner' element={
-            <>
-            <DashProvider value= {<>
+          <Route path='admindash/banner' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<>
               <BannerForm />
             </>}>
-              <Dashboard />
-            </DashProvider>
-            </>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
           } />
           <Route path='admin/order' element={
-            <>
+            <Adminroutes>
             <DashProvider value= {<>
               <Orderlist />
             </>}>
               <Dashboard />
             </DashProvider>
-            </>
+            </Adminroutes>
           } />
-          <Route path='admin/categories' element={
-            <>
-            <DashProvider value= {<>
+          <Route path='admindash/categories' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<>
               <CategoryUpload />
             </>}>
-              <Dashboard />
-            </DashProvider>
-            </>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
           } />
-          <Route path='upload' element={<FilesUpload />} />
-          <Route path='/admin/categories/update/:id' element={<Categoryupdate />} />
-          <Route path='/admin/product/update/:id' element={<ProductUpdate />} />
-          <Route path='uploadbanner' element={<BannerForm />} />
-          <Route path='admin/batch' element={<Batchproduct />} />
+
+
+
+
+          <Route path='admindash/batch' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<>
+              <Batchproduct />
+            </>}>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
+          } />
+
+          <Route path='admindash/users' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<>
+              <Adduser />
+            </>}>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
+          } />
+
+
+
+
+
+          {/* <Route path='upload' element={<FilesUpload />} /> */}
+          <Route path='/admin/categories/update/:id' element=
+          
+          {<Adminroutes>
+            <Categoryupdate />
+            </Adminroutes>} />
+          <Route path='/admin/product/update/:id' element={
+          <Adminroutes>
+            <ProductUpdate />
+          </Adminroutes>
+          
+        
+        } />
+          {/* <Route path='uploadbanner' element={<BannerForm />} /> */}
+         
           {/* <Route path='admin' element={<Dashboard/>} /> */}
         
           <Route path="*" element={<NotFound/>} />
+          <Route path="/map" element={<Openstreet/>} />
 
         </Routes>
       </main>

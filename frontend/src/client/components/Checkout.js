@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { CartContext } from '../../context/cartcontext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Checkout = () => {
 
@@ -19,6 +20,64 @@ const Checkout = () => {
   const [deliveryfee, setDeliveryfee] = useState(0);
   const [emailError, setEmailError] = useState("");
   const [formError, setFormError] = useState(false);
+  const [suburbs, setSuburbs] = useState([]);
+  const [selectedCity, setSelectedCity] = useState('')
+
+// other state variables...
+
+useEffect(() => {
+  // Load suburbs when the emirate changes
+  if (emirate) {
+    fetchSuburbs();
+  }
+}, [emirate]);
+
+const fetchSuburbs = async () => {
+  try {
+    let emirateCode = '';
+
+    // Map emirate to corresponding ISO 3166-2 code
+    switch (emirate) {
+      case 'Abu Dhabi Emirate':
+        emirateCode = 'AE-AZ';
+        break;
+      case 'Dubai':
+        emirateCode = 'AE-DU';
+        break;
+      case 'Sharjah Emirate':
+        emirateCode = 'AE-SH';
+        break;
+      case 'Ajman Emirate':
+        emirateCode = 'AE-AJ';
+        break;
+      case 'Umm al-Quwain':
+        emirateCode = 'AE-UQ';
+        break;
+      case 'Ras al-Khaimah':
+        emirateCode = 'AE-RK';
+        break;
+      case 'Fujairah Emirate':
+        emirateCode = 'AE-FU';
+        break;
+      default:
+        break;
+    }
+
+    const response = await axios.get(
+      `https://overpass-api.de/api/interpreter?data=[out:json][timeout:25];area["ISO3166-2"="${emirateCode}"][admin_level=4];(node["place"="suburb"](area);way["place"="suburb"](area);relation["place"="suburb"](area););out;`
+    );
+    const data = response.data;
+    const loadedSuburbs = data.elements.map((element) => ({
+      id: element.id,
+      name: element.tags['name:en'] || element.tags.name,
+    }));
+    setSuburbs(loadedSuburbs);
+  } catch (error) {
+    console.error('Error fetching suburbs:', error);
+  }
+};
+
+
 
 
   const validateForm = () => {
@@ -147,7 +206,20 @@ const Checkout = () => {
     setCurrentLocation(e.target.value);
     setCustomerInfo({ ...customerInfo, address: e.target.value });
   };
-  const handleEmiratesChange = e => {
+
+
+  // const handleEmirateChange = (event) => {
+  //   setEmirate(event.target.value);
+  //   setSelectedCity('');
+  // };
+  
+  const handleCityChange = (event) => {
+    setSelectedCity(event.target.value);
+    setCustomerInfo({ ...customerInfo, city: event.target.value})
+  };
+
+
+  const handleEmirateChange = e => {
     setFetchingLocation(true);
     setEmirate(e.target.value);
     setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalprice: parseFloat((totalVatPrice + deliveryfee).toFixed(2)) });
@@ -276,56 +348,53 @@ const Checkout = () => {
                         </span>
                       </div>
                     </div>
+                   
+                   
                     <div className="col-6">
-                      <div className="form-group mt-3">
-                        <label className="form-label" htmlFor="emirate">
-                          Emirate <span className='text-danger'>*</span>
-                        </label>
-                        <select
-                          className="form-control"
-                          id="emirate"
-                          value={emirate}
-
-                          onChange={
-                            handleEmiratesChange
-                          } >
-
-
-
-                          <option value="">Select Emirate</option>
-                          <option value="Abu Dhabi Emirate">Abu Dhabi</option>
-                          <option value="Dubai">Dubai</option>
-                          <option value="Sharjah Emirate">Sharjah</option>
-                          <option value="Ajman Emirate">Ajman</option>
-                          <option value="Umm al-Quwain">Umm Al Quwain</option>
-                          <option value="Ras al-Khaimah">Ras Al Khaimah</option>
-                          <option value="Fujairah Emirate">Fujairah</option>
-                          {/* Add other city options */}
-                        </select>
-                      </div>
-                    </div>
+        <div className="form-group mt-3">
+          <label className="form-label" htmlFor="emirate">
+            Emirate <span className="text-danger">*</span>
+          </label>
+          <select
+            className="form-control"
+            id="emirate"
+            value={emirate}
+            onChange={handleEmirateChange}
+          >
+            <option value="">Select Emirate</option>
+            <option value="Abu Dhabi Emirate">Abu Dhabi</option>
+            <option value="Dubai">Dubai</option>
+            <option value="Sharjah Emirate">Sharjah</option>
+            <option value="Ajman Emirate">Ajman</option>
+            <option value="Umm al-Quwain">Umm Al Quwain</option>
+            <option value="Ras al-Khaimah">Ras Al Khaimah</option>
+            <option value="Fujairah Emirate">Fujairah</option>
+          </select>
+        </div>
+      </div>
+      
+                   
                     <div className="col-6">
-                      <div className="form-group mt-3">
-                        <label className="form-label" htmlFor="city">
-                          City <span className='text-danger'>*</span>
-                        </label>
-                        <div className="d-flex">
-                          <input
-                            className="form-control"
-                            type="text"
-                            id="city"
-                            value={city}
-                            onChange={e => {
-                              setCity(e.target.value);
-                              setCustomerInfo({ ...customerInfo, city: e.target.value })}
-                            }
-                              
-                          />
+        <div className="form-group mt-3">
+          <label className="form-label" htmlFor="city">
+            City <span className="text-danger">*</span>
+          </label>
+          <select
+            className="form-control"
+            id="city"
+            value={selectedCity}
+            onChange={handleCityChange}
+          >
+            <option value="">Select City</option>
+            {suburbs.map((suburb) => (
+              <option key={suburb.id} value={suburb.name}>
+                {suburb.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-                        </div>
-
-                      </div>
-                    </div>
                     <div className="col-12">
                       <div className="form-group mt-3">
                         <label className="form-label" htmlFor="address">

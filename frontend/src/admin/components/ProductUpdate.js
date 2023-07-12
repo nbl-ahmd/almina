@@ -338,7 +338,8 @@ useEffect(() => {
               alt=""
             />
           )}
-        <span className='preview-text'>Upload Image</span>
+        {!formData.image?(<span className='preview-text'>Upload Image</span>):'' }
+        
         </label>
    
         <div className="row g-3 form-row form-group mb-3">
@@ -360,6 +361,7 @@ useEffect(() => {
     </div>
     <div className="col-6">
     <div className="input-group">
+    <span className="input-group-text">Stock</span>
     <input type="number" className="form-control" name="stock" placeholder="Stock" value={formData.stock || ''} onChange={handleFormChange}/>
     </div>
     </div>

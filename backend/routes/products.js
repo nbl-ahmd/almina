@@ -158,22 +158,88 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
 //         });
 // });
 
-productRouter.get('/', (req, res) => {
+// productRouter.get('/', (req, res) => {
+//   const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
+//   const limit = Number(req.query.limit) || 10; // Default limit is 10 if not provided
+//   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
+
+//   Product.find(filter)
+//     .skip(offset)
+//     .limit(limit)
+//     .populate('category')
+//     .then(products => {
+//       res.status(200).json(products);
+//     })
+//     .catch(error => {
+//       console.log(error);
+//       res.status(500).json({ error: 'Internal server error' });
+//     });
+// });
+
+
+
+
+productRouter.get('/', async (req, res) => {
   const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
-  const limit = Number(req.query.limit) || 10; // Default limit is 10 if not provided
+  const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
 
-  Product.find(filter)
-    .skip(offset)
-    .limit(limit)
-    .populate('category')
-    .then(products => {
-      res.status(200).json(products);
+  try {
+    let products;
+
+ if (limit) {
+      // Fetch products with pagination
+      products = await Product.find(filter)
+        .skip(offset)
+        .limit(limit)
+        .populate('category');
+    } else {
+      // Fetch all products without pagination
+      products = await Product.find(filter).populate('category');
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+productRouter.get('/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  const limit = Number(req.query.limit); // Remove default limit
+  const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
+
+  try {
+    // Perform the search query against the name and description fields
+
+    let searchResults;
+    if (limit) {
+     searchResults = await Product.find({
+      $or: [
+        { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the name field
+        { description: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the description field
+      ],
     })
-    .catch(error => {
-      console.log(error);
-      res.status(500).json({ error: 'Internal server error' });
-    });
+    .skip(offset)
+        .limit(limit)
+        .populate('category');
+  }
+  else{
+     searchResults = await Product.find({
+      $or: [
+        { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the name field
+        { description: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the description field
+      ],
+    }).populate('category');
+
+  }
+
+    res.json(searchResults);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    res.status(500).json({ error: 'An error occurred while searching for products' });
+  }
 });
 
 
