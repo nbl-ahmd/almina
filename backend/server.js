@@ -8,7 +8,7 @@ let express = require('express'),
 
 const dotenv = require('dotenv');
 
-
+require('./keep-alive');
 
 dotenv.config(); // Load environment variables from .env file
 
