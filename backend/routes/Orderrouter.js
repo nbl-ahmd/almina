@@ -26,7 +26,7 @@ Orderrouter.post('/', async (req, res) => {
   try {
     const orderID = await generateOrderID();
     const order = await Order.create({ ...req.body, orderId: orderID });
-
+    const { io } = req.app.locals;
     // Update the stock of the ordered products
     const orderedItems = order.cartItems;
     await Promise.all(orderedItems.map(item => {
@@ -34,11 +34,15 @@ Orderrouter.post('/', async (req, res) => {
       return Product.findByIdAndUpdate(_id, { $inc: { stock: -quantity } });
     }));
 
+    
+
     res.status(201).json(order);
+    io.emit('newOrder', order);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create order' });
   }
+  
 });
 
 Orderrouter.get('/', (req, res) => {

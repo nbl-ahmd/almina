@@ -6,7 +6,9 @@ let express = require('express'),
 
 
 
-    const dotenv = require('dotenv');
+const dotenv = require('dotenv');
+
+
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -49,10 +51,22 @@ app.use('/api/orders', orderRouter);
 app.use('/api/auth', loginRouter);
 app.use('/api/batch', batchProductRouter);
 
+
+const httpServer = require("http").createServer(app);
+const io = require("socket.io")(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+  app.locals.io = io;
+
+
+
 const port = process.env.PORT || 4000;
 
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
     console.log('Connected to port ' + port);
 });
 
@@ -68,3 +82,4 @@ app.use(function (err, req, res, next) {
     if (!err.statusCode) err.statusCode = 500;
     res.status(err.statusCode).send(err.message);
 });
+
