@@ -31,16 +31,18 @@ const OrderList = () => {
           const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
          fetchOrders(currentCity);
          
+
+         // Play audio
+    const audio = new Audio(NotificationSound);
+    audio.play();
           // Display push notification
     if (Notification.permission === 'granted') {
       const notification = new Notification('New Order Placed', {
-        body: `Hi`,
+        body: `new order has been recieved`,
       });
     }
 
-    // Play audio
-    const audio = new Audio(NotificationSound);
-    audio.play();
+    
    
     
         } catch (error) {
@@ -131,7 +133,7 @@ const OrderList = () => {
   return (
     <div className="container-fluid h-100">
       {notificationPermission === 'default' && (
-        <button onClick={handleRequestNotificationPermission}>Enable Notifications</button>
+        <button className='btn btn-p mt-2 mb-2' onClick={handleRequestNotificationPermission}>Enable Notifications</button>
       )}
       <div className="row">
         <div className="pt-4">
