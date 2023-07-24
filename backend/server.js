@@ -6,12 +6,14 @@ let express = require('express'),
 
 
 
-    const dotenv = require('dotenv');
+const dotenv = require('dotenv');
+
+
 
 dotenv.config(); // Load environment variables from .env file
 
 
-const uri = process.env.MONGODB_URI;
+// const uri = process.env.MONGODB_URI;
 
 const bannersRouter = require('./routes/banners.js');
 const productsRouter = require('./routes/products');
@@ -24,7 +26,7 @@ const loginRouter = require('./routes/Login');
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
-mongoose.connect(uri, {
+mongoose.connect("mongodb+srv://nbl:rs4DvQ6YHteb1Kwt@almina-cluster.ovx7dwd.mongodb.net/?retryWrites=true&w=majority", {
     useNewUrlParser: true
 }).then(() => {
     console.log('Database sucessfully connected')
@@ -49,12 +51,27 @@ app.use('/api/orders', orderRouter);
 app.use('/api/auth', loginRouter);
 app.use('/api/batch', batchProductRouter);
 
+
+const httpServer = require("http").createServer(app);
+const io = require("socket.io")(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+  app.locals.io = io;
+
+
+
 const port = process.env.PORT || 4000;
 
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
     console.log('Connected to port ' + port);
 });
+app.get('/',(req, res) => {
+    res.json("Hello")
+})
 
 app.use((req, res, next) => {
     // Error goes via `next()` method
