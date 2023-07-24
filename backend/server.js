@@ -13,7 +13,7 @@ const dotenv = require('dotenv');
 dotenv.config(); // Load environment variables from .env file
 
 
-const uri = process.env.MONGODB_URI;
+// const uri = process.env.MONGODB_URI;
 
 const bannersRouter = require('./routes/banners.js');
 const productsRouter = require('./routes/products');
@@ -26,7 +26,7 @@ const loginRouter = require('./routes/Login');
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
-mongoose.connect(uri, {
+mongoose.connect("mongodb+srv://nbl:rs4DvQ6YHteb1Kwt@almina-cluster.ovx7dwd.mongodb.net/?retryWrites=true&w=majority", {
     useNewUrlParser: true
 }).then(() => {
     console.log('Database sucessfully connected')
