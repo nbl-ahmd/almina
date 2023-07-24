@@ -1,11 +1,66 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import baseURL from '../../axiosConfig';
+import io from 'socket.io-client';
+import NotificationSound from "../assets/notification.mp3";
+const socket = io.connect(baseURL);
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [userCities, setUserCities] = useState([]);
   const [excludeCities, setExcludeCities] = useState([]);
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+
+
+
+    // Connect to the Socket.io server
+   
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+   
+
+    // Listen for 'newOrder' event
+    useEffect(() => {
+
+
+
+      socket.on('newOrder', (order) => {
+        try {
+          const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
+         fetchOrders(currentCity);
+         
+          // Display push notification
+    if (Notification.permission === 'granted') {
+      const notification = new Notification('New Order Placed', {
+        body: `Hi`,
+      });
+    }
+
+    // Play audio
+    const audio = new Audio(NotificationSound);
+    audio.play();
+   
+    
+        } catch (error) {
+          console.error('Error updating orders:', error);
+        }
+      });
+  
+      return () => {
+        socket.off('newOrder');
+      };
+    }, [orders]);
+    
+
+    const handleRequestNotificationPermission = () => {
+      Notification.requestPermission().then((permission) => {
+        setNotificationPermission(permission);
+      });
+    };
+
+
 
   useEffect(() => {
     const cities = JSON.parse(localStorage.getItem('cities')) || [];
@@ -20,6 +75,8 @@ const OrderList = () => {
     } else {
       fetchExcludeCities();
     }
+
+    
   }, []);
   
   
@@ -73,6 +130,9 @@ const OrderList = () => {
 
   return (
     <div className="container-fluid h-100">
+      {notificationPermission === 'default' && (
+        <button onClick={handleRequestNotificationPermission}>Enable Notifications</button>
+      )}
       <div className="row">
         <div className="pt-4">
           <div className="card-header border-0 d-flex justify-content-between">
