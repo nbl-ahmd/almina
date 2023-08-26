@@ -157,19 +157,20 @@ const fetchSuburbs = async () => {
   const fetchLocation = async (latitude, longitude) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+       
       );
       const data = await response.json();
       const address = data.display_name;
       const country = data.address.country;
       const maplink = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
 
-      if (country !== "United Arab Emirates") {
+       if (country !== "United Arab Emirates") {
 
 
         setErrorMessage('We only ship to UAE');
         return;
-      }
+       }
       setMaplink(maplink);
       setCurrentLocation(address);
 
@@ -177,7 +178,7 @@ const fetchSuburbs = async () => {
       setEmirate(emirate);
 
       const city = data.address.suburb || data.address.industrial || data.address.city;
-      setCity(city);
+      setSelectedCity(city);
       let deliveryfee=0;
       (emirate === 'Ras al-Khaimah') ? (deliveryfee=0) : (deliveryfee=15);
       setDeliveryfee(deliveryfee);
@@ -220,7 +221,7 @@ const fetchSuburbs = async () => {
 
 
   const handleEmirateChange = e => {
-    setFetchingLocation(true);
+    
     setEmirate(e.target.value);
     setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalprice: parseFloat((totalVatPrice + deliveryfee).toFixed(2)) });
     console.log(customerInfo);

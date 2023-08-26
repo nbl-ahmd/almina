@@ -95,7 +95,7 @@ export default function Dashboard() {
                            </div>
                      
                 </nav>
-                <div className="flex-lg-1 h-100  overflow-y-auto right-section">
+                <div className="flex-lg-1 h-100 right-section">
                     <nav className="navbar topbar" id='topbar'>
                         <div className="w-100 d-flex justify-content-between">
 
