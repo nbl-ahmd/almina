@@ -98,7 +98,7 @@ const Products_list = () => {
         hasMore={searching ? !loaded : true} // Update hasMore condition
         loader={<p className='pb-3 text-center'>Loading...</p>}
         endMessage={<p className='pb-3'>No more data to load.</p>}
-        scrollThreshold={1}
+        scrollThreshold={0.8}
         height={'90vh'}
       
       >
