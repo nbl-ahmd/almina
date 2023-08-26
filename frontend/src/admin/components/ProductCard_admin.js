@@ -3,16 +3,40 @@ import React, { useState } from 'react'
 import product from './product';
 import { Link } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
+import DeleteConfirmation from './delete confirmation';
 
 const ProductCard_admin = ({product}) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State to manage the delete modal
     const [productFilter, setProductFilter] = useState();
+
+
+
+
     const deleteProduct = () => {
-        axios
-        .delete(`${baseURL}/api/products/${product._id}`)
+      // Show the delete confirmation modal
+      setShowDeleteModal(true);
+    };
+  
+    const confirmDelete = (id) => {
+      axios
+        .delete(`${baseURL}/api/products/${id}`)
         .then((res) => {
+          // Handle successful deletion if needed
         })
         .catch((error) => console.log(error));
-}
+  
+      // Close the delete confirmation modal
+      setShowDeleteModal(false);
+    };
+  
+    const hideDeleteModal = () => {
+      // Close the delete confirmation modal without performing any action
+      setShowDeleteModal(false);
+    };
+
+
+
+ 
     
   return (
   <div className="admin">
@@ -57,6 +81,16 @@ const ProductCard_admin = ({product}) => {
                 </div>
               </div>
             </div>
+
+            {/* Render the delete confirmation modal */}
+      <DeleteConfirmation
+        showModal={showDeleteModal}
+        hideModal={hideDeleteModal}
+        confirmModal={confirmDelete}
+        id={product._id}
+        type="product"
+        message="Are you sure you want to delete this product?"
+      />
           </div>
    </div>
     
