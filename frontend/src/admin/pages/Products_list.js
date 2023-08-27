@@ -57,9 +57,11 @@ const Products_list = () => {
     console.log(searchResults.length);
     setSearchedProducts(searchResults);
     console.log(limit);
+
     if (searchResults.length < limit) {
-      setLoaded(true); // Update loaded state
+      setLoaded(true);
       setLoading(false);
+      setFetchingMore(false); // Reset fetchingMore state
     } else {
       setFetchingMore(true);
     }
@@ -94,8 +96,8 @@ const Products_list = () => {
     <div className='overflow-y-auto' style={{ height: '90vh' }}>
       <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
-        next={fetchProducts}
-        hasMore={searching ? !loaded : true} // Update hasMore condition
+        next={searching ? search : fetchProducts}
+        hasMore={searching ? !loaded && fetchingMore : true} // Use both loaded and fetchingMore conditions
         loader={<p className='pb-3 text-center'>Loading...</p>}
         endMessage={<p className='pb-3'>No more data to load.</p>}
         scrollThreshold={0.8}
