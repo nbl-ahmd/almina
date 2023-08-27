@@ -61,6 +61,7 @@ const Products_list = () => {
     if (searchResults.length < limit) {
       setLoaded(true);
       setLoading(false);
+      setSearching(false);
       setFetchingMore(false); // Reset fetchingMore state
     } else {
       setFetchingMore(true);
