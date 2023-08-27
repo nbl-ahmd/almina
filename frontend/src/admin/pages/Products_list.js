@@ -10,6 +10,7 @@ const Products_list = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [offset, setOffset] = useState(0);
+  const [searchOffset, setSearchOffset] = useState(0);
   const [limit, setLimit] = useState(10);
   const [searching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,27 +47,49 @@ const Products_list = () => {
 
 
   const search = async () => {
-    const searchParams = new URLSearchParams(location.search);
+    try{
+      const searchParams = new URLSearchParams(location.search);
     const searchQuery = searchParams.get('q');
     const response = await axios.get(
-      `${baseURL}/api/products/search?q=${searchQuery}&offset=${offset}${
-        searching === false ? `&limit=${limit}` : ''
-      }`
-    );
+      `${baseURL}/api/products/search?`, {
+        params: {
+          q: searchQuery,
+          disabled: false,
+          offset: searchOffset,
+          limit: limit
+        }
+      });
+      
+      
+      
+      // q=${searchQuery}&offset=${offset}${
+      //   searching === false ? `&limit=${limit}` : ''
+      // }`
+    
     const searchResults = response.data;
+    
     console.log(searchResults.length);
-    setSearchedProducts(searchResults);
+    console.log("offset" + searchOffset);
+
+
+    setSearchedProducts(prevItems => [...prevItems, ...searchResults]);
+    setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+
+      
+    // setSearchedProducts(searchResults);
     console.log(limit);
 
     if (searchResults.length < limit) {
       setLoaded(true);
       setLoading(false);
-      setSearching(false);
       setFetchingMore(false); // Reset fetchingMore state
     } else {
       setFetchingMore(true);
     }
-  };
+  } catch (error) {
+    setError(error);
+  }
+    }
 
   const fetchProducts = async () => {
     console.log('fetch products called')
@@ -100,7 +123,7 @@ const Products_list = () => {
         next={searching ? search : fetchProducts}
         hasMore={searching ? !loaded && fetchingMore : true} // Use both loaded and fetchingMore conditions
         loader={<p className='pb-3 text-center'>Loading...</p>}
-        endMessage={<p className='pb-3'>No more data to load.</p>}
+        endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
         scrollThreshold={0.8}
         height={'90vh'}
       
