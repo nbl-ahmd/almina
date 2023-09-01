@@ -62,14 +62,16 @@ const CategoryUpload = () => {
         </form>
         <p>{message}</p>
       </div>
-      <div className="container mt-4">
-        <table className="table">
+      <div className="container table-responsive mt-4 mb-3" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <table className="table ">
           {category.map(category => (
             <Categorylist key={category._id} category={category} />
           ))}
         </table>
 
       </div>
+
+      
     </>
   );
 }

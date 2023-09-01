@@ -34,7 +34,7 @@ const UploadCSV = () => {
   };
 
   return (
-    <main className="container mt-4">
+    <div className="container mt-4">
       <h2>Upload CSV File</h2>
       <div className="card p-2 border-0 shadow-sm mt-3">
       <div>
@@ -49,7 +49,7 @@ const UploadCSV = () => {
       <div className="mt-3">
       {uploadStatus && <p className="text-pg">{uploadStatus}</p>}
       </div>
-    </main>
+    </div>
   );
 };
 
