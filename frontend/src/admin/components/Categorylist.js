@@ -38,7 +38,7 @@ function Categorylist({category}) {
                              <div className=' d-flex add-to-cart-btn me-2'><button  className="btn  btn-sm text-white d-flex" onClick={deleteCategory}><i className="bi bi-trash fs-5"></i>
                       </button></div>
 
-                             <div className=' d-flex add-to-cart-btn'><Link to = {`/admin/categories/update/${category._id}`} className="btn  btn-sm text-white d-flex"  ><i className="bi bi-pen-fill fs-5"></i>
+                             <div className=' d-flex add-to-cart-btn'><Link to = {`/admindash/categories/update/${category._id}`} className="btn  btn-sm text-white d-flex"  ><i className="bi bi-pen-fill fs-5"></i>
                       </Link>
                       </div>
                             </div> 

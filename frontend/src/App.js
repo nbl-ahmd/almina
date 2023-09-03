@@ -252,6 +252,19 @@ const App = () => {
           {<Adminroutes>
             <Categoryupdate />
             </Adminroutes>} />
+
+
+            <Route path='/admindash/categories/update/:id' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <Categoryupdate />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+
+
           <Route path='/admin/product/update/:id' element={
           <Adminroutes>
             <ProductUpdate />
