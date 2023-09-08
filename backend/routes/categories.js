@@ -3,6 +3,7 @@ const express = require('express');
 const categoryRouter = express.Router();
 const multer = require('multer');
 const path = require('path');
+const sharp= require('sharp')
 const { v4: uuidv4 } = require('uuid');
 // Generate a random color
 //google
@@ -162,9 +163,9 @@ categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
   
     try {
       // Retrieve the previous image filename from the database
-      const prevProduct = await Product.findById(id);
-      const prevImage = prevProduct.image;
-      const prevGdriveFileId = prevProduct.gdriveFileId;
+      const prevCategory = await Category.findById(id);
+      const prevImage = prevCategory.image;
+      const prevGdriveFileId = prevCategory.gdriveFileId;
   
       // Check if each field is present in the request body and update the corresponding field
       if (req.body.name) {
@@ -220,16 +221,16 @@ categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
       
       }
   
-      const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+      const category = await Category.findByIdAndUpdate(id, updateFields, { new: true });
   
-      if (!product) {
-        return res.status(400).send('The product cannot be updated!');
+      if (!category) {
+        return res.status(400).send('The category cannot be updated!');
       }
   
-      res.send(product);
+      res.send(category);
     } catch (error) {
-      console.error('Error updating product:', error);
-      res.status(500).send('An error occurred while updating the product');
+      console.error('Error updating category:', error);
+      res.status(500).send('An error occurred while updating the category');
     }
   });
 
