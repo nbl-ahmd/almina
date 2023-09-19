@@ -12,15 +12,17 @@ const ProductCard_admin = ({product}) => {
 
 
 
-    const deleteProduct = () => {
+    const deleteProduct = (id) => {
+      console.log(id);
       // Show the delete confirmation modal
       setShowDeleteModal(true);
     };
   
     const confirmDelete = (id) => {
+      console.log(id);
       axios
-        .delete(`${baseURL}/api/products/${id}`)
-        .then((res) => {
+      .delete(`${baseURL}/api/products/${id}`)
+      .then((res) => {
           // Handle successful deletion if needed
         })
         .catch((error) => console.log(error));
@@ -32,6 +34,7 @@ const ProductCard_admin = ({product}) => {
     const hideDeleteModal = () => {
       // Close the delete confirmation modal without performing any action
       setShowDeleteModal(false);
+      console.log('id');
     };
 
 
@@ -66,7 +69,7 @@ const ProductCard_admin = ({product}) => {
                   
                  <div className='d-flex justify-content-between'>
                  <div className=' d-flex  align-items-center rounded-1'>
-                  <div className="btn  btn-sm text-pr d-flex p-0 text-sm d-flex align-items-center" onClick={deleteProduct}>
+                  <div className="btn  btn-sm text-pr d-flex p-0 text-sm d-flex align-items-center" onClick={() => deleteProduct(product._id)}>
                     <i className="bi bi-trash fs-6 pe-1 text-sm"></i>
                     <span>
                       Delete
@@ -86,7 +89,7 @@ const ProductCard_admin = ({product}) => {
       <DeleteConfirmation
         showModal={showDeleteModal}
         hideModal={hideDeleteModal}
-        confirmModal={confirmDelete}
+        confirmModal={() => confirmDelete(product._id)}
         id={product._id}
         type="product"
         message="Are you sure you want to delete this product?"

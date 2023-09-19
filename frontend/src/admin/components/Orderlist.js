@@ -11,64 +11,44 @@ const OrderList = () => {
   const [excludeCities, setExcludeCities] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
 
+  useEffect(() => {
+    const handleNewOrder = (order) => {
+      try {
+        const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
+        fetchOrders(currentCity);
 
+        // Play audio
+        const audio = new Audio(NotificationSound);
+        audio.play();
 
-    // Connect to the Socket.io server
-   
-    if (Notification.permission !== 'granted') {
-      Notification.requestPermission();
-    }
-
-   
-
-    // Listen for 'newOrder' event
-    useEffect(() => {
-
-
-
-      socket.on('newOrder', (order) => {
-        try {
-          const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
-         fetchOrders(currentCity);
-         
-
-         // Play audio
-    const audio = new Audio(NotificationSound);
-    audio.play();
-          // Display push notification
-    if (Notification.permission === 'granted') {
-      const notification = new Notification('New Order Placed', {
-        body: `new order has been recieved`,
-      });
-    }
-
-    
-   
-    
-        } catch (error) {
-          console.error('Error updating orders:', error);
+        // Display push notification
+        if (Notification.permission === 'granted') {
+          const notification = new Notification('New Order Placed', {
+            body: 'A new order has been received.',
+          });
         }
-      });
-  
-      return () => {
-        socket.off('newOrder');
-      };
-    }, [orders]);
-    
-
-    const handleRequestNotificationPermission = () => {
-      Notification.requestPermission().then((permission) => {
-        setNotificationPermission(permission);
-      });
+      } catch (error) {
+        console.error('Error updating orders:', error);
+      }
     };
 
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission().then(permission => {
+        setNotificationPermission(permission);
+      });
+    }
 
+    socket.on('newOrder', handleNewOrder);
+
+    return () => {
+      socket.off('newOrder', handleNewOrder);
+    };
+  }, [orders]);
 
   useEffect(() => {
     const cities = JSON.parse(localStorage.getItem('cities')) || [];
     if (Array.isArray(cities) && cities.every(city => typeof city === 'string')) {
       if (cities.length === 0) {
-        console.log("fetchexcludedcities");
         fetchExcludeCities();
       } else {
         setUserCities(cities);
@@ -77,11 +57,7 @@ const OrderList = () => {
     } else {
       fetchExcludeCities();
     }
-
-    
   }, []);
-  
-  
 
   const fetchExcludeCities = async () => {
     try {
@@ -91,25 +67,19 @@ const OrderList = () => {
       const excludeCities = [...new Set(allCities)]; // Remove duplicates
       setUserCities(excludeCities);
       fetchOrders(excludeCities);
-      console.log(excludeCities);
     } catch (error) {
       console.error('Error fetching user cities:', error);
     }
   };
-  
 
   const fetchOrders = async (cities) => {
     try {
-      console.log("cities" + cities);
       const response = await axios.get(`${baseURL}/api/orders`);
       const filteredOrders = response.data.filter(order => {
-       const currentCity= JSON.parse(localStorage.getItem('cities')) || [];
+        const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
         if (currentCity.length === 0) {
-          console.log("display exc");
           return !cities.includes(order.customer.city) && !order.dispatched;
-          
         } else {
-          console.log("display in");
           return cities.includes(order.customer.city) && !order.dispatched;
         }
       });
@@ -128,7 +98,11 @@ const OrderList = () => {
     }
   };
 
-
+  const handleRequestNotificationPermission = () => {
+    Notification.requestPermission().then((permission) => {
+      setNotificationPermission(permission);
+    });
+  };
 
   return (
     <div className="container-fluid h-100">

@@ -20,6 +20,7 @@ const productsRouter = require('./routes/products');
 const categoryRouter = require('./routes/categories')
 const orderRouter = require('./routes/Orderrouter');
 const batchProductRouter = require('./routes/batchProductRouter'); // Import the batchProductRouter
+const storeRouter = require('./routes/storeRouter')
 
 const fs = require('fs');
 const loginRouter = require('./routes/Login');
@@ -50,6 +51,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/auth', loginRouter);
 app.use('/api/batch', batchProductRouter);
+app.use('/api/store', storeRouter);
 
 
 const httpServer = require("http").createServer(app);

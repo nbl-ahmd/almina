@@ -34,7 +34,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav>
+    <nav className='nav-wrapper'>
       <header className="p-3 pt-4">
         <div className="container">
           <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-around justify-content-between">

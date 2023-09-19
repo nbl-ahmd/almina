@@ -113,6 +113,15 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (item) => {
     try {
+      const response = await axios.get(`${baseURL}/api/store/status`);
+      const storeStatus = response.data.status;
+  console.log(storeStatus);
+      if (storeStatus === 'closed') {
+        alert('The store is currently closed. You cannot add items to your cart.');
+        return;
+      }
+
+    try {
       const response = await axios.get(`${baseURL}/api/products/${item._id}`);
       const product = response.data;
 
@@ -152,6 +161,9 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       console.error('Error fetching product stock:', error);
     }
+  } catch (error) {
+    console.error('Error fetching store status:', error);
+  }
   };
 
   const removeFromCart = (item) => {
