@@ -9,7 +9,9 @@ const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [userCities, setUserCities] = useState([]);
   const [excludeCities, setExcludeCities] = useState([]);
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [notificationPermission, setNotificationPermission] = useState(
+    'Notification' in window ? Notification.permission : 'denied'
+  );
 
   useEffect(() => {
     const handleNewOrder = (order) => {
@@ -21,8 +23,8 @@ const OrderList = () => {
         const audio = new Audio(NotificationSound);
         audio.play();
 
-        // Display push notification
-        if (Notification.permission === 'granted') {
+        // Display push notification if supported
+        if ('Notification' in window && Notification.permission === 'granted') {
           const notification = new Notification('New Order Placed', {
             body: 'A new order has been received.',
           });
@@ -32,7 +34,7 @@ const OrderList = () => {
       }
     };
 
-    if (Notification.permission !== 'granted') {
+    if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission().then(permission => {
         setNotificationPermission(permission);
       });
