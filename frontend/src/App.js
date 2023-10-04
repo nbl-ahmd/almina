@@ -31,6 +31,7 @@ import Login from './admin/login/Login'
 import Admindash from './admin/pages/Admindash';
 import Adduser from './admin/pages/Adduser';
 import Openstreet from './client/components/Openstreet';
+import BackToTopButton from './client/components/BackToTopButton';
 
 
 
@@ -280,6 +281,7 @@ const App = () => {
           <Route path="/map" element={<Openstreet/>} />
 
         </Routes>
+        <BackToTopButton />
       </main>
     </BrowserRouter>
 

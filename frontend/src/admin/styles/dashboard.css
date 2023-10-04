@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 main{
-    min-height: 100%;
+    min-height: 100vh;
 }
 .filter-icon-wrapper{
  border: solid rgb(56, 142, 60) 1px;
@@ -59,7 +59,7 @@ main{
     max-width: 137px;;
 }
 .dash-container{
-    height: 100vh;
+   
    
 }
 .sidebar-wrapper{

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
 import { useAuthentication } from '../login/auth';
 import { AdminDashConsumer } from '../../App';
+import BackToTopButton from '../../client/components/BackToTopButton';
 
 const AdminDashboard = () => {
  
@@ -186,6 +187,7 @@ setDropdown(!dropdown)
                 </div>
             </div>
             <div className={`layout-overlay layout-menu-toggle ${sidebarVisible ? '' : 'd-none'}`} onClick={() => toggleSidebar()}></div>
+            <BackToTopButton />
         </div>
 
 

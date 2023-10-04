@@ -4,6 +4,7 @@ import ProductCard_admin from '../components/ProductCard_admin';
 import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useLocation } from 'react-router-dom';
+import BackToTopButton from '../../client/components/BackToTopButton';
 
 const Products_list = () => {
   const [productList, setProductList] = useState([]);
@@ -150,17 +151,17 @@ const Products_list = () => {
   return (
     <>
     
-    <div className='overflow-y-auto' style={{ height: '90vh' }}>
+    <div id="scrollableDiv" className='overflow-y-auto' style={{ height: '90vh' }}>
+<BackToTopButton />
     
-
       <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
         next={searching ? search : fetchProducts}
-        hasMore={searching ? !loaded && fetchingMore : fetchingMore} // Use both loaded and fetchingMore conditions
-        loader={<p className='pb-3 text-center'>Loading...</p>}
+        hasMore={searching ? !loaded && fetchingMore : !loaded} // Use both loaded and fetchingMore conditions
+        loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...' : 'No more data to load.'}</p>}
         endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
         scrollThreshold={0.8}
-        height={'90vh'}
+        scrollableTarget="scrollableDiv"
       
       >
         <div className="container ">
@@ -222,8 +223,9 @@ const Products_list = () => {
                 ))}
           </div>
         </div>
-      </InfiniteScroll>
+      </InfiniteScroll> 
     </div>
+   
     </>
   );
 };
