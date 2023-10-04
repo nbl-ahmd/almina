@@ -1,15 +1,39 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import logo from '../assets/logo.png';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/cartcontext';
 import axios from 'axios';
 import baseURL from '../../axiosConfig';
 
+
+import Box from '@mui/material/Box';
+import BottomNavigation from '@mui/material/BottomNavigation';
+import BottomNavigationAction from '@mui/material/BottomNavigationAction';
+
+
 const Navbar = () => {
+  const [value, setValue] = React.useState(0);
+
   const { cartItems } = useContext(CartContext);
   const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [stickyClass, setStickyClass] = useState('relative');
+
+  useEffect(() => {
+    window.addEventListener('scroll', stickNavbar);
+
+    return () => {
+      window.removeEventListener('scroll', stickNavbar);
+    };
+  }, []);
+
+  const stickNavbar = () => {
+    if (window !== undefined) {
+      let windowHeight = window.scrollY;
+      windowHeight > 500 ? setStickyClass('fixed-nav') : setStickyClass('relative');
+    }
+  };
 
   const performSearch = (event) => {
     setSearchInput(event.target.value);
@@ -34,11 +58,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className='nav-wrapper'>
-      <header className="p-3 pt-4">
+    <>
+    <nav className={`nav-wrapper ${stickyClass}`}>
+      <header className="p-3">
         <div className="container">
           <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-around justify-content-between">
-            <a href="/" className="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none ">
+            <a href="/" className="d-flex align-items-center mb-lg-0 link-body-emphasis text-decoration-none ">
               <img src={logo} alt="" width="120px" />
             </a>
 
@@ -51,7 +76,7 @@ const Navbar = () => {
               </div>
             </Link>
 
-            <form className="col-12 col-lg-6 mb-lg-0 me-lg-3 mt-3 mt-lg-0 order-1 order-lg-0" role="search" onSubmit={handleSearch}>
+            <form className="col-12 col-lg-6 mb-lg-0 me-lg-3 mt-2 mt-lg-0 order-1 order-lg-0" role="search" onSubmit={handleSearch}>
               <div className="input-group">
                 <input
                   type="search"
@@ -73,7 +98,7 @@ const Navbar = () => {
         </div>
       </header>
 
-      <nav className="container mt-2 d-flex justify-content-center justify-content-lg-start">
+      <nav className="d-none d-lg-flex container mt-2 d-flex justify-content-center ">
         <ul className="nav px-lg-0 justify-content-around mb-md-0 gap-2 ms-md-5 flex-grow-1 flex-md-grow-0 nav-ul">
           <li>
             <Link to="/" className={location.pathname === '/' ? 'active px-2' : 'px-2'}>
@@ -92,7 +117,27 @@ const Navbar = () => {
           </li>
         </ul>
       </nav>
+    
     </nav>
+     <nav className="fixed-bottom d-lg-none mobile-bottom-nav">
+     <Link to={'/'} className={location.pathname === '/' ? 'active text-truncate ' : 'text-truncate '} >
+     <i class="bi bi-house icon"></i>
+     <span>Home</span>
+     </Link>
+     <Link to={'/products'} className={location.pathname === '/products' ? 'active text-truncate ' : 'text-truncate'} >
+     <i class="bi bi-prescription2 icon"></i>
+     <span>All Products</span>
+     </Link>
+     <Link to={'/categories'} className={location.pathname === '/categories' ? 'active text-truncate ' : 'text-truncate'} >
+     <i class="bi bi-ui-checks-grid icon"></i>
+     <span>Categories</span>
+     </Link>
+     
+    </nav>
+    </>
+
+
+
   );
 };
 

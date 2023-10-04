@@ -52,7 +52,7 @@ import Productskeleton from '../components/Productskeleton'
   
    return (
      <main>
-       <div className="mt-4 pt-3 pb-3 hero-wrapper">
+       <div className=" pt-3 pb-3 hero-wrapper">
          <div className="container">
            <div className="row d-flex align align-items-center">
              <div className="mt-1 mt-xxl-0 col-xxl-3 col-12 d-lg-flex d-xl-block gap-3 gap-xl-0 order-1 order-xxl-0">

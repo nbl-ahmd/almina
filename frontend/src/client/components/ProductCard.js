@@ -41,12 +41,12 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
             ) : (
               <div className="skeleton-image skeleton "></div>
             )}
-            <div className="px-2 pt-2">
+            <div className="px-2 pt-2 product-details-card">
               <div className="mb-1">
-                <Link className="category-name text-pb d-block fw-300 text-sm" to="/">
+                <Link className="category-name text-pb d-block fw-300 text-sm text-truncate" to="/">
                   {product.category.name}
                 </Link>
-                <h6 className="fw-500 fs-sm overflow text-small">{product.name}</h6>
+                <h6 className="fw-500 fs-sm overflow text-small">{product.name.toLowerCase()}</h6>
               </div>
               <div className="d-flex justify-content-between align-items-center mt-2 pb-1">
 

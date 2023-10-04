@@ -19,12 +19,24 @@ const Products_list = () => {
   const [loading, setLoading] = useState(true);
   const [fetchingMore, setFetchingMore] = useState(false);
   const [loaded, setLoaded] = useState(false); // Move loaded state here
+  const [category, setCategory] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const [toggleFilter, setToggleFilter]= useState(true);
   const location = useLocation();
 
   useEffect(() => {
     fetchProducts();
+  }, [selectedCategory]);
+  useEffect(() => {
+    axios
+      .get(`${baseURL}/api/category`)
+      .then((response) => {
+        setCategory(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => console.log(error));
   }, []);
-
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -96,18 +108,33 @@ const Products_list = () => {
     setLoaded(false); // Reset loaded state before fetching more products
     setIsLoading(true);
     setError(null);
+    let filter
+    if (selectedCategory){
+       filter = {"category": selectedCategory, "disabled": false };
+    }
+    else{
+      filter = {"disabled": false };
+    }
+    const filterString = JSON.stringify(filter);
     try {
       const response = await axios.get(`${baseURL}/api/products`, {
         params: {
+          filter: filterString,
           disabled: false,
           offset: offset,
-          limit: searching === false ? limit : undefined
-        }
+          limit: searching === false ? limit : undefined,
+          category: selectedCategory,
+        },
       });
       const data = response.data;
 
-      setProductList(prevItems => [...prevItems, ...data]);
+      if (offset == 0){
+        setProductList(data);
+        setOffset(prevOffset => prevOffset + limit);
+      }else{
+        setProductList(prevItems => [...prevItems, ...data]);
       setOffset(prevOffset => prevOffset + limit);
+      }
     } catch (error) {
       setError(error);
     } finally {
@@ -116,18 +143,72 @@ const Products_list = () => {
   };
   
 
+  function toggleFilterFunction() {
+    setToggleFilter(!toggleFilter);
+  }
+
   return (
+    <>
+    
     <div className='overflow-y-auto' style={{ height: '90vh' }}>
+    
+
       <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
         next={searching ? search : fetchProducts}
-        hasMore={searching ? !loaded && fetchingMore : true} // Use both loaded and fetchingMore conditions
+        hasMore={searching ? !loaded && fetchingMore : fetchingMore} // Use both loaded and fetchingMore conditions
         loader={<p className='pb-3 text-center'>Loading...</p>}
         endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
         scrollThreshold={0.8}
         height={'90vh'}
       
       >
+        <div className="container ">
+      <div className="d-flex justify-content-between p-3 align-items-center ">
+          <span>Filter by categories</span>
+        <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
+        <i className="bi bi-filter icon"></i>
+        </div>
+      </div>
+      {/*filter*/}
+     
+
+
+
+      <div className={`card filter-menu py-4 ${toggleFilter ? 'd-none' : 'd-flex'}`}>
+        <div className='px-3 d-flex justify-content-between'>
+          <h6>
+            categories
+          </h6>
+          <span className='text-pg' onClick={()=> {setSelectedCategory(null)
+          setOffset(0)
+          toggleFilterFunction()}}>Clear</span>
+        </div>
+        <ul className=''>
+        {category.map((categoryItem) => (
+       <li
+       className={`py-2 ${selectedCategory === categoryItem._id ? 'active' : ''}`}
+       key={categoryItem._id}
+       onClick={() => {
+        if (selectedCategory === categoryItem._id) {
+          setSelectedCategory(null); // Deselect the category
+        } else {
+          setSelectedCategory(categoryItem._id); // Select the category
+        }
+        setOffset(0);
+        toggleFilterFunction()
+        
+        
+      }}
+     >
+        {categoryItem.name}
+      </li>
+    ))}
+        </ul>
+      </div>
+    </div>
+        
+
         <div className="container mb-5">
           <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
             {searching
@@ -143,6 +224,7 @@ const Products_list = () => {
         </div>
       </InfiniteScroll>
     </div>
+    </>
   );
 };
 

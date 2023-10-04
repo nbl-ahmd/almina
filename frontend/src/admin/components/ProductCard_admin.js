@@ -42,7 +42,7 @@ const ProductCard_admin = ({product}) => {
  
     
   return (
-  <div className="admin">
+  <div className="admin p-0">
    <div className="p-1 p-md-2">
    <div className="products p-2">
             <div className=" card-product">
