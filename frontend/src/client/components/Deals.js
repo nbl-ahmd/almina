@@ -40,20 +40,18 @@ import baseURL from '../../axiosConfig';
       navigation: true,
       keyboard: true,
       breakpoints: {
-
-
-        640: {
-            slidesPerView: 2,
-            spaceBetween: 10,
-          },
-          768: {
-            slidesPerView: 3,
-            spaceBetween: 30,
-          },
-          1024: {
-            slidesPerView: 4,
-            spaceBetween: 40,
-          },
+        960: {
+          slidesPerView: 4,
+          spaceBetween: 8
+        },
+        720: {
+          slidesPerView: 3,
+          spaceBetween: 6
+        },
+        300: {
+          slidesPerView: 2,
+          spaceBetween: 4
+        },
       },
       injectStyles: [
         `.slide{
