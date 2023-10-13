@@ -156,7 +156,7 @@ import Deals from '../components/Deals'
 <div className="container pt-4">
 <div className="title pt-1 pb-2 ">
            <h5>Top Deals</h5>
-           <Link to='/categories'>View All</Link>
+           <Link to='/offers'>View All</Link>
          </div>
 
          <div className="deals">

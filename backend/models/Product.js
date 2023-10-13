@@ -15,7 +15,10 @@ const productSchema = new mongoose.Schema({
     stock: { type: Number, required: true },
     sale: { type: Boolean, required: true, default: false },
     disabled: {type: Boolean, default: false},
-    barcode: {type: String, required: true}
+    barcode: {type: String, required: true},
+    salePrice: { type: Number, required: false },
+    salePercent: {type: Number, required: false},
+    saleBadge: {type: String, required: false},
 
 
 });

@@ -32,6 +32,8 @@ import Admindash from './admin/pages/Admindash';
 import Adduser from './admin/pages/Adduser';
 import Openstreet from './client/components/Openstreet';
 import BackToTopButton from './client/components/BackToTopButton';
+import DealPage from './client/pages/DealPage';
+import { Breadcrumb } from 'react-bootstrap';
 
 
 
@@ -109,6 +111,14 @@ const App = () => {
             <CartProvider>
             <Navbar />
             <Products />
+            </CartProvider>
+            </>
+          } />
+          <Route path='offers' element={
+            <>
+            <CartProvider>
+            <Navbar />
+            <DealPage />
             </CartProvider>
             </>
           } />

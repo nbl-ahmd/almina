@@ -548,7 +548,7 @@ const fetchSuburbs = async () => {
                     <span className="col-9 fw-200 text-small text-start overflow-wrap">{item.name} <span className='fw-500'>x {item.quantity}</span></span>
 
 
-                    <span className="col-3 fw-200 text-small text-end">AED {item.quantity *(item.vat ? (parseFloat((item.price + ((item.price / 100) * 5)).toFixed(2))) : item.price)}</span>
+                    <span className="col-3 fw-200 text-small text-end">AED {item.quantity *(item.price)}</span>
 
                   </div>
                 ))}

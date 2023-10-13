@@ -116,7 +116,7 @@ const Navbar = () => {
             </Link>
           </li>
           <li>
-            <Link to="/categories" className={location.pathname === '/Offers' ? 'active px-2' : 'px-2'}>
+            <Link to="/offers" className={location.pathname === '/offers' ? 'active px-2' : 'px-2'}>
               Offers
             </Link>
           </li>

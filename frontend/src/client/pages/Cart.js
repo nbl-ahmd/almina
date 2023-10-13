@@ -51,7 +51,7 @@ console.log(cartItems.length);
                 
               </div>
               <div className="fs-lg text-accent pt-2">
-                AED {item.vat ? (parseFloat((item.price + ((item.price / 100) * 5)).toFixed(2))) : item.price}
+                AED {item.price}
               </div>
               {/* <div className="text-sm">
                 

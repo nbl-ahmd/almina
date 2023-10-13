@@ -64,7 +64,7 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
                  
                   
                   
-                 <span className="product-price">AED {product.vat ? (parseFloat((product.price + ((product.price / 100) * 5)).toFixed(2))) : product.price}</span>
+                 <span className="product-price">AED {product.price}</span>
 
                </div>
                <button

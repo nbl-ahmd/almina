@@ -7,6 +7,7 @@ import Productskeleton from '../components/Productskeleton';
 import { v4 as uuidv4 } from 'uuid';
 import BackToTopButton from '../components/BackToTopButton';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const Products = () => {
   const [productList, setProductList] = useState([]);
@@ -154,7 +155,8 @@ const Products = () => {
 
   return (
     <section className="container" style={{ paddingBottom: '100px' }}>
-      <div className="title pt-5 px-4">
+      <Breadcrumbs />
+      <div className="title pt-2 px-4">
         
         <h5>{searchQuery ? `Resuts for "${searchQuery}" ` : 'All Products'}</h5>
         

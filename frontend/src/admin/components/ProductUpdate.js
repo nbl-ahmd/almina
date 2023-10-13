@@ -6,27 +6,32 @@ import baseURL from '../../axiosConfig';
 
 const ProductUpdate = () => {
 
-    const {id} = useParams();
+  const { id } = useParams();
   const [product, setProduct] = useState({});
   const [formData, setFormData] = useState({});
   const [imageFile, setImageFile] = useState([]);
-  
+
   const [categoryList, setCategoryList] = useState([]);
-const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('');
 
-const [file, setFile] = useState('');
+  const [file, setFile] = useState('');
 
-useEffect(() => {
-  
-  console.log(file);
-         axios.get(`${baseURL}/api/category`)
-           .then(response => {
-             setCategoryList(response.data);
-           })
-           .catch(error => {
-             console.log(error);
-           });
-       }, [id]);
+
+  const [salePrice, setSalePrice] = useState('');
+  const [offerPercentage, setOfferPercentage] = useState('');
+  const [pageText, setPageText] = useState('');
+
+  useEffect(() => {
+
+    console.log(file);
+    axios.get(`${baseURL}/api/category`)
+      .then(response => {
+        setCategoryList(response.data);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, [id]);
 
   useEffect(() => {
     // Fetch the product data using the id
@@ -42,33 +47,36 @@ useEffect(() => {
           featured: String(response.data.featured),
           category: response.data.category,
           image: response.data.image,
-          disabled: String(response.data.disabled)
-          
+          disabled: String(response.data.disabled),
+          salePrice: response.data.salePrice,
+          offerPercentage: response.data.offerPercentage,
+          pageText: response.data.pageText,
+
         });
         setFile(`${baseURL}/api/products/images/${response.data.image}`);
       })
       .catch(error => {
         console.error('Error fetching product:', error);
       });
-      
+
   }, [id]);
 
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     console.log(formData)
   };
-  
-  
+
+
   const handleImageChange = async (e) => {
     setFile(URL.createObjectURL(e.target.files[0]));
-   await  setImageFile(e.target.files[0]);
+    await setImageFile(e.target.files[0]);
     console.log(e.target.files[0]);
-    
-  
+
+
   };
 
-  const handleSubmit =  (e) => {
-     
+  const handleSubmit = (e) => {
+
     e.preventDefault();
     const formDataWithImage = new FormData();
     formDataWithImage.append('name', formData.name);
@@ -81,7 +89,7 @@ useEffect(() => {
     formDataWithImage.append('disabled', formData.disabled);
     if (imageFile) {
       console.log(imageFile);
-       formDataWithImage.append('image', imageFile);
+      formDataWithImage.append('image', imageFile);
       console.log(imageFile);
     }
 
@@ -105,193 +113,188 @@ useEffect(() => {
   console.log('formData:', formData);
   console.log('imageFile:', imageFile);
   console.log('file:', file);
+  const handleSaleChange = (e) => {
+    const isSale = e.target.value === 'true';
+    setFormData({ ...formData, sale: String(isSale) });
+  };
+
+
+  const handleSalePriceChange = (e) => {
+    setSalePrice(e.target.value);
+  };
+
+  const handleOfferPercentageChange = (e) => {
+    setOfferPercentage(e.target.value);
+  };
+
+  const handlePageTextChange = (e) => {
+    setPageText(e.target.value);
+  };
   return (
 
     <div>
-    <div className="container d-flex flex-fill justify-content-center pt-5">
-      <form className="form mb-4" onSubmit={handleSubmit}>
-     
-        <label htmlFor='uploadbtn' className="img-preview-wrapper mb-3 d-flex">
-      
-        <input type="file" id='uploadbtn' onChange={handleImageChange} hidden/>
-        {imageFile ? (
-            <img src={file} className="img-preview" alt="" />
-          ) : (
-            <img
-              src={`${baseURL}/api/products/images/${formData.image}`}
-              className="img-preview"
-              alt=""
-            />
-          )}
-        {!formData.image?(<span className='preview-text'>Upload Image</span>):'' }
-        
-        </label>
-   
-        <div className="row g-3 form-row form-group mb-3">
-    <div className="col-6">
-    <div className="form-holder">
-    <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name || ''} onChange={handleFormChange}/>
-    </div>
-    </div>
-    <div className="col-6">
-    <div className=" input-group">
-    <select className="custom-select form-control" id="inputGroupSelect01" name="category" value={formData.category || ''} onChange={handleFormChange} >
-    <option selected>Select Category</option>
-        {categoryList.map(categoryList => (
-          <option value={categoryList._id}>{categoryList.name}</option>
-        ))}
-      </select>
-      <i className="bi bi-arrow-down-square-fill input-group-text"></i>
-    </div>
-    </div>
-    <div className="col-6">
-    <div className="input-group">
-    <span className="input-group-text">Stock</span>
-    <input type="number" className="form-control" name="stock" placeholder="Stock" value={formData.stock || ''} onChange={handleFormChange}/>
-    </div>
-    </div>
-    <div className="col-6">
-    <div className="input-group">
-    <span className="input-group-text">AED</span>
-    <input type="number" className="form-control" name="price" placeholder="Price" value={formData.price || ''} onChange={handleFormChange}/>
-    </div>
-    </div>
-<div className="col-12">
-  <div className="container">
-    <div className="row">
-    <div className="col-4">
-    <div className="input-group">
-    <div className="btn-group">
-    <label htmlFor="vat" className='me-1'>VAT</label>
-          <div>
-            <input type="radio" className="btn-check" id="vat-yes" name="vat" value="true" checked={formData.vat === 'true'} onChange={handleFormChange} />
-            <label htmlFor="vat-yes" className="btn btn-outline-primary me-1">Yes</label>
+      <div className="container d-flex flex-fill justify-content-center pt-5">
+        <form className="form mb-4" onSubmit={handleSubmit}>
+
+          <label htmlFor='uploadbtn' className="img-preview-wrapper mb-3 d-flex">
+
+            <input type="file" id='uploadbtn' onChange={handleImageChange} hidden />
+            {imageFile ? (
+              <img src={file} className="img-preview" alt="" />
+            ) : (
+              <img
+                src={`${baseURL}/api/products/images/${formData.image}`}
+                className="img-preview"
+                alt=""
+              />
+            )}
+            {!formData.image ? (<span className='preview-text'>Upload Image</span>) : ''}
+
+          </label>
+
+          <div className="row g-3 form-row form-group mb-3">
+            <div className="col-6">
+              <div className="form-holder">
+                <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name || ''} onChange={handleFormChange} />
+              </div>
+            </div>
+            <div className="col-6">
+              <div className=" input-group">
+                <select className="custom-select form-control" id="inputGroupSelect01" name="category" value={formData.category || ''} onChange={handleFormChange} >
+                  <option selected>Select Category</option>
+                  {categoryList.map(categoryList => (
+                    <option value={categoryList._id}>{categoryList.name}</option>
+                  ))}
+                </select>
+                <i className="bi bi-arrow-down-square-fill input-group-text"></i>
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="input-group">
+                <span className="input-group-text">Stock</span>
+                <input type="number" className="form-control" name="stock" placeholder="Stock" value={formData.stock || ''} onChange={handleFormChange} />
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="input-group">
+                <span className="input-group-text">AED</span>
+                <input type="number" className="form-control" name="price" placeholder="Price" value={formData.price || ''} onChange={handleFormChange} />
+              </div>
+            </div>
+            <div className="col-12">
+              <div className="container">
+                <div className="row">
+                  <div className="col-4">
+                    <div className="input-group">
+                      <div className="btn-group">
+                        <label htmlFor="vat" className='me-1'>VAT</label>
+                        <div>
+                          <input type="radio" className="btn-check" id="vat-yes" name="vat" value="true" checked={formData.vat === 'true'} onChange={handleFormChange} />
+                          <label htmlFor="vat-yes" className="btn btn-outline-primary me-1">Yes</label>
+                        </div>
+                        <div>
+                          <input type="radio" className="btn-check" id="vat-no" name="vat" value="false" checked={formData.vat === 'false'} onChange={handleFormChange} />
+                          <label htmlFor="vat-no" className="btn btn-outline-primary">No</label>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className="col-4">
+
+                    <div className="input-group">
+                      <div className="btn-group">
+                        <label htmlFor="sale" className='me-1'>Sale</label>
+                        <div>
+                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={formData.sale === 'true'} onChange={handleFormChange} />
+                          <label htmlFor="sale-yes" className="btn btn-outline-primary me-1">Yes</label>
+                        </div>
+                        <div>
+                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={formData.sale === 'false'} onChange={handleFormChange} />
+                          <label htmlFor="sale-no" className="btn btn-outline-primary">No</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-4">
+
+                    <div className="input-group">
+                      <div className="btn-group">
+                        <label htmlFor="featured" className='me-1'>Featured</label>
+                        <div>
+                          <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={formData.featured === 'true'} onChange={handleFormChange} />
+                          <label htmlFor="featured-yes" className="btn btn-outline-primary me-1">Yes</label>
+                        </div>
+                        <div>
+                          <input type="radio" className="btn-check" id="featured-no" name="featured" value="false" checked={formData.featured === 'false'} onChange={handleFormChange} />
+                          <label htmlFor="featured-no" className="btn btn-outline-primary">No</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div className="col-4">
+
+                    <div className="input-group">
+                      <div className="btn-group">
+                        <label htmlFor="disabled" className='me-1'>disabled</label>
+                        <div>
+                          <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value="true" checked={formData.disabled === 'true'} onChange={handleFormChange} />
+                          <label htmlFor="disabled-yes" className="btn btn-outline-primary me-1">Yes</label>
+                        </div>
+                        <div>
+                          <input type="radio" className="btn-check" id="disabled-no" name="disabled" value="false" checked={formData.disabled === 'false'} onChange={handleFormChange} />
+                          <label htmlFor="disabled-no" className="btn btn-outline-primary">No</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Additional fields displayed when 'Sale' is selected */}
+            {formData.sale === 'true' && (
+              <div>
+                <div className="col-6">
+                  <div className="input-group">
+                    <span className="input-group-text">Sale Price</span>
+                    <input type="number" className="form-control" name="salePrice" placeholder="Sale Price" value={salePrice} onChange={handleSalePriceChange} />
+                  </div>
+                </div>
+                <div className="col-6">
+                  <div className="input-group">
+                    <span className="input-group-text">Offer Percentage</span>
+                    <input type="number" className="form-control" name="offerPercentage" placeholder="Offer Percentage" value={offerPercentage} onChange={handleOfferPercentageChange} />
+                  </div>
+                </div>
+                <div className="col-12">
+                  <div className="form-holder">
+                    <input type="text" name="pageText" className="form-control" placeholder="Page Text" value={pageText} onChange={handlePageTextChange} />
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
-          <div>
-            <input type="radio" className="btn-check" id="vat-no" name="vat" value="false" checked={formData.vat === 'false'} onChange={handleFormChange} />
-            <label htmlFor="vat-no" className="btn btn-outline-primary">No</label>
+          <div className="d-flex align-items-center">
+            <button className='btn btn-primary me-5' type='submit'>Upload</button>
+            <span className='d-block'> {message}
+            </span>
           </div>
-    </div>
-    </div>
-   
-    </div>
-   
-    <div className="col-4">
-    
-    <div className="input-group">
-    <div className="btn-group">
-    <label htmlFor="sale" className='me-1'>Sale</label>
-          <div>
-            <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={formData.sale === 'true'} onChange={handleFormChange} />
-            <label htmlFor="sale-yes" className="btn btn-outline-primary me-1">Yes</label>
-          </div>
-          <div>
-            <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={formData.sale === 'false'} onChange={handleFormChange} />
-            <label htmlFor="sale-no" className="btn btn-outline-primary">No</label>
-          </div>
-    </div>
-    </div>
-    </div>
-    <div className="col-4">
-    
-    <div className="input-group">
-    <div className="btn-group">
-    <label htmlFor="featured" className='me-1'>Featured</label>
-          <div>
-            <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={formData.featured === 'true'} onChange={handleFormChange} />
-            <label htmlFor="featured-yes" className="btn btn-outline-primary me-1">Yes</label>
-          </div>
-          <div>
-            <input type="radio" className="btn-check" id="featured-no" name="featured" value="false" checked={formData.featured === 'false'} onChange={handleFormChange} />
-            <label htmlFor="featured-no" className="btn btn-outline-primary">No</label>
-          </div>
-    </div>
-    </div>
+        </form>
+
+
+
+      </div>
+
     </div>
 
 
-    <div className="col-4">
-    
-    <div className="input-group">
-    <div className="btn-group">
-    <label htmlFor="disabled" className='me-1'>disabled</label>
-          <div>
-            <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value="true" checked={formData.disabled === 'true'} onChange={handleFormChange} />
-            <label htmlFor="disabled-yes" className="btn btn-outline-primary me-1">Yes</label>
-          </div>
-          <div>
-            <input type="radio" className="btn-check" id="disabled-no" name="disabled" value="false" checked={formData.disabled === 'false'} onChange={handleFormChange} />
-            <label htmlFor="disabled-no" className="btn btn-outline-primary">No</label>
-          </div>
-    </div>
-    </div>
-    </div>
-    </div>
-  </div>
-</div>
-
-   
-    </div>
-    <div className="d-flex align-items-center">
-    <button className='btn btn-primary me-5' type='submit'>Upload</button>
- <span className='d-block'> {message}
- </span>
-    </div>
-      </form>
-   
-     
-   
-    </div>
-   
-        </div>
-
-
-   )}
+  )
+}
 
 export default ProductUpdate;
 
 
-{/* <div className="container d-flex flex-fill justify-content-center pt-5">
-<h2>Edit Product</h2>
-<form className="form mb-4" onSubmit={handleSubmit}>
-  <div>
-    <label htmlFor="name">Name</label>
-    <input type="text" name="name" value={formData.name || ''} onChange={handleFormChange} />
-  </div>
-  <div>
-    <label htmlFor="price">Price</label>
-    <input type="number" name="price" value={formData.price || ''} onChange={handleFormChange} />
-  </div>
-  <div>
-    <label htmlFor="stock">Stock</label>
-    <input type="number" name="stock" value={formData.stock || ''} onChange={handleFormChange} />
-  </div>
-  <div>
-    <label htmlFor="vat">VAT</label>
-    <select name="vat" value={formData.vat || ''} onChange={handleFormChange}>
-      <option value="true">Yes</option>
-      <option value="false">No</option>
-    </select>
-  </div>
-  <div>
-    <label htmlFor="sale">Sale</label>
-    <select name="sale" value={formData.sale || ''} onChange={handleFormChange}>
-      <option value="true">Yes</option>
-      <option value="false">No</option>
-    </select>
-  </div>
-  <div>
-    <label htmlFor="featured">Featured</label>
-    <select name="featured" value={formData.featured || ''} onChange={handleFormChange}>
-      <option value="true">Yes</option>
-      <option value="false">No</option>
-   </select>
-   </div>
-   <button type='submit'>
-update
-   </button>
-   </form>
-   </div> */}
-
-
-    

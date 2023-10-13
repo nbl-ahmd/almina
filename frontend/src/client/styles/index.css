@@ -347,9 +347,19 @@ li a {
   width: 100%;
 
 }
+.breadcrumb-item+.breadcrumb-item::before{
+  color: var(--primary-green) !important;
+}
+.breadcrumb{
+  font-size: 12px;
+}
 
-
-
+.breadcrumb-item .active {
+  color: rgb(120, 144, 156) !important;
+}
+.breadcrumb-item a{
+  color: var(--primary-green) !important;
+}
 
 .hero-slider {
   position: relative;
