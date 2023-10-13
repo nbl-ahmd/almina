@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useResolvedPath } from 'react-router-dom'; // Import useResolvedPath
+import { Link, useResolvedPath } from 'react-router-dom'; // Import useResolvedPath
 
 const Breadcrumbs = ({catname}) => {
     const resolvedPath = useResolvedPath().pathname; // Use useResolvedPath to get the resolved pathname
@@ -20,7 +20,7 @@ const Breadcrumbs = ({catname}) => {
       }
       return (
         <li className="breadcrumb-item" key={index}>
-          <a href={path}>{part}</a>
+          <Link to={path}>{part}</Link>
         </li>
       );
     });
@@ -31,7 +31,7 @@ const Breadcrumbs = ({catname}) => {
      <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item">
-            <a href="#">Home</a>
+            <Link to={'/'}>Home</Link>
           </li>
           {getBreadcrumbItems()}
         </ol>
