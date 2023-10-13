@@ -266,7 +266,7 @@ const App = () => {
           } />
 
 
-          <Route path='/admin/product/update/:id' element={
+          <Route path='/admin/productlist/update/:id' element={
           <Adminroutes>
             <ProductUpdate />
           </Adminroutes>

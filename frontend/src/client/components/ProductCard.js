@@ -28,8 +28,13 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
         <div className="products p-2">
           <div className="card card-product">
             <div className="text-center position-relative">
-              <div className="position-absolute top-0 start-0">
-                {product.sale && <span className="badge">Sale</span>}
+            <div className="position-absolute top-0 start-0">
+  {product.sale && !product.featured && <span className="badge">Sale</span>}
+  {product.featured && !product.sale && <span className="badge">Featured</span>}
+  {product.sale && product.featured && <span className="badge">Sale</span>}
+</div>
+              <div className="position-absolute top-0 end-0">
+                {product.sale && <span className="offer-badge badge">20%<br />Offer</span>}
               </div>
             </div>
             {imageLoaded ? (
@@ -43,7 +48,7 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
             )}
             <div className="px-2 pt-2 product-details-card">
               <div className="mb-1">
-                <Link className="category-name text-pb d-block fw-300 text-sm text-truncate" to="/">
+                <Link className="category-name text-pb d-block fw-300 text-sm text-truncate" to={`/categories/${product.category._id}`}>
                   {product.category.name}
                 </Link>
                 <h6 className="fw-500 fs-sm overflow text-small">{product.name.toLowerCase()}</h6>

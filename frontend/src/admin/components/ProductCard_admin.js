@@ -76,7 +76,7 @@ const ProductCard_admin = ({product}) => {
                     </span>
                       </div></div>
                       <div className=' d-flex  '>
-                        <Link to = {`/admin/product/update/${product._id}`} className="btn  btn-sm d-flex"  ><i className="bi bi-pen  pe-2 text-pg text-sm"></i>
+                        <Link to = {`/admin/productlist/update/${product._id}`} className="btn  btn-sm d-flex"  ><i className="bi bi-pen  pe-2 text-pg text-sm"></i>
                       <span className='text-pg text-sm'>Edit</span>
                       </Link>
                       </div>

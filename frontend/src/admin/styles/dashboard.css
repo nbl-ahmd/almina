@@ -38,6 +38,9 @@ main{
 .filter-menu li:hover{
     background-color: #88d19987;
 }
+.filter-menu .active{
+    background-color: #88d19987;
+}
 .cat-img-preview{
     width: 30px;
     margin-right: 1rem;

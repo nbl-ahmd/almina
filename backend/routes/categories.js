@@ -180,7 +180,7 @@ categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
   
       if (req.file) {
         const image = req.file;
-  
+   console.log('image is there')
        // Delete the previous image from Google Drive
        if (prevGdriveFileId && prevGdriveFileId !== '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL') {
         await drive.files.delete({
@@ -193,6 +193,7 @@ categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
   
         // Crop the image into a square
         const croppedImage = await sharp(image.buffer)
+    .resize({ width: 500, height: 500, fit: 'cover' })
     .webp()
     .toBuffer();
   

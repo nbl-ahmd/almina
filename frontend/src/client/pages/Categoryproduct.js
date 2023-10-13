@@ -49,8 +49,15 @@ const CategoryPage = () => {
   return (
 
     <section className='container pt-5 h-100'>
+      <nav aria-label="breadcrumb">
+  <ol className="breadcrumb">
+    <li className="breadcrumb-item"><a href="#">Home</a></li>
+    <li className="breadcrumb-item"><a href="#">Library</a></li>
+    <li className="breadcrumb-item active" aria-current="page">Data</li>
+  </ol>
+</nav>
     <div className="title pt-1 pb-4 mb-4 border-bottom">
-        <h3>{catname}</h3>
+        <h6>{catname}</h6>
       </div>
       <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3">
 

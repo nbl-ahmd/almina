@@ -6,121 +6,231 @@ import baseURL from '../../axiosConfig';
 import Productskeleton from '../components/Productskeleton';
 import { v4 as uuidv4 } from 'uuid';
 import BackToTopButton from '../components/BackToTopButton';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const Products = () => {
+  const [productList, setProductList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [offset, setOffset] = useState(0);
+  const [searchOffset, setSearchOffset] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [searching, setSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [searchedProducts, setSearchedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(10);
-  const [searching, setSearching] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
   const [loaded, setLoaded] = useState(false); // Move loaded state here
+  const [category, setCategory] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [toggleFilter, setToggleFilter]= useState(true);
   const location = useLocation();
 
+ 
   useEffect(() => {
     fetchProducts();
+  }, [selectedCategory]);
+  useEffect(() => {
+    axios
+      .get(`${baseURL}/api/category`)
+      .then((response) => {
+        setCategory(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => console.log(error));
   }, []);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const searchQuery = searchParams.get('q');
+    const newSearchQuery = searchParams.get('q');
+    setSearchQuery(newSearchQuery || '');
+    setOffset(0); // Reset offset when search query changes
+  }, [location.search]);
+
+  useEffect(() => {
     if (searchQuery) {
       search();
       setSearching(true);
     } else {
-      setSearchedProducts(products);
+      setSearchedProducts([]);
       setSearching(false);
     }
-  }, [location.search, products]);
+  }, [searchQuery]);
+
+
+
 
   const search = async () => {
-    const searchParams = new URLSearchParams(location.search);
+    try{
+      const searchParams = new URLSearchParams(location.search);
     const searchQuery = searchParams.get('q');
     const response = await axios.get(
-      `${baseURL}/api/products/search?q=${searchQuery}&offset=${offset}${
-        searching === false ? `&limit=${limit}` : ''
-      }`
-    );
+      `${baseURL}/api/products/search?`, {
+        params: {
+          q: searchQuery,
+          disabled: false,
+          offset: searchOffset,
+          limit: limit
+        }
+      });
+      
+      
+      
+      // q=${searchQuery}&offset=${offset}${
+      //   searching === false ? `&limit=${limit}` : ''
+      // }`
+    
     const searchResults = response.data;
+    
     console.log(searchResults.length);
-    setSearchedProducts(searchResults);
+    console.log("offset" + searchOffset);
+
+
+    setSearchedProducts(prevItems => [...prevItems, ...searchResults]);
+    setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+
+      
+    // setSearchedProducts(searchResults);
     console.log(limit);
+
     if (searchResults.length < limit) {
-      setLoaded(true); // Update loaded state
+      setLoaded(true);
       setLoading(false);
+      setFetchingMore(false); // Reset fetchingMore state
     } else {
       setFetchingMore(true);
     }
-  };
+  } catch (error) {
+    setError(error);
+  }
+    }
 
-  const fetchProducts = () => {
-    setLoading(true);
-
-    const filter = { disabled: false };
+  const fetchProducts = async () => {
+    console.log('fetch products called')
+    setLoaded(false); // Reset loaded state before fetching more products
+    setIsLoading(true);
+    setError(null);
+    let filter
+    if (selectedCategory){
+       filter = {"category": selectedCategory, "disabled": false };
+    }
+    else{
+      filter = {"disabled": false };
+    }
     const filterString = JSON.stringify(filter);
-
-    axios
-      .get(
-        `${baseURL}/api/products?filter=${encodeURIComponent(
-          filterString
-        )}&offset=${offset}${searching === false ? `&limit=${limit}` : ''}`
-      )
-      .then((response) => {
-        setProducts((prevProducts) => [...prevProducts, ...response.data]);
-        setLoading(false);
-        setFetchingMore(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching products:', error);
-        setLoading(false);
-        setFetchingMore(false);
+    try {
+      const response = await axios.get(`${baseURL}/api/products`, {
+        params: {
+          filter: filterString,
+          disabled: false,
+          offset: offset,
+          limit: searching === false ? limit : undefined,
+          category: selectedCategory,
+        },
       });
-    // Delay of 500 milliseconds (adjust as needed)
-  };
+      const data = response.data;
 
-  const handleScroll = () => {
-    const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
-    if (scrollTop + clientHeight >= scrollHeight - 5 && !fetchingMore && !loaded) {
-      setOffset((prevOffset) => prevOffset + limit);
-      setFetchingMore(true);
+      if (offset == 0){
+        setProductList(data);
+        setOffset(prevOffset => prevOffset + limit);
+      }else{
+        setProductList(prevItems => [...prevItems, ...data]);
+      setOffset(prevOffset => prevOffset + limit);
+      }
+    } catch (error) {
+      setError(error);
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [fetchingMore, loaded]); // Update the dependency array
+  function toggleFilterFunction() {
+    setToggleFilter(!toggleFilter);
+  }
 
-  useEffect(() => {
-    if (fetchingMore) {
-      fetchProducts();
-    }
-  }, [offset, fetchingMore]);
+
 
   return (
-    <section className="container pt-5" style={{ paddingBottom: '100px' }}>
-      <div className="title pt-5">Products</div>
-      <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3 px-2 mb-4">
-        {searchedProducts.length === 0 &&
-          Array.from({ length: 10 }).map((_, index) => (
-            <Productskeleton key={index} />
-          ))}
-        {searchedProducts.map((product) => (
-          <ProductCard key={uuidv4()} product={product} />
-        ))}
-      </div>
-      {(loading || fetchingMore) && (
-        <div className="text-center" style={{ opacity: 0.5 }}>
-          <i className="fa fa-spinner fa-spin fa-2x" aria-hidden="true"></i>
-          <p>Loading...</p>
+    <section className="container" style={{ paddingBottom: '100px' }}>
+      <div className="title pt-5 px-4">
+        
+        <h5>{searchQuery ? `Resuts for "${searchQuery}" ` : 'All Products'}</h5>
+        
         </div>
-      )}
+      <div id="scrollableDiv">
+    
+    <InfiniteScroll
+      dataLength={searching ? searchedProducts.length : productList.length}
+      next={searching ? search : fetchProducts}
+      hasMore={searching ? !loaded && fetchingMore : !loaded} // Use both loaded and fetchingMore conditions
+      loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...' : 'No more data to load.'}</p>}
+      endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
+    
+    >
+      <div className="container ">
+    <div className="d-flex justify-content-between p-3 align-items-center ">
+        <span>Filter by categories</span>
+      <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
+      <i className="bi bi-filter icon"></i>
+      </div>
+    </div>
+    {/*filter*/}
+   
 
-      {/* Add the BackToTopButton component */}
-      <BackToTopButton />
+
+
+    <div className={`card filter-menu py-4 ${toggleFilter ? 'd-none' : 'd-flex'}`}>
+      <div className='px-3 d-flex justify-content-between'>
+        <h6>
+          categories
+        </h6>
+        <span className='text-pg' onClick={()=> {setSelectedCategory(null)
+        setOffset(0)
+        toggleFilterFunction()}}>Clear</span>
+      </div>
+      <ul className=''>
+      {category.map((categoryItem) => (
+     <li
+     className={`py-2 ${selectedCategory === categoryItem._id ? 'active' : ''}`}
+     key={categoryItem._id}
+     onClick={() => {
+      if (selectedCategory === categoryItem._id) {
+        setSelectedCategory(null); // Deselect the category
+      } else {
+        setSelectedCategory(categoryItem._id); // Select the category
+      }
+      setOffset(0);
+      toggleFilterFunction()
+      
+      
+    }}
+   >
+      {categoryItem.name}
+    </li>
+  ))}
+      </ul>
+    </div>
+  </div>
+      
+
+      <div className="container mb-5">
+        <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
+          {searching
+            ? searchedProducts.map(product => (
+                <ProductCard key={product._id} product={product} />
+              ))
+            :
+            
+              productList.map(product => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+        </div>
+      </div>
+    </InfiniteScroll> 
+  </div>
+    
     </section>
   );
 };

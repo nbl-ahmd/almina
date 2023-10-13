@@ -98,8 +98,8 @@ const Navbar = () => {
         </div>
       </header>
 
-      <nav className="d-none d-lg-flex container mt-2 d-flex justify-content-center ">
-        <ul className="nav px-lg-0 justify-content-around mb-md-0 gap-2 ms-md-5 flex-grow-1 flex-md-grow-0 nav-ul">
+      <nav className="d-none d-md-flex mt-2 justify-content-center border-top border-bottom py-2">
+        <ul className="nav container px-lg-0  mb-md-0 gap-2 ms-md-5 justify-content-center nav-ul">
           <li>
             <Link to="/" className={location.pathname === '/' ? 'active px-2' : 'px-2'}>
               Home
@@ -107,7 +107,7 @@ const Navbar = () => {
           </li>
           <li>
             <Link to="/products" className={location.pathname === '/products' ? 'active px-2' : 'px-2'}>
-              Products
+              All Products
             </Link>
           </li>
           <li>
@@ -115,11 +115,16 @@ const Navbar = () => {
               Categories
             </Link>
           </li>
+          <li>
+            <Link to="/categories" className={location.pathname === '/Offers' ? 'active px-2' : 'px-2'}>
+              Offers
+            </Link>
+          </li>
         </ul>
       </nav>
     
     </nav>
-     <nav className="fixed-bottom d-lg-none mobile-bottom-nav">
+     <nav className="fixed-bottom d-md-none mobile-bottom-nav">
      <Link to={'/'} className={location.pathname === '/' ? 'active text-truncate ' : 'text-truncate '} >
      <i class="bi bi-house icon"></i>
      <span>Home</span>

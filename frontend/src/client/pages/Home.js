@@ -6,6 +6,7 @@
  import ProductCard from '../components/ProductCard'
 import baseURL from '../../axiosConfig'
 import Productskeleton from '../components/Productskeleton'
+import Deals from '../components/Deals'
 
  const Home = () => {
    const [banners, setBanners] = useState([]);
@@ -28,12 +29,18 @@ import Productskeleton from '../components/Productskeleton'
   }, []);
    // Fetch products on component mount
    useEffect(() => {
-    const filter = { featured: true, disabled: false };
+    const filter = { featured : true, disabled: false, };
     const filterString = JSON.stringify(filter);
 
      axios
-     .get(`${baseURL}/api/products?filter=${encodeURIComponent(filterString)}`)
-       .then((response) => {
+     .get(`${baseURL}/api/products`, {
+      params: {
+        filter: filterString,
+        limit: 10,
+        
+      },
+    })
+    .then((response) => {
          console.log(response.data);
          setProduct(response.data);
        })
@@ -52,7 +59,7 @@ import Productskeleton from '../components/Productskeleton'
   
    return (
      <main>
-       <div className=" pt-3 pb-3 hero-wrapper">
+       <div className="pt-3 pt-md-5 pb-3 hero-wrapper">
          <div className="container">
            <div className="row d-flex align align-items-center">
              <div className="mt-1 mt-xxl-0 col-xxl-3 col-12 d-lg-flex d-xl-block gap-3 gap-xl-0 order-1 order-xxl-0">
@@ -73,7 +80,7 @@ import Productskeleton from '../components/Productskeleton'
                       <br />
                       Bath
                       </h6>
-                      <Link to='/products' className="text-pg fw-300">
+                      <Link to='/categories/64ee2f4972cf379c2709eb66' className="text-pg fw-300">
                         <span>
                         Shop now
                         </span>
@@ -96,7 +103,7 @@ import Productskeleton from '../components/Productskeleton'
                       <br />
                       Suplements
                       </h6>
-                      <Link to='/products' className="text-pb fw-300">
+                      <Link to='/categories/64f1bb39b104acd36d01c959' className="text-pb fw-300">
                         <span>
                         Shop now
                         </span>
@@ -119,7 +126,7 @@ import Productskeleton from '../components/Productskeleton'
                       <br />
                       Pressure
                       </h6>
-                      <Link to='/products' className="text-or fw-300">
+                      <Link to='/categories/65082cbe10cd27c3db3e88cb' className="text-or fw-300">
                         <span>
                         Shop now
                         </span>
@@ -145,12 +152,25 @@ import Productskeleton from '../components/Productskeleton'
          </div>
        </div>
 
+<section >
+<div className="container pt-4">
+<div className="title pt-1 pb-2 ">
+           <h5>Top Deals</h5>
+           <Link to='/categories'>View All</Link>
+         </div>
 
+         <div className="deals">
+          <Deals />
+         </div>
+
+</div>
+
+</section>
  {/* category section */}
 
-<section className='container pt-5'>
-<div className="title pt-1 pb-2 ">
-           <h3>Categories</h3>
+<section className='container pt-2 pt-lg-5'>
+<div className="title pt-4 pb-2 ">
+           <h5>Categories</h5>
            <Link to='/categories'>View All</Link>
          </div>
 
@@ -161,7 +181,7 @@ import Productskeleton from '../components/Productskeleton'
   <Link to={`/categories/${category._id}`} className="cat-container" style={{backgroundColor: `rgba(${category.color}, 0.09)`}}>
     <img src={`${baseURL}/api/category/images/${category.image}`} alt="" />
   </Link>
-  <span className='text-small text-center'>
+  <span className='text-small text-center pt-1'>
     {category.name}
   </span>
 </div>
@@ -171,9 +191,9 @@ import Productskeleton from '../components/Productskeleton'
 </section>
 
  {/* sales section */}
- <section className="container pt-5">
- <div className="title pt-1 pb-4 mb-4 border-bottom">
-           <h3>Featured Products</h3>
+ <section className="container pt-2 pt-lg-5">
+ <div className="title pt-4 pb-4 mb-4 border-bottom">
+           <h5>Featured Products</h5>
            <Link to='/products'>View All</Link>
          </div>
  </section>

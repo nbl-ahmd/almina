@@ -151,8 +151,7 @@ const Products_list = () => {
   return (
     <>
     
-    <div id="scrollableDiv" className='overflow-y-auto' style={{ height: '90vh' }}>
-<BackToTopButton />
+    <div id="scrollableDiv">
     
       <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
@@ -160,8 +159,6 @@ const Products_list = () => {
         hasMore={searching ? !loaded && fetchingMore : !loaded} // Use both loaded and fetchingMore conditions
         loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...' : 'No more data to load.'}</p>}
         endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
-        scrollThreshold={0.8}
-        scrollableTarget="scrollableDiv"
       
       >
         <div className="container ">
@@ -214,12 +211,12 @@ const Products_list = () => {
           <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
             {searching
               ? searchedProducts.map(product => (
-                  <ProductCard_admin key={product.id} product={product} />
+                  <ProductCard_admin key={product._id} product={product} />
                 ))
               :
               
                 productList.map(product => (
-                  <ProductCard_admin key={product.id} product={product} />
+                  <ProductCard_admin key={product._id} product={product} />
                 ))}
           </div>
         </div>
