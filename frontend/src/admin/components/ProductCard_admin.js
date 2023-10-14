@@ -13,7 +13,9 @@ const ProductCard_admin = ({productData}) => {
     const [showEditModal, setShowEditModal] = useState(false); // State to manage the edit modal
     const [product, setProduct] = useState(productData); // State to store edited product data
   
-
+useEffect(()=>{
+console.log(product);
+}, []);
     // Function to receive data from the child component
   const updatedProducts = (data) => {
     setProduct(data);
@@ -48,8 +50,6 @@ const ProductCard_admin = ({productData}) => {
 
 
     const handleEditClick = () => {
-      // Show the edit modal and populate editedProduct with the product data
-      setProduct(product);
       setShowEditModal(true);
     };
  

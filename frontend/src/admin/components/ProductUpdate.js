@@ -6,7 +6,7 @@ import baseURL from '../../axiosConfig';
 
 const ProductUpdate = ({id, products, editedProduct}) => {
 
-  const [product, setProduct] = useState({});
+  const [product, setProduct] = useState([]);
   const [formData, setFormData] = useState({});
   const [imageFile, setImageFile] = useState([]);
 
@@ -33,10 +33,10 @@ const ProductUpdate = ({id, products, editedProduct}) => {
   }, [id]);
 
   useEffect(() => {
+    setProduct(products);
     // Fetch the product data using the id
     axios.get(`${baseURL}/api/products/${id}`)
       .then(response => {
-        setProduct(products);
         setFormData({
           name: response.data.name,
           price: response.data.price,
@@ -61,8 +61,23 @@ const ProductUpdate = ({id, products, editedProduct}) => {
   }, [id]);
 
   const handleFormChange = (e) => {
-    setProduct({ ...product, [e.target.name]: e.target.value });
-    console.log(formData)
+    const { name, value } = e.target;
+
+    if (name === 'category') {
+      // Find the category object based on the selected ID
+      const selectedCategory = categoryList.find((cat) => cat._id === value);
+  
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        category: selectedCategory,
+      }));
+    } else {
+      // For other form fields, update them as before
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        [name]: value,
+      }));
+    }
   };
 
 
@@ -75,7 +90,8 @@ const ProductUpdate = ({id, products, editedProduct}) => {
   };
 
   const handleSubmit = (e) => {
-    editedProduct(product)
+    
+    console.log(product);
     e.preventDefault();
     const formDataWithImage = new FormData();
     formDataWithImage.append('name', product.name);
@@ -98,13 +114,22 @@ const ProductUpdate = ({id, products, editedProduct}) => {
         console.log('formdata: ' + formData.category);
         console.log('Product updated:', response.data);
         setMessage('Product updated successfully');
+        
         // Perform any necessary actions after successful update
+        // Access the new image name from the API response
+    const updatedImage = response.data.image;
+
+    // Update the product state with the new image name
+    editedProduct({ ...product, image: updatedImage });
       })
+      
       .catch(error => {
         console.error('Error updating product:', error);
         setMessage('Error: Product was not updated');
         // Handle the error
       });
+      
+
   };
   console.log('Rendering ProductUpdate component');
   console.log('categoryList:', categoryList);
@@ -142,12 +167,12 @@ const ProductUpdate = ({id, products, editedProduct}) => {
               <img src={file} className="img-preview" alt="" />
             ) : (
               <img
-                src={`${baseURL}/api/products/images/${formData.image}`}
+                src={`${baseURL}/api/products/images/${product.image}`}
                 className="img-preview"
                 alt=""
               />
             )}
-            {!formData.image ? (<span className='preview-text'>Upload Image</span>) : ''}
+            {!product.image ? (<span className='preview-text'>Upload Image</span>) : ''}
 
           </label>
 
@@ -159,7 +184,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
             </div>
             <div className="col-6">
               <div className=" input-group">
-                <select className="custom-select form-control" id="inputGroupSelect01" name="category" value={formData.category || ''} onChange={handleFormChange} >
+                <select className="custom-select form-control" id="inputGroupSelect01" name="category" value={product.category ? product.category._id : ''} onChange={handleFormChange} >
                   <option selected>Select Category</option>
                   {categoryList.map(categoryList => (
                     <option value={categoryList._id}>{categoryList.name}</option>
@@ -171,13 +196,13 @@ const ProductUpdate = ({id, products, editedProduct}) => {
             <div className="col-6">
               <div className="input-group">
                 <span className="input-group-text">Stock</span>
-                <input type="number" className="form-control" name="stock" placeholder="Stock" value={formData.stock || ''} onChange={handleFormChange} />
+                <input type="number" className="form-control" name="stock" placeholder="Stock" value={product.stock || ''} onChange={handleFormChange} />
               </div>
             </div>
             <div className="col-6">
               <div className="input-group">
                 <span className="input-group-text">AED</span>
-                <input type="number" className="form-control" name="price" placeholder="Price" value={formData.price || ''} onChange={handleFormChange} />
+                <input type="number" className="form-control" name="price" placeholder="Price" value={product.price || ''} onChange={handleFormChange} />
               </div>
             </div>
             <div className="col-12">
@@ -188,11 +213,11 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                       <div className="btn-group">
                         <label htmlFor="vat" className='me-1'>VAT</label>
                         <div>
-                          <input type="radio" className="btn-check" id="vat-yes" name="vat" value="true" checked={formData.vat === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="vat-yes" name="vat" value="true" checked={product.vat === 'true'} onChange={handleFormChange} />
                           <label htmlFor="vat-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="vat-no" name="vat" value="false" checked={formData.vat === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="vat-no" name="vat" value="false" checked={product.vat === 'false'} onChange={handleFormChange} />
                           <label htmlFor="vat-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -206,11 +231,11 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                       <div className="btn-group">
                         <label htmlFor="sale" className='me-1'>Sale</label>
                         <div>
-                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={formData.sale === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={product.sale === 'true'} onChange={handleFormChange} />
                           <label htmlFor="sale-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={formData.sale === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={product.sale === 'false'} onChange={handleFormChange} />
                           <label htmlFor="sale-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -222,11 +247,11 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                       <div className="btn-group">
                         <label htmlFor="featured" className='me-1'>Featured</label>
                         <div>
-                          <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={formData.featured === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={product.featured === 'true'} onChange={handleFormChange} />
                           <label htmlFor="featured-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="featured-no" name="featured" value="false" checked={formData.featured === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="featured-no" name="featured" value="false" checked={product.featured === 'false'} onChange={handleFormChange} />
                           <label htmlFor="featured-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -240,11 +265,11 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                       <div className="btn-group">
                         <label htmlFor="disabled" className='me-1'>disabled</label>
                         <div>
-                          <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value="true" checked={formData.disabled === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value="true" checked={product.disabled === 'true'} onChange={handleFormChange} />
                           <label htmlFor="disabled-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="disabled-no" name="disabled" value="false" checked={formData.disabled === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="disabled-no" name="disabled" value="false" checked={product.disabled === 'false'} onChange={handleFormChange} />
                           <label htmlFor="disabled-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -254,7 +279,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
               </div>
             </div>
             {/* Additional fields displayed when 'Sale' is selected */}
-            {formData.sale === 'true' && (
+            {product.sale === 'true' && (
               <div>
                 <div className="col-6">
                   <div className="input-group">
