@@ -211,12 +211,12 @@ const Products_list = () => {
           <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
             {searching
               ? searchedProducts.map(product => (
-                  <ProductCard_admin key={product._id} product={product} />
+                  <ProductCard_admin key={product._id} productData={product} />
                 ))
               :
               
                 productList.map(product => (
-                  <ProductCard_admin key={product._id} product={product} />
+                  <ProductCard_admin key={product._id} productData={product} />
                 ))}
           </div>
         </div>

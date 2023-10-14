@@ -4,9 +4,8 @@ import { useParams } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
 
 
-const ProductUpdate = () => {
+const ProductUpdate = ({id, products, editedProduct}) => {
 
-  const { id } = useParams();
   const [product, setProduct] = useState({});
   const [formData, setFormData] = useState({});
   const [imageFile, setImageFile] = useState([]);
@@ -37,7 +36,7 @@ const ProductUpdate = () => {
     // Fetch the product data using the id
     axios.get(`${baseURL}/api/products/${id}`)
       .then(response => {
-        setProduct(response.data);
+        setProduct(products);
         setFormData({
           name: response.data.name,
           price: response.data.price,
@@ -62,7 +61,7 @@ const ProductUpdate = () => {
   }, [id]);
 
   const handleFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setProduct({ ...product, [e.target.name]: e.target.value });
     console.log(formData)
   };
 
@@ -76,10 +75,10 @@ const ProductUpdate = () => {
   };
 
   const handleSubmit = (e) => {
-
+    editedProduct(product)
     e.preventDefault();
     const formDataWithImage = new FormData();
-    formDataWithImage.append('name', formData.name);
+    formDataWithImage.append('name', product.name);
     formDataWithImage.append('price', formData.price);
     formDataWithImage.append('stock', formData.stock);
     formDataWithImage.append('category', formData.category);
@@ -132,7 +131,7 @@ const ProductUpdate = () => {
   };
   return (
 
-    <div>
+    <div className=''>
       <div className="container d-flex flex-fill justify-content-center pt-5">
         <form className="form mb-4" onSubmit={handleSubmit}>
 
@@ -155,7 +154,7 @@ const ProductUpdate = () => {
           <div className="row g-3 form-row form-group mb-3">
             <div className="col-6">
               <div className="form-holder">
-                <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name || ''} onChange={handleFormChange} />
+                <input type="text" name="name" className="form-control" placeholder="Name" value={product.name || ''} onChange={handleFormChange} />
               </div>
             </div>
             <div className="col-6">

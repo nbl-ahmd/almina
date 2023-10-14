@@ -199,7 +199,7 @@ const AddUser = () => {
       </div>
 
       {modalOpen && (
-        <div className="modal">
+        <div className="city-list modal">
           <div className="modal-wrapper p-4">
             <div className="d-flex justify-content-between">
               <h4>Select Cities</h4>

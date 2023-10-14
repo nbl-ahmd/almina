@@ -447,7 +447,7 @@ padding: 1rem 2rem;
     color: #fff;
 }
 /* Modal Styles */
-.modal {
+.city-list {
     position: fixed;
     top: 0;
     left: 0;
@@ -459,22 +459,22 @@ padding: 1rem 2rem;
     justify-content: center;
   }
 
-  .modal .bi{
+  .city-list .bi{
     color: #696cff;
     font-size: 1.5rem;
   }
-  .modal-wrapper{
+  .city-list  .modal-wrapper{
     background-color: #fff;
     border-radius: 0.5rem;
   }
-  .modal-content {
+  .city-list .modal-wrapper .modal-content {
     border: none;    
     max-width: 80vw;
     max-height: 80vh;
     overflow-y: scroll;
   }
   
-  .modal-content h4 {
+  .city-list .modal-wrapper .modal-content h4 {
     margin-top: 0;
   }
   

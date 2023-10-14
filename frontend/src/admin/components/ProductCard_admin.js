@@ -1,14 +1,23 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import product from './product';
 import { Link } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
 import DeleteConfirmation from './delete confirmation';
+import { Button, Modal } from 'react-bootstrap';
+import ProductUpdate from './ProductUpdate'
 
-const ProductCard_admin = ({product}) => {
+const ProductCard_admin = ({productData}) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false); // State to manage the delete modal
     const [productFilter, setProductFilter] = useState();
+    const [showEditModal, setShowEditModal] = useState(false); // State to manage the edit modal
+    const [product, setProduct] = useState(productData); // State to store edited product data
+  
 
+    // Function to receive data from the child component
+  const updatedProducts = (data) => {
+    setProduct(data);
+  }
 
 
 
@@ -38,7 +47,11 @@ const ProductCard_admin = ({product}) => {
     };
 
 
-
+    const handleEditClick = () => {
+      // Show the edit modal and populate editedProduct with the product data
+      setProduct(product);
+      setShowEditModal(true);
+    };
  
     
   return (
@@ -59,7 +72,7 @@ const ProductCard_admin = ({product}) => {
                   <div className="d-flex justify-content-between">
                   <span className='category-name text-pb fw-400 text-small'>{product.category.name}</span>
                 
-                  <span className="product-price">AED {product.vat ? (parseFloat((product.price + ((product.price / 100) * 5)).toFixed(2))) : product.price}</span>
+                  <span className="product-price">AED {product.price}</span>
                   </div>
 
                 <h6 className="fw-500 mt-1 overflow product-name">{product.name}</h6>
@@ -76,9 +89,10 @@ const ProductCard_admin = ({product}) => {
                     </span>
                       </div></div>
                       <div className=' d-flex  '>
-                        <Link to = {`/admin/productlist/update/${product._id}`} className="btn  btn-sm d-flex"  ><i className="bi bi-pen  pe-2 text-pg text-sm"></i>
-                      <span className='text-pg text-sm'>Edit</span>
-                      </Link>
+                      <button className="btn btn-sm d-flex" onClick={handleEditClick}>
+                  <i className="bi bi-pen pe-2 text-pg text-sm"></i>
+                  <span className="text-pg text-sm">Edit</span>
+                </button>
                       </div>
                  </div>
                 </div>
@@ -94,6 +108,25 @@ const ProductCard_admin = ({product}) => {
         type="product"
         message="Are you sure you want to delete this product?"
       />
+
+
+       {/* Render the Edit Modal */}
+       <Modal show={showEditModal} fullscreen={true} onHide={() => setShowEditModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Product</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <ProductUpdate id = {product._id} products = {product}  editedProduct = {updatedProducts}/>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+              Close
+            </Button>
+            {/* Add a Save button to save the edited product */}
+          </Modal.Footer>
+        </Modal>
+
+        
           </div>
    </div>
     
