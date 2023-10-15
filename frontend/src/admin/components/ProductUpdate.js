@@ -62,6 +62,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
+    console.log(e.target.value);
 
     if (name === 'category') {
       // Find the category object based on the selected ID
@@ -73,11 +74,13 @@ const ProductUpdate = ({id, products, editedProduct}) => {
       }));
     } else {
       // For other form fields, update them as before
-      setProduct((prevProduct) => ({
-        ...prevProduct,
-        [name]: value,
-      }));
-    }
+    const updatedValue = name === 'vat' || name === 'sale' || name === 'featured' || name === 'disabled' ? value === 'true' : value;
+    
+    setProduct((prevProduct) => ({
+      ...prevProduct,
+      [name]: updatedValue,
+    }));
+  }
   };
 
 
@@ -97,7 +100,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
     formDataWithImage.append('name', product.name);
     formDataWithImage.append('price', product.price);
     formDataWithImage.append('stock', product.stock);
-    formDataWithImage.append('category', product.category);
+    formDataWithImage.append('category', product.category._id);
     formDataWithImage.append('vat', product.vat);
     formDataWithImage.append('sale', product.sale);
     formDataWithImage.append('featured', product.featured);
@@ -205,19 +208,19 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                 <input type="number" className="form-control" name="price" placeholder="Price" value={product.price || ''} onChange={handleFormChange} />
               </div>
             </div>
-            <div className="col-12">
+            <div className="col-12 mt-5">
               <div className="container">
-                <div className="row">
-                  <div className="col-4">
+                <div className="row g-4">
+                  <div className="col-6 mb-3">
                     <div className="input-group">
                       <div className="btn-group">
-                        <label htmlFor="vat" className='me-1'>VAT</label>
+                        <label htmlFor="vat" className='col-form-label me-3'>VAT</label>
                         <div>
-                          <input type="radio" className="btn-check" id="vat-yes" name="vat" value="true" checked={product.vat === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="vat-yes" name="vat" value={true} checked={product.vat === true} onChange={handleFormChange} />
                           <label htmlFor="vat-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="vat-no" name="vat" value="false" checked={product.vat === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="vat-no" name="vat" value={false} checked={product.vat === false} onChange={handleFormChange} />
                           <label htmlFor="vat-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -225,33 +228,33 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
                   </div>
 
-                  <div className="col-4">
+                  <div className="col-6 mb-3">
 
                     <div className="input-group">
                       <div className="btn-group">
-                        <label htmlFor="sale" className='me-1'>Sale</label>
+                        <label htmlFor="sale" className='col-form-label me-3'>Sale</label>
                         <div>
-                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={product.sale === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={product.sale === true} onChange={handleFormChange} />
                           <label htmlFor="sale-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={product.sale === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={product.sale === false} onChange={handleFormChange} />
                           <label htmlFor="sale-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="col-4">
+                  <div className="col-6 mb-3">
 
                     <div className="input-group">
                       <div className="btn-group">
-                        <label htmlFor="featured" className='me-1'>Featured</label>
+                        <label htmlFor="featured" className='col-form-label me-3'>Featured</label>
                         <div>
-                          <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={product.featured === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={product.featured === true} onChange={handleFormChange} />
                           <label htmlFor="featured-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="featured-no" name="featured" value="false" checked={product.featured === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="featured-no" name="featured" value="false" checked={product.featured === false} onChange={handleFormChange} />
                           <label htmlFor="featured-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -259,17 +262,17 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                   </div>
 
 
-                  <div className="col-4">
+                  <div className="col-6 mb-3">
 
                     <div className="input-group">
                       <div className="btn-group">
-                        <label htmlFor="disabled" className='me-1'>disabled</label>
+                        <label htmlFor="disabled" className='col-form-label me-3'>disabled</label>
                         <div>
-                          <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value="true" checked={product.disabled === 'true'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value={true} checked={product.disabled === true} onChange={handleFormChange} />
                           <label htmlFor="disabled-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="disabled-no" name="disabled" value="false" checked={product.disabled === 'false'} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="disabled-no" name="disabled" value= {false} checked={product.disabled === false} onChange={handleFormChange} />
                           <label htmlFor="disabled-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -279,7 +282,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
               </div>
             </div>
             {/* Additional fields displayed when 'Sale' is selected */}
-            {product.sale === 'true' && (
+            {product.sale === true && (
               <div>
                 <div className="col-6">
                   <div className="input-group">
