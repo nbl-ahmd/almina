@@ -95,13 +95,13 @@ const ProductUpdate = ({id, products, editedProduct}) => {
     e.preventDefault();
     const formDataWithImage = new FormData();
     formDataWithImage.append('name', product.name);
-    formDataWithImage.append('price', formData.price);
-    formDataWithImage.append('stock', formData.stock);
-    formDataWithImage.append('category', formData.category);
-    formDataWithImage.append('vat', formData.vat);
-    formDataWithImage.append('sale', formData.sale);
-    formDataWithImage.append('featured', formData.featured);
-    formDataWithImage.append('disabled', formData.disabled);
+    formDataWithImage.append('price', product.price);
+    formDataWithImage.append('stock', product.stock);
+    formDataWithImage.append('category', product.category);
+    formDataWithImage.append('vat', product.vat);
+    formDataWithImage.append('sale', product.sale);
+    formDataWithImage.append('featured', product.featured);
+    formDataWithImage.append('disabled', product.disabled);
     if (imageFile) {
       console.log(imageFile);
       formDataWithImage.append('image', imageFile);
