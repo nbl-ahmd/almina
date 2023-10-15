@@ -210,11 +210,11 @@ const ProductUpdate = ({id, products, editedProduct}) => {
             </div>
             <div className="col-12 mt-5">
               <div className="container">
-                <div className="row g-4">
-                  <div className="col-6 mb-3">
-                    <div className="input-group">
+                <div className="row">
+                  <div className="col-6 ">
+                    <div className="form-group mb-3">
+                        <label htmlFor="vat" className='mb-2'>VAT</label>
                       <div className="btn-group">
-                        <label htmlFor="vat" className='col-form-label me-3'>VAT</label>
                         <div>
                           <input type="radio" className="btn-check" id="vat-yes" name="vat" value={true} checked={product.vat === true} onChange={handleFormChange} />
                           <label htmlFor="vat-yes" className="btn btn-outline-primary me-1">Yes</label>
@@ -230,9 +230,9 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
                   <div className="col-6 mb-3">
 
-                    <div className="input-group">
-                      <div className="btn-group">
+                    <div className="form-group mb-3">
                         <label htmlFor="sale" className='col-form-label me-3'>Sale</label>
+                      <div className="btn-group">
                         <div>
                           <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={product.sale === true} onChange={handleFormChange} />
                           <label htmlFor="sale-yes" className="btn btn-outline-primary me-1">Yes</label>
@@ -246,9 +246,9 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                   </div>
                   <div className="col-6 mb-3">
 
-                    <div className="input-group">
-                      <div className="btn-group">
+                    <div className="form-group mb-3">
                         <label htmlFor="featured" className='col-form-label me-3'>Featured</label>
+                      <div className="btn-group">
                         <div>
                           <input type="radio" className="btn-check" id="featured-yes" name="featured" value="true" checked={product.featured === true} onChange={handleFormChange} />
                           <label htmlFor="featured-yes" className="btn btn-outline-primary me-1">Yes</label>
@@ -264,9 +264,9 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
                   <div className="col-6 mb-3">
 
-                    <div className="input-group">
-                      <div className="btn-group">
+                    <div className="form-group mb-3">
                         <label htmlFor="disabled" className='col-form-label me-3'>disabled</label>
+                      <div className="btn-group">
                         <div>
                           <input type="radio" className="btn-check" id="disabled-yes" name="disabled" value={true} checked={product.disabled === true} onChange={handleFormChange} />
                           <label htmlFor="disabled-yes" className="btn btn-outline-primary me-1">Yes</label>
