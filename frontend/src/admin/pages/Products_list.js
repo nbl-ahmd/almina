@@ -129,7 +129,7 @@ const Products_list = () => {
       });
       const data = response.data;
 
-      if (offset == 0){
+      if (offset === 0){
         setProductList(data);
         setOffset(prevOffset => prevOffset + limit);
       }else{
