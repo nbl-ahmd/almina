@@ -497,3 +497,27 @@ padding: 1rem 2rem;
     line-height: 1.2;
     font-size: 0.9rem;
 }
+
+
+
+.admin-product-image{
+    border-radius: 0.6rem;
+    object-fit: cover;
+    background-color: #E1F0F8;
+    box-shadow: 0px 0px 7px 0px #e1f4f8;
+
+}     
+    
+.admin-products{
+    height: 100%;
+}
+.admin-products:hover{
+    box-shadow: 0px 0px 6px 0px #b9c8f8c4;
+    border-radius: 5px;
+
+}
+
+.admin-products .card-product{
+    display: flex;
+    flex-direction: column;
+}

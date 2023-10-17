@@ -56,30 +56,33 @@ console.log(product);
     
   return (
   <div className="admin p-0">
-   <div className="p-1 p-md-2">
-   <div className="products p-2">
+   <div className="p-1 p-md-2 h-100">
+   <div className="admin-products p-2">
             <div className=" card-product">
            {product.sale?( <div className="text-center position-relative">
                   <div className=" position-absolute top-0 start-0">
                     <span className="badge">Sale</span>
                   </div>
                   </div>): ''}
-            <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid product-image"  />
-              <div className="px-2 pt-3">
+            <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid admin-product-image"  />
+              <div className="pt-3 product-details-card">
                
                 <div className="mb-1">
                   
                   <div className="d-flex justify-content-between">
                   <span className='category-name text-pb fw-400 text-small'>{product.category.name}</span>
                 
-                  <span className="product-price">AED {product.price}</span>
+                  
                   </div>
 
                 <h6 className="fw-500 mt-1 overflow product-name">{product.name}</h6>
+                <div className="">
+                
+                </div>
                 </div>
                
                 <div className="">
-                  
+                <span className="product-price">AED {product.price}</span>
                  <div className='d-flex justify-content-between'>
                  <div className=' d-flex  align-items-center rounded-1'>
                   <div className="btn  btn-sm text-pr d-flex p-0 text-sm d-flex align-items-center" onClick={() => deleteProduct(product._id)}>

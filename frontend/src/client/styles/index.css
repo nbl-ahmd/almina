@@ -446,6 +446,8 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 
 .card-product {
   background-color: transparent;
+  height: 100%;
+  border: 0;
 }
 
 .product-image {
@@ -1018,4 +1020,8 @@ input[type="radio"].btn-check:checked+label.btn.payment-card i {
   font-size: 1.4rem;
   color: white;
   font-weight: bold;
+}
+
+footer{
+  background-color: #131c25;
 }
