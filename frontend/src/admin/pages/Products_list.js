@@ -152,7 +152,6 @@ const Products_list = () => {
     <>
     
     <div id="scrollableDiv">
-    
       <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
         next={searching ? search : fetchProducts}
