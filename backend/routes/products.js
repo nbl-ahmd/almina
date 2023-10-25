@@ -365,6 +365,18 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
     if (req.body.disabled) {
       updateFields.disabled = req.body.disabled === 'true';
     }
+    if (req.body.saleType) {
+      updateFields.saleType = req.body.saleType;
+    }
+    if (req.body.salePrice) {
+      updateFields.salePrice = req.body.salePrice;
+    }
+    if (req.body.salePercent) {
+      updateFields.salePercent = req.body.salePercent;
+    }
+    if (req.body.saleBadge) {
+      updateFields.saleBadge = req.body.saleBadge;
+    }
 
     if (req.file) {
       const image = req.file;

@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/local-auth": "^2.1.0",
+    "@react-email/render": "^0.0.7",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -28,6 +29,7 @@
     "multer": "^1.4.5-lts.1",
     "nanoid": "^4.0.2",
     "node-fetch": "^2.6.1",
+    "nodemailer": "^6.9.7",
     "randomcolor": "^0.6.2",
     "redis": "^4.6.7",
     "sharp": "^0.32.1",

@@ -58,6 +58,18 @@ const orderSchema = new mongoose.Schema({
       type: String,
      
     },
+    totalSalePrice: {
+      type: Number,
+      required: true
+    },
+    totalVat: {
+      type: Number,
+      required: false
+    },
+    totalAmount: {
+      type: Number,
+      required: true
+    },
 
   },
   cartItems: [

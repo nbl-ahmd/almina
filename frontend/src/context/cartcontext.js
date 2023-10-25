@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { createContext, useEffect, useState } from 'react';
 import baseURL from '../axiosConfig';
+import { render } from '@react-email/render';
+import OrderConfirmation from '../email/OrderConfirmation';
 
 export const CartContext = createContext();
 
@@ -12,6 +14,7 @@ export const CartProvider = ({ children }) => {
   });
 
   const [totalPrice, setTotalPrice] = useState(0);
+  const [totalSalePrice, setTotalSalePrice] = useState(0);
   const [totalVatPrice, setTotalVatPrice] = useState(0);
   const [totalVat, setTotalVat] = useState(0);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -21,6 +24,7 @@ export const CartProvider = ({ children }) => {
     calculateTotalPrice();
     calculateTotalVatPrice();
     calculateTotalVat();
+    calculateTotalSalePrice();
   }, [cartItems]);
 
   const calculateTotalPrice = () => {
@@ -31,11 +35,19 @@ export const CartProvider = ({ children }) => {
     setTotalPrice(totalPrice);
     console.log("total price: " + totalPrice);
   };
+  const calculateTotalSalePrice = () => {
+    let totalSalePrice = 0;
+    cartItems.forEach((item) => {
+      totalSalePrice += (item.salePrice?item.salePrice:item.price) * item.quantity;
+    });
+    setTotalSalePrice(totalSalePrice);
+    console.log("total Sale price: " + totalSalePrice);
+  };
 
   const calculateTotalVat = () => {
     let totalVat = 0;
     cartItems.forEach((item) => {
-      const itemVat = item.vat ? (item.price / 100) * 5 : 0;
+      const itemVat = item.vat ? ((item.salePrice ? item.salePrice: item.price) / 100) * 5 : 0;
       const vat = itemVat * item.quantity;
       totalVat += vat;
     });
@@ -70,7 +82,10 @@ export const CartProvider = ({ children }) => {
     note: '',
     payment: '',
     maplink: '',
-    totalprice: totalPrice
+    totalprice: totalPrice,
+    totalSalePrice : totalSalePrice,
+    totalVat: totalVat,
+    totalAmount: totalSalePrice,
   });
 
   const handleQuantityChange = async (event, item) => {
@@ -116,7 +131,7 @@ export const CartProvider = ({ children }) => {
       const response = await axios.get(`${baseURL}/api/store/status`);
       const storeStatus = response.data.status;
   console.log(storeStatus);
-      if (storeStatus === 'closed') {
+      if (storeStatus === 'lclosed') {
         alert('The store is currently closed. You cannot add items to your cart.');
         return;
       }
@@ -192,16 +207,35 @@ export const CartProvider = ({ children }) => {
         note: customerInfo.note,
         payment: customerInfo.payment,
         totalprice: totalPrice,
-        maplink: customerInfo.maplink
+        totalSalePrice: totalSalePrice,
+        maplink: customerInfo.maplink,
+        totalVat: totalVat,
+        totalAmount:customerInfo.totalAmount,
+        
 
 
 
       },
-      cartItems: cartItems
+      cartItems: cartItems,
+      
     };
+    
 
+  
+    //  axios.post(`${baseURL}/api/orders/email`,{ htmlContent: html })
+    //  .then((response) => {
+    // //   // Handle the response from the server if needed
+    // //   console.log(html);
+    // //   console.log('Email sent successfully:', response.data);
+    //  })
+    //  .catch((error) => {
+    //    // Handle the error if needed
+    //    console.error('Error sending email:', error);
+    //  });
+  
     // Send a POST request to your MongoDB server to save the order data
     console.log(orderData);
+    
     axios
       .post(`${baseURL}/api/orders`, orderData)
       .then((response) => {
@@ -209,9 +243,31 @@ export const CartProvider = ({ children }) => {
         console.log('Order saved successfully:', response.data);
         const orderId = response.data.orderId;
 
+        const html = render(<OrderConfirmation order = {response.data} />, {
+          pretty: true,
+        });
+
+        const emailData = {
+          recipient: response.data.customer.email, // Include the orderData
+          htmlContent: html, // Include the rendered email template
+        };
+        axios.post(`${baseURL}/api/orders/email`,emailData)
+     .then((response) => {
+    //   // Handle the response from the server if needed
+    //   console.log(html);
+    //   console.log('Email sent successfully:', response.data);
+     })
+     .catch((error) => {
+       // Handle the error if needed
+       console.error('Error sending email:', error);
+     });
+  
+
         // Set the order ID in the orderModal state
         setOrderModal(orderId);
         console.log('id' +ordermodal);
+     
+        console.log(html);
         // // Clear the cart and customer information after successful upload
          setCartItems([]);
          setCustomerInfo({
@@ -221,7 +277,7 @@ export const CartProvider = ({ children }) => {
            address: ''
          });
          localStorage.removeItem('cartItems');
-        
+     
       })
       .catch((error) => {
         // Handle the error if needed
@@ -240,9 +296,11 @@ export const CartProvider = ({ children }) => {
         customerInfo,
         handleCheckout,
         totalPrice,
+        totalSalePrice,
         totalVatPrice,
         totalVat,
-        setCustomerInfo
+        setCustomerInfo,
+        
       }}
     >
 {}

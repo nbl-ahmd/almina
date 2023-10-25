@@ -26,12 +26,16 @@ const Products = () => {
   const [category, setCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [toggleFilter, setToggleFilter]= useState(true);
+  const [showLoadMoreButton, setShowLoadMoreButton]= useState(false);
   const location = useLocation();
+
 
  
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory]);
+
+
   useEffect(() => {
     axios
       .get(`${baseURL}/api/category`)
@@ -46,13 +50,15 @@ const Products = () => {
     const searchParams = new URLSearchParams(location.search);
     const newSearchQuery = searchParams.get('q');
     setSearchQuery(newSearchQuery || '');
-    setOffset(0); // Reset offset when search query changes
+    setSearchOffset(0); // Reset offset when search query changes
+    console.log("1  ..... " +searchQuery);
   }, [location.search]);
 
   useEffect(() => {
     if (searchQuery) {
       search();
       setSearching(true);
+      console.log("2 ...." +searchQuery);
     } else {
       setSearchedProducts([]);
       setSearching(false);
@@ -63,9 +69,10 @@ const Products = () => {
 
 
   const search = async () => {
+    console.log("search offset" + searchOffset)
     try{
-      const searchParams = new URLSearchParams(location.search);
-    const searchQuery = searchParams.get('q');
+    console.log("search ...." +searchQuery);
+;
     const response = await axios.get(
       `${baseURL}/api/products/search?`, {
         params: {
@@ -83,17 +90,23 @@ const Products = () => {
       // }`
     
     const searchResults = response.data;
-    
-    console.log(searchResults.length);
-    console.log("offset" + searchOffset);
+   ;
 
 
-    setSearchedProducts(prevItems => [...prevItems, ...searchResults]);
+    if (searchOffset === 0){
+      setSearchedProducts(searchResults);
+      setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+      setLoaded(false);
+      setFetchingMore(true);
+      
+    }else{
+      setSearchedProducts(prevItems => [...prevItems, ...searchResults]);
     setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+    }
 
       
     // setSearchedProducts(searchResults);
-    console.log(limit);
+   
 
     if (searchResults.length < limit) {
       setLoaded(true);
@@ -112,6 +125,7 @@ const Products = () => {
     setLoaded(false); // Reset loaded state before fetching more products
     setIsLoading(true);
     setError(null);
+    setShowLoadMoreButton(false);
     let filter
     if (selectedCategory){
        filter = {"category": selectedCategory, "disabled": false };
@@ -132,7 +146,7 @@ const Products = () => {
       });
       const data = response.data;
 
-      if (offset == 0){
+      if (offset === 0){
         setProductList(data);
         setOffset(prevOffset => prevOffset + limit);
       }else{
@@ -165,10 +179,10 @@ const Products = () => {
     
     <InfiniteScroll
       dataLength={searching ? searchedProducts.length : productList.length}
-      next={searching ? search : fetchProducts}
+      next={searching ? search : ()=>{setShowLoadMoreButton(true)}}
       hasMore={searching ? !loaded && fetchingMore : !loaded} // Use both loaded and fetchingMore conditions
-      loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...' : 'No more data to load.'}</p>}
-      endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
+      loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...': null }</p>}
+      endMessage={<p className='pb-3 text-center'>No more data to load.</p> }
     
     >
       <div className="container ">
@@ -230,6 +244,11 @@ const Products = () => {
               ))}
         </div>
       </div>
+      {showLoadMoreButton && ( // Content rendered when fetchingMore is false
+          <div className="text-center">
+            <button className="btn btn-sm btn-outline-dark" onClick={fetchProducts}>Load More</button>
+          </div>
+        )}
     </InfiniteScroll> 
   </div>
     

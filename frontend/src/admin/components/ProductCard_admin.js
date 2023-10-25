@@ -61,7 +61,7 @@ console.log(product);
             <div className=" card-product">
            {product.sale?( <div className="text-center position-relative">
                   <div className=" position-absolute top-0 start-0">
-                    <span className="badge">Sale</span>
+                    <span className="badge bg-success">Sale</span>
                   </div>
                   </div>): ''}
             <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid admin-product-image"  />

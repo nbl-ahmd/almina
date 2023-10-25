@@ -2,6 +2,7 @@ const express = require('express');
 const Orderrouter = express.Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const nodemailer = require('nodemailer');
 
 // Function to generate a unique order ID
 async function generateOrderID() {
@@ -44,6 +45,42 @@ Orderrouter.post('/', async (req, res) => {
   }
   
 });
+
+
+Orderrouter.post('/email', async (req, res) => {
+  try {
+
+    console.log(req.body.html);
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.office365.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'info@alminapharmacy.com',
+      pass: 'Mina@online',
+    },
+    tls: {
+      // do not fail on invalid certs
+      rejectUnauthorized: false,
+    },
+  });
+  const { recipient, htmlContent } = req.body;
+  
+  const options = {
+    from: 'info@alminapharmacy.com',
+    to: recipient,
+    subject: 'Your order has been placed successfully',
+    html: htmlContent,
+  };
+  
+  await transporter.sendMail(options);
+}
+catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Failed to send mail' });
+}
+
+})
 
 Orderrouter.get('/', (req, res) => {
   Order.find().populate('cartItems._id')

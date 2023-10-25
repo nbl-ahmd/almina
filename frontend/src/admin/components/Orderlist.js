@@ -177,7 +177,7 @@ const OrderList = () => {
                           <span className="badge bg-faded-success text-pb p-2">{order.customer.payment}</span>
                         </td>
                         <td>{order.customer.note}</td>
-                        <td>{order.customer.totalprice}</td>
+                        <td>{order.customer.totalAmount}</td>
                         <td>
                           {!order.dispatched && (
                             <button className="btn btn-primary btn-sm" onClick={() => handleDispatchOrder(order._id)}>
@@ -211,7 +211,14 @@ const OrderList = () => {
                                     <img className="rounded-1" src={`${baseURL}/api/products/images/${cartItem._id.image}`} width="60" alt={cartItem._id.name} />
                                   </td>
                                   <td>{cartItem._id.name}</td>
+                                  {cartItem._id.salePrice ?
+                                  <>
+                                  <td className=''><span className='text-strike me-2'>{cartItem._id.price}</span>{cartItem._id.salePrice}</td>
+                                  </>
+                                  
+                                  :
                                   <td>{cartItem._id.price}</td>
+}
                                   <td>{cartItem.quantity}</td>
                                 </tr>
                               ))}

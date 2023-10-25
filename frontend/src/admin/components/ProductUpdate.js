@@ -16,9 +16,13 @@ const ProductUpdate = ({id, products, editedProduct}) => {
   const [file, setFile] = useState('');
 
 
-  const [salePrice, setSalePrice] = useState('');
-  const [offerPercentage, setOfferPercentage] = useState('');
+  const [salePrice, setSalePrice] = useState(0);
+  const [offerPercentage, setOfferPercentage] = useState(formData.offerPercentage || 0);
   const [pageText, setPageText] = useState('');
+  const [saleType, setSaleType] = useState('price_cut');
+  const [displaySaleText, setDisplaySaleText] = useState('');
+
+
 
   useEffect(() => {
 
@@ -48,8 +52,9 @@ const ProductUpdate = ({id, products, editedProduct}) => {
           image: response.data.image,
           disabled: String(response.data.disabled),
           salePrice: response.data.salePrice,
-          offerPercentage: response.data.offerPercentage,
-          pageText: response.data.pageText,
+          salePercent: response.data.salePercent,
+          saleBadge: response.data.saleBadge,
+          saleType: response.data.saleType,
 
         });
         setFile(`${baseURL}/api/products/images/${response.data.image}`);
@@ -60,9 +65,15 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
   }, [id]);
 
+
+
   const handleFormChange = (e) => {
+
+    
+
     const { name, value } = e.target;
-    console.log(e.target.value);
+    console.log(product);
+
 
     if (name === 'category') {
       // Find the category object based on the selected ID
@@ -72,14 +83,47 @@ const ProductUpdate = ({id, products, editedProduct}) => {
         ...prevProduct,
         category: selectedCategory,
       }));
-    } else {
+    } 
+    else if (name === 'salePercent'){
+      const percentage = parseFloat(e.target.value);
+      setOfferPercentage(percentage);
+      
+    
+      // Calculate the new offer value by deducting the percentage from the original price
+      const originalPrice = product.price;
+      const discountAmount = (originalPrice * percentage) / 100;
+      const newOfferValue = originalPrice - discountAmount;
+    
+      // Update the product form data with the new offer value
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        salePercent: percentage,
+        salePrice: Number(newOfferValue.toFixed(2)),
+
+        saleBadge: percentage + '% offer',
+        
+      }));
+    }
+    else if(name === 'saleBadge'){
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        salePercent: 0,
+        salePrice: 0,
+        saleBadge: e.target.value,
+        
+      }));
+    }
+   
+    else {
       // For other form fields, update them as before
     const updatedValue = name === 'vat' || name === 'sale' || name === 'featured' || name === 'disabled' ? value === 'true' : value;
-    
-    setProduct((prevProduct) => ({
-      ...prevProduct,
-      [name]: updatedValue,
-    }));
+  
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        [name]: updatedValue,
+        saleBadge: displaySaleText,
+      }));
+
   }
   };
 
@@ -105,6 +149,10 @@ const ProductUpdate = ({id, products, editedProduct}) => {
     formDataWithImage.append('sale', product.sale);
     formDataWithImage.append('featured', product.featured);
     formDataWithImage.append('disabled', product.disabled);
+    formDataWithImage.append('salePrice', product.salePrice);
+    formDataWithImage.append('salePercent', product.salePercent);
+    formDataWithImage.append('saleBadge', product.saleBadge);
+    formDataWithImage.append('saleType', product.saleType);
     if (imageFile) {
       console.log(imageFile);
       formDataWithImage.append('image', imageFile);
@@ -140,23 +188,26 @@ const ProductUpdate = ({id, products, editedProduct}) => {
   console.log('formData:', formData);
   console.log('imageFile:', imageFile);
   console.log('file:', file);
-  const handleSaleChange = (e) => {
-    const isSale = e.target.value === 'true';
-    setFormData({ ...formData, sale: String(isSale) });
-  };
+  
+  // const handleOfferPercentageChange = (e) => {
+  //   const percentage = parseFloat(e.target.value);
+  //   setOfferValue(percentage);
+  
+  //   // Calculate the new offer value by deducting the percentage from the original price
+  //   const originalPrice = parseFloat(formData.price);
+  //   const discountAmount = (originalPrice * percentage) / 100;
+  //   const newOfferValue = originalPrice - discountAmount;
+  
+  //   // Update the product form data with the new offer value
+  //   setFormData((prevFormData) => ({
+  //     ...prevFormData,
+  //     offerPercentage: percentage,
+  //     salePrice: newOfferValue.toFixed(2), // Save the new offer value
+  //   }));
+  // };
+  
 
 
-  const handleSalePriceChange = (e) => {
-    setSalePrice(e.target.value);
-  };
-
-  const handleOfferPercentageChange = (e) => {
-    setOfferPercentage(e.target.value);
-  };
-
-  const handlePageTextChange = (e) => {
-    setPageText(e.target.value);
-  };
   return (
 
     <div className=''>
@@ -234,11 +285,29 @@ const ProductUpdate = ({id, products, editedProduct}) => {
                         <label htmlFor="sale" className='col-form-label me-3'>Sale</label>
                       <div className="btn-group">
                         <div>
-                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={product.sale === true} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="sale-yes" name="sale" value="true" checked={product.sale === true} onChange={(e)=>{
+                  const isSale = e.target.value === 'true';
+                  setFormData({ ...formData, sale: String(isSale) });
+                  // Reset sale-specific fields when the sale option changes
+                  setSaleType('');
+                  setSalePrice(0);
+                  setDisplaySaleText('');
+                  console.log("Dsads");
+                  handleFormChange(e);
+                }} />
                           <label htmlFor="sale-yes" className="btn btn-outline-primary me-1">Yes</label>
                         </div>
                         <div>
-                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={product.sale === false} onChange={handleFormChange} />
+                          <input type="radio" className="btn-check" id="sale-no" name="sale" value="false" checked={product.sale === false} onChange={(e)=>{
+                  const isSale = e.target.value === 'true';
+                  setFormData({ ...formData, sale: String(isSale) });
+                  // Reset sale-specific fields when the sale option changes
+                  setSaleType('');
+                  setSalePrice(0);
+                  setDisplaySaleText('');
+                  console.log("Dsads");
+                  handleFormChange(e);
+                }} />
                           <label htmlFor="sale-no" className="btn btn-outline-primary">No</label>
                         </div>
                       </div>
@@ -282,27 +351,87 @@ const ProductUpdate = ({id, products, editedProduct}) => {
               </div>
             </div>
             {/* Additional fields displayed when 'Sale' is selected */}
-            {product.sale === true && (
-              <div>
+            {product.sale && (
+            <div>
+              <div className="col-6 mb-3">
+                <div className="form-group mb-3">
+                  <label className="col-form-label me-3">Sale Type</label>
+                  <select
+                    className="form-select"
+                    name="saleType"
+                    value={product.saleType}
+                    onChange={(e)=>{
+                      handleFormChange(e);
+                      setSaleType(e.target.value);
+                    }}
+                  >
+                    <option value="price_cut">Price Cut</option>
+                    <option value="percentage_offer">Percentage Offer</option>
+                    <option value="combo_offer">Combo Offer</option>
+                  </select>
+                </div>
+              </div>
+              {saleType === 'price_cut' && (
                 <div className="col-6">
                   <div className="input-group">
                     <span className="input-group-text">Sale Price</span>
-                    <input type="number" className="form-control" name="salePrice" placeholder="Sale Price" value={salePrice} onChange={handleSalePriceChange} />
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="salePrice"
+                      placeholder="Sale Price"
+                      value={product.salePrice}
+                      onChange={(e)=>{
+                        handleFormChange(e);
+                        setSalePrice(e.target.value);
+                      setDisplaySaleText('sale')
+                        
+                      }}
+                    />
                   </div>
                 </div>
+              )}
+              {saleType === 'percentage_offer' && (
                 <div className="col-6">
-                  <div className="input-group">
-                    <span className="input-group-text">Offer Percentage</span>
-                    <input type="number" className="form-control" name="offerPercentage" placeholder="Offer Percentage" value={offerPercentage} onChange={handleOfferPercentageChange} />
-                  </div>
+                <div className="input-group">
+                  <span className="input-group-text">Offer Percentage</span>
+                  <input
+                    type="number"
+                    className="form-control"
+                    name="salePercent"
+                    placeholder="Offer Percentage"
+                    value={product.salePercent}
+                    onChange={(e)=>{
+                      handleFormChange(e);
+                      setOfferPercentage(e.target.value);
+                      setSalePrice(e.target.value);
+                    }}
+                  />
                 </div>
+                {product.sale && (
+                  <p className="text-muted">Calculated Offer Value: AED {product.salePrice || 'enter percentage to calculate'}</p>
+                )}
+              </div>
+              )}
+              {saleType === 'combo_offer' && (
                 <div className="col-12">
                   <div className="form-holder">
-                    <input type="text" name="pageText" className="form-control" placeholder="Page Text" value={pageText} onChange={handlePageTextChange} />
+                    <input
+                      type="text"
+                      name="saleBadge"
+                      className="form-control"
+                      placeholder="Page Text"
+                      value={product.saleBadge}
+                      onChange={(e)=>{
+                        handleFormChange(e);
+                        setDisplaySaleText(e.target.value);
+                      }}
+                    />
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
           </div>
           <div className="d-flex align-items-center">

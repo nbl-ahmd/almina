@@ -107,7 +107,7 @@ categoryRouter.post('/', upload.single('image'), async (req, res) => {
 
 
 categoryRouter.get('/', async (req, res) => {
-    const categoryList = await Category.find();
+    const categoryList = await Category.find().sort({ name: 1 });
 
     if (!categoryList) {
         res.status(500).json({ succes: false })

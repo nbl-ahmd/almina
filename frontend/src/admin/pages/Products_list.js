@@ -43,13 +43,15 @@ const Products_list = () => {
     const searchParams = new URLSearchParams(location.search);
     const newSearchQuery = searchParams.get('q');
     setSearchQuery(newSearchQuery || '');
-    setOffset(0); // Reset offset when search query changes
+    setSearchOffset(0); // Reset offset when search query changes
+    console.log("1  ..... " +searchQuery);
   }, [location.search]);
 
   useEffect(() => {
     if (searchQuery) {
       search();
       setSearching(true);
+      console.log("2 ...." +searchQuery);
     } else {
       setSearchedProducts([]);
       setSearching(false);
@@ -58,11 +60,11 @@ const Products_list = () => {
 
 
 
-
   const search = async () => {
+    console.log("search offset" + searchOffset)
     try{
-      const searchParams = new URLSearchParams(location.search);
-    const searchQuery = searchParams.get('q');
+    console.log("search ...." +searchQuery);
+;
     const response = await axios.get(
       `${baseURL}/api/products/search?`, {
         params: {
@@ -80,17 +82,23 @@ const Products_list = () => {
       // }`
     
     const searchResults = response.data;
-    
-    console.log(searchResults.length);
-    console.log("offset" + searchOffset);
+   ;
 
 
-    setSearchedProducts(prevItems => [...prevItems, ...searchResults]);
+    if (searchOffset === 0){
+      setSearchedProducts(searchResults);
+      setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+      setLoaded(false);
+      setFetchingMore(true);
+      
+    }else{
+      setSearchedProducts(prevItems => [...prevItems, ...searchResults]);
     setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+    }
 
       
     // setSearchedProducts(searchResults);
-    console.log(limit);
+   
 
     if (searchResults.length < limit) {
       setLoaded(true);

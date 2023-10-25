@@ -19,6 +19,7 @@ const productSchema = new mongoose.Schema({
     salePrice: { type: Number, required: false },
     salePercent: {type: Number, required: false},
     saleBadge: {type: String, required: false},
+    saleType: {type: String, required: false},
 
 
 });

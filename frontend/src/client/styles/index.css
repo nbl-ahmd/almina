@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --li-grey: #373f50;
   --primary-red: #FF6363;
@@ -12,8 +16,12 @@
   --primary-blue-light: #E9F3FC;
   --primary-orange-light: #F7F2EE;
   --primary-green-light: #E6F6F3;
-  --grey: rgb(246, 246, 247)
+  --grey: rgb(246, 246, 247);
+  --primary-purple: #C047EF;
+  --secondary-orange: #fe7c0b;
 }
+
+
 
 /* #688DAC */
 .text-pb {
@@ -31,7 +39,12 @@
 .text-or {
   color: var(--primary-orange);
 }
-
+.bg-p-pu{
+  background-color: var(--primary-purple) !important;
+} 
+.bg-p-or{
+  background-color: var(--secondary-orange) !important;
+} 
 /* html {
     font-size: 16px;
 }
@@ -188,7 +201,7 @@ ul{
   padding: 0;
   margin: 0;
 }
-.nav li {
+.nav .nav-li {
   font-family: 'Poppins', sans-serif;
   font-size: 14px !important;
   font-weight: 300 !important;
@@ -196,11 +209,11 @@ ul{
   position: relative;
   
 }
-.nav li a{
+.nav .nav-li a{
   color: #165d59 !important;
 }
 
-.nav li .active::before{
+.nav .nav-li .active::before{
   content: "";
 background: #165d59;
 height: 2px;
@@ -268,7 +281,7 @@ li a {
 }
 
 
-.nav-ul .active {
+.nav-ul .nav-li .active {
   color: var(--primary-red) !important;
 
 }
@@ -472,16 +485,16 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 .products:hover {
   background-color: #fff;
   box-shadow: 2px 8px 40px rgba(0, 0, 0, .08);
-  border-radius: 1.5rem;
+  border-radius: .8rem;
 }
 
 .products .badge {
 
   background-color: rgb(66, 214, 151, 0.7);
-  margin-left: 1rem;
-  margin-top: 1rem;
+  margin-left: 5px;
+  margin-top: 5px;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 300;
 
 }
@@ -489,32 +502,30 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 
   background-color: rgba(255, 99, 99, 0.9);
   
-  position: absolute;
-  right: 1rem;
-  border-radius: 100%;
-  width: 50px;
-  height: 50px;
+ 
+
+}
+.out-of-stock-text{
   display: flex;
-  justify-content: center;
+  width: 100%;
+  border-radius: 5px;
   align-items: center;
-  font-weight: 200;
-  text-align: center;
-  font-size: 14px;
-  line-height: 1.4;
-  
-
-
-
+  line-height: 1.5rem;
+  padding: .2rem;
+  font-size: 12px;
+  font-weight: 300;
+  font-family: 'Poppins', sans-serif;
 }
 
 
-
 .add-to-cart-btn {
-  border-radius: .8rem;
+  width: 100%;
+  border-radius: 5px;
   background-color: #42C6A5;
   color: #ffff;
-  width: 3rem;
+  align-items: center;
   justify-content: center;
+  line-height: 1;
   padding: .2rem;
 }
 
@@ -526,6 +537,19 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 
 .add-to-cart-btn i {
   font-size: 18px;
+}
+
+.text-strike{
+  text-decoration: none;
+  position: relative;
+}
+.text-strike::before{
+  content: '';
+  width: 100%;
+  position: absolute;
+  right: 0;
+  top: calc( 50%  );
+  border-bottom: 1px solid var(--primary-red);
 }
 
 .product-price {
@@ -723,7 +747,7 @@ input::-webkit-inner-spin-button {
 .pay-popup {
   position: fixed;
   width: 100%;
-  bottom: 0;
+  bottom: 78px;
   left: 50%;
   -webkit-transform: translateX(-50%);
   transform: translateX(-50%);
@@ -756,6 +780,7 @@ input::-webkit-inner-spin-button {
   font-weight: 400;
   font-size: calc(16px + 2 * (100vw - 320px) / 1600);
   border-radius: 8px;
+  
 
 }
 
@@ -853,8 +878,8 @@ button:disabled {
 
 
 .cat-container {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   overflow: hidden;
   border-radius: 20%;
   padding: .5rem;
@@ -874,9 +899,26 @@ button:disabled {
 }
 
 .cat-wrapper {
-  width: 100px;
+  width: 70px;
   word-break: break-all;
   line-height: 1.1;
+
+}
+.cat-wrapper span{
+  font-size: 12px;
+}
+@media (min-width: 992px){
+  .cat-container {
+    width: 100px;
+    height: 100px;
+  
+  
+  }
+  
+  .cat-wrapper {
+    width: 100px;
+  
+  }
 
 }
 
@@ -1023,5 +1065,39 @@ input[type="radio"].btn-check:checked+label.btn.payment-card i {
 }
 
 footer{
-  background-color: #131c25;
+  background-color: #F7FAFC;
+}
+.newsletter-input{
+  background-color: rgba(0, 0, 0, .06);
+  border: 0;
+  border-radius: 5px;
+  padding-inline: 1rem !important;
+  font-weight: 300;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: rgb(45, 55, 72);
+}
+.newsletter-input:focus-visible{
+  outline: var(--secondary-green) auto 1px;
+}
+.newsletter-btn{
+  background-color: var(--secondary-green);
+}
+
+.newsletter-btn i{
+  color: #fff;
+}
+
+.footer-socials{
+  display: flex;
+}
+.footer-socials .icon{
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 100%;
+  color: #0d1824;
 }

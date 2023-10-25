@@ -22,6 +22,19 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
     addToCart(product);
   };
 
+  function getSaleTypeClass(saleType) {
+    switch (saleType) {
+      case 'price_cut':
+        return 'bg-p-or'; // Replace with your actual class name
+      case 'percentage_offer':
+        return 'offer-badge'; // Replace with your actual class name
+      case 'combo_offer':
+        return 'bg-p-pu'; // Replace with your actual class name
+      default:
+        return 'bg-p-or'; // Default class when saleType doesn't match any specific type
+    }
+  }
+
   return (
     <>
       <div className="p-1 p-md-2">
@@ -29,13 +42,12 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
           <div className="card card-product">
             <div className="text-center position-relative">
             <div className="position-absolute top-0 start-0">
-  {product.sale && !product.featured && <span className="badge">Sale</span>}
+  {product.sale && !product.featured && <span className={`badge ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>}
   {product.featured && !product.sale && <span className="badge">Featured</span>}
-  {product.sale && product.featured && <span className="badge">Sale</span>}
+  {product.sale && product.featured && <span className={`badge ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>}
+  
 </div>
-              <div className="position-absolute top-0 end-0">
-                {product.sale && <span className="offer-badge badge">20%<br />Offer</span>}
-              </div>
+              
             </div>
             {imageLoaded ? (
               <img
@@ -53,32 +65,50 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
                 </Link>
                 <h6 className="fw-500 fs-sm overflow text-small">{product.name.toLowerCase()}</h6>
               </div>
-              <div className="d-flex justify-content-between align-items-center mt-2 pb-1">
 
 
-              {product.stock === 0 ? (
-                    <span className=" text-or mx-auto">Out of Stock</span>
-                  ) : (
-               <>
+              {/* {product.stock === 0 ? (
+                <span className=" text-or mx-auto">Out of Stock</span>
+                ) : (
+                  
+                  
+                )} */}
+                <div className="pb-1">
+              
                 <div className="">
                  
                   
-                  
-                 <span className="product-price">AED {product.price}</span>
+                  {product.salePrice ?(
+
+                    <>
+                    <span className="text-small me-2 text-strike">AED {product.price}</span>
+                    <span className="product-price">AED {product.salePrice}</span>
+                    </>
+                    ):  <span className="product-price">AED {product.price}</span>}
+                   
 
                </div>
-               <button
-                 className="btn btn-sm d-flex add-to-cart-btn"
+               
+              
+             
+              {product.stock === 0 ? (
+                
+                <span className="out-of-stock-text text-pr">Temporarily Out of Stock</span>
+               
+                ) : (
+                  <button
+                 className={`btn btn-sm d-flex add-to-cart-btn`}
                  onClick={handleAddToCart}
                  disabled={isAddingToCart}
                  >
-       <i className="bi bi-bag"></i>
+       <i className="bi bi-bag me-2"></i>
+       Add to cart
                </button>
-               </>
-                    
-                  )}
+                  
+                )}
+                 </div>
 
-              </div>
+              
             </div>
           </div>
         </div>

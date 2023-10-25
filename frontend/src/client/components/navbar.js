@@ -41,7 +41,10 @@ const Navbar = () => {
 
   const handleSearch = async (event) => {
     event.preventDefault();
-
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
     if (searchInput.trim() === '') {
       navigate('/products'); // Redirect to the products page
     } else {
@@ -100,22 +103,22 @@ const Navbar = () => {
 
       <nav className="d-none d-md-flex mt-2 justify-content-center border-top border-bottom py-2">
         <ul className="nav container px-lg-0  mb-md-0 gap-2 ms-md-5 justify-content-center nav-ul">
-          <li>
+          <li className='nav-li'>
             <Link to="/" className={location.pathname === '/' ? 'active px-2' : 'px-2'}>
               Home
             </Link>
           </li>
-          <li>
+          <li className='nav-li'>
             <Link to="/products" className={location.pathname === '/products' ? 'active px-2' : 'px-2'}>
               All Products
             </Link>
           </li>
-          <li>
+          <li className='nav-li'>
             <Link to="/categories" className={location.pathname === '/categories' ? 'active px-2' : 'px-2'}>
               Categories
             </Link>
           </li>
-          <li>
+          <li className='nav-li'>
             <Link to="/offers" className={location.pathname === '/offers' ? 'active px-2' : 'px-2'}>
               Offers
             </Link>

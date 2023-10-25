@@ -42,7 +42,8 @@ import baseURL from '../../axiosConfig';
       breakpoints: {
         960: {
           slidesPerView: 4,
-          spaceBetween: 8
+          spaceBetween: 8,
+          
         },
         720: {
           slidesPerView: 3,

@@ -9,7 +9,7 @@ const Checkout = () => {
 
 
   const navigate = useNavigate();
-  const { customerInfo, setCustomerInfo, handleCheckout, cartItems, totalPrice, totalVatPrice, totalVat } = useContext(CartContext);
+  const { customerInfo, setCustomerInfo, handleCheckout, cartItems, totalPrice, totalSalePrice, totalVatPrice, totalVat, totalAmount } = useContext(CartContext);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [currentLocation, setCurrentLocation] = useState('');
   const [maplink, setMaplink] = useState('');
@@ -21,7 +21,7 @@ const Checkout = () => {
   const [emailError, setEmailError] = useState("");
   const [formError, setFormError] = useState(false);
   const [suburbs, setSuburbs] = useState([]);
-  const [selectedCity, setSelectedCity] = useState('')
+  const [selectedCity, setSelectedCity] = useState('');
 
 // other state variables...
 
@@ -182,8 +182,9 @@ const fetchSuburbs = async () => {
       let deliveryfee=0;
       (emirate === 'Ras al-Khaimah') ? (deliveryfee=0) : (deliveryfee=15);
       setDeliveryfee(deliveryfee);
+      
 
-      setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalprice: parseFloat((totalVatPrice + deliveryfee).toFixed(2)) });
+      setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)) });
 
       console.log("emirates", emirate);
       console.log("cinfo", customerInfo);
@@ -223,9 +224,18 @@ const fetchSuburbs = async () => {
   const handleEmirateChange = e => {
     
     setEmirate(e.target.value);
-    setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalprice: parseFloat((totalVatPrice + deliveryfee).toFixed(2)) });
+    let deliveryfee=0;
+      (emirate === 'Ras al-Khaimah') ? (deliveryfee=0) : (deliveryfee=15);
+      setDeliveryfee(deliveryfee);
+      
+
+      setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)) });
+    
     console.log(customerInfo);
-    (e.target.value === 'Ras al-Khaimah') ? (setDeliveryfee(0)) : (setDeliveryfee(15))
+    
+
+    
+    
   };
 
 
@@ -532,7 +542,7 @@ const fetchSuburbs = async () => {
 
             {/* right side */}
 
-            <div className="col-lg-5">
+            <div className="col-lg-5 mb-4">
               <div className="checkout-wrapper mb-4">
                 <h4 className="tp-checkout-bill-title mb-4">Order summary</h4>
                 <div className="sub-total d-flex justify-content-between row text-start mb-2">
@@ -548,7 +558,7 @@ const fetchSuburbs = async () => {
                     <span className="col-9 fw-200 text-small text-start overflow-wrap">{item.name} <span className='fw-500'>x {item.quantity}</span></span>
 
 
-                    <span className="col-3 fw-200 text-small text-end">AED {item.quantity *(item.price)}</span>
+                    <span className="col-3 fw-200 text-small text-end">AED {item.quantity *(item.salePrice? item.salePrice:item.price)}</span>
 
                   </div>
                 ))}
@@ -556,24 +566,18 @@ const fetchSuburbs = async () => {
               </div>
               <div className="checkout-wrapper">
 
+                
+
                 <div className="sub-total d-flex justify-content-between row mb-1">
-                  <span className="col-9 fw-200 text-small text-start overflow-wrap light-text">sub Total <span className='text-sm'>(Exl. VAT)</span> </span>
+                  <span className="col-9 fw-200 text-small text-start overflow-wrap light-text">sub Total </span>
 
 
-                  <span className="col-3 fw-200 text-small text-end">AED {totalPrice}</span>
+                  <span className="col-3 fw-200 text-small text-end">AED {totalSalePrice}</span>
 
                 </div>
 
                 <div className="sub-total d-flex justify-content-between row mb-1">
-                  <span className="col-9 fw-200 text-small text-start overflow-wrap light-text">sub Total <span className='text-sm'>(Exl. VAT)</span> </span>
-
-
-                  <span className="col-3 fw-200 text-small text-end">AED {totalVatPrice}</span>
-
-                </div>
-
-                <div className="sub-total d-flex justify-content-between row mb-1">
-                  <span className="col-9 fw-200 text-small text-start overflow-wrap light-text">VAT Amount</span>
+                  <span className="col-9 fw-200 text-small text-start overflow-wrap light-text">Total estimated Vat</span>
 
 
                   <span className="col-3 fw-200 text-small text-end">AED {totalVat}</span>
@@ -587,7 +591,18 @@ const fetchSuburbs = async () => {
                   <span className="col-3 fw-200 text-small text-end">AED {deliveryfee}</span>
 
                 </div>
+                <div className="sub-total d-flex justify-content-between row mb-1 pb-3 border-bottom">
+                    <span className="col-6 text-start overflow-wrap">Order Total</span>
+
+
+                   <div className="col-6 d-flex flex-column">
+                   <span className="text-end fw-600 fs-5">AED {totalSalePrice + deliveryfee}</span>
+                   <span className="text-small text-end">(All prices include VAT)</span>
+                   </div>
+
+                  </div>
               </div>
+              <button className="btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3" type="button" onClick={validateForm}>Place order</button>
 
 
             </div>
@@ -598,10 +613,10 @@ const fetchSuburbs = async () => {
 
 
 
-      {cartItems.length > 0 && <div className="pay-popup ">
+      {cartItems.length > 0 && <div className="pay-popup d-md-none ">
         <div className="price-items">
           <span className='text-small'>Order Total</span>
-          <h2> <small>AED</small>{parseFloat((totalVatPrice + deliveryfee).toFixed(2))}</h2>
+          <h2> <small>AED</small>{totalSalePrice + deliveryfee}</h2>
         </div>
 
 

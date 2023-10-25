@@ -103,7 +103,7 @@ const App = () => {
               <CartProvider>
               <Navbar />
               <Home />
-              
+              <Footer />
               </CartProvider>
             </>} />
           <Route path='products' element={
@@ -112,6 +112,7 @@ const App = () => {
             <Navbar />
             <Products />
             </CartProvider>
+            <Footer />
             </>
           } />
           <Route path='offers' element={
@@ -120,6 +121,7 @@ const App = () => {
             <Navbar />
             <DealPage />
             </CartProvider>
+            <Footer />
             </>
           } />
           <Route path='/search' element={
@@ -128,12 +130,14 @@ const App = () => {
             <Navbar />
             <Products />
             </CartProvider>
+            <Footer />
             </>
           } />
           <Route path='/categories' element={
             <CartProvider>
               <Navbar />
             <Categories />
+            <Footer />
             </CartProvider>
           } />
           
@@ -141,6 +145,7 @@ const App = () => {
   <CartProvider>
     <Navbar />
     <CategoryPage />
+    <Footer />
   </CartProvider>
 } />
 
@@ -292,6 +297,7 @@ const App = () => {
 
         </Routes>
         <BackToTopButton />
+        
       </main>
     </BrowserRouter>
 

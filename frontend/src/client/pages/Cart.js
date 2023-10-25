@@ -8,7 +8,7 @@ const Cart = () => {
 
 
 
-  const { cartItems, removeFromCart, handleQuantityChange,totalPrice } = useContext(CartContext);
+  const { cartItems, removeFromCart, handleQuantityChange,totalPrice,totalSalePrice, totalVat } = useContext(CartContext);
 
   
 
@@ -24,12 +24,14 @@ console.log(cartItems.length);
     <>
     {cartItems.length ? (
       <div className="container mt-5 pb-5 mb-5">
-      <div className=" d-flex justify-content-between align-items-center">
+       <div className="row">
+     <div className=" d-flex justify-content-between align-items-center">
       <h4 className='ps-2 mb-0'>Your Cart</h4>
       <Link to='/products' className='btn btn-sm btn-outline-danger pe-2 text-small d-flex justify-content-between align-items-center me-2'>
       <i className="bi bi-chevron-left me-2 text-sm"></i>
       continue shopping</Link>
       </div>
+     <div className="col-md-12 col-lg-8">
       {cartItems.map((item) => (
         
        <div className="container mt-4">
@@ -50,9 +52,22 @@ console.log(cartItems.length);
                 <span className="text-muted text-sm me-2">{item.category.name}</span>
                 
               </div>
-              <div className="fs-lg text-accent pt-2">
+
+              {item.salePrice ?
+              (
+                <div className='d-flex align-items-center'>
+                <div className="text-small text-accent me-2 text-strike">
                 AED {item.price}
               </div>
+                 <div className="fs-lg text-accent pt-0">
+                AED {item.salePrice}
+              </div>
+                </div>
+              ): <div className="fs-lg text-accent pt-2">
+              AED {item.price}
+            </div>
+              }
+            
               {/* <div className="text-sm">
                 
                 VAT: {item.vat ? 'AED' + item.price : '0'}
@@ -105,8 +120,59 @@ console.log(cartItems.length);
         </div>
        </div>
       ))}
+     </div>
+     <div className="col-md-12 col-lg-4 mb-5 mb-md-3">
+     <div className="checkout-wrapper mb-3 mt-4">
+                <h6 className="tp-checkout-bill-title mb-4">Order summary</h6>
+                
+
+                  <div className="sub-total d-flex justify-content-between row mb-1 border-bottom py-2">
+                    <span className="col-6 text-start overflow-wrap">Order Value</span>
+
+
+                    <div className="col-6 text-end">
+                    {totalPrice-totalSalePrice !== 0 && 
+                    
+                    <span className="me-3 text-strike">AED {totalPrice}</span>}
+                    <span className="">AED {totalSalePrice}</span>
+                    </div>
+
+                  </div>
+                  {totalPrice-totalSalePrice !== 0 && 
+                  <div className="sub-total d-flex justify-content-between row mb-1 border-bottom py-2">
+                    <span className="col-6 text-start overflow-wrap">Total discount</span>
+
+
+                    <span className="col-6  text-end">- AED {totalPrice-totalSalePrice}</span>
+
+                  </div>
+}
+                  {totalVat && 
+                  <div className="sub-total d-flex justify-content-between row mb-1 pb-3 border-bottom py-2">
+                    <span className="col-6 text-start overflow-wrap">Total estimated Vat</span>
+
+
+                    <span className="col-6  text-end">AED {totalVat}</span>
+
+                  </div>
+}
+                  <div className="sub-total d-flex justify-content-between row mb-1 pb-3 border-bottom">
+                    <span className="col-6 text-start overflow-wrap">Order Total</span>
+
+
+                   <div className="col-6 d-flex flex-column">
+                   <span className="text-end fw-600 fs-5">AED {totalSalePrice}</span>
+                   <span className="text-small text-end">(All prices include VAT)</span>
+                   </div>
+
+                  </div>
+              
+              </div>
+              <Link to="/checkout" className="btn btn-lg w-100 btn-dark mt-0 d-none d-md-flex justify-content-center">Proceed to Checkout</Link>
+     </div>
 
      
+    </div>
     </div>
     ):(
       <div className="container empty-cart d-flex align-items-center justify-content-center flex-fill mt-5">
@@ -125,10 +191,10 @@ console.log(cartItems.length);
     </div>
     )}
 
-{cartItems.length>0 && <div className="pay-popup ">
+{cartItems.length>0 && <div className="pay-popup d-flex d-md-none">
 <div className="price-items">
   <span className='text-small'>Cart Subtotal</span>
-  <h2> <small>AED</small> {totalPrice}</h2>
+  <h2> <small>AED</small> {totalSalePrice}</h2>
 </div>
 <Link to="/checkout" className="btn btn-lg theme-btn pay-btn mt-0">Proceed to Checkout</Link>
 </div>}

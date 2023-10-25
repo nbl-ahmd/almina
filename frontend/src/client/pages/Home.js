@@ -7,6 +7,8 @@
 import baseURL from '../../axiosConfig'
 import Productskeleton from '../components/Productskeleton'
 import Deals from '../components/Deals'
+import Footer from '../components/footer'
+import CategorySlide from '../components/CategorySlide'
 
  const Home = () => {
    const [banners, setBanners] = useState([]);
@@ -174,20 +176,7 @@ import Deals from '../components/Deals'
            <Link to='/categories'>View All</Link>
          </div>
 
-         <div className="">
-<div className="cat justify-content-start d-flex overflow-y-scroll ">
-{category.map(category =>(
-  <div className="cat-wrapper pe-3 d-flex align-items-center flex-column" key={category._id}>
-  <Link to={`/categories/${category._id}`} className="cat-container" style={{backgroundColor: `rgba(${category.color}, 0.09)`}}>
-    <img src={`${baseURL}/api/category/images/${category.image}`} alt="" />
-  </Link>
-  <span className='text-small text-center pt-1'>
-    {category.name}
-  </span>
-</div>
-))}
-</div>
-         </div>
+         < CategorySlide category={category} />
 </section>
 
  {/* sales section */}
@@ -212,9 +201,7 @@ import Deals from '../components/Deals'
          </div>
        </div>
 
-       <footer className=' bg-dark text-center mb-0 p-5'>
-         <p className=' text-light'>Almina Pharmacy</p>
-       </footer>
+
      </main>
    )
  }
