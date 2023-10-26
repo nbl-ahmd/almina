@@ -28,6 +28,12 @@ const Footer = () => {
                     <p className="mb-0"><a href="mailto:info@alminapharmacy.com" className="text-muted text-primary-hover">
                         <i className="las la-envelope me-2"></i>
                         info@alminapharmacy.com</a></p>
+                    <p className="mb-0"><a href="tel:+971504825007" className="text-muted text-primary-hover">
+                        <i className="las la-phone me-2"></i>
+                        +971 50 482 5007</a></p>
+
+
+
         </div>
 
         <div className="footer-socials gap-4">

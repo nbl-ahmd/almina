@@ -15,7 +15,7 @@ const Products = () => {
   const [error, setError] = useState(null);
   const [offset, setOffset] = useState(0);
   const [searchOffset, setSearchOffset] = useState(0);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(30);
   const [searching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);

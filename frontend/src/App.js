@@ -34,6 +34,8 @@ import Openstreet from './client/components/Openstreet';
 import BackToTopButton from './client/components/BackToTopButton';
 import DealPage from './client/pages/DealPage';
 import { Breadcrumb } from 'react-bootstrap';
+import SalesList from './admin/pages/SalesList';
+import OutOfStock from './admin/pages/OutOfStock';
 
 
 
@@ -178,9 +180,37 @@ const App = () => {
             </DashProvider>
             </Adminroutes>
           } />
+          <Route path='/admin/salelist' element={
+            <Adminroutes>
+            <DashProvider value= {<SalesList />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          <Route path='/admin/salelist/search' element={
+            <Adminroutes>
+            <DashProvider value= {<SalesList />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
           <Route path='/admin/productlist/search' element={
             <Adminroutes>
             <DashProvider value= {<Products_list />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          <Route path='/admin/outofstock' element={
+            <Adminroutes>
+            <DashProvider value= {<OutOfStock />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          <Route path='/admin/outofstock/search' element={
+            <Adminroutes>
+            <DashProvider value= {<OutOfStock />}>
               <Dashboard />
             </DashProvider>
             </Adminroutes>
@@ -203,6 +233,20 @@ const App = () => {
               <ProductUpload />
            <CategoryUpload />
             </>}>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
+          } />
+          <Route path='admindash/salelist' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<SalesList />}>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
+          } />
+          <Route path='admindash/outofstock' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<OutOfStock />}>
               <Admindash />
             </AdminDashProvider>
             </AdminProtectedRoute>

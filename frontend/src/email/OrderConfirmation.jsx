@@ -27,9 +27,10 @@ import {
 //   }
   export const OrderConfirmation = ({
     order,
+    orderId
     
   }) => {
-    const previewText = `Your order of #${order.orderId} have been placed successfully `;
+    const previewText = `Your order of #${orderId} have been placed successfully `;
   
     return (
       <Html>
@@ -54,7 +55,7 @@ import {
                   Order Confirmation
                 </Text>
                 <Text className='m-0'>
-                  Order # <Link>{order.orderId}
+                  Order # <Link>{orderId}
                   </Link>
                 </Text>
                 </Column>
@@ -79,7 +80,7 @@ import {
                    <Row className='bg-[#fff] rounded-md p-2 mb-3'>
                    <Column className='max-w-[70px]'>
                    <Img 
-                   src={`http://localhost:4000/api/products/images/${product.image}`} width="70"
+                   src={`https://almina-shop.onrender.com/api/products/images/${product.image}`} width="70"
                    height="auto"
                    alt="product image"
                    className="my-0 border-md max-w-[70px] w-[fit-content]] flex mx-0" />

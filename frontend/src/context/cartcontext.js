@@ -242,8 +242,7 @@ export const CartProvider = ({ children }) => {
         // Handle the response if needed
         console.log('Order saved successfully:', response.data);
         const orderId = response.data.orderId;
-
-        const html = render(<OrderConfirmation order = {response.data} />, {
+        const html = render(<OrderConfirmation order = {orderData}  orderId = {orderId}/>, {
           pretty: true,
         });
 
@@ -263,20 +262,20 @@ export const CartProvider = ({ children }) => {
      });
   
 
-        // Set the order ID in the orderModal state
-        setOrderModal(orderId);
-        console.log('id' +ordermodal);
+       //Set the order ID in the orderModal state
+       setOrderModal(orderId);
+       console.log('id' +ordermodal);
      
-        console.log(html);
-        // // Clear the cart and customer information after successful upload
-         setCartItems([]);
-         setCustomerInfo({
-           name: '',
-           mobile: '',
-           email: '',
-           address: ''
-         });
-         localStorage.removeItem('cartItems');
+       console.log(html);
+        // Clear the cart and customer information after successful upload
+        setCartItems([]);
+        setCustomerInfo({
+          name: '',
+          mobile: '',
+          email: '',
+          address: ''
+        });
+        localStorage.removeItem('cartItems');
      
       })
       .catch((error) => {

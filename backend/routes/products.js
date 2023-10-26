@@ -192,7 +192,8 @@ productRouter.get('/', async (req, res) => {
       products = await Product.find(filter)
         .skip(offset)
         .limit(limit)
-        .populate('category');
+        .populate('category')
+        .sort({ stock: -1 });
     } else {
       // Fetch all products without pagination
       products = await Product.find(filter).populate('category');

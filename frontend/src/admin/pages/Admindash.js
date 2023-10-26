@@ -59,6 +59,22 @@ const AdminDashboard = () => {
     </Link>
 
 </li>
+    <li className="nav-item my-1">
+
+    <Link to='/admindash/salelist' className='nav-link'>
+        <i className="bi bi-columns-gap me-3"></i>
+        Sale
+    </Link>
+
+</li>
+    <li className="nav-item my-1">
+
+    <Link to='/admindash/outofstock' className='nav-link'>
+        <i className="bi bi-columns-gap me-3"></i>
+        Out Of Stock
+    </Link>
+
+</li>
 <li className="nav-item my-1">
     <Link to="/admindash/categories" className='nav-link py-2'>
         <i className="bi bi-columns-gap me-3"></i>
