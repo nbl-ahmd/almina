@@ -19,7 +19,7 @@ import baseURL from '../../axiosConfig';
      .get(`${baseURL}/api/products`, {
       params: {
         filter: filterString,
-        limit: 10,
+       
         
       },
     })
