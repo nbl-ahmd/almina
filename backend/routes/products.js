@@ -369,10 +369,10 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
     if (req.body.saleType) {
       updateFields.saleType = req.body.saleType;
     }
-    if (req.body.salePrice) {
-      updateFields.salePrice = req.body.salePrice;
+    if (!isNaN(req.body.salePrice)) {
+      updateFields.salePrice = parseFloat(req.body.salePrice);
     }
-    if (req.body.salePercent) {
+    if (!isNaN(req.body.salePercent)) {
       updateFields.salePercent = req.body.salePercent;
     }
     if (req.body.saleBadge) {
