@@ -131,7 +131,7 @@ export const CartProvider = ({ children }) => {
       const response = await axios.get(`${baseURL}/api/store/status`);
       const storeStatus = response.data.status;
   console.log(storeStatus);
-      if (storeStatus === 'lclosed') {
+      if (storeStatus === 'closed') {
         alert('The store is currently closed. You cannot add items to your cart.');
         return;
       }
