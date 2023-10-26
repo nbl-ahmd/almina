@@ -3,6 +3,7 @@ import axios from 'axios';
 import baseURL from '../../axiosConfig';
 
 const AddUser = () => {
+  const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -11,7 +12,7 @@ const AddUser = () => {
   const [message, setMessage] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [suburbs, setSuburbs] = useState([]);
-  const [userDetails, setUserDetails] = useState(null); // State to store user details
+  const [userDetails, setUserDetails] = useState([]); // State to store user details
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -72,6 +73,32 @@ const AddUser = () => {
       setSelectedCities(selectedCities.filter((city) => city !== value));
     }
   };
+
+  const handleEditUser = async (user) => {
+    // Implement edit user functionality
+    // You can use a modal or form to edit user details
+    console.log('Edit User:', user);
+  };
+
+  const handleDeleteUser = async (user) => {
+    // Implement delete user functionality
+    // Prompt the user for confirmation, and then make a DELETE request
+    if (window.confirm(`Are you sure you want to delete user ${user.username}?`)) {
+      try {
+        const response = await axios.delete(`${baseURL}/api/auth/users/${user._id}`);
+        if (response.status === 200) {
+          // User deleted successfully
+          setUserDetails(userDetails.filter((u) => u._id !== user._id));
+          console.log(`User ${user.username} deleted.`);
+        } else {
+          console.error('Failed to delete user');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+  };
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -178,16 +205,22 @@ const AddUser = () => {
               <h3 className="card-title mb-3">User Details</h3>
               {userDetails ? (
                 userDetails.map((user) => (
-                  <div className='card mb-3 p-2' key={user.id}>
+                  <div className={`card mb-3 p-2 ${user.username === 'admin' ? 'border border-danger':'border border-success' }`} key={user.id}>
                     <span>Username: {user.username}</span>
                     <span>Name: {user.name}</span>
                     <span>Role: {user.role}</span>
                     <span>Cities:</span>
                     <ul>
                       {user.cities.map((city) => (
-                        <li key={city}>{city}</li>
+                        <li className=' list-group-item text-black-50' key={city}>{city}</li>
                       ))}
                     </ul>
+                    <div className="d-flex flex-fill justify-content-end">
+                    
+                    <button className="btn btn-sm btn-danger " onClick={() => handleDeleteUser(user)}>
+                      Delete
+                    </button>
+                    </div>
                   </div>
                 ))
               ) : (

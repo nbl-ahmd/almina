@@ -82,6 +82,14 @@ export default function Dashboard() {
     
     <li className="nav-item my-1">
 
+    <Link to='/admin/dispatched' className='nav-link'>
+        <i className="bi bi-columns-gap me-3"></i>
+       Dispatched Orders
+    </Link>
+
+</li>
+    <li className="nav-item my-1">
+
     <Link to='/admin/productlist' className='nav-link'>
         <i className="bi bi-columns-gap me-3"></i>
         products

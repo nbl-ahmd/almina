@@ -103,5 +103,24 @@ loginRouter.get('/users', (req, res) => {
     });
 });
 
+// Delete a user by ID
+loginRouter.delete('/users/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Delete the user from the database
+    const deletedUser = await users.findByIdAndDelete(userId);
+
+    if (deletedUser) {
+      res.status(200).json({ message: 'User deleted' });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 module.exports = loginRouter;

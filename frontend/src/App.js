@@ -36,6 +36,7 @@ import DealPage from './client/pages/DealPage';
 import { Breadcrumb } from 'react-bootstrap';
 import SalesList from './admin/pages/SalesList';
 import OutOfStock from './admin/pages/OutOfStock';
+import Dispatched from './admin/components/Dispatched';
 
 
 
@@ -211,6 +212,13 @@ const App = () => {
           <Route path='/admin/outofstock/search' element={
             <Adminroutes>
             <DashProvider value= {<OutOfStock />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          <Route path='/admin/dispatched' element={
+            <Adminroutes>
+            <DashProvider value= {<Dispatched />}>
               <Dashboard />
             </DashProvider>
             </Adminroutes>
