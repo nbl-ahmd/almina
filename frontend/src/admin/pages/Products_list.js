@@ -5,6 +5,8 @@ import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useLocation } from 'react-router-dom';
 import BackToTopButton from '../../client/components/BackToTopButton';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import ProductUpload from '../components/ProductUpload';
 
 const Products_list = () => {
   const [productList, setProductList] = useState([]);
@@ -22,6 +24,7 @@ const Products_list = () => {
   const [loaded, setLoaded] = useState(false); // Move loaded state here
   const [category, setCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showProductModal, setShowProductModal] = useState(false);
 
   const [toggleFilter, setToggleFilter]= useState(true);
   const location = useLocation();
@@ -30,13 +33,19 @@ const Products_list = () => {
     fetchProducts();
   }, [selectedCategory]);
   useEffect(() => {
-    axios
-      .get(`${baseURL}/api/category`)
+    try{
+      const filter = { "disabled": false };
+      const filterString = JSON.stringify(filter);
+      axios
+      .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
       .then((response) => {
         setCategory(response.data);
         console.log(response.data);
       })
-      .catch((error) => console.log(error));
+     }
+     catch (error) {
+      console.error('Error fetching products by category:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -71,7 +80,8 @@ const Products_list = () => {
           q: searchQuery,
           disabled: false,
           offset: searchOffset,
-          limit: limit
+          limit: limit,
+          disabledCat: false,
         }
       });
       
@@ -128,6 +138,7 @@ const Products_list = () => {
     try {
       const response = await axios.get(`${baseURL}/api/products`, {
         params: {
+          disabledCat: false,
           filter: filterString,
           disabled: false,
           offset: offset,
@@ -139,7 +150,7 @@ const Products_list = () => {
 
       if (offset === 0){
         setProductList(data);
-        setOffset(prevOffset => prevOffset + limit);
+        setOffset(limit);
       }else{
         setProductList(prevItems => [...prevItems, ...data]);
       setOffset(prevOffset => prevOffset + limit);
@@ -228,8 +239,23 @@ const Products_list = () => {
           </div>
         </div>
       </InfiniteScroll> 
+      <button className=" d-flex add-category-btn" onClick={() =>{
+                        setShowProductModal(true);
+                        }}>+
+                </button>
     </div>
-   
+    <Dialog sx={{
+    backdropFilter: "blur(3px)",
+  }}
+  // 👇 Props passed to Paper (modal content)
+  PaperProps={{ sx: { borderRadius: "20px", p:1 } }} open={showProductModal} onClose={() => setShowProductModal(false)}>
+        <DialogTitle sx={{color: 'black'}}>Add new product</DialogTitle>
+        <DialogContent sx={{pb:0}}>
+        <ProductUpload />
+            
+        </DialogContent>
+       
+      </Dialog>
     </>
   );
 };

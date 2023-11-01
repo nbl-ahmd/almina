@@ -26,7 +26,12 @@ const CategoryPage = () => {
     try {
       const filter = {"category": categoryId, "disabled": false };
     const filterString = JSON.stringify(filter);
-        const response = await axios.get(`${baseURL}/api/products?filter=${encodeURIComponent(filterString)}`);
+        const response = await axios.get(`${baseURL}/api/products?filter=${encodeURIComponent(filterString)}`, {
+          params: {
+            disabledCat: false,
+            
+          },
+        });
         setProducts(response.data);
         console.log(response.data);
         console.log(filter);

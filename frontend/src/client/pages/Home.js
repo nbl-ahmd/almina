@@ -39,6 +39,7 @@ import CategorySlide from '../components/CategorySlide'
       params: {
         filter: filterString,
         limit: 10,
+        disabledCat: false,
         
       },
     })
@@ -50,13 +51,19 @@ import CategorySlide from '../components/CategorySlide'
    }, []);
 
    useEffect(() => {
-     axios
-       .get(`${baseURL}/api/category`)
-       .then((response) => {
-         setCategory(response.data);
-         console.log(response.data);
-       })
-       .catch((error) => console.log(error));
+    try{
+      const filter = { "disabled": false };
+      const filterString = JSON.stringify(filter);
+      axios
+      .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
+      .then((response) => {
+        setCategory(response.data);
+        console.log(response.data);
+      })
+     }
+     catch (error) {
+      console.error('Error fetching products by category:', error);
+    }
    }, []);
   
    return (

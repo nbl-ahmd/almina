@@ -5,6 +5,12 @@ import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useLocation } from 'react-router-dom';
 import BackToTopButton from '../../client/components/BackToTopButton';
+import ProductCardPharmacy from '../components/ProductCardPharmacy';
+import { Box, Card, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { red } from '@mui/material/colors';
+import { Button, Modal } from 'react-bootstrap';
+import ProductUpdate from '../components/ProductUpdate';
+import ProductEditPharmacy from '../components/ProductEditPharmacy';
 
 const Products_list = () => {
   const [productList, setProductList] = useState([]);
@@ -22,21 +28,43 @@ const Products_list = () => {
   const [loaded, setLoaded] = useState(false); // Move loaded state here
   const [category, setCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-
+  const [showEditModal, setShowEditModal] = useState(false);
   const [toggleFilter, setToggleFilter]= useState(true);
   const location = useLocation();
 
+  function getSaleTypeClass(saleType) {
+    switch (saleType) {
+      case 'price_cut':
+        return 'bg-p-or'; // Replace with your actual class name
+      case 'percentage_offer':
+        return 'offer-badge'; // Replace with your actual class name
+      case 'combo_offer':
+        return 'bg-p-pu'; // Replace with your actual class name
+      default:
+        return 'bg-p-or'; // Default class when saleType doesn't match any specific type
+    }
+  }
+  const handleEditClick = () => {
+    setShowEditModal(true);
+  };
+  
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory]);
   useEffect(() => {
-    axios
-      .get(`${baseURL}/api/category`)
+    try{
+      const filter = { "disabled": false };
+      const filterString = JSON.stringify(filter);
+      axios
+      .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
       .then((response) => {
         setCategory(response.data);
         console.log(response.data);
       })
-      .catch((error) => console.log(error));
+     }
+     catch (error) {
+      console.error('Error fetching products by category:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -57,8 +85,32 @@ const Products_list = () => {
       setSearching(false);
     }
   }, [searchQuery]);
+  const updatedProducts = (data) => {
+    setProducts(data);
+  }
 
-
+  const handleToggleProduct = async (productToToggle) => {
+    // Make an API request to update the 'disabled' property of the product
+    // You should pass the product ID or some identifier to the API to update the specific product.
+    // After updating, set the new 'disabled' value in the state.
+    try {
+      console.log(productToToggle._id);
+      await axios.put(`${baseURL}/api/products/publish/${productToToggle._id}`);
+    } catch (error) {
+      console.error('Error dispatching order:', error);
+    }
+  
+    // For demonstration purposes, I'll assume the product is updated immediately.
+    const updatedProduct = { ...productToToggle, disabled: !productToToggle.disabled };
+  
+    // Update the 'productList' state with the new value
+    setProductList((prevProductList) =>
+      prevProductList.map((product) =>
+        product._id === productToToggle._id ? updatedProduct : product
+      )
+    );
+  };
+  
 
   const search = async () => {
     console.log("search offset" + searchOffset)
@@ -71,7 +123,8 @@ const Products_list = () => {
           q: searchQuery,
           disabled: false,
           offset: searchOffset,
-          limit: limit
+          limit: limit,
+          disabledCat: false,
         }
       });
       
@@ -87,7 +140,7 @@ const Products_list = () => {
 
     if (searchOffset === 0){
       setSearchedProducts(searchResults);
-      setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+      setSearchOffset(limit);
       setLoaded(false);
       setFetchingMore(true);
       
@@ -119,27 +172,28 @@ const Products_list = () => {
     setError(null);
     let filter
     if (selectedCategory){
-       filter = {"category": selectedCategory, "sale": true, "disabled": false, stock : 0  };
+       filter = {"category": selectedCategory, "disabled": false, "stock" : 0 };
     }
     else{
-      filter = {"disabled": false ,stock : 0 };
+      filter = {"disabled": false , "stock" : 0};
     }
     const filterString = JSON.stringify(filter);
     try {
       const response = await axios.get(`${baseURL}/api/products`, {
         params: {
           filter: filterString,
-
+          disabled: false,
           offset: offset,
           limit: searching === false ? limit : undefined,
           category: selectedCategory,
+          disabledCat: false,
         },
       });
       const data = response.data;
 
       if (offset === 0){
         setProductList(data);
-        setOffset(prevOffset => prevOffset + limit);
+        setOffset(limit);
       }else{
         setProductList(prevItems => [...prevItems, ...data]);
       setOffset(prevOffset => prevOffset + limit);
@@ -169,12 +223,7 @@ const Products_list = () => {
       
       >
         <div className="container ">
-      <div className="d-flex justify-content-between p-3 align-items-center ">
-          <span>Filter by categories</span>
-        <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
-        <i className="bi bi-filter icon"></i>
-        </div>
-      </div>
+      
       {/*filter*/}
      
 
@@ -214,22 +263,174 @@ const Products_list = () => {
     </div>
         
 
-        <div className="container mb-5">
-          <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
+        <div className="">
+          <div className="">
             {searching
-              ? searchedProducts.map(product => (
-                  <ProductCard_admin key={product._id} productData={product} />
-                ))
+              ? 
+
+
+              <Container>
+                <Card sx={{borderRadius:'10px', mx:0, my:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
+                <div className="d-flex justify-content-between p-3 align-items-center ">
+                  <span>Filter by categories</span>
+                <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
+                <i className="bi bi-filter icon"></i>
+                </div>
+              </div>
+                <TableContainer>
+                    <Table sx={{'th': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'500'}, 'td': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'400', borderBottom: '1px solid rgb(244, 246, 248)'}}} aria-label="simple table">
+                        <TableHead sx={{ backgroundColor: 'rgb(244, 246, 248)'}}>
+                        <TableRow sx={{}} >
+                    <TableCell>Product</TableCell>
+                    <TableCell align="left">Stock</TableCell>
+                    <TableCell align="left">Price</TableCell>
+                    <TableCell align="left">Publish</TableCell>
+                  </TableRow>
+                        </TableHead>
+                        <TableBody>
+                        {searchedProducts.map(product => (
+                    <TableRow
+                      key={product.name}
+                      sx={{fontFamily: 'Poppins, sans-serif'}}
+                    >
+                      <TableCell >
+                       <Box sx={{display: 'flex',
+                   alignItems: 'center',
+                   maxWidth:'500px'}}>
+                       <img src=
+                        {`${baseURL}/api/products/images/${product.image}`} width={'100px'} className='me-2 border border-1 rounded-3'/>
+                        <Box sx={{ml:2}} >
+                        <span>
+                                          {product.sale &&
+                                      <span className={`badge mb-2 ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>
+                                      }
+                                          </span>
+                        <p className='mb-1'>
+                        {product.name}
+                        </p>
+                        <p className='fw-300'>
+                        {product.category.name}
+                        </p>
+                        </Box>
+                       </Box>
+                      </TableCell>
+                      
+                      <TableCell align="left">{product.stock}</TableCell>
+                      <TableCell align="left">AED {product.price}</TableCell>
+                      <TableCell align="left">
+          <Switch
+            checked={!product.disabled}
+            onChange={() => handleToggleProduct(product)}
+            color="primary"
+            name="toggleProduct"
+            inputProps={{ 'aria-label': 'toggle product' }}
+          />
+        </TableCell>
+                      
+                    </TableRow>
+                  ))}
+                </TableBody>
+                    </Table>
+                </TableContainer>
+                </Card>
+            </Container>
+                
               :
               
-                productList.map(product => (
-                  <ProductCard_admin key={product._id} productData={product} />
-                ))}
+
+                  <Container>
+        <Card sx={{borderRadius:'10px', mx:0, my:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
+        <div className="d-flex justify-content-between p-3 align-items-center ">
+          <span>Filter by categories</span>
+        <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
+        <i className="bi bi-filter icon"></i>
+        </div>
+      </div>
+        <TableContainer>
+            <Table sx={{'th': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'500'}, 'td': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'400', borderBottom: '1px solid rgb(244, 246, 248)'}}} aria-label="simple table">
+                <TableHead sx={{ backgroundColor: 'rgb(244, 246, 248)'}}>
+                <TableRow sx={{}} >
+            <TableCell>Product</TableCell>
+            <TableCell align="left">Stock</TableCell>
+            <TableCell align="left">Price</TableCell>
+            <TableCell align="left">Publish</TableCell>
+            <TableCell align="left">Action</TableCell>
+          </TableRow>
+                </TableHead>
+                <TableBody>
+          {productList.map(product => (
+            <TableRow
+              key={product.name}
+              sx={{fontFamily: 'Poppins, sans-serif'}}
+            >
+              <TableCell >
+               <Box sx={{display: 'flex',
+           alignItems: 'center',
+           maxWidth:'500px'}}>
+               <img src=
+                {`${baseURL}/api/products/images/${product.image}`} width={'100px'} className='me-2 border border-1 rounded-3'/>
+                <Box sx={{ml:2}} >
+                <span>
+                                  {product.sale &&
+                              <span className={`badge mb-2 ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>
+                              }
+                                  </span>
+                <p className='mb-1'>
+                {product.name}
+                </p>
+                <p className='fw-300'>
+                {product.category.name}
+                </p>
+                </Box>
+               </Box>
+              </TableCell>
+              
+              <TableCell align="left">{product.stock}</TableCell>
+              <TableCell align="left">AED {product.price}</TableCell>
+              <TableCell align="left">
+  <Switch
+    checked={!product.disabled}
+    onChange={() => handleToggleProduct(product)}
+    color="primary"
+    name="toggleProduct"
+    inputProps={{ 'aria-label': 'toggle product' }}
+  />
+  
+</TableCell>
+<TableCell align="left"><div className=' d-flex  '>
+                      <button className="btn btn-sm d-flex" onClick={() =>{
+                        handleEditClick();
+                        setProducts(product);
+                        }}>
+                  <i className="bi bi-pen pe-2 text-pg text-sm"></i>
+                  <span className="text-pg text-sm">Edit</span>
+                </button>
+                      </div></TableCell>
+              
+            </TableRow>
+          ))}
+        </TableBody>
+            </Table>
+        </TableContainer>
+        </Card>
+    </Container>
+                  // <ProductCardPharmacy key={product._id} productData={product} />
+               }
           </div>
         </div>
       </InfiniteScroll> 
     </div>
-   
+    <Modal centered show={showEditModal} fullscreen={false} onHide={() => setShowEditModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Product</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          {/**add here */}
+            <ProductEditPharmacy id = {products._id} products = {products} editedProduct = {updatedProducts} />
+          </Modal.Body>
+          
+        </Modal>
+
     </>
   );
 };

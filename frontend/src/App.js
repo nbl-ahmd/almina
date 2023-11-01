@@ -37,6 +37,9 @@ import { Breadcrumb } from 'react-bootstrap';
 import SalesList from './admin/pages/SalesList';
 import OutOfStock from './admin/pages/OutOfStock';
 import Dispatched from './admin/components/Dispatched';
+import ProductsPharmacy from './admin/pages/ProductsPharmacy';
+import OrderDetails from './admin/pages/OrderDetails';
+import DisabledList from './admin/pages/DisabledList';
 
 
 
@@ -173,10 +176,24 @@ const App = () => {
             </DashProvider>
             </Adminroutes>
           } />
+          <Route path='admin/orders/:OrderId' element={
+            <Adminroutes>
+            <DashProvider value= {<OrderDetails />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
           
           <Route path='/admin/productlist' element={
             <Adminroutes>
-            <DashProvider value= {<Products_list />}>
+            <DashProvider value= {<ProductsPharmacy />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          <Route path='/admin/disabled' element={
+            <Adminroutes>
+            <DashProvider value= {<DisabledList />}>
               <Dashboard />
             </DashProvider>
             </Adminroutes>
@@ -197,7 +214,7 @@ const App = () => {
           } />
           <Route path='/admin/productlist/search' element={
             <Adminroutes>
-            <DashProvider value= {<Products_list />}>
+            <DashProvider value= {<ProductsPharmacy />}>
               <Dashboard />
             </DashProvider>
             </Adminroutes>
@@ -241,6 +258,15 @@ const App = () => {
               <ProductUpload />
            <CategoryUpload />
             </>}>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
+          } />
+          <Route path='admindash/products' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {
+              <Products_list />
+            }>
               <Admindash />
             </AdminDashProvider>
             </AdminProtectedRoute>

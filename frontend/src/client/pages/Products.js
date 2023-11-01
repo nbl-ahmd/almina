@@ -37,13 +37,19 @@ const Products = () => {
 
 
   useEffect(() => {
-    axios
-      .get(`${baseURL}/api/category`)
+    try{
+      const filter = { "disabled": false };
+      const filterString = JSON.stringify(filter);
+      axios
+      .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
       .then((response) => {
         setCategory(response.data);
         console.log(response.data);
       })
-      .catch((error) => console.log(error));
+     }
+     catch (error) {
+      console.error('Error fetching products by category:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -76,6 +82,7 @@ const Products = () => {
     const response = await axios.get(
       `${baseURL}/api/products/search?`, {
         params: {
+          disabledCat: false,
           q: searchQuery,
           disabled: false,
           offset: searchOffset,
@@ -95,7 +102,7 @@ const Products = () => {
 
     if (searchOffset === 0){
       setSearchedProducts(searchResults);
-      setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+      setSearchOffset(limit);
       setLoaded(false);
       setFetchingMore(true);
       
@@ -137,6 +144,7 @@ const Products = () => {
     try {
       const response = await axios.get(`${baseURL}/api/products`, {
         params: {
+          disabledCat: false,
           filter: filterString,
           disabled: false,
           offset: offset,
@@ -148,7 +156,7 @@ const Products = () => {
 
       if (offset === 0){
         setProductList(data);
-        setOffset(prevOffset => prevOffset + limit);
+        setOffset(limit);
       }else{
         setProductList(prevItems => [...prevItems, ...data]);
       setOffset(prevOffset => prevOffset + limit);
@@ -179,7 +187,7 @@ const Products = () => {
     
     <InfiniteScroll
       dataLength={searching ? searchedProducts.length : productList.length}
-      next={searching ? search : ()=>{setShowLoadMoreButton(true)}}
+      next={searching ? search : fetchProducts}
       hasMore={searching ? !loaded && fetchingMore : !loaded} // Use both loaded and fetchingMore conditions
       loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...': null }</p>}
       endMessage={<p className='pb-3 text-center'>No more data to load.</p> }

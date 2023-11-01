@@ -30,13 +30,19 @@ const Products_list = () => {
     fetchProducts();
   }, [selectedCategory]);
   useEffect(() => {
+    try{
+    const filter = { "disabled": false };
+    const filterString = JSON.stringify(filter);
     axios
-      .get(`${baseURL}/api/category`)
-      .then((response) => {
-        setCategory(response.data);
-        console.log(response.data);
-      })
-      .catch((error) => console.log(error));
+    .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
+    .then((response) => {
+      setCategory(response.data);
+      console.log(response.data);
+    })
+   }
+   catch (error) {
+    console.error('Error fetching products by category:', error);
+  }
   }, []);
 
   useEffect(() => {
@@ -71,7 +77,8 @@ const Products_list = () => {
           q: searchQuery,
           disabled: false,
           offset: searchOffset,
-          limit: limit
+          limit: limit,
+          disabledCat: false,
         }
       });
       
@@ -87,7 +94,7 @@ const Products_list = () => {
 
     if (searchOffset === 0){
       setSearchedProducts(searchResults);
-      setSearchOffset(prevsearchOffset => prevsearchOffset + limit);
+      setSearchOffset(limit);
       setLoaded(false);
       setFetchingMore(true);
       
@@ -112,45 +119,43 @@ const Products_list = () => {
   }
     }
 
-  const fetchProducts = async () => {
-    console.log('fetch products called')
-    setLoaded(false); // Reset loaded state before fetching more products
-    setIsLoading(true);
-    setError(null);
-    let filter
-    if (selectedCategory){
-       filter = {"category": selectedCategory, "sale": true, "disabled": false,  };
-    }
-    else{
-      filter = {"disabled": false, "sale": true };
-    }
-    const filterString = JSON.stringify(filter);
-    try {
-      const response = await axios.get(`${baseURL}/api/products`, {
-        params: {
-          filter: filterString,
-
-          offset: offset,
-          limit: searching === false ? limit : undefined,
-          category: selectedCategory,
-        },
-      });
-      const data = response.data;
-
-      if (offset === 0){
-        setProductList(data);
-        setOffset(prevOffset => prevOffset + limit);
-      }else{
-        setProductList(prevItems => [...prevItems, ...data]);
-      setOffset(prevOffset => prevOffset + limit);
-      }
-    } catch (error) {
-      setError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchProducts = async () => {
+      console.log('fetch products called')
+      setLoaded(false); // Reset loaded state before fetching more products
+      setIsLoading(true);
+      setError(null);
+      
+      const  filter = {
+          "disabled": false,
+          "sale": true,
+   };
+      const filterString = JSON.stringify(filter);
+      try {
+        const response = await axios.get(`${baseURL}/api/products`, {
+          params: {
+            disabledCat: false,
+            filter: filterString,
+            disabled: false,
+            offset: offset,
+            limit: searching === false ? limit : undefined,
+            category: selectedCategory,
+          },
+        });
+        const data = response.data;
   
+        if (offset === 0){
+          setProductList(data);
+          setOffset(limit);
+        }else{
+          setProductList(prevItems => [...prevItems, ...data]);
+        setOffset(prevOffset => prevOffset + limit);
+        }
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   function toggleFilterFunction() {
     setToggleFilter(!toggleFilter);
@@ -160,6 +165,8 @@ const Products_list = () => {
     <>
     
     <div id="scrollableDiv">
+
+      
       <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
         next={searching ? search : fetchProducts}

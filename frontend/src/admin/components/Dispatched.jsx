@@ -2,8 +2,11 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import baseURL from '../../axiosConfig';
 import io from 'socket.io-client';
+import { Button, Container, Card, Table, TableRow, TableCell, TableBody, TableHead, Collapse, Typography, Box, Grid, Paper, Chip } from '@mui/material';
 import NotificationSound from "../assets/notification.mp3";
+import { Link } from 'react-router-dom';
 const socket = io.connect(baseURL);
+
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -12,19 +15,50 @@ const OrderList = () => {
   const [notificationPermission, setNotificationPermission] = useState(
     'Notification' in window ? Notification.permission : 'denied'
   );
-
+  function getSaleTypeClass(saleType) {
+    switch (saleType) {
+      case 'price_cut':
+        return 'bg-p-or'; // Replace with your actual class name
+      case 'percentage_offer':
+        return 'offer-badge'; // Replace with your actual class name
+      case 'combo_offer':
+        return 'bg-p-pu'; // Replace with your actual class name
+      default:
+        return 'bg-p-or'; // Default class when saleType doesn't match any specific type
+    }
+  }
   useEffect(() => {
     const handleNewOrder = (order) => {
       try {
         const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
         fetchOrders(currentCity);
 
+        // Play audio
+        const audio = new Audio(NotificationSound);
+        audio.play();
+
+        // Display push notification if supported
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const notification = new Notification('New Order Placed', {
+            body: 'A new order has been received.',
+          });
+        }
       } catch (error) {
         console.error('Error updating orders:', error);
       }
     };
 
-    
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission().then(permission => {
+        setNotificationPermission(permission);
+      });
+    }
+
+    socket.on('newOrder', handleNewOrder);
+
+    return () => {
+      socket.off('newOrder', handleNewOrder);
+    };
   }, [orders]);
 
   useEffect(() => {
@@ -73,7 +107,7 @@ const OrderList = () => {
 
   const handleDispatchOrder = async (orderId) => {
     try {
-      await axios.put(`${baseURL}/api/orders/${orderId}`, { dispatched: false });
+      await axios.put(`${baseURL}/api/orders/${orderId}`, { dispatched: true });
       setOrders(prevOrders => prevOrders.filter(order => order._id !== orderId));
     } catch (error) {
       console.error('Error dispatching order:', error);
@@ -91,131 +125,155 @@ const OrderList = () => {
       {notificationPermission === 'default' && (
         <button className='btn btn-p mt-2 mb-2' onClick={handleRequestNotificationPermission}>Enable Notifications</button>
       )}
-      <div className="row">
+     
         <div className="pt-4">
-          <div className="card-header border-0 d-flex justify-content-between">
+         
             {/*<!-- Title -->*/}
-            <h2 className="card-header-title h4 text-uppercase">
+            
+            {/*<!-- Dropdown -->*/}
+           
+         
+          
+
+
+
+          <Container sx={{mb:3}}>
+          <h2 className="card-header-title h4 text-uppercase">
               Recent orders
             </h2>
-            {/*<!-- Dropdown -->*/}
-            <div className="dropdown">
-              <a href="javascript: void(0);" className="dropdown-toggle no-arrow text-secondary" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="14" width="14">
-                  <g>
-                    <circle cx="12" cy="3.25" r="3.25" style={{ fill: 'currentColor' }}></circle>
-                    <circle cx="12" cy="12" r="3.25" style={{ fill: "currentColor" }}></circle>
-                    <circle cx="12" cy="20.75" r="3.25" style={{ fill: "currentColor" }}></circle>
-                  </g>
-                </svg>
-              </a>
-              <div className="dropdown-menu">
-                <a href="javascript: void(0);" className="dropdown-item">
-                  Export report
-                </a>
-                <a href="javascript: void(0);" className="dropdown-item">
-                  Share
-                </a>
-                <a href="javascript: void(0);" className="dropdown-item">
-                  Action
-                </a>
-              </div>
-            </div>
-          </div>
-          {/*<!-- Card -->*/}
-          <div className="card border-0">
-            {/*<!-- Table -->*/}
-            <div className="table-responsive">
-              <table id="projectsTable" className="table table-borderless table-edge table-nowrap mb-0">
-                <thead className="thead-light table-nowrap">
-                  <tr className=''>
-                    <th scope="col" className="">No.</th>
-                    <th scope="col">Order ID</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Mobile</th>
-                    <th scope="col">Address</th>
-                    <th className="col">Link</th>
-                    <th scope="col">Payment</th>
-                    <th scope="col">Note</th>
-                    <th scope="col">Total</th>
-                    <th scope="col">Action</th> {/* New column for action */}
-                  </tr>
-                </thead>
-                <tbody className=''>
+            <Card variant="outlined" sx={{ borderRadius: '15px', border: 'none', mt: 5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px' }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: 'rgb(244, 246, 248)', "& th": { borderBottom: 'none', color: 'rgb(99, 115, 129)' } }} >
+                    <TableCell>Order ID</TableCell>
+                    <TableCell>Customer</TableCell>
+                    <TableCell>Address</TableCell>
+                    <TableCell>Payment</TableCell>
+                    <TableCell>Total</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+               
+               <TableBody >
                   {orders.map((order, index) => (
                     <React.Fragment key={order._id}>
-                      <tr className=''>
-                        <td>{index + 1}</td>
-                        <td>#{order.orderId}</td>
-                        <td>{order.customer.name}</td>
-                        <td>{order.customer.mobile}</td>
-                        <td>
-                          <small> building: {order.customer.buildingname}, room: {order.customer.flatno}, <span className='fw-bold'>{order.customer.address}</span>, {order.customer.city}, {order.customer.emirate}</small>
-                        </td>
-                        <td>{order.customer.maplink ? order.customer.maplink : 'No link'}</td>
-                        <td>
-                          <span className="badge bg-faded-success text-pb p-2">{order.customer.payment}</span>
-                        </td>
-                        <td>{order.customer.note}</td>
-                        <td>{order.customer.totalAmount}</td>
-                        <td>
-                          {!order.dispatched && (
-                            <button className="btn btn-dark btn-sm" onClick={() => handleDispatchOrder(order._id)}>
-                              revoke Dispatch
+                      <TableRow sx={{ "& td": { borderBottom: 'dotted 1px rgb(241, 243, 244)', color: 'rgb(33, 43, 54)' } }}>
+
+                        <TableCell>#{order.orderId}</TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+
+                            <span className='fw-400 mb-2'>
+                              {order.customer.name}
+                            </span>
+                            <span className='text-sm text'>
+                              {order.customer.mobile}
+                            </span>
+                          </Box>
+                        </TableCell>
+
+                        <TableCell>
+                          <Typography variant="body2">
+                            Building: {order.customer.buildingname}, room: {order.customer.flatno},{' '}
+                            <span className="fw-bold">{order.customer.address}</span>, {order.customer.city}, {order.customer.emirate}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <span className="badge bg-faded-success text-pb py-2">
+                            {order.customer.payment}
+                          </span>
+                        </TableCell>
+                        <TableCell>AED {order.customer.totalAmount}</TableCell>
+                        <TableCell sx={{display: 'flex'}}>
+                          {/* {!order.dispatched && (
+                            <button className="btn btn-primary btn-sm text-sm" onClick={() => handleDispatchOrder(order._id)}>
+                              Dispatch
                             </button>
-                          )}
-                        </td>
-                        <div className="table-toggle-wrapper">
-                          <a className="table-toggle pe-2" data-bs-toggle="collapse" href={`#multiCollapseExample${index}`} role="button" aria-expanded="false" aria-controls={`multiCollapseExample${index}`}>
-                            <i class="bi bi-caret-down-fill"></i>
-                          </a>
-                        </div>
-                      </tr>
-                      <tr className="collapse multi-collapse" id={`multiCollapseExample${index}`}>
-                        <td colSpan="9">
-                          <table className="table table-borderless align-middle table-edge table-nowrap mb-0">
-                            <thead className="thead-light">
-                              <tr>
-                                <th className="w-60px">No.</th>
-                                <th scope="col">Image</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Quantity</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {order.cartItems.map((cartItem, index) => (
-                                <tr key={index}>
-                                  <td>{index + 1}</td>
-                                  <td>
-                                    <img className="rounded-1" src={`${baseURL}/api/products/images/${cartItem._id.image}`} width="60" alt={cartItem._id.name} />
-                                  </td>
-                                  <td>{cartItem._id.name}</td>
-                                  {cartItem._id.salePrice ?
-                                  <>
-                                  <td className=''><span className='text-strike me-2'>{cartItem._id.price}</span>{cartItem._id.salePrice}</td>
-                                  </>
+                          )} */}
+                          <div
+                            className="table-toggle me-2"
+                            data-bs-toggle="collapse"
+                            href={`#multiCollapseExample${index}`}
+                            role="button"
+                            aria-expanded="false"
+                            aria-controls={`multiCollapseExample${index}`}
+                          
+                          >
+                            <i className="bi bi-caret-down-fill"></i>
+                          </div>
+                          <Link to={`/admin/orders/${order._id}`} orders ={orders}>
+                          <i className="bi bi-eye-fill " style={{color: '#7D879C'}}></i>
+                          </Link>
+                          
+                        </TableCell>
+                      </TableRow>
+                      <TableRow className="collapse multi-collapse" id={`multiCollapseExample${index}`}>
+                        <TableCell colSpan="10" sx={{ bgcolor: 'rgb(244, 246, 248)', borderBottom: 'none' }}>
+                          {order.cartItems.map((cartItem, index) => (
+                            <Box key={index} sx={{ p: 4, bgcolor: '#fff', borderRadius: '15px', display: 'flex', alignItems: 'center' , mb: 1}}>
+                              <div className='d-flex flex-grow-1'>
+                                <img src={`${baseURL}/api/products/images/${cartItem._id.image}`} alt="" width={'100px'} className='me-4 bg-body border rounded-3' />
+
+
+                                 <div className='d-flex flex-column justify-content-center'>
+                                  <span>
+                                  {cartItem._id.sale &&
+                              <span className={`badge mb-2 ${getSaleTypeClass(cartItem._id.saleType)}`}>{cartItem._id.saleBadge || 'sale'}</span>
+                              }
+                                  </span>
+                                 <span className='mb-2'>
+                                  {cartItem._id.name}
                                   
-                                  :
-                                  <td>{cartItem._id.price}</td>
-}
-                                  <td>{cartItem.quantity}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
+                                </span>
+                                 <span>
+                                  {cartItem._id.category.name}
+                                </span>
+                                 </div>
+                                
+                              </div>
+                              
+                               <div className='d-flex w-25 justify-content-between'>
+                               <div>
+                                  x {cartItem.quantity}
+                                </div>
+
+                                
+                                  <div>
+                                  {cartItem._id.salePrice ?
+                                    <>
+                                      <span className=''><span className='text-strike me-2'>{cartItem._id.price}</span>{cartItem._id.salePrice}</span>
+                                    </>
+
+                                    :
+                                    <span>{cartItem._id.price}</span>}
+                                  </div>
+                                
+                               </div>
+                             
+
+
+
+
+
+                            </Box>
+                          ))}
+                        </TableCell>
+                      </TableRow>
                     </React.Fragment>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            {/*<!-- / .table-responsive -->*/}
-          </div>
+                </TableBody>
+              </Table>
+              {orders.length === 0 && (<Box sx={{p:3 , display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow:1}}>
+                <Typography>
+                  No current Orders
+                </Typography>
+               </Box>)}
+            </Card>
+          </Container>
+
         </div>
       </div>
-    </div>
+ 
   );
 };
 

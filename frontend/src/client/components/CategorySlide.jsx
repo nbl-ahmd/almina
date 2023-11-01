@@ -91,7 +91,7 @@ const CategorySlide = ({category}) => {
       
 
         {category.map((item) => (
-        <swiper-slide key={item._id} class='mb-2'>
+        <swiper-slide key={item._id} class='mb-3 d-flex justify-content-center align-items-center'>
                  <div className="cat-wrapper d-flex align-items-center flex-column" key={item._id}>
   <Link to={`/categories/${item._id}`} className="cat-container" style={{backgroundColor: `rgba(${item.color}, 0.09)`}}>
     <img src={`${baseURL}/api/category/images/${item.image}`} alt="" />

@@ -2,25 +2,15 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
+import { Alert, Button, DialogActions, DialogContent } from '@mui/material';
 
-export default function Categoryupdate() {
-  const [category, setCategory] = useState({
-    name: '', // Initial empty name
-    image: null, // Initial null image
-  });
+export default function Categoryupdate({cat}) {
+  const [category, setCategory] = useState(cat);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
   const { id } = useParams();
 
-  useEffect(() => {
-    axios
-      .get(`${baseURL}/api/category/${id}`)
-      .then((response) => {
-        console.log(response.data);
-        setCategory(response.data);
-      })
-      .catch((error) => console.log(error));
-  }, [id]);
+
 
   const onImageChange = (e) => {
     const file = e.target.files[0];
@@ -35,7 +25,7 @@ export default function Categoryupdate() {
     formData.append('image', category.image);
 
     axios
-      .put(`${baseURL}/api/category/${id}`, formData, {
+      .put(`${baseURL}/api/category/${category._id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Set the content type to multipart/form-data
         },
@@ -53,26 +43,15 @@ export default function Categoryupdate() {
   };
 
   return (
-    <div className="container">
+
+
+    <>
+    <DialogContent>
+        <div className="container">
       <form className="form mt-5" onSubmit={onSubmit}>
-        <div className="form-holder">
-          <input
-            type="text"
-            className="form-control w-50"
-            id="categoryName"
-            placeholder="Category"
-            value={category.name}
-            onChange={(e) => setCategory({ ...category, name: e.target.value })}
-          />
-          <input
-            type="file"
-            className="form-control w-50"
-            id="categoryImage"
-            placeholder="Category Image"
-            onChange={onImageChange}
-          />
-          {/* Display the current category image if it exists */}
-          {category.image && (
+         {/* Display the current category image if it exists */}
+         <div className="d-flex justify-content-center mb-3">
+         {category.image && (
             <img
               src={`${baseURL}/api/category/images/${category.image}`}
               alt="Current Category Image"
@@ -80,14 +59,39 @@ export default function Categoryupdate() {
               style={{ maxWidth: '100px' }}
             />
           )}
-          <div className="form-group">
-            <button className="btn btn-primary mt-2" type="submit">
-              Upload
-            </button>
-          </div>
+         </div>
+
+        <div className="form-holder">
+          <input
+            type="text"
+            className="form-control mb-3"
+            id="categoryName"
+            placeholder="Category"
+            value={category.name}
+            onChange={(e) => setCategory({ ...category, name: e.target.value })}
+          />
+          <input
+            type="file"
+            className="form-control"
+            id="categoryImage"
+            placeholder="Category Image"
+            onChange={onImageChange}
+          />
+         
+          
         </div>
       </form>
-      <span>{message}</span>
+      {message &&(
+        <Alert sx={{mt:2}}>{message}</Alert>
+      )}
     </div>
+      </DialogContent>
+      <DialogActions>
+        
+        <Button onClick={onSubmit} color="primary">
+          Save
+        </Button>
+      </DialogActions></>
+    
   );
 }

@@ -5,7 +5,7 @@
   --primary-red: #FF6363;
   --heading-grey: #566a7f;
   --primary-body: #697a8d;
-  --secondary-body: rgb(155, 163, 170);
+  --secondary-body: rgb(74, 74, 74);
   --secondary-red: #FC292B;
   --primary-green: #66BFBF;
   --primary-orange: #FEB1A1;
@@ -235,7 +235,7 @@ border-radius: 4px;
   font-size: .8rem;
   position: relative;
   padding: .7rem 1rem .7rem 1rem;
-  border-radius: .7rem;
+  border-radius: 5px;
   font-weight: 400;
   line-height: 1;
   outline: none !important;
@@ -502,6 +502,9 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
   
  
 
+}
+.offer-badge{
+  background-color: rgba(255, 99, 99, 0.9);
 }
 .out-of-stock-text{
   display: flex;

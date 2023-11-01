@@ -54,7 +54,7 @@ main {
     text-decoration: none;
     color: #16192c;
     font-size: .875rem !important;
-    font-weight: 500;
+    
     line-height: 1.5rem;
 }
 
@@ -67,6 +67,10 @@ main {
 .nav-logo {
     max-width: 137px;
     ;
+}
+
+.nav-left{
+    min-width: 300px;
 }
 
 .dash-container {}
@@ -82,9 +86,9 @@ main {
     left: 0;
     margin-right: 0 !important;
     margin-left: 0 !important;
-    width: 16.25rem;
-
-    border-right: 1px solid #e7eaf0;
+    width: 15rem;
+font-family: 'Poppins' , sans-serif;
+font-weight: 300 !important;
 
 
 }
@@ -103,8 +107,8 @@ main {
 
 .topbar {
     width: calc(100% - (1.625rem * 2));
-    margin: .75rem auto 0;
-    border-radius: .375rem;
+    margin: 2rem auto 0;
+    border-radius: 10px;
     padding: 0 1.5rem;
     box-shadow: 0 0 .375rem .25rem rgba(161, 172, 184, .15);
     position: relative;
@@ -115,6 +119,12 @@ main {
     color: #697a8d;
     z-index: 2;
     background-color: #fff;
+    -webkit-backdrop-filter: blur(6px);
+background-color: rgba(255, 255, 255, 0.8);
+transition-duration: 200ms;
+transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+transition-delay: 0ms;
+transition-property: height;
 }
 
 .bi-list {
@@ -140,12 +150,11 @@ main {
 }
 
 .navbar-nav .nav-item {
-    width: 16.25rem;
+   
 }
 
 .navbar-nav .nav-link {
-    color: #697a8d !important;
-    font-weight: 200;
+    color: #4c4edd;
 }
 
 .nav-link:hover {
@@ -171,6 +180,7 @@ main {
     .sidebar-wrapper {
         height: 100vh;
         display: block !important;
+        
     }
 
 
@@ -180,7 +190,9 @@ main {
 
     .right-section {
         flex: 1 !important;
-        padding-left: 16.25rem;
+        margin-left: 15rem;
+        background-color: #f4f7fe;
+        min-height: 100vh;
 
 
     }
@@ -199,7 +211,7 @@ main {
 
     .layout-overlay {
         position: absolute;
-        top: 0;
+        top: 0px;
         right: 0;
         height: 100% !important;
         width: 100% !important;
@@ -209,6 +221,13 @@ main {
         opacity: 0.5;
         cursor: pointer;
         z-index: 2;
+         background-color: #fff;
+    -webkit-backdrop-filter: blur(6px);
+background-color: rgba(58, 54, 54, 0.8);
+transition-duration: 200ms;
+transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+transition-delay: 0ms;
+transition-property: height;
     }
 
     .layout-menu {
@@ -242,6 +261,7 @@ main {
     margin-top: 2rem;
     padding-right: 2rem;
     padding-left: 2rem;
+    
 
 
 }
@@ -432,8 +452,24 @@ select {
 .sidebar-container {
     display: flex;
     flex-flow: column;
-    height: 90%;
-    justify-content: center;
+    margin-top: 3rem;
+}
+.sidebar-container ul li a {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    
+}
+.sidebar-container ul li svg {
+   color: rgba(40, 7, 89, 0.933);
+    
+}
+.sidebar-container ul li a:hover {
+    background-color: rgba(128, 227, 208, 0.154);
+    
+}
+.sidebar-container ul li i {
+    
+    font-size: 18px;
 }
 
 .notfound {
@@ -550,4 +586,30 @@ select {
 .admin-products .card-product {
     display: flex;
     flex-direction: column;
+}
+.customer-info span{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    color: #435971;
+}
+.customer-info a{
+   color: #4c4edd;
+}
+.add-category-btn{
+    font-size: 2rem;
+    position:fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #585be1;
+    color: #fff;
+    bottom: 20px;
+    right: 20px;
+    outline: none;
+    border: none;
+    border-radius: 6px;
+    box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
 }

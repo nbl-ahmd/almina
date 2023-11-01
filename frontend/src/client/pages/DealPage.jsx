@@ -50,6 +50,7 @@ const DealPage = () => {
     try {
       const response = await axios.get(`${baseURL}/api/products`, {
         params: {
+          disabledCat: false,
           filter: filterString,
           disabled: false,
           offset: offset,
@@ -59,9 +60,9 @@ const DealPage = () => {
       });
       const data = response.data;
 
-      if (offset == 0){
+      if (offset === 0){
         setProductList(data);
-        setOffset(prevOffset => prevOffset + limit);
+        setOffset(limit);
       }else{
         setProductList(prevItems => [...prevItems, ...data]);
       setOffset(prevOffset => prevOffset + limit);

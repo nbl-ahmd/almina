@@ -21,7 +21,18 @@ console.log(product);
     setProduct(data);
   }
 
-
+  function getSaleTypeClass(saleType) {
+    switch (saleType) {
+      case 'price_cut':
+        return 'bg-p-or'; // Replace with your actual class name
+      case 'percentage_offer':
+        return 'offer-badge'; // Replace with your actual class name
+      case 'combo_offer':
+        return 'bg-p-pu'; // Replace with your actual class name
+      default:
+        return 'bg-p-or'; // Default class when saleType doesn't match any specific type
+    }
+  }
 
     const deleteProduct = (id) => {
       console.log(id);
@@ -61,7 +72,7 @@ console.log(product);
             <div className=" card-product">
            {product.sale?( <div className="text-center position-relative">
                   <div className=" position-absolute top-0 start-0">
-                    <span className="badge bg-success">Sale</span>
+                  <span className={`badge mb-2 ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>
                   </div>
                   </div>): ''}
             <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid admin-product-image"  />

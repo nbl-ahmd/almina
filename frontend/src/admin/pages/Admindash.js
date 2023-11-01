@@ -51,52 +51,52 @@ const AdminDashboard = () => {
 
 
     
-    <li className="nav-item my-1">
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
-    <Link to='/admindash/uploadproduct' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <Link to='/admindash/products' className='nav-link'>
+    <i className="ri-medicine-bottle-line me-3"></i>
         products
     </Link>
 
 </li>
-    <li className="nav-item my-1">
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
     <Link to='/admindash/salelist' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <i className="ri-percent-line me-3"></i>
         Sale
     </Link>
 
 </li>
-    <li className="nav-item my-1">
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
     <Link to='/admindash/outofstock' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <i className="ri-box-1-line me-3"></i>
         Out Of Stock
     </Link>
 
 </li>
-<li className="nav-item my-1">
+<li className="nav-item my-1" onClick={() => toggleSidebar()}>
     <Link to="/admindash/categories" className='nav-link py-2'>
         <i className="bi bi-columns-gap me-3"></i>
         category
     </Link>
 
 </li>
-<li className="nav-item my-1">
+<li className="nav-item my-1" onClick={() => toggleSidebar()}>
     <Link to="/admindash/banner" className='nav-link py-2'>
         <i className="bi bi-columns-gap me-3"></i>
         Banner
     </Link>
 
 </li>
-<li className="nav-item my-1">
+<li className="nav-item my-1" onClick={() => toggleSidebar()}>
     <Link to="/admindash/batch" className='nav-link py-2'>
         <i className="bi bi-columns-gap me-3"></i>
         Batch products
     </Link>
 
 </li>
-<li className="nav-item my-1">
+<li className="nav-item my-1" onClick={() => toggleSidebar()}>
     <Link to="/admindash/users" className='nav-link py-2'>
         <i className="bi bi-columns-gap me-3"></i>
         Users

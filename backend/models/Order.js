@@ -8,6 +8,12 @@ const orderSchema = new mongoose.Schema({
   dispatched: {
     type: Boolean,
   },
+  billno: {
+    type: String,
+  },
+  billamount: {
+    type: Number,
+  },
   customer: {
    
     name: {

@@ -10,13 +10,19 @@ const Categories = () => {
   const [category, setCategory] = useState([]);
 
   useEffect(() => {
+   try{
+    const filter = { "disabled": false };
+    const filterString = JSON.stringify(filter);
     axios
-      .get(`${baseURL}/api/category`)
-      .then((response) => {
-        setCategory(response.data);
-        console.log(response.data);
-      })
-      .catch((error) => console.log(error));
+    .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
+    .then((response) => {
+      setCategory(response.data);
+      console.log(response.data);
+    })
+   }
+   catch (error) {
+    console.error('Error fetching products by category:', error);
+  }
   }, []);
   return (
 <>

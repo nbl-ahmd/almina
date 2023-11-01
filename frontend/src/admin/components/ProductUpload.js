@@ -1,6 +1,8 @@
 import React, { useEffect, useState} from 'react';
 import axios from 'axios';
 import baseURL from '../../axiosConfig';
+import { Alert } from '@mui/material';
+
 
 
 
@@ -15,6 +17,7 @@ const ProductUpload = () => {
   const [stock, setStock] = useState('');
   const [sale, setSale] = useState(false);
   const [message, setMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [file, setFile] = useState();
   const [barcode, setBarcode] = useState('')
 
@@ -66,7 +69,7 @@ const ProductUpload = () => {
       })
       .catch(error => {
         console.log(error);
-        setMessage('Error: product was not created');
+        setErrorMessage('Error: product was not created');
       });
   };
 
@@ -148,7 +151,7 @@ const ProductUpload = () => {
 </div>
 </div>
 </div>
-<div className="col-4">
+<div className="col-6">
 <div className="nput-group">
 <div className="btn-group">
   <input type="radio" className="btn-check" name="featured" id="featured1" value='true' checked={featured} onChange={ () => setFeatured(true)}/>
@@ -161,9 +164,10 @@ const ProductUpload = () => {
 </div>
 </div>
 </div>
-<button className='btn btn-primary' type='submit'>Upload</button>
-<span className='d-block'>
-{message}
+<button className='btn btn-primary float-end mt-2' type='submit'>Upload</button>
+<span className='d-flex mt-3'>
+{message && <Alert severity="success">{message}</Alert>}
+{errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 </span>
   </form>
 

@@ -183,23 +183,52 @@ productRouter.get('/', async (req, res) => {
   const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
   const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-
+  const disabledCategory = (req.query.disabledCat);
   try {
     let products;
 
  if (limit) {
       // Fetch products with pagination
       products = await Product.find(filter)
+      .sort({ stock: -1, _id: 1  })
         .skip(offset)
         .limit(limit)
-        .populate('category')
-        .sort({ stock: -1 });
+        .populate('category');
     } else {
       // Fetch all products without pagination
       products = await Product.find(filter).populate('category');
     }
 
-    res.status(200).json(products);
+console.log(disabledCategory);
+    if(disabledCategory === 'false'){
+      // Filter products where category.disabled is false
+const filteredProducts = products.filter((product) => {
+  // If a product has a category and category.disabled is false, include it
+  if (product.category && product.category.disabled === false) {
+    return true;
+  }
+  return false;
+});
+res.status(200).json(filteredProducts);
+    
+    }
+    else if(disabledCategory === 'true'){
+      // Filter products where category.disabled is false
+const filteredProducts = products.filter((product) => {
+  // If a product has a category and category.disabled is false, include it
+  if (product.category && product.category.disabled === true) {
+    return true;
+  }
+  return false;
+});
+res.status(200).json(filteredProducts);
+    
+    }
+    else{
+      console.log('normal products')
+      res.status(200).json(products);
+    }
+
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -210,7 +239,7 @@ productRouter.get('/search', async (req, res) => {
   const searchQuery = req.query.q;
   const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-
+  const disabledCategory = (req.query.disabledCat);
   try {
     // Perform the search query against the name and description fields
 
@@ -236,7 +265,37 @@ productRouter.get('/search', async (req, res) => {
 
   }
 
-    res.json(searchResults);
+
+   if(disabledCategory === 'false'){
+      // Filter products where category.disabled is false
+const filteredProducts = searchResults.filter((searchResults) => {
+  // If a product has a category and category.disabled is false, include it
+  if (searchResults.category && searchResults.category.disabled === false) {
+    return true;
+  }
+  return false;
+});
+res.status(200).json(filteredProducts);
+    
+    }
+    else if(disabledCategory === 'true'){
+      // Filter products where category.disabled is false
+const filteredSearchResults = searchResults.filter((searchResults) => {
+  // If a product has a category and category.disabled is false, include it
+  if (searchResults.category && searchResults.category.disabled === true) {
+    return true;
+  }
+  return false;
+});
+res.status(200).json(filteredSearchResults);
+    
+    }
+    else{
+      console.log('normal products')
+      res.status(200).json(searchResults);
+    }
+
+
   } catch (error) {
     console.error('Error searching products:', error);
     res.status(500).json({ error: 'An error occurred while searching for products' });
@@ -320,7 +379,31 @@ productRouter.delete('/:id', async (req, res) => {
 });
 
 
-  
+productRouter.put('/publish/:productId', async (req, res) => {
+  const { productId } = req.params;
+  try {
+    // Find the product by its ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Update the 'disabled' property of the product
+    product.disabled = !product.disabled;
+
+    // Save the updated product
+    await product.save();
+    console.log('success');
+
+    res.json({ message: 'Product updated successfully' });
+  } catch (error) {
+    console.error('Error while updating the product:', error);
+    res.status(500).json({ error: 'Failed to update the product' });
+  }
+});
+
+
 
 productRouter.put('/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
@@ -443,6 +526,7 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
     res.status(500).send('An error occurred while updating the product');
   }
 });
+
 
 module.exports = productRouter;
 

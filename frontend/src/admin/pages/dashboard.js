@@ -4,6 +4,8 @@ import { DashConsumer } from '../../App';
 import Product from '../components/product';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthentication } from '../login/auth';
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
+import 'remixicon/fonts/remixicon.css'
 
 
 
@@ -70,9 +72,9 @@ export default function Dashboard() {
                            <ul className="navbar-nav py-1 d-flex">
 
                                 
-<li className="nav-item my-1">
+<li className="nav-item my-1" onClick={() => toggleSidebar()}>
     <Link to="/admin/" className='nav-link py-2'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <i className="ri-menu-4-fill me-3"></i>
         Dashboard
     </Link>
 
@@ -80,35 +82,36 @@ export default function Dashboard() {
 
 
     
-    <li className="nav-item my-1">
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
     <Link to='/admin/dispatched' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <i className="ri-shopping-cart-line me-3"></i>
        Dispatched Orders
     </Link>
 
 </li>
-    <li className="nav-item my-1">
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
     <Link to='/admin/productlist' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <i className="ri-medicine-bottle-line me-3"></i>
         products
     </Link>
 
 </li>
-    <li className="nav-item my-1">
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
     <Link to='/admin/outofstock' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
+    <i className="ri-box-1-line me-3"></i>
         Out of stock
     </Link>
 
 </li>
-    <li className="nav-item my-1">
+   
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
-    <Link to='/admin/salelist' className='nav-link'>
-        <i className="bi bi-columns-gap me-3"></i>
-        Sale
+    <Link to='/admin/disabled' className='nav-link'>
+    <i className="ri-close-circle-line me-3"></i>
+        Disabled
     </Link>
 
 </li>
@@ -121,14 +124,15 @@ export default function Dashboard() {
                 </nav>
                 <div className="flex-lg-1 h-100 right-section">
                     <nav className="navbar topbar" id='topbar'>
-                        <div className="w-100 d-flex justify-content-between">
+                        <div className="w-100 d-flex justify-content-between align-items-center">
 
                            <div className="nav-left d-flex">
                            <div className="nav-item d-flex me-3 collapsed d-lg-none align-items-center" onClick={() => toggleSidebar()}>
                                 <i className="bi bi-list"></i>
                             </div>
-                            <form className="form-inline ms-auto me-auto d-md-flex" role="search" onSubmit={handleSearch}>
-              <div className="input-group">
+                            <form className="form-inline ms-auto me-auto d-md-flex w-100" role="search" onSubmit={handleSearch}>
+              <div className="input-group flex-grow-1">
+              <span className="input-group-text border-0"><i className="ri-search-line"></i></span>
                 <input
                   type="search"
                   className="form-control searchbar"
@@ -137,6 +141,7 @@ export default function Dashboard() {
                   value={searchInput}
                   onChange={performSearch}
                 />
+                
 
                 {searchInput && (
                   <button type="button" className="btn clear-button" onClick={clearSearchInput}>

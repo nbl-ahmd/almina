@@ -83,7 +83,15 @@ catch (error) {
 })
 
 Orderrouter.get('/', (req, res) => {
-  Order.find().populate('cartItems._id')
+  Order.find()
+  .populate({
+    path: 'cartItems._id', // Populates the cartItems._id field
+    model: 'Product',      // Specifies the model to populate from
+    populate: {
+      path: 'category',    // Populates the category field within the Product schema
+      model: 'Category'    // Replace 'Category' with your actual Category model name
+    }
+  })
     .then(orders => {
       res.status(200).json(orders);
     })
@@ -94,7 +102,14 @@ Orderrouter.get('/', (req, res) => {
 });
 
 Orderrouter.get('/:id', async(req,res)=>{
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate({
+    path: 'cartItems._id', // Populates the cartItems._id field
+    model: 'Product',      // Specifies the model to populate from
+    populate: {
+      path: 'category',    // Populates the category field within the Product schema
+      model: 'Category'    // Replace 'Category' with your actual Category model name
+    }
+  });
   console.log(req.params.id);
 
   if(!order){
@@ -103,8 +118,27 @@ Orderrouter.get('/:id', async(req,res)=>{
   res.status(200).send(order);
 })
 
+Orderrouter.put('/edit/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    
+
+    // Check if the request body contains updated order data
+    const updatedOrderData = req.body;
+    const updateFields = {};
+    console.log(updatedOrderData);
+    const order = await Order.findByIdAndUpdate(orderId, updatedOrderData, { new: true });
+    res.json({ message: 'Order dispatched successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update and dispatch the order' });
+  }
+});
+
 Orderrouter.put('/:orderId', async (req, res) => {
   const { orderId } = req.params;
+  const {billno} = req.body;
+  const {billamount} = req.body;
   try {
     const order = await Order.findById(orderId);
     if (!order) {
@@ -112,6 +146,8 @@ Orderrouter.put('/:orderId', async (req, res) => {
     }
 
     order.dispatched = true;
+    order.billno = billno;
+    order.billamount = billamount;
     await order.save();
 
     res.json({ message: 'Order dispatched successfully' });
@@ -119,6 +155,7 @@ Orderrouter.put('/:orderId', async (req, res) => {
     res.status(500).json({ error: 'Failed to dispatch order' });
   }
 });
+
 
 
 

@@ -107,7 +107,8 @@ categoryRouter.post('/', upload.single('image'), async (req, res) => {
 
 
 categoryRouter.get('/', async (req, res) => {
-    const categoryList = await Category.find().sort({ name: 1 });
+  const filter = req.query.filter ? JSON.parse(req.query.filter) : {};
+    const categoryList = await Category.find(filter).sort({ name: 1 });
 
     if (!categoryList) {
         res.status(500).json({ succes: false })
@@ -157,6 +158,29 @@ categoryRouter.get('/:id', async(req,res)=>{
 
 
 
+categoryRouter.put('/disable/:id', upload.single('image'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Find the product by its ID
+    const category = await Category.findById(id);
+
+    if (!category) {
+      return res.status(404).json({ error: 'category not found' });
+    }
+
+    // Update the 'disabled' property of the product
+    category.disabled = !category.disabled;
+
+    // Save the updated product
+    await category.save();
+    console.log('success');
+
+    res.json({ message: 'category updated successfully' });
+  } catch (error) {
+    console.error('Error while updating the category:', error);
+    res.status(500).json({ error: 'Failed to update the category' });
+  }
+  });
 categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
     const updateFields = {};
