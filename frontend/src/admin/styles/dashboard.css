@@ -4,6 +4,7 @@
 
 main {
     min-height: 100vh;
+    background-color: #f4f7fe;
 }
 
 .filter-icon-wrapper {
@@ -70,7 +71,7 @@ main {
 }
 
 .nav-left{
-    min-width: 300px;
+   
 }
 
 .dash-container {}
@@ -79,7 +80,8 @@ main {
 
     z-index: 3;
     overflow: scroll;
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: fixed;
     top: 0;
     bottom: 0;
@@ -179,13 +181,15 @@ transition-property: height;
 
     .sidebar-wrapper {
         height: 100vh;
-        display: block !important;
+        display: flex !important;
+        flex-direction: column;
         
     }
 
 
     .sidebar-container {
         flex-direction: column;
+        flex-grow: 1;
     }
 
     .right-section {
@@ -199,24 +203,22 @@ transition-property: height;
 }
 
 .layout-menu-expanded .layout-overlay {
-    display: none;
+    display: none !important;
 }
 
 .navbar-nav {}
+.layout-overlay{
+}
 
-@media (max-width: 1200px) {
-    .layout-menu-expanded .layout-overlay {
-        display: block;
-    }
-
+@media (max-width: 992px) {
     .layout-overlay {
+        display: block;
         position: absolute;
         top: 0px;
         right: 0;
         height: 100% !important;
         width: 100% !important;
         left: 0;
-        display: block;
         background: #435971;
         opacity: 0.5;
         cursor: pointer;
@@ -229,6 +231,12 @@ transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 transition-delay: 0ms;
 transition-property: height;
     }
+
+}
+@media (max-width: 1200px) {
+    
+
+   
 
     .layout-menu {
         position: fixed !important;
@@ -420,6 +428,16 @@ select {
     width: 100%;
     padding: 5px;
 }
+.form-control:focus, .form-control:focus + .input-group-text {
+    border-color: #0a1c37; 
+    outline: 0;
+    box-shadow: none;
+}
+
+.input-group-text{
+    cursor: pointer;
+}
+
 
 
 
@@ -453,10 +471,15 @@ select {
     display: flex;
     flex-flow: column;
     margin-top: 3rem;
+    flex-grow: 1;
 }
 .sidebar-container ul li a {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+    
+}
+.sidebar-container ul li .active {
+    background-color: rgba(128, 227, 208, 0.154);
     
 }
 .sidebar-container ul li svg {
@@ -613,3 +636,13 @@ select {
     border-radius: 6px;
     box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
 }
+
+.image-container {
+    transition: transform 0.3s; /* Smooth transition effect for scaling */
+  }
+  
+  .image-container.enlarged {
+    transform: scale(1.2); /* Scale the image up when it's enlarged */
+    cursor: pointer; /* Change the cursor to indicate it can be clicked to close */
+  }
+  

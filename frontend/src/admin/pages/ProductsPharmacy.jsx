@@ -221,14 +221,31 @@ const Products_list = () => {
         endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
       
       >
-        <div className="container ">
+       
+        
+
+        <div className="">
+          <div className="">
+            {searching
+              ? 
+
+
+              <Container>
+                <Card sx={{borderRadius:'10px', my:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
+                <div className="d-flex justify-content-between p-3 align-items-center ">
+                  <span>Filter by categories</span>
+                <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
+                <i className="bi bi-filter icon"></i>
+                </div>
+              </div>
+              <div className="container">
       
       {/*filter*/}
      
 
 
 
-      <div className={`card filter-menu py-4 ${toggleFilter ? 'd-none' : 'd-flex'}`}>
+      <div className={`card filter-menu py-4  mb-3 ${toggleFilter ? 'd-none' : 'd-flex'}`}>
         <div className='px-3 d-flex justify-content-between'>
           <h6>
             categories
@@ -260,22 +277,6 @@ const Products_list = () => {
         </ul>
       </div>
     </div>
-        
-
-        <div className="">
-          <div className="">
-            {searching
-              ? 
-
-
-              <Container>
-                <Card sx={{borderRadius:'10px', my:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
-                <div className="d-flex justify-content-between p-3 align-items-center ">
-                  <span>Filter by categories</span>
-                <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
-                <i className="bi bi-filter icon"></i>
-                </div>
-              </div>
                 <TableContainer>
                     <Table sx={{'th': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'500'}, 'td': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'400', borderBottom: '1px solid rgb(244, 246, 248)'}}} aria-label="simple table">
                         <TableHead sx={{ backgroundColor: 'rgb(244, 246, 248)'}}>
@@ -345,6 +346,45 @@ const Products_list = () => {
         <i className="bi bi-filter icon"></i>
         </div>
       </div>
+      <div className="container">
+      
+      {/*filter*/}
+     
+
+
+
+      <div className={`card filter-menu py-4  mb-3 ${toggleFilter ? 'd-none' : 'd-flex'}`}>
+        <div className='px-3 d-flex justify-content-between'>
+          <h6>
+            categories
+          </h6>
+          <span className='text-pg' onClick={()=> {setSelectedCategory(null)
+          setOffset(0)
+          toggleFilterFunction()}}>Clear</span>
+        </div>
+        <ul className=''>
+        {category.map((categoryItem) => (
+       <li
+       className={`py-2 ${selectedCategory === categoryItem._id ? 'active' : ''}`}
+       key={categoryItem._id}
+       onClick={() => {
+        if (selectedCategory === categoryItem._id) {
+          setSelectedCategory(null); // Deselect the category
+        } else {
+          setSelectedCategory(categoryItem._id); // Select the category
+        }
+        setOffset(0);
+        toggleFilterFunction()
+        
+        
+      }}
+     >
+        {categoryItem.name}
+      </li>
+    ))}
+        </ul>
+      </div>
+    </div>
         <TableContainer>
             <Table sx={{'th': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'500'}, 'td': { border: 0, fontFamily: 'Poppins, sans-serif' , fontWeight:'400', borderBottom: '1px solid rgb(244, 246, 248)'}}} aria-label="simple table">
                 <TableHead sx={{ backgroundColor: 'rgb(244, 246, 248)'}}>

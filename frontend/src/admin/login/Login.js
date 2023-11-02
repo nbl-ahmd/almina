@@ -4,6 +4,8 @@
 
 import React, { useState } from 'react';
 import { useAuthentication } from '../login/auth';
+import { Alert } from '@mui/material';
+
 
 
 
@@ -11,7 +13,14 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage]= useState();
+
+  const [showPassword, setShowPassword] = useState(false);
   const { authenticate } = useAuthentication();
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
 
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
@@ -30,6 +39,7 @@ const Login = () => {
     } catch (error) {
       // Handle authentication error
       setMessage('Incorrect username or password');
+      console.log('erors');
     }
   }
 
@@ -45,7 +55,7 @@ const Login = () => {
                 </div>
                 <h5 className="mb-2 fw-400">Welcome to Al mina! 👋</h5>
                 <p className="mb-4 fw-300 text-small">Please sign-in to your account and start the adventure </p>
-
+{message && <Alert severity='error'>{message}</Alert>}
                 <form onSubmit={handleSubmit} className="mb-3">
                   <div className="mb-3">
                     <label htmlFor="username" className="form-label text-small">Username</label>
@@ -59,8 +69,9 @@ const Login = () => {
                       </a>
                     </div>
                     <div className="input-group input-group-merge">
-                      <input type="password" id="password" className="form-control" value={password} onChange={handlePasswordChange} placeholder="············" aria-describedby="password" />
-                      <span className="input-group-text cursor-pointer"><i className="bx bx-hide"></i></span>
+                      <input type={showPassword ? 'text' : 'password'} id="password" className="form-control border-end-0" value={password} onChange={handlePasswordChange} placeholder="" aria-describedby="password" />
+                      <span className="input-group-text cursor-pointer bg-white border-start-0" onClick={handleTogglePasswordVisibility}>
+                        {showPassword ?<i class="ri-eye-line"></i> :<i className="ri-eye-close-line"></i>}</span>
                     </div>
                   </div>
                   <div className="mb-3">
@@ -70,9 +81,7 @@ const Login = () => {
                     <button className="btn btn-primary btn-p d-grid w-100" type="submit">Sign in</button>
                   </div>
                 </form>
-                <div className="text-sm text-pr text-center">
-                  <span>{message}</span>
-                </div>
+                
               </div>
             </div>
           </div>

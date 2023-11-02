@@ -72,7 +72,7 @@ console.log(product);
             <div className=" card-product">
            {product.sale?( <div className="text-center position-relative">
                   <div className=" position-absolute top-0 start-0">
-                  <span className={`badge mb-2 ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>
+                  <span className={`badge mb-2 ms-1 ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>
                   </div>
                   </div>): ''}
             <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid admin-product-image"  />

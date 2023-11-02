@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import baseURL from '../../axiosConfig';
 import io from 'socket.io-client';
-import { Button, Container, Card, Table, TableRow, TableCell, TableBody, TableHead, Collapse, Typography, Box, Grid, Paper, Chip } from '@mui/material';
+import { Button, Container, Card, Table, TableRow, TableCell, TableBody, TableHead, Collapse, Typography, Box, Grid, Paper, Chip, TableContainer } from '@mui/material';
 import NotificationSound from "../assets/notification.mp3";
 import { Link } from 'react-router-dom';
 const socket = io.connect(baseURL);
@@ -142,7 +142,8 @@ const OrderList = () => {
               Recent orders
             </h2>
             <Card variant="outlined" sx={{ borderRadius: '15px', border: 'none', mt: 5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px' }}>
-              <Table>
+             <TableContainer>
+             <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: 'rgb(244, 246, 248)', "& th": { borderBottom: 'none', color: 'rgb(99, 115, 129)' } }} >
                     <TableCell>Order ID</TableCell>
@@ -263,6 +264,7 @@ const OrderList = () => {
                   ))}
                 </TableBody>
               </Table>
+             </TableContainer>
               {orders.length === 0 && (<Box sx={{p:3 , display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow:1}}>
                 <Typography>
                   No current Orders

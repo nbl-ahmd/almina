@@ -73,7 +73,7 @@ export default function Dashboard() {
 
                                 
 <li className="nav-item my-1" onClick={() => toggleSidebar()}>
-    <Link to="/admin/" className='nav-link py-2'>
+    <Link to="/admin" className={location.pathname === '/admin' ? 'nav-link active ' : 'nav-link'}>
     <i className="ri-menu-4-fill me-3"></i>
         Dashboard
     </Link>
@@ -84,7 +84,7 @@ export default function Dashboard() {
     
     <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
-    <Link to='/admin/dispatched' className='nav-link'>
+    <Link to='/admin/dispatched' className={location.pathname === '/admin/dispatched' ? 'nav-link active ' : 'nav-link'}>
     <i className="ri-shopping-cart-line me-3"></i>
        Dispatched Orders
     </Link>
@@ -92,7 +92,7 @@ export default function Dashboard() {
 </li>
     <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
-    <Link to='/admin/productlist' className='nav-link'>
+    <Link to='/admin/productlist' className={location.pathname === '/admin/productlist' ? 'nav-link active ' : 'nav-link'}>
     <i className="ri-medicine-bottle-line me-3"></i>
         products
     </Link>
@@ -100,7 +100,7 @@ export default function Dashboard() {
 </li>
     <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
-    <Link to='/admin/outofstock' className='nav-link'>
+    <Link to='/admin/outofstock' className={location.pathname === '/admin/outofstock' ? 'nav-link active ' : 'nav-link'}>
     <i className="ri-box-1-line me-3"></i>
         Out of stock
     </Link>
@@ -109,7 +109,7 @@ export default function Dashboard() {
    
     <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
-    <Link to='/admin/disabled' className='nav-link'>
+    <Link to='/admin/disabled' className={location.pathname === '/admin/disabled' ? 'nav-link active ' : 'nav-link'}>
     <i className="ri-close-circle-line me-3"></i>
         Disabled
     </Link>
@@ -119,6 +119,8 @@ export default function Dashboard() {
 
 
 </ul>
+
+
                            </div>
                      
                 </nav>
@@ -160,7 +162,7 @@ export default function Dashboard() {
                              </form> */}
                            </div>
 
-                           <div className="nav-right">
+                           <div className="nav-right ms-2">
                           
         <div className="avatar avatar-online d-flex align-items-center justify-content-center" onClick={()=>{
 setDropdown(!dropdown)

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Categorylist from './Categorylist';
 import baseURL from '../../axiosConfig';
-import { Tab, Tabs, Grid, Card, CardHeader, CardContent, Chip, ThemeProvider, createTheme, Box } from '@mui/material';
+import { Tab, Tabs, Grid, Card, CardHeader, CardContent, Chip, ThemeProvider, createTheme, Box, Container } from '@mui/material';
 import{Modal} from 'react-bootstrap';
 
 
@@ -87,14 +87,14 @@ const CategoryUpload = () => {
   return (
     <>
     <ThemeProvider theme={theme}>
-    <div className="container my-5">
+    <Container sx={{mt:4}}>
         <h6 className="ps-3"> Categories</h6>
         <Card sx={{paddingBottom: 5, mt:5, borderRadius:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
         <Tabs 
         
         aria-label="custom indicator color tabs" sx={{ px:3, boxShadow: 'rgba(145, 158, 171, 0.08) 0px -2px 0px 0px inset'}} value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
           <Tab  sx={{
-            'span' :{textOverflow: 'clip'},
+            'span' :{textOverflow: 'clip', p:0},
                 textTransform: 'none',
                 minWidth: '50px', 
                 mr:4,// Adjust the width as needed
@@ -102,7 +102,8 @@ const CategoryUpload = () => {
                 py:2,
                 px:0,
                 
-              }} label={<span style={{}}>Active <Chip sx={{width:30, height:30, borderRadius:'5px', backgroundColor: 'rgb(33, 43, 54)', color:'#fff', ml:1}} label={allCategories.length} /></span>} />
+              }} label={<span style={{}}>Active 
+              <Chip sx={{width:30, height:30, borderRadius:'5px', backgroundColor: 'rgb(33, 43, 54)', color:'#fff', ml:1,}} label={allCategories.length} /></span>} />
           <Tab sx={{textTransform :"none", minWidth: '50px', py:2,
                 px:0,}} label={<span style={{}}>Disabled<Chip sx={{'span' :{textOverflow: 'clip', p:0}, width:30, height:30,  borderRadius:'5px', backgroundColor: 'rgb(255, 171, 0)',  ml:1}} label={disabledCategories.length} /></span>} />
         </Tabs>
@@ -115,14 +116,14 @@ const CategoryUpload = () => {
        <Grid container spacing={4}>
      
           {(activeTab === 0 ? allCategories : disabledCategories).map((category) => (
-            <Grid item xs={4} key={category._id}>
+            <Grid item xs={12} sm={6} md={4} key={category._id}>
               <Categorylist category={category} onCategoryUpdate={handleCategoryUpdate} />
             </Grid>
           ))}
         </Grid>
        </CardContent>
         </Card>
-      </div>
+      </Container>
     </ThemeProvider>
       
 

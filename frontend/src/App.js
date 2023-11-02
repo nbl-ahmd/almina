@@ -40,6 +40,7 @@ import Dispatched from './admin/components/Dispatched';
 import ProductsPharmacy from './admin/pages/ProductsPharmacy';
 import OrderDetails from './admin/pages/OrderDetails';
 import DisabledList from './admin/pages/DisabledList';
+import SettingsPage from './admin/pages/SettingsPage';
 
 
 
@@ -245,13 +246,51 @@ const App = () => {
           <Route path='admindash' element={
               <AdminProtectedRoute>
               <AdminDashProvider value= {<>
-                <ProductUpload />
-             <CategoryUpload />
+                <Products_list />
               </>}>
                 <Admindash />
               </AdminDashProvider>
               </AdminProtectedRoute>
           } />
+          <Route path='admindash/search' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <Products_list />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+          <Route path='admindash/outofstock/search' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <OutOfStock />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+
+          <Route path='admindash/salelist/search' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <SalesList />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+
+          <Route path='admindash/categories/search' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <Products_list />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+
           <Route path='admindash/uploadproduct' element={
             <AdminProtectedRoute>
             <AdminDashProvider value= {<>
@@ -289,6 +328,15 @@ const App = () => {
             <AdminProtectedRoute>
             <AdminDashProvider value= {<>
               <BannerForm />
+            </>}>
+              <Admindash />
+            </AdminDashProvider>
+            </AdminProtectedRoute>
+          } />
+          <Route path='admindash/settings' element={
+            <AdminProtectedRoute>
+            <AdminDashProvider value= {<>
+              <SettingsPage />
             </>}>
               <Admindash />
             </AdminDashProvider>

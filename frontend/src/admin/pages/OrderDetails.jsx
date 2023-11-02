@@ -1,4 +1,4 @@
-import { Container, Grid, Card, Box, Typography, TextField, Chip, Alert } from '@mui/material';
+import { Container, Grid, Card, Box, Typography, TextField, Chip, Alert, Dialog } from '@mui/material';
 import baseURL from '../../axiosConfig';
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -14,6 +14,8 @@ const OrderDetails = () => {
   const [documentAmount, setDocumentAmount] = useState(); // Add state for document ID
   const [documentAmountError, setDocumentAmountError] = useState(''); 
   const [documentAmountValidateError, setDocumentAmountValidateError] = useState(''); 
+  const [selectedImage, setSelectedImage] = useState(null);
+const [galleryOpen, setGalleryOpen] = useState(false);
 
   useEffect(() => {
     axios
@@ -149,6 +151,10 @@ const OrderDetails = () => {
     updatedOrder.cartItems[index].quantity = newQuantity;
     setOrder(updatedOrder);
   };
+  const openGallery = (imageURL) => {
+    setSelectedImage(imageURL);
+    setGalleryOpen(true);
+  };
 
   return (
     <Container sx={{ mt: 2, marginBottom: '5rem' }}>
@@ -170,8 +176,8 @@ const OrderDetails = () => {
               Dispatch
             </Button>
           ):(
-            <Button className="btn btn-p" onClick={() => handleDispatchOrder(order._id)}>
-              Dispatch
+            <Button className="btn btn-dark" onClick={() => handleDispatchOrder(order._id)}>
+              Update
             </Button>
           )
         )}
@@ -184,9 +190,9 @@ const OrderDetails = () => {
               <h6>Details</h6>
 
               {editMode ? (
-                <Button onClick={handleSaveClick}>Save</Button>
+                <Button className='btn-p' onClick={handleSaveClick}>Save</Button>
               ) : (
-                <Button onClick={handleEditClick}>Edit</Button>
+                <Button className='btn-dark' onClick={handleEditClick}>Edit</Button>
               )}
             </div>
 
@@ -197,7 +203,18 @@ const OrderDetails = () => {
                 order.cartItems.map((cartItem, index) => (
                   <Box key={index} sx={{ py: 3, bgcolor: '#fff', borderRadius: '15px', display: 'flex', alignItems: 'center', mb: 1, fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: '400' }}>
                     <div className="d-flex flex-grow-1">
-                      <img src={`${baseURL}/api/products/images/${cartItem._id.image}`} alt="" width={'100px'} className="me-4 bg-body border rounded-3" />
+                    <div
+  className="image-container"
+  onClick={() => openGallery(cartItem._id.image)}
+>
+  <img
+    src={`${baseURL}/api/products/images/${cartItem._id.image}`}
+    alt=""
+    width={'100px'}
+    className="me-4 bg-body border rounded-3"
+  />
+</div>
+
 
                       <div className="d-flex flex-column justify-content-center user-details">
                         <span>
@@ -339,6 +356,17 @@ const OrderDetails = () => {
       </Grid>
 
       <Grid item xs={12} md={8}></Grid>
+      <Dialog 
+        open={galleryOpen}
+        onClose={()=>{
+          setGalleryOpen(!galleryOpen);
+        }}>
+        <img
+    src={`${baseURL}/api/products/images/${selectedImage}`}
+    alt=""
+    width={'400px'}
+  />
+      </Dialog>
     </Container>
   );
 };

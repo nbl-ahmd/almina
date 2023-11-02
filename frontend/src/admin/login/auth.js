@@ -52,6 +52,7 @@ export const useAuthentication = () => {
     } catch (error) {
       console.error('Login failed', error);
       // Handle login error
+      throw error;
     }
   };
 

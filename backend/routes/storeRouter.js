@@ -7,10 +7,11 @@ storeRouter.put('/status', async (req, res) => {
   const { status } = req.body;
   console.log('Received status:', status); // Add this line for debugging
 
-  if (status === 'open' || status === 'closed') {
+  if (typeof status === 'boolean' ) {
     try {
+      console.log('condition status:',status)
       // Update the store status in the database
-      const result = await Store.findOneAndUpdate({}, { status }, { upsert: true });
+      const result = await Store.findOneAndUpdate({}, { status: status ? 'open' : 'closed' }, { upsert: true });
       console.log('Update result:', result); // Log the result for debugging
 
       res.status(200).json({ message: 'Store status updated successfully' });
