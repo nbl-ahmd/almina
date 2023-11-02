@@ -35,18 +35,18 @@ const AdminDashboard = () => {
         event.preventDefault();
     
         if (searchInput.trim() === '') {
-          navigate('/admin'); // Redirect to the products page
+          navigate('/admindash'); // Redirect to the products page
         } else {
           const encodedSearchInput = encodeURIComponent(searchInput.trim());
     
     
-          navigate(`search?q=${encodedSearchInput}`);
+          navigate(`/admindash/products/search?q=${encodedSearchInput}`);
         }
       };
     
       const clearSearchInput = () => {
         setSearchInput('');
-        navigate('/admin/productlist'); // Redirect to the search page without any query parameter
+        navigate('/admindash'); // Redirect to the search page without any query parameter
       };
 
       

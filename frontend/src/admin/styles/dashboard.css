@@ -649,3 +649,24 @@ select {
     cursor: pointer; /* Change the cursor to indicate it can be clicked to close */
   }
   
+
+  .sub-searchbar {
+    background-color: #ffffff;
+    border: 1px solid #e1e2e4;
+    border-radius: .7rem;
+    font-size: .8rem;
+    position: relative;
+    padding: .7rem 1rem .7rem 1rem;
+    border-radius: 5px;
+    font-weight: 400;
+    line-height: 1;
+    outline: none !important;
+    /* Remove the blue outline */
+    max-width: 400px;
+  
+  }
+  .sub-searchbar-icon{
+    background-color: #ffffff;
+    border: 1px solid #e1e2e4 !important;
+  }
+  

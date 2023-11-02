@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import ProductCard_admin from '../components/ProductCard_admin';
 import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BackToTopButton from '../../client/components/BackToTopButton';
 import { Card, CardContent, Chip, Container } from '@mui/material';
 
@@ -25,6 +25,9 @@ const Products_list = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const [toggleFilter, setToggleFilter]= useState(true);
+  const [searchInput, setSearchInput] = useState('');
+  const navigate = useNavigate();
+  
   const location = useLocation();
 
   useEffect(() => {
@@ -65,6 +68,29 @@ const Products_list = () => {
     }
   }, [searchQuery]);
 
+
+  const performSearch = (event) => {
+    setSearchInput(event.target.value);
+  };
+
+  const handleSearch = async (event) => {
+    return
+    event.preventDefault();
+
+    if (searchInput.trim() === '') {
+      navigate('/admindash/salelist'); // Redirect to the products page
+    } else {
+      const encodedSearchInput = encodeURIComponent(searchInput.trim());
+
+
+      navigate(`/admindash/salelist/search?q=${encodedSearchInput}`);
+    }
+  };
+
+  const clearSearchInput = () => {
+    setSearchInput('');
+    navigate('/admindash/salelist'); // Redirect to the search page without any query parameter
+  };
 
 
   const search = async () => {
@@ -183,8 +209,28 @@ const Products_list = () => {
           <h6 className='px-2 mt-4'>Sale Products</h6>
           <Card sx={{ mt:5, borderRadius:'15px', boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
           <Container sx={{ px:3, boxShadow: 'rgba(145, 158, 171, 0.08) 0px -2px 0px 0px inset', py:1}}>
-      <div className="d-flex justify-content-between p-3 align-items-center ">
-          <span>Filter by categories</span>
+          <div className="d-flex justify-content-between p-3 align-items-center ">
+          <span className='me-2 flex-nowrap' >Filter by categories</span>
+          <form className="form-inline  d-md-flex  me-3 w-75 justify-content-center" role="search" onSubmit={handleSearch}>
+              <div className=" input-group justify-content-center">
+              <label className="input-group-text border-0 sub-searchbar-icon"><i className="ri-search-line"></i></label>
+                <input
+                  type="search"
+                  className="form-control sub-searchbar"
+                  placeholder="Search..."
+                  aria-label="Search"
+                  value={searchInput}
+                  onChange={performSearch}
+                />
+                
+
+                {searchInput && (
+                  <button type="button" className="btn clear-button" onClick={clearSearchInput}>
+                    <i className="bi bi-x"></i>
+                  </button>
+                )}
+              </div>
+            </form>
         <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
         <i className="bi bi-filter icon"></i>
         </div>

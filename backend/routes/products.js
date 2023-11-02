@@ -236,6 +236,7 @@ res.status(200).json(filteredProducts);
 });
 
 productRouter.get('/search', async (req, res) => {
+  const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
   const searchQuery = req.query.q;
   const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided

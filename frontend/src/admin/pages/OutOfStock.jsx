@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import ProductCard_admin from '../components/ProductCard_admin';
 import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BackToTopButton from '../../client/components/BackToTopButton';
 import ProductCardPharmacy from '../components/ProductCardPharmacy';
 import { Box, Card, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
@@ -30,7 +30,38 @@ const Products_list = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [toggleFilter, setToggleFilter]= useState(true);
+  const [searchInput, setSearchInput] = useState('');
+  const navigate = useNavigate();
+
+  
   const location = useLocation();
+
+
+
+  const performSearch = (event) => {
+    setSearchInput(event.target.value);
+  };
+
+  const handleSearch = async (event) => {
+    return
+    event.preventDefault();
+
+    if (searchInput.trim() === '') {
+      navigate('/admindash/outofstock'); // Redirect to the products page
+    } else {
+      const encodedSearchInput = encodeURIComponent(searchInput.trim());
+
+
+      navigate(`/
+outofstock/search?q=${encodedSearchInput}`);
+    }
+  };
+
+  const clearSearchInput = () => {
+    setSearchInput('');
+    navigate('/admindash/outofstock'); // Redirect to the search page without any query parameter
+  };
+
 
   function getSaleTypeClass(saleType) {
     switch (saleType) {
@@ -233,11 +264,31 @@ const Products_list = () => {
               <Container>
                 <Card sx={{borderRadius:'10px', mx:0, my:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
                 <div className="d-flex justify-content-between p-3 align-items-center ">
-                  <span>Filter by categories</span>
-                <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
-                <i className="bi bi-filter icon"></i>
-                </div>
+          <span className='me-2 flex-nowrap' >Filter by categories</span>
+          <form className="form-inline  d-md-flex  me-3 w-75 justify-content-center" role="search" onSubmit={handleSearch}>
+              <div className=" input-group justify-content-center">
+              <label className="input-group-text border-0 sub-searchbar-icon"><i className="ri-search-line"></i></label>
+                <input
+                  type="search"
+                  className="form-control sub-searchbar"
+                  placeholder="Search..."
+                  aria-label="Search"
+                  value={searchInput}
+                  onChange={performSearch}
+                />
+                
+
+                {searchInput && (
+                  <button type="button" className="btn clear-button" onClick={clearSearchInput}>
+                    <i className="bi bi-x"></i>
+                  </button>
+                )}
               </div>
+            </form>
+        <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
+        <i className="bi bi-filter icon"></i>
+        </div>
+      </div>
 
               <div className="container">
       
@@ -286,6 +337,7 @@ const Products_list = () => {
                     <TableCell align="left">Stock</TableCell>
                     <TableCell align="left">Price</TableCell>
                     <TableCell align="left">Publish</TableCell>
+                    <TableCell align="left">Action</TableCell>
                   </TableRow>
                         </TableHead>
                         <TableBody>
@@ -327,6 +379,15 @@ const Products_list = () => {
             inputProps={{ 'aria-label': 'toggle product' }}
           />
         </TableCell>
+        <TableCell align="left"><div className=' d-flex  '>
+                      <button className="btn btn-sm d-flex" onClick={() =>{
+                        handleEditClick();
+                        setProducts(product);
+                        }}>
+                  <i className="bi bi-pen pe-2 text-pg text-sm"></i>
+                  <span className="text-pg text-sm">Edit</span>
+                </button>
+                      </div></TableCell>
                       
                     </TableRow>
                   ))}
@@ -342,7 +403,27 @@ const Products_list = () => {
                   <Container>
         <Card sx={{borderRadius:'10px', mx:0, my:5, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
         <div className="d-flex justify-content-between p-3 align-items-center ">
-          <span>Filter by categories</span>
+          <span className='me-2 flex-nowrap' >Filter by categories</span>
+          <form className="form-inline  d-md-flex  me-3 w-75 justify-content-center" role="search" onSubmit={handleSearch}>
+              <div className=" input-group justify-content-center">
+              <label className="input-group-text border-0 sub-searchbar-icon"><i className="ri-search-line"></i></label>
+                <input
+                  type="search"
+                  className="form-control sub-searchbar"
+                  placeholder="Search..."
+                  aria-label="Search"
+                  value={searchInput}
+                  onChange={performSearch}
+                />
+                
+
+                {searchInput && (
+                  <button type="button" className="btn clear-button" onClick={clearSearchInput}>
+                    <i className="bi bi-x"></i>
+                  </button>
+                )}
+              </div>
+            </form>
         <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
         <i className="bi bi-filter icon"></i>
         </div>
@@ -360,6 +441,7 @@ const Products_list = () => {
           <h6>
             categories
           </h6>
+          
           <span className='text-pg' onClick={()=> {setSelectedCategory(null)
           setOffset(0)
           toggleFilterFunction()}}>Clear</span>

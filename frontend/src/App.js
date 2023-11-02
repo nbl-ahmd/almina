@@ -252,7 +252,7 @@ const App = () => {
               </AdminDashProvider>
               </AdminProtectedRoute>
           } />
-          <Route path='admindash/search' element={
+          <Route path='admindash/products/search' element={
               <AdminProtectedRoute>
               <AdminDashProvider value= {<>
                 <Products_list />
