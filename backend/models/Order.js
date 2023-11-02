@@ -76,6 +76,10 @@ const orderSchema = new mongoose.Schema({
       type: Number,
       required: true
     },
+    deliveryFee: {
+      type: Number,
+      required: true
+    },
 
   },
   cartItems: [

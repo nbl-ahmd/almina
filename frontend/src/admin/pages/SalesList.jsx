@@ -74,7 +74,6 @@ const Products_list = () => {
   };
 
   const handleSearch = async (event) => {
-    return
     event.preventDefault();
 
     if (searchInput.trim() === '') {
@@ -94,7 +93,12 @@ const Products_list = () => {
 
 
   const search = async () => {
-    console.log("search offset" + searchOffset)
+    console.log("search offset" + searchOffset);
+    const  filter = [
+      {"disabled": false},
+      {"sale": true}
+  ];
+  const filterString = JSON.stringify(filter);
     try{
     console.log("search ...." +searchQuery);
 ;
@@ -102,6 +106,7 @@ const Products_list = () => {
       `${baseURL}/api/products/search?`, {
         params: {
           q: searchQuery,
+          filter: filterString,
           disabled: false,
           offset: searchOffset,
           limit: limit,

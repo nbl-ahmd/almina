@@ -14,7 +14,7 @@ const Checkout = () => {
   const [currentLocation, setCurrentLocation] = useState('');
   const [maplink, setMaplink] = useState('');
   const [editingLocation, setEditingLocation] = useState(false);
-  const [city, setCity] = useState('select City');
+  // const [city, setCity] = useState('select City');
   const [emirate, setEmirate] = useState('select Emirate');
   const [errorMessage, setErrorMessage] = useState('');
   const [deliveryfee, setDeliveryfee] = useState(0);
@@ -22,6 +22,7 @@ const Checkout = () => {
   const [formError, setFormError] = useState(false);
   const [suburbs, setSuburbs] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
+  const [fetchingSuburbs, setFetchingSuburbs] = useState(false);
 
 // other state variables...
 
@@ -34,6 +35,8 @@ useEffect(() => {
 
 const fetchSuburbs = async () => {
   try {
+    setFetchingSuburbs(true);
+
     let emirateCode = '';
 
     // Map emirate to corresponding ISO 3166-2 code
@@ -71,9 +74,13 @@ const fetchSuburbs = async () => {
       id: element.id,
       name: element.tags['name:en'] || element.tags.name,
     }));
+
+    setFetchingSuburbs(false);
     setSuburbs(loadedSuburbs);
   } catch (error) {
+    // Handle the error, e.g., show an error message
     console.error('Error fetching suburbs:', error);
+    setFetchingSuburbs(false); // Ensure it's set back to false in case of an error
   }
 };
 
@@ -184,7 +191,7 @@ const fetchSuburbs = async () => {
       setDeliveryfee(deliveryfee);
       
 
-      setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)) });
+      setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee});
 
       console.log("emirates", emirate);
       console.log("cinfo", customerInfo);
@@ -195,7 +202,7 @@ const fetchSuburbs = async () => {
     } catch (error) {
       console.error('Error fetching location:', error);
     }
-
+console.log("123" + selectedCity);
 
   };
 
@@ -229,7 +236,7 @@ const fetchSuburbs = async () => {
       setDeliveryfee(deliveryfee);
       
 
-      setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)) });
+      setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee });
     
     console.log(customerInfo);
     
@@ -396,12 +403,18 @@ const fetchSuburbs = async () => {
             value={selectedCity}
             onChange={handleCityChange}
           >
-            <option value="">Select City</option>
+            {fetchingSuburbs ? (
+          <option value="">Loading Cities...</option>
+        ) : (
+          <>
+            <option value={selectedCity || ''}>{selectedCity || 'Select City'}</option>
             {suburbs.map((suburb) => (
               <option key={suburb.id} value={suburb.name}>
                 {suburb.name}
               </option>
             ))}
+          </>
+        )}
           </select>
         </div>
       </div>

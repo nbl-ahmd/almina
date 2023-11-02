@@ -236,22 +236,30 @@ res.status(200).json(filteredProducts);
 });
 
 productRouter.get('/search', async (req, res) => {
-  const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
+  const filter = req.query.filter ? JSON.parse(req.query.filter) : []; // Parse the filter JSON string if provided
   const searchQuery = req.query.q;
   const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
   const disabledCategory = (req.query.disabledCat);
+  console.log(filter);
   try {
     // Perform the search query against the name and description fields
 
     let searchResults;
     if (limit) {
-     searchResults = await Product.find({
-      $or: [
-        { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the name field
-        { description: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the description field
-      ],
-    })
+      const searchQueryConditions = {
+        $or: [
+          { name: { $regex: searchQuery, $options: 'i' } },
+          { description: { $regex: searchQuery, $options: 'i' } },
+        ],
+      };
+      const combinedConditions = {
+        $and: [searchQueryConditions, ...filter],
+      };
+
+      console.log(combinedConditions);
+
+     searchResults = await Product.find(combinedConditions)
     .skip(offset)
         .limit(limit)
         .populate('category');

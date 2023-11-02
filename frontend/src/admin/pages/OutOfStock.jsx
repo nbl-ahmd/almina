@@ -43,7 +43,7 @@ const Products_list = () => {
   };
 
   const handleSearch = async (event) => {
-    return
+    
     event.preventDefault();
 
     if (searchInput.trim() === '') {
@@ -52,8 +52,7 @@ const Products_list = () => {
       const encodedSearchInput = encodeURIComponent(searchInput.trim());
 
 
-      navigate(`/
-outofstock/search?q=${encodedSearchInput}`);
+      navigate(`/admindash/outofstock/search?q=${encodedSearchInput}`);
     }
   };
 
@@ -144,7 +143,12 @@ outofstock/search?q=${encodedSearchInput}`);
   
 
   const search = async () => {
-    console.log("search offset" + searchOffset)
+    console.log("search offset" + searchOffset);
+    const  filter = [
+      {"disabled": false},
+      {"stock": 0}
+  ];
+  const filterString = JSON.stringify(filter);
     try{
     console.log("search ...." +searchQuery);
 ;
@@ -152,6 +156,7 @@ outofstock/search?q=${encodedSearchInput}`);
       `${baseURL}/api/products/search?`, {
         params: {
           q: searchQuery,
+          filter: filterString,
           disabled: false,
           offset: searchOffset,
           limit: limit,
