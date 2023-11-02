@@ -58,7 +58,7 @@ const AdminDashboard = () => {
 
 
   return (
-<div className='container-fluid admin'>
+<div className='container-fluid admin admin-bg'>
             <div className="d-flex flex-column flex-lg-row h-lg-full  dash-container">
 
                 <nav className={`navbar navbar-expand-lg ${sidebarVisible ? 'navbar-expand' : 'collapse'}  py-0 bg-white navbar-vertical navbar-light sidebar-wrapper overflow-hidden sidebar-list justify-content-lg-start`} id='sidebarCollapse' >
@@ -148,7 +148,7 @@ const AdminDashboard = () => {
                 </nav>
                 <div className="flex-lg-1   right-section ">
                     <nav className="navbar topbar" id='topbar'>
-                        <div className="w-100 d-flex justify-content-between">
+                        <div className="w-100 d-flex justify-content-between align-items-center">
 
                            <div className="nav-left d-flex">
                            <div className="nav-item d-flex me-3 collapsed d-lg-none align-items-center" onClick={() => toggleSidebar()}>
@@ -177,7 +177,7 @@ const AdminDashboard = () => {
             </form>
                            </div>
 
-                           <div className="nav-right">
+                           <div className="nav-right ms-2">
                           
         <div className="avatar avatar-online d-flex align-items-center justify-content-center" onClick={()=>{
 setDropdown(!dropdown)

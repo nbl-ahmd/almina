@@ -81,8 +81,8 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
                   {product.salePrice ?(
 
                     <>
-                    <span className="text-small me-2 text-strike">AED {product.price}</span>
-                    <span className="product-price">AED {product.salePrice}</span>
+                    <span className="product-price me-2">AED {product.salePrice}</span>
+                    <span className="text-small  text-strike">AED {product.price}</span>
                     </>
                     ):  <span className="product-price">AED {product.price}</span>}
                    

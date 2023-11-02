@@ -5,6 +5,7 @@ import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useLocation } from 'react-router-dom';
 import BackToTopButton from '../../client/components/BackToTopButton';
+import { Card, CardContent, Chip, Container } from '@mui/material';
 
 const Products_list = () => {
   const [productList, setProductList] = useState([]);
@@ -167,15 +168,21 @@ const Products_list = () => {
     <div id="scrollableDiv">
 
       
-      <InfiniteScroll
+    <InfiniteScroll
         dataLength={searching ? searchedProducts.length : productList.length}
         next={searching ? search : fetchProducts}
         hasMore={searching ? !loaded && fetchingMore : !loaded} // Use both loaded and fetchingMore conditions
-        loader={<p className='pb-3 text-center'>{isLoading ? 'Loading...' : 'No more data to load.'}</p>}
+        loader={<p className='pb-3 text-center mt-4'>{isLoading ? 'Loading...' : 'No more data to load.'}</p>}
         endMessage={<p className='pb-3 text-center'>No more data to load.</p>}
       
       >
-        <div className="container ">
+        
+        
+
+        <Container sx={{mt:2}}>
+          <h6 className='px-2 mt-4'>Sale Products</h6>
+          <Card sx={{ mt:5, borderRadius:'15px', boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px'}}>
+          <Container sx={{ px:3, boxShadow: 'rgba(145, 158, 171, 0.08) 0px -2px 0px 0px inset', py:1}}>
       <div className="d-flex justify-content-between p-3 align-items-center ">
           <span>Filter by categories</span>
         <div className='filter-icon-wrapper' onClick={() => toggleFilterFunction()}>
@@ -218,10 +225,8 @@ const Products_list = () => {
     ))}
         </ul>
       </div>
-    </div>
-        
-
-        <div className="container mb-5">
+    </Container>
+          <CardContent sx={{px:1}}>
           <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
             {searching
               ? searchedProducts.map(product => (
@@ -233,7 +238,9 @@ const Products_list = () => {
                   <ProductCard_admin key={product._id} productData={product} />
                 ))}
           </div>
-        </div>
+          </CardContent>
+          </Card>
+        </Container>
       </InfiniteScroll> 
     </div>
    

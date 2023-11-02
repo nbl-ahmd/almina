@@ -4,7 +4,10 @@
 
 main {
     min-height: 100vh;
+}
+.admin-bg{
     background-color: #f4f7fe;
+    min-height: 100vh;
 }
 
 .filter-icon-wrapper {

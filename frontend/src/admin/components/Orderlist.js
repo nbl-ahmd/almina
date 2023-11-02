@@ -267,7 +267,7 @@ const OrderList = () => {
               </TableContainer>
               {orders.length === 0 && (<Box sx={{p:3 , display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow:1}}>
                 <Typography>
-                  No current Orders
+                No Pending Orders
                 </Typography>
                </Box>)}
             </Card>

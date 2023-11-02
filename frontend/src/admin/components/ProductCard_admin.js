@@ -93,7 +93,15 @@ console.log(product);
                 </div>
                
                 <div className="">
+                 <div className="d-flex flex-column">
+                 {product.salePrice ? 
+                 <>
+                 <span className=" text-strike me-auto">AED {product.price}</span>
+                 <span className="product-price me-auto">AED {product.salePrice}</span>
+                 </>:
                 <span className="product-price">AED {product.price}</span>
+                 }
+                 </div>
                  <div className='d-flex justify-content-between'>
                  <div className=' d-flex  align-items-center rounded-1'>
                   <div className="btn  btn-sm text-pr d-flex p-0 text-sm d-flex align-items-center" onClick={() => deleteProduct(product._id)}>

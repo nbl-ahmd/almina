@@ -543,6 +543,7 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 .text-strike{
   text-decoration: none;
   position: relative;
+  font-size: 14rpx;
 }
 .text-strike::before{
   content: '';
@@ -557,6 +558,7 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
   color: var(--primary-red);
   font-family: Poppins, sans-serif;
   font-weight: 400;
+  font-size: 15px;
 }
 
 .overflow {
