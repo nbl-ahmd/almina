@@ -248,7 +248,7 @@ setFetchingLocation(false);
 
     setEmirate(selectedEmirate);
     setDeliveryfee(deliveryFee);
-      
+    setSelectedCity(''); // Set the selectedCity to an empty string here  
 
       setCustomerInfo({ ...customerInfo, emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee });
     
