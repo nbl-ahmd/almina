@@ -4,16 +4,19 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/cartcontext';
 import axios from 'axios';
 import baseURL from '../../axiosConfig';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 import Box from '@mui/material/Box';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
+import { Button, Dialog, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 
 const Navbar = () => {
   const [value, setValue] = React.useState(0);
-
+const [showNotification, setShowNotification] = useState(true);
+const [showNotificationModal, setShowNotificationModal] = useState(false);
   const { cartItems } = useContext(CartContext);
   const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
@@ -62,6 +65,56 @@ const Navbar = () => {
 
   return (
     <>
+    <Dialog PaperProps={{
+    style: {
+      backgroundColor: 'rgb(31,31,31)',
+      maxWidth: '400px', 
+      width: '100%', 
+      
+    }
+  }}  onClose={()=>{
+      setShowNotificationModal(!showNotificationModal);
+    }} open={showNotificationModal}>
+      <DialogTitle id="alert-dialog-title">
+      <Button sx={{float:'right', color:"white"}} onClick={()=>{
+        setShowNotificationModal(!showNotificationModal)
+      }}>
+        <CloseIcon />
+      </Button>
+        </DialogTitle>
+<DialogContent sx={{color: 'white', fontFamily: 'Poppins, sans-serif',
+      fontWeight: '200', px:5, pb:5, fontSize:15}}>
+          
+        <ul>
+          <li className='mb-3'>
+          Our free home delivery service is available within a 15-kilometer radius from the Ras Al Khaimah city center.
+          </li>
+          <li className='mb-3'>
+          Deliveries outside the specified 15-kilometer radius from the Ras Al Khaimah city center may be subject to additional delivery charges, which will be communicated after recieving the order.
+          </li>
+          <li className='mb-3'>
+          Our delivery personnel will make reasonable efforts to deliver your order to the specified location. It is the customer's responsibility to provide accurate and accessible delivery information
+          </li>
+          <li className='mb-3'>
+          We reserve the right to refuse delivery to any location or customer at our discretion, including any locations outside our service area.
+          </li>
+          <li className='mb-3'>
+          By availing of our free home delivery service in Ras Al Khaimah, you agree to abide by these terms and conditions. We appreciate your understanding and cooperation in ensuring a smooth and reliable delivery service. If you have any questions or require further information, please do not hesitate to contact us. Thank you for choosing Al Mina Pharmacy for your Pharmacy needs.
+          </li>
+        </ul>
+           
+          </DialogContent>
+    </Dialog>
+    <div className={`${(location.pathname === '/' ) && showNotification ? 'home-notification-wrapper' : 'd-none'} `}>
+<div className='d-flex justify-content-center flex-grow-1' style={{cursor: 'pointer'}} onClick={()=>{
+setShowNotificationModal(true);
+}}>
+<span>Free Home Delivery across Ras Al Khaimah *</span>
+</div>
+ <button type="button" className="btn-close btn-close-white float-end me-2" aria-label="Close" onClick={() =>{
+  setShowNotification(false);
+ }}></button>
+    </div>
     <nav className={`nav-wrapper ${(location.pathname === '/checkout' || location.pathname === '/cart' )? '' : stickyClass} `}>
       <header className="p-3">
         <div className="container">

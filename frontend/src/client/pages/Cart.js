@@ -155,15 +155,15 @@ console.log(cartItems.length);
 
                   </div>
 }
-                  {totalVat && 
+                 
                   <div className="sub-total d-flex justify-content-between row mb-1 pb-3 border-bottom py-2">
                     <span className="col-6 text-start overflow-wrap">Total estimated Vat</span>
 
 
-                    <span className="col-6  text-end">AED {totalVat}</span>
+                    <span className="col-6  text-end">AED {totalVat || 0}</span>
 
                   </div>
-}
+
                   <div className="sub-total d-flex justify-content-between row mb-1 pb-3 border-bottom">
                     <span className="col-6 text-start overflow-wrap">Order Total</span>
 

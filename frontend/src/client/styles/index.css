@@ -170,6 +170,21 @@ a {
   }
 }
 
+.home-notification-wrapper{
+  background-color: rgb(31,31,31);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 200;
+  z-index: 999;
+  font-size: 14px;
+}
+.btn-close-white{
+  font-size: 12px;
+  
+}
 
 .nav-wrapper {
   background-color: #fff;

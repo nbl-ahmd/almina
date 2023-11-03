@@ -152,6 +152,12 @@ const fetchSuburbs = async () => {
         },
         error => {
           console.error('Error retrieving current location:', error);
+          if (error && error.message && error.message.includes("User denied Geolocation")){
+            setErrorMessage('Please allow location permission');
+          }else{
+            setErrorMessage('unable to autolocate');
+          }
+          setFetchingLocation(false);
         }
       );
     } else {
@@ -197,12 +203,14 @@ const fetchSuburbs = async () => {
       console.log("cinfo", customerInfo);
 
       console.log(city);
-      setFetchingLocation(false);
+      
 
     } catch (error) {
       console.error('Error fetching location:', error);
+      setErrorMessage('unable to autolocate');
     }
 console.log("123" + selectedCity);
+setFetchingLocation(false);
 
   };
 
@@ -230,13 +238,19 @@ console.log("123" + selectedCity);
 
   const handleEmirateChange = e => {
     
-    setEmirate(e.target.value);
-    let deliveryfee=0;
-      (emirate === 'Ras al-Khaimah') ? (deliveryfee=0) : (deliveryfee=15);
-      setDeliveryfee(deliveryfee);
+    const selectedEmirate = e.target.value;
+    let deliveryFee = 0;
+    if (selectedEmirate === 'Ras al-Khaimah') {
+      deliveryFee = 0;
+    } else {
+      deliveryFee = 15;
+    }
+
+    setEmirate(selectedEmirate);
+    setDeliveryfee(deliveryFee);
       
 
-      setCustomerInfo({ ...customerInfo, emirate: e.target.value, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee });
+      setCustomerInfo({ ...customerInfo, emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee });
     
     console.log(customerInfo);
     

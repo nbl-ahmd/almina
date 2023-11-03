@@ -32,16 +32,20 @@ export const CartProvider = ({ children }) => {
     cartItems.forEach((item) => {
       totalPrice += item.price * item.quantity;
     });
-    setTotalPrice(parseFloat(totalPrice).toFixed(2));
-    console.log("total price: " + totalPrice);
+    const roundedtotalPrice = totalPrice.toFixed(2);
+    setTotalPrice(parseFloat(roundedtotalPrice));
+    console.log("total vat: " + roundedtotalPrice);
+
   };
   const calculateTotalSalePrice = () => {
     let totalSalePrice = 0;
     cartItems.forEach((item) => {
       totalSalePrice += (item.salePrice?item.salePrice:item.price) * item.quantity;
     });
-    setTotalSalePrice(parseFloat(totalSalePrice).toFixed(2));
-    console.log("total Sale price: " + totalSalePrice);
+    const roundedtotalSalePrice = totalSalePrice.toFixed(2);
+    setTotalSalePrice(parseFloat(roundedtotalSalePrice));
+    console.log("total vat: " + roundedtotalSalePrice);
+
   };
 
   const calculateTotalVat = () => {
