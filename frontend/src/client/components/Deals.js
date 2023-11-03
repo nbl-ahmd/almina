@@ -40,6 +40,11 @@ import baseURL from '../../axiosConfig';
       navigation: true,
       keyboard: true,
       breakpoints: {
+        1200: {
+          slidesPerView: 5,
+          spaceBetween: 8,
+          
+        },
         960: {
           slidesPerView: 4,
           spaceBetween: 8,

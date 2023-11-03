@@ -262,6 +262,7 @@ const Products_list = () => {
         </DialogContent>
        
       </Dialog>
+      
     </>
   );
 };

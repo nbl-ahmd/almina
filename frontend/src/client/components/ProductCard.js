@@ -101,7 +101,6 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
                  onClick={handleAddToCart}
                  disabled={isAddingToCart}
                  >
-       <i className="bi bi-bag me-2"></i>
        Add to cart
                </button>
                   

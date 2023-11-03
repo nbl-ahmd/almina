@@ -254,7 +254,7 @@ console.log("123" + selectedCity);
 
 
       {errorMessage &&
-        <div className=" alert alert-danger alert-dismissible fade show" role="alert">
+        <div className=" alert alert-danger alert-dismissible fade show z-3" role="alert">
           <span className='me-2'>
             {errorMessage}
           </span>

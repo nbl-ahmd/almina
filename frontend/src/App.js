@@ -41,6 +41,8 @@ import ProductsPharmacy from './admin/pages/ProductsPharmacy';
 import OrderDetails from './admin/pages/OrderDetails';
 import DisabledList from './admin/pages/DisabledList';
 import SettingsPage from './admin/pages/SettingsPage';
+import Contact from './client/pages/Contact';
+import OutOfStockPharmacy from './admin/pages/OutOfStockPharmacy';
 
 
 
@@ -164,6 +166,13 @@ const App = () => {
             <Footer />
            </CartProvider>
           } />
+          <Route path='contact' element={
+           <CartProvider>
+             <Navbar />
+            <Contact />
+            <Footer />
+           </CartProvider>
+          } />
 <Route path='admin/login' element={
             <Login />
           } />
@@ -222,7 +231,7 @@ const App = () => {
           } />
           <Route path='/admin/outofstock' element={
             <Adminroutes>
-            <DashProvider value= {<OutOfStock />}>
+            <DashProvider value= {<OutOfStockPharmacy />}>
               <Dashboard />
             </DashProvider>
             </Adminroutes>
@@ -422,7 +431,7 @@ const App = () => {
           <Route path="/map" element={<Openstreet/>} />
 
         </Routes>
-        <BackToTopButton />
+        
         
       </main>
     </BrowserRouter>

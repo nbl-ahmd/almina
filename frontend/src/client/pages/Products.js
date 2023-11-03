@@ -259,7 +259,7 @@ const Products = () => {
         )}
     </InfiniteScroll> 
   </div>
-    
+  <BackToTopButton />
     </section>
   );
 };

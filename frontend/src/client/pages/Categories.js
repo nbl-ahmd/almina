@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 import baseURL from '../../axiosConfig';
 import Breadcrumbs from '../components/Breadcrumbs';
+import BackToTopButton from '../components/BackToTopButton';
 
 const Categories = () => {
 
@@ -52,6 +53,7 @@ const Categories = () => {
          </div>
 </div>
 </section>
+<BackToTopButton />
 </>
   )
 }

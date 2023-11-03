@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from 'react-bootstrap';
+import BackToTopButton from '../../client/components/BackToTopButton';
 
 const OrderDetails = () => {
   const { OrderId } = useParams();

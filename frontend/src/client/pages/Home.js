@@ -9,6 +9,7 @@ import Productskeleton from '../components/Productskeleton'
 import Deals from '../components/Deals'
 import Footer from '../components/footer'
 import CategorySlide from '../components/CategorySlide'
+import BackToTopButton from '../components/BackToTopButton'
 
  const Home = () => {
    const [banners, setBanners] = useState([]);
@@ -68,7 +69,7 @@ import CategorySlide from '../components/CategorySlide'
   
    return (
      <main>
-       <div className="pt-3 pt-md-5 pb-3 hero-wrapper">
+       <div className="pt-3 pt-md-5 pb-4 hero-wrapper">
          <div className="container">
            <div className="row d-flex align align-items-center">
              <div className="mt-1 mt-xxl-0 col-xxl-3 col-12 d-lg-flex d-xl-block gap-3 gap-xl-0 order-1 order-xxl-0">
@@ -162,7 +163,7 @@ import CategorySlide from '../components/CategorySlide'
        </div>
 
 <section >
-<div className="container pt-4">
+<div className="container pt-4 mt-lg-5">
 <div className="title pt-1 pb-2 ">
            <h5>Top Deals</h5>
            <Link to='/offers'>View All</Link>
@@ -188,14 +189,14 @@ import CategorySlide from '../components/CategorySlide'
 
  {/* sales section */}
  <section className="container pt-2 pt-lg-5">
- <div className="title pt-4 pb-4 mb-4 border-bottom">
+ <div className="title pt-4 pb-4 mb-3 ">
            <h5>Featured Products</h5>
            <Link to='/products'>View All</Link>
          </div>
  </section>
 
        <div className="container mb-5">
-         <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3 px-2">
+         <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 mt-3 px-2">
 
       {product.length === 0 && Array.from({ length: 10 }).map((_, index) => (
         <Productskeleton key={index} />
@@ -208,7 +209,7 @@ import CategorySlide from '../components/CategorySlide'
          </div>
        </div>
 
-
+       <BackToTopButton />
      </main>
    )
  }

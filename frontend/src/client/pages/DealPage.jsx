@@ -104,7 +104,7 @@ const DealPage = () => {
       </div>
     </InfiniteScroll> 
   </div>
-    
+  <BackToTopButton />
     </section>
   )
 }

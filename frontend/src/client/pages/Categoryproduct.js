@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import Productskeleton from '../components/Productskeleton';
 import Breadcrumbs from '../components/Breadcrumbs';
+import BackToTopButton from '../components/BackToTopButton';
 
 const CategoryPage = () => {
   const { categoryId } = useParams();
@@ -63,6 +64,7 @@ const CategoryPage = () => {
           <p>No products found in this category.</p>
         )}
     </div>
+    <BackToTopButton />
   </section>
 
   

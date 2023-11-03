@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthentication } from '../login/auth';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import 'remixicon/fonts/remixicon.css'
+import BackToTopButton from '../../client/components/BackToTopButton';
 
 
 
@@ -238,6 +239,7 @@ setDropdown(!dropdown)
                 </div>
             </div>
             <div className={`layout-overlay layout-menu-toggle ${sidebarVisible ? '' : 'd-none'}`} onClick={() => toggleSidebar()}></div>
+            <BackToTopButton />
         </div>
     )
 }

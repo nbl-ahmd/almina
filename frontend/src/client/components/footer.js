@@ -53,8 +53,8 @@ const Footer = () => {
     <div className="col-md-6 col-lg-2 mb-4">
         <h6>Al Mina</h6>
         <ul className="nav flex-column">
-        <li className="nav-item mb-2"><Link to={'/about'} onClick={scrollToTop} className="nav-link p-0 text-muted">About us</Link></li>
-        <li className="nav-item mb-2"><Link to={'/about'} onClick={scrollToTop} className="nav-link p-0 text-muted">Contact us</Link></li>
+        <li className="nav-item mb-2"><Link to={'/contact'} onClick={scrollToTop} className="nav-link p-0 text-muted">About us</Link></li>
+        <li className="nav-item mb-2"><Link to={'/contact'} onClick={scrollToTop} className="nav-link p-0 text-muted">Contact us</Link></li>
         <li className="nav-item mb-2"><Link to={'/cart'} onClick={scrollToTop} className="nav-link p-0 text-muted">Cart</Link></li>
         </ul>
       </div>

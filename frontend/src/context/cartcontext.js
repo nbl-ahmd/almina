@@ -32,7 +32,7 @@ export const CartProvider = ({ children }) => {
     cartItems.forEach((item) => {
       totalPrice += item.price * item.quantity;
     });
-    setTotalPrice(totalPrice);
+    setTotalPrice(parseFloat(totalPrice).toFixed(2));
     console.log("total price: " + totalPrice);
   };
   const calculateTotalSalePrice = () => {
@@ -40,7 +40,7 @@ export const CartProvider = ({ children }) => {
     cartItems.forEach((item) => {
       totalSalePrice += (item.salePrice?item.salePrice:item.price) * item.quantity;
     });
-    setTotalSalePrice(totalSalePrice);
+    setTotalSalePrice(parseFloat(totalSalePrice).toFixed(2));
     console.log("total Sale price: " + totalSalePrice);
   };
 
@@ -211,6 +211,7 @@ export const CartProvider = ({ children }) => {
         maplink: customerInfo.maplink,
         totalVat: totalVat,
         totalAmount:customerInfo.totalAmount,
+        deliveryFee: customerInfo.deliveryFee
         
 
 

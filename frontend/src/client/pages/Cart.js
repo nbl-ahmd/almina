@@ -5,12 +5,15 @@ import Checkout from '../components/Checkout';
 import baseURL from '../../axiosConfig';
 const Cart = () => {
 
-
+  const [totalDiscount, setTotalDiscount] = useState(0);
 
 
   const { cartItems, removeFromCart, handleQuantityChange,totalPrice,totalSalePrice, totalVat } = useContext(CartContext);
 
-  
+  useEffect(() => {
+    // Load suburbs when the emirate changes
+    calculateDiscount();
+  }, [totalPrice]);
 
  
   
@@ -18,6 +21,11 @@ const Cart = () => {
     removeFromCart(itemId);
   };
 
+  const calculateDiscount = () => {
+    let discount = 0;
+    discount = totalPrice-totalSalePrice;
+    setTotalDiscount(parseFloat(discount).toFixed(2));
+    }
  
 console.log(cartItems.length);
   return (
@@ -131,19 +139,19 @@ console.log(cartItems.length);
 
 
                     <div className="col-6 text-end">
-                    {totalPrice-totalSalePrice !== 0 && 
+                    {totalPrice !== 0 && 
                     
                     <span className="me-3 text-strike">AED {totalPrice}</span>}
                     <span className="">AED {totalSalePrice}</span>
                     </div>
 
                   </div>
-                  {totalPrice-totalSalePrice !== 0 && 
+                  {totalPrice !== 0 && 
                   <div className="sub-total d-flex justify-content-between row mb-1 border-bottom py-2">
                     <span className="col-6 text-start overflow-wrap">Total discount</span>
 
 
-                    <span className="col-6  text-end">- AED {totalPrice-totalSalePrice}</span>
+                    <span className="col-6  text-end">- AED {totalDiscount}</span>
 
                   </div>
 }

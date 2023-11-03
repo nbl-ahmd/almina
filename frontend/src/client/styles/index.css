@@ -469,8 +469,8 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 
 .products {
   border-radius: .8rem;
-  background-color: rgb(246, 246, 247);
   height: 100%;
+  box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
 
 }
 .product-details-card{
@@ -520,14 +520,16 @@ swiper-slide .p-1 .products .card-product .product-details-card .mb-1{
 
 
 .add-to-cart-btn {
+  margin-top: 5px;
   width: 100%;
-  border-radius: 5px;
+  border-radius: 0.9rem;
   background-color: #42C6A5;
   color: #ffff;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  padding: .2rem;
+  padding-block: .47rem;
+  font-family: 'Poppins', sans-serif;
 }
 
 
@@ -864,7 +866,7 @@ button:disabled {
   top: 1rem;
   padding: .5rem 1rem;
   border-left: var(--primary-red) 2px solid;
-  z-index: 5;
+  z-index: 20 !important;
 
 
 }
