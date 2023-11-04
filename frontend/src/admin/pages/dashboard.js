@@ -10,8 +10,9 @@ import BackToTopButton from '../../client/components/BackToTopButton';
 import { Alert, Snackbar, Switch } from '@mui/material';
 import axios from 'axios';
 import baseURL from '../../axiosConfig';
-
-
+import {app} from '../../firebase'
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+const messaging = getMessaging(app);
 
 export default function Dashboard() {
     const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -120,10 +121,26 @@ export default function Dashboard() {
         }
       },[notificationPermission] );
     
+      useEffect(() =>{
+        if ("Notification" in window) {
+          Notification.requestPermission().then((permission) => {
+            setNotificationPermission(permission);
+console.log(permission);
+          {permission === 'granted' ? setMessage('notification enabled'): setMessage('notification blocked');}
+          });
+          console.log("Notifications are supported");
+        } else {
+          setNotificationPermission('denied');
+          setMessage('Browser does not support desktop notification');
+        }
+      },[] );
+    
       
     const toggleSidebar = () => {
         setSidebarVisible(!sidebarVisible);
     };
+
+    
 
     
 
@@ -133,6 +150,22 @@ export default function Dashboard() {
         // If notifications were previously granted and the user wants to disable them, revoke permission
         setMessage('notification disabled');
         setNotificationPermission('denied');
+        console.log("Notification User Permission Granted."); 
+        return getToken(messaging, { vapidKey: `BGLR_kRqa5U4O4QeuBuT0l9ZWWxkont3ETXVbdRSyhP0-0CJe9fCzu_ypogjtGG2_GzqZDwhiJ8WbpxAlH793ig` })
+          .then((currentToken) => {
+  
+            if (currentToken) {
+  
+              console.log('Client Token: ', currentToken);
+            } else {
+              
+              console.log('Failed to generate the app registration token.');
+            }
+          })
+          .catch((err) => {
+  
+            console.log('An error occurred when requesting to receive the token.', err);
+          });
         
       
       } else{
