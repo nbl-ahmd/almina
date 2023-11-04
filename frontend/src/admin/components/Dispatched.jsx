@@ -33,16 +33,6 @@ const OrderList = () => {
         const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
         fetchOrders(currentCity);
 
-        // Play audio
-        const audio = new Audio(NotificationSound);
-        audio.play();
-
-        // Display push notification if supported
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const notification = new Notification('New Order Placed', {
-            body: 'A new order has been received.',
-          });
-        }
       } catch (error) {
         console.error('Error updating orders:', error);
       }
