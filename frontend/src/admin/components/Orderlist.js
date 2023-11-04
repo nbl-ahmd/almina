@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import baseURL from '../../axiosConfig';
 import io from 'socket.io-client';
-import { Button, Container, Card, Table, TableRow, TableCell, TableBody, TableHead, Collapse, Typography, Box, Grid, Paper, Chip, TableContainer } from '@mui/material';
+import { Button, Container, Card, Table, TableRow, TableCell, TableBody, TableHead, Collapse, Typography, Box, Grid, Paper, Chip, TableContainer, Switch, Alert } from '@mui/material';
 import NotificationSound from "../assets/notification.mp3";
 import { Link } from 'react-router-dom';
 const socket = io.connect(baseURL);
@@ -12,6 +12,7 @@ const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [userCities, setUserCities] = useState([]);
   const [excludeCities, setExcludeCities] = useState([]);
+  const [message, setMessage] = useState('');
   const [notificationPermission, setNotificationPermission] = useState(
     'Notification' in window ? Notification.permission : 'denied'
   );
@@ -74,6 +75,14 @@ const OrderList = () => {
       fetchExcludeCities();
     }
   }, []);
+  useEffect(() =>{
+    if (!("Notification" in window)) {
+      console.log("Browser does not support desktop notification");
+      setMessage('Browser does not support desktop notification')
+    } else {
+      console.log("Notifications are supported");
+    }
+  },[] );
 
   const fetchExcludeCities = async () => {
     try {
@@ -117,14 +126,23 @@ const OrderList = () => {
   const handleRequestNotificationPermission = () => {
     Notification.requestPermission().then((permission) => {
       setNotificationPermission(permission);
+
+      if (permission === 'granted') {
+        // If permission is granted, you can now show notifications
+        const notification = new Notification('Notifications Enabled', {
+          body: 'You will now receive notifications for new orders.',
+        });
+      }
     });
   };
 
   return (
     <div className="container-fluid h-100">
-      {notificationPermission === 'default' && (
+      {/* {notificationPermission === 'default' && (
         <button className='btn btn-p mt-2 mb-2' onClick={handleRequestNotificationPermission}>Enable Notifications</button>
-      )}
+      )} */}
+
+
      
         <div className="pt-4">
          

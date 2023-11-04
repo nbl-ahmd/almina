@@ -3,6 +3,24 @@ const Orderrouter = express.Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const nodemailer = require('nodemailer');
+const webpush = require('web-push');
+
+
+
+// npx web-push generate-vapid-keys
+
+// =======================================
+
+// Public Key:
+// BPJRLHqL62nj3j6L8lAsRnjdRKNaLkRxrpFQwmEgDbqMbYDZeRR4vyj9X-tIGVzHkt4pbgFbgIOd_Lma6p4i3Bk
+
+// Private Key:
+// Fw-Pj6RU4RnxSPbi2ravY3Ja9YxsaTvpyu86yteG2S8
+
+// =======================================
+
+
+
 
 // Function to generate a unique order ID
 async function generateOrderID() {
@@ -21,7 +39,32 @@ async function generateOrderID() {
     throw error;
   }
 }
+const vapidKeys = {
+  publicKey: 'BPJRLHqL62nj3j6L8lAsRnjdRKNaLkRxrpFQwmEgDbqMbYDZeRR4vyj9X-tIGVzHkt4pbgFbgIOd_Lma6p4i3Bk',
+  privateKey: 'Fw-Pj6RU4RnxSPbi2ravY3Ja9YxsaTvpyu86yteG2S8',
+};
 
+webpush.setVapidDetails('mailto:nabeelkerala2000@gmail.com', vapidKeys.publicKey, vapidKeys.privateKey);
+
+Orderrouter.post('/subscribe', (req, res) => {
+  const pushSubscription = req.body.subscription;
+
+  const notificationPayload = {
+    title: 'New Order Placed',
+    body: 'A new order has been received.',
+    icon: 'https://cdn-icons-png.flaticon.com/128/1008/1008010.png', // Replace with your icon path
+  };
+
+  webpush.sendNotification(pushSubscription, JSON.stringify(notificationPayload))
+    .then(response => {
+      console.log('Push notification sent');
+      res.status(200).json({ success: true });
+    })
+    .catch(error => {
+      console.error('Push notification error:', error);
+      res.status(500).json({ success: false, error: 'Push notification error' });
+    });
+});
 // POST /api/orders
 Orderrouter.post('/', async (req, res) => {
   try {

@@ -7,6 +7,9 @@ import { useAuthentication } from '../login/auth';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import 'remixicon/fonts/remixicon.css'
 import BackToTopButton from '../../client/components/BackToTopButton';
+import { Alert, Snackbar, Switch } from '@mui/material';
+import axios from 'axios';
+import baseURL from '../../axiosConfig';
 
 
 
@@ -16,6 +19,11 @@ export default function Dashboard() {
     const dropdownRef = useRef(null);
     const { logout } = useAuthentication();
     const [searchInput, setSearchInput] = useState('');
+    const [message, setMessage] = useState('');
+    const [openSnackBar, setOpenSnackBar] = useState(false);
+    const [notificationPermission, setNotificationPermission] = useState(
+      'Notification' in window ? Notification.permission : 'denied'
+    );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,6 +49,65 @@ export default function Dashboard() {
     navigate('/admin/productlist'); // Redirect to the search page without any query parameter
   };
 
+  const publicKey = 'BPJRLHqL62nj3j6L8lAsRnjdRKNaLkRxrpFQwmEgDbqMbYDZeRR4vyj9X-tIGVzHkt4pbgFbgIOd_Lma6p4i3Bk';
+  useEffect(() => {
+    navigator.serviceWorker.ready
+      .then(function (registration) {
+        if (!registration.pushManager) {
+          console.error('PushManager is not available.');
+          return;
+        }
+
+        registration.pushManager
+          .subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKey),
+          })
+          .then(function (subscription) {
+            sendSubscriptionToServer(subscription);
+          })
+          .catch(function (error) {
+            console.error('Push subscription failed:', error);
+          });
+      })
+      .catch(function (error) {
+        console.error('Service Worker registration failed:', error);
+      });
+  }, []);
+
+
+ function sendSubscriptionToServer(subscription) {
+    // Make an HTTP POST request to your server to save the subscription
+    axios
+      .post(`${baseURL}/api/orders/subscribe`, { subscription })
+      .then((response) => {
+        if (response.status === 200) {
+          // Subscription saved successfully
+        } else {
+          throw new Error('Failed to save subscription on the server.');
+        }
+      })
+      .catch((error) => {
+        console.error('Error saving subscription on the server:', error);
+      });
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+  
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+  
+    for (let i = 0; i < rawData.length; i++) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -55,12 +122,66 @@ export default function Dashboard() {
           document.removeEventListener('mousedown', handleClickOutside);
         };
       }, []);
+
+      useEffect(() =>{
+        if (!("Notification" in window)) {
+          console.log("Browser does not support desktop notification");
+          setMessage('Browser does not support desktop notification');
+          setNotificationPermission('denied');
+        }
+      },[notificationPermission] );
+    
       
     const toggleSidebar = () => {
         setSidebarVisible(!sidebarVisible);
     };
+
+    
+
+
+    const handleRequestNotificationPermission = () => {
+      if (notificationPermission === 'granted') {
+        // If notifications were previously granted and the user wants to disable them, revoke permission
+        setMessage('notification disabled');
+        setNotificationPermission('denied');
+        
+      
+      } else{
+
+        if ("Notification" in window) {
+          Notification.requestPermission().then((permission) => {
+            setNotificationPermission(permission);
+console.log(permission);
+          {permission === 'granted' ? setMessage('notification enabled'): setMessage('notification blocked');}
+          });
+          console.log("Notifications are supported");
+        } else {
+          setNotificationPermission('denied');
+          setMessage('Browser does not support desktop notification');
+        }
+        
+        
+      }
+      setOpenSnackBar(true);
+      console.log(notificationPermission);
+      
+      
+    };
+
+
     return (
         <div className='admin admin-bg'>
+            {message &&  <Snackbar
+        open={openSnackBar}
+        autoHideDuration={3000}
+        onClose={(event, reason)=>{
+          if (reason === 'clickaway') {
+            return;
+          }
+          setOpenSnackBar(false);
+        }}
+        message={message}
+      />}
             <div className="d-flex flex-column flex-lg-row h-lg-full  dash-container">
 
                 <nav className={`navbar navbar-expand-lg ${sidebarVisible ? 'navbar-expand' : 'collapse'}  py-0 bg-white navbar-vertical navbar-light sidebar-wrapper overflow-hidden sidebar-list justify-content-lg-start`} id='sidebarCollapse' >
@@ -204,7 +325,12 @@ setDropdown(!dropdown)
             <span className="d-flex align-items-center align-middle">
               <i className="flex-shrink-0 bx bx-credit-card me-2"></i>
               <span className="flex-grow-1 align-middle">Notifications</span>
-              <span className="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
+              <Switch
+              checked={notificationPermission === 'granted'}
+              onChange={handleRequestNotificationPermission}
+              color="primary"
+            />
+          
             </span>
           </a>
         </li>

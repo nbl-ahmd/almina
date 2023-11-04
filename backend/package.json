@@ -38,7 +38,8 @@
     "socket.io-client": "^4.7.1",
     "socket.io-emitter": "^3.2.0",
     "uuid": "^9.0.0",
-    "uuidv4": "^6.2.13"
+    "uuidv4": "^6.2.13",
+    "web-push": "^3.6.6"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

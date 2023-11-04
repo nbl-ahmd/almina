@@ -75,8 +75,8 @@ const fetchSuburbs = async () => {
       name: element.tags['name:en'] || element.tags.name,
     }));
 
-    setFetchingSuburbs(false);
     setSuburbs(loadedSuburbs);
+    setFetchingSuburbs(false);
   } catch (error) {
     // Handle the error, e.g., show an error message
     console.error('Error fetching suburbs:', error);
@@ -249,7 +249,6 @@ setFetchingLocation(false);
     setEmirate(selectedEmirate);
     setDeliveryfee(deliveryFee);
     setSelectedCity(''); // Set the selectedCity to an empty string here  
-
       setCustomerInfo({ ...customerInfo, emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee });
     
     console.log(customerInfo);
@@ -623,7 +622,7 @@ setFetchingLocation(false);
 
 
                    <div className="col-6 d-flex flex-column">
-                   <span className="text-end fw-600 fs-5">AED {totalSalePrice + deliveryfee}</span>
+                   <span className="text-end fw-600 fs-5">AED {Number((totalSalePrice + deliveryfee).toFixed(2))}</span>
                    <span className="text-small text-end">(All prices include VAT)</span>
                    </div>
 
@@ -643,7 +642,7 @@ setFetchingLocation(false);
       {cartItems.length > 0 && <div className="pay-popup d-md-none ">
         <div className="price-items">
           <span className='text-small'>Order Total</span>
-          <h2> <small>AED</small>{totalSalePrice + deliveryfee}</h2>
+          <h2> <small>AED</small>{Number((totalSalePrice + deliveryfee).toFixed(2))}</h2>
         </div>
 
 
