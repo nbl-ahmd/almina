@@ -2,15 +2,15 @@
 importScripts("https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js");
 importScripts("https://www.gstatic.com/firebasejs/10.5.2/firebase-messaging.js");
     
-    const firebaseConfig = {
-        apiKey: "AIzaSyCAoeyr-tAvfLBcULu3uK_1yAtJ_YNjNv8",
-        authDomain: "alminaecommerce.firebaseapp.com",
-        projectId: "alminaecommerce",
-        storageBucket: "alminaecommerce.appspot.com",
-        messagingSenderId: "203555401885",
-        appId: "1:203555401885:web:30719addb82f375e672474",
-        measurementId: "G-ZJC6EFBR6V"
-      };
+const firebaseConfig = {
+    apiKey: "AIzaSyDhlVBTL5vkRCjowYXXf8WJRMMi17LNaR8",
+    authDomain: "al-mina-ba5a8.firebaseapp.com",
+    projectId: "al-mina-ba5a8",
+    storageBucket: "al-mina-ba5a8.appspot.com",
+    messagingSenderId: "181730454094",
+    appId: "1:181730454094:web:fee86cd06a91d37cb4311f",
+    measurementId: "G-Z482GSGXYM"
+  };
     
     firebase.initializeApp(firebaseConfig);
     
