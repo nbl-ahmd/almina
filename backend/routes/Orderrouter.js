@@ -134,7 +134,7 @@ Orderrouter.get('/', (req, res) => {
       path: 'category',    // Populates the category field within the Product schema
       model: 'Category'    // Replace 'Category' with your actual Category model name
     }
-  })
+  }).sort({ createdAt: -1 }) // Sort by 'createdAt' field in descending order;
     .then(orders => {
       res.status(200).json(orders);
     })
