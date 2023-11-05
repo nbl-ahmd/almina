@@ -10,9 +10,9 @@ import BackToTopButton from '../../client/components/BackToTopButton';
 import { Alert, Snackbar, Switch } from '@mui/material';
 import axios from 'axios';
 import baseURL from '../../axiosConfig';
-import {app} from '../../firebase'
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-const messaging = getMessaging(app);
+
+import { getMessaging, getToken } from "firebase/messaging";
+import { messaging } from '../../firebase';
 
 export default function Dashboard() {
     const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -50,52 +50,21 @@ export default function Dashboard() {
     navigate('/admin/productlist'); // Redirect to the search page without any query parameter
   };
 
-  const publicKey = 'BPJRLHqL62nj3j6L8lAsRnjdRKNaLkRxrpFQwmEgDbqMbYDZeRR4vyj9X-tIGVzHkt4pbgFbgIOd_Lma6p4i3Bk';
-
   
-  
-  useEffect(() => {
-    navigator.serviceWorker.ready
-      .then(function (registration) {
-        if (!registration.pushManager) {
-          console.error('PushManager is not available.');
-          return;
-        }
 
-        registration.pushManager
-          .subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: publicKey,
-          })
-          .then(function (subscription) {
-            sendSubscriptionToServer(subscription);
-          })
-          .catch(function (error) {
-            console.error('Push subscription failed:', error);
-          });
-      })
-      .catch(function (error) {
-        console.error('Service Worker registration failed:', error);
-      });
-  }, []);
-
-
- function sendSubscriptionToServer(subscription) {
-    // Make an HTTP POST request to your server to save the subscription
-    axios
-      .post(`${baseURL}/api/orders/subscribe`, { subscription })
-      .then((response) => {
-        if (response.status === 200) {
-          // Subscription saved successfully
-        } else {
-          throw new Error('Failed to save subscription on the server.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error saving subscription on the server:', error);
-      });
+  async function requestPermission() {
+    const permission = await Notification.requestPermission()
+    if(permission === 'granted') {
+      const token = await getToken(messaging, { vapidKey: 'BGLR_kRqa5U4O4QeuBuT0l9ZWWxkont3ETXVbdRSyhP0-0CJe9fCzu_ypogjtGG2_GzqZDwhiJ8WbpxAlH793ig' })
+      console.log('Ton Gen', token);
+    }else if(permission === 'denied')
+    {
+      alert('you denied for the notification')
+    }
   }
-
+useEffect(() => {
+  requestPermission();
+}, []);
 
 
 
@@ -121,26 +90,10 @@ export default function Dashboard() {
         }
       },[notificationPermission] );
     
-      useEffect(() =>{
-        if ("Notification" in window) {
-          Notification.requestPermission().then((permission) => {
-            setNotificationPermission(permission);
-console.log(permission);
-          {permission === 'granted' ? setMessage('notification enabled'): setMessage('notification blocked');}
-          });
-          console.log("Notifications are supported");
-        } else {
-          setNotificationPermission('denied');
-          setMessage('Browser does not support desktop notification');
-        }
-      },[] );
-    
       
     const toggleSidebar = () => {
         setSidebarVisible(!sidebarVisible);
     };
-
-    
 
     
 
@@ -150,22 +103,6 @@ console.log(permission);
         // If notifications were previously granted and the user wants to disable them, revoke permission
         setMessage('notification disabled');
         setNotificationPermission('denied');
-        console.log("Notification User Permission Granted."); 
-        return getToken(messaging, { vapidKey: `BGLR_kRqa5U4O4QeuBuT0l9ZWWxkont3ETXVbdRSyhP0-0CJe9fCzu_ypogjtGG2_GzqZDwhiJ8WbpxAlH793ig` })
-          .then((currentToken) => {
-  
-            if (currentToken) {
-  
-              console.log('Client Token: ', currentToken);
-            } else {
-              
-              console.log('Failed to generate the app registration token.');
-            }
-          })
-          .catch((err) => {
-  
-            console.log('An error occurred when requesting to receive the token.', err);
-          });
         
       
       } else{
