@@ -285,6 +285,7 @@ const Products_list = () => {
                     <TableCell align="left">Stock</TableCell>
                     <TableCell align="left">Price</TableCell>
                     <TableCell align="left">Publish</TableCell>
+                    <TableCell align="left">Action</TableCell>
                   </TableRow>
                         </TableHead>
                         <TableBody>
@@ -326,6 +327,15 @@ const Products_list = () => {
             inputProps={{ 'aria-label': 'toggle product' }}
           />
         </TableCell>
+        <TableCell align="left"><div className=' d-flex  '>
+                      <button className="btn btn-sm d-flex" onClick={() =>{
+                        handleEditClick();
+                        setProducts(product);
+                        }}>
+                  <i className="bi bi-pen pe-2 text-pg text-sm"></i>
+                  <span className="text-pg text-sm">Edit</span>
+                </button>
+                      </div></TableCell>
                       
                     </TableRow>
                   ))}
