@@ -26,6 +26,7 @@ const app = initializeApp(firebaseConfig);
  export const requestPermission = () => {
 
    console.log("Requesting User Permission......");
+   if ("Notification" in window) {
    Notification.requestPermission().then((permission) => {
 
      if (permission === "granted") {
@@ -52,7 +53,10 @@ const app = initializeApp(firebaseConfig);
      }
    });
 
+ } else{
+  console.log('Browser does not support desktop notification');
  }
+}
 
  requestPermission();
 
