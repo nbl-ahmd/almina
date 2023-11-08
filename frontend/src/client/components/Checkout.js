@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { CartContext } from '../../context/cartcontext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Alert } from '@mui/material';
 
 const Checkout = () => {
 
@@ -286,8 +287,10 @@ setFetchingLocation(false);
             <div className="row">
               <div className="col-xxl-12">
                 <div className="breadcrumb__content p-relative z-index-1">
+                
                   <h3 className="breadcrumb__title">Checkout</h3>
                 </div>
+                {totalSalePrice< 10 && <Alert severity='warning'>"Oops! It looks like the minimum order amount is AED 10. You're just AED {10-totalSalePrice.toFixed(2)} away from reaching it. Why not add a little more to your cart?" </Alert>}
               </div>
             </div>
           </div>
@@ -628,7 +631,7 @@ setFetchingLocation(false);
 
                   </div>
               </div>
-              <button className="btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3" type="button" onClick={validateForm}>Place order</button>
+              <button className={` btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={validateForm} title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
 
 
             </div>
@@ -647,7 +650,7 @@ setFetchingLocation(false);
 
 
 
-        <button className="btn btn-lg theme-btn pay-btn mt-0" type="button" onClick={validateForm}>Place order</button>
+        <button className={` btn btn-lg theme-btn pay-btn mt-0 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={validateForm} title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
       </div>}
     </>
 

@@ -804,6 +804,11 @@ input::-webkit-inner-spin-button {
 
 }
 
+.disabled {
+  pointer-events: auto !important; /* Make the button focusable */
+  cursor: not-allowed !important; /* Change the cursor to indicate it's not clickable */
+}
+
 .empty-cart {
   display: flex;
   flex-direction: column;
