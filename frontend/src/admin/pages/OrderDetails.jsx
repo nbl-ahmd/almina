@@ -85,6 +85,9 @@ const [galleryOpen, setGalleryOpen] = useState(false);
       setDocumentAmountValidateError('');
     
     }
+    if(documentIdError){
+      return;
+    }
 
     try {
       await axios.put(`${baseURL}/api/orders/${orderId}`, { dispatched: true, billno: documentId, billamount: documentAmount});
@@ -292,9 +295,22 @@ const [galleryOpen, setGalleryOpen] = useState(false);
           placeholder={order.billno || 'Enter document id'}
           value={documentId}
           onChange={(e) => {
-            setDocumentId(e.target.value);
-            // Clear the document ID error message when the input changes
-            setDocumentIdError('');
+
+            const inputText = e.target.value;
+            // Define a regular expression to match only digits (0-9)
+            const regex = /^[0-9]+$/;
+             if (!regex.test(inputText) || inputText.length < 5) {
+              // If the input doesn't match the regex, set an error message
+              setDocumentIdError('Enter a valid document number with minimum 5 digits (numbers only).');
+            } else {
+              // If the input is valid, clear the error message
+              setDocumentIdError('');
+            }
+            setDocumentId(inputText);
+        
+
+
+        
           }}
           
         />
