@@ -52,9 +52,20 @@ const OrderList = () => {
   }
   useEffect(() => {
     const handleNewOrder = (order) => {
-      try {
-        const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
-        fetchOrders(currentCity);
+      try { 
+        const cities = JSON.parse(localStorage.getItem('cities')) || [];
+        if (Array.isArray(cities) && cities.every(city => typeof city === 'string')) {
+          if (cities.length === 0) {
+            fetchExcludeCities();
+          } else {
+            setUserCities(cities);
+            fetchOrders(cities);
+          }
+        } else {
+          fetchExcludeCities();
+        }
+
+
 
         // Play audio
         const audio = new Audio(NotificationSound);

@@ -23,6 +23,9 @@ const userSchema = new mongoose.Schema({
   cities: {
     type: [String]
   },
+  subscription: {
+    tpe: Object,
+  },
 });
 
 const User = mongoose.model('User', userSchema);
