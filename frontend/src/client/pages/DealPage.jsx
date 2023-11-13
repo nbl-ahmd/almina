@@ -84,7 +84,14 @@ const DealPage = () => {
         
         </div>
       <div id="scrollableDiv">
-    
+      {productList.length === 0 &&
+      <div className="container mb-5">
+      <div className="row row-cols-auto row-cols-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-5 mt-3 px-2 mb-4">
+      {productList.length === 0 && Array.from({ length: 10 }).map((_, index) => (
+      <Productskeleton key={index} />
+    ))}
+      </div>
+    </div>}
     <InfiniteScroll
       dataLength={searching ? searchedProducts.length : productList.length}
       next={fetchProducts}

@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import baseURL from '../../axiosConfig';
 import Breadcrumbs from '../components/Breadcrumbs';
 import BackToTopButton from '../components/BackToTopButton';
+import Skeleton from '@mui/material/Skeleton';
+
 
 const Categories = () => {
 
@@ -37,6 +39,15 @@ const Categories = () => {
 
          <div className="container">
 <div className="row justify-content-between">
+
+{category.length === 0 &&
+<>
+      {category.length === 0 && Array.from({ length: 18 }).map((_, index) => (
+      <div className="col-4 col-md-3 col-lg-2 d-flex justify-content-center mb-lg-5">
+      <Skeleton variant="rounded" width={110} height={110} />
+      </div>
+    ))}
+    </>}
 {category.map(category =>(
  <div className="col-4 col-md-3 col-lg-2 d-flex justify-content-center mb-lg-5">
    <div className="cat-wrapper pe-3 d-flex align-items-center flex-column mb-3" key={category._id}>

@@ -108,7 +108,7 @@ import baseURL from '../../axiosConfig';
     <swiper-container class = "slide" init="false" ref={swiperRef}
     >
      {deals.map((product) => (
-        <swiper-slide key={deals._id}>
+        <swiper-slide key={product._id}>
                  
              <ProductCard product={product} />
         </swiper-slide>

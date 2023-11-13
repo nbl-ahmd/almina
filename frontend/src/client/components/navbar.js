@@ -182,15 +182,15 @@ setShowNotificationModal(true);
     </nav>
      <nav className="fixed-bottom d-md-none mobile-bottom-nav">
      <Link to={'/'} className={location.pathname === '/' ? 'active text-truncate ' : 'text-truncate '} >
-     <i class="bi bi-house icon"></i>
+     <i className="bi bi-house icon"></i>
      <span>Home</span>
      </Link>
      <Link to={'/products'} className={location.pathname === '/products' ? 'active text-truncate ' : 'text-truncate'} >
-     <i class="bi bi-prescription2 icon"></i>
+     <i className="bi bi-prescription2 icon"></i>
      <span>All Products</span>
      </Link>
      <Link to={'/categories'} className={location.pathname === '/categories' ? 'active text-truncate ' : 'text-truncate'} >
-     <i class="bi bi-ui-checks-grid icon"></i>
+     <i className="bi bi-ui-checks-grid icon"></i>
      <span>Categories</span>
      </Link>
      
