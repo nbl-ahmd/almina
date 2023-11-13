@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
+
  import { getAnalytics } from "firebase/analytics";
 
 // TODO: Replace the following with your app's Firebase project configuration

@@ -110,7 +110,7 @@ Orderrouter.post('/email', async (req, res) => {
   const { recipient, htmlContent } = req.body;
   
   const options = {
-    from: 'info@alminapharmacy.com',
+    from: '"Al Mina Pharmacy" <info@alminapharmacy.com>',
     to: recipient,
     subject: 'Your order has been placed successfully',
     html: htmlContent,

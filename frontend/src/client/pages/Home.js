@@ -29,8 +29,33 @@ import BackToTopButton from '../components/BackToTopButton'
         setBanners(response.data);
       })
       .catch((error) => console.log(error));
+
+
+
   }, []);
    // Fetch products on component mount
+   const access_token = 'EABlRaKb3ADcBO2eZCpZBKs9ZBhdhWGNzqqZAZAkK8XYwpWcZBAI4ylOpCp96x5J8JPgkI4j4gM0LQIRU5uLFJ8n0BRdkI0r11gJRPqxIs9TuEBbROhG2R4j5iUP7tmKZAqRZBP5lx2d6MxwDhvLPPrCEg5Nmj1VmE1MpzXChjigGZAxjyg3V82jM4cfGUfseX9TK3FgZDZD';
+
+   const payload ={
+    "data": [
+        {
+            "event_name": "ViewContent",
+            "event_time": 1699815303,
+            "action_source": "website",
+            
+        }
+    ]
+};
+
+   useEffect(() => {
+    axios.post(`https://graph.facebook.com/v12.0/YOUR_PIXEL_ID/events?access_token=${access_token}`, payload)
+    .then(response => {
+      console.log(response.data);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+   }, []);
    useEffect(() => {
     const filter = { featured : true, disabled: false, };
     const filterString = JSON.stringify(filter);
