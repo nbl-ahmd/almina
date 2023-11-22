@@ -14,15 +14,15 @@ function sendMessage(data) {
   return axios(config)
 }
 
-function getTextMessageInput(recipient) {
+function getTextMessageInput(recipient, text) {
   return JSON.stringify({
     "messaging_product": "whatsapp",
     "preview_url": false,
     "recipient_type": "individual",
     "to": recipient,
-    "type": "image",
-    "image": {
-      "link": "https://drive.google.com/uc?export=view&id=1UeS8C8NaHBjUv29crZcQnzsDoyTgwiWA"
+    "type": "text",
+    "text": {
+        "body": text
     }
   });
 }

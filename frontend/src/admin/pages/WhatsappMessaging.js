@@ -15,6 +15,7 @@ const WhatsappMessaging = () => {
   const [recipients, setRecipients] = useState([]);
   const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [text, setText] = useState('');
 
   useEffect(() => {
     // Your existing logic to fetch recipients
@@ -23,8 +24,8 @@ const WhatsappMessaging = () => {
     });
     // Socket.io event listener for new messages
     socket.on('newMessage', (message) => {
-      if (selectedRecipient && message.recipient === selectedRecipient) {
-        setMessages((prevMessages) => [...prevMessages, message.message]);
+      if (selectedRecipient && message.recipient.from === selectedRecipient) {
+        setMessages((prevMessages) => [...prevMessages, message.content]);
       }
     });
 
@@ -54,7 +55,7 @@ const WhatsappMessaging = () => {
         try {
           const response = await axios.get(`${baseURL}/api/whatsapp/messages/${selectedRecipient}`);
           setMessages(response.data.messages);
-          console.log(response.data.messages[0]);
+          console.log(response.data.messages);
         } catch (error) {
           console.error('Error fetching messages:', error);
         }
@@ -83,6 +84,24 @@ const WhatsappMessaging = () => {
       }
     }
   };
+  const sendChatMessage = async (recipient, message) => {
+    
+      try {
+        setText('');
+        // axios.post(`${baseURL}/api/whatsapp/text`, recipient, message)
+        // .then(response => {
+        //     console.log(response.data);
+        //   })
+        //   .catch(error => {
+        //     console.log(error);
+        //   });
+
+        // You can add additional logic here based on the response if needed
+
+      } catch (error) {
+        console.error(error);
+      }
+  };
 
   return (
     <>
@@ -109,12 +128,12 @@ const WhatsappMessaging = () => {
           background: "rgba(128, 227, 208, 0.154)",
           borderRadius: 2,
         }}
-        onClick={() => setSelectedRecipient(recipient)}
+        onClick={() => setSelectedRecipient(recipient.from)}
       >
         <Stack spacing={2} direction="row" alignItems="center">
         <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
-          <Typography noWrap>{recipient}</Typography>
+          <Typography noWrap>{recipient.name}</Typography>
           <Typography noWrap>{recipient.from}</Typography>
           </Box>
         </Stack>
@@ -131,12 +150,12 @@ const WhatsappMessaging = () => {
           <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
           <Typography noWrap>{selectedRecipient.name}</Typography>
-          <Typography noWrap>{selectedRecipient}</Typography>
+          <Typography noWrap>{selectedRecipient.from}</Typography>
           </Box>
         </Stack>
 </AppBar>
 
-    <Box sx={{ p:3}}>
+    <Box sx={{ p:3, display: "flex", flexDirection:"column"}}>
     {messages.map((message, index) => (
                 <WhatsapChatCard key={index} content={message.content} sender={message.sender} />
               ))}
@@ -149,8 +168,14 @@ const WhatsappMessaging = () => {
         sx={{ ml: 1, flex: 1 }}
         placeholder="Message the customer"
         inputProps={{ 'aria-label': 'Message the customer' }}
+        onChange={(e) => setText(e.target.value)}
+        value={text}
       />
-       <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+       <IconButton type="button" sx={{ p: '10px' }} aria-label="search" onClick={
+        ()=>{
+          sendChatMessage(selectedRecipient, text);
+        }
+       }>
         <SendIcon />
       </IconButton>
       </Box>

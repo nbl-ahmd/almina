@@ -34,10 +34,25 @@ whatsappRouter.post('/sr', function(req, res, next) {
    console.log(recipient);
 });
  
-
-
 whatsappRouter.post('/', function(req, res, next) {
-    var data = getTextMessageInput(918943628330);
+  var data = getTextMessageInput(process.env.RECIPIENT_WAID, 'Welcome to the Movie Ticket Demo App for Node.js!');
+  
+  sendMessage(data)
+    .then(function (response) {
+      res.redirect('/catalog');
+      return;
+    })
+    .catch(function (error) {
+      console.log(error);
+      return;
+    });
+});
+
+
+whatsappRouter.post('/text', function(req, res, next) {
+  const recipient = req.body.recipient;
+  const text = req.body.text;
+    var data = getTextMessageInput(recipient, text);
     
     sendMessage(data)
       .then(function (response) {
@@ -56,7 +71,7 @@ whatsappRouter.post('/', function(req, res, next) {
   whatsappRouter.get('/recipients', async (req, res) => {
   try {
     // Fetch all distinct usernames from the database
-    const recipients = await Whatsapp.distinct('from');
+    const recipients = await Whatsapp.find({});
     res.json(recipients);
   } catch (error) {
     console.error('Error fetching recipients:', error);
@@ -69,7 +84,6 @@ whatsappRouter.post('/', function(req, res, next) {
     try {
       // Find the conversation for the given recipient
       const conversation = await Whatsapp.findOne({ from: recipient });
-      console.log(conversation);
       if (conversation) {
         // Send the messages to the client
         res.json(conversation);
