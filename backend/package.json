@@ -32,6 +32,7 @@
     "nodemailer": "^6.9.7",
     "randomcolor": "^0.6.2",
     "redis": "^4.6.7",
+    "request": "^2.88.2",
     "sharp": "^0.32.1",
     "sharp-multer": "^0.2.5",
     "socket.io": "^4.7.1",

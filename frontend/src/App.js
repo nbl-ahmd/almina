@@ -43,6 +43,7 @@ import DisabledList from './admin/pages/DisabledList';
 import SettingsPage from './admin/pages/SettingsPage';
 import Contact from './client/pages/Contact';
 import OutOfStockPharmacy from './admin/pages/OutOfStockPharmacy';
+import WhatsappMessaging from './admin/pages/WhatsappMessaging';
 
 
 
@@ -421,6 +422,15 @@ const App = () => {
               <AdminProtectedRoute>
               <AdminDashProvider value= {<>
                 <Categoryupdate />
+              </>}>
+                <Admindash />
+              </AdminDashProvider>
+              </AdminProtectedRoute>
+          } />
+            <Route path='/admindash/whatsapp' element={
+              <AdminProtectedRoute>
+              <AdminDashProvider value= {<>
+                <WhatsappMessaging />
               </>}>
                 <Admindash />
               </AdminDashProvider>
