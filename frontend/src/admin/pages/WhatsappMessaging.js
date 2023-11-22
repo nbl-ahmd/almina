@@ -53,7 +53,8 @@ const WhatsappMessaging = () => {
       if (selectedRecipient) {
         try {
           const response = await axios.get(`${baseURL}/api/whatsapp/messages/${selectedRecipient}`);
-          setMessages(response.data);
+          setMessages(response.data.messages);
+          console.log(response.data.messages[0]);
         } catch (error) {
           console.error('Error fetching messages:', error);
         }
@@ -113,7 +114,7 @@ const WhatsappMessaging = () => {
         <Stack spacing={2} direction="row" alignItems="center">
         <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
-          <Typography noWrap>{recipient.name}</Typography>
+          <Typography noWrap>{recipient}</Typography>
           <Typography noWrap>{recipient.from}</Typography>
           </Box>
         </Stack>
@@ -130,7 +131,7 @@ const WhatsappMessaging = () => {
           <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
           <Typography noWrap>{selectedRecipient.name}</Typography>
-          <Typography noWrap>{selectedRecipient.from}</Typography>
+          <Typography noWrap>{selectedRecipient}</Typography>
           </Box>
         </Stack>
 </AppBar>

@@ -63,16 +63,16 @@ whatsappRouter.post('/', function(req, res, next) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-  whatsappRouter.get('messages/:recipient', async (req, res) => {
+  whatsappRouter.get('/messages/:recipient', async (req, res) => {
     const recipient = req.params.recipient;
   
     try {
       // Find the conversation for the given recipient
       const conversation = await Whatsapp.findOne({ from: recipient });
-  
+      console.log(conversation);
       if (conversation) {
         // Send the messages to the client
-        res.json(conversation.messages);
+        res.json(conversation);
       } else {
         res.status(404).json({ error: 'Conversation not found' });
       }
@@ -125,16 +125,23 @@ whatsappRouter.post("/webhook",async (req, res) => {
 
       try {
         // Check if the conversation exists
-        const conversation = await Whatsapp.findOne({ username: from });
+        const conversation = await Whatsapp.findOne({ from: from });
 
         if (conversation) {
+          console.log("old");
+          console.log(conversation);
           // Conversation exists, append the new message to the existing conversation
           conversation.messages.push({
             content: msg_body,
             timestamp: new Date(),
             sender: 'user',
           });
-          await conversation.save();
+          await conversation.save((error) => {
+            if (error) {
+              console.error('Error saving conversation:', error);
+            }
+          });
+          
 
           // Emit the new message to all connected clients
       req.app.locals.io.emit('newMessage', {
