@@ -136,11 +136,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
             timestamp: new Date(),
             sender: 'user',
           });
-          await conversation.save((error) => {
-            if (error) {
-              console.error('Error saving conversation:', error);
-            }
-          });
+          await conversation.save(); // Returns a promise, no callback needed
           
 
           // Emit the new message to all connected clients
