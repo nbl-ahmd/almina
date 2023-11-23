@@ -49,6 +49,7 @@ function getTemplatedMessageInput(recipient, template, link) {
             }
           ]
         }
+        
       ]
     }
   }
