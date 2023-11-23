@@ -129,7 +129,7 @@ const AdminDashboard = () => {
 </li>
 <li className="nav-item my-1" onClick={() =>{ toggleSidebar()}}>
     <Link to="/admindash/whatsapp" className={location.pathname === '/admindash/whatsapp' ? 'nav-link active ' : 'nav-link'}>
-    <i className="ri-user-line me-3"></i>
+    <i className="ri-whatsapp-line me-3"></i>
         Whatsapp
     </Link>
 
