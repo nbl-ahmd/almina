@@ -11,9 +11,8 @@ const Whatsapp = require('../models/Whatsapp');
  whatsappRouter.use(bodyParser.json());
 
 whatsappRouter.post('/s', function(req, res, next) {
- 
-    const recipient = Object.keys(req.body)[0];
-  var data = getTemplatedMessageInput(recipient);
+  const { recipient, template, link } = req.body;
+  var data = getTemplatedMessageInput(recipient, template, link);
   
   sendMessage(data)
   .then(function (response) {
@@ -50,8 +49,9 @@ whatsappRouter.post('/', function(req, res, next) {
 
 
 whatsappRouter.post('/text', function(req, res, next) {
-  const recipient = req.body.recipient;
-  const text = req.body.text;
+  const { recipient, name, text } = req.body;
+  console.log(recipient);
+  console.log(text);
     var data = getTextMessageInput(recipient, text);
     
     sendMessage(data)
@@ -63,6 +63,7 @@ whatsappRouter.post('/text', function(req, res, next) {
         console.log(error);
         return;
       });
+      saveAdminMessage(req, recipient, name, text)
   });
 
 
@@ -94,10 +95,60 @@ whatsappRouter.post('/text', function(req, res, next) {
       console.error('Error fetching messages:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
+    
+
+    
   });
 
 
+const saveAdminMessage = async (req, from, name, msg_body)=>{
+  try {
+    // Check if the conversation exists
+    const conversation = await Whatsapp.findOne({ from: from });
 
+    if (conversation) {
+      console.log("old");
+      console.log(conversation);
+      // Conversation exists, append the new message to the existing conversation
+      conversation.messages.push({
+        content: msg_body,
+        timestamp: new Date(),
+        sender: 'admin',
+      });
+      await conversation.save(); // Returns a promise, no callback needed
+      
+
+      // Emit the new message to all connected clients
+  req.app.locals.io.emit('newMessage', {
+    recipient: from,
+    message: { content: msg_body, sender: 'admin' },
+  });
+    } else {
+      // Conversation doesn't exist, create a new conversation
+      const newConversation = new Whatsapp({
+        from: from,
+        name: name,
+        messages: [
+          {
+            content: msg_body,
+            timestamp: new Date(),
+            sender: 'admin',
+          },
+        ],
+      });
+      await newConversation.save();
+      
+        // Emit the new message to all connected clients
+  req.app.locals.io.emit('newMessage', {
+    recipient: from,
+    message: { content: msg_body, sender: 'admin' },
+  });
+    }
+  } catch (error) {
+    console.error('Error handling conversation:', error);
+  }
+
+}
 
   /*
  * Starter Project for WhatsApp Echo Bot Tutorial

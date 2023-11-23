@@ -3,9 +3,9 @@ var axios = require('axios');
 function sendMessage(data) {
   var config = {
     method: 'post',
-    url: `https://graph.facebook.com/v17.0/163562513510742/messages`,
+    url: `https://graph.facebook.com/v17.0/185798894609701/messages`,
     headers: {
-      'Authorization': `Bearer EAAErqwBrM1sBOZCPC49k1k7iKUpnv6umqLbqZCXkyuNZBbPZCK9FLsQOkpgqoF1m2cQhZBZBZBVa8nzf4egtLQoQqb1fEwgRZCAvTrD57E0RF1vZAInzIvAEmBZBE6kBiuqLfeVwh8wGYVujdae9PMZCMnpkNm0zSrH1x2qZABOAEMhEkZCLaYWuHGTVbKYNUyZAb1PnQZBWvAda1pULzJJlJczvFtH0OpCrAx5TbDssdLI`,
+      'Authorization': `Bearer EAAErqwBrM1sBOwWpdnbMqBgGFPABDLcqZCESBxITR7ylN8WID1cuSqMAce4tyu2QS1vYgqm4VNDQS0fYKNuqCGq0vaVmoe8VZBysRQeEMfhwFFGMuInfHioVtOYMjyvP4IxHZBHY5CVky1R6MQ8euF0ZA0twNibwvq9G6yNyx8MZBkNF0ZBHfLVL2unPmaXjw9dHELRCUouMCnFERZAljdPy40fRnkWaLKjUpAZD`,
       'Content-Type': 'application/json'
     },
     data: data
@@ -27,15 +27,15 @@ function getTextMessageInput(recipient, text) {
   });
 }
 
-function getTemplatedMessageInput(recipient) {
+function getTemplatedMessageInput(recipient, template, link) {
   return JSON.stringify({
     "messaging_product": "whatsapp",
     "to": recipient,
     "type": "template",
     "template": {
-      "name": "weekly_promotion",
+      "name": template,
       "language": {
-        "code": "en"
+        "code": "en_US"
       },
      "components": [
         {
@@ -44,7 +44,7 @@ function getTemplatedMessageInput(recipient) {
             {
               "type": "image",
               "image": {
-                "link": "https://drive.google.com/uc?export=view&id=1UeS8C8NaHBjUv29crZcQnzsDoyTgwiWA"
+                "link": link
               }
             }
           ]
