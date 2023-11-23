@@ -6,6 +6,157 @@ var axios = require('axios');
 const { sendMessage, getTemplatedMessageInput, getTextMessageInput } = require("../messageHelper");
 const whatsappRouter = express.Router();
 const Whatsapp = require('../models/Whatsapp');
+const multer = require('multer');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const cors = require('cors');
+const WhatsappPoster = require('../models/WhatsappPoster');
+const sharp = require('sharp');
+const router = express.Router();
+const uploadDir = path.join(__dirname, '..', 'public/WhatsappPoster');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+const fs = require('fs');
+//google
+const { Readable } = require('stream');
+const { google } = require('googleapis');
+// Load the JSON key file
+const keyFile = path.join(__dirname, '/cred.json');
+
+// Create a new instance of the drive API
+const auth = new google.auth.GoogleAuth({
+  keyFile,
+  scopes: ['https://www.googleapis.com/auth/drive.file'],
+});
+
+const drive = google.drive({ version: 'v3', auth });
+
+// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const FOLDER_ID = '11wB-C-ZmixvTLZnrFVkRfokTQmBmLlmv';
+
+whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
+  const image = req.file;
+  const croppedImage = await sharp(image.buffer)
+    .toBuffer();
+  const resizedFilename = uuidv4() + '.jpg';
+  // save the resized image to the directory
+ 
+  const poster = new WhatsappPoster({ image: resizedFilename }); 
+  
+   // Upload the file to Google Drive
+   try {
+    const fileMetadata = {
+      name: resizedFilename,
+      parents: [FOLDER_ID], // Set the parent folder ID
+    };
+
+    const media = {
+      mimeType: 'image/jpg',
+      body: Readable.from(croppedImage),
+    };
+
+    const response = await drive.files.create({
+      resource: fileMetadata,
+      media: media,
+      fields: 'id',
+    });
+
+    poster.gdriveFileId = response.data.id; // Save the Google Drive file ID to the poster document
+
+    // Save the poster document to the database
+    await poster.save();
+
+    res.status(201).json({ message: 'poster created successfully' });
+  } catch (error) {
+    console.error('Error uploading file to Google Drive:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
+  req.app.locals.io.emit('newPoster', {
+    image: resizedFilename,
+  });
+});
+  // save the resized filename to the database
+
+  whatsappRouter.get('/image', (req, res) => {
+  WhatsappPoster.find()
+    .then(poster => {
+      res.status(200).json(poster);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: 'Internal server error' });
+    });
+});
+
+whatsappRouter.get('/image/:filename', async (req, res) => {
+  const { filename } = req.params;
+
+  try {
+    // Retrieve the poster by filename from the database
+    const poster = await WhatsappPoster.findOne({ image: filename });
+    if (!poster) {
+      return res.status(404).json({ error: 'poster not found' });
+    }
+
+    // Retrieve the image file from Google Drive
+    const response = await drive.files.get(
+      { fileId: poster.gdriveFileId, alt: 'media' },
+      { responseType: 'stream' }
+    );
+
+    // Set the appropriate Content-Type header for the image
+    res.set('Content-Type', 'image/webp');
+
+    // Pipe the image stream from Google Drive to the response stream
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('Error retrieving image from Google Drive:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+whatsappRouter.delete('/image/:id', async (req, res) => {
+  const posterId = req.params.id;
+
+  try {
+    // Find the poster by ID
+    const poster = await WhatsappPoster.findById(posterId);
+    if (!poster) {
+      return res.status(404).json({ success: false, message: 'poster not found!' });
+    }
+
+    // Delete the poster from the database
+    await WhatsappPoster.findByIdAndRemove(posterId);
+
+    // If applicable, delete the image file from Google Drive
+    if (poster.gdriveFileId) {
+      await drive.files.delete({ fileId: poster.gdriveFileId });
+    }
+
+    // Delete the image file from the server's file system
+    fs.unlink(path.join(uploadDir, poster.image), (error) => {
+      if (error) {
+        console.log('Error deleting image file:', error);
+      }
+    });
+
+    return res.status(200).json({ success: true, message: 'The poster and image are deleted!' });
+  } catch (error) {
+    console.error('Error deleting poster:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 
  whatsappRouter.use(bodyParser.json());

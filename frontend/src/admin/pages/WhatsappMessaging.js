@@ -6,6 +6,8 @@ import WhatsapChatCard from '../components/WhatsapChatCard';
 import SendIcon from '@mui/icons-material/Send';
 import io from 'socket.io-client';
 import Papa from 'papaparse'; // You may need to install the papaparse library
+import WhatsapPoster from '../components/WhatsapPoster';
+import WhatsappPosterList from '../components/WhatsappPosterList';
 
 const socket = io.connect(baseURL);
 
@@ -25,6 +27,45 @@ const WhatsappMessaging = () => {
 
   const [phoneNumbers, setPhoneNumbers] = useState([]);
 
+
+  const [banners, setBanners] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${baseURL}/api/whatsapp/image`)
+      .then(response => {
+        console.log(response.data);
+        setBanners(response.data);
+      })
+      .catch(error => console.log(error));
+  }, []);
+
+
+ const [name, setName] = useState('');
+ const [image, setImage] = useState(null);
+ const [message, setMessage] = useState('');
+
+ const handleImageChange = event => setImage(event.target.files[0]);
+
+ const handleSubmit = event => {
+   event.preventDefault();
+   const formData = new FormData();
+   formData.append('image', image);
+   axios.post(`${baseURL}/api/whatsapp/image`, formData)
+     .then(response => {
+       console.log(response.data);
+       setMessage('Banner created successfully');
+     })
+     .catch(error => {
+       console.log(error);
+       setMessage('Error creating banner');
+     });
+ };
+
+
+
+
+
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
 
@@ -43,9 +84,22 @@ const WhatsappMessaging = () => {
 
   useEffect(() => {
     // Your existing logic to fetch recipients
+    socket.on('newPoster', (poster) => {
+
+    setBanners((prevBanners) => [...prevBanners, poster]);
+    console.log(poster);
+
+    });
+
+
+
     socket.on('newMessage', (conversation) => {
 
-      const recipientExists = recipients.some((recipient) => recipient.from === conversation.recipient);
+      const recipientExists = recipients.some((recipient) => recipient?.from === conversation.recipient);
+
+      // Alternatively, you can use optional chaining to handle potential undefined values:
+      // const recipientExists = recipients.some((recipient) => recipient?.from === conversation.recipient);
+      
 console.log(recipient);   
   // If the recipient doesn't exist, add it to the state
   if (!recipientExists) {
@@ -63,6 +117,7 @@ console.log(recipient);
     });
 
     return () => {
+      socket.off('newPoster');
       socket.off('newMessage');
     };
   }, [selectedRecipient,recipients]);
@@ -171,7 +226,7 @@ console.log(recipient);
   return (
     <>
   
-    <Container>
+    <Container sx={{mt:4}}>
     <Grid container spacing={2}>
   <Grid item xs={4}>
   <ThemeProvider theme={theme}>
@@ -208,15 +263,15 @@ console.log(recipient);
         }}
         onClick={() =>
            {
-            setSelectedRecipient(recipient.from);
-           setSelectedRecipientName(recipient.name)
+            setSelectedRecipient(recipient?.from);
+           setSelectedRecipientName(recipient?.name)
            }}
       >
         <Stack spacing={2} direction="row" alignItems="center">
         <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
-          <Typography noWrap>{recipient.name}</Typography>
-          <Typography noWrap>{recipient.from}</Typography>
+          <Typography noWrap>{recipient?.name}</Typography>
+          <Typography noWrap>{recipient?.from}</Typography>
           </Box>
         </Stack>
       </Box>
@@ -306,7 +361,7 @@ onClick={() =>
   </Grid>
   :
   <Grid item xs={8}>
-    <Box sx={{position:"relative",  width: "100%", background: '#fff', borderRadius: 2, flexGrow: 1, height:650, overflow: 'hidden', boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", }}>
+    <Box sx={{position:"relative",  width: "100%", background: '#fff', borderRadius: 2, flexGrow: 1, height:650, overflow: 'auto', boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", }}>
     <AppBar position="static" sx={{px:4, py:1, background: 'rgba(128, 227, 208, 0.154)',boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", }}>
   <Stack spacing={5} direction="row" alignItems="center">
           <Avatar><i className="ri-user-line"></i></Avatar>
@@ -316,9 +371,9 @@ onClick={() =>
         </Stack>
 </AppBar>
 
-<Box sx={{p:3, display: "flex", mb:4, maxHeight:490, overflowY: "auto", justifyContent:"space-around"}}>
+<Box sx={{px:3, py:2, display: "flex", justifyContent:"space-around"}}>
 {/* <input type="file" accept=".csv" onChange={handleFileChange} /> */}
-<Box sx={{p:3, width:250, height:250, boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", borderRadius:2 , display:"flex",textAlign:'center', flexDirection:"column", alignItems:"center", justifyContent:"space-between"}}>
+<Box sx={{p:3, width:200, height:250, boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", borderRadius:2 , display:"flex",textAlign:'center', flexDirection:"column", alignItems:"center", justifyContent:"space-between"}}>
   <Box>
   <h5>Upload csv file</h5>
   <Typography sx={{mt:2, lineHeight:1.3, fontWeight:300, fontSize:13, color: '#cedcd', textAlign:'center', fontFamily: 'Poppins, sans-serif'}}>Please select and upload a csv file of the numbers to send the broadcast</Typography>
@@ -340,7 +395,26 @@ onClick={() =>
 </Box>
 </Box>
 
-<Box sx={{p:3, width:250, height:250, boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", borderRadius:2 , display:"flex",textAlign:'center', flexDirection:"column", alignItems:"center", justifyContent:"space-between"}}>
+<Box sx={{p:2, width:200, height:250, boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", borderRadius:2 , display:"flex",textAlign:'center', flexDirection:"column", alignItems:"center", justifyContent:"space-between"}}>
+  <Box>
+  <h5>Upload Image</h5>
+  <Typography sx={{mt:2, lineHeight:1.3, fontWeight:300, fontSize:13, color: '#cedcd', textAlign:'center', fontFamily: 'Poppins, sans-serif'}}>Please select and upload an image to send with the broadcast</Typography>
+  </Box>
+<Box>
+<div className="">
+      <form className='' onSubmit={handleSubmit}>
+       
+        <div className='mb-2'>
+          <input className='form-control' type="file" id="image" onChange={handleImageChange} />
+        </div>
+        <button className='btn btn-p' type="submit">Upload</button>
+      </form>
+      <p>{message}</p>
+  </div>
+</Box>
+</Box>
+
+<Box sx={{p:3, width:200, height:250, boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", borderRadius:2 , display:"flex",textAlign:'center', flexDirection:"column", alignItems:"center", justifyContent:"space-between"}}>
   <Box>
   <Typography sx={{mb:3, lineHeight:1.3, fontWeight:300, fontSize:13, color: '#cedcd', textAlign:'center', fontFamily: 'Poppins, sans-serif'}}> Enter template name and link and click send</Typography>
   </Box>
@@ -412,7 +486,23 @@ Send
 </Box>
 </Box>
     </Box>
+    
+
+    
+  
+    <Box sx={{px:5, display: "flex", mb:3, justifyContent:"space-around"}}>
+    <Grid container spacing={2}>
+    {banners.map(banners => (
+      <Grid item xs={3}>
+  <WhatsappPosterList key={banners._id} banners={banners} />
+  </Grid>
+))}
+</Grid>
     </Box>
+    
+    </Box>
+
+   
    </Grid> 
     }
    
