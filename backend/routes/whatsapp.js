@@ -38,7 +38,7 @@ whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
   const image = req.file;
   const croppedImage = await sharp(image.buffer)
     .toBuffer();
-  const resizedFilename = uuidv4() + '.jpg';
+  const resizedFilename = uuidv4() + '.jpeg';
   // save the resized image to the directory
  
   const poster = new WhatsappPoster({ image: resizedFilename }); 
@@ -51,7 +51,7 @@ whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
     };
 
     const media = {
-      mimeType: 'image/jpg',
+      mimeType: 'image/jpeg',
       body: Readable.from(croppedImage),
     };
 
@@ -106,7 +106,7 @@ whatsappRouter.get('/image/:filename', async (req, res) => {
     );
 
     // Set the appropriate Content-Type header for the image
-    res.set('Content-Type', 'image/webp');
+    res.set('Content-Type', 'image/jpeg');
 
     // Pipe the image stream from Google Drive to the response stream
     response.data.pipe(res);
