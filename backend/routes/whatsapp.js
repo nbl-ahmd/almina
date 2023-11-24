@@ -336,9 +336,11 @@ whatsappRouter.post("/webhook",async (req, res) => {
         req.body.entry[0].changes[0].value.metadata.phone_number_id;
       let from = req.body.entry[0].changes[0].value.messages[0].from; // extract the phone number from the webhook payload
       let name = req.body.entry[0].changes[0].value.contacts[0].profile.name; // extract the name from the webhook payload
-      let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body; // extract the message text from the webhook payload
+      let msg_body = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.text?.body || '"stop promotion"'; // extract the message text from the webhook payload
       let status = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.button?.text || 'true';
 
+      console.log(msg_body);
+      console.log(status);
 
       try {
         // Check if the conversation exists
