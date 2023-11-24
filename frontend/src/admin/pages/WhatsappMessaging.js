@@ -257,7 +257,7 @@ console.log(recipient);
           my: 1,
           mx: 'auto',
           p: 1,
-          background: "rgba(128, 227, 208, 0.154)",
+          background: recipient?.promotionStatus === 'Stop promotions' ? 'rgba(255,99,99,.9)' : 'rgba(128, 227, 208, 0.154)',
           borderRadius: 2,
           cursor: 'pointer'
         }}
@@ -293,7 +293,7 @@ sx={{
 }}
 onClick={() =>
    {
-    setSelectedRecipient(recipient.from);
+   setSelectedRecipient(recipient.from);
    setSelectedRecipientName(recipient.name)
    }}
 >

@@ -11,6 +11,10 @@ const conversationSchema = new mongoose.Schema({
     unique: true,
     required: true,
   },
+  promotionStatus:{
+    type: String,
+    default: 'true',
+  },
   messages: [
     {
       content: {

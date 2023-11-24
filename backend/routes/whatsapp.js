@@ -337,7 +337,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
       let from = req.body.entry[0].changes[0].value.messages[0].from; // extract the phone number from the webhook payload
       let name = req.body.entry[0].changes[0].value.contacts[0].profile.name; // extract the name from the webhook payload
       let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body; // extract the message text from the webhook payload
-
+let status = req.body.entry[0].changes[0].value.messages[0].button.text;
 
       try {
         // Check if the conversation exists
@@ -352,12 +352,15 @@ whatsappRouter.post("/webhook",async (req, res) => {
             timestamp: new Date(),
             sender: 'user',
           });
+           // Update promotionStatus field
+    conversation.promotionStatus = status;
           await conversation.save(); // Returns a promise, no callback needed
           
 
           // Emit the new message to all connected clients
       req.app.locals.io.emit('newMessage', {
         recipient: from,
+        promotionStatus: status,
         message: { content: msg_body, sender: 'user' },
       });
         } else {
@@ -365,6 +368,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
           const newConversation = new Whatsapp({
             from: from,
             name: name,
+            promotionStatus: status,
             messages: [
               {
                 content: msg_body,
@@ -378,6 +382,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
             // Emit the new message to all connected clients
       req.app.locals.io.emit('newMessage', {
         recipient: from,
+        promotionStatus: status,
         message: { content: msg_body, sender: 'user' },
       });
         }
