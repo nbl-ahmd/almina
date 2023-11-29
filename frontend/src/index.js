@@ -4,21 +4,16 @@ import './client/styles/index.css';
 import App from './App';
 import { hydrate, render } from "react-dom";
 import reportWebVitals from './reportWebVitals';
-import { HelmetProvider } from 'react-helmet-async';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-if (root.hasChildNodes()) {
-  hydrate(<App />, root);
+
+ReactDOM.render(<App />, document.getElementById('root'));
+const rootElement = document.getElementById("root");
+
+if (rootElement.hasChildNodes()) {
+  ReactDOM.hydrate(<App />, rootElement);
 } else {
-  render(<App />, root);
+  ReactDOM.render(<App />, rootElement);
 }
-root.render(
-  <React.StrictMode>
-    <HelmetProvider>
-    <App />
-    </HelmetProvider>
-  </React.StrictMode>
-);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

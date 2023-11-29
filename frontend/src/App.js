@@ -1,6 +1,7 @@
 
 import './client/styles/App.css';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import Navbar from './client/components/navbar';
 import React, { useEffect, useState } from 'react';
 import Home from './client/pages/Home';
@@ -96,12 +97,8 @@ const App = () => {
   }, []);
 
   return (
+    <HelmetProvider>
     <BrowserRouter>
-
-
-
-
-
       <main>
         <Routes>
           <Route path='/cart' element={
@@ -457,7 +454,7 @@ const App = () => {
         
       </main>
     </BrowserRouter>
-
+    </HelmetProvider>
 
 
 
