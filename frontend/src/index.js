@@ -2,12 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './client/styles/index.css';
 import App from './App';
+import { hydrate, render } from "react-dom";
 import reportWebVitals from './reportWebVitals';
+import { HelmetProvider } from 'react-helmet-async';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+if (root.hasChildNodes()) {
+  hydrate(<App />, root);
+} else {
+  render(<App />, root);
+}
 root.render(
   <React.StrictMode>
+    <HelmetProvider>
     <App />
+    </HelmetProvider>
   </React.StrictMode>
 );
 

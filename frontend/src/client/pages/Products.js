@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -176,6 +177,16 @@ const Products = () => {
 
 
   return (
+   <>
+    <Helmet>
+<title>{searchedProducts?.[0]?.name || 'Search Products'}</title>
+<meta name='description' content={searchedProducts?`Discover the best deals on ${searchedProducts?.[0]?.name || 'vitaced'} at Al Mina Pharamcy. Shop now for quality healthcare with our competitive prices. ${searchedProducts?.[0]?.name || 'vitaced'} available at just ${searchedProducts?.[0]?.price || ''} AED. Your trusted destination for health essentials.` : 'Explore our comprehensive pharmacy products range at Al Mina Pharamcy. From Vitamin C serums and supplements to trusted brands like Advil, Cetaphil, and Baneocin. Find the best prices on Al Mina, Bepanthen, and more. Conveniently located near you, shop for quality healthcare products now.'} />
+<link rel="canonical" href={searchedProducts?`https://www.alminapharmacy.com/search?q=${searchQuery}` : "https://www.alminapharmacy.com/products"} />
+<meta property="og:image" content={searchedProducts? `${baseURL}/api/products/images/${searchedProducts?.[0]?.image || 'fb634ad3-7062-4baf-a08d-4f8f04abb459.webp'}` :`${baseURL}/api/products/images/fb634ad3-7062-4baf-a08d-4f8f04abb459.webp` } />
+<meta property="og:image:width" content="700" />
+<meta property="og:image:height" content="699" />
+
+</Helmet>
     <section className="container" style={{ paddingBottom: '100px' }}>
       <Breadcrumbs />
       <div className="title pt-2 px-4">
@@ -271,6 +282,7 @@ const Products = () => {
   </div>
   <BackToTopButton />
     </section>
+    </>
   );
 };
 
