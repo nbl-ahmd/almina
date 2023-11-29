@@ -30,6 +30,7 @@
     "nanoid": "^4.0.2",
     "node-fetch": "^2.6.1",
     "nodemailer": "^6.9.7",
+    "prerender-node": "^3.7.0",
     "randomcolor": "^0.6.2",
     "redis": "^4.6.7",
     "request": "^2.88.2",

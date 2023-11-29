@@ -80,6 +80,7 @@ app.use((req, res, next) => {
         next(new Error('Something went wrong'));
     });
 });
+app.use(require('prerender-node').set('prerenderToken', 'Gi4GIJ70fCQG19PyXS6a'));
 
 app.use(function (err, req, res, next) {
     console.error(err.message);
