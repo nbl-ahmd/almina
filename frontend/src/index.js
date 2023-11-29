@@ -5,7 +5,7 @@ import App from './App';
 import { hydrate, render } from "react-dom";
 import reportWebVitals from './reportWebVitals';
 
-
+const root = ReactDOM.createRoot(document.getElementById('root'));
 ReactDOM.render(<App />, document.getElementById('root'));
 const rootElement = document.getElementById("root");
 
