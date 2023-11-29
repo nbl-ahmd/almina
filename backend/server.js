@@ -54,7 +54,7 @@ app.use('/api/auth', loginRouter);
 app.use('/api/batch', batchProductRouter);
 app.use('/api/store', storeRouter);
 app.use('/api/whatsapp', whatsappRouter);
-app.use(require('prerender-node').set('prerenderToken', 'Gi4GIJ70fCQG19PyXS6a'));
+
 
 const httpServer = require("http").createServer(app);
 const io = require("socket.io")(httpServer, {
@@ -80,7 +80,6 @@ app.use((req, res, next) => {
         next(new Error('Something went wrong'));
     });
 });
-
 
 app.use(function (err, req, res, next) {
     console.error(err.message);
