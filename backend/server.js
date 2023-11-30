@@ -54,7 +54,7 @@ app.use('/api/batch', batchProductRouter);
 app.use('/api/store', storeRouter);
 app.use('/api/whatsapp', whatsappRouter);
 
-app.use(require('prerender-node').set('prerenderToken', 'gJpYFFZOEWUsYIXzO0tJ'));
+app.use(require('prerender-node').set('prerenderToken', 'cV1Q2WmvQ2B8kbh0xwsB').set('host', 'https://www.alminapharmacy.com'));
 
 const httpServer = require("http").createServer(app);
 const io = require("socket.io")(httpServer, {
