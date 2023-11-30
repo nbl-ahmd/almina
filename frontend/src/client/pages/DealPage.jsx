@@ -9,6 +9,7 @@ import BackToTopButton from '../components/BackToTopButton';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Footer from '../components/footer';
+import { CustomHelmet } from '../components/CustomHelmet';
 
 
 const DealPage = () => {
@@ -37,7 +38,7 @@ const DealPage = () => {
   }, []);
 
   const fetchProducts = async () => {
-    console.log('fetch products called')
+    
     setLoaded(false); // Reset loaded state before fetching more products
     setIsLoading(true);
     setError(null);
@@ -76,6 +77,13 @@ const DealPage = () => {
 
 
   return (
+    <>
+    <CustomHelmet 
+    title ={'Top deals'}
+    description = {'Discover exclusive deals at Al Mina Pharmacy, your trusted destination for premium healthcare products in Ras Al Khaimah. From Vitamin C serums to Advil 12-hour extended release tablets, we cater to your diverse needs. Find quality items like Cipla HUF PUF Kit, Betadine for throat gargle, and Baneocin ointment. Explore Betadine vaginal pessaries, Avalon Active Cream, and Cetaphil offers in the UAE. Whether you seek Advil 12-hour tablets, Alka Cran, or Avalon Diaper Cream, our pharmacy near you in Ras Al Khaimah ensures convenience. Unlock savings on Bepanthen Plus, Adol Infant Drops 100mg, and a variety of vitamin supplements, including Vitamin D and Vitamin B12. Dive into top-notch products like Skinceuticals CE Ferulic and explore drug stores close to you for the best medical supplies. Benefit from Betadine liquid mouthwash, Bepanthen Hydrating Cream, and Betadine Cold Defense Nasal Spray. Your health is our priority, making us the go-to pharmacy for your well-being in Ras Al Khaimah'}
+    url = {'https://www.alminapharmacy.com/offers'}
+    image = {'https://almina-shop.onrender.com/api/banners/images/8f4c5405-af45-4a09-a32c-cfdabd77934f.webp'}
+    />
     <section className="container" style={{ paddingBottom: '100px' }}>
       <Breadcrumbs />
       <div className="title pt-1 px-4">
@@ -113,6 +121,7 @@ const DealPage = () => {
   </div>
   <BackToTopButton />
     </section>
+    </>
   )
 }
 

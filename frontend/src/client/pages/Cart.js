@@ -27,7 +27,7 @@ const Cart = () => {
     setTotalDiscount(parseFloat(discount).toFixed(2));
     }
  
-console.log(cartItems.length);
+
   return (
     <>
     {cartItems.length ? (

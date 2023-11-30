@@ -34,7 +34,6 @@ export const CartProvider = ({ children }) => {
     });
     const roundedtotalPrice = totalPrice.toFixed(2);
     setTotalPrice(parseFloat(roundedtotalPrice));
-    console.log("total vat: " + roundedtotalPrice);
 
   };
   const calculateTotalSalePrice = () => {
@@ -44,7 +43,6 @@ export const CartProvider = ({ children }) => {
     });
     const roundedtotalSalePrice = totalSalePrice.toFixed(2);
     setTotalSalePrice(parseFloat(roundedtotalSalePrice));
-    console.log("total vat: " + roundedtotalSalePrice);
 
   };
 
@@ -57,7 +55,6 @@ export const CartProvider = ({ children }) => {
     });
     const roundedTotalVat = totalVat.toFixed(2);
     setTotalVat(parseFloat(roundedTotalVat));
-    console.log("total vat: " + roundedTotalVat);
   };
 
   const calculateTotalVatPrice = () => {
@@ -70,7 +67,6 @@ export const CartProvider = ({ children }) => {
 
     const roundedTotalVatPrice = totalVatPrice.toFixed(2);
     setTotalVatPrice(parseFloat(roundedTotalVatPrice));
-    console.log("total vat price: " + roundedTotalVatPrice);
   };
 
   const [customerInfo, setCustomerInfo] = useState({
@@ -134,7 +130,7 @@ export const CartProvider = ({ children }) => {
     try {
       const response = await axios.get(`${baseURL}/api/store/status`);
       const storeStatus = response.data.status;
-  console.log(storeStatus);
+ 
       if (storeStatus === 'closed') {
         alert('The store is currently closed. You cannot add items to your cart.');
         return;
@@ -157,7 +153,7 @@ export const CartProvider = ({ children }) => {
         }
 
         updatedCartItems[existingCartItemIndex].quantity = updatedQuantity;
-        console.log('already in cart');
+      
 
         // Update local storage with the updated cart items
         localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
@@ -186,8 +182,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = (item) => {
-    console.log('deleted');
-    console.log(item);
+  
     setCartItems((prevCartItems) => {
       const updatedCartItems = prevCartItems.filter((cartItems) => cartItems._id !== item._id);
       // Update local storage with the updated cart items
@@ -225,27 +220,15 @@ export const CartProvider = ({ children }) => {
       
     };
     
-
-  
-    //  axios.post(`${baseURL}/api/orders/email`,{ htmlContent: html })
-    //  .then((response) => {
-    // //   // Handle the response from the server if needed
-    // //   console.log(html);
-    // //   console.log('Email sent successfully:', response.data);
-    //  })
-    //  .catch((error) => {
-    //    // Handle the error if needed
-    //    console.error('Error sending email:', error);
-    //  });
   
     // Send a POST request to your MongoDB server to save the order data
-    console.log(orderData);
+
     
     axios
       .post(`${baseURL}/api/orders`, orderData)
       .then((response) => {
         // Handle the response if needed
-        console.log('Order saved successfully:', response.data);
+        
         const orderId = response.data.orderId;
         const html = render(<OrderConfirmation order = {orderData}  orderId = {orderId}/>, {
           pretty: true,
@@ -257,9 +240,6 @@ export const CartProvider = ({ children }) => {
         };
         axios.post(`${baseURL}/api/orders/email`,emailData)
      .then((response) => {
-    //   // Handle the response from the server if needed
-    //   console.log(html);
-    //   console.log('Email sent successfully:', response.data);
      })
      .catch((error) => {
        // Handle the error if needed
@@ -269,9 +249,6 @@ export const CartProvider = ({ children }) => {
 
        //Set the order ID in the orderModal state
        setOrderModal(orderId);
-       console.log('id' +ordermodal);
-     
-       console.log(html);
         // Clear the cart and customer information after successful upload
         setCartItems([]);
         setCustomerInfo({

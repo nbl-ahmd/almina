@@ -8,21 +8,21 @@ import Home from './client/pages/Home';
 import About from './client/pages/About';
 import Products from './client/pages/Products';
 import Categories from './client/pages/Categories'
-import FilesUpload from './admin/components/ProductUpload';
+import Cart from './client/pages/Cart';
+import Checkout from './client/components/Checkout';
+import DealPage from './client/pages/DealPage';
+
 import BannerForm from './admin/components/BannerForm';
-import BannerCard from './client/components/BannerCard';
-import axios from 'axios';
 import Dashboard from './admin/pages/dashboard';
 import NotFound from './client/pages/NotFound'
-import Product from './admin/components/product';
 import ProductUpload from './admin/components/ProductUpload';
 import CategoryUpload from './admin/components/CategoryUpload';
 import Products_list from './admin/pages/Products_list';
 import Categoryupdate from './admin/components/Categoryupdate';
 import ProductUpdate from './admin/components/ProductUpdate';
-import Cart from './client/pages/Cart';
+
 import { CartProvider } from './context/cartcontext';
-import Checkout from './client/components/Checkout';
+
 import Orderlist from './admin/components/Orderlist';
 import CategoryPage from './client/pages/Categoryproduct';
 import Footer from './client/components/footer';
@@ -32,9 +32,6 @@ import Login from './admin/login/Login'
 import Admindash from './admin/pages/Admindash';
 import Adduser from './admin/pages/Adduser';
 import Openstreet from './client/components/Openstreet';
-import BackToTopButton from './client/components/BackToTopButton';
-import DealPage from './client/pages/DealPage';
-import { Breadcrumb } from 'react-bootstrap';
 import SalesList from './admin/pages/SalesList';
 import OutOfStock from './admin/pages/OutOfStock';
 import Dispatched from './admin/components/Dispatched';

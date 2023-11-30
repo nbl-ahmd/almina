@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import Productskeleton from '../components/Productskeleton';
 import Breadcrumbs from '../components/Breadcrumbs';
 import BackToTopButton from '../components/BackToTopButton';
+import { CustomHelmet } from '../components/CustomHelmet';
 
 const CategoryPage = () => {
   const { categoryId } = useParams();
@@ -15,7 +16,7 @@ const CategoryPage = () => {
 
   useEffect(() => {
     axios.get(`${baseURL}/api/category/${categoryId}`).then((response) => {
-        console.log(response.data.name);
+       
         setCatname(response.data.name);
       })
    
@@ -34,8 +35,8 @@ const CategoryPage = () => {
           },
         });
         setProducts(response.data);
-        console.log(response.data);
-        console.log(filter);
+       
+       
      
     } catch (error) {
       console.error('Error fetching products by category:', error);
@@ -44,7 +45,13 @@ const CategoryPage = () => {
 
 
   return (
-
+<>
+<CustomHelmet 
+    title ={catname}
+    description = {`Explore a diverse range of products for ${catname} at Al Mina Pharmacy. Shop high-quality essentials, including ${products?.[0]?.name} and more. Our curated selection caters to your skincare needs, ensuring you have access to the best solutions. Discover effective products for a radiant and healthy skin routine. Shop now for expert-recommended solutions at Al Mina Pharmacy.`}
+    url = {`https://www.alminapharmacy.com/categories/${categoryId}`}
+    image = {`${baseURL}/api/category/images/${products?.[0]?.category?.image || ''}`}
+    />
     <section className='container h-100'>
     <Breadcrumbs catname = {catname} />
     <div className="title pt-1 px-4 mb-4">
@@ -67,6 +74,7 @@ const CategoryPage = () => {
     <BackToTopButton />
   </section>
 
+</>
   
 
 

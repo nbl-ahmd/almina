@@ -7,25 +7,21 @@
 import baseURL from '../../axiosConfig'
 import Productskeleton from '../components/Productskeleton'
 import Deals from '../components/Deals'
-import Footer from '../components/footer'
 import CategorySlide from '../components/CategorySlide'
 import BackToTopButton from '../components/BackToTopButton'
+import { CustomHelmet } from '../components/CustomHelmet'
 
  const Home = () => {
    const [banners, setBanners] = useState([]);
    const [product, setProduct] = useState([]);
    const [category, setCategory] = useState([]);
-  //  const [cartItems, setCartItems] = useState(() => {
-  //   // Retrieve cart items from local storage on initial render
-  //   const storedCartItems = localStorage.getItem('cartItems');
-  //   return storedCartItems ? JSON.parse(storedCartItems) : [];
-  // });
+
   // Fetch banners on component mount
   useEffect(() => {
     axios
       .get(`${baseURL}/api/banners`)
       .then((response) => {
-        console.log(response.data);
+       
         setBanners(response.data);
       })
       .catch((error) => console.log(error));
@@ -52,7 +48,7 @@ import BackToTopButton from '../components/BackToTopButton'
       },
     })
     .then((response) => {
-         console.log(response.data);
+        
          setProduct(response.data);
        })
        .catch((error) => console.log(error));
@@ -66,7 +62,7 @@ import BackToTopButton from '../components/BackToTopButton'
       .get(`${baseURL}/api/category?filter=${encodeURIComponent(filterString)}`)
       .then((response) => {
         setCategory(response.data);
-        console.log(response.data);
+       
       })
      }
      catch (error) {
@@ -75,6 +71,13 @@ import BackToTopButton from '../components/BackToTopButton'
    }, []);
   
    return (
+    <>
+    <CustomHelmet 
+    title ={"Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah"}
+    description = {`Discover premium healthcare at Al Mina Pharmacy, your reliable choice in Ras Al Khaimah. Explore a diverse range, from Vitamin C serums to Advil 12 Hour Extended Release. Enjoy the convenience of free delivery in Ras Al Khaimah. Elevate your wellness journey with trusted products at Al Mina Pharmacy.`}
+    url = {'https://www.alminapharmacy.com'}
+    image = {`https://www.alminapharmacy.com/static/media/logo.8833247e76213f696009.png`}
+    />
      <main>
       
        <div className="pt-3 pt-md-5 pb-4 hero-wrapper">
@@ -219,6 +222,7 @@ import BackToTopButton from '../components/BackToTopButton'
 
        <BackToTopButton />
      </main>
+     </>
    )
  }
 
