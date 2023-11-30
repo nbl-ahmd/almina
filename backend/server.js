@@ -7,7 +7,6 @@ let express = require('express'),
 
 
 const dotenv = require('dotenv');
-
 require('./keep-alive');
 
 dotenv.config(); // Load environment variables from .env file
@@ -55,6 +54,7 @@ app.use('/api/batch', batchProductRouter);
 app.use('/api/store', storeRouter);
 app.use('/api/whatsapp', whatsappRouter);
 
+app.use(require('prerender-node').set('prerenderToken', 'gJpYFFZOEWUsYIXzO0tJ'));
 
 const httpServer = require("http").createServer(app);
 const io = require("socket.io")(httpServer, {
@@ -81,9 +81,9 @@ app.use((req, res, next) => {
     });
 });
 
-app.use(function (err, req, res, next) {
+app.use((err, req, res, next) => {
     console.error(err.message);
     if (!err.statusCode) err.statusCode = 500;
-    res.status(err.statusCode).send(err.message);
-});
+    res.status(err.statusCode).json({ error: err.message });
+  });
 
