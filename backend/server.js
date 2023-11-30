@@ -7,7 +7,6 @@ let express = require('express'),
 
 
 const dotenv = require('dotenv');
-const prerenderio = require('prerender-node');
 require('./keep-alive');
 
 dotenv.config(); // Load environment variables from .env file
@@ -44,11 +43,6 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(cors({ origin: '*' }));
-
-prerenderio.set('prerenderToken', 'ZRy5F5qoAqF3sJMDG8Y1');
-prerenderio.set('protocol', 'https');
-prerenderio.set('host', 'alminapharmacy.com');
-app.use(prerenderio);
 
 app.use('/public', express.static('public'));
 app.use('/api/category', categoryRouter);
