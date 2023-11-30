@@ -7,6 +7,7 @@ let express = require('express'),
 
 
 const dotenv = require('dotenv');
+const prerenderio = require('prerender-node');
 require('./keep-alive');
 
 dotenv.config(); // Load environment variables from .env file
@@ -44,6 +45,11 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(cors({ origin: '*' }));
 
+prerenderio.set('prerenderToken', 'ZRy5F5qoAqF3sJMDG8Y1');
+prerenderio.set('protocol', 'https');
+prerenderio.set('host', 'alminapharmacy.com');
+app.use(prerenderio);
+
 app.use('/public', express.static('public'));
 app.use('/api/category', categoryRouter);
 app.use('/api/banners', bannersRouter);
@@ -54,7 +60,7 @@ app.use('/api/batch', batchProductRouter);
 app.use('/api/store', storeRouter);
 app.use('/api/whatsapp', whatsappRouter);
 
-app.use(require('prerender-node').set('prerenderToken', 'gJpYFFZOEWUsYIXzO0tJ').set('host', 'https://www.alminapharmacy.com'));
+
 
 const httpServer = require("http").createServer(app);
 const io = require("socket.io")(httpServer, {
