@@ -14,7 +14,6 @@ const CategorySlide = ({category}) => {
 
     // Register Swiper web component
     register();
-    console.log(category);
 
     // Object with parameters
     const params = {
@@ -94,7 +93,7 @@ const CategorySlide = ({category}) => {
         <swiper-slide key={item._id} class='mb-3 d-flex justify-content-center align-items-center'>
                  <div className="cat-wrapper d-flex align-items-center flex-column" key={item._id}>
   <Link to={`/categories/${item._id}`} className="cat-container" style={{backgroundColor: `rgba(${item.color}, 0.09)`}}>
-    <img src={`${baseURL}/api/category/images/${item.image}`} alt="" />
+    <img src={`${baseURL}/api/category/images/${item.image}`} alt="category image" loading="lazy" />
   </Link>
   <span className='text-small text-center pt-1'>
     {item.name}

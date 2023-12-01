@@ -13,14 +13,18 @@ function ProductCard({ product }) {
     const defaultImage = "fb634ad3-7062-4baf-a08d-4f8f04abb459.webp";
 image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
    
-    image.onload = () => {
-      setImageLoaded(true);
-    };
+    // image.onload = () => {
+    //   setImageLoaded(true);
+    // };
   }, [product.image]);
 
   const handleAddToCart = () => {
     addToCart(product);
   };
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
 
   function getSaleTypeClass(saleType) {
     switch (saleType) {
@@ -49,15 +53,20 @@ image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
 </div>
               
             </div>
-            {imageLoaded ? (
+
+            {!imageLoaded && (
+              <div className="skeleton-image skeleton">
+                {/* Loading skeleton or spinner goes here */}
+              </div>
+            )}
+            
               <img
                 src={`${baseURL}/api/products/images/${product.image}`}
                 alt="Product image"
                 className="card-img img-fluid product-image"
+                loading="lazy"
+                onLoad={handleImageLoad}
               />
-            ) : (
-              <div className="skeleton-image skeleton "></div>
-            )}
             <div className="px-2 pt-2 product-details-card">
               <div className="mb-1">
                 <Link className="category-name text-pb d-block fw-300 text-sm text-truncate" to={`/categories/${product.category._id}`}>

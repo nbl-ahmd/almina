@@ -12,7 +12,6 @@ const BannerCard = ({ banners }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const img = () => {
     setImageLoaded(true);
-   console.log('loaded');
   }
   const swiperParams = {
     autoplay: {
@@ -54,7 +53,9 @@ const BannerCard = ({ banners }) => {
         <SwiperSlide key={banner._id}>
                  
                
-                <img className=' slide-img' src={`${baseURL}/api/banners/images/${banner.image}`} alt={banner.name} onLoad={img}/>
+                <img className=' slide-img' src={`${baseURL}/api/banners/images/${banner.image}`} alt={banner.name}
+                loading="lazy"
+                 onLoad={img}/>
                 {!imageLoaded && (
                   <div className="skeleton-banner skeleton"></div>
               )}
