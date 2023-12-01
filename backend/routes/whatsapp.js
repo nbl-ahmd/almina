@@ -20,6 +20,7 @@ const fs = require('fs');
 //google
 const { Readable } = require('stream');
 const { google } = require('googleapis');
+const whatsappBulkReportModel = require('../models/whatsappBulkReport');
 // Load the JSON key file
 const keyFile = path.join(__dirname, '/cred.json');
 
@@ -415,6 +416,32 @@ whatsappRouter.post("/webhook",async (req, res) => {
     // Return a '404 Not Found' if event is not from a WhatsApp API
     res.sendStatus(404);
   }
+
+//status
+
+
+if (req.body.object) {
+  if (
+    req.body.entry &&
+    req.body.entry[0].changes &&
+    req.body.entry[0].changes[0] &&
+    req.body.entry[0].changes[0].value.statuses &&
+    req.body.entry[0].changes[0].value.statuses[0]
+  ) {
+    
+    let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status; 
+    let error = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.title || '';
+    let errorDetails = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.error_data?.details || '';
+    let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
+    res.json({messageStatus: messageStatus, error:error ,errorDetails: errorDetails, recipient:recipient});
+
+  }
+} else {
+  // Return a '404 Not Found' if event is not from a WhatsApp API
+  res.sendStatus(404);
+}
+
+
 });
 
 // Accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
