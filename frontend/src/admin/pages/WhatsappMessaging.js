@@ -29,6 +29,7 @@ const WhatsappMessaging = () => {
 
 
   const [banners, setBanners] = useState([]);
+  const [broadcaststatus, setBroadcaststatus] = useState([]);
 
   useEffect(() => {
     axios.get(`${baseURL}/api/whatsapp/image`)
@@ -122,6 +123,59 @@ console.log(recipient);
     };
   }, [selectedRecipient,recipients]);
 
+
+
+  useEffect(() => {
+    // Your existing logic to fetch recipients
+
+
+    
+    socket.on('newBroadcast', (broadcaststatus) => {
+
+    setBanners((prevStatus) => [...prevStatus, broadcaststatus]);
+    console.log(broadcaststatus);
+
+    });
+
+
+
+    socket.on('newBroadcast', (conversation) => {
+
+      const recipientExists = recipients.some((recipient) => recipient?.from === conversation.recipient);
+
+      // Alternatively, you can use optional chaining to handle potential undefined values:
+      // const recipientExists = recipients.some((recipient) => recipient?.from === conversation.recipient);
+      
+console.log(recipient);   
+  // If the recipient doesn't exist, add it to the state
+  if (!recipientExists) {
+    setRecipients((prevRecipients) => [...prevRecipients, conversation.recipient]);
+  }
+      console.log(conversation);
+    });
+    // Socket.io event listener for new messages
+    socket.on('newMessage', (message) => {
+      if (selectedRecipient && message.recipient === selectedRecipient) {
+        setMessages((prevMessages) => [...prevMessages, message.message]);
+        
+        console.log(message.message.content);
+      }
+    });
+
+    return () => {
+      socket.off('newPoster');
+      socket.off('newMessage');
+    };
+  }, [selectedRecipient,recipients]);
+
+
+
+
+
+
+
+
+
   useEffect(() => {
     // Fetch all recipients when the component mounts
     const fetchRecipients = async () => {
@@ -164,6 +218,7 @@ console.log(recipient);
         })
         .then(response => {
             console.log(response.data);
+
           })
           .catch(error => {
             console.log(error);

@@ -435,6 +435,36 @@ if (req.body.object) {
     let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
     res.json({messageStatus: messageStatus, error:error ,errorDetails: errorDetails, recipient:recipient});
 
+
+    try {
+
+
+
+       // Conversation doesn't exist, create a new conversation
+       const newBroadcast = new whatsappBulkReportModel({
+        
+        broadcast: [
+          {
+            messageStatus: messageStatus,
+            error: error,
+            errorDetails: errorDetails,
+            recipient: recipient
+          },
+        ],
+      });
+      await newBroadcast.save();
+      
+      
+    // Emit the new message to all connected clients
+    req.app.locals.io.emit('newBroadcast', {
+      broadcast: { messageStatus: messageStatus,
+        error: error,
+        errorDetails: errorDetails,
+        recipient: recipient},
+    });
+    } catch (error) {
+      console.error('Error handling conversation:', error);
+    }
   }
 } else {
   // Return a '404 Not Found' if event is not from a WhatsApp API
