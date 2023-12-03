@@ -429,21 +429,30 @@ whatsappRouter.post("/webhook",async (req, res) => {
   
       try {
   
-  
-  
-         // Conversation doesn't exist, create a new conversation
-         const newBroadcast = new whatsappBulkReportModel({
-          
-          broadcast: [
-            {
+        const existingBroadcast = await whatsappBulkReportModel.findOne({ 'broadcast.recipient': recipient });
+
+        if (existingBroadcast) {
+          // Update the existing broadcast entry
+          existingBroadcast.broadcast.push({ messageStatus, error, errorDetails, recipient });
+          await existingBroadcast.save();
+        } else {
+          // Create a new broadcast entry
+          const newBroadcast = new whatsappBulkReportModel({
+            broadcast: [
+              {
               messageStatus: messageStatus,
               error: error,
               errorDetails: errorDetails,
               recipient: recipient
             },
           ],
-        });
-        await newBroadcast.save();
+          });
+          await newBroadcast.save();
+        }
+    
+        // emitNewBroadcast(req, 'user', messageStatus, error, errorDetails, recipient);
+    
+  
         
         
       // Emit the new message to all connected clients
