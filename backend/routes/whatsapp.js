@@ -411,6 +411,55 @@ whatsappRouter.post("/webhook",async (req, res) => {
       //   headers: { "Content-Type": "application/json" },
       // });
     }
+    
+  else if (
+      req.body.entry &&
+      req.body.entry[0].changes &&
+      req.body.entry[0].changes[0] &&
+      req.body.entry[0].changes[0].value.statuses &&
+      req.body.entry[0].changes[0].value.statuses[0]
+    ) {
+      
+      let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status; 
+      let error = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.title || '';
+      let errorDetails = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.error_data?.details || '';
+      let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
+      res.json({messageStatus: messageStatus, error:error ,errorDetails: errorDetails, recipient:recipient});
+  
+  
+      try {
+  
+  
+  
+         // Conversation doesn't exist, create a new conversation
+         const newBroadcast = new whatsappBulkReportModel({
+          
+          broadcast: [
+            {
+              messageStatus: messageStatus,
+              error: error,
+              errorDetails: errorDetails,
+              recipient: recipient
+            },
+          ],
+        });
+        await newBroadcast.save();
+        
+        
+      // Emit the new message to all connected clients
+      req.app.locals.io.emit('newBroadcast', {
+        broadcast: { messageStatus: messageStatus,
+          error: error,
+          errorDetails: errorDetails,
+          recipient: recipient},
+      });
+      } catch (error) {
+        console.error('Error handling conversation:', error);
+      }
+    }
+    else {
+      console.log('no message found')
+    }
     res.sendStatus(200);
   } else {
     // Return a '404 Not Found' if event is not from a WhatsApp API
@@ -420,56 +469,56 @@ whatsappRouter.post("/webhook",async (req, res) => {
 //status
 
 
-if (req.body.object) {
-  if (
-    req.body.entry &&
-    req.body.entry[0].changes &&
-    req.body.entry[0].changes[0] &&
-    req.body.entry[0].changes[0].value.statuses &&
-    req.body.entry[0].changes[0].value.statuses[0]
-  ) {
+// if (req.body.object) {
+//   if (
+//     req.body.entry &&
+//     req.body.entry[0].changes &&
+//     req.body.entry[0].changes[0] &&
+//     req.body.entry[0].changes[0].value.statuses &&
+//     req.body.entry[0].changes[0].value.statuses[0]
+//   ) {
     
-    let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status; 
-    let error = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.title || '';
-    let errorDetails = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.error_data?.details || '';
-    let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
-    res.json({messageStatus: messageStatus, error:error ,errorDetails: errorDetails, recipient:recipient});
+//     let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status; 
+//     let error = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.title || '';
+//     let errorDetails = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.error_data?.details || '';
+//     let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
+//     res.json({messageStatus: messageStatus, error:error ,errorDetails: errorDetails, recipient:recipient});
 
 
-    try {
+//     try {
 
 
 
-       // Conversation doesn't exist, create a new conversation
-       const newBroadcast = new whatsappBulkReportModel({
+//        // Conversation doesn't exist, create a new conversation
+//        const newBroadcast = new whatsappBulkReportModel({
         
-        broadcast: [
-          {
-            messageStatus: messageStatus,
-            error: error,
-            errorDetails: errorDetails,
-            recipient: recipient
-          },
-        ],
-      });
-      await newBroadcast.save();
+//         broadcast: [
+//           {
+//             messageStatus: messageStatus,
+//             error: error,
+//             errorDetails: errorDetails,
+//             recipient: recipient
+//           },
+//         ],
+//       });
+//       await newBroadcast.save();
       
       
-    // Emit the new message to all connected clients
-    req.app.locals.io.emit('newBroadcast', {
-      broadcast: { messageStatus: messageStatus,
-        error: error,
-        errorDetails: errorDetails,
-        recipient: recipient},
-    });
-    } catch (error) {
-      console.error('Error handling conversation:', error);
-    }
-  }
-} else {
-  // Return a '404 Not Found' if event is not from a WhatsApp API
-  res.sendStatus(404);
-}
+//     // Emit the new message to all connected clients
+//     req.app.locals.io.emit('newBroadcast', {
+//       broadcast: { messageStatus: messageStatus,
+//         error: error,
+//         errorDetails: errorDetails,
+//         recipient: recipient},
+//     });
+//     } catch (error) {
+//       console.error('Error handling conversation:', error);
+//     }
+//   }
+// } else {
+//   // Return a '404 Not Found' if event is not from a WhatsApp API
+//   res.sendStatus(404);
+// }
 
 
 });
