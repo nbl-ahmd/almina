@@ -3,9 +3,9 @@ var axios = require('axios');
 function sendMessage(data) {
   var config = {
     method: 'post',
-    url: `https://graph.facebook.com/v17.0/163562513510742/messages`,
+    url: `https://graph.facebook.com/v17.0/185798894609701/messages`,
     headers: {
-      'Authorization': `Bearer EAAErqwBrM1sBOZCB2h9mcOAk0nENpawMZACNt5ijtSSA2RRdwR69T0aC6JZABz1Nwv2Dac926jAHZCdk9CWqOuliGWe5P3vuT5MKb2HOZBAfiVIAA781gtL1x3PPzUQBr5KRVJtpsrZBPiBjZCyOHbqOPs89KZBdDHjCnQUQlGYtQl4mDfsHOrAiNLoj7wWp1ock6M34vxXOSJBKUIDnKsTXUKr3RWrxBVhqSR0ZD`,
+      'Authorization': `Bearer EAAErqwBrM1sBOwnBrNUfaXqurNzxa8nvaPMKHPCQM6uU4FHYiohVoXseTHQqTZC9tOZCpQfgwyjYVL81ZBk4FxoPL7lv9zniMjBiEZAcXixnmraInJlqA02yZCVIxIy2V5S04fVeCIq0U5tZAaYYQqiibtbB8DZAZCSrZCfVTN8q4JhygJmrJUv6XSTfZBjB0iH27h7slFi2lq2BY2QwZAp`,
       'Content-Type': 'application/json'
     },
     data: data
@@ -35,7 +35,7 @@ function getTemplatedMessageInput(recipient, template, link) {
     "template": {
       "name": template,
       "language": {
-        "code": "en"
+        "code": "en_US"
       },
      "components": [
         {
