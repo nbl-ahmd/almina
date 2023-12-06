@@ -273,7 +273,7 @@ const [galleryOpen, setGalleryOpen] = useState(false);
                                     </div>
                                     <div className='mb-2'>
                                     <span>Shipping </span>
-                                    <span className='ms-5'>AED {parseFloat(order.customer.totalAmount - order.customer.totalSalePrice).toFixed(0)}</span>
+                                    <span className='ms-5'>AED {parseFloat(order.customer.deliveryFee ).toFixed(0)}</span>
                                     </div>
                                     <div>
                                     <span className='text-or fw-500'>Total </span>

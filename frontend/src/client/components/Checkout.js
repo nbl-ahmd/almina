@@ -193,12 +193,12 @@ const fetchSuburbs = async () => {
 
       const city = data.address.suburb || data.address.industrial || data.address.city;
       setSelectedCity(city);
-      let deliveryfee=0;
-      (emirate === 'Ras al-Khaimah') ? (deliveryfee=0) : (deliveryfee=15);
-      setDeliveryfee(deliveryfee);
+      let deliveryfees=0;
+      (emirate === 'Ras al-Khaimah') ? (deliveryfees=0) : (deliveryfees=15);
+      setDeliveryfee(deliveryfees);
       
 
-      setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee});
+      setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalAmount: Number((totalSalePrice + deliveryfees).toFixed(2)), deliveryFee: deliveryfees});
 
       console.log("emirates", emirate);
       console.log("cinfo", customerInfo);
@@ -250,7 +250,7 @@ setFetchingLocation(false);
     setEmirate(selectedEmirate);
     setDeliveryfee(deliveryFee);
     setSelectedCity(''); // Set the selectedCity to an empty string here  
-      setCustomerInfo({ ...customerInfo, emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryfee).toFixed(2)), deliveryFee: deliveryfee });
+      setCustomerInfo({ ...customerInfo, emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryFee).toFixed(2)), deliveryFee: deliveryFee });
     
     console.log(customerInfo);
     
@@ -378,7 +378,7 @@ setFetchingLocation(false);
         </button>
 
                         <span>
-                          Use my current location
+                          Use Auto location
                         </span>
                       </div>
                     </div>
