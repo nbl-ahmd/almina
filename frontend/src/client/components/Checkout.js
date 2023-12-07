@@ -194,7 +194,7 @@ const fetchSuburbs = async () => {
       const city = data.address.suburb || data.address.industrial || data.address.city;
       setSelectedCity(city);
       let deliveryfees=0;
-      (emirate === 'Ras al-Khaimah') ? (deliveryfees=0) : (deliveryfees=15);
+      (emirate === 'Ras al-Khaimah') ? (deliveryfees=0) : (deliveryfees=21);
       setDeliveryfee(deliveryfees);
       
 
@@ -244,7 +244,7 @@ setFetchingLocation(false);
     if (selectedEmirate === 'Ras al-Khaimah') {
       deliveryFee = 0;
     } else {
-      deliveryFee = 15;
+      deliveryFee = 21;
     }
 
     setEmirate(selectedEmirate);
