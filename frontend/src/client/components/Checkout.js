@@ -238,7 +238,6 @@ setFetchingLocation(false);
 
 
   const handleEmirateChange = e => {
-    
     const selectedEmirate = e.target.value;
     let deliveryFee = 0;
     if (selectedEmirate === 'Ras al-Khaimah') {
@@ -250,7 +249,7 @@ setFetchingLocation(false);
     setEmirate(selectedEmirate);
     setDeliveryfee(deliveryFee);
     setSelectedCity(''); // Set the selectedCity to an empty string here  
-      setCustomerInfo({ ...customerInfo, emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryFee).toFixed(2)), deliveryFee: deliveryFee });
+      setCustomerInfo({ ...customerInfo,maplink: '', emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryFee).toFixed(2)), deliveryFee: deliveryFee });
     
     console.log(customerInfo);
     
@@ -290,7 +289,7 @@ setFetchingLocation(false);
                 
                   <h3 className="breadcrumb__title">Checkout</h3>
                 </div>
-                {totalSalePrice< 10 && <Alert severity='warning'>"Oops! It looks like the minimum order amount is AED 10. You're just AED {10-totalSalePrice.toFixed(2)} away from reaching it. Why not add a little more to your cart?" </Alert>}
+                {totalSalePrice< 10 && <Alert severity='warning'>"Oops! It looks like the minimum order amount is AED 10. You're just AED {(10-totalSalePrice).toFixed(2)} away from reaching it. Why not add a little more to your cart?" </Alert>}
               </div>
             </div>
           </div>
@@ -631,7 +630,10 @@ setFetchingLocation(false);
 
                   </div>
               </div>
-              <button className={` btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={validateForm} title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
+              <button className={` btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={()=>{
+                totalSalePrice< 10 ? setErrorMessage('Minimum order amount is AED 10'):validateForm()
+              }
+                } title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
 
 
             </div>
@@ -650,7 +652,10 @@ setFetchingLocation(false);
 
 
 
-        <button className={` btn btn-lg theme-btn pay-btn mt-0 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={validateForm} title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
+        <button className={` btn btn-lg theme-btn pay-btn mt-0 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={()=>{
+                totalSalePrice< 10 ? setErrorMessage('Minimum order amount is AED 10'):validateForm()
+              }
+             } title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
       </div>}
     </>
 
