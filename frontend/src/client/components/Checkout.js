@@ -90,10 +90,13 @@ const fetchSuburbs = async () => {
 
   const validateForm = () => {
     let hasError = false;
-
+    if (formError === true) {
+      hasError = true;
+    }
     if (customerInfo.name.trim() === '') {
       hasError = true;
     }
+
 
     if (customerInfo.mobile.trim() === '') {
       hasError = true;
@@ -120,12 +123,21 @@ const fetchSuburbs = async () => {
 
   };;
 
+  const validateUAEPhoneNumber = (phoneNumber) => {
+    // UAE mobile numbers start with 971 and have a total of 12 digits
+    const uaePhoneNumberRegex = /^\d{10}$/;
+    return uaePhoneNumberRegex.test(phoneNumber);
+  };
+
+
   const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(customerInfo.email)) {
       setEmailError("Please enter a valid email");
+      setFormError(true);
     } else {
       setEmailError("");
+      setFormError(false);
     }
   };
 
@@ -259,6 +271,7 @@ setFetchingLocation(false);
   };
 
 
+
   console.log(deliveryfee);
   console.log(customerInfo);
   return (
@@ -325,13 +338,25 @@ setFetchingLocation(false);
                           Mobile <span className='text-danger'>*</span>
 
                         </label>
+                        <div className="input-group">
+          <div className="input-group-prepend">
+            <span className="input-group-text bg-white border-0">+971</span>
+          </div>
                         <input
-                          className="form-control"
-                          type="text"
+                          className={`form-control ${validateUAEPhoneNumber(customerInfo.mobile) ? 'is-valid' : 'is-invalid'}`}
+                          type="tel"
                           id="mobile"
                           value={customerInfo.mobile}
-                          onChange={e => setCustomerInfo({ ...customerInfo, mobile: e.target.value })}
+                          onChange={e =>
+                            {
+                            setCustomerInfo({ ...customerInfo, mobile: e.target.value });
+                            
+                            validateUAEPhoneNumber(customerInfo.mobile) ? setFormError(false) : setFormError(true)
+                               }
+                              }
                         />
+                        <div className="invalid-feedback">Please enter a valid UAE mobile number. <span className='text-sm'>example 0504825007</span></div>
+        </div>
                       </div>
                     </div>
 
