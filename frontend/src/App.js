@@ -42,6 +42,7 @@ import SettingsPage from './admin/pages/SettingsPage';
 import Contact from './client/pages/Contact';
 import OutOfStockPharmacy from './admin/pages/OutOfStockPharmacy';
 import WhatsappMessaging from './admin/pages/WhatsappMessaging';
+import Cancelled from './admin/components/Cancelled';
 
 
 
@@ -253,6 +254,13 @@ const App = () => {
           <Route path='/admin/dispatched' element={
             <Adminroutes>
             <DashProvider value= {<Dispatched />}>
+              <Dashboard />
+            </DashProvider>
+            </Adminroutes>
+          } />
+          <Route path='/admin/cancelled' element={
+            <Adminroutes>
+            <DashProvider value= {<Cancelled />}>
               <Dashboard />
             </DashProvider>
             </Adminroutes>

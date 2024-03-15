@@ -84,9 +84,9 @@ const OrderList = () => {
       const filteredOrders = response.data.filter(order => {
         const currentCity = JSON.parse(localStorage.getItem('cities')) || [];
         if (currentCity.length === 0) {
-          return !cities.includes(order.customer.city) && order.dispatched;
+          return !cities.includes(order.customer.city) && order.dispatched && !order.canceled;
         } else {
-          return cities.includes(order.customer.city) && order.dispatched;
+          return cities.includes(order.customer.city) && order.dispatched && !order.canceled;
         }
       });
       setOrders(filteredOrders);

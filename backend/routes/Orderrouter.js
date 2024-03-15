@@ -66,29 +66,6 @@ Orderrouter.post('/subscribe', (req, res) => {
     });
 });
 // POST /api/orders
-Orderrouter.post('/', async (req, res) => {
-  try {
-    const orderID = await generateOrderID();
-    const order = await Order.create({ ...req.body, orderId: orderID });
-    const { io } = req.app.locals;
-    // Update the stock of the ordered products
-    const orderedItems = order.cartItems;
-    await Promise.all(orderedItems.map(item => {
-      const { _id, quantity } = item;
-      return Product.findByIdAndUpdate(_id, { $inc: { stock: -quantity } });
-    }));
-
-    
-
-    res.status(201).json(order);
-    io.emit('newOrder', order);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create order' });
-  }
-  
-});
-
 
 Orderrouter.post('/email', async (req, res) => {
   try {
@@ -196,6 +173,23 @@ Orderrouter.put('/:orderId', async (req, res) => {
     res.json({ message: 'Order dispatched successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to dispatch order' });
+  }
+});
+Orderrouter.put('/cancel/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+ 
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    order.canceled = true;
+    await order.save();
+
+    res.json({ message: 'Order cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to cancel order' });
   }
 });
 

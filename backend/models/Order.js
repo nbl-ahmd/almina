@@ -8,6 +8,10 @@ const orderSchema = new mongoose.Schema({
   dispatched: {
     type: Boolean,
   },
+  canceled: {
+    type: Boolean,
+    default: false,
+  },
   billno: {
     type: String,
   },

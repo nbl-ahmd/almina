@@ -189,8 +189,19 @@ productRouter.get('/', async (req, res) => {
 
  if (limit) {
       // Fetch products with pagination
+
+      let sortQuery = {}; // Define an empty object to store the sorting query
+
+      if (filter.sale === true) {
+        // If sale is true, sort by createdAt in descending order
+        sortQuery = { createdAt: -1, _id: 1 };
+      } else {
+        // Otherwise, sort by stock in descending order
+        sortQuery = { stock: -1, _id: 1 };
+      }
+
       products = await Product.find(filter)
-      .sort({ stock: -1, _id: 1  })
+      .sort(sortQuery)
         .skip(offset)
         .limit(limit)
         .populate('category');
@@ -470,6 +481,9 @@ productRouter.put('/:id', upload.single('image'), async (req, res) => {
     if (req.body.saleBadge) {
       updateFields.saleBadge = req.body.saleBadge;
     }
+
+    updateFields.createdAt= Date.now();
+
 
     if (req.file) {
       const image = req.file;

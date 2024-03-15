@@ -20,6 +20,10 @@ const productSchema = new mongoose.Schema({
     salePercent: {type: Number, required: false},
     saleBadge: {type: String, required: false},
     saleType: {type: String, required: false},
+    createdAt: {
+        type: Date,
+        default: Date.now
+      }
 
 
 });

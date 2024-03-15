@@ -298,6 +298,10 @@ li a {
   color: var(--primary-red) !important;
 
 }
+.nav-ul .nav-li :hover {
+  color: var(--primary-red) !important;
+
+}
 
 .navbar-tool-label {
   position: absolute;

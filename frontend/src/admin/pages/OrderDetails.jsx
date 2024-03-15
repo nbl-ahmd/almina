@@ -1,4 +1,4 @@
-import { Container, Grid, Card, Box, Typography, TextField, Chip, Alert, Dialog } from '@mui/material';
+import { Container, Grid, Card, Box, Typography, TextField, Chip, Alert, Dialog, Modal, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import baseURL from '../../axiosConfig';
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -6,17 +6,19 @@ import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import BackToTopButton from '../../client/components/BackToTopButton';
 
+
 const OrderDetails = () => {
   const { OrderId } = useParams();
   const [order, setOrder] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [documentId, setDocumentId] = useState(''); // Add state for document ID
-  const [documentIdError, setDocumentIdError] = useState(''); 
+  const [documentIdError, setDocumentIdError] = useState('');
   const [documentAmount, setDocumentAmount] = useState(); // Add state for document ID
-  const [documentAmountError, setDocumentAmountError] = useState(''); 
-  const [documentAmountValidateError, setDocumentAmountValidateError] = useState(''); 
+  const [documentAmountError, setDocumentAmountError] = useState('');
+  const [documentAmountValidateError, setDocumentAmountValidateError] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
-const [galleryOpen, setGalleryOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State to manage the delete modal
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
   useEffect(() => {
     axios
@@ -26,8 +28,8 @@ const [galleryOpen, setGalleryOpen] = useState(false);
         setOrder(response.data);
       })
       .catch((error) => console.log(error));
-      setDocumentId('');
-      setDocumentIdError('');
+    setDocumentId('');
+    setDocumentIdError('');
   }, [OrderId]);
 
   function formatTimestamp(timestamp) {
@@ -58,6 +60,8 @@ const [galleryOpen, setGalleryOpen] = useState(false);
     }
   }
 
+
+
   const handleDispatchOrder = async (orderId) => {
     if (!documentId && !documentAmount) {
       // Both fields are empty
@@ -76,24 +80,24 @@ const [galleryOpen, setGalleryOpen] = useState(false);
       return;
     }
 
-    if(documentAmount !== order.customer.totalAmount){
+    if (documentAmount !== order.customer.totalAmount) {
       setDocumentAmountValidateError('bill Amount not same');
       console.log(documentAmount, order.customer.totalAmount);
-      console.log(typeof(documentAmount), typeof(order.customer.totalAmount));
+      console.log(typeof (documentAmount), typeof (order.customer.totalAmount));
       return;
-    }else{
+    } else {
       setDocumentAmountValidateError('');
-    
+
     }
-    if(documentIdError){
+    if (documentIdError) {
       return;
     }
 
     try {
-      await axios.put(`${baseURL}/api/orders/${orderId}`, { dispatched: true, billno: documentId, billamount: documentAmount});
+      await axios.put(`${baseURL}/api/orders/${orderId}`, { dispatched: true, billno: documentId, billamount: documentAmount });
       console.log('Order dispatched successfully');
       // After a successful update, update the order state
-    setOrder((prevOrder) => ({
+      setOrder((prevOrder) => ({
         ...prevOrder,
         dispatched: true,
       }));
@@ -101,6 +105,46 @@ const [galleryOpen, setGalleryOpen] = useState(false);
     } catch (error) {
       console.error('Error dispatching order:', error);
     }
+  };
+  const handleCancelOrder = async (orderId) => {
+
+    try {
+      await axios.put(`${baseURL}/api/orders//cancel/${orderId}`, { cancelled: true });
+      console.log('Order canceled successfully');
+      setShowDeleteModal(false);
+      // After a successful update, update the order state
+      setOrder((prevOrder) => ({
+        ...prevOrder,
+        cancelled: true,
+      }));
+
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+    }
+  };
+
+  const cancelOrder = (id) => {
+    console.log(id);
+    // Show the delete confirmation modal
+    setShowDeleteModal(true);
+  };
+  const hideDeleteModal = () => {
+    // Close the delete confirmation modal without performing any action
+    setShowDeleteModal(false);
+    console.log('id');
+  };
+
+  const confirmDelete = (id) => {
+    console.log(id);
+    // axios
+    // .delete(`${baseURL}/api/products/${id}`)
+    // .then((res) => {
+    //     // Handle successful deletion if needed
+    //   })
+    //   .catch((error) => console.log(error));
+
+    // Close the delete confirmation modal
+    setShowDeleteModal(false);
   };
 
   const handleEditClick = () => {
@@ -113,36 +157,36 @@ const [galleryOpen, setGalleryOpen] = useState(false);
     let updatedTotalSalePrice = 0;
     let updatedTotalAmount = 0;
     let itemPrice = 0;
-  
+
     if (updatedOrder.cartItems) {
       updatedOrder.cartItems.forEach((cartItem) => {
         // Multiply the new quantity with the original price
         const newQuantity = cartItem.quantity;
-        const originalPrice = cartItem._id.salePrice ? cartItem._id.salePrice :cartItem._id.price;
-        itemPrice= newQuantity * originalPrice;
-  
+        const originalPrice = cartItem._id.salePrice ? cartItem._id.salePrice : cartItem._id.price;
+        itemPrice = newQuantity * originalPrice;
+
         // Update the total sale price
         updatedTotalSalePrice += itemPrice;
       });
     }
-  
+
     // Calculate the updated total amount
     updatedTotalAmount = updatedTotalSalePrice + (order.customer.totalAmount - order.customer.totalSalePrice);
-  
+
     // Update the customer details in the order
     updatedOrder.customer.totalSalePrice = updatedTotalSalePrice;
     updatedOrder.customer.totalAmount = updatedTotalAmount;
-  
+
     try {
       // Make a PUT request to update the order in the API
       setOrder(updatedOrder);
       await axios.put(`${baseURL}/api/orders/edit/${order._id}`, updatedOrder);
-      
+
       // Update the local state to reflect the changes
-      
+
       // Exit edit mode
       setEditMode(false);
-      
+
       console.log('Order updated successfully');
     } catch (error) {
       console.error('Error updating order:', error);
@@ -164,8 +208,12 @@ const [galleryOpen, setGalleryOpen] = useState(false);
     <Container sx={{ mt: 2, marginBottom: '5rem' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 5, fontFamily: 'Poppins, sans-serif', fontWeight: '300', fontSize: '15px' }}>
         <div>
-          <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>Order # {order.orderId} {order.dispatched ?  <Chip  label="dispatched" color="success" variant="outlined" /> :  <Chip  label="pending" color="warning" variant="outlined" />}
-          
+          <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>Order # {order.orderId} {order.canceled ? (
+              <Chip label="cancelled" color="error" variant="outlined" />
+            ) : order.dispatched ?
+              (<Chip label="dispatched" color="success" variant="outlined" />)
+              : (<Chip label="pending" color="warning" variant="outlined" />)}
+
           </Typography>
           <Typography sx={{ color: 'rgb(145, 158, 171)' }}>{formattedDate}</Typography>
         </div>
@@ -175,17 +223,45 @@ const [galleryOpen, setGalleryOpen] = useState(false);
             Save
           </Button>
         ) : (
-          !order.dispatched ?(
-            <Button className="btn btn-p" onClick={() => handleDispatchOrder(order._id)}>
-              Dispatch
-            </Button>
-          ):(
+          !order.dispatched ? (
+            <Box>
+              <Button className="btn btn-p me-3" onClick={() => handleDispatchOrder(order._id)}>
+                Dispatch
+              </Button>
+              <Button className="btn btn-danger" onClick={() => cancelOrder(order._id)}>
+                cancel
+              </Button>
+            </Box>
+
+          ) : (
             <Button className="btn btn-dark" onClick={() => handleDispatchOrder(order._id)}>
               Update
             </Button>
           )
         )}
       </Box>
+      <Dialog
+        open={showDeleteModal}
+        onClose={hideDeleteModal}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Cancel the order"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            are you sure you want to cancel the order
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="default" onClick={hideDeleteModal}>No</Button>
+          <Button variant="danger" onClick={() => { handleCancelOrder(order._id) }} autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Render the delete confirmation modal */}
 
       <Grid container spacing={{ xs: 2, md: 3 }}>
         <Grid item xs={12} md={8}>
@@ -207,17 +283,17 @@ const [galleryOpen, setGalleryOpen] = useState(false);
                 order.cartItems.map((cartItem, index) => (
                   <Box key={index} sx={{ py: 3, bgcolor: '#fff', borderRadius: '15px', display: 'flex', alignItems: 'center', mb: 1, fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: '400' }}>
                     <div className="d-flex flex-grow-1">
-                    <div
-  className="image-container"
-  onClick={() => openGallery(cartItem._id.image)}
->
-  <img
-    src={`${baseURL}/api/products/images/${cartItem._id.image}`}
-    alt=""
-    width={'100px'}
-    className="me-4 bg-body border rounded-3"
-  />
-</div>
+                      <div
+                        className="image-container"
+                        onClick={() => openGallery(cartItem._id.image)}
+                      >
+                        <img
+                          src={`${baseURL}/api/products/images/${cartItem._id.image}`}
+                          alt=""
+                          width={'100px'}
+                          className="me-4 bg-body border rounded-3"
+                        />
+                      </div>
 
 
                       <div className="d-flex flex-column justify-content-center user-details">
@@ -236,17 +312,17 @@ const [galleryOpen, setGalleryOpen] = useState(false);
                     <div className="d-flex w-25 justify-content-between">
                       {editMode ? (
                         <TextField
-                        sx={{width: '80px'}}
-                        id="outlined-number"
-                        label="Quantity"
-                        type="number"
-                        value={cartItem.quantity}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        onChange={(e) => handleQuantityChange(Number(e.target.value), index)}
-                      />
-                       
+                          sx={{ width: '80px' }}
+                          id="outlined-number"
+                          label="Quantity"
+                          type="number"
+                          value={cartItem.quantity}
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          onChange={(e) => handleQuantityChange(Number(e.target.value), index)}
+                        />
+
                       ) : (
                         <div>x {cartItem.quantity}</div>
                       )}
@@ -266,72 +342,72 @@ const [galleryOpen, setGalleryOpen] = useState(false);
                     </div>
                   </Box>
                 ))}
-                {order !== null && Array.isArray(order.cartItems) && order.cartItems.length > 0 && (<Box sx={{display: 'flex' , alignItems : 'end', flexDirection: 'column', fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: '300'}}>
-                                    <div className='mb-2 '>
-                                    <span>Subtotal </span>
-                                    <span className='ms-5'>AED {order.customer.totalSalePrice}</span>
-                                    </div>
-                                    <div className='mb-2'>
-                                    <span>Shipping </span>
-                                    <span className='ms-5'>AED {parseFloat(order.customer.deliveryFee ).toFixed(0)}</span>
-                                    </div>
-                                    <div>
-                                    <span className='text-or fw-500'>Total </span>
-                                    <span className='ms-5 fw-500'> AED {order.customer.totalAmount}</span>
-                                    </div>
-                                </Box>)}
+              {order !== null && Array.isArray(order.cartItems) && order.cartItems.length > 0 && (<Box sx={{ display: 'flex', alignItems: 'end', flexDirection: 'column', fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: '300' }}>
+                <div className='mb-2 '>
+                  <span>Subtotal </span>
+                  <span className='ms-5'>AED {order.customer.totalSalePrice}</span>
+                </div>
+                <div className='mb-2'>
+                  <span>Shipping </span>
+                  <span className='ms-5'>AED {parseFloat(order.customer.deliveryFee).toFixed(0)}</span>
+                </div>
+                <div>
+                  <span className='text-or fw-500'>Total </span>
+                  <span className='ms-5 fw-500'> AED {order.customer.totalAmount}</span>
+                </div>
+              </Box>)}
             </Box>
           </Card>
-          <Card sx={{mt:3, p: 3, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px' }}>
+          <Card sx={{ mt: 3, p: 3, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px' }}>
 
-          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center">
               <h6>Document id :</h6>
 
-               {/* Display the error message if documentIdError is not empty */}
-          {documentIdError && <Alert severity="error">{documentIdError}</Alert>}
+              {/* Display the error message if documentIdError is not empty */}
+              {documentIdError && <Alert severity="error">{documentIdError}</Alert>}
               <TextField
-          required
-          id="outlined-required"
-          placeholder={order.billno || 'Enter document id'}
-          value={documentId}
-          onChange={(e) => {
+                required
+                id="outlined-required"
+                placeholder={order.billno || 'Enter document id'}
+                value={documentId}
+                onChange={(e) => {
 
-            const inputText = e.target.value;
-            // Define a regular expression to match only digits (0-9)
-            const regex = /^[0-9]+$/;
-             if (!regex.test(inputText) || inputText.length < 5) {
-              // If the input doesn't match the regex, set an error message
-              setDocumentIdError('Enter a valid document number with minimum 5 digits (numbers only).');
-            } else {
-              // If the input is valid, clear the error message
-              setDocumentIdError('');
-            }
-            setDocumentId(inputText);
-        
+                  const inputText = e.target.value;
+                  // Define a regular expression to match only digits (0-9)
+                  const regex = /^[0-9]+$/;
+                  if (!regex.test(inputText) || inputText.length < 5) {
+                    // If the input doesn't match the regex, set an error message
+                    setDocumentIdError('Enter a valid document number with minimum 5 digits (numbers only).');
+                  } else {
+                    // If the input is valid, clear the error message
+                    setDocumentIdError('');
+                  }
+                  setDocumentId(inputText);
 
 
-        
-          }}
-          
-        />
-        
-            </div>
-          <div className="d-flex justify-content-between align-items-center mt-4">
-              <h6>Document amount :</h6>
-               {/* Display the error message if documentIdError is not empty */}
-          {documentAmountError && <Alert severity="error">{documentAmountError}</Alert>}
-          
-                
-                <input type="number" className="form-control" name="price" placeholder={order.billamount || 'Enter order Amount'} value={documentAmount ||''} onChange={(e)=>{
-                  setDocumentAmount(parseFloat(e.target.value))
+
+
                 }}
-                style={{ width: '180px' }}/>
-             
-             {/* Display the error message if documentIdError is not empty */}
-          {documentAmountValidateError && <Alert severity="error">{documentAmountValidateError}</Alert>}
+
+              />
+
             </div>
-           
-    
+            <div className="d-flex justify-content-between align-items-center mt-4">
+              <h6>Document amount :</h6>
+              {/* Display the error message if documentIdError is not empty */}
+              {documentAmountError && <Alert severity="error">{documentAmountError}</Alert>}
+
+
+              <input type="number" className="form-control" name="price" placeholder={order.billamount || 'Enter order Amount'} value={documentAmount || ''} onChange={(e) => {
+                setDocumentAmount(parseFloat(e.target.value))
+              }}
+                style={{ width: '180px' }} />
+
+              {/* Display the error message if documentIdError is not empty */}
+              {documentAmountValidateError && <Alert severity="error">{documentAmountValidateError}</Alert>}
+            </div>
+
+
           </Card>
         </Grid>
         <Grid item xs={12} md={4}>
@@ -369,20 +445,20 @@ const [galleryOpen, setGalleryOpen] = useState(false);
               )}
           </Card>
         </Grid>
-        
+
       </Grid>
 
       <Grid item xs={12} md={8}></Grid>
-      <Dialog 
+      <Dialog
         open={galleryOpen}
-        onClose={()=>{
+        onClose={() => {
           setGalleryOpen(!galleryOpen);
         }}>
         <img
-    src={`${baseURL}/api/products/images/${selectedImage}`}
-    alt=""
-    width={'400px'}
-  />
+          src={`${baseURL}/api/products/images/${selectedImage}`}
+          alt=""
+          width={'400px'}
+        />
       </Dialog>
     </Container>
   );

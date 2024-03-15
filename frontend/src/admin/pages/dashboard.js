@@ -218,6 +218,14 @@ console.log(permission);
 </li>
     <li className="nav-item my-1" onClick={() => toggleSidebar()}>
 
+    <Link to='/admin/cancelled' className={location.pathname === '/admin/cancelled' ? 'nav-link active ' : 'nav-link'}>
+    <i className="ri-shopping-cart-line me-3"></i>
+       Cancelled Orders
+    </Link>
+
+</li>
+    <li className="nav-item my-1" onClick={() => toggleSidebar()}>
+
     <Link to='/admin/productlist' className={location.pathname === '/admin/productlist' ? 'nav-link active ' : 'nav-link'}>
     <i className="ri-medicine-bottle-line me-3"></i>
         products
