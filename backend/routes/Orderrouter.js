@@ -66,6 +66,28 @@ Orderrouter.post('/subscribe', (req, res) => {
     });
 });
 // POST /api/orders
+Orderrouter.post('/', async (req, res) => {
+  try {
+    const orderID = await generateOrderID();
+    const order = await Order.create({ ...req.body, orderId: orderID });
+    const { io } = req.app.locals;
+    // Update the stock of the ordered products
+    const orderedItems = order.cartItems;
+    await Promise.all(orderedItems.map(item => {
+      const { _id, quantity } = item;
+      return Product.findByIdAndUpdate(_id, { $inc: { stock: -quantity } });
+    }));
+
+
+
+    res.status(201).json(order);
+    io.emit('newOrder', order);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create order' });
+  }
+
+});
 
 Orderrouter.post('/email', async (req, res) => {
   try {
