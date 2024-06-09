@@ -122,8 +122,12 @@ setShowNotificationModal(true);
             <a href="/" className="d-flex align-items-center mb-lg-0 link-body-emphasis text-decoration-none ">
               <img src={logo} alt="" width="120px" />
             </a>
-
-            <Link className='order-0 order-lg-1' to='/cart'>
+           <div className="d-flex align-items-center order-0 order-lg-1">
+           <div className="me-3">
+           <p className="text-muted my-0 text-sm">Delivery timing :</p>
+           <p className="text-muted my-0 text-small">8 am - 12 pm</p>
+           </div>
+            <Link className='' to='/cart'>
               <div className='order-lg-2 icon-wrapper'>
                 {cartItems.length > 0 && (
                   <span _ngcontent-ytt-c67="" className="navbar-tool-label">{cartItems.length}</span>
@@ -131,6 +135,7 @@ setShowNotificationModal(true);
                 <i className="bi bi-bag"></i>
               </div>
             </Link>
+           </div>
 
             <form className="col-12 col-lg-6 mb-lg-0 me-lg-3 mt-2 mt-lg-0 order-1 order-lg-0" role="search" onSubmit={handleSearch}>
               <div className="input-group">
@@ -151,10 +156,14 @@ setShowNotificationModal(true);
               </div>
             </form>
           </div>
+        {/* <div className="d-none d-lg-flex pt-3 pb-0 mb-0 ms-5 ps-4">
+           <p className="text-muted my-0 text-sm">Delivery timing : 8 am - 12 pm</p>
+           </div> */}
         </div>
       </header>
 
       <nav className="d-none d-md-flex mt-2 justify-content-center border-top border-bottom py-2">
+     
         <ul className="nav container px-lg-0  mb-md-0 gap-2 ms-md-5 justify-content-center nav-ul">
           <li className='nav-li'>
             <Link to="/" className={location.pathname === '/' ? 'active px-2' : 'px-2'}>
