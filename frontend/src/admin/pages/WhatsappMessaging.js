@@ -134,8 +134,7 @@ console.log(recipient);
     
     socket.on('newBroadcast', (broadcaststatus) => {
 
-      setBroadcaststatus((prevStatus) => [...prevStatus, broadcaststatus]);
-      if broadcaststatus.
+    setBroadcaststatus((prevStatus) => [...prevStatus, broadcaststatus]);
     console.log(broadcaststatus);
 
     });
