@@ -168,11 +168,11 @@ whatsappRouter.post('/s', function(req, res, next) {
   
   sendMessage(data)
   .then(function (response) {
-    res.status(200).json("success");
+    res.status(200).json({ status: "success", recipient });
     return;
   })
   .catch(function (error) {
-    res.status(500).json("fail");
+    res.status(500).json({ status: "fail", recipient });
     console.log(error);
     return;
   });

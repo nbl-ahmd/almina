@@ -24,7 +24,8 @@ const WhatsappMessaging = () => {
   const [template, setTemplate] = useState('');
   const [link, setLink] = useState('');
   const [activeTab, setActiveTab] = useState(0);
-
+  const [messageStatuses, setMessageStatuses] = useState({});
+  const [failedNumbers, setFailedNumbers] = useState([]);
   const [phoneNumbers, setPhoneNumbers] = useState([]);
 
 
@@ -82,6 +83,7 @@ const WhatsappMessaging = () => {
       });
     }
   };
+
 
   useEffect(() => {
     // Your existing logic to fetch recipients
@@ -211,29 +213,33 @@ console.log(recipient);
     for (const recipient of phoneNumbers) {
         console.log(recipient);
       try {
-        axios.post(`${baseURL}/api/whatsapp/s`, {
+        const response = await axios.post(`${baseURL}/api/whatsapp/s`, {
           recipient: recipient,
           template: template,
           link: link
-        })
-        .then(response => {
-            console.log(response.data);
-
-          })
-          .catch(error => {
-            console.log(error);
-          });
-
-        // You can add additional logic here based on the response if needed
-
+        });
+        setMessageStatuses((prevStatuses) => ({
+          ...prevStatuses,
+          [recipient]: 'success'
+        }));
+        console.log(response.data);
       } catch (error) {
-        console.error(error);
+        setMessageStatuses((prevStatuses) => ({
+          ...prevStatuses,
+          [recipient]: 'fail'
+        }));
+        setFailedNumbers((prevFailedNumbers) => [...prevFailedNumbers, recipient]);
+        console.log(error);
       }
     }
 
     console.log(template);
     console.log(link);
   };
+
+
+
+
   const sendChatMessage = async (recipient, name, message) => {
     
       try {
@@ -355,7 +361,11 @@ onClick={() =>
 <Stack spacing={2} direction="row" alignItems="center">
 <Avatar><i className="ri-user-line"></i></Avatar>
   <Box>
-  <Typography noWrap key={index}>{number}</Typography>
+
+  <Typography noWrap key={index}>{number}
+                                   
+                                  </Typography>
+                                  {'success' === 'success' ? 'Sent' : messageStatuses[number] === 'fail' ? 'Failed' : ''}
   </Box>
 </Stack>
 </Box>
@@ -415,17 +425,42 @@ onClick={() =>
     }
   </Grid>
   :
+  
   <Grid item xs={8}>
+     
     <Box sx={{position:"relative",  width: "100%", background: '#fff', borderRadius: 2, flexGrow: 1, height:650, overflow: 'auto', boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", }}>
     <AppBar position="static" sx={{px:4, py:1, background: 'rgba(128, 227, 208, 0.154)',boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", }}>
   <Stack spacing={5} direction="row" alignItems="center">
           <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
-          <Typography noWrap>Broadcast Message</Typography>
+          {failedNumbers.length > 0 ? <Typography noWrap>Failed</Typography> : <Typography noWrap>Broadcast Message</Typography>}
           </Box>
         </Stack>
 </AppBar>
 
+                  <ul>
+                    {failedNumbers.map((number, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          my: 1,
+                          mx: 'auto',
+                          p: 1,
+                          background: "rgba(255, 99, 99, 0.154)",
+                          borderRadius: 2,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <Stack spacing={2} direction="row" alignItems="center">
+                          <Avatar><i className="ri-user-line"></i></Avatar>
+                          <Box>
+                            <Typography noWrap>{number}</Typography>
+                          </Box>
+                        </Stack>
+                      </Box>
+                    ))}
+                  </ul>
+                  
 <Box sx={{px:3, py:2, display: "flex", justifyContent:"space-around"}}>
 {/* <input type="file" accept=".csv" onChange={handleFileChange} /> */}
 <Box sx={{p:3, width:200, height:250, boxShadow: "rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px", borderRadius:2 , display:"flex",textAlign:'center', flexDirection:"column", alignItems:"center", justifyContent:"space-between"}}>
