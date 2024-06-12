@@ -134,7 +134,8 @@ console.log(recipient);
     
     socket.on('newBroadcast', (broadcaststatus) => {
 
-    setBanners((prevStatus) => [...prevStatus, broadcaststatus]);
+      setBroadcaststatus((prevStatus) => [...prevStatus, broadcaststatus]);
+      if broadcaststatus.
     console.log(broadcaststatus);
 
     });
@@ -212,26 +213,27 @@ console.log(recipient);
   const sendMessages = async () => {
     for (const recipient of phoneNumbers) {
         console.log(recipient);
-      try {
-        const response = await axios.post(`${baseURL}/api/whatsapp/s`, {
-          recipient: recipient,
-          template: template,
-          link: link
-        });
-        setMessageStatuses((prevStatuses) => ({
-          ...prevStatuses,
-          [recipient]: 'success'
-        }));
-        console.log(response.data);
-      } catch (error) {
-        setMessageStatuses((prevStatuses) => ({
-          ...prevStatuses,
-          [recipient]: 'fail'
-        }));
-        setFailedNumbers((prevFailedNumbers) => [...prevFailedNumbers, recipient]);
-        console.log(error);
+        try {
+          axios.post(`${baseURL}/api/whatsapp/s`, {
+            recipient: recipient,
+            template: template,
+            link: link
+          })
+          .then(response => {
+              console.log(response.data);
+  
+            })
+            .catch(error => {
+              console.log(error);
+            });
+  
+          // You can add additional logic here based on the response if needed
+  
+        } catch (error) {
+          console.error(error);
+        }
       }
-    }
+  
 
     console.log(template);
     console.log(link);
@@ -433,33 +435,18 @@ onClick={() =>
   <Stack spacing={5} direction="row" alignItems="center">
           <Avatar><i className="ri-user-line"></i></Avatar>
           <Box>
-          {failedNumbers.length > 0 ? <Typography noWrap>Failed</Typography> : <Typography noWrap>Broadcast Message</Typography>}
+          {broadcaststatus.length > 0 ? <Typography noWrap>Status</Typography> : <Typography noWrap>Broadcast Message</Typography>}
           </Box>
         </Stack>
 </AppBar>
 
-                  <ul>
-                    {failedNumbers.map((number, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          my: 1,
-                          mx: 'auto',
-                          p: 1,
-                          background: "rgba(255, 99, 99, 0.154)",
-                          borderRadius: 2,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <Stack spacing={2} direction="row" alignItems="center">
-                          <Avatar><i className="ri-user-line"></i></Avatar>
-                          <Box>
-                            <Typography noWrap>{number}</Typography>
-                          </Box>
-                        </Stack>
-                      </Box>
-                    ))}
-                  </ul>
+{broadcaststatus.map((status, index) => (
+        <div key={index}>
+          <p>Recipient: {status.recipient}</p>
+          <p>Status: {status.messageStatus}</p>
+          {/* Add additional fields as needed */}
+        </div>
+      ))}
                   
 <Box sx={{px:3, py:2, display: "flex", justifyContent:"space-around"}}>
 {/* <input type="file" accept=".csv" onChange={handleFileChange} /> */}
