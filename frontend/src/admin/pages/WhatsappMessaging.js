@@ -137,8 +137,9 @@ console.log(recipient);
     setBroadcaststatus((prevStatus) => [...prevStatus, broadcaststatus]);
     console.log(broadcaststatus);
 
-    });
 
+    });
+console.log(broadcaststatus);
 
 
     socket.on('newBroadcast', (conversation) => {
@@ -167,6 +168,7 @@ console.log(recipient);
     return () => {
       socket.off('newPoster');
       socket.off('newMessage');
+      socket.off('newBroadcast');
     };
   }, [selectedRecipient,recipients]);
 
@@ -441,8 +443,10 @@ onClick={() =>
 
 {broadcaststatus.map((status, index) => (
         <div key={index}>
-          <p>Recipient: {status.recipient}</p>
-          <p>Status: {status.messageStatus}</p>
+          <span className='me-3'>Recipient: {status.broadcast.recipient}</span>
+          <span className='me-3'>Status: {status.broadcast.messageStatus}</span>
+          {status.broadcast.error ? <span>details: {status.broadcast.error}</span>: ''}
+          <br />
           {/* Add additional fields as needed */}
         </div>
       ))}
