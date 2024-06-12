@@ -348,7 +348,7 @@ sx={{
   my: 1,
   mx: 'auto',
   p: 1,
-  background: "rgba(128, 227, 208, 0.154)",
+  background: messageStatuses[number] === 'fail' ? "rgba(255, 99, 99, 0.154)" : "rgba(128, 227, 208, 0.154)",
   borderRadius: 2,
   cursor: 'pointer'
 }}
@@ -365,7 +365,7 @@ onClick={() =>
   <Typography noWrap key={index}>{number}
                                    
                                   </Typography>
-                                  {'success' === 'success' ? 'Sent' : messageStatuses[number] === 'fail' ? 'Failed' : ''}
+                                  {messageStatuses[number] === 'success' ? 'Sent' : messageStatuses[number] === 'fail' ? 'Failed' : ''}
   </Box>
 </Stack>
 </Box>
