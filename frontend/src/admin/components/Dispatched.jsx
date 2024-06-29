@@ -203,21 +203,21 @@ const OrderList = () => {
                           {order.cartItems.map((cartItem, index) => (
                             <Box key={index} sx={{ p: 4, bgcolor: '#fff', borderRadius: '15px', display: 'flex', alignItems: 'center' , mb: 1}}>
                               <div className='d-flex flex-grow-1'>
-                                <img src={`${baseURL}/api/products/images/${cartItem._id.image}`} alt="" width={'100px'} className='me-4 bg-body border rounded-3' />
+                                <img src={`${baseURL}/api/products/images/${cartItem._id?.image ||"data:image/png;base64,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"}`} alt="" width={'100px'} className='me-4 bg-body border rounded-3' />
 
 
                                  <div className='d-flex flex-column justify-content-center'>
                                   <span>
-                                  {cartItem._id.sale &&
+                                  {cartItem._id?.sale &&
                               <span className={`badge mb-2 ${getSaleTypeClass(cartItem._id.saleType)}`}>{cartItem._id.saleBadge || 'sale'}</span>
                               }
                                   </span>
                                  <span className='mb-2'>
-                                  {cartItem._id.name}
+                                  {cartItem._id?.name || 'deleted product'}
                                   
                                 </span>
                                  <span>
-                                  {cartItem._id.category.name}
+                                  {cartItem._id?.category?.name || "deleted cateory"}
                                 </span>
                                  </div>
                                 
@@ -230,13 +230,13 @@ const OrderList = () => {
 
                                 
                                   <div>
-                                  {cartItem._id.salePrice ?
+                                  {cartItem._id?.salePrice ?
                                     <>
                                       <span className=''><span className='text-strike me-2'>{cartItem._id.price}</span>{cartItem._id.salePrice}</span>
                                     </>
 
                                     :
-                                    <span>{cartItem._id.price}</span>}
+                                    <span>{cartItem._id?.price}</span>}
                                   </div>
                                 
                                </div>
