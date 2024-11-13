@@ -1093,6 +1093,42 @@ input[type="radio"].btn-check:checked+label.btn.payment-card i {
   font-weight: bold;
 }
 
+
+.whatsapp-button {
+  position: fixed;
+  right: 16px;
+  bottom: 30px; /* Positioned above the back-to-top button */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.whatsapp-button.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.whatsapp-button:hover {
+  background-color: #1da851;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.whatsapp-button .fa-whatsapp {
+  font-size: 24px;
+  color: white;
+}
+
 footer{
   background-color: #F7FAFC;
 }

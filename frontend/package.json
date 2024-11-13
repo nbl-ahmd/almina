@@ -21,6 +21,7 @@
     "firebase": "^10.5.2",
     "intersection-observer": "^0.12.2",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.456.0",
     "mapbox-gl": "^2.15.0",
     "nodemailer": "^6.9.7",
     "papaparse": "^5.4.1",

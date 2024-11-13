@@ -10,6 +10,7 @@ import Deals from '../components/Deals'
 import CategorySlide from '../components/CategorySlide'
 import BackToTopButton from '../components/BackToTopButton'
 import { CustomHelmet } from '../components/CustomHelmet'
+import WhatsAppButton from '../components/WhatsappButton'
 
  const Home = () => {
    const [banners, setBanners] = useState([]);
@@ -220,7 +221,7 @@ import { CustomHelmet } from '../components/CustomHelmet'
            ))}
          </div>
        </div>
-
+       <WhatsAppButton />
        <BackToTopButton />
      </main>
      </>

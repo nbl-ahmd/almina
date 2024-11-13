@@ -43,7 +43,7 @@ const Footer = () => {
           <Link to={'https://www.facebook.com/alminapharmacy'} className='icon'>
           <i className="fa-brands fa-facebook"></i>
           </Link>
-          <Link to={'/'} className='icon'>
+          <Link to={'https://wa.me/+971504825007'} className='icon'>
           <i className="fa-brands fa-whatsapp"></i>
           </Link>
         </div>
