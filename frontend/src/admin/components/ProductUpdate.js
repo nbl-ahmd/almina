@@ -9,6 +9,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
   const [product, setProduct] = useState([]);
   const [formData, setFormData] = useState({});
   const [imageFile, setImageFile] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]); // Store selected files
 
   const [categoryList, setCategoryList] = useState([]);
   const [message, setMessage] = useState('');

@@ -152,6 +152,7 @@ const Products = () => {
           category: selectedCategory,
         },
       });
+
       const data = response.data;
 
       if (offset === 0){

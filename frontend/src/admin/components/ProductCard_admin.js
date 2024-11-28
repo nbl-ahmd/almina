@@ -75,7 +75,21 @@ console.log(product);
                   <span className={`badge mb-2 ms-1 ${getSaleTypeClass(product.saleType)}`}>{product.saleBadge || 'sale'}</span>
                   </div>
                   </div>): ''}
-            <img src={`${baseURL}/api/products/images/${product.image}`} alt="Product image" className="card-img img-fluid admin-product-image"  />
+
+
+                  <img
+                  src={
+                    product.image // Check if `product.image` exists
+                      ? `${baseURL}/api/products/images/${product.image}`
+                      : product.images && product.images.length > 0 // If `product.image` doesn't exist, check for `product.images[0]`
+                      ? `${baseURL}/api/products/images/${product.images[0]}`
+                      : `${baseURL}/api/products/images/default-image.webp` // Fallback to a default image
+                  }
+                  alt={product.name || 'Product image'}
+                  className="card-img img-fluid admin-product-image"
+                />
+
+
               <div className="pt-3 product-details-card">
                
                 <div className="mb-1">

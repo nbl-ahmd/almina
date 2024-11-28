@@ -1,14 +1,14 @@
-import React, { useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import baseURL from '../../axiosConfig';
 import { Alert } from '@mui/material';
 
-
-
-
 const ProductUpload = () => {
   const [name, setName] = useState('');
-  const [image, setImage] = useState(null);
+  const [description, setDescription] = useState('');
+  const [images, setImages] = useState([]); // Store selected files
+  const [previewImages, setPreviewImages] = useState([]); // Store preview URLs
+
   const [categoryList, setCategoryList] = useState([]);
   const [category, setCategory] = useState('');
   const [featured, setFeatured] = useState(false);
@@ -18,42 +18,32 @@ const ProductUpload = () => {
   const [sale, setSale] = useState(false);
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [file, setFile] = useState();
-  const [barcode, setBarcode] = useState('')
+  const [barcode, setBarcode] = useState('');
 
   useEffect(() => {
-    axios.get(`${baseURL}/api/category`)
-      .then(response => {
+    axios
+      .get(`${baseURL}/api/category`)
+      .then((response) => {
         setCategoryList(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   }, []);
-    
-  
-  
-  const onNameChange = e => setName(e.target.value);
-  const onImageChange = e =>{ 
-    setFile(URL.createObjectURL(e.target.files[0]));
-    setImage(e.target.files[0])};
-  const onCategoryChange = e => setCategory(e.target.value);
-  // const onFeaturedChange = e => setFeatured(e.target.value);
-  const onPriceChange = e => setPrice(e.target.value);
 
-  const onBarcodeChange = e => setBarcode(e.target.value);
+  const onImageChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setImages(selectedFiles);
 
-
-  // const onVatChange = e => setVat(e.target.value);
-  const onStockChange = e => setStock(e.target.value);
-  // const onSaleChange = e => setSale(e.target.value);
-
+    const previewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
+    setPreviewImages(previewUrls);
+  };
 
   const onSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('image', image);
+    images.forEach((image) => formData.append('images', image)); // Append each image
     formData.append('category', category);
     formData.append('featured', featured);
     formData.append('price', price);
@@ -61,45 +51,107 @@ const ProductUpload = () => {
     formData.append('stock', stock);
     formData.append('sale', sale);
     formData.append('barcode', barcode);
+    formData.append('description', description)
 
-    axios.post(`${baseURL}/api/products`, formData)
-    .then(response => {
+    axios
+      .post(`${baseURL}/api/products`, formData)
+      .then((response) => {
         console.log(response.data);
-        setMessage('product created successfully');
+        setMessage('Product created successfully');
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
-        setErrorMessage('Error: product was not created');
+        setErrorMessage('Error: Product was not created');
       });
   };
 
-
-
   return (
     <div>
-<div className="container d-flex flex-fill justify-content-center pt-5">
-  <form className="form mb-4" onSubmit={onSubmit}>
-  
-    <label htmlFor='uploadbtn' className="img-preview-wrapper mb-3 d-flex">
-   
-    <input type="file" id='uploadbtn' onChange={onImageChange} hidden/>
-    <div className="img-container">
-    <img src={file} className='img-preview' alt="" />
-    <span className="alt-text">Upload Image</span>
-  </div>
-    
-    </label>
+      <div className="container d-flex flex-fill justify-content-center pt-5">
+        <form className="form mb-4" onSubmit={onSubmit}>
+          <div className="mb-3">
+            <label htmlFor="uploadbtn" className="d-block text-center">
+              <div
+                style={{
+                  width: '150px',
+                  height: '150px',
+                  border: '2px dashed #ccc',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  margin: '0 auto 10px',
+                }}
+              >
+                {previewImages.length === 0 ? (
+                  <span style={{ color: '#999' }}>Upload Images</span>
+                ) : (
+                  <img
+                    src={previewImages[0]}
+                    alt="Main Preview"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '10px',
+                    }}
+                  />
+                )}
+              </div>
+            </label>
+            <input
+              type="file"
+              id="uploadbtn"
+              name='images'
+              onChange={onImageChange}
+              hidden
+              multiple
+            />
+            <div className="image-preview-container d-flex justify-content-center flex-wrap gap-2">
+              {previewImages.map((preview, index) => (
+                <img
+                  key={index}
+                  src={preview}
+                  alt={`Preview ${index}`}
+                  className="img-thumbnail"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    objectFit: 'cover',
+                    margin: '5px',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
 
-    <div className="row g-3 form-row form-group">
-<div className="col-6">
+          <div className="row g-3 form-row form-group">
+
+            <div className="col-6">
 <div className="form-holder">
 
-<input type="text" className="form-control" placeholder="Name" value={name} onChange={onNameChange}/>
+<input type="text" className="form-control" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)}/>
 </div>
 </div>
+            {/* <div className="col-6">
+              <select
+                className="custom-select form-control"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="">Select Category</option>
+                {categoryList.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div> */}
+
 <div className="col-6">
 <div className=" input-group">
-<select className="custom-select form-control" id="inputGroupSelect01" value={category} onChange={onCategoryChange} >
+<select className="custom-select form-control" id="inputGroupSelect01" value={category} onChange={(e) => setCategory(e.target.value)} >
 <option selected>Select Category</option>
     {categoryList.map(categoryList => (
       <option value={categoryList._id}>{categoryList.name}</option>
@@ -108,23 +160,99 @@ const ProductUpload = () => {
   <i className="bi bi-arrow-down-square-fill input-group-text"></i>
 </div>
 </div>
-<div className="col-6">
+
+
+<div className="col-12">
+<div className="form-holder">
+
+<input type="text" className="form-control" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
+</div>
+</div>
+
+            {/* <div className="col-6">
+              <input
+                type="number"
+                className="form-control"
+                placeholder="Stock"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+              />
+            </div> */}
+
+            <div className="col-6">
 <div className="input-group">
-<input type="number" className="form-control" placeholder="Stock" value={stock} onChange={onStockChange}/>
+<input type="number" className="form-control" placeholder="Stock" value={stock} onChange={(e) => setStock(e.target.value)}/>
 </div>
 </div>
+            {/* <div className="col-6">
+              <div className="input-group">
+                <span className="input-group-text">AED</span>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Price"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              </div>
+            </div> */}
+
+
 <div className="col-6">
 <div className="input-group">
 <span className="input-group-text">AED</span>
-<input type="number" className="form-control" placeholder="Price" value={price} onChange={onPriceChange}/>
+<input type="number" className="form-control" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)}/>
 </div>
 </div>
+
+
+            {/* <div className="col-6">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Barcode"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+              />
+            </div> */}
+
 <div className="col-6">
 <div className="input-group">
 <span className="input-group-text">barcode</span>
-<input type="text" className="form-control" placeholder="barcode" value={barcode} onChange={onBarcodeChange}/>
+<input type="text" className="form-control" placeholder="barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)}/>
 </div>
 </div>
+
+
+
+            {/* <div className="col-4">
+              <div className="btn-group">
+                <input
+                  type="radio"
+                  className="btn-check"
+                  name="vat"
+                  id="vat1"
+                  checked={vat}
+                  onChange={() => setVat(true)}
+                />
+                <label className="btn btn-secondary" htmlFor="vat1">
+                  VAT
+                </label>
+                <input
+                  type="radio"
+                  className="btn-check"
+                  name="vat"
+                  id="vat2"
+                  checked={!vat}
+                  onChange={() => setVat(false)}
+                />
+                <label className="btn btn-secondary" htmlFor="vat2">
+                  No VAT
+                </label>
+              </div>
+            </div> */}
+
+
 <div className="col-4">
 <div className="input-group">
 <div className="btn-group">
@@ -151,6 +279,8 @@ const ProductUpload = () => {
 </div>
 </div>
 </div>
+
+
 <div className="col-6">
 <div className="nput-group">
 <div className="btn-group">
@@ -163,35 +293,16 @@ const ProductUpload = () => {
 </div>
 </div>
 </div>
-</div>
-<button className='btn btn-primary float-end mt-2' type='submit'>Upload</button>
-<span className='d-flex mt-3'>
-{message && <Alert severity="success">{message}</Alert>}
-{errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-</span>
-  </form>
+          </div>
 
-  
+          <button className="btn btn-primary float-end mt-3" type="submit">
+            Upload
+          </button>
+        </form>
 
-</div>
-
-
-
-
-
-      {/* <div className="container">
-        <div className="row">
-          <form onSubmit={onSubmit}>
-            <h3>file upload</h3>
-            <div className="form-group">
-              <input type="file" onChange={onFileChange} />
-            </div>
-            <div className="form-group">
-              <button className='btn btn-primary' type='submit'>Upload</button>
-            </div>
-          </form>
-        </div>
-      </div> */}
+        {message && <Alert severity="success">{message}</Alert>}
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+      </div>
     </div>
   );
 };

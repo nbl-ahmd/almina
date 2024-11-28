@@ -1166,3 +1166,56 @@ footer{
   border-radius: 100%;
   color: #0d1824;
 }
+
+
+
+
+
+.zoom-container {
+  position: relative;
+  width: 100%; /* Responsive container */
+  max-width: 400px; /* Maintain aspect ratio */
+  height: 400px; /* Consistent height */
+  overflow: hidden;
+  margin: auto;
+  background-color: #fff; /* Card background */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Increased shadow intensity */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.zoom-container:hover {
+  transform: translateY(-5px); /* Slight lift on hover */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+}
+
+.zoom-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Scales image proportionally */
+  border-radius: 10px; /* Match container corners */
+  transition: transform 0.3s ease; /* Smooth zoom effect */
+}
+
+.zoom-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  display: none;
+  pointer-events: none;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6); /* Increased shadow for zoom box */
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%; /* Circular zoom box */
+}
+
+@media (max-width: 768px) {
+  .zoom-container {
+    max-width: 300px;
+    height: 300px;
+  }
+}
+
+

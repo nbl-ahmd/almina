@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-cloud/local-auth": "^2.1.0",
     "@react-email/render": "^0.0.7",
+    "axios": "^1.7.7",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

@@ -126,61 +126,60 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (item) => {
+  const addToCart = async (item, quantity = 1) => {
     try {
       const response = await axios.get(`${baseURL}/api/store/status`);
       const storeStatus = response.data.status;
- 
+  
       if (storeStatus === 'closed') {
         alert('The store is currently closed. You cannot add items to your cart.');
         return;
       }
-
-    try {
-      const response = await axios.get(`${baseURL}/api/products/${item._id}`);
-      const product = response.data;
-
-      const existingCartItemIndex = cartItems.findIndex((cartItem) => cartItem._id === item._id);
-
-      if (existingCartItemIndex !== -1) {
-        // If item already exists in cart, increment the quantity
-        const updatedCartItems = [...cartItems];
-        const updatedQuantity = updatedCartItems[existingCartItemIndex].quantity + 1;
-
-        if (updatedQuantity > product.stock) {
-          alert('Stock is low!');
-          return;
+  
+      try {
+        const response = await axios.get(`${baseURL}/api/products/${item._id}`);
+        const product = response.data;
+  
+        const existingCartItemIndex = cartItems.findIndex((cartItem) => cartItem._id === item._id);
+  
+        if (existingCartItemIndex !== -1) {
+          // If item already exists in cart, increment the quantity
+          const updatedCartItems = [...cartItems];
+          const updatedQuantity = updatedCartItems[existingCartItemIndex].quantity + quantity;
+  
+          if (updatedQuantity > product.stock) {
+            alert('Stock is low!');
+            return;
+          }
+  
+          updatedCartItems[existingCartItemIndex].quantity = updatedQuantity;
+  
+          // Update local storage with the updated cart items
+          localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+  
+          setCartItems(updatedCartItems);
+        } else {
+          // If item does not exist in cart, add it with the provided or default quantity
+          if (quantity > product.stock) {
+            alert('Stock is low!');
+            return;
+          }
+  
+          const updatedCartItems = [...cartItems, { ...item, quantity }];
+  
+          // Update local storage with the updated cart items
+          localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+  
+          setCartItems(updatedCartItems);
         }
-
-        updatedCartItems[existingCartItemIndex].quantity = updatedQuantity;
-      
-
-        // Update local storage with the updated cart items
-        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-
-        setCartItems(updatedCartItems);
-      } else {
-        // If item does not exist in cart, add it with quantity 1
-        if (1 > product.stock) {
-          alert('Stock is low!');
-          return;
-        }
-
-        const updatedCartItems = [...cartItems, { ...item, quantity: 1 }];
-
-        // Update local storage with the updated cart items
-        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-
-        setCartItems(updatedCartItems);
+      } catch (error) {
+        console.error('Error fetching product stock:', error);
       }
     } catch (error) {
-      console.error('Error fetching product stock:', error);
+      console.error('Error fetching store status:', error);
     }
-  } catch (error) {
-    console.error('Error fetching store status:', error);
-  }
   };
-
+  
   const removeFromCart = (item) => {
   
     setCartItems((prevCartItems) => {

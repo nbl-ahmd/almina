@@ -44,6 +44,8 @@ import OutOfStockPharmacy from './admin/pages/OutOfStockPharmacy';
 import WhatsappMessaging from './admin/pages/WhatsappMessaging';
 import Cancelled from './admin/components/Cancelled';
 
+import ProductDetails from './client/pages/ProductDetails';
+
 
 
 
@@ -128,6 +130,15 @@ const App = () => {
             <CartProvider>
             <Navbar />
             <Products />
+            </CartProvider>
+            <Footer />
+            </>
+          } />
+          <Route path='productdetails/:id' element={
+            <>
+            <CartProvider>
+            <Navbar />
+            <ProductDetails />
             </CartProvider>
             <Footer />
             </>

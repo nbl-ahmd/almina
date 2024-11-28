@@ -49,102 +49,105 @@ async function generateProductID() {
 }
 
 
-productRouter.post('/', upload.single('image'), async (req, res) => {
-  const category = await Category.findById(req.body.category);
-  const {
-    name,
-    price,
-    stock,
-    barcode
-  } = req.body;
-  const vat = req.body.vat == 'true';
-  const sale = req.body.sale == 'true';
-  const featured = req.body.featured == 'true';
-  const image = req.file;
-  const product_id = await generateProductID();
-  let orientation = 1;
-  if (image) {
-    try {
-      const exifData = await sharp(image.buffer).metadata();
-      orientation = exifData.orientation || 1;
-    } catch (error) {
-      console.error('Error reading EXIF data:', error);
-    }
+// productRouter.post('/', upload.single('image'), async (req, res) => {
+//   const category = await Category.findById(req.body.category);
+//   const {
+//     name,
+//     price,
+//     stock,
+//     barcode,
+//     description
+//   } = req.body;
+//   const vat = req.body.vat == 'true';
+//   const sale = req.body.sale == 'true';
+//   const featured = req.body.featured == 'true';
+//   const image = req.file;
+//   const product_id = await generateProductID();
+//   let orientation = 1;
+//   if (image) {
+//     try {
+//       const exifData = await sharp(image.buffer).metadata();
+//       orientation = exifData.orientation || 1;
+//     } catch (error) {
+//       console.error('Error reading EXIF data:', error);
+//     }
 
-    // crop the image into a square
-    const croppedImage = await sharp(image.buffer)
-      .resize({ width: 500, height: 500, fit: 'cover' })
-      .rotate()
-      .webp()
-      .toBuffer();
+//     // crop the image into a square
+//     const croppedImage = await sharp(image.buffer)
+//       .resize({ width: 500, height: 500, fit: 'cover' })
+//       .rotate()
+//       .webp()
+//       .toBuffer();
 
-    // generate a new filename for the resized image
-    const Filename = uuidv4() + '.webp';
+//     // generate a new filename for the resized image
+//     const Filename = uuidv4() + '.webp';
 
-    const product = new Product({
-      product_id,
-      name,
-      image: Filename,
-      category,
-      featured,
-      price,
-      vat,
-      stock,
-      sale,
-      barcode
-    }); // save the resized filename to the database
+//     const product = new Product({
+//       product_id,
+//       name,
+//       image: Filename,
+//       category,
+//       featured,
+//       price,
+//       vat,
+//       stock,
+//       sale,
+//       barcode,
+//       description
+//     }); // save the resized filename to the database
 
-    try {
-      const fileMetadata = {
-        name: Filename,
-        parents: [FOLDER_ID], // Set the parent folder ID
-      };
+//     try {
+//       const fileMetadata = {
+//         name: Filename,
+//         parents: [FOLDER_ID], // Set the parent folder ID
+//       };
 
-      const media = {
-        mimeType: 'image/webp',
-        body: Readable.from(croppedImage),
-      };
+//       const media = {
+//         mimeType: 'image/webp',
+//         body: Readable.from(croppedImage),
+//       };
 
-      const response = await drive.files.create({
-        resource: fileMetadata,
-        media: media,
-        fields: 'id',
-      });
+//       const response = await drive.files.create({
+//         resource: fileMetadata,
+//         media: media,
+//         fields: 'id',
+//       });
 
-      product.gdriveFileId = response.data.id; // Save the Google Drive file ID to the product document
+//       product.gdriveFileId = response.data.id; // Save the Google Drive file ID to the product document
 
-      // Save the product document to the database
-      await product.save();
+//       // Save the product document to the database
+//       await product.save();
 
-      res.status(201).json({ message: 'product created successfully' });
-    } catch (error) {
-      console.error('Error uploading file to Google Drive:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  } else {
-    const product = new Product({
-      product_id,
-      name,
-      category,
-      featured,
-      price,
-      vat,
-      stock,
-      sale,
-      barcode
-    });
+//       res.status(201).json({ message: 'product created successfully' });
+//     } catch (error) {
+//       console.error('Error uploading file to Google Drive:', error);
+//       res.status(500).json({ error: 'Internal server error' });
+//     }
+//   } else {
+//     const product = new Product({
+//       product_id,
+//       name,
+//       category,
+//       featured,
+//       price,
+//       vat,
+//       stock,
+//       sale,
+//       barcode,
+//       description
+//     });
 
-    try {
-      // Save the product document to the database without an image
-      await product.save();
+//     try {
+//       // Save the product document to the database without an image
+//       await product.save();
 
-      res.status(201).json({ message: 'product created successfully' });
-    } catch (error) {
-      console.error('Error saving product:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-});
+//       res.status(201).json({ message: 'product created successfully' });
+//     } catch (error) {
+//       console.error('Error saving product:', error);
+//       res.status(500).json({ error: 'Internal server error' });
+//     }
+//   }
+// });
 
 
 // productRouter.get('/', (req, res) => {
@@ -176,6 +179,173 @@ productRouter.post('/', upload.single('image'), async (req, res) => {
 //     });
 // });
 
+
+
+productRouter.post('/', upload.array('images', 5), async (req, res) => {
+  const category = await Category.findById(req.body.category);
+  const { name, price, stock, barcode, description } = req.body;
+  const vat = req.body.vat === 'true';
+  const sale = req.body.sale === 'true';
+  const featured = req.body.featured === 'true';
+  const product_id = await generateProductID();
+  const files = req.files;
+
+  let imageUrls = [];
+  let gdriveFileIds = [];
+
+  if (files && files.length > 0) {
+      for (const file of files) {
+          try {
+            console.log('got inside ', file)
+              // Resize and convert the image
+              const croppedImage = await sharp(file.buffer)
+                  .resize({ width: 500, height: 500, fit: 'cover' })
+                  .webp()
+                  .toBuffer();
+
+              // Generate a filename
+              const filename = uuidv4() + '.webp';
+
+              // Save to Google Drive
+              const fileMetadata = {
+                  name: filename,
+                  parents: [FOLDER_ID],
+              };
+              const media = {
+                  mimeType: 'image/webp',
+                  body: Readable.from(croppedImage),
+              };
+              const response = await drive.files.create({
+                  resource: fileMetadata,
+                  media: media,
+                  fields: 'id',
+              });
+
+              console.log('hereee final response',response.data)
+
+              // Store URLs and Google Drive IDs
+              imageUrls.push(filename);
+              gdriveFileIds.push(response.data.id);
+          } catch (error) {
+              console.error('Error processing image:', error);
+              return res.status(500).json({ error: 'Failed to upload images' });
+          }
+      }
+  }
+
+  const product = new Product({
+      product_id,
+      name,
+      images: imageUrls, // Save array of image URLs
+      gdriveFileIds, // Save array of Google Drive file IDs
+      category,
+      featured,
+      price,
+      vat,
+      stock,
+      sale,
+      barcode,
+      description,
+  });
+
+  try {
+      await product.save();
+      res.status(201).json({ message: 'Product created successfully', product });
+  } catch (error) {
+      console.error('Error saving product:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+productRouter.get('/images/:filename', async (req, res) => {
+  const { filename } = req.params;
+
+  try {
+    // Retrieve the product by filename
+    const product = await Product.findOne({
+      $or: [{ image: filename }, { images: filename }],
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product or image not found' });
+    }
+
+    if (product.gdriveFileId) {
+      // For old products with a single gdriveFileId
+      const response = await drive.files.get(
+        { fileId: product.gdriveFileId, alt: 'media' },
+        { responseType: 'stream' }
+      );
+
+      // Set the appropriate Content-Type header for the image
+      res.set('Content-Type', 'image/webp');
+
+      // Pipe the image stream from Google Drive to the response stream
+      response.data.pipe(res);
+    } else if (product.gdriveFileIds) {
+      // For new products with multiple gdriveFileIds
+      console.log('Google Drive File IDs:', product.gdriveFileIds);
+
+      // Find the index of the requested filename in the `images` array
+      const imageIndex = product.images.indexOf(filename);
+      if (imageIndex === -1 || !product.gdriveFileIds[imageIndex]) {
+        return res.status(404).json({ error: 'Image not found in product' });
+      }
+
+      const gdriveFileId = product.gdriveFileIds[imageIndex];
+      const response = await drive.files.get(
+        { fileId: gdriveFileId, alt: 'media' },
+        { responseType: 'stream' }
+      );
+
+      // Set the appropriate Content-Type header for the image
+      res.set('Content-Type', 'image/webp');
+
+      // Pipe the image stream from Google Drive to the response stream
+      response.data.pipe(res);
+    } else {
+      return res.status(404).json({ error: 'No valid Google Drive file ID found' });
+    }
+  } catch (error) {
+    console.error('Error retrieving image from Google Drive:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// productRouter.get('/images/:filename', async(req, res) => {
+//   const { filename } = req.params;
+
+
+//   try {
+//     // Retrieve the product by filename from the database
+//     const product = await Product.findOne({ image: filename });
+//     if (!product) {
+//       return res.status(404).json({ error: 'product not found' });
+//     }
+
+//     console.log('inside img fetchh', product)
+
+
+
+//     // Retrieve the image file from Google Drive
+//     const response = await drive.files.get(
+//       { fileId: product.gdriveFileId, alt: 'media' },
+//       { responseType: 'stream' }
+//     );
+
+//     // Set the appropriate Content-Type header for the image
+//     res.set('Content-Type', 'image/webp');
+
+//     // Pipe the image stream from Google Drive to the response stream
+//     response.data.pipe(res);
+//   } catch (error) {
+//     console.error('Error retrieving image from Google Drive:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 
 
@@ -324,33 +494,6 @@ res.status(200).json(filteredSearchResults);
 
 
 
-productRouter.get('/images/:filename', async(req, res) => {
-  const { filename } = req.params;
-
-  try {
-    // Retrieve the product by filename from the database
-    const product = await Product.findOne({ image: filename });
-    if (!product) {
-      return res.status(404).json({ error: 'product not found' });
-    }
-
-    // Retrieve the image file from Google Drive
-    const response = await drive.files.get(
-      { fileId: product.gdriveFileId, alt: 'media' },
-      { responseType: 'stream' }
-    );
-
-    // Set the appropriate Content-Type header for the image
-    res.set('Content-Type', 'image/webp');
-
-    // Pipe the image stream from Google Drive to the response stream
-    response.data.pipe(res);
-  } catch (error) {
-    console.error('Error retrieving image from Google Drive:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 productRouter.get('/:id', async(req,res)=>{
     const product = await Product.findById(req.params.id);
 
@@ -425,130 +568,115 @@ productRouter.put('/publish/:productId', async (req, res) => {
 
 
 
-productRouter.put('/:id', upload.single('image'), async (req, res) => {
+productRouter.put('/:id', upload.array('images', 5), async (req, res) => {
   const { id } = req.params;
   const updateFields = {};
+  const files = req.files;
 
   try {
-    // Retrieve the previous image filename from the database
-    const prevProduct = await Product.findById(id);
-    const prevImage = prevProduct.image;
-    const prevGdriveFileId = prevProduct.gdriveFileId;
-
-    // Check if each field is present in the request body and update the corresponding field
-    if (req.body.name) {
-      updateFields.name = req.body.name;
-    }
-
-    if (req.body.price) {
-      updateFields.price = req.body.price;
-    }
-    if (req.body.barcode) {
-      updateFields.barcode = req.body.barcode;
-    }
-
-    if (req.body.category) {
-      updateFields.category = req.body.category;
-    }
-
-    if (req.body.stock) {
-      updateFields.stock = req.body.stock;
-    }
-
-    if (req.body.vat) {
-      updateFields.vat = req.body.vat === 'true';
-    }
-
-    if (req.body.sale) {
-      updateFields.sale = req.body.sale === 'true';
-    }
-
-    if (req.body.featured) {
-      updateFields.featured = req.body.featured === 'true';
-    }
-    if (req.body.disabled) {
-      updateFields.disabled = req.body.disabled === 'true';
-    }
-    if (req.body.saleType) {
-      updateFields.saleType = req.body.saleType;
-    }
-    if (!isNaN(req.body.salePrice)) {
-      updateFields.salePrice = parseFloat(req.body.salePrice);
-    }
-    if (!isNaN(req.body.salePercent)) {
-      updateFields.salePercent = req.body.salePercent;
-    }
-    if (req.body.saleBadge) {
-      updateFields.saleBadge = req.body.saleBadge;
-    }
-
-    updateFields.createdAt= Date.now();
-
-
-    if (req.file) {
-      const image = req.file;
-
-     // Delete the previous image from Google Drive
-     if (prevGdriveFileId && prevGdriveFileId !== '1Ru3bJPvlSfkEJ74gEjdgO9jSQtJNFtCu') {
-      await drive.files.delete({
-        fileId: prevGdriveFileId,
-      });
-    }
-
-
-      // Extract the EXIF orientation
-      let orientation = 1;
-      try {
-        const exifData = await sharp(image.buffer).metadata();
-        orientation = exifData.orientation || 1;
-      } catch (error) {
-        console.error('Error reading EXIF data:', error);
+      const prevProduct = await Product.findById(id);
+      if (!prevProduct) {
+          return res.status(404).json({ error: 'Product not found' });
       }
 
-      // Crop the image into a square
-      const croppedImage = await sharp(image.buffer)
-        .resize({ width: 500, height: 500, fit: 'cover' })
-        .rotate()
-        .webp()
-        .toBuffer();
+      // Handle text fields
+      if (req.body.name) updateFields.name = req.body.name;
+      if (req.body.price) updateFields.price = req.body.price;
+      if (req.body.stock) updateFields.stock = req.body.stock;
+      if (req.body.description) updateFields.description = req.body.description;
 
-      // Generate a new filename for the resized image
-      const filename = uuidv4() + '.webp'; // 
+      let imageUrls = prevProduct.images;
+      let gdriveFileIds = prevProduct.gdriveFileIds;
 
-       // Save the updated image to Google Drive
-       const fileMetadata = {
-        name: filename,
-        parents: [FOLDER_ID], // Set the parent folder ID
-      };
+      if (files && files.length > 0) {
+          // Delete previous images from Google Drive
+          for (const fileId of gdriveFileIds) {
+              try {
+                  await drive.files.delete({ fileId });
+              } catch (error) {
+                  console.error('Error deleting file from Google Drive:', error);
+              }
+          }
 
-      const media = {
-        mimeType: 'image/webp',
-        body: Readable.from(croppedImage),
-      };
+          // Process new images
+          imageUrls = [];
+          gdriveFileIds = [];
+          for (const file of files) {
+              try {
+                  const croppedImage = await sharp(file.buffer)
+                      .resize({ width: 500, height: 500, fit: 'cover' })
+                      .webp()
+                      .toBuffer();
 
-      const response = await drive.files.create({
-        resource: fileMetadata,
-        media: media,
-        fields: 'id',
-      });
+                  const filename = uuidv4() + '.webp';
 
-      updateFields.image = filename;
-      updateFields.gdriveFileId = response.data.id; // Save the updated Google Drive file ID to the product document
-    
-    }
+                  const fileMetadata = {
+                      name: filename,
+                      parents: [FOLDER_ID],
+                  };
+                  const media = {
+                      mimeType: 'image/webp',
+                      body: Readable.from(croppedImage),
+                  };
+                  const response = await drive.files.create({
+                      resource: fileMetadata,
+                      media: media,
+                      fields: 'id',
+                  });
 
-    const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+                  imageUrls.push(filename);
+                  gdriveFileIds.push(response.data.id);
+              } catch (error) {
+                  console.error('Error processing new images:', error);
+                  return res.status(500).json({ error: 'Failed to upload new images' });
+              }
+          }
+      }
 
-    if (!product) {
-      return res.status(400).send('The product cannot be updated!');
-    }
+      updateFields.images = imageUrls;
+      updateFields.gdriveFileIds = gdriveFileIds;
 
-    res.send(product);
+      const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+      res.json(product);
   } catch (error) {
-    console.error('Error updating product:', error);
-    res.status(500).send('An error occurred while updating the product');
+      console.error('Error updating product:', error);
+      res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+
+productRouter.get('/details/:productId', async (req, res) => {
+
+  const { productId } = req.params;
+
+  try {
+    // Find the product by its product_id (custom field)
+    const product = await Product.findOne({ product_id: productId }).populate('category');
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Find all products in the same category except the current product
+    const relatedProducts = await Product.find({
+      category: product.category._id,
+      product_id: { $ne: productId }, // Exclude the current product
+    }).populate('category');
+
+    res.status(200).json({
+      product,
+      relatedProducts,
+    });
+  } catch (error) {
+    console.error('Error fetching product details:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 
 
 module.exports = productRouter;
