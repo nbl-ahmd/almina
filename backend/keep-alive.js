@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
 // Replace 'YOUR_APP_URL' with the URL of your Express server (e.g., 'http://localhost:4000' during development).
-const appUrl = 'https://almina-shop.onrender.com';
+const appUrl = 'https://almina-of4b.onrender.com';
 
 // The interval at which the keep-alive requests will be sent (e.g., every 5 minutes).
 const keepAliveInterval = 13 * 60 * 1000; // 5 minutes in milliseconds.
