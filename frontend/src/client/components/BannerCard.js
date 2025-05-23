@@ -53,7 +53,7 @@ const BannerCard = ({ banners }) => {
         <SwiperSlide key={banner._id}>
                  
                
-                <img className=' slide-img' src={`${baseURL}/api/banners/images/${banner.image}`} alt={banner.name}
+                <img className=' slide-img' src={`https://cdn.alminapharmacy.com/cdn/banners/${banner.image}`} alt={banner.name}
                 loading="lazy"
                  onLoad={img}/>
                 {!imageLoaded && (

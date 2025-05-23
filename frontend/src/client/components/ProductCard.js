@@ -12,7 +12,7 @@ function ProductCard({ product }) {
   useEffect(() => {
     const image = new Image();
     const defaultImage = "fb634ad3-7062-4baf-a08d-4f8f04abb459.webp";
-    image.src = `${baseURL}/api/products/images/${product.image || defaultImage}`;
+    image.src = `https://cdn.alminapharmacy.com/cdn/products/${product.image || defaultImage}`;
    
     // image.onload = () => {
     //   setImageLoaded(true);
@@ -65,7 +65,7 @@ function ProductCard({ product }) {
                 <img
                   src={
                     product.image // Check if `product.image` exists
-                      ? `${baseURL}/api/products/images/${product.image}`
+                      ? `https://cdn.alminapharmacy.com/cdn/products/${product.image}`
                       : product.images && product.images.length > 0 // If `product.image` doesn't exist, check for `product.images[0]`
                       ? `${baseURL}/api/products/images/${product.images[0]}`
                       : `${baseURL}/api/products/images/default-image.webp` // Fallback to a default image
