@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>We will be back soon</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #06182c, #0b2742);
+      color: #f7f9fc;
+      text-align: center;
+      padding: 2rem;
+    }
+    .card {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(6, 20, 39, 0.75);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(6px);
+    }
+    h1 {
+      font-size: 1.9rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.01em;
+    }
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      color: #d7e4ff;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.9rem 1.3rem;
+      border-radius: 999px;
+      background: #25d366;
+      color: #0a2312;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 12px 25px rgba(37, 211, 102, 0.35);
+    }
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(37, 211, 102, 0.45);
+    }
+    .cta svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <h1>We will be right back</h1>
+    <p>We are performing scheduled upgrades to improve your shopping experience. Need assistance right now? Send us a WhatsApp message and the team will help you instantly.</p>
+    <a class="cta" href="https://wa.me/971504825007" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M16.027 3C9.389 3 4 8.222 4 14.667c0 2.47.873 4.75 2.34 6.586L5 29l8.083-2.57c.909.254 1.87.393 2.944.393 6.638 0 12.027-5.223 12.027-11.667C28.055 8.223 22.666 3 16.027 3zm0 2.4c5.326 0 9.638 4.2 9.638 9.333 0 5.134-4.312 9.334-9.638 9.334-.955 0-1.873-.136-2.72-.4l-1.12-.343-4.68 1.486 1.06-4.11-.727-.867c-1.15-1.351-1.8-3.08-1.8-5.1 0-5.133 4.311-9.333 9.637-9.333zm-4.088 4.672c-.182 0-.485.07-.738.352-.254.282-.968.944-.968 2.3 0 1.356.992 2.667 1.13 2.852.14.188 1.918 3.064 4.74 4.17 2.82 1.106 2.82.737 3.327.69.508-.047 1.64-.67 1.873-1.32.232-.65.232-1.207.163-1.324-.07-.118-.254-.188-.53-.33-.276-.141-1.64-.808-1.894-.9-.254-.094-.44-.142-.626.14-.186.284-.716.9-.878 1.08-.163.188-.325.212-.598.07-.277-.141-1.16-.426-2.212-1.35-.818-.715-1.37-1.6-1.532-1.883-.163-.282-.017-.434.123-.574.126-.124.277-.324.416-.486.139-.165.185-.283.277-.472.093-.188.046-.353-.023-.495-.07-.142-.618-1.512-.874-2.07-.23-.503-.465-.575-.647-.58z"></path>
+      </svg>
+      Chat on WhatsApp
+    </a>
+  </main>
+</body>
+</html>

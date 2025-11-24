@@ -58,6 +58,60 @@ const AdminDashboardContext = React.createContext()
 const AdminDashProvider =  AdminDashboardContext.Provider
 export const AdminDashConsumer =  AdminDashboardContext.Consumer
 
+const MaintenanceLanding = () => {
+  const whatsappUrl = 'https://wa.me/971504825007';
+  const containerStyle = {
+    minHeight: '100vh',
+    margin: 0,
+    background: 'linear-gradient(135deg, #031226, #08223d)',
+    color: '#f5f7fb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2rem',
+    textAlign: 'center'
+  };
+  const cardStyle = {
+    maxWidth: '520px',
+    width: '100%',
+    background: 'rgba(3, 12, 27, 0.8)',
+    borderRadius: '18px',
+    padding: '2.75rem 2.25rem',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    boxShadow: '0 30px 60px rgba(0, 0, 0, 0.55)'
+  };
+  const buttonStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    borderRadius: '999px',
+    padding: '0.95rem 1.6rem',
+    fontWeight: 600,
+    background: '#25d366',
+    color: '#05210f',
+    textDecoration: 'none',
+    marginTop: '1.5rem',
+    boxShadow: '0 18px 35px rgba(37, 211, 102, 0.35)'
+  };
+
+  return (
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <p style={{ textTransform: 'uppercase', letterSpacing: '0.25em', fontSize: '0.75rem', color: '#8fa6c3' }}>Temporarily offline</p>
+        <h1 style={{ fontSize: '2.1rem', marginBottom: '1rem' }}>We are upgrading the pharmacy</h1>
+        <p style={{ lineHeight: 1.6, fontSize: '1.05rem', color: '#c9d8ef' }}>
+          Our storefront is undergoing scheduled maintenance. If you need to place an order or have a question, tap the
+          WhatsApp button below and our team will respond right away.
+        </p>
+        <a href={whatsappUrl} style={buttonStyle} target="_blank" rel="noopener noreferrer">
+          Chat on WhatsApp
+        </a>
+      </div>
+    </div>
+  );
+};
+
 
 const Adminroutes = ({ children }) => {
   const isAuthenticated = localStorage.getItem('token');
@@ -83,8 +137,12 @@ const AdminProtectedRoute = ({ children }) => {
 
 
 const App = () => {
+  const maintenanceEnabled = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
 
   useEffect(() => {
+    if (maintenanceEnabled) {
+      return;
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js')
         .then(function(registration) {
@@ -94,7 +152,15 @@ const App = () => {
           console.error('Service Worker registration failed:', error);
         });
     }
-  }, []);
+  }, [maintenanceEnabled]);
+
+  if (maintenanceEnabled) {
+    return (
+      <HelmetProvider>
+        <MaintenanceLanding />
+      </HelmetProvider>
+    );
+  }
 
   return (
     <HelmetProvider>

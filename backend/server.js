@@ -8,6 +8,7 @@ let express = require('express'),
 
 const dotenv = require('dotenv');
 require('./keep-alive');
+const path = require('path');
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -24,6 +25,11 @@ const whatsappRouter = require('./routes/whatsapp');
 
 const fs = require('fs');
 const loginRouter = require('./routes/Login');
+
+const maintenancePagePath = path.join(__dirname, 'public', 'maintenance.html');
+const maintenanceHtml = fs.existsSync(maintenancePagePath)
+    ? fs.readFileSync(maintenancePagePath, 'utf8')
+    : '<h1>Temporarily unavailable</h1>';
 
 // MongoDB Configuration
 mongoose.Promise = global.Promise;
@@ -43,6 +49,17 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(cors({ origin: '*' }));
+
+app.use((req, res, next) => {
+    if (process.env.MAINTENANCE_MODE === 'true') {
+        res
+            .status(503)
+            .set('Content-Type', 'text/html')
+            .send(maintenanceHtml);
+        return;
+    }
+    next();
+});
 
 app.use('/public', express.static('public'));
 app.use('/api/category', categoryRouter);
