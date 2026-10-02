@@ -226,6 +226,26 @@ Before implementing framework-specific behavior:
 2. use documentation matching that version
 3. do not rely on remembered behavior from older Next.js releases
 
+For this workspace, run `npm run docs:next` from the root to print the installed
+Next.js version and resolve `next/dist/docs` from `apps/web`. Read the relevant
+bundled documentation before framework edits; it is matched to the installed
+version and updates with the dependency. Use `rg --files` in that directory to
+find the appropriate App Router guide/API reference. Do not assume `next` is
+physically installed in `apps/web/node_modules` (npm may hoist it).
+
+If bundled docs are unavailable, install from the committed lockfile first.
+Any framework upgrade must recheck stable patched 16.x releases, React/Node
+compatibility, migration notes and bundled docs, then update the lockfile and
+`docs/migration/FOUNDATION_2026-10-02.md`. Verify the running Turbopack application
+through `/_next/mcp` and browser checks; `.mcp.json` configures the pinned local
+Next.js DevTools MCP. Never expose development diagnostics on production hosts.
+
+The additive foundation uses npm workspaces (`apps/*`, `packages/*`), Node 24 LTS
+from `.nvmrc`, and `npm run build:foundation`. The root `build`/`start` commands
+remain legacy deployment contracts pending verification of production hosting.
+Do not import legacy startup, inherit `backend/.env`, or connect a database during
+install/build/tests. See the foundation document for configuration and isolation.
+
 Use:
 
 - App Router

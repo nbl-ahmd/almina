@@ -1,0 +1,18 @@
+{
+  "name": "@almina/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "exports": {
+    "./env": "./src/env.ts",
+    "./logger": "./src/logger.ts",
+    "./eslint": "./eslint.mjs",
+    "./tsconfig.json": "./tsconfig.json"
+  }
+}

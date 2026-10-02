@@ -1,12 +1,20 @@
 {
   "name": "almina",
   "version": "1.0.0",
-  "description": "mern ecommerce",
-  "main": "index.js",
+  "description": "Al Mina incremental modernization workspace with preserved legacy deployment commands",
   "scripts": {
     "build": "npm install && cd backend && npm install",
     "start": "pm2-runtime start backend/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsx --test tests/*.test.ts",
+    "dev": "npm run dev --workspace @almina/web --",
+    "dev:api": "npm run dev --workspace @almina/api",
+    "build:foundation": "npm run build --workspaces --if-present",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
+    "lint": "eslint apps packages tests scripts/tooling",
+    "start:web": "npm run start --workspace @almina/web --",
+    "start:api": "npm run start --workspace @almina/api",
+    "docs:next": "node scripts/tooling/next-docs.mjs",
+    "smoke:foundation": "node scripts/tooling/smoke-foundation.mjs"
   },
   "repository": {
     "type": "git",
@@ -19,10 +27,31 @@
   },
   "homepage": "https://github.com/nbl-ahmd/almina",
   "dependencies": {
-    "@novu/node": "^0.19.0",
-    "in": "^0.19.0",
-    "pm2": "^5.3.0",
-    "terminal": "^0.1.4",
-    "your": "^0.2.3"
+    "pm2": "5.3.0"
+  },
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24.21.0 <25",
+    "npm": ">=11.19.0 <12"
+  },
+  "packageManager": "npm@11.19.0",
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.19.1",
+    "eslint": "9.39.5",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "next-devtools-mcp": "0.4.0",
+    "esbuild": "0.28.2"
+  },
+  "overrides": {
+    "next-devtools-mcp": {
+      "@modelcontextprotocol/sdk": "1.31.0"
+    }
   }
 }
