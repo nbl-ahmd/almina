@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const requestIdSchema = z.uuid();
 export const errorCodeSchema = z.enum([
   'INVALID_REQUEST', 'NOT_FOUND', 'METHOD_NOT_ALLOWED', 'SERVICE_UNAVAILABLE', 'INTERNAL_ERROR',
+  'UNAUTHORIZED', 'FORBIDDEN', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA_TYPE', 'RATE_LIMITED', 'REQUEST_TIMEOUT',
 ]);
 export const apiErrorSchema = z.object({
   error: z.object({ code: errorCodeSchema, message: z.string().max(200) }).strict(),
@@ -33,3 +34,5 @@ export const emptyQuerySchema = z.object({}).strict();
 // Business IDs and MongoDB IDs stay separate; no money/commerce policy is invented here.
 export const productBusinessIdSchema = z.string().regex(/^PD\d+$/);
 export const mongoIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/);
+
+export * from './api';

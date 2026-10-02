@@ -42,6 +42,14 @@ Completed a controlled dependency inventory and cleanup on 2026-10-02. Removed c
 
 Future implementation must update this file with completed gates and evidence, not merely planned changes.
 
+## Modular API service migration
+
+Implemented an additive modular Express 5.2.1/TypeScript service on `codex/modular-api`: public catalog, staff login/session/logout, server-enforced admin/city-scoped order reads, explicit DTOs/projections, strict request schemas/body limits, indexed text-search predicates, scoped cursor pagination, secure headers, exact-origin CORS, rate limits, request deadlines, redacted structured logs/request IDs and graceful draining/database lifecycle. Indexes have an explicit additive/idempotent plan/apply script; no index was applied and no database was contacted. See [route/auth, schema/index inventories, performance queries and compatibility changes](MODULAR_API_2026-10-02.md).
+
+This does not remediate the retained legacy backend or constitute a production cutover. Legacy callers/deployment/media/provider integrations and all commerce/admin mutation workflows remain legacy-owned. Checkout integrity, account inventory/credential rotation, legacy authentication rollout, database/index explain checks and distributed ingress quotas remain required gates. New staff sessions intentionally reject the legacy compromised JWT contract and enforce current server-side city assignments; unassigned staff have no order access.
+
+Local verification: full typecheck/lint, 52 automated tests with synthetic query doubles/loopback HTTP, API bundle, full foundation production build, compiled-process/foundation smoke and connection-free index plan. No production/customer data, provider integrations or database index plans were exercised against a live database. Planner/load behavior remains unverified.
+
 ## Storefront preview route migration
 
 Implemented the requested storefront route structure in the isolated Next.js preview on `codex/storefront-routes`. Public catalog pages now fetch/render on the server through a guarded read-only legacy adapter; client islands handle only gallery/cart interactions and browser storage. Existing product IDs and category MongoDB IDs remain the route identity, with readable slug prefixes. Legacy product/category links are supported and query parameters retained. Permanent redirects are gated by `STOREFRONT_REDIRECTS_VERIFIED` (false by default), pending real staging/production target and URL inventory verification. Typography/palette/card language use the existing PT Sans and pharmacy assets; no production redesign/cutover occurred.

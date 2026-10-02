@@ -7,6 +7,6 @@ await build({
   platform: 'node',
   target: 'node24',
   format: 'esm',
-  external: ['express', 'mongodb', 'zod'],
+  external: ['express', 'mongodb', 'zod', 'helmet', 'express-rate-limit', 'bcryptjs'],
   sourcemap: false,
 });

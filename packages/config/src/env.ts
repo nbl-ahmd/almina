@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isIP } from 'node:net';
 
 export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 export type AppEnvironment = 'development' | 'staging' | 'production';
@@ -74,6 +75,8 @@ export function readApiEnvironment(source: EnvironmentSource) {
     API_HOST: z.enum(['127.0.0.1', '0.0.0.0']).default(shared.APP_ENV === 'development' ? '127.0.0.1' : '0.0.0.0'),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     DATABASE_MODE: z.enum(['disabled', 'enabled']).default('disabled'),
+    API_TRUST_PROXY: z.string().default('').transform(value => value ? value.split(',').map(item => item.trim()) : [])
+      .refine(values => values.length <= 10 && values.every(value => isIP(value) !== 0)),
   }), source);
   if (value.DATABASE_MODE === 'disabled') {
     // Fail closed if a secret was supplied but the connection mode was forgotten.

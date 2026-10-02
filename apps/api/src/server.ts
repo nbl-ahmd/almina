@@ -3,22 +3,31 @@ import { readApiEnvironment } from '@almina/config/env';
 import { createLogger } from '@almina/config/logger';
 import { createApp } from './app.js';
 import { createDatabase } from './database.js';
+import { HttpError } from './errors.js';
 
 async function main() {
   const env = readApiEnvironment(process.env);
   const logger = createLogger({ service: 'api', environment: env.APP_ENV, level: env.LOG_LEVEL });
   const database = createDatabase(env.database);
-  const server = createServer(createApp({ database, logger }));
+  let stopping = false;
+  const server = createServer(createApp({ database, logger, webOrigin: env.WEB_ORIGIN,
+    trustProxy: env.API_TRUST_PROXY, draining: () => stopping,
+    getDb: async () => {
+      try { return await database.getDb(); }
+      catch { throw new HttpError(503, 'SERVICE_UNAVAILABLE'); }
+    },
+  }));
   server.requestTimeout = 15000;
   server.headersTimeout = 10000;
   server.keepAliveTimeout = 5000;
+  server.maxHeadersCount = 50;
+  server.setTimeout(15000, socket => socket.destroy());
   server.on('error', () => {
     logger.log('error', 'request_failed');
-    void database.close().finally(() => { process.exitCode = 1; });
+    void database.close().catch(() => logger.log('error', 'shutdown_failed')).finally(() => { process.exitCode = 1; });
   });
   server.listen(env.PORT, env.API_HOST, () => logger.log('info', 'api_started'));
 
-  let stopping = false;
   const stop = () => {
     if (stopping) return;
     stopping = true;

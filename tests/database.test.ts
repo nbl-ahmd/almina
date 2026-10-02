@@ -27,6 +27,7 @@ test('connections are lazy and concurrent callers reuse one pool', async () => {
   assert.equal(connections, 1);
   assert.equal(await db.checkReadiness(), true);
   await db.close();
+  await db.close();
   assert.equal(closes, 1);
   await assert.rejects(db.getDb(), /closed/);
 });

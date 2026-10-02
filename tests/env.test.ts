@@ -66,3 +66,11 @@ test('port/mode validation and legacy settings cannot activate database access',
   assert.throws(() => readApiEnvironment({ DATABASE_MODE: 'true' }), ConfigurationError);
   assert.equal(readApiEnvironment({ MONGO_URI: 'fake-sensitive-marker', REACT_APP_API: 'https://legacy.example.invalid' }).database.mode, 'disabled');
 });
+
+test('proxy trust is disabled by default and accepts only explicit bounded IP lists', () => {
+  assert.deepEqual(readApiEnvironment({}).API_TRUST_PROXY, []);
+  assert.deepEqual(readApiEnvironment({ API_TRUST_PROXY: '127.0.0.1, ::1' }).API_TRUST_PROXY, ['127.0.0.1', '::1']);
+  for (const API_TRUST_PROXY of ['true', '1', 'loopback', '0.0.0.0/0', 'host.invalid', Array(11).fill('127.0.0.1').join(',')]) {
+    assert.throws(() => readApiEnvironment({ API_TRUST_PROXY }), ConfigurationError);
+  }
+});

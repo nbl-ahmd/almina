@@ -64,7 +64,7 @@ test('invalid/oversized JSON and unsupported methods return JSON errors without 
   await fixture({ mode: 'disabled', checkReadiness: async () => true }, async (origin, logs) => {
     for (const body of ['{"fake-sensitive-marker":', JSON.stringify({ marker: 'fake-sensitive-marker'.repeat(2000) })]) {
       const response = await fetch(`${origin}/api/v1/status`, { method: 'POST', headers: { 'content-type': 'application/json' }, body });
-      assert.equal(response.status, 400);
+      assert.equal(response.status, body.length > 16384 ? 413 : 400);
       assert.ok(!JSON.stringify(await response.json()).includes('fake-sensitive-marker'));
     }
     const response = await fetch(`${origin}/api/v1/status`, { method: 'POST' });

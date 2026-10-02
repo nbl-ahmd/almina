@@ -3,11 +3,13 @@ import type { ApiEnvironment } from '@almina/config/env';
 
 type Connection = { connect: () => Promise<Db>; close: () => Promise<void> };
 export type DatabaseProbe = { checkReadiness: () => Promise<boolean>; mode: 'disabled' | 'enabled' };
+export type GetDb = () => Promise<Db>;
+export const queryOptions = { maxTimeMS: 3000, timeoutMS: 5000 };
 
 export function createDatabase(config: ApiEnvironment['database'],
   factory: (uri: string, name: string) => Connection = (uri, name) => {
     const client = new MongoClient(uri, {
-      appName: 'almina-foundation-api', maxPoolSize: 10, minPoolSize: 0,
+      appName: 'almina-api-v1', maxPoolSize: 10, minPoolSize: 0, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 3000,
       serverSelectionTimeoutMS: 3000, connectTimeoutMS: 3000, socketTimeoutMS: 5000,
       ...(uri.startsWith('mongodb+srv://') ? { tls: true, tlsAllowInvalidCertificates: false, tlsAllowInvalidHostnames: false } : {}),
     });
@@ -47,6 +49,7 @@ export function createDatabase(config: ApiEnvironment['database'],
       } catch { return false; }
     },
     async close() {
+      if (closed) return;
       closed = true;
       await pending?.catch(() => undefined);
       await connection?.close();
