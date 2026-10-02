@@ -22,7 +22,6 @@ export function errorHandler(logger: Logger): ErrorRequestHandler {
     const body: ApiError = { error: { code: failure.code, message: errorMessages[failure.code] }, requestId: res.locals.requestId as string };
     logger.log(failure.status >= 500 ? 'error' : 'warn', 'request_failed', { requestId: body.requestId, status: failure.status });
     if (failure.status === 503) res.set('Retry-After', '5');
-    if (failure.status === 401) res.set('WWW-Authenticate', 'Bearer');
     res.status(failure.status).json(body);
   };
 }

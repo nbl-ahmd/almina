@@ -49,11 +49,12 @@ export default function Dashboard() {
     navigate('/admin/productlist'); // Redirect to the search page without any query parameter
   };
 
-  const publicKey = 'BPJRLHqL62nj3j6L8lAsRnjdRKNaLkRxrpFQwmEgDbqMbYDZeRR4vyj9X-tIGVzHkt4pbgFbgIOd_Lma6p4i3Bk';
+  const publicKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
 
 
 
   useEffect(() => {
+    if (!publicKey) return;
     navigator.serviceWorker.ready
       .then(function (registration) {
         if (!registration.pushManager) {
@@ -350,9 +351,9 @@ setDropdown(!dropdown)
           <div className="dropdown-divider"></div>
         </li>
         <li>
-          <button className="dropdown-item" >
+          <button className="dropdown-item" onClick={logout}>
             <i className="bx bx-power-off me-2"></i>
-            <span className="align-middle" onClick={()=> logout()}>Log Out</span>
+            <span className="align-middle">Log Out</span>
           </button>
         </li>
       </ul>

@@ -6,7 +6,7 @@ import { Button, Container, Card, Table, TableRow, TableCell, TableBody, TableHe
 import NotificationSound from "../assets/notification.mp3";
 import { Toaster, toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-const socket = io.connect(baseURL);
+const socket = io.connect(baseURL, { withCredentials: true });
 
 
 const OrderList = () => {
@@ -103,16 +103,8 @@ const OrderList = () => {
   },[] );
 
   const fetchExcludeCities = async () => {
-    try {
-      const response = await axios.get(`${baseURL}/api/auth/users`);
-      const users = response.data;
-      const allCities = users.map(user => user.cities).flat();
-      const excludeCities = [...new Set(allCities)]; // Remove duplicates
-      setUserCities(excludeCities);
-      fetchOrders(excludeCities);
-    } catch (error) {
-      console.error('Error fetching user cities:', error);
-    }
+    setUserCities([]);
+    await fetchOrders([]); // The server applies role/city permissions, including empty assignments.
   };
 
   const fetchOrders = async (cities) => {

@@ -1,5 +1,4 @@
 var express = require('express');
-require('dotenv').config();
 var axios = require('axios');
 const { sendMessage, getTemplatedMessageInput, getTextMessageInput } = require("../messageHelper");
 const whatsappRouter = express.Router();
@@ -13,14 +12,14 @@ const sharp = require('sharp');
 const router = express.Router();
 const uploadDir = path.join(__dirname, '..', 'public/WhatsappPoster');
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
 const fs = require('fs');
 //google
 const { Readable } = require('stream');
 const { google } = require('googleapis');
 const whatsappBulkReportModel = require('../models/whatsappBulkReport');
 // Load the JSON key file
-const keyFile = path.join(__dirname, '/cred.json');
+const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 // Create a new instance of the drive API
 const auth = new google.auth.GoogleAuth({
@@ -35,13 +34,13 @@ const FOLDER_ID = '11wB-C-ZmixvTLZnrFVkRfokTQmBmLlmv';
 
 whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
   const image = req.file;
-  const croppedImage = await sharp(image.buffer)
+  const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })
     .toBuffer();
   const resizedFilename = uuidv4() + '.jpeg';
   // save the resized image to the directory
- 
-  const poster = new WhatsappPoster({ image: resizedFilename }); 
-  
+
+  const poster = new WhatsappPoster({ image: resizedFilename });
+
    // Upload the file to Google Drive
    try {
     const fileMetadata = {
@@ -67,7 +66,7 @@ whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
 
     res.status(201).json({ message: 'poster created successfully' });
   } catch (error) {
-    console.error('Error uploading file to Google Drive:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 
@@ -83,7 +82,7 @@ whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
       res.status(200).json(poster);
     })
     .catch(error => {
-      console.log(error);
+
       res.status(500).json({ error: 'Internal server error' });
     });
 });
@@ -110,7 +109,7 @@ whatsappRouter.get('/image/:filename', async (req, res) => {
     // Pipe the image stream from Google Drive to the response stream
     response.data.pipe(res);
   } catch (error) {
-    console.error('Error retrieving image from Google Drive:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -136,13 +135,13 @@ whatsappRouter.delete('/image/:id', async (req, res) => {
     // Delete the image file from the server's file system
     fs.unlink(path.join(uploadDir, poster.image), (error) => {
       if (error) {
-        console.log('Error deleting image file:', error);
+
       }
     });
 
     return res.status(200).json({ success: true, message: 'The poster and image are deleted!' });
   } catch (error) {
-    console.error('Error deleting poster:', error);
+
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -161,7 +160,7 @@ whatsappRouter.delete('/image/:id', async (req, res) => {
 whatsappRouter.post('/s', function(req, res, next) {
   const { recipient, template, link } = req.body;
   var data = getTemplatedMessageInput(recipient, template, link);
-  
+
   sendMessage(data)
   .then(function (response) {
     res.status(200).json({ status: "success", recipient });
@@ -169,28 +168,28 @@ whatsappRouter.post('/s', function(req, res, next) {
   })
   .catch(function (error) {
     res.status(500).json({ status: "fail", recipient });
-    console.log(error);
+
     return;
   });
 });
 
 whatsappRouter.post('/sr', function(req, res, next) {
- 
+
     const recipient = Object.keys(req.body)[0];
     res.status(201).json({ message: 'product created successfully' });
-   console.log(recipient);
+
 });
- 
+
 whatsappRouter.post('/', function(req, res, next) {
   var data = getTextMessageInput(process.env.RECIPIENT_WAID, 'Welcome to the Movie Ticket Demo App for Node.js!');
-  
+
   sendMessage(data)
     .then(function (response) {
       res.redirect('/catalog');
       return;
     })
     .catch(function (error) {
-      console.log(error);
+
       return;
     });
 });
@@ -198,17 +197,17 @@ whatsappRouter.post('/', function(req, res, next) {
 
 whatsappRouter.post('/text', function(req, res, next) {
   const { recipient, name, text } = req.body;
-  console.log(recipient);
-  console.log(text);
+
+
     var data = getTextMessageInput(recipient, text);
-    
+
     sendMessage(data)
       .then(function (response) {
         res.redirect('/catalog');
         return;
       })
       .catch(function (error) {
-        console.log(error);
+
         return;
       });
       saveAdminMessage(req, recipient, name, text)
@@ -223,13 +222,13 @@ whatsappRouter.post('/text', function(req, res, next) {
     const recipients = await Whatsapp.find({});
     res.json(recipients);
   } catch (error) {
-    console.error('Error fetching recipients:', error);
+
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
   whatsappRouter.get('/messages/:recipient', async (req, res) => {
     const recipient = req.params.recipient;
-  
+
     try {
       // Find the conversation for the given recipient
       const conversation = await Whatsapp.findOne({ from: recipient });
@@ -240,12 +239,12 @@ whatsappRouter.post('/text', function(req, res, next) {
         res.status(404).json({ error: 'Conversation not found' });
       }
     } catch (error) {
-      console.error('Error fetching messages:', error);
+
       res.status(500).json({ error: 'Internal Server Error' });
     }
-    
 
-    
+
+
   });
 
 
@@ -255,8 +254,8 @@ const saveAdminMessage = async (req, from, name, msg_body)=>{
     const conversation = await Whatsapp.findOne({ from: from });
 
     if (conversation) {
-      console.log("old");
-      console.log(conversation);
+
+
       // Conversation exists, append the new message to the existing conversation
       conversation.messages.push({
         content: msg_body,
@@ -264,7 +263,7 @@ const saveAdminMessage = async (req, from, name, msg_body)=>{
         sender: 'admin',
       });
       await conversation.save(); // Returns a promise, no callback needed
-      
+
 
       // Emit the new message to all connected clients
   req.app.locals.io.emit('newMessage', {
@@ -285,7 +284,7 @@ const saveAdminMessage = async (req, from, name, msg_body)=>{
         ],
       });
       await newConversation.save();
-      
+
         // Emit the new message to all connected clients
   req.app.locals.io.emit('newMessage', {
     recipient: from,
@@ -293,7 +292,7 @@ const saveAdminMessage = async (req, from, name, msg_body)=>{
   });
     }
   } catch (error) {
-    console.error('Error handling conversation:', error);
+
   }
 
 }
@@ -318,7 +317,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
   let body = req.body;
 
   // Check the Incoming webhook message
-  console.log(JSON.stringify(req.body, null, 2));
+
 
   // info on WhatsApp text message payload: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-examples#text-messages
   if (req.body.object) {
@@ -336,16 +335,16 @@ whatsappRouter.post("/webhook",async (req, res) => {
       let msg_body = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.text?.body || '"stop promotion"'; // extract the message text from the webhook payload
       let status = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.button?.text || 'true';
 
-      console.log(msg_body);
-      console.log(status);
+
+
 
       try {
         // Check if the conversation exists
         const conversation = await Whatsapp.findOne({ from: from });
 
         if (conversation) {
-          console.log("old");
-          console.log(conversation);
+
+
           // Conversation exists, append the new message to the existing conversation
           conversation.messages.push({
             content: msg_body,
@@ -355,7 +354,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
            // Update promotionStatus field
     conversation.promotionStatus = status;
           await conversation.save(); // Returns a promise, no callback needed
-          
+
 
           // Emit the new message to all connected clients
       req.app.locals.io.emit('newMessage', {
@@ -378,7 +377,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
             ],
           });
           await newConversation.save();
-          
+
             // Emit the new message to all connected clients
       req.app.locals.io.emit('newMessage', {
         recipient: from,
@@ -387,7 +386,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
       });
         }
       } catch (error) {
-        console.error('Error handling conversation:', error);
+
       }
 
 
@@ -407,7 +406,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
       //   headers: { "Content-Type": "application/json" },
       // });
     }
-    
+
   else if (
       req.body.entry &&
       req.body.entry[0].changes &&
@@ -415,16 +414,16 @@ whatsappRouter.post("/webhook",async (req, res) => {
       req.body.entry[0].changes[0].value.statuses &&
       req.body.entry[0].changes[0].value.statuses[0]
     ) {
-      
-      let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status; 
+
+      let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status;
       let error = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.title || '';
       let errorDetails = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.error_data?.details || '';
       let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
       res.json({messageStatus: messageStatus, error:error ,errorDetails: errorDetails, recipient:recipient});
-  
-  
+
+
       try {
-  
+
         const existingBroadcast = await whatsappBulkReportModel.findOne({ 'broadcast.recipient': recipient });
 
         if (existingBroadcast) {
@@ -445,12 +444,12 @@ whatsappRouter.post("/webhook",async (req, res) => {
           });
           await newBroadcast.save();
         }
-    
+
         // emitNewBroadcast(req, 'user', messageStatus, error, errorDetails, recipient);
-    
-  
-        
-        
+
+
+
+
       // Emit the new message to all connected clients
       req.app.locals.io.emit('newBroadcast', {
         broadcast: { messageStatus: messageStatus,
@@ -459,11 +458,11 @@ whatsappRouter.post("/webhook",async (req, res) => {
           recipient: recipient},
       });
       } catch (error) {
-        console.error('Error handling conversation:', error);
+
       }
     }
     else {
-      console.log('no message found')
+
     }
     res.sendStatus(200);
   } else {
@@ -482,8 +481,8 @@ whatsappRouter.post("/webhook",async (req, res) => {
 //     req.body.entry[0].changes[0].value.statuses &&
 //     req.body.entry[0].changes[0].value.statuses[0]
 //   ) {
-    
-//     let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status; 
+
+//     let messageStatus = req.body.entry[0].changes[0].value.statuses[0].status;
 //     let error = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.title || '';
 //     let errorDetails = req.body.entry[0].changes[0].value.statuses[0].errors?.[0]?.error_data?.details || '';
 //     let recipient = req.body.entry[0].changes[0].value.statuses[0].recipient_id;
@@ -496,7 +495,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
 
 //        // Conversation doesn't exist, create a new conversation
 //        const newBroadcast = new whatsappBulkReportModel({
-        
+
 //         broadcast: [
 //           {
 //             messageStatus: messageStatus,
@@ -507,8 +506,8 @@ whatsappRouter.post("/webhook",async (req, res) => {
 //         ],
 //       });
 //       await newBroadcast.save();
-      
-      
+
+
 //     // Emit the new message to all connected clients
 //     req.app.locals.io.emit('newBroadcast', {
 //       broadcast: { messageStatus: messageStatus,
@@ -517,7 +516,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
 //         recipient: recipient},
 //     });
 //     } catch (error) {
-//       console.error('Error handling conversation:', error);
+//
 //     }
 //   }
 // } else {
@@ -529,7 +528,7 @@ whatsappRouter.post("/webhook",async (req, res) => {
 });
 
 // Accepts GET requests at the /webhook endpoint. You need this URL to setup webhook initially.
-// info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests 
+// info on verification request payload: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
 whatsappRouter.get("/webhook", (req, res) => {
   /**
    * UPDATE YOUR VERIFY TOKEN
@@ -543,17 +542,17 @@ whatsappRouter.get("/webhook", (req, res) => {
   let challenge = req.query["hub.challenge"];
 
   // Check if a token and mode were sent
-  if (mode && token) {
+  if (mode && token && verify_token) {
     // Check the mode and token sent are correct
     if (mode === "subscribe" && token === verify_token) {
       // Respond with 200 OK and challenge token from the request
-      console.log("WEBHOOK_VERIFIED");
+
       res.status(200).send(challenge);
     } else {
       // Responds with '403 Forbidden' if verify tokens do not match
       res.sendStatus(403);
     }
-  }
+  } else { res.sendStatus(403); }
 });
 
 

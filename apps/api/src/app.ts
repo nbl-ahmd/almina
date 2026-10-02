@@ -12,7 +12,7 @@ import { validate, noBody } from './http/validation.js';
 
 export function createApp(options: {
   database: DatabaseProbe; logger: Logger; getDb?: GetDb; webOrigin?: string;
-  trustProxy?: string[]; rateLimit?: number; draining?: () => boolean; requestDeadlineMs?: number;
+  development?: boolean; trustProxy?: string[]; rateLimit?: number; draining?: () => boolean; requestDeadlineMs?: number;
 }) {
   const app = express();
   app.disable('x-powered-by');
@@ -39,7 +39,13 @@ export function createApp(options: {
     });
     next();
   });
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: { useDefaults: false, directives: {
+    defaultSrc: ["'none'"], frameAncestors: ["'none'"], baseUri: ["'none'"], formAction: ["'none'"],
+  } }, strictTransportSecurity: options.development ? false : { maxAge: 31536000, includeSubDomains: false },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' } }));
+  app.use((_req, res, next) => {
+    res.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()'); next();
+  });
   // Health routes do not depend on browser CORS or public-API quota.
   const routes = ['/health/live', '/health/ready', '/api/v1/status'];
   for (const route of routes) app.get(route, async (req, res) => {
@@ -58,7 +64,7 @@ export function createApp(options: {
     if (req.headers.origin) {
       if (req.headers.origin !== options.webOrigin) { next(new HttpError(403, 'FORBIDDEN')); return; }
       res.set({ 'Access-Control-Allow-Origin': options.webOrigin,
-        'Access-Control-Expose-Headers': 'X-Request-ID, RateLimit, Retry-After' });
+        'Access-Control-Allow-Credentials': 'true', 'Access-Control-Expose-Headers': 'X-Request-ID, RateLimit, Retry-After' });
     }
     next();
   });
@@ -71,10 +77,10 @@ export function createApp(options: {
       const method = req.headers['access-control-request-method'];
       const headers = String(req.headers['access-control-request-headers'] ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
       if (!req.headers.origin || !['GET', 'HEAD', 'POST'].includes(String(method))
-        || headers.some(value => !['authorization', 'content-type'].includes(value))) {
+        || headers.some(value => !['content-type', 'x-csrf-protection'].includes(value))) {
         next(new HttpError(403, 'FORBIDDEN')); return;
       }
-      res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+      res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST', 'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection',
         'Access-Control-Max-Age': '600' }).status(204).end();
       return;
     }
@@ -91,7 +97,7 @@ export function createApp(options: {
     res.set('Allow', 'GET, HEAD'); next(new HttpError(405, 'METHOD_NOT_ALLOWED'));
   });
   const getDb: GetDb = options.getDb ?? (() => Promise.reject(new HttpError(503, 'SERVICE_UNAVAILABLE')));
-  app.use('/api/v1', apiRoutes(getDb));
+  app.use('/api/v1', apiRoutes(getDb, options.webOrigin ?? '', options.development));
   app.use((_req, _res, next) => next(new HttpError(404, 'NOT_FOUND')));
   app.use(errorHandler(options.logger));
   return app;

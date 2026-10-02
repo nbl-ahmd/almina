@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import baseURL from '../../axiosConfig';
+import baseURL, { apiFetch } from '../../axiosConfig';
 
 const AddUser = () => {
   const [users, setUsers] = useState([]);
@@ -105,7 +105,7 @@ const AddUser = () => {
 
     try {
       // Call the signup API with the provided user data
-      const response = await fetch(`${baseURL}/api/auth/signup`, {
+      const response = await apiFetch(`${baseURL}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

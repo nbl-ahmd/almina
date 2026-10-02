@@ -1,126 +1,66 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { check, validationResult } = require('express-validator');
-const users = require('../models/User');
-const asyncHandler = require('express-async-handler');
-const loginRouter = express.Router();
-const secretKey = 'your-secret-key';
+const { hash } = require('bcryptjs');
+const mongoose = require('mongoose');
+const { wrap, fail } = require('../security/boundary.cjs');
+const { cookieName, cookieOptions, readSessionCookie } = require('../security/sessions.cjs');
 
-
-
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    req.user = decoded;
-    next();
-  });
+module.exports = function loginRoutes(auth, development = false, getDb = () => mongoose.connection.db) {
+  const router = express.Router();
+  const cookie = cookieName(development);
+  router.post('/login', wrap(async (req, res) => {
+    // Validate before issuing expensive work or database query; roles/unknown keys rejected.
+    const body = req.body;
+    if (!body || Object.keys(body).some(key => !['username', 'password'].includes(key))
+      || typeof body.username !== 'string' || !body.username.length || body.username.length > 100
+      || typeof body.password !== 'string' || !body.password.length || Buffer.byteLength(body.password) > 72) throw fail(400, 'INVALID_REQUEST');
+    await auth.limitLogin(body.username, req.ip);
+    const login = await auth.login(body);
+    // Re-login rotates the current browser session after credentials succeed.
+    const prior = readSessionCookie(req.headers, development);
+    if (prior) await auth.logout(prior);
+    res.cookie(cookie, login.token, cookieOptions(development));
+    res.json({ ...login.user, _id: login.user.id, expiresAt: login.expiresAt });
+  }));
+  router.get('/me', (req, res) => res.json({ ...req.identity, _id: req.identity.id }));
+  router.post('/logout', wrap(async (req, res) => {
+    await auth.logout(readSessionCookie(req.headers, development));
+    const { maxAge, ...options } = cookieOptions(development);
+    res.clearCookie(cookie, options).status(204).end();
+  }));
+  router.post('/logout-all', wrap(async (req, res) => {
+    await auth.revokeUser(new mongoose.Types.ObjectId(req.identity.id));
+    const { maxAge, ...options } = cookieOptions(development);
+    res.clearCookie(cookie, options).status(204).end();
+  }));
+  // The existing URL is retained for the admin Add User workflow. No public staff signup.
+  router.post('/signup', wrap(async (req, res) => {
+    const { username, password, name, role, cities } = req.body ?? {};
+    if (Object.keys(req.body ?? {}).some(key => !['username', 'password', 'name', 'role', 'cities'].includes(key))
+      || typeof username !== 'string' || !/^[A-Za-z0-9_.@-]{1,100}$/.test(username)
+      || typeof password !== 'string' || password.length < 12 || Buffer.byteLength(password) > 72
+      || typeof name !== 'string' || name.length < 1 || name.length > 100
+      || !['admin', 'user'].includes(role) || !Array.isArray(cities) || cities.length > 100
+      || cities.some(city => typeof city !== 'string' || !city.length || city.length > 100)) throw fail(400, 'INVALID_REQUEST');
+    try { await getDb().collection('users').insertOne({ username, password: await hash(password, 12), name, role, cities }); }
+    catch (error) { if (error.code !== 11000) throw error; } // Identical response for duplicate account names.
+    res.status(202).json({ message: 'User provisioning request processed' });
+  }));
+  router.get('/users', wrap(async (req, res) => {
+    const limit = req.query.limit === undefined ? 100 : Number(req.query.limit);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100 || Object.keys(req.query).some(key => !['limit', 'before'].includes(key))
+      || (req.query.before !== undefined && !/^[a-f0-9]{24}$/i.test(req.query.before))) throw fail(400, 'INVALID_REQUEST');
+    const filter = req.query.before ? { _id: { $lt: new mongoose.Types.ObjectId(req.query.before) } } : {};
+    const docs = await getDb().collection('users').find(filter, { projection: { username: 1, name: 1, role: 1, cities: 1 }, maxTimeMS: 3000 })
+      .sort({ _id: -1 }).limit(limit).toArray();
+    res.json(docs.map(doc => ({ _id: doc._id, username: doc.username, name: doc.name, role: doc.role, cities: doc.cities ?? [] })));
+  }));
+  router.delete('/users/:id', wrap(async (req, res) => {
+    if (!/^[a-f0-9]{24}$/i.test(req.params.id)) throw fail(400, 'INVALID_REQUEST');
+    if (req.params.id.toLowerCase() === req.identity.id) throw fail(403, 'FORBIDDEN');
+    const userId = new mongoose.Types.ObjectId(req.params.id);
+    await getDb().collection('users').deleteOne({ _id: userId });
+    await auth.revokeUser(userId);
+    res.json({ message: 'User deletion processed' });
+  }));
+  return router;
 };
-
-
-// Login endpoint
-loginRouter.post('/login', [
-  // Validation rules for username and password
-  check('username').notEmpty().withMessage('Username is required'),
-  check('password').notEmpty().withMessage('Password is required')
-], asyncHandler(async (req, res) => {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { username, password } = req.body;
-
-  // Find user in the database based on the provided username
-  const user = await users.findOne({ username });
-
-  // Check if user exists and the password matches
-  if (!user || !bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json({ error: 'Invalid username or password' });
-  }
-
-  // Generate a JWT token
-  const token = jwt.sign({ username }, secretKey);
-
-  res.json({ token, name: user.name, username: user.username, role: user.role, cities: user.cities });
-}));
-
-
-loginRouter.post('/signup', [
-  // Validation rules for username and password
-  check('username').notEmpty().withMessage('Username is required'),
-  check('password').notEmpty().withMessage('Password is required')
-], async (req, res) => {
-  // Check for validation errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { username, password, name, role, cities } = req.body;
-
-  try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user in the database
-    const newUser = new users({
-      username,
-      password: hashedPassword,
-      name,
-      role,
-      cities,
-    });
-
-    // Save the user to MongoDB
-    const savedUser = await newUser.save();
-
-    res.json({ message: 'Signup successful' });
-  } catch (error) {
-    console.error('Signup failed', error);
-    res.status(500).json({ error: 'Signup failed' });
-  }
-});
-
-
-loginRouter.get('/users', (req, res) => {
-  users.find()
-    .then(users => {
-      res.status(200).json(users);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).json({ error: 'Internal server error' });
-    });
-});
-
-// Delete a user by ID
-loginRouter.delete('/users/:id', async (req, res) => {
-  const userId = req.params.id;
-
-  try {
-    // Delete the user from the database
-    const deletedUser = await users.findByIdAndDelete(userId);
-
-    if (deletedUser) {
-      res.status(200).json({ message: 'User deleted' });
-    } else {
-      res.status(404).json({ error: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-module.exports = loginRouter;

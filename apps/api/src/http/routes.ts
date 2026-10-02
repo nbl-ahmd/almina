@@ -5,6 +5,8 @@ import { emptyQuerySchema, catalogQuerySchema, adminProductQuerySchema, cursorQu
   businessProductParamsSchema, orderQuerySchema, loginBodySchema, productDtoSchema, categoryDtoSchema, bannerDtoSchema,
   storeDtoSchema, staffDtoSchema, loginDtoSchema, orderSummaryDtoSchema, orderDetailDtoSchema, pageSchema, successSchema,
   type Staff } from '@almina/contracts';
+import { cookieOptions, cookieName, readSessionCookie, verifyBrowserMutation } from '../../../../backend/security/sessions.cjs';
+import { ObjectId } from 'mongodb';
 import { HttpError } from '../errors.js';
 import { validate, noBody } from './validation.js';
 import { createCatalogRepository } from '../modules/catalog/repository.js';
@@ -13,7 +15,7 @@ import { createAuthService } from '../modules/auth/service.js';
 import { createStaffRepository } from '../modules/auth/repository.js';
 import { createOrderRepository } from '../modules/orders/repository.js';
 
-export function apiRoutes(getDb: GetDb) {
+export function apiRoutes(getDb: GetDb, webOrigin: string, development = false) {
   const router = Router();
   const catalog = createCatalogRepository(getDb);
   const auth = createAuthService(getDb);
@@ -25,7 +27,7 @@ export function apiRoutes(getDb: GetDb) {
     if (!res.writableEnded) res.json(response);
   }
   async function identity(req: Request, admin = false): Promise<Staff> {
-    const user = await auth.authenticate(req.headers.authorization);
+    const user = await auth.authenticate(readSessionCookie(req.headers, development));
     if (admin && user.role !== 'admin') throw new HttpError(403, 'FORBIDDEN');
     return user;
   }
@@ -61,7 +63,14 @@ export function apiRoutes(getDb: GetDb) {
   router.post('/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false,
     handler: (_req, _res, next) => next(new HttpError(429, 'RATE_LIMITED')) }), async (req, res) => {
     validate(emptyQuerySchema, req.query);
-    send(res, loginDtoSchema, await auth.login(validate(loginBodySchema, req.body)));
+    verifyBrowserMutation(req, [webOrigin], () => new HttpError(403, 'FORBIDDEN'));
+    const input = validate(loginBodySchema, req.body);
+    await auth.limitLogin(input.username, req.ip);
+    const login = await auth.login(input);
+    const prior = readSessionCookie(req.headers, development);
+    if (prior) await auth.logout(prior);
+    res.cookie(cookieName(development), login.token, cookieOptions(development));
+    send(res, loginDtoSchema, { expiresAt: login.expiresAt, user: login.user });
   });
   router.all('/auth/login', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
   read('/auth/me', async (req, res) => {
@@ -71,11 +80,25 @@ export function apiRoutes(getDb: GetDb) {
   });
   router.post('/auth/logout', async (req, res) => {
     await identity(req);
+    verifyBrowserMutation(req, [webOrigin], () => new HttpError(403, 'FORBIDDEN'));
     noBody(req); validate(emptyQuerySchema, req.query);
-    await auth.logout(req.headers.authorization);
+    await auth.logout(readSessionCookie(req.headers, development));
+    const { maxAge: _maxAge, ...options } = cookieOptions(development);
+    void _maxAge;
+    res.clearCookie(cookieName(development), options);
     if (!res.writableEnded) res.status(204).end();
   });
   router.all('/auth/logout', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
+  router.post('/auth/logout-all', async (req, res) => {
+    const user = await identity(req);
+    verifyBrowserMutation(req, [webOrigin], () => new HttpError(403, 'FORBIDDEN'));
+    noBody(req); validate(emptyQuerySchema, req.query);
+    await auth.revokeUser(new ObjectId(user.id));
+    const { maxAge: _maxAge, ...options } = cookieOptions(development);
+    void _maxAge;
+    res.clearCookie(cookieName(development), options).status(204).end();
+  });
+  router.all('/auth/logout-all', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
   read('/admin/products', async (req, res) => {
     await identity(req, true);
     send(res, pageSchema(productDtoSchema), await catalog.products(validate(adminProductQuerySchema, req.query), true));

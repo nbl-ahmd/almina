@@ -9,7 +9,7 @@ import Papa from 'papaparse'; // You may need to install the papaparse library
 import WhatsapPoster from '../components/WhatsapPoster';
 import WhatsappPosterList from '../components/WhatsappPosterList';
 
-const socket = io.connect(baseURL);
+const socket = io.connect(baseURL, { withCredentials: true });
 
 const WhatsappMessaging = () => {
 

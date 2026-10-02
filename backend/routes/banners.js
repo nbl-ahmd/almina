@@ -8,13 +8,13 @@ const sharp = require('sharp');
 const router = express.Router();
 const uploadDir = path.join(__dirname, '..', 'public/banner');
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
 const fs = require('fs');
 //google
 const { Readable } = require('stream');
 const { google } = require('googleapis');
 // Load the JSON key file
-const keyFile = path.join(__dirname, '/cred.json');
+const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 // Create a new instance of the drive API
 const auth = new google.auth.GoogleAuth({
@@ -30,14 +30,14 @@ const FOLDER_ID = '10jn65wQMomVYMAAy4TuH8iVgiFa8IhxJ';
 router.post('/', upload.single('image'), async (req, res) => {
   const { name, link } = req.body;
   const image = req.file;
-  const croppedImage = await sharp(image.buffer)
+  const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })
     .webp()
     .toBuffer();
   const resizedFilename = uuidv4() + '.webp';
   // save the resized image to the directory
- 
-  const banner = new Banner({ name, image: resizedFilename, link }); 
-  
+
+  const banner = new Banner({ name, image: resizedFilename, link });
+
    // Upload the file to Google Drive
    try {
     const fileMetadata = {
@@ -63,7 +63,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 
     res.status(201).json({ message: 'Banner created successfully' });
   } catch (error) {
-    console.error('Error uploading file to Google Drive:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -75,7 +75,7 @@ router.get('/', (req, res) => {
       res.status(200).json(banners);
     })
     .catch(error => {
-      console.log(error);
+
       res.status(500).json({ error: 'Internal server error' });
     });
 });
@@ -102,7 +102,7 @@ router.get('/images/:filename', async (req, res) => {
     // Pipe the image stream from Google Drive to the response stream
     response.data.pipe(res);
   } catch (error) {
-    console.error('Error retrieving image from Google Drive:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -128,13 +128,13 @@ router.delete('/:id', async (req, res) => {
     // Delete the image file from the server's file system
     fs.unlink(path.join(uploadDir, banner.image), (error) => {
       if (error) {
-        console.log('Error deleting image file:', error);
+
       }
     });
 
     return res.status(200).json({ success: true, message: 'The banner and image are deleted!' });
   } catch (error) {
-    console.error('Error deleting banner:', error);
+
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

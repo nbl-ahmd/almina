@@ -45,7 +45,7 @@ try {
   assert.equal(forbidden.status, 403);
   assert.equal(forbidden.headers.get('access-control-allow-origin'), null);
   const preflight = await fetch(`${origin}/api/v1/catalog/products`, { method: 'OPTIONS', headers: {
-    Origin: 'http://localhost:3000', 'Access-Control-Request-Method': 'GET', 'Access-Control-Request-Headers': 'Authorization' } });
+    Origin: 'http://localhost:3000', 'Access-Control-Request-Method': 'GET', 'Access-Control-Request-Headers': 'X-CSRF-Protection' } });
   assert.equal(preflight.status, 204);
   assert.equal(preflight.headers.get('access-control-allow-origin'), 'http://localhost:3000');
   const oversized = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' },

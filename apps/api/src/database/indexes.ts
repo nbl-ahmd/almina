@@ -14,8 +14,10 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
     { name: 'v1_order_state_page', key: { dispatched: 1, canceled: 1, _id: -1 } },
     { name: 'v1_order_city_state_page', key: { 'customer.city': 1, dispatched: 1, canceled: 1, _id: -1 } },
   ],
+  auth_rate_limits: [{ name: 'auth_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
   api_sessions: [
     { name: 'v1_session_token', key: { tokenHash: 1 }, unique: true },
+    { name: 'v2_session_user', key: { userId: 1 } },
     { name: 'v1_session_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 },
   ],
 };

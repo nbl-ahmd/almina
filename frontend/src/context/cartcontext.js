@@ -1,8 +1,8 @@
 import axios from 'axios';
 import React, { createContext, useEffect, useState } from 'react';
 import baseURL from '../axiosConfig';
-import { render } from '@react-email/render';
-import OrderConfirmation from '../email/OrderConfirmation';
+
+
 
 export const CartContext = createContext();
 
@@ -229,24 +229,7 @@ export const CartProvider = ({ children }) => {
         // Handle the response if needed
         
         const orderId = response.data.orderId;
-        const html = render(<OrderConfirmation order = {orderData}  orderId = {orderId}/>, {
-          pretty: true,
-        });
-
-        const emailData = {
-          recipient: response.data.customer.email, // Include the orderData
-          htmlContent: html, // Include the rendered email template
-        };
-        axios.post(`${baseURL}/api/orders/email`,emailData)
-     .then((response) => {
-     })
-     .catch((error) => {
-       // Handle the error if needed
-       console.error('Error sending email:', error);
-     });
-  
-
-       //Set the order ID in the orderModal state
+//Set the order ID in the orderModal state
        setOrderModal(orderId);
         // Clear the cart and customer information after successful upload
         setCartItems([]);

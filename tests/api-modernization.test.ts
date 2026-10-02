@@ -71,6 +71,12 @@ function databaseFixture(initial: Record<string, Document[]> = {}) {
         const index = documents.findIndex(doc => matches(doc, filter));
         if (index >= 0) documents.splice(index, 1);
       },
+      async findOneAndUpdate(filter: Document, update: Document) {
+        let doc = documents.find(doc => matches(doc, filter));
+        if (!doc) { doc = { ...filter, ...update.$setOnInsert, count: 0 }; documents.push(doc!); }
+        doc!.count += update.$inc.count;
+        return doc;
+      },
       async createIndexes(value: Document[], options: Document) {
         calls.push({ collection, operation: 'createIndexes', value: { indexes: value }, options });
       },
@@ -169,7 +175,7 @@ test('bcrypt login uses hashed expiring sessions; logout, expiry and role change
   await assert.rejects(auth.login({ username: 'fixture', password: 'wrong' }), { status: 401 });
   await assert.rejects(auth.login({ username: 'missing-account', password: 'wrong' }), { status: 401 });
   const login = await auth.login({ username: 'fixture', password: 'fixture-password' });
-  const bearer = `Bearer ${login.token}`;
+  const bearer = login.token;
   assert.equal((await auth.authenticate(bearer)).role, 'user');
   assert.ok(!JSON.stringify(fixture.collections.api_sessions).includes(login.token));
   assert.equal(fixture.collections.api_sessions![0]!.tokenHash.length, 64);
@@ -190,10 +196,10 @@ test('deleted/disabled users cannot continue using an existing session', async (
   const auth = createAuthService(async () => fixture.db);
   const login = await auth.login({ username: 'fixture', password: 'fixture-password' });
   fixture.collections.users![0]!.disabled = true;
-  await assert.rejects(auth.authenticate(`Bearer ${login.token}`), { status: 401 });
+  await assert.rejects(auth.authenticate(login.token), { status: 401 });
   await assert.rejects(auth.login({ username: 'fixture', password: 'fixture-password' }), { status: 401 });
   fixture.collections.users!.splice(0);
-  await assert.rejects(auth.authenticate(`Bearer ${login.token}`), { status: 401 });
+  await assert.rejects(auth.authenticate(login.token), { status: 401 });
 });
 
 test('HTTP negative tests reject unauthorized admin routes before database access or PII disclosure', async () => {
@@ -201,7 +207,7 @@ test('HTTP negative tests reject unauthorized admin routes before database acces
     for (const route of ['/admin/orders', `/admin/orders/${uid}`, '/admin/users', '/admin/products', '/auth/me', '/auth/logout']) {
       const response = await fetch(`${origin}/api/v1${route}`, route === '/auth/logout' ? { method: 'POST' } : {});
       assert.equal(response.status, 401);
-      assert.equal(response.headers.get('www-authenticate'), 'Bearer'); apiErrorSchema.parse(await response.json());
+      assert.equal(response.headers.get('www-authenticate'), null); apiErrorSchema.parse(await response.json());
     }
     assert.equal((await fetch(`${origin}/api/v1/orders`)).status, 404);
     for (const route of ['products?filter=%7B%7D', 'products?limit=1&limit=2', 'products?disabled=true', 'products/not-an-id']) {
@@ -213,19 +219,19 @@ test('HTTP negative tests reject unauthorized admin routes before database acces
 test('HTTP staff cannot read admin users/products; order lists are scoped and schema validation precedes persistence', async () => {
   const fixture = databaseFixture({ users: [{ _id: uid, ...staff, password: await hash('fixture-password', 4) }], orders: [order] });
   await httpFixture(async (origin, logs) => {
-    const loginResponse = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' },
+    const loginResponse = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', Origin: 'http://localhost:3000', 'X-CSRF-Protection': '1' },
       body: JSON.stringify({ username: 'fixture', password: 'fixture-password' }) });
     assert.equal(loginResponse.status, 200);
     const { data: login } = await loginResponse.json();
-    const headers = { Authorization: `Bearer ${login.token}` };
+    const headers = { Cookie: loginResponse.headers.get('set-cookie')!.split(';')[0]! };
     for (const route of ['/admin/products', '/admin/users']) assert.equal((await fetch(`${origin}/api/v1${route}`, { headers })).status, 403);
     const response = await fetch(`${origin}/api/v1/admin/orders`, { headers });
     assert.equal(response.status, 200); const body = await response.json();
     assert.equal(body.data.items.length, 1); assert.ok(!JSON.stringify(body).includes('fake-sensitive-marker'));
     assert.equal((await fetch(`${origin}/api/v1/admin/orders?city=City%20B`, { headers })).status, 403);
-    assert.ok(!logs.join('').includes('fixture-password')); assert.ok(!logs.join('').includes(login.token));
+    assert.ok(!logs.join('').includes('fixture-password')); assert.equal('token' in login, false); assert.ok(!logs.join('').includes(headers.Cookie));
     const before = fixture.calls.length;
-    const invalid = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' },
+    const invalid = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', Origin: 'http://localhost:3000', 'X-CSRF-Protection': '1' },
       body: JSON.stringify({ username: 'fixture', password: 'fixture-password', role: 'admin' }) });
     assert.equal(invalid.status, 400); assert.equal(fixture.calls.length, before);
   }, { getDb: async () => fixture.db });
@@ -235,7 +241,7 @@ test('HTTP exact-origin CORS and preflight allow only intended methods/headers',
   await httpFixture(async origin => {
     assert.equal((await fetch(`${origin}/api/v1/catalog/products`, { headers: { Origin: 'https://evil.example.invalid' } })).status, 403);
     const response = await fetch(`${origin}/api/v1/catalog/products`, { method: 'OPTIONS', headers: { Origin: 'http://localhost:3000',
-      'Access-Control-Request-Method': 'GET', 'Access-Control-Request-Headers': 'Authorization, Content-Type' } });
+      'Access-Control-Request-Method': 'GET', 'Access-Control-Request-Headers': 'X-CSRF-Protection, Content-Type' } });
     assert.equal(response.status, 204); assert.equal(response.headers.get('access-control-allow-origin'), 'http://localhost:3000');
     for (const method of ['DELETE', 'PUT']) assert.equal((await fetch(`${origin}/api/v1/catalog/products`, { method: 'OPTIONS',
       headers: { Origin: 'http://localhost:3000', 'Access-Control-Request-Method': method } })).status, 403);
@@ -276,10 +282,10 @@ test('global rate limit cannot be bypassed with spoofed forwarding headers; heal
 test('login has a tighter quota including invalid bodies', async () => {
   await httpFixture(async origin => {
     for (let attempt = 0; attempt < 10; attempt++) {
-      const response = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+      const response = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', Origin: 'http://localhost:3000', 'X-CSRF-Protection': '1' }, body: '{}' });
       assert.equal(response.status, 400);
     }
-    const limited = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const limited = await fetch(`${origin}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', Origin: 'http://localhost:3000', 'X-CSRF-Protection': '1' }, body: '{}' });
     assert.equal(limited.status, 429); assert.ok(limited.headers.has('retry-after'));
   }, { getDb: async () => assert.fail('invalid login must never query the DB') });
 });

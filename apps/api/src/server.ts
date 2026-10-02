@@ -10,7 +10,7 @@ async function main() {
   const logger = createLogger({ service: 'api', environment: env.APP_ENV, level: env.LOG_LEVEL });
   const database = createDatabase(env.database);
   let stopping = false;
-  const server = createServer(createApp({ database, logger, webOrigin: env.WEB_ORIGIN,
+  const server = createServer(createApp({ database, logger, webOrigin: env.WEB_ORIGIN, development: env.APP_ENV === 'development',
     trustProxy: env.API_TRUST_PROXY, draining: () => stopping,
     getDb: async () => {
       try { return await database.getDb(); }

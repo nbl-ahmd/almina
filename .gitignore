@@ -10,3 +10,7 @@ coverage/
 .DS_Store
 *.log
 .agent-browser/
+
+# Inject secrets outside source control.
+backend/.env.local
+backend/routes/cred.json

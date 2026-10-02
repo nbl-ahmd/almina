@@ -29,7 +29,7 @@ export function createStorefrontFixture() {
     if (url.pathname === '/api/products/details/PD0001') { res.end(JSON.stringify({ product, relatedProducts: [] })); return; }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
-      const match = !q || new RegExp(q, 'i').test(product.name);
+      const match = !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(product.name);
       res.end(JSON.stringify(match && Number(url.searchParams.get('offset')) === 0 ? [product] : [])); return;
     }
     res.writeHead(404); res.end('null');

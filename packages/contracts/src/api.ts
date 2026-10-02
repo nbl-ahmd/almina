@@ -43,7 +43,7 @@ export const storeDtoSchema = z.object({ status: z.enum(['open', 'closed']) }).s
 export const staffDtoSchema = z.object({
   id, username: z.string(), name: z.string(), role: z.enum(['admin', 'user']), cities: z.array(z.string()),
 }).strict();
-export const loginDtoSchema = z.object({ token: z.string(), expiresAt: z.iso.datetime(), user: staffDtoSchema }).strict();
+export const loginDtoSchema = z.object({ expiresAt: z.iso.datetime(), user: staffDtoSchema }).strict();
 export const orderSummaryDtoSchema = z.object({
   id, orderId: z.string(), createdAt: z.iso.datetime().nullable(),
   dispatched: z.boolean(), canceled: z.boolean(), city: z.string().nullable(),

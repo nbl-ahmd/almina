@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import localFont from 'next/font/local';
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   description: 'Al Mina Pharmacy storefront verification environment.',
   robots: { index: false, follow: false },
 };
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  await connection(); // Fresh nonce per render; HTML must never be shared from a cache.
   return <html lang="en"><body className={ptSans.className}><Navigation /><main id="main-content">{children}</main><Footer /></body></html>;
 }

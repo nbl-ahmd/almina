@@ -28,6 +28,7 @@ import CategoryPage from './client/pages/Categoryproduct';
 import Footer from './client/components/footer';
 import Batchproduct from './admin/components/Batchproduct';
 
+import { SessionRoute } from './admin/login/auth';
 import Login from './admin/login/Login'
 import Admindash from './admin/pages/Admindash';
 import Adduser from './admin/pages/Adduser';
@@ -113,28 +114,8 @@ const MaintenanceLanding = () => {
 };
 
 
-const Adminroutes = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
-
-  if (!isAuthenticated || role !== 'user') {
-    return <Navigate to="/admin/login" />;
-  }
-
-  return children;
-};
-
-const AdminProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
-
-  if (!isAuthenticated || role !== 'admin') {
-    return <Navigate to="/admin/login" />;
-  }
-
-  return children;
-};
-
+const Adminroutes = ({ children }) => <SessionRoute>{children}</SessionRoute>;
+const AdminProtectedRoute = ({ children }) => <SessionRoute role="admin">{children}</SessionRoute>;
 
 const App = () => {
   const maintenanceEnabled = process.env.REACT_APP_MAINTENANCE_MODE === 'true';

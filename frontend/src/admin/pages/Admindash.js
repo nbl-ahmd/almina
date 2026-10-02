@@ -233,9 +233,9 @@ setDropdown(!dropdown)
           <div className="dropdown-divider"></div>
         </li>
         <li>
-          <button className="dropdown-item" >
+          <button className="dropdown-item" onClick={logout}>
             <i className="bx bx-power-off me-2"></i>
-            <span className="align-middle" onClick={()=> logout()}>Log Out</span>
+            <span className="align-middle">Log Out</span>
           </button>
         </li>
       </ul>

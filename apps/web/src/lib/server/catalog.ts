@@ -36,8 +36,8 @@ export async function getProducts(options: { page?: number; category?: string; o
   if (options.featured) filter.featured = true;
   const params = new URLSearchParams({ disabledCat: 'false', limit: '30', offset: String((page - 1) * 30) });
   if (options.q) {
-    // Legacy search treats q as a regex. Escape it here so public search remains literal.
-    params.set('q', options.q.slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    // The hardened legacy API treats q as literal text and escapes it on the server.
+    params.set('q', options.q.slice(0, 80));
     params.set('filter', JSON.stringify([filter]));
   } else params.set('filter', JSON.stringify(filter));
   const raw = array(await legacyRead(`/api/products${options.q ? '/search' : ''}?${params}`));

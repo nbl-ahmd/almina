@@ -8,7 +8,8 @@ export function validate<T>(schema: z.ZodType<T>, input: unknown): T {
   return result.data;
 }
 export function noBody(req: Request) {
-  if (req.body !== undefined || Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding']) {
+  const emptyParsedBody = req.headers['content-length'] === '0' && req.body !== null && typeof req.body === 'object' && Object.keys(req.body).length === 0;
+  if ((req.body !== undefined && !emptyParsedBody) || Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding']) {
     throw new HttpError(400, 'INVALID_REQUEST');
   }
 }

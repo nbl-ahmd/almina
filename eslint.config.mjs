@@ -18,7 +18,7 @@ export default defineConfig([
     },
   },
   { files: ['apps/web/src/lib/server/**/*.ts'], rules: { 'no-restricted-imports': 'off' } },
-  { files: ['apps/web/next.config.ts'], rules: { 'no-restricted-imports': 'off' } },
+  { files: ['apps/web/next.config.ts', 'apps/web/src/proxy.ts'], rules: { 'no-restricted-imports': 'off' } },
   { files: ['**/*.mjs'], languageOptions: { globals: {
     console: 'readonly', process: 'readonly', URL: 'readonly', fetch: 'readonly', AbortSignal: 'readonly',
   } } },

@@ -12,7 +12,7 @@ Repository audit complete for audit baseline `3d27241`. An additive modernizatio
 - P1: unrestricted messaging/uploads/query predicates/regex, unsigned/replayed webhook processing, insecure SMTP certificate handling, session weaknesses and reachable dependency vulnerabilities.
 - Integrity prerequisites: define approved VAT/delivery/cancellation policies, transactions/idempotency/numbering, immutable new order snapshots, legacy schema/media compatibility and safe reconciliation.
 
-No finding is recorded as remediated. Credential validity and prior revocations are unknown; required rotation/revocation is documented in audit section F and has not been performed.
+The audit baseline remains historical; authentication/authorization findings are remediated in local source by the hardening work below, pending production rollout. Critical commerce findings remain unresolved. Credential validity and prior revocations are unknown; required rotation/revocation is documented in audit section F and has not been performed.
 
 Foundation follow-up conflicts: retained legacy PM2 tree has 23 advisory entries including two critical; compatible ESLint 9 stack is deprecated pending plugin ESLint 10 support. Root build/start remain legacy deployment contracts, while root installation now requires Node 24/npm 11. These do not authorize a deployment or replace the blocking remediation work.
 
@@ -34,7 +34,7 @@ Completed a controlled dependency inventory and cleanup on 2026-10-02. Removed c
 ## Next ordered work
 
 1. Confirm actual production deployment, owners, credential status, backups/recovery and read-only data/media/URL inventory.
-2. Remediate legacy API security with compatible legacy client authentication and regression coverage.
+2. Roll out the locally verified auth boundary with rotated credentials, reviewed accounts, same-origin routing and static-host headers; verify sanitized staging first.
 3. Repair commerce integrity in the shared API before moving checkout.
 4. Use the independently verified foundation to migrate low-risk storefront routes incrementally after security/integrity gates; confirm deployment commands and isolate sanitized staging first.
 5. Migrate cart/checkout/admin/integrations through verified compatibility adapters; cut over progressively with safe rollback.
@@ -57,3 +57,12 @@ Implemented the requested storefront route structure in the isolated Next.js pre
 Cart imports legacy IDs/quantities, ignores stored prices and rechecks current catalog/store status through server actions. The checkout URL provides saved-cart review, with ordering disabled: live checkout migration is **incomplete** until the audited pricing, policy, atomic inventory and idempotency prerequisites are remediated. No order, inventory, customer, integration or database writes were introduced. Unmigrated legacy routes remain owned by the legacy deployment.
 
 Local verification: full typecheck/lint, 34 unit/integration tests, Turbopack production build, compiled storefront smoke and foundation smoke passed; running Next.js 16.3.8 Turbopack route/compilation/error diagnostics clear after intentional outage recovery. Browser direct navigation and refresh passed for all nine expected routes, dynamic details/categories, old shared URLs and 404s. Verified legacy cart import with forged prices, persistence, quantity/stock limits, removal, store closure, 375/1280 px layouts/mobile links and error-boundary retry. React inspection confirms server pages/navigation with small interactive islands. Verification used only a synthetic loopback API; production visual/data parity and real checkout remain unverified. See [route contracts, gates, limitations and reproducible verification](STOREFRONT_ROUTES_2026-10-02.md).
+
+
+## Authentication and authorization hardening
+
+Implemented on `codex/auth-hardening`, 2026-10-02, across both legacy and versioned APIs. Replaced JWT/localStorage auth with shared digest-backed, expiring HTTP-only cookies; enforced current-role/city RBAC and default-deny authorization before legacy handlers/uploads; made staff provisioning admin-only; protected user/catalog/category/banner/store/batch/order/WhatsApp/push operations; added server invalidation, distributed login quotas, exact Origin/custom-header CSRF checks, signed/replay-checked webhooks, realtime reauthorization and stricter security headers/CSP. The legacy client now verifies server sessions and uses cookies, with confirmed browser login/refresh/logout. Public published media contracts are preserved. Source credentials were removed; rotation is still required. No production data/deployment/provider/credential action occurred.
+
+See the [53-handler route authorization matrix](AUTHORIZATION_MATRIX_2026-10-02.md) and [hardening decisions, tests, compatibility and rollout gates](AUTH_HARDENING_2026-10-02.md). Local verification includes 107 passing automated tests with security regressions, typecheck/lint, foundation and CRA builds, compiled API/storefront smoke, Next MCP and browser workflows, and connection-free index planning. Static-host headers are supplied but require operator application to the actual deployment. Compromised legacy JWT/bearer sessions are deliberately rejected, requiring staff re-login and account inventory review.
+
+Critical guest checkout pricing/inventory/atomicity/idempotency findings remain unresolved. Dependency advisories, provider recovery/durable jobs, real index/load checks and production integration/template/media parity remain gates. This work must not be described as a fully secure production commerce cutover.

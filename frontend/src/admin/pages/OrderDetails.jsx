@@ -109,7 +109,7 @@ const OrderDetails = () => {
   const handleCancelOrder = async (orderId) => {
 
     try {
-      await axios.put(`${baseURL}/api/orders//cancel/${orderId}`, { cancelled: true });
+      await axios.put(`${baseURL}/api/orders/cancel/${orderId}`, { cancelled: true });
       console.log('Order canceled successfully');
       setShowDeleteModal(false);
       // After a successful update, update the order state

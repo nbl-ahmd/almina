@@ -32,6 +32,21 @@ try {
     assert.equal(response.status, 200, path); assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.ok((await response.text()).includes(text), `SSR content absent for ${path}`);
   }
+  const secure = await fetch(`${origin}/cart`, { headers: { 'x-nonce': 'caller-selected-nonce' } });
+  const csp = secure.headers.get('content-security-policy');
+  assert.ok(csp?.includes("frame-ancestors 'none'"));
+  assert.ok(!csp.includes("'unsafe-eval'"));
+  assert.ok(!csp.split(';').find(part => part.trim().startsWith('script-src')).includes("'unsafe-inline'"));
+  const nonce = csp.match(/'nonce-([^']+)'/)?.[1];
+  assert.ok(nonce && nonce !== 'caller-selected-nonce');
+  const secureHtml = await secure.text();
+  for (const match of secureHtml.matchAll(/<script\b([^>]*)>/g)) {
+    assert.ok(match[1].includes(`nonce="${nonce}"`), 'Every framework script must carry the response nonce');
+  }
+  for (const header of ['x-frame-options', 'x-content-type-options', 'referrer-policy', 'permissions-policy']) assert.ok(secure.headers.has(header));
+  assert.ok(secure.headers.get('cache-control').includes('no-store'));
+  const secondSecure = await fetch(`${origin}/cart`);
+  assert.notEqual(secondSecure.headers.get('content-security-policy').match(/'nonce-([^']+)'/)?.[1], nonce);
   const literalSearch = await fetch(`${origin}/search?q=%5B`);
   assert.equal(literalSearch.status, 200); assert.ok((await literalSearch.text()).includes('No products found.'));
   for (const path of ['/missing', '/products/missing', '/categories/missing', '/categories/cccccccccccccccccccccccc', '/productdetails/PD9999', '/_next/mcp', '/api/orders']) {

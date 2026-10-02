@@ -1,5 +1,7 @@
 # Modular Node API migration
 
+**Security supersession:** the bearer-session and legacy-auth limitations described in this historical implementation report are superseded by [authentication hardening](AUTH_HARDENING_2026-10-02.md) and the [current route matrix](AUTHORIZATION_MATRIX_2026-10-02.md). Production rollout remains gated.
+
 Implemented on `codex/modular-api`, 2026-10-02. This is an additive production-service migration, **not a deployment or complete migration of the legacy backend**. `apps/api` now owns validated catalog reads, staff sessions and authorized order/staff reads. Legacy checkout, mutations, uploads, realtime and provider integrations remain on the legacy service, with the audited vulnerabilities still unresolved there. Root `build`/`start`, legacy callers, database documents, identifiers, historical totals and shared URLs are unchanged.
 
 ## Service architecture and operation

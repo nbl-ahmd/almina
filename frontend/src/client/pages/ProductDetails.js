@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { CartContext } from '../../context/cartcontext';
 import { Link, useParams } from 'react-router-dom';
-import baseURL from '../../axiosConfig';
+import baseURL, { apiFetch } from '../../axiosConfig';
 import BackToTopButton from '../components/BackToTopButton';
 import { CustomHelmet } from '../components/CustomHelmet';
 import ProductCard from '../components/ProductCard';
@@ -21,7 +21,7 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await fetch(`${baseURL}/api/products/details/${id}`);
+        const response = await apiFetch(`${baseURL}/api/products/details/${id}`);
         const data = await response.json();
         console.log('hreee data got', data.product)
         setProduct(data.product);

@@ -6,7 +6,7 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const multer = require('multer');
 const uploadDir = path.join(__dirname, '..', 'public/csv');
-const upload = multer({ dest: uploadDir });
+const upload = multer({ dest: uploadDir, limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 5, parts: 6 } });
 const { v4: uuidv4 } = require('uuid');
 
 async function generateProductID(maxID) {
@@ -14,7 +14,7 @@ async function generateProductID(maxID) {
     const newProductID = `PD${String(maxID + 1).padStart(4, '0')}`;
     return newProductID;
   } catch (error) {
-    console.error('Error generating Product ID:', error);
+
     throw error;
   }
 }
@@ -65,7 +65,7 @@ batchProductRouter.post('/', upload.single('file'), async (req, res) => {
           // Create a new category if it doesn't exist
           category = new Category({ name: categoryName, color: color });
           category = await category.save();
-          console.log(`Category '${categoryName}' not found for product '${data.name}'. Created new category.`);
+
         }
         const productId = await generateProductID(maxID); // Pass the current maximum ID to generateProductID
         maxID++; // Increment the maximum ID for the next product
@@ -83,7 +83,7 @@ batchProductRouter.post('/', upload.single('file'), async (req, res) => {
 
         products.push(product);
       } catch (error) {
-        console.error('Error processing product:', error);
+
         res.status(500).json({ error: 'Error processing products' });
         return;
       }
@@ -91,14 +91,14 @@ batchProductRouter.post('/', upload.single('file'), async (req, res) => {
 
     if (products.length > 0) {
       const result = await Product.insertMany(products);
-      console.log('Products inserted:', result);
+
       res.json({ success: true, count: result.length });
     } else {
-      console.log('No products to insert');
+
       res.json({ success: true, count: 0 });
     }
   } catch (error) {
-    console.error('Error inserting products:', error);
+
     res.status(500).json({ error: 'Error inserting products' });
   }
 });
