@@ -1,7 +1,6 @@
 let express = require('express'),
     mongoose = require('mongoose'),
     cors = require('cors'),
-    bodyParser = require('body-parser'),
     dbConfig = require('./database/db');
 
 
@@ -44,8 +43,8 @@ mongoose.connect(uri, {
 )
 
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
+app.use(express.json());
+app.use(express.urlencoded({
     extended: false
 }));
 app.use(cors({ origin: '*' }));
@@ -103,4 +102,3 @@ app.use((err, req, res, next) => {
     if (!err.statusCode) err.statusCode = 500;
     res.status(err.statusCode).json({ error: err.message });
   });
-

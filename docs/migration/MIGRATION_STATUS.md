@@ -25,7 +25,11 @@ Foundation follow-up conflicts: retained legacy PM2 tree has 23 advisory entries
 
 Foundation verification completed locally: install and clean `npm ci`, full typecheck, lint, 30 unit/integration tests, web Turbopack production build, API bundle and compiled production smoke. Next DevTools MCP configured and connected; runtime compilation/error diagnostics clear. Browser navigation/reload, server rendering, console/network, React server boundaries, 375/1280 px layouts verified. The preview remains noindex and database-disabled; smoke verifies upstream failure, health, real 404s and absent production MCP.
 
-Not performed: database/provider/deployment access, production probing/index verification, real customer/staff/commerce workflows, legacy Node 24 runtime validation, hosted CI execution or bundle/performance measurements. These remain rollout gates.
+Not performed: database/provider/deployment access, production probing/index verification, real customer/staff/commerce workflows, legacy Node 24 runtime validation, hosted CI execution, or production-route performance measurement. A post-change CRA bundle measurement is recorded in the dependency report; no pre-change artifact was available for comparison. These remain rollout gates.
+
+## Dependency modernization assessment
+
+Completed a controlled dependency inventory and cleanup on 2026-10-02. Removed confirmed-unused CRA/backend packages, replaced Express `body-parser` middleware with Express built-ins, consolidated UUID usage, and regenerated both legacy lockfiles. Kept active production dependencies until their routes/workflows migrate. Root and legacy audit findings remain; the full decision table, direct inventory, test/build results, and package-specific decisions are in [the dependency modernization report](DEPENDENCY_MODERNIZATION_2026-10-02.md). CRA builds with warnings at 507.6 kB gzipped main JS. Its Jest run is blocked by the existing Swiper ESM import, and the backend test script is a placeholder; upload/parser major upgrades remain separately unverified.
 
 ## Next ordered work
 

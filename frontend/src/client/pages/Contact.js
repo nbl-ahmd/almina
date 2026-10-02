@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Container, Typography, Grid, Stack, Image } from "@mui/material";
+import { Box, Container, Typography, Grid } from "@mui/material";
 
 const AboutUsPage = () => {
     

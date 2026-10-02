@@ -1,6 +1,4 @@
 var express = require('express');
-var request = require("request");
-var bodyParser = require('body-parser');
 require('dotenv').config();
 var axios = require('axios');
 const { sendMessage, getTemplatedMessageInput, getTextMessageInput } = require("../messageHelper");
@@ -159,8 +157,6 @@ whatsappRouter.delete('/image/:id', async (req, res) => {
 
 
 
-
- whatsappRouter.use(bodyParser.json());
 
 whatsappRouter.post('/s', function(req, res, next) {
   const { recipient, template, link } = req.body;
