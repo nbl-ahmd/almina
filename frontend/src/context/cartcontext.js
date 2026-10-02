@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, useRef } from 'react';
 import baseURL from '../axiosConfig';
 
 
@@ -18,7 +18,11 @@ export const CartProvider = ({ children }) => {
   const [totalVatPrice, setTotalVatPrice] = useState(0);
   const [totalVat, setTotalVat] = useState(0);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [confirmedTotal, setConfirmedTotal] = useState(null);
   const [ordermodal, setOrderModal] = useState('');
+  const [checkoutPending, setCheckoutPending] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  const checkoutLock = useRef(false);
 
   useEffect(() => {
     calculateTotalPrice();
@@ -69,7 +73,13 @@ export const CartProvider = ({ children }) => {
     setTotalVatPrice(parseFloat(roundedTotalVatPrice));
   };
 
-  const [customerInfo, setCustomerInfo] = useState({
+  const [customerInfo, setCustomerInfo] = useState(() => {
+    let retryCustomer = {};
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('checkoutAttempt') || 'null');
+      if (saved?.customer && Object.values(saved.customer).every(value => typeof value === 'string')) retryCustomer = saved.customer;
+    } catch { /* A malformed retry cannot become authoritative input. */ }
+    return {
     name: '',
     mobile: '',
     email:'',
@@ -86,6 +96,8 @@ export const CartProvider = ({ children }) => {
     totalSalePrice : totalSalePrice,
     totalVat: totalVat,
     totalAmount: totalSalePrice,
+    ...retryCustomer,
+  };
   });
 
   const handleQuantityChange = async (event, item) => {
@@ -190,62 +202,43 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  const handleCheckout = () => {
-    // Prepare the data to be uploaded to MongoDB
-    const orderData = {
-      customer: {
-        name: customerInfo.name,
-        mobile: customerInfo.mobile,
-        email: customerInfo.email,
-        emirate: customerInfo.emirate,
-        city: customerInfo.city,
-        address: customerInfo.address,
-        buildingname: customerInfo.buildingname,
-        flatno: customerInfo.flatno,
-        note: customerInfo.note,
-        payment: customerInfo.payment,
-        totalprice: totalPrice,
-        totalSalePrice: totalSalePrice,
-        maplink: customerInfo.maplink,
-        totalVat: totalVat,
-        totalAmount:customerInfo.totalAmount,
-        deliveryFee: customerInfo.deliveryFee
-        
-
-
-
-      },
-      cartItems: cartItems,
-      
-    };
-    
-  
-    // Send a POST request to your MongoDB server to save the order data
-
-    
-    axios
-      .post(`${baseURL}/api/orders`, orderData)
-      .then((response) => {
-        // Handle the response if needed
-        
-        const orderId = response.data.orderId;
-//Set the order ID in the orderModal state
-       setOrderModal(orderId);
-        // Clear the cart and customer information after successful upload
-        setCartItems([]);
-        setCustomerInfo({
-          name: '',
-          mobile: '',
-          email: '',
-          address: ''
-        });
-        localStorage.removeItem('cartItems');
-     
-      })
-      .catch((error) => {
-        // Handle the error if needed
-        console.error('Error saving order:', error);
-      });
+  const handleCheckout = async () => {
+    if (checkoutLock.current) return;
+    checkoutLock.current = true;
+    setCheckoutPending(true);
+    setCheckoutError('');
+    const customer = Object.fromEntries(['name', 'mobile', 'email', 'emirate', 'city', 'address', 'buildingname',
+      'flatno', 'note', 'payment', 'maplink'].map(field => [field, customerInfo[field] || '']));
+    const intent = { customer, items: cartItems.map(item => ({ productId: item._id, quantity: item.quantity })) };
+    try {
+      // Preserve the exact attempt across reloads/timeouts. A changed cart cannot reuse an uncertain attempt.
+      const stored = sessionStorage.getItem('checkoutAttempt');
+      const attempt = stored ? JSON.parse(stored) : { ...intent, idempotencyKey: crypto.randomUUID() };
+      if (stored && JSON.stringify({ customer: attempt.customer, items: attempt.items }) !== JSON.stringify(intent)) {
+        setCheckoutError('A previous checkout has an uncertain result. Restore its cart and details and retry before placing another order.');
+        return;
+      }
+      // Review a live quote before sending an intent. Checkout recalculates again within its transaction.
+      if (!stored) {
+        const quote = await axios.post(`${baseURL}/api/orders/quote`, intent);
+        if (!window.confirm(`Place order for AED ${(quote.data.totalMinor / 100).toFixed(2)}? Prices are confirmed by the server.`)) return;
+      }
+      sessionStorage.setItem('checkoutAttempt', JSON.stringify(attempt));
+      const response = await axios.post(`${baseURL}/api/orders`, attempt);
+      setConfirmedTotal(response.data.totals.totalMinor / 100);
+      setOrderModal(response.data.orderId);
+      sessionStorage.removeItem('checkoutAttempt');
+      setCartItems([]);
+      setCustomerInfo({ name: '', mobile: '', email: '', address: '' });
+      localStorage.removeItem('cartItems');
+    } catch (error) {
+      // Explicit non-commit validation failures can be corrected. Keep retry key on ambiguous failures/timeouts.
+      if ([400, 422].includes(error.response?.status) || ['INSUFFICIENT_STOCK', 'PRODUCT_UNAVAILABLE'].includes(error.response?.data?.code)) sessionStorage.removeItem('checkoutAttempt');
+      setCheckoutError('Checkout could not be completed. Check availability and details, then retry. A retry will not place the same order twice.');
+    } finally {
+      checkoutLock.current = false;
+      setCheckoutPending(false);
+    }
   };
 
   return (
@@ -258,6 +251,8 @@ export const CartProvider = ({ children }) => {
         addToCart,
         customerInfo,
         handleCheckout,
+        checkoutPending,
+        checkoutError,
         totalPrice,
         totalSalePrice,
         totalVatPrice,
@@ -287,7 +282,7 @@ export const CartProvider = ({ children }) => {
     <div className="modal-content">
 			<div className="modal-body text-center">
 				<h5 className='mb-3'>Order Placed Successfully!</h5>	
-				<p className='fw-300'>Your order with ID <span className='fw-400 text-pg'>{ordermodal}</span> has been placed successfully.
+				<p className='fw-300'>Your order with ID <span className='fw-400 text-pg'>{ordermodal}</span> has been placed successfully for AED {confirmedTotal?.toFixed(2)}.
         
         <br />
         Thank you for choosing our Almina Pharmacy

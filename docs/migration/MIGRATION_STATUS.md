@@ -1,6 +1,6 @@
 # Migration status
 
-Last updated: 2026-10-02.
+Last updated: 2026-10-03.
 
 ## Current state
 
@@ -12,7 +12,7 @@ Repository audit complete for audit baseline `3d27241`. An additive modernizatio
 - P1: unrestricted messaging/uploads/query predicates/regex, unsigned/replayed webhook processing, insecure SMTP certificate handling, session weaknesses and reachable dependency vulnerabilities.
 - Integrity prerequisites: define approved VAT/delivery/cancellation policies, transactions/idempotency/numbering, immutable new order snapshots, legacy schema/media compatibility and safe reconciliation.
 
-The audit baseline remains historical; authentication/authorization findings are remediated in local source by the hardening work below, pending production rollout. Critical commerce findings remain unresolved. Credential validity and prior revocations are unknown; required rotation/revocation is documented in audit section F and has not been performed.
+The audit baseline remains historical; authentication/authorization findings are remediated in local source by the hardening work below, pending production rollout. Critical checkout findings are remediated in local source by the commerce work below, pending staged verification and production rollout. Credential validity and prior revocations are unknown; required rotation/revocation is documented in audit section F and has not been performed.
 
 Foundation follow-up conflicts: retained legacy PM2 tree has 23 advisory entries including two critical; compatible ESLint 9 stack is deprecated pending plugin ESLint 10 support. Root build/start remain legacy deployment contracts, while root installation now requires Node 24/npm 11. These do not authorize a deployment or replace the blocking remediation work.
 
@@ -65,4 +65,11 @@ Implemented on `codex/auth-hardening`, 2026-10-02, across both legacy and versio
 
 See the [53-handler route authorization matrix](AUTHORIZATION_MATRIX_2026-10-02.md) and [hardening decisions, tests, compatibility and rollout gates](AUTH_HARDENING_2026-10-02.md). Local verification includes 107 passing automated tests with security regressions, typecheck/lint, foundation and CRA builds, compiled API/storefront smoke, Next MCP and browser workflows, and connection-free index planning. Static-host headers are supplied but require operator application to the actual deployment. Compromised legacy JWT/bearer sessions are deliberately rejected, requiring staff re-login and account inventory review.
 
-Critical guest checkout pricing/inventory/atomicity/idempotency findings remain unresolved. Dependency advisories, provider recovery/durable jobs, real index/load checks and production integration/template/media parity remain gates. This work must not be described as a fully secure production commerce cutover.
+Guest checkout pricing/inventory/atomicity/idempotency findings are addressed by the shared commerce service below, pending production rollout. Dependency advisories, provider recovery/durable jobs, real index/load checks and production integration/template/media parity remain gates. This work must not be described as a fully secure production commerce cutover.
+
+
+## Commerce integrity
+
+Implemented locally on `codex/commerce-integrity`, 2026-10-03. Both checkout APIs now share a strict TypeScript transaction service: current DB products and approved server policy determine prices, discounts, inclusive VAT, delivery, AED 10 minimum, availability, stock and final totals. Atomic conditional decrements, order persistence, counter numbering, durable retry receipts and notification jobs commit together. New orders save immutable commercial line snapshots and explicit lifecycle history; pre-dispatch cancellation restores new-order stock exactly once. Legacy routes/screens retain adapters and historical totals; unsafe commercial edits are rejected. Browser checkout sends intent only and preserves retry keys through uncertain results.
+
+The owner approved inclusive VAT, current emirate fees and once-only pre-dispatch restocking. The connection-free plan and gated, idempotent additive migration preserve legacy fields, flag contradictory historical states and mark unavailable snapshot provenance; they never guess historical product prices or stock effects. Real local replica-set regressions cover concurrency, rollback, tampering, duplicate submission, lifecycle races, RBAC, migration reruns and both driver/HTTP stacks. See [implementation, verification, rollout and rollback](COMMERCE_INTEGRITY_2026-10-03.md). No production migration or deployment occurred. Staged business-flow acceptance, production backups/index/data inventory and a coordinated writer maintenance window remain prerequisites to activation. Next storefront checkout remains gated pending its separate migration.

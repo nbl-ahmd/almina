@@ -10,19 +10,19 @@ const Checkout = () => {
 
 
   const navigate = useNavigate();
-  const { customerInfo, setCustomerInfo, handleCheckout, cartItems, totalPrice, totalSalePrice, totalVatPrice, totalVat, totalAmount } = useContext(CartContext);
+  const { checkoutPending, checkoutError, customerInfo, setCustomerInfo, handleCheckout, cartItems, totalPrice, totalSalePrice, totalVatPrice, totalVat, totalAmount } = useContext(CartContext);
   const [fetchingLocation, setFetchingLocation] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState('');
+  const [currentLocation, setCurrentLocation] = useState(customerInfo.address || '');
   const [maplink, setMaplink] = useState('');
   const [editingLocation, setEditingLocation] = useState(false);
   // const [city, setCity] = useState('select City');
-  const [emirate, setEmirate] = useState('select Emirate');
+  const [emirate, setEmirate] = useState(customerInfo.emirate || '');
   const [errorMessage, setErrorMessage] = useState('');
   const [deliveryfee, setDeliveryfee] = useState(0);
   const [emailError, setEmailError] = useState("");
   const [formError, setFormError] = useState(false);
   const [suburbs, setSuburbs] = useState([]);
-  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedCity, setSelectedCity] = useState(customerInfo.city || '');
   const [fetchingSuburbs, setFetchingSuburbs] = useState(false);
 
 // other state variables...
@@ -80,7 +80,7 @@ const fetchSuburbs = async () => {
     setFetchingSuburbs(false);
   } catch (error) {
     // Handle the error, e.g., show an error message
-    console.error('Error fetching suburbs:', error);
+    console.error('Suburb lookup failed');
     setFetchingSuburbs(false); // Ensure it's set back to false in case of an error
   }
 };
@@ -144,7 +144,6 @@ const fetchSuburbs = async () => {
 
   useEffect(() => {
 
-    console.log("tp checkout : " + totalPrice);
     if (cartItems.length === 0) {
       navigate('/cart');
     }
@@ -159,7 +158,6 @@ const fetchSuburbs = async () => {
         position => {
           const { latitude, longitude } = position.coords;
 
-          console.log(latitude, longitude);
           fetchLocation(latitude, longitude);
 
         },
@@ -212,17 +210,13 @@ const fetchSuburbs = async () => {
 
       setCustomerInfo({ ...customerInfo, address, emirate, city, maplink, totalAmount: Number((totalSalePrice + deliveryfees).toFixed(2)), deliveryFee: deliveryfees});
 
-      console.log("emirates", emirate);
-      console.log("cinfo", customerInfo);
 
-      console.log(city);
       
 
     } catch (error) {
       console.error('Error fetching location:', error);
       setErrorMessage('unable to autolocate');
     }
-console.log("123" + selectedCity);
 setFetchingLocation(false);
 
   };
@@ -263,7 +257,6 @@ setFetchingLocation(false);
     setSelectedCity(''); // Set the selectedCity to an empty string here  
       setCustomerInfo({ ...customerInfo,maplink: '', emirate: selectedEmirate, totalAmount: Number((totalSalePrice + deliveryFee).toFixed(2)), deliveryFee: deliveryFee });
     
-    console.log(customerInfo);
     
 
     
@@ -272,8 +265,6 @@ setFetchingLocation(false);
 
 
 
-  console.log(deliveryfee);
-  console.log(customerInfo);
   return (
 
     <>
@@ -302,7 +293,8 @@ setFetchingLocation(false);
                 
                   <h3 className="breadcrumb__title">Checkout</h3>
                 </div>
-                {totalSalePrice< 10 && <Alert severity='warning'>"Oops! It looks like the minimum order amount is AED 10. You're just AED {(10-totalSalePrice).toFixed(2)} away from reaching it. Why not add a little more to your cart?" </Alert>}
+                {checkoutError && <Alert severity='error'>{checkoutError}</Alert>}
+                {checkoutPending && <Alert severity='info'>Submitting order…</Alert>}
               </div>
             </div>
           </div>
@@ -645,7 +637,7 @@ setFetchingLocation(false);
 
                 </div>
                 <div className="sub-total d-flex justify-content-between row mb-1 pb-3 border-bottom">
-                    <span className="col-6 text-start overflow-wrap">Order Total</span>
+                    <span className="col-6 text-start overflow-wrap">Estimated total</span>
 
 
                    <div className="col-6 d-flex flex-column">
@@ -655,10 +647,10 @@ setFetchingLocation(false);
 
                   </div>
               </div>
-              <button className={` btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={()=>{
-                totalSalePrice< 10 ? setErrorMessage('Minimum order amount is AED 10'):validateForm()
+              <button className={` btn btn-lg btn-dark d-none d-md-flex justify-content-center w-100 mt-3  `} type="button" disabled={checkoutPending} onClick={()=>{
+                validateForm()
               }
-                } title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
+                } title="Review server quote">Place order</button>
 
 
             </div>
@@ -671,16 +663,16 @@ setFetchingLocation(false);
 
       {cartItems.length > 0 && <div className="pay-popup d-md-none ">
         <div className="price-items">
-          <span className='text-small'>Order Total</span>
+          <span className='text-small'>Estimated total</span>
           <h2> <small>AED</small>{Number((totalSalePrice + deliveryfee).toFixed(2))}</h2>
         </div>
 
 
 
-        <button className={` btn btn-lg theme-btn pay-btn mt-0 ${totalSalePrice < 10 && 'disabled'} `} type="button" onClick={()=>{
-                totalSalePrice< 10 ? setErrorMessage('Minimum order amount is AED 10'):validateForm()
+        <button className={` btn btn-lg theme-btn pay-btn mt-0  `} type="button" disabled={checkoutPending} onClick={()=>{
+                validateForm()
               }
-             } title={totalSalePrice < 10 ? "Minimum order amount is AED 10" : ""}>Place order</button>
+             } title="Review server quote">Place order</button>
       </div>}
     </>
 

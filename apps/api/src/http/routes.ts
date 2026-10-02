@@ -4,8 +4,9 @@ import type { z } from 'zod';
 import { emptyQuerySchema, catalogQuerySchema, adminProductQuerySchema, cursorQuerySchema, resourceParamsSchema,
   businessProductParamsSchema, orderQuerySchema, loginBodySchema, productDtoSchema, categoryDtoSchema, bannerDtoSchema,
   storeDtoSchema, staffDtoSchema, loginDtoSchema, orderSummaryDtoSchema, orderDetailDtoSchema, pageSchema, successSchema,
-  type Staff } from '@almina/contracts';
+  quoteDtoSchema, checkoutDtoSchema, statusInputSchema, orderStatusSchema, type Staff } from '@almina/contracts';
 import { cookieOptions, cookieName, readSessionCookie, verifyBrowserMutation } from '../../../../backend/security/sessions.cjs';
+import { createCommerceService } from '../modules/orders/commerce.js';
 import { ObjectId } from 'mongodb';
 import { HttpError } from '../errors.js';
 import { validate, noBody } from './validation.js';
@@ -20,6 +21,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string, development = false) 
   const catalog = createCatalogRepository(getDb);
   const auth = createAuthService(getDb);
   const orders = createOrderRepository(getDb);
+  const commerce = createCommerceService(getDb);
   const staff = createStaffRepository(getDb);
   function send<T>(res: Parameters<RequestHandler>[1], schema: z.ZodType<T>, data: unknown) {
     // Validate responses too: no raw database fields can leak through the envelope.
@@ -99,6 +101,25 @@ export function apiRoutes(getDb: GetDb, webOrigin: string, development = false) 
     res.clearCookie(cookieName(development), options).status(204).end();
   });
   router.all('/auth/logout-all', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
+  router.post('/checkout/quote', async (req, res) => {
+    validate(emptyQuerySchema, req.query);
+    verifyBrowserMutation(req, [webOrigin], () => new HttpError(403, 'FORBIDDEN'));
+    send(res, quoteDtoSchema, await commerce.quote(req.body));
+  });
+  router.post('/checkout', async (req, res) => {
+    validate(emptyQuerySchema, req.query);
+    verifyBrowserMutation(req, [webOrigin], () => new HttpError(403, 'FORBIDDEN'));
+    const result = await commerce.checkout(req.body);
+    res.status(result.replayed ? 200 : 201);
+    send(res, checkoutDtoSchema, result);
+  });
+  router.post('/admin/orders/:id/status', async (req, res) => {
+    const user = await identity(req);
+    validate(emptyQuerySchema, req.query);
+    verifyBrowserMutation(req, [webOrigin], () => new HttpError(403, 'FORBIDDEN'));
+    const result = await commerce.transition(validate(resourceParamsSchema, req.params).id, validate(statusInputSchema, req.body), user);
+    send(res, statusInputSchema.pick({ status: true }), { status: orderStatusSchema.parse(result?.status) });
+  });
   read('/admin/products', async (req, res) => {
     await identity(req, true);
     send(res, pageSchema(productDtoSchema), await catalog.products(validate(adminProductQuerySchema, req.query), true));

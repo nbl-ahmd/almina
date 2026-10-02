@@ -12,6 +12,7 @@ export function orderFilter(query: OrderQuery, user: Staff): Filter<Document> {
     if (query.city && !user.cities.includes(query.city)) throw new HttpError(403, 'FORBIDDEN');
     filter['customer.city'] = query.city ?? { $in: user.cities };
   } else if (query.city) filter['customer.city'] = query.city;
+  if (query.status) filter.status = query.status;
   if (query.dispatched !== undefined) filter.dispatched = query.dispatched ? true : { $ne: true };
   if (query.canceled !== undefined) filter.canceled = query.canceled ? true : { $ne: true };
   return filter;

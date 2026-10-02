@@ -14,7 +14,7 @@ const routePolicies = [
   ['GET', '/api/banners/images/:filename', 'public'], ['DELETE', '/api/banners/:id', 'admin'],
   ['POST', '/api/batch', 'admin'], ['PUT', '/api/store/status', 'admin'], ['GET', '/api/store/status', 'public'],
   ['POST', '/api/store/cart/add', 'public'],
-  ['POST', '/api/orders', 'public'], ['POST', '/api/orders/email', 'admin'], ['POST', '/api/orders/subscribe', 'staff'], ['DELETE', '/api/orders/subscribe', 'staff'],
+  ['POST', '/api/orders', 'public'], ['POST', '/api/orders/quote', 'public'], ['POST', '/api/orders/email', 'admin'], ['POST', '/api/orders/subscribe', 'staff'], ['DELETE', '/api/orders/subscribe', 'staff'],
   ['GET', '/api/orders', 'orders'], ['GET', '/api/orders/:id', 'orders'],
   ['PUT', '/api/orders/edit/:orderId', 'admin'], ['PUT', '/api/orders/:orderId', 'orders'], ['PUT', '/api/orders/cancel/:orderId', 'orders'],
   ['POST', '/api/whatsapp/image', 'admin'], ['GET', '/api/whatsapp/image', 'admin'],

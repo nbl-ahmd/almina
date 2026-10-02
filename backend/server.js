@@ -19,6 +19,7 @@ const io = require('socket.io')(server, { cors: { origin: origins, credentials: 
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
 mongoose.connect(process.env.MONGODB_URI).then(() => {
+  require('./commerce/outbox.cjs').startOrderOutbox(async () => mongoose.connection.db);
   server.listen(process.env.PORT || 4000, () => console.log('Legacy API listening'));
 }).catch(() => { console.error('Database connection failed'); process.exitCode = 1; });
 server.requestTimeout = 15000;

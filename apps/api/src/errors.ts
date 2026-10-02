@@ -8,6 +8,12 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  COMMERCE_UNAVAILABLE: 'Checkout configuration is unavailable.',
+  PRODUCT_UNAVAILABLE: 'A product is unavailable.',
+  INSUFFICIENT_STOCK: 'Insufficient stock.',
+  MINIMUM_ORDER: 'The minimum order amount was not met.',
+  IDEMPOTENCY_CONFLICT: 'The checkout key was already used for a different request.',
+  INVALID_TRANSITION: 'The order cannot move to that status.',
   INVALID_REQUEST: 'The request is invalid.',
   NOT_FOUND: 'The resource was not found.',
   METHOD_NOT_ALLOWED: 'The request method is not supported.',

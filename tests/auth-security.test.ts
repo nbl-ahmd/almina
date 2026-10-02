@@ -208,33 +208,39 @@ test('source auth contracts do not persist tokens or embed provider/signing cred
   }
 });
 
-test('legacy order reads and dispatch/cancel enforce database city scope, including empty assignments and forged city bodies', async t => {
+test('legacy order reads and transactional commands enforce city scope and reject forged fields', async t => {
   const Order = require('../backend/models/Order');
   let cities = ['City A']; let saved = 0;
-  const found: { customer: { city: string }; save: () => Promise<void> } = { customer: { city: 'City B' }, save: async () => { saved++; } };
+  const found = { _id: id, customer: { city: 'City B', totalAmount: 12 }, status: 'pending' };
   const filters: Record<string, unknown>[] = [];
-  t.mock.method(Order, 'findOne', (filter: Record<string, unknown>) => {
+  function find(filter: Record<string, unknown>) {
     filters.push(filter);
-    const allowed = (filter['customer.city'] as { $in: string[] }).$in.includes(found.customer.city);
-    const promise = Promise.resolve(allowed ? found : null);
-    return { populate: () => promise, then: promise.then.bind(promise) };
-  });
+    return (filter['customer.city'] as { $in: string[] }).$in.includes(found.customer.city) ? found : null;
+  }
+  t.mock.method(Order, 'findOne', (filter: Record<string, unknown>) => ({ populate() { return this; }, lean: async () => find(filter) }));
+  const db = { client: { startSession: () => ({ withTransaction: async (run: () => Promise<void>) => run(), endSession: async () => undefined }) },
+    collection: () => ({ findOne: async (filter: Record<string, unknown>) => find(filter),
+      updateOne: async (_filter: unknown, update: { $set: Record<string, unknown> }) => { Object.assign(found, update.$set); saved++; return { modifiedCount: 1 }; } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities }) };
-  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth }), async origin => {
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: async () => db }), async origin => {
     for (const assignment of [['City A'], []]) {
       cities = assignment;
-      for (const [method, path] of [['GET', `/api/orders/${id}`], ['PUT', `/api/orders/${id}`], ['PUT', `/api/orders/cancel/${id}`]] as const) {
+      for (const [method, path, body] of [['GET', `/api/orders/${id}`, undefined],
+        ['PUT', `/api/orders/${id}`, { billno: '12345', billamount: 12 }],
+        ['PUT', `/api/orders/cancel/${id}`, {}]] as const) {
         const response = await fetch(origin + path, { method, headers: browserHeaders,
-          ...(method === 'PUT' ? { body: JSON.stringify({ billno: 'Synthetic', billamount: 12, cities: ['City B'] }) } : {}) });
+          ...(body ? { body: JSON.stringify(body) } : {}) });
         assert.equal(response.status, 404); assert.equal(saved, 0);
         assert.deepEqual(filters.at(-1)!['customer.city'], { $in: assignment });
       }
     }
     cities = ['City B'];
-    assert.equal((await fetch(`${origin}/api/orders/${id}`, { method: 'PUT', headers: browserHeaders, body: JSON.stringify({ billno: 'Synthetic', billamount: 12 }) })).status, 200);
+    const path = `${origin}/api/orders/${id}`;
+    assert.equal((await fetch(path, { method: 'PUT', headers: browserHeaders, body: '{"billno":"12345","billamount":12,"cities":["City B"]}' })).status, 400);
+    assert.equal((await fetch(path, { method: 'PUT', headers: browserHeaders, body: '{"billno":"12345","billamount":12}' })).status, 200);
     assert.equal(saved, 1);
-    assert.equal((await fetch(`${origin}/api/orders/cancel/${id}`, { method: 'PUT', headers: browserHeaders, body: '{}' })).status, 200);
-    assert.equal(saved, 2);
+    assert.equal((await fetch(`${origin}/api/orders/cancel/${id}`, { method: 'PUT', headers: browserHeaders, body: '{}' })).status, 409);
+    assert.equal(saved, 1);
   });
 });
 

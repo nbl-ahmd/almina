@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Al Mina incremental modernization workspace with preserved legacy deployment commands",
   "scripts": {
-    "build": "npm install && cd backend && npm install",
+    "build": "npm install --include=dev && cd backend && npm install && cd .. && npm run build:commerce",
     "start": "pm2-runtime start backend/server.js",
     "test": "tsx --test tests/*.test.ts",
     "dev": "npm run dev --workspace @almina/web --",
@@ -19,7 +19,15 @@
     "smoke:foundation": "node scripts/tooling/smoke-foundation.mjs",
     "smoke:api": "node scripts/tooling/smoke-api.mjs",
     "smoke:storefront": "node scripts/tooling/smoke-storefront.mjs",
-    "verify:storefront:browser": "node scripts/tooling/verify-storefront-browser.mjs"
+    "verify:storefront:browser": "node scripts/tooling/verify-storefront-browser.mjs",
+    "build:commerce": "node scripts/tooling/build-commerce.mjs",
+    "pretest": "npm run build:commerce",
+    "prestart": "npm run check:commerce",
+    "db:commerce:plan": "tsx scripts/migrations/commerce.ts",
+    "db:commerce:apply": "tsx scripts/migrations/commerce.ts --apply",
+    "test:commerce:integration": "npm run build:commerce && node scripts/tooling/test-commerce-integration.mjs",
+    "check:commerce": "node scripts/tooling/check-commerce-build.mjs",
+    "verify:commerce:browser": "node scripts/tooling/verify-commerce-browser.mjs"
   },
   "repository": {
     "type": "git",

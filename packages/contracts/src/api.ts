@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { orderStatusSchema, lineSnapshotSchema, quoteDtoSchema } from './commerce';
 
 const id = z.string().regex(/^[a-fA-F0-9]{24}$/);
 const booleanQuery = z.enum(['true', 'false']).transform(value => value === 'true');
@@ -12,7 +13,7 @@ export const catalogQuerySchema = cursorQuerySchema.extend({
 }).strict();
 export const adminProductQuerySchema = catalogQuerySchema.extend({ disabled: booleanQuery.optional() }).strict();
 export const orderQuerySchema = cursorQuerySchema.extend({
-  dispatched: booleanQuery.optional(), canceled: booleanQuery.optional(),
+  dispatched: booleanQuery.optional(), canceled: booleanQuery.optional(), status: orderStatusSchema.optional(),
   city: z.string().trim().min(1).max(100).optional(),
 }).strict();
 export const resourceParamsSchema = z.object({ id }).strict();
@@ -46,6 +47,7 @@ export const staffDtoSchema = z.object({
 export const loginDtoSchema = z.object({ expiresAt: z.iso.datetime(), user: staffDtoSchema }).strict();
 export const orderSummaryDtoSchema = z.object({
   id, orderId: z.string(), createdAt: z.iso.datetime().nullable(),
+  status: z.union([orderStatusSchema, z.literal('legacy_conflict')]),
   dispatched: z.boolean(), canceled: z.boolean(), city: z.string().nullable(),
   // Historical values are reported as stored; never recalculate them from live products.
   totalAmount: z.number().finite().nullable(), billno: z.string().nullable(), billamount: z.number().finite().nullable(),
@@ -59,8 +61,9 @@ export const orderDetailDtoSchema = orderSummaryDtoSchema.extend({
     totalSalePrice: z.number().finite().nullable(), totalVat: z.number().finite().nullable(),
     totalAmount: z.number().finite().nullable(), deliveryFee: z.number().finite().nullable(),
   }).strict(),
-  items: z.array(z.object({ productId: id, quantity: z.number().int().positive() }).strict()),
-  snapshotAvailable: z.literal(false),
+  items: z.array(z.object({ productId: id.nullable(), quantity: z.number().finite().nullable() }).strict()),
+  snapshotAvailable: z.boolean(),
+  lines: z.array(lineSnapshotSchema).nullable(), totals: quoteDtoSchema.nullable(),
 }).strict();
 export function pageSchema<T extends z.ZodType>(item: T) {
   return z.object({ items: z.array(item).max(100), nextCursor: z.string().nullable() }).strict();

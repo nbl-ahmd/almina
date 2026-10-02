@@ -1,6 +1,16 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
+  // Additive v2 fields. Historical documents retain all legacy values. Core writes use the shared transaction service.
+  schemaVersion: { type: Number },
+  status: { type: String, enum: ['pending', 'confirmed', 'packed', 'dispatched', 'cancelled', 'refunded', 'legacy_conflict'] },
+  statusHistory: [{ status: String, at: Date, actorId: mongoose.Schema.Types.ObjectId }],
+  lines: { type: [new mongoose.Schema({ productId: String, sku: String, barcode: String, name: String, quantity: Number,
+    unitPriceMinor: Number, salePriceMinor: Number, discountMinor: Number, taxRateBps: Number, taxMinor: Number, lineTotalMinor: Number }, { _id: false })], immutable: true, default: undefined },
+  totals: { type: new mongoose.Schema({ currency: String, policyVersion: String, vatMode: String,
+    subtotalMinor: Number, discountMinor: Number, taxMinor: Number, deliveryFeeMinor: Number, minimumOrderMinor: Number, totalMinor: Number }, { _id: false }), immutable: true },
+  inventory: { deducted: Boolean, restored: Boolean },
+  cancellationRestocks: { type: Boolean, immutable: true },
   orderId: {
     type: String,
     required: true

@@ -1,30 +1,18 @@
 const express = require('express');
 const Orderrouter = express.Router();
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const mongoose = require('mongoose');
+const { createCommerceService, legacyOrderDto } = require('../commerce/dist/service.cjs');
+const getLegacyDb = async () => {
+  if (!mongoose.connection.db || mongoose.connection.readyState !== 1) throw Object.assign(new Error('Unavailable'), { status: 503 });
+  return mongoose.connection.db;
+};
+const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb ?? getLegacyDb);
 const nodemailer = require('nodemailer');
-const { sendOrderConfirmation } = require('../integrations/order-email.cjs');
 
 
 
 
-// Function to generate a unique order ID
-async function generateOrderID() {
-  try {
-    const existingOrders = await Order.find();
-    let maxID = 5000;
-    for (const order of existingOrders) {
-      const orderID = parseInt(order.orderId.substring(2));
-      if (orderID > maxID) {
-        maxID = orderID;
-      }
-    }
-    return `OD${String(maxID + 1).padStart(4, '0')}`;
-  } catch (error) {
-
-    throw error;
-  }
-}
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
   const subscription = req.body?.subscription;
@@ -48,30 +36,19 @@ Orderrouter.delete('/subscribe', require('../security/boundary.cjs').wrap(async 
   res.status(204).end();
 }));
 
-// POST /api/orders
+// Strict intent-only contract: old tabs supplying prices/totals must refresh.
+Orderrouter.post('/quote', async (req, res) => {
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'Invalid request' });
+  res.json(await commerceFor(req).quote(req.body));
+});
 Orderrouter.post('/', async (req, res) => {
-  try {
-    if (!req.body || Object.keys(req.body).some(key => !['customer', 'cartItems'].includes(key))) return res.status(400).json({ error: 'Invalid request' });
-    const orderID = await generateOrderID();
-    const order = await Order.create({ customer: req.body.customer, cartItems: req.body.cartItems, orderId: orderID, dispatched: false, canceled: false });
-    const { io } = req.app.locals;
-    // Update the stock of the ordered products
-    const orderedItems = order.cartItems;
-    await Promise.all(orderedItems.map(item => {
-      const { _id, quantity } = item;
-      return Product.findByIdAndUpdate(_id, { $inc: { stock: -quantity } });
-    }));
-
-
-
-    res.status(201).json(order);
-    io.emit('newOrder', order);
-    void sendOrderConfirmation(order).catch(() => console.error('Order confirmation delivery failed')); // No PII/provider error logging.
-  } catch (error) {
-
-    res.status(500).json({ error: 'Failed to create order' });
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'Invalid request' });
+  const result = await commerceFor(req).checkout(req.body);
+  res.status(result.replayed ? 200 : 201).json(result);
+  if (!result.replayed) {
+    // Domain records a durable notification job in the same commit; providers never run inside it.
+    req.app.locals.io?.emit('newOrder', { _id: result.id, orderId: result.orderId });
   }
-
 });
 
 Orderrouter.post('/email', async (req, res) => {
@@ -120,9 +97,9 @@ Orderrouter.get('/', (req, res) => {
       path: 'category',    // Populates the category field within the Product schema
       model: 'Category'    // Replace 'Category' with your actual Category model name
     }
-  }).sort({ createdAt: -1 }) // Sort by 'createdAt' field in descending order;
+  }).lean().sort({ createdAt: -1 }) // Sort by 'createdAt' field in descending order;
     .then(orders => {
-      res.status(200).json(orders);
+      res.status(200).json(orders.map(legacyOrderDto));
     })
     .catch(error => {
 
@@ -138,72 +115,41 @@ Orderrouter.get('/:id', async(req,res)=>{
       path: 'category',    // Populates the category field within the Product schema
       model: 'Category'    // Replace 'Category' with your actual Category model name
     }
-  });
+  }).lean();
 
 
   if(!order){
       return res.status(404).json({message: 'Order not found'})
   }
-  res.status(200).send(order);
+  res.status(200).send(legacyOrderDto(order));
 })
 
+// Legacy URL adapters accept lifecycle/billing commands only. Commercial snapshots cannot be edited.
 Orderrouter.put('/edit/:orderId', async (req, res) => {
-  const { orderId } = req.params;
-
-  try {
-
-
-    // Check if the request body contains updated order data
-    const updatedOrderData = req.body;
-    if (!updatedOrderData || Object.keys(updatedOrderData).some(key => !['billno', 'billamount', 'dispatched', 'canceled'].includes(key))) return res.status(400).json({ error: 'Invalid request' });
-
-    const order = await Order.findByIdAndUpdate(orderId, { $set: updatedOrderData }, { new: true, runValidators: true });
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-    res.json({ message: 'Order dispatched successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update and dispatch the order' });
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'Invalid request' });
+  if (!req.body || Object.keys(req.body).some(key => !['status', 'billno', 'billamount', 'dispatched', 'canceled'].includes(key))) {
+    return res.status(400).json({ error: 'Order commercial fields are immutable' });
   }
+  if ((req.body.dispatched && req.body.canceled) || (req.body.status && (req.body.dispatched !== undefined || req.body.canceled !== undefined))) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+  const status = req.body.status ?? (req.body.canceled === true ? 'cancelled' : req.body.dispatched === true ? 'dispatched' : undefined);
+  const input = { status, ...(req.body.billno !== undefined ? { billno: req.body.billno } : {}),
+    ...(req.body.billamount !== undefined ? { billamount: req.body.billamount } : {}) };
+  const result = await commerceFor(req).transition(req.params.orderId, input, req.identity, !req.body.status);
+  res.json(result);
 });
-
 Orderrouter.put('/:orderId', async (req, res) => {
-  const { orderId } = req.params;
-  const {billno} = req.body;
-  const {billamount} = req.body;
-  try {
-    const order = await Order.findOne({ _id: orderId, ...(req.identity.role === 'admin' ? {} : { 'customer.city': { $in: req.identity.cities } }) });
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-
-    order.dispatched = true;
-    order.billno = billno;
-    order.billamount = billamount;
-    await order.save();
-
-    res.json({ message: 'Order dispatched successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to dispatch order' });
-  }
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'Invalid request' });
+  if (!req.body || Object.keys(req.body).some(key => !['dispatched', 'billno', 'billamount'].includes(key))
+    || (req.body.dispatched !== undefined && req.body.dispatched !== true)) return res.status(400).json({ error: 'Invalid request' });
+  res.json(await commerceFor(req).transition(req.params.orderId, { status: 'dispatched', billno: req.body.billno, billamount: req.body.billamount }, req.identity, true));
 });
 Orderrouter.put('/cancel/:orderId', async (req, res) => {
-  const { orderId } = req.params;
-
-  try {
-    const order = await Order.findOne({ _id: orderId, ...(req.identity.role === 'admin' ? {} : { 'customer.city': { $in: req.identity.cities } }) });
-    if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-
-    order.canceled = true;
-    await order.save();
-
-    res.json({ message: 'Order cancelled successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to cancel order' });
-  }
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'Invalid request' });
+  if (!req.body || Object.keys(req.body).some(key => !['cancelled', 'canceled'].includes(key))
+    || Object.values(req.body).some(value => value !== true)) return res.status(400).json({ error: 'Invalid request' });
+  res.json(await commerceFor(req).transition(req.params.orderId, { status: 'cancelled' }, req.identity));
 });
-
-
-
 
 module.exports = Orderrouter;
