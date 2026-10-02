@@ -10,13 +10,14 @@
     "typecheck": "node ../../scripts/tooling/web-typegen.mjs && tsc --noEmit"
   },
   "dependencies": {
+    "@almina/config": "0.1.0",
+    "@almina/contracts": "0.1.0",
+    "@almina/ui": "0.1.0",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
-    "@almina/contracts": "0.1.0",
-    "@almina/config": "0.1.0",
-    "@almina/ui": "0.1.0"
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

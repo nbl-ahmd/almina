@@ -14,7 +14,9 @@
     "start:web": "npm run start --workspace @almina/web --",
     "start:api": "npm run start --workspace @almina/api",
     "docs:next": "node scripts/tooling/next-docs.mjs",
-    "smoke:foundation": "node scripts/tooling/smoke-foundation.mjs"
+    "smoke:foundation": "node scripts/tooling/smoke-foundation.mjs",
+    "smoke:storefront": "node scripts/tooling/smoke-storefront.mjs",
+    "verify:storefront:browser": "node scripts/tooling/verify-storefront-browser.mjs"
   },
   "repository": {
     "type": "git",

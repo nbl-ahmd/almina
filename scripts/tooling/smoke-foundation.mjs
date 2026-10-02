@@ -53,7 +53,7 @@ try {
   await waitForServer(apiOrigin, api, '/health/live');
   const web = launch([require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(webPort)],
     new URL('apps/web/', root), { ...env, API_ORIGIN: apiOrigin });
-  await waitForServer(webOrigin, web, '/');
+  await waitForServer(webOrigin, web, '/foundation/status');
   const readiness = await fetch(`${apiOrigin}/health/ready`);
   assert.equal(readiness.status, 200);
   assert.equal((await readiness.json()).data.database, 'disabled');

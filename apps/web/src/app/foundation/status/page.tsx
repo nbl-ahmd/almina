@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
-import { PageContent } from '@almina/ui';
 import { ApiClientError } from '@almina/contracts/client';
 import { getApiClient } from '@/lib/server/api';
 import { getWebLogger } from '@/lib/server/logger';
@@ -17,10 +16,10 @@ export default async function StatusPage() {
     getWebLogger().log('warn', 'web_error');
     if (!(error instanceof ApiClientError)) throw new Error('Service status could not be loaded.');
   }
-  return <PageContent>
+  return <section>
     <h1>Service status</h1>
     <p role="status">{status ? 'API is available.' : 'API is temporarily unavailable.'}</p>
     {status ? <p>Database: {status.database}.</p> : null}
     <Link href="/">Return home</Link>
-  </PageContent>;
+  </section>;
 }

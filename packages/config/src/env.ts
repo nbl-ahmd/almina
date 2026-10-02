@@ -52,11 +52,18 @@ function common(source: EnvironmentSource) {
 
 export function readWebEnvironment(source: EnvironmentSource) {
   const shared = common(source);
-  const value = parse(z.object({ API_ORIGIN: originSchema }), {
+  const value = parse(z.object({
+    API_ORIGIN: originSchema,
+    LEGACY_API_ORIGIN: originSchema,
+    STOREFRONT_REDIRECTS_VERIFIED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+  }), {
     API_ORIGIN: source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
+    STOREFRONT_REDIRECTS_VERIFIED: source.STOREFRONT_REDIRECTS_VERIFIED,
+    LEGACY_API_ORIGIN: source.LEGACY_API_ORIGIN ?? source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
   });
-  if (shared.APP_ENV !== 'development' && new URL(value.API_ORIGIN).protocol !== 'https:') {
-    throw new ConfigurationError(['API_ORIGIN']);
+  if (shared.APP_ENV !== 'development') {
+    const invalid = (['API_ORIGIN', 'LEGACY_API_ORIGIN'] as const).filter(field => new URL(value[field]).protocol !== 'https:');
+    if (invalid.length) throw new ConfigurationError(invalid);
   }
   return { ...shared, ...value };
 }
