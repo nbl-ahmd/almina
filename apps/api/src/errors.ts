@@ -8,6 +8,7 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  PRICE_CHANGED: 'The quote changed. Review the updated total before ordering.',
   COMMERCE_UNAVAILABLE: 'Checkout configuration is unavailable.',
   PRODUCT_UNAVAILABLE: 'A product is unavailable.',
   INSUFFICIENT_STOCK: 'Insufficient stock.',

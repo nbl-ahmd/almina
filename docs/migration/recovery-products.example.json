@@ -1,0 +1,12 @@
+[
+  {
+    "product_id": "PD_RECOVERY_001",
+    "name": "Replace with verified product name",
+    "category": "Replace with verified category",
+    "barcode": "Replace with physical barcode",
+    "price": "25.00",
+    "vat": true,
+    "description": "Replace with reviewed product information",
+    "cloudinaryImages": []
+  }
+]

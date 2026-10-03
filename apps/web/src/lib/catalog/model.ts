@@ -9,6 +9,7 @@ const productSchema = z.object({ _id: z.string().regex(objectId), product_id: z.
   salePrice: z.number().finite().nonnegative().optional(), stock: z.number().int().nonnegative(),
   disabled: z.boolean().optional(), sale: z.boolean().optional(), featured: z.boolean().optional(),
   image: z.string().optional(), images: z.array(z.string()).optional(),
+  cloudinaryImages: z.array(z.string()).max(8).optional(),
   description: z.string().optional(), saleBadge: z.string().optional() });
 export type Category = z.infer<typeof categorySchema>;
 export type Product = z.infer<typeof productSchema>;

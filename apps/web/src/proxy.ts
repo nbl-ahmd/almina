@@ -22,7 +22,7 @@ export function proxy(request: NextRequest) {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''}`,
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
-    `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${mediaOrigin}`,
+    `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${mediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
     "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), `connect-src 'self'${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),

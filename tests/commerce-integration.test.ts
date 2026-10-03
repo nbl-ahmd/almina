@@ -7,9 +7,11 @@ import { MongoClient, ObjectId, type Document, type Db, type Filter, type Update
 import { hash } from 'bcryptjs';
 import { createLogger } from '@almina/config/logger';
 import { createApp } from '../apps/api/src/app.js';
-import { createCommerceService } from '../apps/api/src/modules/orders/commerce.js';
+import { createCommerceService, quoteHash } from '../apps/api/src/modules/orders/commerce.js';
 import { orderDetailDto } from '../apps/api/src/modules/orders/dto.js';
 import { migrateCommerce } from '../scripts/migrations/commerce.js';
+import { bootstrapRecovery } from '../scripts/migrations/recovery-bootstrap.js';
+import { importRecoveryCatalog, parseRecoveryCatalog } from '../scripts/migrations/recovery-catalog.js';
 
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
@@ -44,6 +46,36 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
   function intent(productId: string, quantity = 1) { return { customer, items: [{ productId, quantity }], idempotencyKey: randomUUID() }; }
   try {
     await db.collection('stores').insertOne({ status: 'open' });
+    await t.test('empty database recovery is closed, idempotent and refuses populated databases', async () => {
+      const recovery = client.db(dbName + '_recovery');
+      const options = { username: 'recovery-admin', name: 'Recovery Admin', password: 'synthetic-recovery-password', orderNumberFloor: 900000 };
+      try {
+        assert.deepEqual(await bootstrapRecovery(recovery, options), { created: true, store: 'closed' });
+        assert.equal(await recovery.collection('users').countDocuments(), 1);
+        assert.equal((await recovery.collection('stores').findOne())!.status, 'closed');
+        assert.equal((await recovery.collection('commerce_counters').findOne())!.value, 900000);
+        assert.deepEqual(await bootstrapRecovery(recovery, options), { created: false, store: 'unchanged' });
+        assert.equal(await recovery.collection('users').countDocuments(), 1);
+        await assert.rejects(bootstrapRecovery(recovery, { ...options, orderNumberFloor: 910000 }));
+        await assert.rejects(bootstrapRecovery(db, options));
+        const rows = [{ product_id: 'PD_RECOVERY_001', name: 'Synthetic care', category: 'Care', barcode: '123',
+          price: '25.00', vat: true, cloudinaryImages: ['https://res.cloudinary.com/synthetic/image/upload/v1/care.webp'] }];
+        assert.equal((await importRecoveryCatalog(recovery, rows, 'synthetic'))!.created, 1);
+        const imported = (await recovery.collection('products').findOne())!;
+        assert.equal(imported.stock, 0); assert.equal(imported.disabled, true);
+        assert.equal((await recovery.collection('categories').findOne())!.disabled, true);
+        await recovery.collection('products').updateOne({ _id: imported._id }, { $set: { stock: 7 } });
+        assert.equal((await importRecoveryCatalog(recovery, rows, 'synthetic'))!.replayed, true);
+        assert.equal((await recovery.collection('products').findOne())!.stock, 7);
+        await assert.rejects(importRecoveryCatalog(recovery, [{ ...rows[0], name: 'Conflicting name' }], 'synthetic'));
+        await assert.rejects(importRecoveryCatalog(recovery, [rows[0], { ...rows[0], product_id: 'PD_OTHER' }], 'synthetic'));
+        assert.equal(await recovery.collection('products').countDocuments(), 1);
+        assert.throws(() => parseRecoveryCatalog([{ ...rows[0], price: '1.001' }], 'synthetic'));
+        assert.throws(() => parseRecoveryCatalog([{ ...rows[0], cloudinaryImages: ['https://res.cloudinary.com/other/image/upload/care.webp'] }], 'synthetic'));
+        await recovery.collection('stores').updateOne({}, { $set: { status: 'open' } });
+        await assert.rejects(importRecoveryCatalog(recovery, [{ ...rows[0], product_id: 'PD_OTHER' }], 'synthetic'));
+      } finally { await recovery.dropDatabase(); }
+    });
     await db.collection('categories').insertOne({ _id: category, name: 'Fixture' });
     await migrateCommerce(db);
 
@@ -62,6 +94,28 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
       assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 2);
       assert.equal(await db.collection('orders').countDocuments(), 0);
       assert.equal(await db.collection('checkout_requests').countDocuments(), 0);
+    });
+
+    await t.test('changed quotes require review before writes and committed retries survive repricing', async () => {
+      const productId = await product(3);
+      const input = intent(productId);
+      const quoteInput = { customer: input.customer, items: input.items };
+      const acceptedQuoteHash = quoteHash(await commerce.quote(quoteInput));
+      await db.collection('products').updateOne({ _id: new ObjectId(productId) }, { $set: { salePrice: 10.25 } });
+      const before = await db.collection('orders').countDocuments();
+      const receipts = await db.collection('checkout_requests').countDocuments();
+      await assert.rejects(commerce.checkout({ ...input, acceptedQuoteHash }), { code: 'PRICE_CHANGED' });
+      assert.equal(await db.collection('orders').countDocuments(), before);
+      assert.equal(await db.collection('checkout_requests').countDocuments(), receipts);
+      assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 3);
+      const reviewed = { ...input, acceptedQuoteHash: quoteHash(await commerce.quote(quoteInput)) };
+      const order = await commerce.checkout(reviewed);
+      await db.collection('products').updateOne({ _id: new ObjectId(productId) }, { $set: { salePrice: 10.1 } });
+      const replay = await commerce.checkout(reviewed);
+      assert.equal(replay!.id, order!.id);
+      assert.equal(replay!.replayed, true);
+      assert.deepEqual(replay!.totals, order!.totals);
+      assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 2);
     });
 
     await t.test('concurrent checkout never oversells and order numbers remain unique', async () => {

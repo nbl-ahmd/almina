@@ -12,7 +12,8 @@ export const customerInputSchema = z.object({
 }).strict();
 const items = z.array(z.object({ productId: id, quantity: z.number().int().min(1).max(1000) }).strict()).min(1).max(100);
 export const quoteInputSchema = z.object({ customer: customerInputSchema, items }).strict();
-export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid() }).strict();
+// Optional only for retained legacy clients; the Next gateway requires acknowledgment.
+export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid(), acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
 export const statusInputSchema = z.object({ status: orderStatusSchema,
   billno: z.string().regex(/^\d{5,30}$/).optional(), billamount: z.number().finite().nonnegative().optional(),
 }).strict();

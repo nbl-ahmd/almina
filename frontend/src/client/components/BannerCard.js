@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import SwiperCore, { Navigation, Pagination, Autoplay } from 'swiper';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import baseURL from '../../axiosConfig';
-
-SwiperCore.use([Navigation, Pagination, Autoplay]);
 
 const BannerCard = ({ banners }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -14,6 +12,7 @@ const BannerCard = ({ banners }) => {
     setImageLoaded(true);
   }
   const swiperParams = {
+    modules: [Navigation, Pagination, Autoplay],
     autoplay: {
       delay: 5000,
       disableOnInteraction: false

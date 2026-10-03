@@ -4,7 +4,7 @@ import type { NextConfig } from 'next';
 import { readWebEnvironment } from '@almina/config/env';
 
 // Validate at dev/build/start, but never inject the resulting env into next.config.env.
-readWebEnvironment(process.env);
+const environment = readWebEnvironment(process.env);
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const catalogApiOrigin = process.env.LEGACY_API_ORIGIN ?? process.env.API_ORIGIN ?? 'https://almina-of4b.onrender.com';
 const catalogApiUrl = new URL(catalogApiOrigin);
@@ -20,6 +20,7 @@ const config: NextConfig = {
   htmlLimitedBots: /.*/,
   images: {
     remotePatterns: [
+      ...(environment.CLOUDINARY_CLOUD_NAME ? [{ protocol: 'https' as const, hostname: 'res.cloudinary.com', pathname: `/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/**`, search: '' }] : []),
       { protocol: 'https', hostname: 'cdn.alminapharmacy.com', pathname: '/cdn/**' },
       // Transitional read-only fallback for existing Drive-backed image routes.
       {

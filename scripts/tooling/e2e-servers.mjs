@@ -64,6 +64,9 @@ try {
   const admin = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4720'], new URL('apps/web/', root), {
     WEB_ORIGIN: 'http://127.0.0.1:4720', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730',
   });
-  await Promise.all([wait('http://127.0.0.1:4710/cart', storefront), wait('http://127.0.0.1:4720/admin/login', admin)]);
+  const checkout = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4740'], new URL('apps/web/', root), {
+    WEB_ORIGIN: 'http://127.0.0.1:4740', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CHECKOUT_ENABLED: 'true',
+  });
+  await Promise.all([wait('http://127.0.0.1:4710/cart', storefront), wait('http://127.0.0.1:4720/admin/login', admin), wait('http://127.0.0.1:4740/checkout', checkout)]);
   ready = createServer((_req, res) => res.end('almina-e2e-ready')).listen(4709, '127.0.0.1');
 } catch (error) { console.error(error.message); await stop(); process.exitCode = 1; }

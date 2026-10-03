@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { cloudinaryImage } from '../apps/web/src/lib/catalog/media';
 import { readProduct, readCategory, productSlug, categorySlug, slugIdentity, decodeStoredCart, cartSchema } from '../apps/web/src/lib/catalog/model';
 import { readWebEnvironment } from '@almina/config/env';
 const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care' };
@@ -29,4 +30,14 @@ test('permanent redirects default on and legacy origins must be credential-free 
   assert.throws(() => readWebEnvironment({ STOREFRONT_REDIRECTS_VERIFIED: 'yes' }));
   assert.throws(() => readWebEnvironment({ LEGACY_API_ORIGIN: 'https://user:password@example.invalid' }));
   assert.throws(() => readWebEnvironment({ APP_ENV: 'staging', NODE_ENV: 'production', WEB_ORIGIN: 'https://web.example.invalid', API_ORIGIN: 'https://api.example.invalid', LEGACY_API_ORIGIN: 'http://localhost:4100' }));
+});
+test('recovered Cloudinary images are restricted to the configured account and raster upload assets', () => {
+  const url = 'https://res.cloudinary.com/synthetic/image/upload/v1/care.webp';
+  assert.equal(cloudinaryImage(url, 'synthetic'), url);
+  for (const value of [url.replace('/synthetic/', '/other/'), url + '?token=private', url.replace('.webp', '.svg'),
+    url.replace('https:', 'http:'), url.replace('res.cloudinary.com', 'untrusted.example'), url.replace('/upload/', '/fetch/'),
+    url.replace('/v1/', '/%2e%2e/'), url.replace('https://', 'https://user:password@')]) {
+    assert.equal(cloudinaryImage(value, 'synthetic'), null);
+  }
+  assert.equal(cloudinaryImage(url, undefined), null);
 });

@@ -56,6 +56,7 @@ jobs:
         if: always()
         with:
           name: api-performance
+          include-hidden-files: true
           path: .verification-results/performance-api.json
           if-no-files-found: ignore
 
@@ -91,6 +92,7 @@ jobs:
         if: always()
         with:
           name: browser-verification
+          include-hidden-files: true
           path: .verification-results/
           retention-days: 7
           if-no-files-found: ignore
@@ -109,6 +111,7 @@ jobs:
         if: always()
         with:
           name: dependency-security-audit
+          include-hidden-files: true
           path: .verification-results/audit-*.json
           retention-days: 7
 

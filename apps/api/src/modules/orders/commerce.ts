@@ -1,13 +1,16 @@
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
 import { checkoutInputSchema, quoteInputSchema, commercePolicySchema, statusInputSchema, type CheckoutInput,
-  type QuoteInput, type CommercePolicy, type Quote, type OrderStatus, type Staff } from '@almina/contracts';
+  type QuoteInput, type CommercePolicy, type Quote, type OrderStatus, type Staff, quoteDtoSchema } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 import { historicalStatus } from './status.js';
 export { historicalStatus } from './status.js';
 import { orderFilter } from './repository.js';
 
 const options = { maxTimeMS: 3000 };
+export function quoteHash(quote: Quote) {
+  return createHash('sha256').update(JSON.stringify(quoteDtoSchema.parse(quote))).digest('hex');
+}
 const transitions: Record<OrderStatus, readonly OrderStatus[]> = {
   pending: ['confirmed', 'cancelled'], confirmed: ['packed', 'cancelled'], packed: ['dispatched', 'cancelled'],
   dispatched: ['refunded'], cancelled: [], refunded: [],
@@ -135,6 +138,9 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           const previous = await prior(session);
           if (previous) { outcome = previous; return; }
           const totals = await quoteFrom(db, input, session);
+          if (input.acceptedQuoteHash && input.acceptedQuoteHash !== quoteHash(totals)) {
+            throw new HttpError(409, 'PRICE_CHANGED');
+          }
           const _id = new ObjectId();
           const now = new Date();
           // Claim key before stock changes. _id has a built-in unique index; receipt and order commit together.

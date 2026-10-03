@@ -8,6 +8,12 @@ test('development has isolated loopback defaults and no database', () => {
   assert.deepEqual(api.database, { mode: 'disabled' });
   assert.equal(readWebEnvironment({}).API_ORIGIN, 'http://127.0.0.1:4000');
 });
+test('checkout activation and Cloudinary account are explicit server configuration', () => {
+  assert.equal(readWebEnvironment({}).CHECKOUT_ENABLED, false);
+  assert.equal(readWebEnvironment({ CHECKOUT_ENABLED: 'true', CLOUDINARY_CLOUD_NAME: 'synthetic' }).CHECKOUT_ENABLED, true);
+  assert.throws(() => readWebEnvironment({ CHECKOUT_ENABLED: 'yes' }), ConfigurationError);
+  assert.throws(() => readWebEnvironment({ CLOUDINARY_CLOUD_NAME: '../other' }), ConfigurationError);
+});
 
 test('production mode requires an explicit deployment environment', () => {
   assert.throws(() => readWebEnvironment({ NODE_ENV: 'production' }), ConfigurationError);

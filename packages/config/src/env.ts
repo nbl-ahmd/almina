@@ -55,6 +55,8 @@ export function readWebEnvironment(source: EnvironmentSource) {
   const shared = common(source);
   const value = parse(z.object({
     API_ORIGIN: originSchema,
+    CLOUDINARY_CLOUD_NAME: z.string().regex(/^[A-Za-z0-9_-]{1,100}$/).optional(),
+    CHECKOUT_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     LEGACY_API_ORIGIN: originSchema,
     STOREFRONT_REDIRECTS_VERIFIED: z.enum(['true', 'false']).default('true').transform(value => value === 'true'),
     STOREFRONT_PRODUCT_REPLACEMENTS: z.string().default('{}').transform((value, ctx) => {
@@ -69,6 +71,8 @@ export function readWebEnvironment(source: EnvironmentSource) {
     }),
   }), {
     API_ORIGIN: source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
+    CHECKOUT_ENABLED: source.CHECKOUT_ENABLED,
+    CLOUDINARY_CLOUD_NAME: source.CLOUDINARY_CLOUD_NAME,
     STOREFRONT_REDIRECTS_VERIFIED: source.STOREFRONT_REDIRECTS_VERIFIED,
     STOREFRONT_PRODUCT_REPLACEMENTS: source.STOREFRONT_PRODUCT_REPLACEMENTS,
     LEGACY_API_ORIGIN: source.LEGACY_API_ORIGIN ?? source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),

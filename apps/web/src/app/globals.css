@@ -1,4 +1,14 @@
-/* Al Mina storefront system. No legacy framework styles enter this application. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source "../";
+
+@theme {
+  --color-line: #c9d4cf;
+  --color-brand: #086657;
+}
+
+/* Keep the verified component styles while migrating components to utilities.
+   Preflight is deliberately omitted to preserve existing form/admin rendering. */
 :root {
   color-scheme: light;
   --color-ink: #17332f;
