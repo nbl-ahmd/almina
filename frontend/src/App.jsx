@@ -113,7 +113,7 @@ const Adminroutes = ({ children }) => <SessionRoute>{children}</SessionRoute>;
 const AdminProtectedRoute = ({ children }) => <SessionRoute role="admin">{children}</SessionRoute>;
 
 const App = () => {
-  const maintenanceEnabled = process.env.REACT_APP_MAINTENANCE_MODE === 'true';
+  const maintenanceEnabled = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
 
   useEffect(() => {
     if (maintenanceEnabled) {

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const bootstrap = readFileSync('tests/fixtures/bootstrap-5.3.0-alpha1.min.css');
 const integrity = 'sha384-' + createHash('sha384').update(bootstrap).digest('base64');
 assert.equal(integrity, 'sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD');
-assert.ok(readFileSync('frontend/public/index.html', 'utf8').includes(integrity), 'Keep the CSS fixture matched to legacy HTML');
+assert.ok(readFileSync('frontend/index.html', 'utf8').includes(integrity), 'Keep the CSS fixture matched to legacy HTML');
 
 export const commerceOrigin = 'http://127.0.0.1:4730';
 export const adminOrigin = 'http://127.0.0.1:4720';

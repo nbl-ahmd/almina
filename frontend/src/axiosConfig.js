@@ -1,6 +1,6 @@
 import axios from 'axios';
 // Cookie auth requires a same-origin reverse proxy or explicitly configured same-site API.
-const baseURL = process.env.REACT_APP_API_ORIGIN || window.location.origin;
+const baseURL = import.meta.env.VITE_API_ORIGIN || window.location.origin;
 const apiOrigin = new URL(baseURL, window.location.origin).origin;
 localStorage.removeItem('token'); // Purge the compromised legacy JWT representation.
 axios.interceptors.request.use(config => {

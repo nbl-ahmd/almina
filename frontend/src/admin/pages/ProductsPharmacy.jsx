@@ -5,7 +5,6 @@ import baseURL from '../../axiosConfig';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useLocation } from 'react-router-dom';
 import BackToTopButton from '../../client/components/BackToTopButton';
-import ProductCardPharmacy from '../components/ProductCardPharmacy';
 import { Box, Card, Container, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { Button, Modal } from 'react-bootstrap';

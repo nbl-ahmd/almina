@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import ProductCard from './ProductCard';
 
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
 const SearchResults = () => {
   const [searchedProducts, setSearchedProducts] = useState([]);

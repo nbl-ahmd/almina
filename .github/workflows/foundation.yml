@@ -78,7 +78,7 @@ jobs:
       - run: npm ci --prefix frontend
       - run: npx --no-install playwright install --with-deps chromium
       - run: npm run build:commerce
-      - name: Build legacy browser fixture (existing CRA warnings are recorded)
+      - name: Build retained React compatibility client with maintained Vite tooling
         run: npm --prefix frontend run build
         env:
           CI: 'false'

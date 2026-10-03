@@ -30,4 +30,4 @@ const server = createServer(async (req, res) => {
     else res.end(body);
   } catch { res.writeHead(404); res.end(); }
 });
-server.listen(Number(process.env.PORT ?? 4200), '127.0.0.1', () => console.log('Performance fixture: synthetic API + compiled CRA on loopback.'));
+server.listen(Number(process.env.PORT ?? 4200), '127.0.0.1', () => console.log('Performance fixture: synthetic API + compiled compatibility React on loopback.'));

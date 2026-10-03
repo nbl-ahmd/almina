@@ -94,7 +94,7 @@ import WhatsAppButton from '../components/WhatsappButton'
                <div className="d-flex align-items-center rounded-3 pt-2 ps-2 mb-0 me-2 me-xl-0">
                <div className=" banner-small flex-xxl-fill overflow-wrap
                d-flex align-items-center bg-faded-success rounded-3 pt-2    me-xl-0 pb-0 pb-md-0 " >
-                  <img src={require('../assets/b1.png')} height="120" alt="Banner" />
+                  <img src={new URL('../assets/b1.png', import.meta.url).href} height="120" alt="Banner" />
                   <div className="py-1 px-2 py-md-0 py-lg-0 py-xxl-0">
                     <h6 className="mb-2">
                       <span className="fw-100">Cosmetics</span>
@@ -117,7 +117,7 @@ import WhatsAppButton from '../components/WhatsappButton'
                <div className="d-flex align-items-center rounded-3 pt-2 ps-2 mb-0 me-2 me-xl-0">
                <div className=" banner-small flex-xxl-fill overflow-wrap
                d-flex align-items-center bg-faded-info rounded-3 pt-2    me-xl-0 pb-0 pb-md-0 " >
-                  <img src={require('../assets/b2.png')} height="120" alt="Banner" />
+                  <img src={new URL('../assets/b2.png', import.meta.url).href} height="120" alt="Banner" />
                   <div className="py-1 px-2 py-md-0 py-lg-0 py-xxl-0">
                     <h6 className="mb-2">
                       <span className="fw-100">Supplements</span>
@@ -140,7 +140,7 @@ import WhatsAppButton from '../components/WhatsappButton'
                <div className="d-flex align-items-center rounded-3 pt-2 ps-2 mb-0 me-2 me-xl-0">
                <div className=" banner-small flex-xxl-fill overflow-wrap
                d-flex align-items-center bg-faded-warning rounded-3 pt-2    me-xl-0 pb-0 pb-md-0 " >
-                  <img src={require('../assets/b3.png')} height="120" alt="Banner" />
+                  <img src={new URL('../assets/b3.png', import.meta.url).href} height="120" alt="Banner" />
                   <div className="py-1 px-2 py-md-0 py-lg-0 py-xxl-0">
                     <h6 className="mb-2">
                       <span className="fw-100">Monitors</span>

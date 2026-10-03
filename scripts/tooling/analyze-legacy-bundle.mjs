@@ -7,10 +7,18 @@ import { Buffer } from 'node:buffer';
 const require = createRequire(new URL('../../frontend/package.json', import.meta.url));
 const { SourceMapConsumer } = require('source-map');
 const directory = resolve('frontend/build');
-const manifest = JSON.parse(await readFile(resolve(directory, 'asset-manifest.json'), 'utf8'));
+const manifest = JSON.parse(await readFile(resolve(directory, '.vite/manifest.json'), 'utf8'));
+const initial = new Set();
+function visit(key) {
+  const entry = manifest[key];
+  if (!entry || initial.has(entry.file)) return;
+  initial.add(entry.file);
+  for (const imported of entry.imports ?? []) visit(imported);
+}
+for (const [key, entry] of Object.entries(manifest)) if (entry.isEntry) visit(key);
 const chunks = [];
-for (const name of (await readdir(resolve(directory, 'static/js'))).filter(name => name.endsWith('.js'))) {
-  const relative = `static/js/${name}`;
+for (const name of (await readdir(resolve(directory, 'assets'))).filter(name => name.endsWith('.js'))) {
+  const relative = `assets/${name}`;
   const code = await readFile(resolve(directory, relative), 'utf8');
   const sourceMap = JSON.parse(await readFile(resolve(directory, relative + '.map'), 'utf8'));
   const consumer = await new SourceMapConsumer(sourceMap);
@@ -27,7 +35,7 @@ for (const name of (await readdir(resolve(directory, 'static/js'))).filter(name 
     packages[group] = (packages[group] ?? 0) + length;
   }
   consumer.destroy?.();
-  chunks.push({ file: relative, initial: manifest.entrypoints.includes(relative), bytes: Buffer.byteLength(code), gzipBytes: gzipSync(code).length,
+  chunks.push({ file: relative, initial: initial.has(relative), bytes: Buffer.byteLength(code), gzipBytes: gzipSync(code).length,
     // Minified span estimates, not additive gzip attribution.
     mappedCodeUnits: Object.fromEntries(Object.entries(packages).sort((a,b)=>b[1]-a[1])) });
 }

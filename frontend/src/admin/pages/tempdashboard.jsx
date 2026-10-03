@@ -5,7 +5,7 @@
         <button className="navbar-toggler ms-n2 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-controls="sidebarCollapse" aria-expanded="false" aria-label="Toggle navigation"><span className="navbar-toggler-icon"></span></button>
 
         <a className="navbar-brand d-inline-block py-lg-5 mb-lg-5 px-lg-6 me-0">
-            <img className="nav-logo sidebar-logo" src={require('../../client/assets/logo.png')} alt="" />
+            <img className="nav-logo sidebar-logo" src={new URL('../../client/assets/logo.png', import.meta.url).href} alt="" />
         </a>
 
         <div className="navbar-collapse collapse sidebar-list justify-content-lg-start" id='sidebarCollapse'>

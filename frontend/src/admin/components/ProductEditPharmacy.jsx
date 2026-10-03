@@ -144,6 +144,7 @@ const ProductUpdate = ({id, products, editedProduct}) => {
     formDataWithImage.append('name', product.name);
     formDataWithImage.append('price', product.price);
     formDataWithImage.append('stock', product.stock);
+    formDataWithImage.append('expectedStock', formData.stock);
     formDataWithImage.append('category', product.category._id);
     formDataWithImage.append('vat', product.vat);
     formDataWithImage.append('sale', product.sale);

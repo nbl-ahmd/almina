@@ -49,7 +49,7 @@ export default function Dashboard() {
     navigate('/admin/productlist'); // Redirect to the search page without any query parameter
   };
 
-  const publicKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
+  const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 
 
@@ -193,7 +193,7 @@ console.log(permission);
                    
                        
                         <div className="navbar-brand d-flex align-items-center">
-                                    <img className="nav-logo sidebar-logo" src={require('../../client/assets/logo.png')} alt="" />
+                                    <img className="nav-logo sidebar-logo" src={new URL('../../client/assets/logo.png', import.meta.url).href} alt="" />
                                 </div>
                            <div className="sidebar-container">
                            <ul className="navbar-nav py-1 d-flex">

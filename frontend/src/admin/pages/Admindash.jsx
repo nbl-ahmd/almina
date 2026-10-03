@@ -65,7 +65,7 @@ const AdminDashboard = () => {
                    
                        
                         <div className="navbar-brand d-flex align-items-center">
-                                    <img className="nav-logo sidebar-logo" src={require('../../client/assets/logo.png')} alt="" />
+                                    <img className="nav-logo sidebar-logo" src={new URL('../../client/assets/logo.png', import.meta.url).href} alt="" />
                                 </div>
                            <div className="sidebar-container justify-content-between">
                            <ul className="navbar-nav py-1 d-flex">
