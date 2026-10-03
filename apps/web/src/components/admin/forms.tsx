@@ -77,6 +77,7 @@ export function AdminForm({
           defaultValue: field.type === "file" ? undefined : field.value,
           "aria-describedby": field.hint ? `${id}-hint` : undefined,
         };
+        if (field.type === "hidden") return <input key={field.name} {...props} type="hidden" />;
         return (
           <label key={field.name} htmlFor={id}>
             {field.label}

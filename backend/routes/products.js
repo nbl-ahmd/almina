@@ -584,23 +584,16 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
 
       // Handle text fields
       if (req.body.name) updateFields.name = req.body.name;
-      if (req.body.price) updateFields.price = req.body.price;
-      if (req.body.stock) updateFields.stock = req.body.stock;
-      if (req.body.description) updateFields.description = req.body.description;
+      if (req.body.price !== undefined) updateFields.price = Number(req.body.price);
+      if (req.body.stock !== undefined) updateFields.stock = Number(req.body.stock);
+      if (req.body.description !== undefined) updateFields.description = req.body.description;
 
       let imageUrls = prevProduct.images;
       let gdriveFileIds = prevProduct.gdriveFileIds;
 
       if (files && files.length > 0) {
-          // Delete previous images from Google Drive
-          for (const fileId of gdriveFileIds) {
-              try {
-                  await drive.files.delete({ fileId });
-              } catch (error) {
-
-              }
-          }
-
+          // Keep prior assets until a separate reference-aware retention review.
+          // Upload failure or a concurrent stock conflict must never delete live media.
           // Process new images
           imageUrls = [];
           gdriveFileIds = [];
@@ -636,10 +629,16 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
           }
       }
 
-      updateFields.images = imageUrls;
-      updateFields.gdriveFileIds = gdriveFileIds;
-
-      const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+      if (files && files.length > 0) {
+          updateFields.images = imageUrls;
+          updateFields.gdriveFileIds = gdriveFileIds;
+      }
+      const filter = { _id: id };
+      if (req.body.stock !== undefined) filter.stock = Number(req.body.expectedStock);
+      // MongoDB evaluates this predicate atomically with the write. A checkout,
+      // cancellation or second editor changing stock makes a stale form fail.
+      const product = await Product.findOneAndUpdate(filter, { $set: updateFields }, { new: true, runValidators: true });
+      if (!product) return res.status(409).json({ code: 'STOCK_CHANGED', error: 'Stock changed. Reload the product before saving.' });
       res.json(product);
   } catch (error) {
 

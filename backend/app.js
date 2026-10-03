@@ -53,7 +53,7 @@ function createLegacyApp(options) {
     if (status === 429) res.set('Retry-After', '900');
     // Never serialize provider errors, database errors, request bodies or credentials.
     const code = ['INVALID_REQUEST', 'INSUFFICIENT_STOCK', 'PRODUCT_UNAVAILABLE', 'MINIMUM_ORDER',
-      'IDEMPOTENCY_CONFLICT', 'COMMERCE_UNAVAILABLE', 'INVALID_TRANSITION'].includes(error.code) ? error.code : undefined;
+      'PRICE_CHANGED', 'STOCK_CHANGED', 'IDEMPOTENCY_CONFLICT', 'COMMERCE_UNAVAILABLE', 'INVALID_TRANSITION'].includes(error.code) ? error.code : undefined;
     res.status(status).json({ ...(code ? { code } : {}), error: status === 401 ? 'Invalid credentials or session' : status === 403 ? 'Access denied'
       : status === 400 ? 'Invalid request' : status === 404 ? 'Not found' : status === 429 ? 'Too many requests' : 'Request failed' });
   });

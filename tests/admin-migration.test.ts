@@ -134,7 +134,7 @@ test("API independently protects new WhatsApp reports and validates administrati
   );
   for (const stock of ["-1", "1.2", "Infinity", {}, [], null, true, ""])
     assert.throws(() => productInput({ stock }));
-  for (const price of ["-1", "NaN", "Infinity", {}])
+  for (const price of ["-1", "NaN", "Infinity", "10.001", "1e3", {}])
     assert.throws(() => productInput({ price }));
   messageInput({
     recipient: "971501234567",

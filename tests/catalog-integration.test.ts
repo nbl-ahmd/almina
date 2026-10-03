@@ -54,7 +54,7 @@ test('real catalog reads and legacy product mutations preserve validation, visib
           assert.equal((await fetch(legacyUrl + '/api/products/' + product._id, { method: 'PUT', headers, body: bad })).status, 400);
         }
         assert.equal((await db.collection('products').findOne({ _id: new ObjectId(product._id) }))!.stock, 2);
-        const update = new FormData(); update.set('stock', '0'); update.set('price', '12.50');
+        const update = new FormData(); update.set('stock', '0'); update.set('expectedStock', '2'); update.set('price', '12.50');
         assert.equal((await fetch(legacyUrl + '/api/products/' + product._id, { method: 'PUT', headers, body: update })).status, 200);
         const detail = await (await fetch(apiUrl + '/api/v1/catalog/products/' + product._id)).json();
         assert.equal(detail.data.stock, 0); assert.equal(detail.data.price, 12.5);

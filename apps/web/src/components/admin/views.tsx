@@ -130,6 +130,7 @@ export function ProductForm({
       hint: "Up to five images, 5 MB each.",
     },
   ];
+  if (edit) fields.push({ name: "expectedStock", label: "Stock at load", type: "hidden", value: display(product?.stock ?? "") });
   if (!edit)
     fields.push(
       { name: "barcode", label: "Barcode", required: true },
