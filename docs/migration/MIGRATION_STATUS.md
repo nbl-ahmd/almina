@@ -40,6 +40,10 @@ Completed a controlled dependency inventory and cleanup on 2026-10-02. Removed c
 5. Migrate cart/checkout/admin/integrations through verified compatibility adapters; cut over progressively with safe rollback.
 6. Remove legacy structures only after usage/retention and recovery verification.
 
+## Media canonicalization
+
+Recorded the existing CDN filename URL contract as canonical for new storefront reads and configured Next Image to use it. The CDN's backing provider is not verifiable from repository configuration. Drive-backed product/category/banner/poster writes and compatibility fields remain active pending a production data inventory, provider confirmation, per-file copy/decode/CDN/render validation, additive backfill and observation window. No live URL was changed, no media or DB reference was migrated/deleted, and Drive credentials/dependency were not retired. See [media inventory, provider decision and staged migration gates](MEDIA_CANONICALIZATION_2026-10-03.md).
+
 Future implementation must update this file with completed gates and evidence, not merely planned changes.
 
 ## Modular API service migration

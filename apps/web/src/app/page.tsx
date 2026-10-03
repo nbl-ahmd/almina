@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Al Mina Pharmacy Ras Al Khaimah', description: 'Healthcare, skincare and pharmacy essentials from Al Mina Pharmacy.' };
 export default async function HomePage() {
   const [banners, categories, featured, offers] = await Promise.all([getBanners(), getCategories(), getProducts({ featured: true }), getProducts({ offers: true })]);
-  return <><section className="hero"><h1>Al Mina Pharmacy</h1>{banners.length ? <div className="banners">{banners.map((banner, i) => <Image key={banner.image} src={banner.image} alt={banner.name} width={1000} height={400} loading={i === 0 ? 'eager' : 'lazy'} unoptimized />)}</div> : null}</section>
+  return <><section className="hero"><h1>Al Mina Pharmacy</h1>{banners.length ? <div className="banners">{banners.map((banner, i) => <Image key={banner.image} src={banner.image} alt={banner.name} width={1000} height={400} sizes="(max-width: 700px) 100vw, 1000px" loading={i === 0 ? 'eager' : 'lazy'} />)}</div> : null}</section>
     <section><h2>Shop by category</h2><CategoryGrid categories={categories} /><Link href="/categories">All categories</Link></section>
     <section><h2>Featured products</h2><ProductGrid products={featured.products.slice(0, 10)} /></section>
     <section><h2>Top deals</h2><ProductGrid products={offers.products.slice(0, 10)} /><Link href="/offers">All offers</Link></section></>;

@@ -43,7 +43,7 @@ export function CartView({ checkout = false }: { checkout?: boolean }) {
   }
   if (!ready) return <p role="status">Loading your cart…</p>;
   return <><p role="alert">{error}</p>{!lines.length ? <><h2>Your cart is currently empty</h2><Link href="/products">Start shopping</Link></> : <>
-    {items.map(item => <article className="cart-row" key={item.id}><Image src={item.image} alt="" width={90} height={90} unoptimized /><div><Link href={item.href}>{item.name}</Link><p>{item.price === null ? 'Unavailable' : money(item.price)} per item</p>{!item.available ? <p role="status">This quantity is no longer available.</p> : null}</div>
+    {items.map(item => <article className="cart-row" key={item.id}><Image src={item.image} alt="" width={90} height={90} sizes="90px" /><div><Link href={item.href}>{item.name}</Link><p>{item.price === null ? 'Unavailable' : money(item.price)} per item</p>{!item.available ? <p role="status">This quantity is no longer available.</p> : null}</div>
       {!checkout ? <div><button aria-label={`Decrease ${item.name} quantity`} disabled={pending || item.quantity <= 1} onClick={() => change(item.id, item.quantity - 1)}>−</button><span className="quantity">{item.quantity}</span><button aria-label={`Increase ${item.name} quantity`} disabled={pending || item.quantity >= 999} onClick={() => change(item.id, item.quantity + 1)}>+</button><button disabled={pending} onClick={() => change(item.id, 0)}>Remove</button></div> : <p>Quantity: {item.quantity}</p>}</article>)}
     <p>Prices and availability are checked against the catalog. Delivery, VAT and the final total must be confirmed at checkout.</p>
     {!checkout ? <Link className="button" href="/checkout">Proceed to checkout</Link> : <Link href="/cart">Edit cart</Link>}

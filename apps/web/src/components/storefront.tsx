@@ -7,7 +7,7 @@ import { AddToCart } from './cart-controls';
 export function ProductGrid({ products }: { products: Product[] }) {
   return products.length ? <div className="product-grid">{products.map(product => <article className="product-card" key={product._id}>
     {product.sale ? <span className="badge">{product.saleBadge || 'Sale'}</span> : product.featured ? <span className="badge">Featured</span> : null}
-    <Link href={productHref(product)}><Image src={productImage(product)} alt={product.name} width={240} height={240} sizes="(max-width: 600px) 45vw, 240px" unoptimized /></Link>
+    <Link href={productHref(product)}><Image src={productImage(product)} alt={product.name} width={240} height={240} sizes="(max-width: 600px) 45vw, (max-width: 1024px) 30vw, 240px" /></Link>
     <Link className="category-name" href={categoryHref(product.category)}>{product.category.name}</Link>
     <h2><Link href={productHref(product)}>{product.name}</Link></h2>
     <p className="price">{money(displayPrice(product))} {product.salePrice ? <del>{money(product.price)}</del> : null}</p>
@@ -16,7 +16,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
 }
 export function CategoryGrid({ categories }: { categories: Category[] }) {
   return <div className="category-grid">{categories.map(category => <Link className="category-card" key={category._id} href={categoryHref(category)}>
-    <Image src={categoryImage(category.image)} alt="" width={120} height={120} unoptimized /><span>{category.name}</span>
+    <Image src={categoryImage(category.image)} alt="" width={120} height={120} sizes="120px" /><span>{category.name}</span>
   </Link>)}</div>;
 }
 export function Breadcrumb({ title }: { title: string }) {
