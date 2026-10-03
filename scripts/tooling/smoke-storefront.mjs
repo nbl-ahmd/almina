@@ -20,7 +20,7 @@ try {
   const origin = `http://127.0.0.1:${port}`;
   web = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: fileURLToPath(new URL('apps/web/', root)), stdio: 'ignore',
-    env: { APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: origin, API_ORIGIN: `http://127.0.0.1:${fixture.address().port}`, STOREFRONT_REDIRECTS_VERIFIED: 'true', NEXT_TELEMETRY_DISABLED: '1' },
+    env: { AL_MINA_ISOLATED_BUILD: process.env.AL_MINA_ISOLATED_BUILD, APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: origin, API_ORIGIN: `http://127.0.0.1:${fixture.address().port}`, STOREFRONT_REDIRECTS_VERIFIED: 'true', NEXT_TELEMETRY_DISABLED: '1' },
   });
   for (let attempt = 0; attempt < 100; attempt++) {
     if (web.exitCode !== null) throw new Error('Compiled storefront did not start');

@@ -8,7 +8,7 @@ import { getWebEnvironment } from '../../../lib/server/env';
 import { breadcrumbData, productData, type Query } from '../../../lib/seo';
 import { StructuredData } from '../../../components/structured-data';
 import { categoryHref, productHref, money, displayPrice } from '../../../lib/catalog/model';
-import { ProductGrid, Breadcrumb } from '../../../components/storefront';
+import { ProductGrid, Breadcrumb, StockState } from '../../../components/storefront';
 import { AddToCart } from '../../../components/cart-controls';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
 export async function generateMetadata({ params, searchParams }: Props) {
@@ -32,6 +32,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
   return <><StructuredData data={productData(origin, product, productImages(product).filter(image => !image.startsWith('/')))} />
     <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: 'Categories', path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }, { name: product.name, path: productHref(product) }])} />
     <Breadcrumb title={product.name} parents={[{ name: 'Categories', path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} /><div className="product-detail"><ProductGallery images={productImages(product)} name={product.name} />
-    <div><h1>{product.name}</h1><Link href={categoryHref(product.category)}>{product.category.name}</Link><p className="price">{money(displayPrice(product))} {product.salePrice ? <del>{money(product.price)}</del> : null}</p><AddToCart id={product._id} stock={product.stock} quantityPicker /><h2>Product description</h2><p className="description">{product.description || 'No description available.'}</p></div></div>
-    <h2>Similar products</h2><ProductGrid products={related.products.filter(item => item._id !== product._id).slice(0, 10)} /></>;
+    <div className="product-information"><Link className="eyebrow" href={categoryHref(product.category)}>{product.category.name}</Link><h1>{product.name}</h1><p className="price">{money(displayPrice(product))} {product.salePrice ? <del>{money(product.price)}</del> : null}</p><StockState stock={product.stock} /><AddToCart id={product._id} stock={product.stock} quantityPicker /><p className="purchase-note">Availability is checked when you add to cart.</p><h2>Product description</h2><p className="description">{product.description || 'No description available.'}</p></div></div>
+    <div className="section-heading related-heading"><h2>Similar products</h2></div><ProductGrid headingLevel={3} products={related.products.filter(item => item._id !== product._id).slice(0, 10)} /></>;
 }

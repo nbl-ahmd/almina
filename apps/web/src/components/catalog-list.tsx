@@ -16,10 +16,10 @@ export async function CatalogList({ title, params, offers = false, category, par
     query.set('page', String(next));
     return `?${query}`;
   }
-  return <><Breadcrumb title={title} parents={parents} /><h1>{title}</h1>
-    {!category ? <form className="filters" method="get"><label>Search products<input name="q" defaultValue={q} maxLength={100} /></label>
-      <label>Category<select name="category" defaultValue={selected}><option value="">All categories</option>{categories.map(cat => <option value={cat._id} key={cat._id}>{cat.name}</option>)}</select></label><button>Apply</button></form> : null}
-    {q ? <p>Results for “{q}”</p> : null}<ProductGrid products={result.products} />
+  return <><Breadcrumb title={title} parents={parents} /><div className="page-heading"><p className="eyebrow">THE PHARMACY COLLECTION</p><h1>{title}</h1><p>Explore products for your health, care and daily routine.</p></div>
+    {!category ? <form key={`${q}:${selected}`} className="filters" method="get" role="search" aria-label="Filter products"><label>Search products<input type="search" placeholder="What are you looking for?" name="q" defaultValue={q} maxLength={100} /></label>
+      <label>Category<select name="category" defaultValue={selected}><option value="">All categories</option>{categories.map(cat => <option value={cat._id} key={cat._id}>{cat.name}</option>)}</select></label><button type="submit">Apply</button>{q || selected ? <Link className="filter-reset" href="?">Clear filters</Link> : null}</form> : null}
+    {q ? <p className="results-label">Results for “{q}”</p> : null}<ProductGrid products={result.products} />
     <nav className="pagination" aria-label="Product pages">{page > 1 ? <Link href={pageHref(page - 1)}>Previous page</Link> : null}<span>Page {page}</span>{result.hasNext ? <Link href={pageHref(page + 1)}>Next page</Link> : null}</nav>
   </>;
 }

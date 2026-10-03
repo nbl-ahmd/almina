@@ -2,6 +2,12 @@
 
 Last updated: 2026-10-03.
 
+## Storefront design system and redesign
+
+Implemented locally on `codex/storefront-design-system`, 2026-10-03, using ui-ux-pro-max: one CSS token system, self-hosted typography, shared stroke icons, mobile/desktop navigation, editorial homepage/category discovery, product cards/grids, labelled search/filters, details/gallery, cart and the gated checkout review, footer and loading/error/empty states. Existing catalog/pricing/stock/cart/URL behavior remains; order placement was not activated. No production application, DB, API, media reference or deployment changed.
+
+Verification: workspace typecheck/lint, 17 focused regression tests, isolated Turbopack foundation build, compiled storefront smoke (including real 404s/308s and no production MCP), existing cart/stock/closed-store browser regression and 45 compiled visual/axe checks across nine views at 360/390/768/1024/1440px. Final views have zero overflow, broken product images, axe violations or incomplete audit items. Keyboard/focus, 200% mobile text, reduced motion, search/filter reset, gallery, loading, errors/retry and empty states passed. An ancestor loading boundary was avoided to preserve real missing-product/category status codes. See [the UI system](design-system/STOREFRONT.md) and [scope, verification, reproduction and activation gates](STOREFRONT_REDESIGN_2026-10-03.md). Real media/staging acceptance and the separate checkout migration remain activation gates.
+
 ## Measured performance work
 
 Implemented locally on `codex/production-performance`, 2026-10-03, after capturing public production and isolated compiled-build baselines. Deferred 33 legacy route screens and Next cart validation, converted the self-hosted font losslessly to WOFF2, reserved legacy card image space/removed a redundant preload, cached only category/banner presentation with authenticated tagged invalidation, and added redacted catalog query timing. Removed three confirmed-unused direct dependency declarations. Local initial CRA JavaScript falls 38.1%; Next catalog JavaScript 38.9%; Next font transfer 43.5%. Full metrics, bundle attribution, scripts, tradeoffs and rollout gates are in [the performance assessment](PERFORMANCE_2026-10-03.md).

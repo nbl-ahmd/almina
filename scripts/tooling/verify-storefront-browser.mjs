@@ -38,7 +38,7 @@ browser('reload'); contains('AED 20.00 per item');
 assert.equal(evaluate('document.querySelector(".quantity").textContent'), '4');
 browser('click', 'button[aria-label="Decrease Daily Care quantity"]');
 browser('wait', '--fn', 'document.querySelector(".quantity")?.textContent === "3"');
-browser('find', 'role', 'button', 'click', '--name', 'Remove'); contains('Your cart is currently empty');
+browser('find', 'role', 'button', 'click', '--name', 'Remove Daily Care from cart'); contains('Your cart is currently empty');
 await fetch(`${fixture}/__fixture/closed`);
 try {
   open('/products/daily-care--PD0001'); contains('Product description');

@@ -1,7 +1,9 @@
 "use client";
 import { useState } from 'react';
+import { Icon } from './icon';
+import Link from 'next/link';
 import { checkAddition } from '../app/cart/actions';
-export function AddToCart({ id, stock, quantityPicker = false }: { id: string; stock: number; quantityPicker?: boolean }) {
+export function AddToCart({ id, stock, quantityPicker = false, name }: { id: string; stock: number; quantityPicker?: boolean; name?: string }) {
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
@@ -21,6 +23,6 @@ export function AddToCart({ id, stock, quantityPicker = false }: { id: string; s
     } catch { setMessage('Unable to save your cart in this browser.'); }
     finally { setPending(false); }
   }
-  return <div>{quantityPicker && stock > 0 ? <label>Quantity<input type="number" min={1} max={Math.min(stock, 999)} value={quantity} onChange={event => setQuantity(Math.max(1, Math.min(stock, 999, Number(event.target.value) || 1)))} /></label> : null}
-    {stock > 0 ? <button type="button" disabled={pending} onClick={add}>{pending ? 'Checking…' : 'Add to cart'}</button> : <p>Temporarily out of stock</p>}<p role="status" className="status">{message}</p></div>;
+  return <div className="cart-controls">{quantityPicker && stock > 0 ? <label>Quantity<input type="number" min={1} max={Math.min(stock, 999)} value={quantity} onChange={event => setQuantity(Math.max(1, Math.min(stock, 999, Number(event.target.value) || 1)))} /></label> : null}
+    <button type="button" aria-label={name ? stock <= 0 ? `Out of stock: ${name}` : pending ? `Checking… ${name}` : `Add to cart: ${name}` : undefined} disabled={pending || stock <= 0} onClick={add}>{stock <= 0 ? 'Out of stock' : pending ? 'Checking…' : <><Icon name="bag" />Add to cart</>}</button><p role="status" className="status">{message}</p>{message === 'Added to cart.' ? <Link className="view-cart-link" href="/cart">View cart</Link> : null}</div>;
 }
