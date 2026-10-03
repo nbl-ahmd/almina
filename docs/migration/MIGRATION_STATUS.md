@@ -1,0 +1,138 @@
+# Migration status
+
+Last updated: 2026-10-03.
+
+## Production migration readiness — blocked
+
+Prepared on `codex/production-migration-readiness`: [Render cutover/recovery runbook](PRODUCTION_CUTOVER_2026-10-03.md), three-phase fail-closed release evidence validator (`npm run release:gate`), and CI regression coverage for missing/skipped evidence, exact SHAs, deployment readbacks, post-cutover timestamps, 24-hour observation and retained legacy fields. Includes all twelve staging/production journeys, environment/provider/media/SEO gates, reconciliation, explicit monitoring thresholds and safe rollback. The validator checks attestations, not provider truth; production deployment controls and telemetry are not configured by it.
+
+Owner confirmed backend `https://almina-of4b.onrender.com`, storefront `https://www.alminapharmacy.com/`, and Render deployment from `master` (correcting initial `main`). Read-only GitHub verification confirms `master` protection requires up-to-date `verify`; source branches remain unmerged. Current live Render SHA and new deployed SHA remain unverified. No deployment, provider send, database migration, credential rotation or legacy field removal occurred.
+
+Fresh local verification: 7 release-gate regressions, 59 focused security, 20 disposable real-database/load and 12 Chromium smoke tests passed; lint and workspace typecheck passed. CLI template parsing and the pending release's nonzero preflight exit were verified. Strict audit still fails: root 19 high/2 critical, backend 13 high/0 critical, frontend 64 high/1 critical dependency entries. These are release blockers, not waived findings.
+
+Anonymous read-only production probes returned homepage 200, robots.txt 200 text/plain, sitemap.xml 200 XML and backend root 500. Homepage raw HTML contained the CRA root with no canonical link detected. These probes do not prove catalog, checkout, notification or admin health and did not inspect customer data. No production order was created. Backup/restoration, secret revocation, exact Render artifacts/config, staging/provider acceptance, production journeys/SEO/security and monitored order/stock reconciliation remain pending. **Do not merge to trigger production yet; migration is not complete.**
+
+## Production verification suite review
+
+Expanded on `codex/production-verification-review`, 2026-10-03. Retained `.github/workflows/foundation.yml` and its `verify` check, removed path-filter gaps, installed backend dependencies/build adapters in the correct order, and added mandatory disposable MongoDB integration/load tests and pinned Chromium E2E against compiled Next/CRA applications. Coverage includes commercial policy edges, lifecycle transitions, real catalog mutations, stock/checkout races, retry idempotency, customer/mobile checkout, Next admin auth/order updates, webhook validation and decoded upload abuse. The review fixed image format spoofing before media effects and made the WhatsApp verification challenge strictly validated plain text.
+
+Local verification: 43 unit, 95 API, 59 overlapping focused security, 20 real database/load and 12 Chromium tests passed, together with clean installation, lint/typecheck, production foundation build and compiled smoke. No production database/provider/migration/deployment operation occurred. Full-lockfile high/critical audits deliberately fail on existing dependency debt and block the final gate; see [review evidence, commands, budgets, CI, deployment prerequisites and rollback](PRODUCTION_VERIFICATION_2026-10-03.md).
+
+GitHub `master` now requires up-to-date GitHub Actions `verify`, including administrators, with force pushes/deletion disabled; readback confirmed the rule. Code has not been pushed, so the expanded workflow is pending merge. Provider-side direct production deployment controls and new hosted preview/staging deployments remain pending confirmed provider/project access, sanitized staging configuration and successful audits. Next customer checkout remains disabled; the current legacy checkout owner is covered by real browser/database tests.
+
+
+## Storefront design system and redesign
+
+Implemented locally on `codex/storefront-design-system`, 2026-10-03, using ui-ux-pro-max: one CSS token system, self-hosted typography, shared stroke icons, mobile/desktop navigation, editorial homepage/category discovery, product cards/grids, labelled search/filters, details/gallery, cart and the gated checkout review, footer and loading/error/empty states. Existing catalog/pricing/stock/cart/URL behavior remains; order placement was not activated. No production application, DB, API, media reference or deployment changed.
+
+Verification: workspace typecheck/lint, 17 focused regression tests, isolated Turbopack foundation build, compiled storefront smoke (including real 404s/308s and no production MCP), existing cart/stock/closed-store browser regression and 45 compiled visual/axe checks across nine views at 360/390/768/1024/1440px. Final views have zero overflow, broken product images, axe violations or incomplete audit items. Keyboard/focus, 200% mobile text, reduced motion, search/filter reset, gallery, loading, errors/retry and empty states passed. An ancestor loading boundary was avoided to preserve real missing-product/category status codes. See [the UI system](design-system/STOREFRONT.md) and [scope, verification, reproduction and activation gates](STOREFRONT_REDESIGN_2026-10-03.md). Real media/staging acceptance and the separate checkout migration remain activation gates.
+
+## Measured performance work
+
+Implemented locally on `codex/production-performance`, 2026-10-03, after capturing public production and isolated compiled-build baselines. Deferred 33 legacy route screens and Next cart validation, converted the self-hosted font losslessly to WOFF2, reserved legacy card image space/removed a redundant preload, cached only category/banner presentation with authenticated tagged invalidation, and added redacted catalog query timing. Removed three confirmed-unused direct dependency declarations. Local initial CRA JavaScript falls 38.1%; Next catalog JavaScript 38.9%; Next font transfer 43.5%. Full metrics, bundle attribution, scripts, tradeoffs and rollout gates are in [the performance assessment](PERFORMANCE_2026-10-03.md).
+
+No production deployment, DB/index/media change or Next checkout activation occurred. Live deployed assets differ from local source; real-user INP/percentiles, production server/Atlas latency and hosted CDN/load behavior remain unmeasured. Next LCP did not improve in the fixture; legacy list CLS still needs representative catalog validation. The versioned cursor/index plan was measured in disposable MongoDB, while the web compatibility adapter still retains legacy offset pagination. Admin writers do not yet invoke tag invalidation, and multi-instance cache behavior remains a rollout gate.
+
+## Current state
+
+Repository audit complete for audit baseline `3d27241`. An additive modernization foundation is implemented on `modernization/foundation`: Next.js 16.3.8/React 19.3/Node 24 LTS, npm workspaces, TypeScript/ESLint, shared validation/client contracts, isolated environment configuration, persistent API health/error/logging conventions and a lazy database boundary. The legacy frontend/backend and their lockfiles remain intact. No production data, deployed services or credentials were changed; no route cutover occurred. See [foundation decisions, dependencies/conflicts and verification](FOUNDATION_2026-10-02.md). Audit deliverables A–O and rollout/rollback gates remain recorded in [the production audit](PRODUCTION_AUDIT_2026-10-02.md).
+
+## Blocking findings
+
+- P0: committed credential material, unauthenticated privileged operations and staff provisioning, public password hashes and customer/message PII, unprotected realtime broadcasts, client-authoritative totals and unsafe stock/order creation.
+- P1: unrestricted messaging/uploads/query predicates/regex, unsigned/replayed webhook processing, insecure SMTP certificate handling, session weaknesses and reachable dependency vulnerabilities.
+- Integrity prerequisites: define approved VAT/delivery/cancellation policies, transactions/idempotency/numbering, immutable new order snapshots, legacy schema/media compatibility and safe reconciliation.
+
+The audit baseline remains historical; authentication/authorization findings are remediated in local source by the hardening work below, pending production rollout. Critical checkout findings are remediated in local source by the commerce work below, pending staged verification and production rollout. Credential validity and prior revocations are unknown; required rotation/revocation is documented in audit section F and has not been performed.
+
+Foundation follow-up conflicts: retained legacy PM2 tree has 23 advisory entries including two critical; compatible ESLint 9 stack is deprecated pending plugin ESLint 10 support. Root build/start remain legacy deployment contracts, while root installation now requires Node 24/npm 11. These do not authorize a deployment or replace the blocking remediation work.
+
+## Verification performed
+
+- Static review of eight mounted API routers/49 handlers, nine models, 44 active frontend route definitions/consumers, commerce/auth/media/integrations and deployment/test configuration.
+- Tracked credential-file presence and a redacted pattern scan of 616 reachable historical text blobs across 179 commits; no credential values recorded in artifacts. Six distinct hardcoded bearer literals were found in WhatsApp helper history; revocation status is unknown.
+- Read-only lockfile advisory audits: root 38, backend 52, frontend 102 vulnerable package entries, including tooling/transitive trees; not unique exploit counts.
+- Audit-time official Next.js documentation/security review identified 16.3.8 without installing it. Foundation implementation rechecked registry/security sources and installed that patched stable 16.x release with matching bundled documentation.
+
+Foundation verification completed locally: install and clean `npm ci`, full typecheck, lint, 30 unit/integration tests, web Turbopack production build, API bundle and compiled production smoke. Next DevTools MCP configured and connected; runtime compilation/error diagnostics clear. Browser navigation/reload, server rendering, console/network, React server boundaries, 375/1280 px layouts verified. The preview remains noindex and database-disabled; smoke verifies upstream failure, health, real 404s and absent production MCP.
+
+Not performed: database/provider/deployment access, production probing/index verification, real customer/staff/commerce workflows, legacy Node 24 runtime validation, hosted CI execution, or production-route performance measurement. A post-change CRA bundle measurement is recorded in the dependency report; no pre-change artifact was available for comparison. These remain rollout gates.
+
+## Dependency modernization assessment
+
+Completed a controlled dependency inventory and cleanup on 2026-10-02. Removed confirmed-unused CRA/backend packages, replaced Express `body-parser` middleware with Express built-ins, consolidated UUID usage, and regenerated both legacy lockfiles. Kept active production dependencies until their routes/workflows migrate. Root and legacy audit findings remain; the full decision table, direct inventory, test/build results, and package-specific decisions are in [the dependency modernization report](DEPENDENCY_MODERNIZATION_2026-10-02.md). CRA builds with warnings at 507.6 kB gzipped main JS. Its Jest run is blocked by the existing Swiper ESM import, and the backend test script is a placeholder; upload/parser major upgrades remain separately unverified.
+
+## Next ordered work
+
+1. Confirm actual production deployment, owners, credential status, backups/recovery and read-only data/media/URL inventory.
+2. Roll out the locally verified auth boundary with rotated credentials, reviewed accounts, same-origin routing and static-host headers; verify sanitized staging first.
+3. Repair commerce integrity in the shared API before moving checkout.
+4. Use the independently verified foundation to migrate low-risk storefront routes incrementally after security/integrity gates; confirm deployment commands and isolate sanitized staging first.
+5. Migrate cart/checkout/admin/integrations through verified compatibility adapters; cut over progressively with safe rollback.
+6. Remove legacy structures only after usage/retention and recovery verification.
+
+## Media canonicalization
+
+Recorded the existing CDN filename URL contract as canonical for new storefront reads and configured Next Image to use it. The CDN's backing provider is not verifiable from repository configuration. Drive-backed product/category/banner/poster writes and compatibility fields remain active pending a production data inventory, provider confirmation, per-file copy/decode/CDN/render validation, additive backfill and observation window. No live URL was changed, no media or DB reference was migrated/deleted, and Drive credentials/dependency were not retired. See [media inventory, provider decision and staged migration gates](MEDIA_CANONICALIZATION_2026-10-03.md).
+
+Future implementation must update this file with completed gates and evidence, not merely planned changes.
+
+## Modular API service migration
+
+Implemented an additive modular Express 5.2.1/TypeScript service on `codex/modular-api`: public catalog, staff login/session/logout, server-enforced admin/city-scoped order reads, explicit DTOs/projections, strict request schemas/body limits, indexed text-search predicates, scoped cursor pagination, secure headers, exact-origin CORS, rate limits, request deadlines, redacted structured logs/request IDs and graceful draining/database lifecycle. Indexes have an explicit additive/idempotent plan/apply script; no index was applied and no database was contacted. See [route/auth, schema/index inventories, performance queries and compatibility changes](MODULAR_API_2026-10-02.md).
+
+This does not remediate the retained legacy backend or constitute a production cutover. Legacy callers/deployment/media/provider integrations and all commerce/admin mutation workflows remain legacy-owned. Checkout integrity, account inventory/credential rotation, legacy authentication rollout, database/index explain checks and distributed ingress quotas remain required gates. New staff sessions intentionally reject the legacy compromised JWT contract and enforce current server-side city assignments; unassigned staff have no order access.
+
+Local verification: full typecheck/lint, 52 automated tests with synthetic query doubles/loopback HTTP, API bundle, full foundation production build, compiled-process/foundation smoke and connection-free index plan. No production/customer data, provider integrations or database index plans were exercised against a live database. Planner/load behavior remains unverified.
+
+## Storefront preview route migration
+
+Implemented the requested storefront route structure in the isolated Next.js preview on `codex/storefront-routes`. Public catalog pages now fetch/render on the server through a guarded read-only legacy adapter; client islands handle only gallery/cart interactions and browser storage. Existing product IDs and category MongoDB IDs remain the route identity, with readable slug prefixes. Legacy product/category links are supported and query parameters retained. Permanent redirects are gated by `STOREFRONT_REDIRECTS_VERIFIED` (false by default), pending real staging/production target and URL inventory verification. Typography/palette/card language use the existing PT Sans and pharmacy assets; no production redesign/cutover occurred.
+
+Cart imports legacy IDs/quantities, ignores stored prices and rechecks current catalog/store status through server actions. The checkout URL provides saved-cart review, with ordering disabled: live checkout migration is **incomplete** until the audited pricing, policy, atomic inventory and idempotency prerequisites are remediated. No order, inventory, customer, integration or database writes were introduced. Unmigrated legacy routes remain owned by the legacy deployment.
+
+Local verification: full typecheck/lint, 34 unit/integration tests, Turbopack production build, compiled storefront smoke and foundation smoke passed; running Next.js 16.3.8 Turbopack route/compilation/error diagnostics clear after intentional outage recovery. Browser direct navigation and refresh passed for all nine expected routes, dynamic details/categories, old shared URLs and 404s. Verified legacy cart import with forged prices, persistence, quantity/stock limits, removal, store closure, 375/1280 px layouts/mobile links and error-boundary retry. React inspection confirms server pages/navigation with small interactive islands. Verification used only a synthetic loopback API; production visual/data parity and real checkout remain unverified. See [route contracts, gates, limitations and reproducible verification](STOREFRONT_ROUTES_2026-10-02.md).
+
+
+## Authentication and authorization hardening
+
+Implemented on `codex/auth-hardening`, 2026-10-02, across both legacy and versioned APIs. Replaced JWT/localStorage auth with shared digest-backed, expiring HTTP-only cookies; enforced current-role/city RBAC and default-deny authorization before legacy handlers/uploads; made staff provisioning admin-only; protected user/catalog/category/banner/store/batch/order/WhatsApp/push operations; added server invalidation, distributed login quotas, exact Origin/custom-header CSRF checks, signed/replay-checked webhooks, realtime reauthorization and stricter security headers/CSP. The legacy client now verifies server sessions and uses cookies, with confirmed browser login/refresh/logout. Public published media contracts are preserved. Source credentials were removed; rotation is still required. No production data/deployment/provider/credential action occurred.
+
+See the [53-handler route authorization matrix](AUTHORIZATION_MATRIX_2026-10-02.md) and [hardening decisions, tests, compatibility and rollout gates](AUTH_HARDENING_2026-10-02.md). Local verification includes 107 passing automated tests with security regressions, typecheck/lint, foundation and CRA builds, compiled API/storefront smoke, Next MCP and browser workflows, and connection-free index planning. Static-host headers are supplied but require operator application to the actual deployment. Compromised legacy JWT/bearer sessions are deliberately rejected, requiring staff re-login and account inventory review.
+
+Guest checkout pricing/inventory/atomicity/idempotency findings are addressed by the shared commerce service below, pending production rollout. Dependency advisories, provider recovery/durable jobs, real index/load checks and production integration/template/media parity remain gates. This work must not be described as a fully secure production commerce cutover.
+
+
+## Commerce integrity
+
+Implemented locally on `codex/commerce-integrity`, 2026-10-03. Both checkout APIs now share a strict TypeScript transaction service: current DB products and approved server policy determine prices, discounts, inclusive VAT, delivery, AED 10 minimum, availability, stock and final totals. Atomic conditional decrements, order persistence, counter numbering, durable retry receipts and notification jobs commit together. New orders save immutable commercial line snapshots and explicit lifecycle history; pre-dispatch cancellation restores new-order stock exactly once. Legacy routes/screens retain adapters and historical totals; unsafe commercial edits are rejected. Browser checkout sends intent only and preserves retry keys through uncertain results.
+
+The owner approved inclusive VAT, current emirate fees and once-only pre-dispatch restocking. The connection-free plan and gated, idempotent additive migration preserve legacy fields, flag contradictory historical states and mark unavailable snapshot provenance; they never guess historical product prices or stock effects. Real local replica-set regressions cover concurrency, rollback, tampering, duplicate submission, lifecycle races, RBAC, migration reruns and both driver/HTTP stacks. See [implementation, verification, rollout and rollback](COMMERCE_INTEGRITY_2026-10-03.md). No production migration or deployment occurred. Staged business-flow acceptance, production backups/index/data inventory and a coordinated writer maintenance window remain prerequisites to activation. Next storefront checkout remains gated pending its separate migration.
+
+
+## Storefront SEO
+
+Implemented locally on `codex/storefront-seo`, 2026-10-03: request-time metadataBase/title template, route/product/category metadata, canonicals, Open Graph/Twitter, production-only public indexing, robots, database-backed cursor-sharded sitemaps, nonce-safe Organization/Product/Breadcrumb JSON-LD, real 404s, default permanent legacy/renamed-slug redirects and explicitly reviewed deleted-product replacements. Product structured offers reflect displayed AED catalog prices; availability stays omitted pending Next checkout/store-open integration. Preview/staging remains excluded; filtered/paginated/search/private routes remain noindex. No deployment, production data access or database write occurred.
+
+Verification includes typecheck/lint, automated tests, a disposable real MongoDB pagination/visibility regression, Turbopack build, compiled API/foundation/storefront/SEO smoke and Next MCP/browser checks. Raw production HTML includes meaningful product content without JavaScript and metadata in head for browser/Googlebot/Facebook/Twitter user agents. Actual URL/data/media inventory, matching legacy/modular API catalog databases, large-catalog sitemap latency/quota/query plans and hosted crawler verification remain deployment gates. See [SEO contracts, configuration, verification and rollback](STOREFRONT_SEO_2026-10-03.md).
+
+
+## Dedicated Next.js administration
+
+Implemented locally on `codex/next-admin`, 2026-10-03: separate `(admin)` route group/layout and storefront layout, cookie login, server-verified page/data access, independently authorized default-deny gateway and retained backend RBAC/city scoping. Migrated dashboard, inventory/search/sale/stock/disabled views, product/category/banner management, transaction-backed order actions, WhatsApp conversations/templates/broadcasts/posters/reports, staff management, notifications, store settings and CSV product import. Admin metadata/headers exclude indexing; semantic forms/tables, responsive navigation, loading and retry/error states are included. Legacy admin links have reversible explicit redirects.
+
+Order updates use authenticated PII-free SSE invalidations from committed authorized orders, with initial/reconnect reconciliation and a recovery poll. Socket.IO keeps connection/delivery authorization and gains a tested shared-bus interface; a deployment bus is not configured. Push subscriptions remain staff-owned; optional public VAPID configuration and real provider delivery remain staging gates. No production data/provider/deployment/credential operation or schema migration occurred. Existing commercial policies, order snapshots and API mutation ownership are retained. See [implementation, verification, compatibility, limits and rollout](NEXT_ADMIN_2026-10-03.md).
+
+Local verification passed: typecheck/lint, 131 automated tests (two database suites skipped in the ordinary run), 11 disposable replica-set integration checks, isolated production build, compiled admin/storefront smoke, 15 browser routes with 60 viewport/accessibility checks, functional login/forms/role-denial/order-arrival/outage recovery and admin-scoped worker registration. Final live Turbopack compilation and browser/runtime diagnostics are clear. Real provider/media parity, ingress quota/load/streaming acceptance and legacy Socket.IO shared-bus configuration remain staging gates.
+
+
+## Completion work — 2026-10-04
+
+The cumulative `codex/complete-production-migration` branch includes all twelve modernization branches. It adds functional, explicitly gated Next checkout with server-verified reviewed totals and saved retry intent; Tailwind 4/PostCSS; account-scoped recovered Cloudinary images; closed-store/first-admin recovery bootstrap and atomic draft catalog imports; patched backend dependencies and deterministic platform-supervised startup; hidden CI evidence uploads; and an exact-commit, verification-gated staging deployment workflow. Unused legacy email code/dependencies were removed. CRA is deliberately retained because compatibility tests and the unverified fallback still depend on it.
+
+Local lint/typecheck/build and 47 unit, 7 release, 95 API, 22 disposable database and 19 Chromium tests pass. Dependency auditing still fails with root 5 high and CRA frontend 59 high findings; backend has none high/critical and all critical findings were removed. Protected master requires green `verify` and auto-deploys on merge. No protected merge, production DB write, credential change, provider call or deployment occurred. The replacement Atlas cluster exists, but hosting/configuration and hosted business/provider acceptance are not verified. Migration completion and CRA retirement remain blocked by these gates. See [the complete recovery, hosting, merge and retirement flow](COMPLETION_FLOW_2026-10-04.md).
+
+
+### Merge-blocker remediation — 2026-10-04
+
+Supersedes the dependency counts in the earlier completion record: root, backend and frontend now have zero high/critical audit findings. CRA build tooling is replaced by maintained Vite while preserving the compatibility UI. Next lint glob discovery uses a scoped maintained adapter with regression coverage. Obsolete Vercel configs and dead CRA test/web-vitals scaffolding are removed. Product stock edits now compare loaded stock atomically, reject stale forms, accept zero stock, and validate price precision; old Drive assets survive replacement failures. Repository integration must use a Render skip phrase until hosted acceptance is complete. This does not claim phase 14 production completion, complete backend ownership transfer, full Tailwind adoption, or fallback retirement. See COMPLETION_FLOW_2026-10-04.md and CODEX_HANDOFF_PROMPTS.md.

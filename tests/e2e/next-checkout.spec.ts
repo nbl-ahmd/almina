@@ -1,0 +1,60 @@
+import { test, expect, reset, state, customer, productId, commerceOrigin } from './fixtures';
+import type { Page } from '@playwright/test';
+
+const origin = 'http://127.0.0.1:4740';
+async function prepare(page: Page) {
+  await page.goto(origin + '/checkout');
+  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
+  for (const [name, value] of Object.entries(customer)) {
+    const field = page.locator(`[name="${name}"]`);
+    if (name === 'emirate' || name === 'payment') await field.selectOption(value);
+    else await field.fill(value);
+  }
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
+}
+test.beforeEach(async ({ request }) => { await reset(request); });
+for (const width of [360, 390, 768, 1280]) test(`Next checkout at ${width}px confirms current totals without overflow`, async ({ page, request }) => {
+  await page.setViewportSize({ width, height: 900 });
+  await prepare(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  const submitted = page.waitForRequest(req => req.method() === 'POST' && new URL(req.url()).pathname === '/api/checkout');
+  await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Order received' })).toBeVisible();
+  const input = (await submitted).postDataJSON();
+  expect(Object.keys(input).sort()).toEqual(['acceptedQuoteHash', 'customer', 'idempotencyKey', 'items']);
+  expect(input.items).toEqual([{ productId, quantity: 2 }]);
+  const result = await state(request);
+  expect(result.orders).toHaveLength(1); expect(result.stock).toBe(2); expect(result.receipts).toBe(1);
+  expect(result.orders[0]!.totals.totalMinor).toBe(4000);
+});
+test('Next checkout refuses changed prices and requires a fresh review', async ({ page, request }) => {
+  await prepare(page);
+  expect((await request.post(commerceOrigin + '/__fixture/price')).status()).toBe(204);
+  await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
+  await expect(page.locator('p[role="alert"]')).toContainText('Prices or delivery have changed');
+  expect((await state(request)).orders).toHaveLength(0);
+  expect((await state(request)).stock).toBe(4);
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Place order — AED 38.00', exact: true })).toBeVisible();
+});
+test('Next checkout reload retries the saved intent after the server has committed', async ({ page, request }) => {
+  await prepare(page);
+  await request.post(commerceOrigin + '/__fixture/delay');
+  await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
+  await expect.poll(async () => (await state(request)).orders.length).toBe(1);
+  const key = await page.evaluate(() => JSON.parse(sessionStorage.getItem('almina.checkout.pending.v1')!).idempotencyKey);
+  await page.reload();
+  const submitted = page.waitForRequest(req => req.method() === 'POST' && new URL(req.url()).pathname === '/api/checkout');
+  await page.getByRole('button', { name: 'Retry pending order', exact: true }).click();
+  expect((await submitted).postDataJSON().idempotencyKey).toBe(key);
+  await expect(page.getByRole('heading', { name: 'Order received' })).toBeVisible();
+  const result = await state(request);
+  expect(result.orders).toHaveLength(1); expect(result.stock).toBe(2); expect(result.receipts).toBe(1);
+});
+test('Next checkout gateway rejects cross-origin submissions and forged totals', async ({ request }) => {
+  const input = { customer, items: [{ productId, quantity: 2 }] };
+  expect((await request.post(origin + '/api/checkout/quote', { data: input, headers: { Origin: 'https://other.example', 'X-CSRF-Protection': '1' } })).status()).toBe(403);
+  expect((await request.post(origin + '/api/checkout/quote', { data: { ...input, total: 1 }, headers: { Origin: origin, 'X-CSRF-Protection': '1' } })).status()).toBe(400);
+  expect((await state(request)).orders).toHaveLength(0);
+});

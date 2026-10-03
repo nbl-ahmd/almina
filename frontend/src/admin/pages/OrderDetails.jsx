@@ -10,7 +10,7 @@ import BackToTopButton from '../../client/components/BackToTopButton';
 const OrderDetails = () => {
   const { OrderId } = useParams();
   const [order, setOrder] = useState([]);
-  const [editMode, setEditMode] = useState(false);
+  const [lifecycleError, setLifecycleError] = useState('');
   const [documentId, setDocumentId] = useState(''); // Add state for document ID
   const [documentIdError, setDocumentIdError] = useState('');
   const [documentAmount, setDocumentAmount] = useState(); // Add state for document ID
@@ -24,10 +24,9 @@ const OrderDetails = () => {
     axios
       .get(`${baseURL}/api/orders/${OrderId}`)
       .then((response) => {
-        console.log(response.data);
         setOrder(response.data);
       })
-      .catch((error) => console.log(error));
+      .catch(() => setLifecycleError('Unable to load this order.'));
     setDocumentId('');
     setDocumentIdError('');
   }, [OrderId]);
@@ -82,8 +81,6 @@ const OrderDetails = () => {
 
     if (documentAmount !== order.customer.totalAmount) {
       setDocumentAmountValidateError('bill Amount not same');
-      console.log(documentAmount, order.customer.totalAmount);
-      console.log(typeof (documentAmount), typeof (order.customer.totalAmount));
       return;
     } else {
       setDocumentAmountValidateError('');
@@ -95,110 +92,43 @@ const OrderDetails = () => {
 
     try {
       await axios.put(`${baseURL}/api/orders/${orderId}`, { dispatched: true, billno: documentId, billamount: documentAmount });
-      console.log('Order dispatched successfully');
       // After a successful update, update the order state
       setOrder((prevOrder) => ({
         ...prevOrder,
         dispatched: true,
+        status: 'dispatched',
       }));
 
     } catch (error) {
-      console.error('Error dispatching order:', error);
+      setLifecycleError('The server rejected dispatch. Check the order status and recorded bill amount.');
     }
   };
   const handleCancelOrder = async (orderId) => {
 
     try {
-      await axios.put(`${baseURL}/api/orders//cancel/${orderId}`, { cancelled: true });
-      console.log('Order canceled successfully');
+      await axios.put(`${baseURL}/api/orders/cancel/${orderId}`, { cancelled: true });
       setShowDeleteModal(false);
       // After a successful update, update the order state
       setOrder((prevOrder) => ({
         ...prevOrder,
-        cancelled: true,
+        canceled: true,
+        status: 'cancelled',
       }));
 
     } catch (error) {
-      console.error('Error cancelling order:', error);
+      setLifecycleError('The server rejected cancellation. Reload the order to check its current status.');
     }
   };
 
-  const cancelOrder = (id) => {
-    console.log(id);
+  const cancelOrder = () => {
     // Show the delete confirmation modal
     setShowDeleteModal(true);
   };
   const hideDeleteModal = () => {
     // Close the delete confirmation modal without performing any action
     setShowDeleteModal(false);
-    console.log('id');
   };
 
-  const confirmDelete = (id) => {
-    console.log(id);
-    // axios
-    // .delete(`${baseURL}/api/products/${id}`)
-    // .then((res) => {
-    //     // Handle successful deletion if needed
-    //   })
-    //   .catch((error) => console.log(error));
-
-    // Close the delete confirmation modal
-    setShowDeleteModal(false);
-  };
-
-  const handleEditClick = () => {
-    setEditMode(!editMode);
-  };
-
-  const handleSaveClick = async () => {
-    // Calculate the updated total sale price and total amount
-    const updatedOrder = { ...order };
-    let updatedTotalSalePrice = 0;
-    let updatedTotalAmount = 0;
-    let itemPrice = 0;
-
-    if (updatedOrder.cartItems) {
-      updatedOrder.cartItems.forEach((cartItem) => {
-        // Multiply the new quantity with the original price
-        const newQuantity = cartItem.quantity;
-        const originalPrice = cartItem._id.salePrice ? cartItem._id.salePrice : cartItem._id.price;
-        itemPrice = newQuantity * originalPrice;
-
-        // Update the total sale price
-        updatedTotalSalePrice += itemPrice;
-      });
-    }
-
-    // Calculate the updated total amount
-    updatedTotalAmount = updatedTotalSalePrice + (order.customer.totalAmount - order.customer.totalSalePrice);
-
-    // Update the customer details in the order
-    updatedOrder.customer.totalSalePrice = updatedTotalSalePrice;
-    updatedOrder.customer.totalAmount = updatedTotalAmount;
-
-    try {
-      // Make a PUT request to update the order in the API
-      setOrder(updatedOrder);
-      await axios.put(`${baseURL}/api/orders/edit/${order._id}`, updatedOrder);
-
-      // Update the local state to reflect the changes
-
-      // Exit edit mode
-      setEditMode(false);
-
-      console.log('Order updated successfully');
-    } catch (error) {
-      console.error('Error updating order:', error);
-    }
-  };
-
-  const handleQuantityChange = (newQuantity, index) => {
-    // Update the quantity of the specified cart item
-    const updatedOrder = { ...order };
-    updatedOrder.cartItems[index].quantity = newQuantity;
-    setOrder(updatedOrder);
-  };
   const openGallery = (imageURL) => {
     setSelectedImage(imageURL);
     setGalleryOpen(true);
@@ -206,38 +136,20 @@ const OrderDetails = () => {
 
   return (
     <Container sx={{ mt: 2, marginBottom: '5rem' }}>
+      {lifecycleError && <Alert severity='error'>{lifecycleError}</Alert>}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 5, fontFamily: 'Poppins, sans-serif', fontWeight: '300', fontSize: '15px' }}>
         <div>
-          <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>Order # {order.orderId} {order.canceled ? (
-              <Chip label="cancelled" color="error" variant="outlined" />
-            ) : order.dispatched ?
-              (<Chip label="dispatched" color="success" variant="outlined" />)
-              : (<Chip label="pending" color="warning" variant="outlined" />)}
+          <Typography sx={{ fontSize: '1.5rem', fontWeight: 600 }}>Order # {order.orderId} <Chip label={order.status || 'pending'} variant='outlined' />
 
           </Typography>
           <Typography sx={{ color: 'rgb(145, 158, 171)' }}>{formattedDate}</Typography>
         </div>
 
-        {editMode ? (
-          <Button className="btn btn-p" onClick={handleSaveClick}>
-            Save
-          </Button>
-        ) : (
-          !order.dispatched ? (
-            <Box>
-              <Button className="btn btn-p me-3" onClick={() => handleDispatchOrder(order._id)}>
-                Dispatch
-              </Button>
-              <Button className="btn btn-danger" onClick={() => cancelOrder(order._id)}>
-                cancel
-              </Button>
-            </Box>
-
-          ) : (
-            <Button className="btn btn-dark" onClick={() => handleDispatchOrder(order._id)}>
-              Update
-            </Button>
-          )
+        {['pending', 'confirmed', 'packed'].includes(order.status || 'pending') && (
+          <Box>
+            <Button className="btn btn-p me-3" onClick={() => handleDispatchOrder(order._id)}>Dispatch</Button>
+            <Button className="btn btn-danger" onClick={() => cancelOrder(order._id)}>Cancel</Button>
+          </Box>
         )}
       </Box>
       <Dialog
@@ -268,12 +180,9 @@ const OrderDetails = () => {
           <Card sx={{ p: 3, boxShadow: 'rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px' }}>
             <div className="d-flex justify-content-between ">
               <h6>Details</h6>
+              {!order.snapshotAvailable && <Alert severity='info'>Historical line snapshots were not recorded. Product labels below are current catalog hints; recorded order totals are preserved.</Alert>}
 
-              {editMode ? (
-                <Button className='btn-p' onClick={handleSaveClick}>Save</Button>
-              ) : (
-                <Button className='btn-dark' onClick={handleEditClick}>Edit</Button>
-              )}
+
             </div>
 
             <Box>
@@ -283,7 +192,7 @@ const OrderDetails = () => {
                 order.cartItems.map((cartItem, index) => (
                   <Box key={index} sx={{ py: 3, bgcolor: '#fff', borderRadius: '15px', display: 'flex', alignItems: 'center', mb: 1, fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: '400' }}>
                     <div className="d-flex flex-grow-1">
-                      <div
+                      {cartItem._id.image && <div
                         className="image-container"
                         onClick={() => openGallery(cartItem._id.image)}
                       >
@@ -293,7 +202,7 @@ const OrderDetails = () => {
                           width={'100px'}
                           className="me-4 bg-body border rounded-3"
                         />
-                      </div>
+                      </div>}
 
 
                       <div className="d-flex flex-column justify-content-center user-details">
@@ -305,38 +214,23 @@ const OrderDetails = () => {
                         <span className="mb-1">
                           {cartItem._id.name}
                         </span>
-                        <Typography sx={{ fontWeight: '300' }}>{cartItem._id.category.name}</Typography>
+                        <Typography sx={{ fontWeight: '300' }}>{cartItem._id.category?.name}</Typography>
                       </div>
                     </div>
 
                     <div className="d-flex w-25 justify-content-between">
-                      {editMode ? (
-                        <TextField
-                          sx={{ width: '80px' }}
-                          id="outlined-number"
-                          label="Quantity"
-                          type="number"
-                          value={cartItem.quantity}
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          onChange={(e) => handleQuantityChange(Number(e.target.value), index)}
-                        />
-
-                      ) : (
-                        <div>x {cartItem.quantity}</div>
-                      )}
+                      <div>x {cartItem.quantity}</div>
 
                       <div>
-                        {cartItem._id.salePrice ? (
+                        {cartItem._id.sale && cartItem._id.salePrice != null ? (
                           <>
                             <span className="">
-                              <span className="text-strike me-2">{cartItem._id.price}</span>
+                              <span className="text-strike me-2">{cartItem._id.price ?? 'Unknown'}</span>
                               {cartItem._id.salePrice}
                             </span>
                           </>
                         ) : (
-                          <span>{cartItem._id.price}</span>
+                          <span>{cartItem._id.price ?? 'Unknown'}</span>
                         )}
                       </div>
                     </div>

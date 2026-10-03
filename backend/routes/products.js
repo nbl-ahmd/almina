@@ -1,3 +1,4 @@
+const { catalogFilter, escapeSearch } = require('../security/catalog-query.cjs');
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -10,14 +11,14 @@ const Category = require('../models/Category');
 const productRouter = express.Router();
 const uploadDir = path.join(__dirname, '..', 'public/products');
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
 const fs = require('fs');
 
 //google
 const { Readable } = require('stream');
 const { google } = require('googleapis');
 // Load the JSON key file
-const keyFile = path.join(__dirname, '/cred.json');
+const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 // Create a new instance of the drive API
 const auth = new google.auth.GoogleAuth({
@@ -43,7 +44,7 @@ async function generateProductID() {
     }
     return `PD${String(maxID + 1).padStart(4, '0')}`;
   } catch (error) {
-    console.error('Error generating product ID:', error);
+
     throw error;
   }
 }
@@ -69,7 +70,7 @@ async function generateProductID() {
 //       const exifData = await sharp(image.buffer).metadata();
 //       orientation = exifData.orientation || 1;
 //     } catch (error) {
-//       console.error('Error reading EXIF data:', error);
+//
 //     }
 
 //     // crop the image into a square
@@ -120,7 +121,7 @@ async function generateProductID() {
 
 //       res.status(201).json({ message: 'product created successfully' });
 //     } catch (error) {
-//       console.error('Error uploading file to Google Drive:', error);
+//
 //       res.status(500).json({ error: 'Internal server error' });
 //     }
 //   } else {
@@ -143,7 +144,7 @@ async function generateProductID() {
 
 //       res.status(201).json({ message: 'product created successfully' });
 //     } catch (error) {
-//       console.error('Error saving product:', error);
+//
 //       res.status(500).json({ error: 'Internal server error' });
 //     }
 //   }
@@ -156,13 +157,13 @@ async function generateProductID() {
 //             res.status(200).json(products);
 //         })
 //         .catch(error => {
-//             console.log(error);
+//
 //             res.status(500).json({ error: 'Internal server error' });
 //         });
 // });
 
 // productRouter.get('/', (req, res) => {
-//   const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
+//   const filter = catalogFilter(req.query.filter); // Parse the filter JSON string if provided
 //   const limit = Number(req.query.limit) || 10; // Default limit is 10 if not provided
 //   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
 
@@ -174,14 +175,15 @@ async function generateProductID() {
 //       res.status(200).json(products);
 //     })
 //     .catch(error => {
-//       console.log(error);
+//
 //       res.status(500).json({ error: 'Internal server error' });
 //     });
 // });
 
 
 
-productRouter.post('/', upload.array('images', 5), async (req, res) => {
+productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
+  require('../security/admin-input.cjs').productInput(req.body, true);
   const category = await Category.findById(req.body.category);
   const { name, price, stock, barcode, description } = req.body;
   const vat = req.body.vat === 'true';
@@ -196,9 +198,9 @@ productRouter.post('/', upload.array('images', 5), async (req, res) => {
   if (files && files.length > 0) {
       for (const file of files) {
           try {
-            console.log('got inside ', file)
+
               // Resize and convert the image
-              const croppedImage = await sharp(file.buffer)
+              const croppedImage = await sharp(file.buffer, { limitInputPixels: 20000000 })
                   .resize({ width: 500, height: 500, fit: 'cover' })
                   .webp()
                   .toBuffer();
@@ -221,13 +223,13 @@ productRouter.post('/', upload.array('images', 5), async (req, res) => {
                   fields: 'id',
               });
 
-              console.log('hereee final response',response.data)
+
 
               // Store URLs and Google Drive IDs
               imageUrls.push(filename);
               gdriveFileIds.push(response.data.id);
           } catch (error) {
-              console.error('Error processing image:', error);
+
               return res.status(500).json({ error: 'Failed to upload images' });
           }
       }
@@ -252,7 +254,7 @@ productRouter.post('/', upload.array('images', 5), async (req, res) => {
       await product.save();
       res.status(201).json({ message: 'Product created successfully', product });
   } catch (error) {
-      console.error('Error saving product:', error);
+
       res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -286,7 +288,7 @@ productRouter.get('/images/:filename', async (req, res) => {
       response.data.pipe(res);
     } else if (product.gdriveFileIds) {
       // For new products with multiple gdriveFileIds
-      console.log('Google Drive File IDs:', product.gdriveFileIds);
+
 
       // Find the index of the requested filename in the `images` array
       const imageIndex = product.images.indexOf(filename);
@@ -309,7 +311,7 @@ productRouter.get('/images/:filename', async (req, res) => {
       return res.status(404).json({ error: 'No valid Google Drive file ID found' });
     }
   } catch (error) {
-    console.error('Error retrieving image from Google Drive:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -326,7 +328,7 @@ productRouter.get('/images/:filename', async (req, res) => {
 //       return res.status(404).json({ error: 'product not found' });
 //     }
 
-//     console.log('inside img fetchh', product)
+//
 
 
 
@@ -342,7 +344,7 @@ productRouter.get('/images/:filename', async (req, res) => {
 //     // Pipe the image stream from Google Drive to the response stream
 //     response.data.pipe(res);
 //   } catch (error) {
-//     console.error('Error retrieving image from Google Drive:', error);
+//
 //     res.status(500).json({ error: 'Internal server error' });
 //   }
 // });
@@ -350,7 +352,7 @@ productRouter.get('/images/:filename', async (req, res) => {
 
 
 productRouter.get('/', async (req, res) => {
-  const filter = req.query.filter ? JSON.parse(req.query.filter) : {}; // Parse the filter JSON string if provided
+  const filter = catalogFilter(req.query.filter); // Parse the filter JSON string if provided
   const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
   const disabledCategory = (req.query.disabledCat);
@@ -380,7 +382,7 @@ productRouter.get('/', async (req, res) => {
       products = await Product.find(filter).populate('category');
     }
 
-console.log(disabledCategory);
+
     if(disabledCategory === 'false'){
       // Filter products where category.disabled is false
 const filteredProducts = products.filter((product) => {
@@ -391,7 +393,7 @@ const filteredProducts = products.filter((product) => {
   return false;
 });
 res.status(200).json(filteredProducts);
-    
+
     }
     else if(disabledCategory === 'true'){
       // Filter products where category.disabled is false
@@ -403,26 +405,26 @@ const filteredProducts = products.filter((product) => {
   return false;
 });
 res.status(200).json(filteredProducts);
-    
+
     }
     else{
-      console.log('normal products')
+
       res.status(200).json(products);
     }
 
   } catch (error) {
-    console.error('Error fetching products:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 productRouter.get('/search', async (req, res) => {
-  const filter = req.query.filter ? JSON.parse(req.query.filter) : []; // Parse the filter JSON string if provided
-  const searchQuery = req.query.q;
+  const filter = Object.entries(catalogFilter(req.query.filter, true)).map(([key, value]) => ({ [key]: value })); // Parse the filter JSON string if provided
+  const searchQuery = escapeSearch(req.query.q);
   const limit = Number(req.query.limit); // Remove default limit
   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
   const disabledCategory = (req.query.disabledCat);
-  console.log(filter);
+
   try {
     // Perform the search query against the name and description fields
 
@@ -438,7 +440,7 @@ productRouter.get('/search', async (req, res) => {
         $and: [searchQueryConditions, ...filter],
       };
 
-      console.log(combinedConditions);
+
 
      searchResults = await Product.find(combinedConditions)
     .skip(offset)
@@ -466,7 +468,7 @@ const filteredProducts = searchResults.filter((searchResults) => {
   return false;
 });
 res.status(200).json(filteredProducts);
-    
+
     }
     else if(disabledCategory === 'true'){
       // Filter products where category.disabled is false
@@ -478,16 +480,16 @@ const filteredSearchResults = searchResults.filter((searchResults) => {
   return false;
 });
 res.status(200).json(filteredSearchResults);
-    
+
     }
     else{
-      console.log('normal products')
+
       res.status(200).json(searchResults);
     }
 
 
   } catch (error) {
-    console.error('Error searching products:', error);
+
     res.status(500).json({ error: 'An error occurred while searching for products' });
   }
 });
@@ -509,9 +511,9 @@ productRouter.get('/category/:categoryId', async (req, res) => {
   try {
     const products = await Product.find({ 'category': categoryId }).populate('category');
     res.json(products);
-    console.log(products._id);
+
   } catch (error) {
-    console.error('Error fetching products by category:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -536,7 +538,7 @@ productRouter.delete('/:id', async (req, res) => {
 
     return res.status(200).json({ success: true, message: 'The product and image are deleted!' });
   } catch (error) {
-    console.error('Error deleting product:', error);
+
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -557,18 +559,19 @@ productRouter.put('/publish/:productId', async (req, res) => {
 
     // Save the updated product
     await product.save();
-    console.log('success');
+
 
     res.json({ message: 'Product updated successfully' });
   } catch (error) {
-    console.error('Error while updating the product:', error);
+
     res.status(500).json({ error: 'Failed to update the product' });
   }
 });
 
 
 
-productRouter.put('/:id', upload.array('images', 5), async (req, res) => {
+productRouter.put('/:id', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
+  require('../security/admin-input.cjs').productInput(req.body);
   const { id } = req.params;
   const updateFields = {};
   const files = req.files;
@@ -581,29 +584,22 @@ productRouter.put('/:id', upload.array('images', 5), async (req, res) => {
 
       // Handle text fields
       if (req.body.name) updateFields.name = req.body.name;
-      if (req.body.price) updateFields.price = req.body.price;
-      if (req.body.stock) updateFields.stock = req.body.stock;
-      if (req.body.description) updateFields.description = req.body.description;
+      if (req.body.price !== undefined) updateFields.price = Number(req.body.price);
+      if (req.body.stock !== undefined) updateFields.stock = Number(req.body.stock);
+      if (req.body.description !== undefined) updateFields.description = req.body.description;
 
       let imageUrls = prevProduct.images;
       let gdriveFileIds = prevProduct.gdriveFileIds;
 
       if (files && files.length > 0) {
-          // Delete previous images from Google Drive
-          for (const fileId of gdriveFileIds) {
-              try {
-                  await drive.files.delete({ fileId });
-              } catch (error) {
-                  console.error('Error deleting file from Google Drive:', error);
-              }
-          }
-
+          // Keep prior assets until a separate reference-aware retention review.
+          // Upload failure or a concurrent stock conflict must never delete live media.
           // Process new images
           imageUrls = [];
           gdriveFileIds = [];
           for (const file of files) {
               try {
-                  const croppedImage = await sharp(file.buffer)
+                  const croppedImage = await sharp(file.buffer, { limitInputPixels: 20000000 })
                       .resize({ width: 500, height: 500, fit: 'cover' })
                       .webp()
                       .toBuffer();
@@ -627,19 +623,25 @@ productRouter.put('/:id', upload.array('images', 5), async (req, res) => {
                   imageUrls.push(filename);
                   gdriveFileIds.push(response.data.id);
               } catch (error) {
-                  console.error('Error processing new images:', error);
+
                   return res.status(500).json({ error: 'Failed to upload new images' });
               }
           }
       }
 
-      updateFields.images = imageUrls;
-      updateFields.gdriveFileIds = gdriveFileIds;
-
-      const product = await Product.findByIdAndUpdate(id, updateFields, { new: true });
+      if (files && files.length > 0) {
+          updateFields.images = imageUrls;
+          updateFields.gdriveFileIds = gdriveFileIds;
+      }
+      const filter = { _id: id };
+      if (req.body.stock !== undefined) filter.stock = Number(req.body.expectedStock);
+      // MongoDB evaluates this predicate atomically with the write. A checkout,
+      // cancellation or second editor changing stock makes a stale form fail.
+      const product = await Product.findOneAndUpdate(filter, { $set: updateFields }, { new: true, runValidators: true });
+      if (!product) return res.status(409).json({ code: 'STOCK_CHANGED', error: 'Stock changed. Reload the product before saving.' });
       res.json(product);
   } catch (error) {
-      console.error('Error updating product:', error);
+
       res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -670,7 +672,7 @@ productRouter.get('/details/:productId', async (req, res) => {
       relatedProducts,
     });
   } catch (error) {
-    console.error('Error fetching product details:', error);
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });

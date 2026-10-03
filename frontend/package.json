@@ -5,71 +5,35 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mapbox/mapbox-sdk": "^0.15.1",
     "@mui/icons-material": "^5.14.16",
     "@mui/material": "^5.14.16",
-    "@mui/x-data-grid": "^6.17.0",
-    "@novu/notification-center": "^0.19.0",
-    "@react-email/components": "^0.0.7",
-    "@react-email/render": "^0.0.7",
-    "@react-google-maps/api": "^2.18.1",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.4.0",
+    "axios": "^1.20.0",
     "bootstrap": "^5.2.3",
-    "firebase": "^10.5.2",
-    "intersection-observer": "^0.12.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.456.0",
-    "mapbox-gl": "^2.15.0",
-    "nodemailer": "^6.9.7",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",
-    "react-dynamic-virtual-scroll": "^1.4.0",
     "react-helmet-async": "^2.0.1",
     "react-hot-toast": "^2.4.1",
-    "react-image-crop": "^10.0.9",
-    "react-image-file-resizer": "^0.4.8",
     "react-infinite-scroll-component": "^6.1.0",
     "react-leaflet": "^4.2.1",
-    "react-router-dom": "^6.8.2",
-    "react-scripts": "5.0.1",
+    "react-router-dom": "7.18.4",
     "remixicon": "^3.5.0",
-    "sharp": "^0.32.1",
     "socket.io-client": "^4.7.1",
-    "swiper": "^9.4.1",
+    "swiper": "12.1.2",
     "swr": "^2.2.4",
-    "web-vitals": "^2.1.4"
+    "uuid": "^11.1.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "start": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
   },
   "devDependencies": {
-    "react-snap": "^1.23.0",
-    "tailwindcss": "^3.3.4"
+    "@vitejs/plugin-react": "6.1.1",
+    "source-map": "0.7.6",
+    "vite": "8.3.2"
   }
 }

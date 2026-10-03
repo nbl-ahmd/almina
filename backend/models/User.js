@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     type: [String]
   },
   subscription: {
-    tpe: Object,
+    type: Object,
   },
 });
 

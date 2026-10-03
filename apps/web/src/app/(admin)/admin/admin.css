@@ -1,0 +1,205 @@
+.admin-app {
+  --admin-ink: #182c35;
+  --admin-border: #ccd8db;
+  --admin-accent: #075e55;
+  color: var(--admin-ink);
+  background: #f4f7f7;
+  min-height: 100dvh;
+  font-size: 1rem;
+}
+.admin-app a {
+  color: var(--admin-accent);
+}
+.admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-bottom: 1px solid var(--admin-border);
+}
+.admin-header > a {
+  font-weight: 700;
+  margin-right: auto;
+}
+.admin-shell {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+}
+.admin-shell > nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #e7efee;
+}
+.admin-shell > nav a {
+  padding: 0.65rem;
+  border-radius: 6px;
+  min-height: 44px;
+}
+.admin-shell > nav a:hover {
+  background: white;
+}
+.admin-shell > main {
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+.admin-app h1 {
+  font-size: 2rem;
+  margin: 0.8rem 0;
+}
+.admin-app h2 {
+  font-size: 1.35rem;
+  margin: 1rem 0;
+}
+.admin-panel,
+.admin-login {
+  background: white;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+.admin-login {
+  max-width: 480px;
+  margin: 3rem auto;
+}
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+.admin-app input,
+.admin-app select,
+.admin-app textarea {
+  width: 100%;
+  font: inherit;
+  background: white;
+  color: var(--admin-ink);
+  border: 1px solid #70888f;
+  border-radius: 5px;
+  padding: 0.6rem;
+  min-height: 44px;
+}
+.admin-app textarea {
+  min-height: 110px;
+}
+.admin-app button {
+  font: inherit;
+  padding: 0.6rem 1rem;
+  min-height: 44px;
+  background: var(--admin-accent);
+  color: white;
+  border: 1px solid var(--admin-accent);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.admin-app button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.admin-app :focus-visible {
+  outline: 3px solid #a15c00;
+  outline-offset: 3px;
+}
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: white;
+  margin: 1rem 0;
+}
+.admin-app table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.admin-app caption {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+}
+.admin-app th,
+.admin-app td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  overflow-wrap: anywhere;
+  min-width: 100px;
+}
+.admin-app th {
+  background: #e7efee;
+}
+.admin-app dl {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 2fr;
+  gap: 0.7rem;
+}
+.admin-app dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.admin-status {
+  padding: 0.75rem;
+  background: #e7efee;
+  border-radius: 6px;
+}
+.admin-skip {
+  position: absolute;
+  top: -100px;
+}
+.admin-skip:focus {
+  top: 8px;
+  background: white;
+  padding: 1rem;
+  z-index: 100;
+}
+.admin-login form {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 760px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+  .admin-shell > nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .admin-header {
+    padding: 1rem;
+  }
+  .admin-login {
+    margin: 1rem;
+  }
+  .admin-panel {
+    padding: 1rem;
+  }
+}
+
+.admin-app input[type="checkbox"] {
+  width: 24px;
+  min-height: 24px;
+  margin: 0.6rem;
+}
+.admin-shell > main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.admin-status {
+  overflow-wrap: anywhere;
+}

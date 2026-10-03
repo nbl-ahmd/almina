@@ -1,0 +1,70 @@
+name: Deploy verified staging release
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Full 40-character commit SHA with successful foundation verification
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: staging-deployment
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require the latest completed push verification for this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE: ${{ inputs.commit }}
+        run: |
+          [[ "$CANDIDATE" =~ ^[a-f0-9]{40}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/foundation.yml/runs?head_sha=$CANDIDATE&event=push&per_page=10" > runs.json
+          jq -e --arg sha "$CANDIDATE" '.workflow_runs | sort_by(.run_number) | last | select(.head_sha == $sha and .status == "completed" and .conclusion == "success")' runs.json > /dev/null
+
+  backend:
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 25
+    strategy:
+      fail-fast: true
+      matrix:
+        service: [api, legacy]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Deploy staging backend at the verified commit and await live status
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_STAGING_API_KEY }}
+          RENDER_SERVICE_ID: ${{ matrix.service == 'api' && vars.RENDER_STAGING_API_SERVICE_ID || vars.RENDER_STAGING_LEGACY_SERVICE_ID }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+          DEPLOYMENT_ENV: staging
+        run: node scripts/tooling/deploy-render-staging.mjs --apply
+
+  web:
+    needs: [verify, backend]
+    runs-on: ubuntu-24.04
+    environment: staging
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Deploy staging Next.js at the same verified commit
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_STAGING_API_KEY }}
+          RENDER_SERVICE_ID: ${{ vars.RENDER_STAGING_WEB_SERVICE_ID }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+          DEPLOYMENT_ENV: staging
+        run: node scripts/tooling/deploy-render-staging.mjs --apply
