@@ -23,8 +23,8 @@ test('cart import discards client prices, stock, customer data and roles; malfor
   assert.equal(cartSchema.safeParse([{ id: raw._id, quantity: 1 }, { id: raw._id, quantity: 1 }]).success, false);
   assert.equal(cartSchema.safeParse([{ id: raw._id, quantity: 1000 }]).success, false);
 });
-test('redirects require explicit verification and legacy origins must be credential-free HTTPS outside development', () => {
-  assert.equal(readWebEnvironment({}).STOREFRONT_REDIRECTS_VERIFIED, false);
+test('permanent redirects default on and legacy origins must be credential-free HTTPS outside development', () => {
+  assert.equal(readWebEnvironment({}).STOREFRONT_REDIRECTS_VERIFIED, true);
   assert.equal(readWebEnvironment({ STOREFRONT_REDIRECTS_VERIFIED: 'true' }).STOREFRONT_REDIRECTS_VERIFIED, true);
   assert.throws(() => readWebEnvironment({ STOREFRONT_REDIRECTS_VERIFIED: 'yes' }));
   assert.throws(() => readWebEnvironment({ LEGACY_API_ORIGIN: 'https://user:password@example.invalid' }));

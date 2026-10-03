@@ -21,7 +21,8 @@ function array(value: unknown): unknown[] {
   if (!Array.isArray(value)) throw new CatalogUnavailable();
   return value;
 }
-export const getCategories = cache(async () => array(await legacyRead('/api/category?filter=%7B%22disabled%22%3Afalse%7D'))
+// Missing legacy disabled fields are public too; normalize before exposing anything.
+export const getCategories = cache(async () => array(await legacyRead('/api/category'))
   .map(readCategory).filter(category => category !== null));
 export async function getCategory(identity: string) {
   if (!objectId.test(identity)) return null;

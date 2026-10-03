@@ -1,6 +1,7 @@
 import { readWebEnvironment } from '@almina/config/env';
 import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
+import { hasDuplicateQuery, isPublicPath } from './lib/seo';
 export function proxy(request: NextRequest) {
   const environment = readWebEnvironment(process.env);
   const mediaOrigin = new URL(environment.LEGACY_API_ORIGIN).origin;
@@ -23,6 +24,9 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next({ request: { headers } });
   response.headers.set('Content-Security-Policy', policy);
   response.headers.set('Cache-Control', 'private, no-store');
+  const indexable = environment.APP_ENV === 'production' && isPublicPath(request.nextUrl.pathname)
+    && !hasDuplicateQuery(Object.fromEntries(request.nextUrl.searchParams));
+  if (!indexable) response.headers.set('X-Robots-Tag', environment.APP_ENV === 'production' ? 'noindex, follow' : 'noindex, nofollow');
   return response;
 }
 export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] };

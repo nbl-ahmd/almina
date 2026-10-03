@@ -5,6 +5,7 @@ import { emptyQuerySchema, catalogQuerySchema, adminProductQuerySchema, cursorQu
   businessProductParamsSchema, orderQuerySchema, loginBodySchema, productDtoSchema, categoryDtoSchema, bannerDtoSchema,
   storeDtoSchema, staffDtoSchema, loginDtoSchema, orderSummaryDtoSchema, orderDetailDtoSchema, pageSchema, successSchema,
   quoteDtoSchema, checkoutDtoSchema, statusInputSchema, orderStatusSchema, type Staff } from '@almina/contracts';
+import { sitemapQuerySchema, sitemapPageSchema } from '@almina/contracts';
 import { cookieOptions, cookieName, readSessionCookie, verifyBrowserMutation } from '../../../../backend/security/sessions.cjs';
 import { createCommerceService } from '../modules/orders/commerce.js';
 import { ObjectId } from 'mongodb';
@@ -39,6 +40,9 @@ export function apiRoutes(getDb: GetDb, webOrigin: string, development = false) 
   }
   read('/catalog/products', async (req, res) => {
     send(res, pageSchema(productDtoSchema), await catalog.products(validate(catalogQuerySchema, req.query)));
+  });
+  read('/catalog/sitemap', async (req, res) => {
+    send(res, sitemapPageSchema, await catalog.sitemap(validate(sitemapQuerySchema, req.query)));
   });
   read('/catalog/products/by-business-id/:productId', async (req, res) => {
     validate(emptyQuerySchema, req.query);

@@ -1,5 +1,7 @@
 # Storefront route migration — 2026-10-02
 
+> SEO follow-up (2026-10-03): production indexing and permanent redirect defaults below are superseded by [the storefront SEO implementation](STOREFRONT_SEO_2026-10-03.md). Non-production previews remain noindex; no production cutover has occurred.
+
 ## Scope and route ownership
 
 This is an additive, isolated Next.js preview. The legacy storefront/backend remain the deployed application; no production routing, MongoDB records, media or order logic were changed. Security and commerce blockers in the production audit remain open. Do not cut over the preview or enable ordering while those blockers remain.

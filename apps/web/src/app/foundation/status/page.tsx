@@ -5,7 +5,7 @@ import { ApiClientError } from '@almina/contracts/client';
 import { getApiClient } from '@/lib/server/api';
 import { getWebLogger } from '@/lib/server/logger';
 
-export const metadata: Metadata = { title: 'Service status' };
+export const metadata: Metadata = { title: 'Service status', robots: { index: false, follow: true } };
 
 export default async function StatusPage() {
   await connection(); // API origin and health are evaluated only for real requests.

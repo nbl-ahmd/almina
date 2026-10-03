@@ -1,19 +1,23 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import { resolveCategory } from '../../../lib/server/catalog';
-import { categoryHref, objectId } from '../../../lib/catalog/model';
+import { categoryHref } from '../../../lib/catalog/model';
 import { getWebEnvironment } from '../../../lib/server/env';
 import { CatalogList, type SearchParams } from '../../../components/catalog-list';
+import { metadataFor } from '../../../lib/server/seo';
+import { breadcrumbData } from '../../../lib/seo';
+import { StructuredData } from '../../../components/structured-data';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<SearchParams> };
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, searchParams }: Props) {
   const category = await resolveCategory((await params).slug);
-  return { title: category?.name ?? 'Category not found', alternates: category ? { canonical: categoryHref(category) } : undefined };
+  if (!category) notFound();
+  return metadataFor(category.name, `Shop ${category.name} products at Al Mina Pharmacy. Browse our current healthcare and wellness catalog.`, categoryHref(category), await searchParams);
 }
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const category = await resolveCategory(slug);
   if (!category) notFound();
   const query = await searchParams;
-  if (objectId.test(slug) && getWebEnvironment().STOREFRONT_REDIRECTS_VERIFIED) {
+  if (`/categories/${slug}` !== categoryHref(category) && getWebEnvironment().STOREFRONT_REDIRECTS_VERIFIED) {
     const retained = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) {
       if (typeof value === 'string') retained.append(key, value);
@@ -21,5 +25,5 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     }
     permanentRedirect(`${categoryHref(category)}${retained.size ? `?${retained}` : ''}`);
   }
-  return <CatalogList title={category.name} category={category._id} params={query} />;
+  return <><StructuredData data={breadcrumbData(getWebEnvironment().WEB_ORIGIN, [{ name: 'Home', path: '/' }, { name: 'Categories', path: '/categories' }, { name: category.name, path: categoryHref(category) }])} /><CatalogList title={category.name} category={category._id} params={query} parents={[{ name: 'Categories', path: '/categories' }]} /></>;
 }

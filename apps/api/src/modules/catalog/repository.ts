@@ -23,6 +23,39 @@ const publicCategoryJoin = [
 
 export function createCatalogRepository(getDb: GetDb) {
   return {
+    async sitemap(query: { kind: 'products' | 'categories'; cursor?: string | undefined }) {
+      const scope = cursorScope('sitemap', { kind: query.kind });
+      const after = decodeCursor(query.cursor, scope);
+      const db = await getDb();
+      const product = query.kind === 'products';
+      const filter: Filter<Document> = { disabled: { $ne: true }, name: { $type: 'string', $ne: '' },
+        _id: { $type: 'objectId', ...(after ? { $lt: after } : {}) },
+        $expr: { $and: [{ $eq: [{ $type: '$name' }, 'string'] },
+          ...(product ? [
+            { $eq: [{ $type: '$product_id' }, 'string'] },
+            { $in: [{ $type: '$price' }, ['double', 'int', 'long']] },
+            { $in: [{ $type: '$stock' }, ['double', 'int', 'long']] },
+            { $eq: ['$stock', { $trunc: { $convert: { input: '$stock', to: 'double', onError: null, onNull: null } } }] },
+          ] : []),
+        ] },
+        ...(product ? { product_id: { $type: 'string', $regex: '^[A-Za-z0-9_-]{1,80}$' },
+          price: { $type: 'number', $gte: 0, $lte: Number.MAX_VALUE },
+          stock: { $type: 'number', $gte: 0, $lte: Number.MAX_SAFE_INTEGER } } : {}),
+      };
+      const docs = await db.collection(query.kind).aggregate([
+        { $match: filter }, { $sort: { _id: -1 } },
+        ...(product ? [
+          { $lookup: { from: 'categories', localField: 'category', foreignField: '_id',
+            pipeline: [{ $match: { disabled: { $ne: true }, name: { $type: 'string', $ne: '' } } }, { $project: { _id: 1 } }], as: 'visibleCategory' } },
+          { $match: { 'visibleCategory.0': { $exists: true } } },
+        ] : []),
+        { $limit: 1001 }, { $project: { _id: 1, name: 1, ...(product ? { product_id: 1 } : {}) } },
+      ], { ...queryOptions, allowDiskUse: false }).toArray();
+      const items = docs.slice(0, 1000);
+      return { items: items.map(doc => ({ id: doc._id.toHexString() as string, name: doc.name as string,
+        ...(product ? { productId: doc.product_id as string } : {}) })),
+        nextCursor: docs.length > 1000 ? encodeCursor(items.at(-1)!._id, scope) : null };
+    },
     async products(query: AdminProductQuery, admin = false) {
       const { limit, cursor, ...filters } = query;
       const scope = cursorScope(admin ? 'admin-products' : 'products', filters);

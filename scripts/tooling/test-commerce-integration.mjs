@@ -31,7 +31,7 @@ try {
     if (Date.now() > deadline) throw new Error('Disposable primary not ready');
     await delay(100);
   }
-  const tests = spawn(process.execPath, ['--import', 'tsx', '--test', 'tests/commerce-integration.test.ts'], {
+  const tests = spawn(process.execPath, ['--import', 'tsx', '--test', ...(process.argv.slice(3).length ? process.argv.slice(3) : ['tests/commerce-integration.test.ts'])], {
     stdio: 'inherit', env: { ...process.env, COMMERCE_TEST_URI: uri },
   });
   const code = await new Promise(resolve => tests.on('exit', resolve));

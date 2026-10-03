@@ -32,6 +32,12 @@ try {
     assert.equal(response.status, 200, path); assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.ok((await response.text()).includes(text), `SSR content absent for ${path}`);
   }
+  assert.match(await (await fetch(`${origin}/robots.txt`)).text(), /Disallow: \//);
+  for (const path of ['/sitemap.xml', '/sitemaps/products/first.xml']) {
+    const response = await fetch(`${origin}${path}`);
+    assert.equal(response.status, 200);
+    assert.ok(!(await response.text()).includes('<loc>'), 'Previews must not submit catalog URLs');
+  }
   const secure = await fetch(`${origin}/cart`, { headers: { 'x-nonce': 'caller-selected-nonce' } });
   const csp = secure.headers.get('content-security-policy');
   assert.ok(csp?.includes("frame-ancestors 'none'"));

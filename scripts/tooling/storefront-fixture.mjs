@@ -1,15 +1,17 @@
 import { createServer } from 'node:http';
+import { createServer as createSecureServer } from 'node:https';
 import { pathToFileURL } from 'node:url';
 // Synthetic compatibility API only. No database, credentials or customer data.
 export const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care', disabled: false };
 export const product = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', product_id: 'PD0001', name: 'Daily Care',
   category, price: 25, salePrice: 20, stock: 4, disabled: false, featured: true, sale: true,
   images: ['fixture.svg'], description: 'Daily care product description.' };
-export function createStorefrontFixture() {
+export function createStorefrontFixture(tls) {
   let closed = false;
   let failed = false;
   const requests = [];
-  const server = createServer((req, res) => {
+  const factory = tls ? handler => createSecureServer(tls, handler) : createServer;
+  const server = factory((req, res) => {
     const url = new URL(req.url, 'http://fixture.invalid');
     requests.push({ method: req.method, pathname: url.pathname });
     if (url.pathname === '/__fixture/health') { res.end('almina-synthetic-catalog'); return; }
@@ -22,6 +24,13 @@ export function createStorefrontFixture() {
       res.end('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" fill="#e6f6f3"/><text x="30" y="120">Daily Care</text></svg>'); return;
     }
     res.setHeader('Content-Type', 'application/json');
+    if (url.pathname === '/api/v1/catalog/sitemap') {
+      const kind = url.searchParams.get('kind');
+      res.end(JSON.stringify({ requestId: '00000000-0000-4000-8000-000000000000', data: {
+        items: kind === 'products' ? [{ id: product._id, productId: product.product_id, name: product.name }]
+          : [{ id: category._id, name: category.name }], nextCursor: null,
+      } })); return;
+    }
     if (url.pathname === '/api/category') { res.end(JSON.stringify([category])); return; }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }
     if (url.pathname === '/api/store/status') { res.end(JSON.stringify({ status: closed ? 'closed' : 'open' })); return; }

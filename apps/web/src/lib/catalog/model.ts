@@ -33,6 +33,8 @@ export function slugIdentity(slug: string): string | null {
 }
 export const productHref = (product: Product) => `/products/${productSlug(product)}`;
 export const categoryHref = (category: Category) => `/categories/${categorySlug(category)}`;
+export const productPath = (name: string, id: string) => `/products/${nameSlug(name)}--${id}`;
+export const categoryPath = (name: string, id: string) => `/categories/${nameSlug(name)}--${id}`;
 export const money = (value: number) => `AED ${value.toFixed(2)}`;
 // Preserve legacy displayed sale-price behavior; this is not a checkout quote.
 export const displayPrice = (product: Product) => product.salePrice || product.price;

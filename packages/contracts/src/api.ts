@@ -7,6 +7,14 @@ export const cursorQuerySchema = z.object({
   limit: z.string().regex(/^\d{1,3}$/).transform(Number).pipe(z.number().int().min(1).max(100)).default(20),
   cursor: z.string().min(1).max(512).regex(/^[A-Za-z0-9_-]+$/).optional(),
 }).strict();
+export const sitemapQuerySchema = z.object({
+  kind: z.enum(['products', 'categories']),
+  cursor: cursorQuerySchema.shape.cursor,
+}).strict();
+export const sitemapPageSchema = z.object({
+  items: z.array(z.object({ id, name: z.string().min(1), productId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/).optional() }).strict()).max(1000),
+  nextCursor: z.string().max(512).regex(/^[A-Za-z0-9_-]+$/).nullable(),
+}).strict();
 export const catalogQuerySchema = cursorQuerySchema.extend({
   categoryId: id.optional(), featured: booleanQuery.optional(), sale: booleanQuery.optional(),
   q: z.string().trim().min(2).max(80).regex(/^[\p{L}\p{N}\s]+$/u).optional(),

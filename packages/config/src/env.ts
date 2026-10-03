@@ -15,7 +15,7 @@ const originSchema = z.string().url().refine((value) => {
   const url = new URL(value);
   return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password
     && url.pathname === '/' && !url.search && !url.hash;
-});
+}).transform(value => new URL(value).origin);
 
 const commonSchema = z.object({
   APP_ENV: z.enum(['development', 'staging', 'production']),
@@ -56,10 +56,21 @@ export function readWebEnvironment(source: EnvironmentSource) {
   const value = parse(z.object({
     API_ORIGIN: originSchema,
     LEGACY_API_ORIGIN: originSchema,
-    STOREFRONT_REDIRECTS_VERIFIED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+    STOREFRONT_REDIRECTS_VERIFIED: z.enum(['true', 'false']).default('true').transform(value => value === 'true'),
+    STOREFRONT_PRODUCT_REPLACEMENTS: z.string().default('{}').transform((value, ctx) => {
+      const schema = z.record(z.string().regex(/^[A-Za-z0-9_-]{1,80}$/), z.string().regex(/^[A-Za-z0-9_-]{1,80}$/))
+        .refine(map => Object.keys(map).length <= 1000 && Object.entries(map).every(([from, to]) => from !== to && !(to in map)));
+      try {
+        const result = schema.safeParse(JSON.parse(value));
+        if (result.success) return result.data;
+      } catch { /* Report configuration field only. */ }
+      ctx.addIssue({ code: 'custom', message: 'Invalid replacement mapping' });
+      return z.NEVER;
+    }),
   }), {
     API_ORIGIN: source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
     STOREFRONT_REDIRECTS_VERIFIED: source.STOREFRONT_REDIRECTS_VERIFIED,
+    STOREFRONT_PRODUCT_REPLACEMENTS: source.STOREFRONT_PRODUCT_REPLACEMENTS,
     LEGACY_API_ORIGIN: source.LEGACY_API_ORIGIN ?? source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
   });
   if (shared.APP_ENV !== 'development') {

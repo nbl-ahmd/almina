@@ -19,6 +19,6 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
     <Image src={categoryImage(category.image)} alt="" width={120} height={120} sizes="120px" /><span>{category.name}</span>
   </Link>)}</div>;
 }
-export function Breadcrumb({ title }: { title: string }) {
-  return <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span> / {title}</span></nav>;
+export function Breadcrumb({ title, parents = [] }: { title: string; parents?: { name: string; path: string }[] }) {
+  return <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link>{parents.map(item => <span key={item.path}> / <Link href={item.path}>{item.name}</Link></span>)}<span aria-current="page"> / {title}</span></nav>;
 }

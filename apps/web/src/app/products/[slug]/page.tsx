@@ -1,20 +1,37 @@
 import { ProductGallery } from '../../../components/product-gallery';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { resolveProduct, getProducts, productImages } from '../../../lib/server/catalog';
+import { permanentRedirect } from 'next/navigation';
+import { getProducts, productImages } from '../../../lib/server/catalog';
+import { resolveProductRoute } from '../../../lib/server/product-route';
+import { metadataFor } from '../../../lib/server/seo';
+import { getWebEnvironment } from '../../../lib/server/env';
+import { breadcrumbData, productData, type Query } from '../../../lib/seo';
+import { StructuredData } from '../../../components/structured-data';
 import { categoryHref, productHref, money, displayPrice } from '../../../lib/catalog/model';
 import { ProductGrid, Breadcrumb } from '../../../components/storefront';
 import { AddToCart } from '../../../components/cart-controls';
-type Props = { params: Promise<{ slug: string }> };
-export async function generateMetadata({ params }: Props) {
-  const product = await resolveProduct((await params).slug);
-  return { title: product?.name ?? 'Product not found', description: product?.description?.slice(0, 160), alternates: product ? { canonical: productHref(product) } : undefined };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
+export async function generateMetadata({ params, searchParams }: Props) {
+  const product = await resolveProductRoute((await params).slug);
+  const image = productImages(product).find(image => !image.startsWith('/'));
+  return metadataFor(product.name, product.description?.slice(0, 160) || `Explore ${product.name} in ${product.category.name} at Al Mina Pharmacy.`, productHref(product), await searchParams, image);
 }
-export default async function ProductPage({ params }: Props) {
-  const product = await resolveProduct((await params).slug);
-  if (!product) notFound();
+export default async function ProductPage({ params, searchParams }: Props) {
+  const { slug } = await params;
+  const product = await resolveProductRoute(slug);
+  if (`/products/${slug}` !== productHref(product) && getWebEnvironment().STOREFRONT_REDIRECTS_VERIFIED) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(await searchParams)) {
+      if (typeof value === 'string') query.append(key, value);
+      else if (Array.isArray(value)) for (const item of value) query.append(key, item);
+    }
+    permanentRedirect(`${productHref(product)}${query.size ? `?${query}` : ''}`);
+  }
   const related = await getProducts({ category: product.category._id });
-  return <><Breadcrumb title={product.name} /><div className="product-detail"><ProductGallery images={productImages(product)} name={product.name} />
+  const origin = getWebEnvironment().WEB_ORIGIN;
+  return <><StructuredData data={productData(origin, product, productImages(product).filter(image => !image.startsWith('/')))} />
+    <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: 'Categories', path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }, { name: product.name, path: productHref(product) }])} />
+    <Breadcrumb title={product.name} parents={[{ name: 'Categories', path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} /><div className="product-detail"><ProductGallery images={productImages(product)} name={product.name} />
     <div><h1>{product.name}</h1><Link href={categoryHref(product.category)}>{product.category.name}</Link><p className="price">{money(displayPrice(product))} {product.salePrice ? <del>{money(product.price)}</del> : null}</p><AddToCart id={product._id} stock={product.stock} quantityPicker /><h2>Product description</h2><p className="description">{product.description || 'No description available.'}</p></div></div>
     <h2>Similar products</h2><ProductGrid products={related.products.filter(item => item._id !== product._id).slice(0, 10)} /></>;
 }

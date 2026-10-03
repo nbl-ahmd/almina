@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server';
 import { getProductByPublicId } from '../../../lib/server/catalog';
 import { productHref } from '../../../lib/catalog/model';
 import { getWebEnvironment } from '../../../lib/server/env';
+import { productReplacement } from '../../../lib/server/product-replacements';
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const product = await getProductByPublicId((await params).id);
+    const { id } = await params;
+    const replacement = productReplacement(id);
+    const product = await getProductByPublicId(id) ?? (replacement ? await getProductByPublicId(replacement) : null);
     if (!product) return new Response('Product not found', { status: 404 });
     const url = new URL(request.url);
     url.pathname = productHref(product);
