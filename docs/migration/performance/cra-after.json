@@ -1,0 +1,566 @@
+{
+  "capturedAt": "2026-10-03T08:22:55.122Z",
+  "origin": "http://127.0.0.1:4200",
+  "profile": {
+    "width": 390,
+    "height": 844,
+    "cpuSlowdown": 4,
+    "latencyMs": 150,
+    "downloadBytesPerSecond": 200000,
+    "cache": "cold browser / warm server",
+    "coverage": "best-effort V8 coverage in UTF-16 code units, not exact executed bytes",
+    "inp": "single search-focus/type interaction lab proxy; null if no eligible interaction"
+  },
+  "results": [
+    {
+      "path": "/",
+      "run": 1,
+      "lcp": 2752,
+      "cls": 0.1905107640790661,
+      "inp": 216,
+      "shiftStart": 2174.9000000003725,
+      "shiftLast": 2481.5,
+      "shiftValue": 0.1905107640790661,
+      "ttfbMs": 2,
+      "serverWaitMs": 1.099999999627471,
+      "htmlMs": 167.80000000074506,
+      "jsTransferredBytes": 180206,
+      "imageTransferredBytes": 121439,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah",
+      "body": "Free Home Delivery across Ras Al Khaimah *\n\nDelivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCateg",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 202.211,
+      "coveredJsCodeUnits": 331236,
+      "hadInteraction": true,
+      "jsNetworkBytes": 180388,
+      "imageNetworkBytes": 123060,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 1
+    },
+    {
+      "path": "/",
+      "run": 2,
+      "lcp": 2492,
+      "cls": 0.18730525724427655,
+      "inp": 16,
+      "shiftStart": 1804.0999999996275,
+      "shiftLast": 2656.9000000003725,
+      "shiftValue": 0.18730525724427655,
+      "ttfbMs": 1.599999999627471,
+      "serverWaitMs": 0.6999999992549419,
+      "htmlMs": 151.30000000074506,
+      "jsTransferredBytes": 180206,
+      "imageTransferredBytes": 121439,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah",
+      "body": "Free Home Delivery across Ras Al Khaimah *\n\nDelivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCateg",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 179.94,
+      "coveredJsCodeUnits": 331236,
+      "hadInteraction": true,
+      "jsNetworkBytes": 180388,
+      "imageNetworkBytes": 123060,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 1
+    },
+    {
+      "path": "/",
+      "run": 3,
+      "lcp": 2544,
+      "cls": 0.18730525724427655,
+      "inp": 16,
+      "shiftStart": 1789,
+      "shiftLast": 2490.800000000745,
+      "shiftValue": 0.18730525724427655,
+      "ttfbMs": 1.699999999254942,
+      "serverWaitMs": 0.8999999985098839,
+      "htmlMs": 150.69999999925494,
+      "jsTransferredBytes": 180206,
+      "imageTransferredBytes": 121439,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah",
+      "body": "Free Home Delivery across Ras Al Khaimah *\n\nDelivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCateg",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 164.493,
+      "coveredJsCodeUnits": 331236,
+      "hadInteraction": true,
+      "jsNetworkBytes": 180388,
+      "imageNetworkBytes": 123053,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 1
+    },
+    {
+      "path": "/",
+      "run": 4,
+      "lcp": 2580,
+      "cls": 0.18743665591007472,
+      "inp": 16,
+      "shiftStart": 1801.8999999985099,
+      "shiftLast": 2494.0999999996275,
+      "shiftValue": 0.18743665591007472,
+      "ttfbMs": 1.5,
+      "serverWaitMs": 0.8000000007450581,
+      "htmlMs": 169.30000000074506,
+      "jsTransferredBytes": 180206,
+      "imageTransferredBytes": 121439,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah",
+      "body": "Free Home Delivery across Ras Al Khaimah *\n\nDelivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCateg",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 162.774,
+      "coveredJsCodeUnits": 331236,
+      "hadInteraction": true,
+      "jsNetworkBytes": 180388,
+      "imageNetworkBytes": 123055,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 1
+    },
+    {
+      "path": "/",
+      "run": 5,
+      "lcp": 2564,
+      "cls": 0.18753343842094972,
+      "inp": 16,
+      "shiftStart": 1798.7999999988824,
+      "shiftLast": 2477.39999999851,
+      "shiftValue": 0.18753343842094972,
+      "ttfbMs": 1.5,
+      "serverWaitMs": 0.7000000011175871,
+      "htmlMs": 158,
+      "jsTransferredBytes": 180206,
+      "imageTransferredBytes": 121439,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah",
+      "body": "Free Home Delivery across Ras Al Khaimah *\n\nDelivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCateg",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 163.072,
+      "coveredJsCodeUnits": 331236,
+      "hadInteraction": true,
+      "jsNetworkBytes": 180388,
+      "imageNetworkBytes": 123056,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 1
+    },
+    {
+      "path": "/products",
+      "run": 1,
+      "lcp": 2388,
+      "cls": 0.5737599473638628,
+      "inp": null,
+      "shiftStart": 2172.7000000011176,
+      "shiftLast": 2409.4000000003725,
+      "shiftValue": 0.5737599473638628,
+      "ttfbMs": 1.400000000372529,
+      "serverWaitMs": 0.6999999992549419,
+      "htmlMs": 162.19999999925494,
+      "jsTransferredBytes": 184925,
+      "imageTransferredBytes": 73987,
+      "fontTransferredBytes": 0,
+      "title": "Search Products",
+      "body": "Delivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCategories\nHome\nproducts\nAll Products\nFilter by c",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/429.2143fd1e.chunk.js",
+          "bytes": 4719
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 128.601,
+      "coveredJsCodeUnits": 264738,
+      "hadInteraction": true,
+      "jsNetworkBytes": 185287,
+      "imageNetworkBytes": 74291,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/products",
+      "run": 2,
+      "lcp": 2360,
+      "cls": 0.5737599473638628,
+      "inp": 16,
+      "shiftStart": 2143.39999999851,
+      "shiftLast": 2408.199999999255,
+      "shiftValue": 0.5737599473638628,
+      "ttfbMs": 1.5,
+      "serverWaitMs": 0.900000000372529,
+      "htmlMs": 159.19999999925494,
+      "jsTransferredBytes": 184925,
+      "imageTransferredBytes": 73987,
+      "fontTransferredBytes": 0,
+      "title": "Search Products",
+      "body": "Delivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCategories\nHome\nproducts\nAll Products\nFilter by c",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/429.2143fd1e.chunk.js",
+          "bytes": 4719
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 130.84799999999998,
+      "coveredJsCodeUnits": 265807,
+      "hadInteraction": true,
+      "jsNetworkBytes": 185287,
+      "imageNetworkBytes": 74291,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/products",
+      "run": 3,
+      "lcp": 2384,
+      "cls": 0.5737599473638628,
+      "inp": 16,
+      "shiftStart": 2170.2999999988824,
+      "shiftLast": 2433.2999999988824,
+      "shiftValue": 0.5737599473638628,
+      "ttfbMs": 1.699999999254942,
+      "serverWaitMs": 1,
+      "htmlMs": 160.40000000037253,
+      "jsTransferredBytes": 184925,
+      "imageTransferredBytes": 73987,
+      "fontTransferredBytes": 0,
+      "title": "Search Products",
+      "body": "Delivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCategories\nHome\nproducts\nAll Products\nFilter by c",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/429.2143fd1e.chunk.js",
+          "bytes": 4719
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 132.546,
+      "coveredJsCodeUnits": 264147,
+      "hadInteraction": true,
+      "jsNetworkBytes": 185287,
+      "imageNetworkBytes": 74291,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/products",
+      "run": 4,
+      "lcp": 2388,
+      "cls": 0.5737599473638628,
+      "inp": null,
+      "shiftStart": 2169.4000000003725,
+      "shiftLast": 2434.300000000745,
+      "shiftValue": 0.5737599473638628,
+      "ttfbMs": 1.400000000372529,
+      "serverWaitMs": 0.7999999988824129,
+      "htmlMs": 158.09999999962747,
+      "jsTransferredBytes": 184925,
+      "imageTransferredBytes": 73987,
+      "fontTransferredBytes": 0,
+      "title": "Search Products",
+      "body": "Delivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCategories\nHome\nproducts\nAll Products\nFilter by c",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/429.2143fd1e.chunk.js",
+          "bytes": 4719
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 129.29299999999998,
+      "coveredJsCodeUnits": 264520,
+      "hadInteraction": true,
+      "jsNetworkBytes": 185287,
+      "imageNetworkBytes": 74291,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/products",
+      "run": 5,
+      "lcp": 2384,
+      "cls": 0.5737599473638628,
+      "inp": null,
+      "shiftStart": 2170.5999999996275,
+      "shiftLast": 2431.5,
+      "shiftValue": 0.5737599473638628,
+      "ttfbMs": 1.400000000372529,
+      "serverWaitMs": 0.6999999992549419,
+      "htmlMs": 167.09999999962747,
+      "jsTransferredBytes": 184925,
+      "imageTransferredBytes": 73987,
+      "fontTransferredBytes": 0,
+      "title": "Search Products",
+      "body": "Delivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCategories\nHome\nproducts\nAll Products\nFilter by c",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/429.2143fd1e.chunk.js",
+          "bytes": 4719
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 126.726,
+      "coveredJsCodeUnits": 265006,
+      "hadInteraction": true,
+      "jsNetworkBytes": 185287,
+      "imageNetworkBytes": 74291,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/login",
+      "run": 1,
+      "lcp": 1832,
+      "cls": 0.00007910412775532607,
+      "inp": null,
+      "shiftStart": 2037,
+      "shiftLast": 2037,
+      "shiftValue": 0.00007910412775532607,
+      "ttfbMs": 1.5,
+      "serverWaitMs": 0.900000000372529,
+      "htmlMs": 160,
+      "jsTransferredBytes": 180553,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy",
+      "body": "404\n\n404 page not found\n\ngo to Home",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/254.7787bb62.chunk.js",
+          "bytes": 347
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 78.117,
+      "coveredJsCodeUnits": 181111,
+      "hadInteraction": false,
+      "jsNetworkBytes": 180914,
+      "imageNetworkBytes": 0,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/login",
+      "run": 2,
+      "lcp": 1856,
+      "cls": 0.00007910412775532607,
+      "inp": null,
+      "shiftStart": 2037.800000000745,
+      "shiftLast": 2037.800000000745,
+      "shiftValue": 0.00007910412775532607,
+      "ttfbMs": 1.6000000014901161,
+      "serverWaitMs": 0.8000000007450581,
+      "htmlMs": 159.69999999925494,
+      "jsTransferredBytes": 180553,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy",
+      "body": "404\n\n404 page not found\n\ngo to Home",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/254.7787bb62.chunk.js",
+          "bytes": 347
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 79.155,
+      "coveredJsCodeUnits": 181111,
+      "hadInteraction": false,
+      "jsNetworkBytes": 180914,
+      "imageNetworkBytes": 0,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/login",
+      "run": 3,
+      "lcp": 1824,
+      "cls": 0.00007910412775532607,
+      "inp": null,
+      "shiftStart": 2023.7000000011176,
+      "shiftLast": 2023.7000000011176,
+      "shiftValue": 0.00007910412775532607,
+      "ttfbMs": 1.6000000014901161,
+      "serverWaitMs": 0.8000000007450581,
+      "htmlMs": 158.5,
+      "jsTransferredBytes": 180553,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy",
+      "body": "404\n\n404 page not found\n\ngo to Home",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/254.7787bb62.chunk.js",
+          "bytes": 347
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 78.514,
+      "coveredJsCodeUnits": 181111,
+      "hadInteraction": false,
+      "jsNetworkBytes": 180914,
+      "imageNetworkBytes": 0,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/login",
+      "run": 4,
+      "lcp": 1852,
+      "cls": 0.00007910412775532607,
+      "inp": null,
+      "shiftStart": 2034.7000000011176,
+      "shiftLast": 2034.7000000011176,
+      "shiftValue": 0.00007910412775532607,
+      "ttfbMs": 1.300000000745058,
+      "serverWaitMs": 0.599999999627471,
+      "htmlMs": 164.69999999925494,
+      "jsTransferredBytes": 180553,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy",
+      "body": "404\n\n404 page not found\n\ngo to Home",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/254.7787bb62.chunk.js",
+          "bytes": 347
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 79.14699999999999,
+      "coveredJsCodeUnits": 181111,
+      "hadInteraction": false,
+      "jsNetworkBytes": 180914,
+      "imageNetworkBytes": 0,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "path": "/login",
+      "run": 5,
+      "lcp": 1852,
+      "cls": 0.00007910412775532607,
+      "inp": null,
+      "shiftStart": 2036,
+      "shiftLast": 2036,
+      "shiftValue": 0.00007910412775532607,
+      "ttfbMs": 1.599999999627471,
+      "serverWaitMs": 0.7999999988824129,
+      "htmlMs": 166.69999999925494,
+      "jsTransferredBytes": 180553,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 0,
+      "title": "Al Mina Pharmacy",
+      "body": "404\n\n404 page not found\n\ngo to Home",
+      "resources": [
+        {
+          "path": "/static/js/main.868c374c.js",
+          "bytes": 180206
+        },
+        {
+          "path": "/static/js/254.7787bb62.chunk.js",
+          "bytes": 347
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 78.652,
+      "coveredJsCodeUnits": 181111,
+      "hadInteraction": false,
+      "jsNetworkBytes": 180914,
+      "imageNetworkBytes": 0,
+      "failedRequests": 0,
+      "failureReasons": {},
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    }
+  ]
+}

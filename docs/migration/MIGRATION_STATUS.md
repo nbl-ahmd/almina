@@ -2,6 +2,12 @@
 
 Last updated: 2026-10-03.
 
+## Measured performance work
+
+Implemented locally on `codex/production-performance`, 2026-10-03, after capturing public production and isolated compiled-build baselines. Deferred 33 legacy route screens and Next cart validation, converted the self-hosted font losslessly to WOFF2, reserved legacy card image space/removed a redundant preload, cached only category/banner presentation with authenticated tagged invalidation, and added redacted catalog query timing. Removed three confirmed-unused direct dependency declarations. Local initial CRA JavaScript falls 38.1%; Next catalog JavaScript 38.9%; Next font transfer 43.5%. Full metrics, bundle attribution, scripts, tradeoffs and rollout gates are in [the performance assessment](PERFORMANCE_2026-10-03.md).
+
+No production deployment, DB/index/media change or Next checkout activation occurred. Live deployed assets differ from local source; real-user INP/percentiles, production server/Atlas latency and hosted CDN/load behavior remain unmeasured. Next LCP did not improve in the fixture; legacy list CLS still needs representative catalog validation. The versioned cursor/index plan was measured in disposable MongoDB, while the web compatibility adapter still retains legacy offset pagination. Admin writers do not yet invoke tag invalidation, and multi-instance cache behavior remains a rollout gate.
+
 ## Current state
 
 Repository audit complete for audit baseline `3d27241`. An additive modernization foundation is implemented on `modernization/foundation`: Next.js 16.3.8/React 19.3/Node 24 LTS, npm workspaces, TypeScript/ESLint, shared validation/client contracts, isolated environment configuration, persistent API health/error/logging conventions and a lazy database boundary. The legacy frontend/backend and their lockfiles remain intact. No production data, deployed services or credentials were changed; no route cutover occurred. See [foundation decisions, dependencies/conflicts and verification](FOUNDATION_2026-10-02.md). Audit deliverables A–O and rollout/rollback gates remain recorded in [the production audit](PRODUCTION_AUDIT_2026-10-02.md).

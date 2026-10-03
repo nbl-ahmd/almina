@@ -34,7 +34,7 @@ export function createApp(options: {
       options.logger.log('info', 'http_request', {
         requestId, method: req.method,
         route: typeof req.route?.path === 'string' ? req.route.path : '/unmatched',
-        status: res.statusCode, durationMs: Math.round(performance.now() - start),
+        status: res.statusCode, durationMs: Math.round((performance.now() - start) * 100) / 100,
       });
     });
     next();
@@ -97,7 +97,12 @@ export function createApp(options: {
     res.set('Allow', 'GET, HEAD'); next(new HttpError(405, 'METHOD_NOT_ALLOWED'));
   });
   const getDb: GetDb = options.getDb ?? (() => Promise.reject(new HttpError(503, 'SERVICE_UNAVAILABLE')));
-  app.use('/api/v1', apiRoutes(getDb, options.webOrigin ?? '', options.development));
+  app.use('/api/v1', apiRoutes(getDb, options.webOrigin ?? '', options.development, measurement => {
+    options.logger.log(measurement.success ? 'info' : 'warn', 'catalog_query', {
+      operation: measurement.operation, durationMs: Math.round(measurement.durationMs * 100) / 100,
+      status: measurement.success ? 200 : 500,
+    });
+  }));
   app.use((_req, _res, next) => next(new HttpError(404, 'NOT_FOUND')));
   app.use(errorHandler(options.logger));
   return app;

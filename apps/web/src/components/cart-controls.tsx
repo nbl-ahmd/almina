@@ -1,7 +1,6 @@
 "use client";
 import { useState } from 'react';
 import { checkAddition } from '../app/cart/actions';
-import { saveCart, storedCart } from '../lib/catalog/browser-cart';
 export function AddToCart({ id, stock, quantityPicker = false }: { id: string; stock: number; quantityPicker?: boolean }) {
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
@@ -9,6 +8,8 @@ export function AddToCart({ id, stock, quantityPicker = false }: { id: string; s
   async function add() {
     setPending(true); setMessage('');
     try {
+      // Storage parsing/validation is needed only after an explicit cart interaction.
+      const { saveCart, storedCart } = await import('../lib/catalog/browser-cart');
       const lines = storedCart();
       const previous = lines.find(line => line.id === id)?.quantity ?? 0;
       const error = await checkAddition(id, previous + quantity);

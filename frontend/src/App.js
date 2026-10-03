@@ -3,53 +3,49 @@ import './client/styles/App.css';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Navbar from './client/components/navbar';
-import React, { useEffect, useState } from 'react';
+import React, { lazy, useEffect } from 'react';
+import { RouteLoadingBoundary } from './client/components/RouteLoadingBoundary';
 import Home from './client/pages/Home';
-import About from './client/pages/About';
-import Products from './client/pages/Products';
-import Categories from './client/pages/Categories'
-import Cart from './client/pages/Cart';
-import Checkout from './client/components/Checkout';
-import DealPage from './client/pages/DealPage';
-
-import BannerForm from './admin/components/BannerForm';
-import Dashboard from './admin/pages/dashboard';
-import NotFound from './client/pages/NotFound'
-import ProductUpload from './admin/components/ProductUpload';
-import CategoryUpload from './admin/components/CategoryUpload';
-import Products_list from './admin/pages/Products_list';
-import Categoryupdate from './admin/components/Categoryupdate';
-import ProductUpdate from './admin/components/ProductUpdate';
 
 import { CartProvider } from './context/cartcontext';
 
-import Orderlist from './admin/components/Orderlist';
-import CategoryPage from './client/pages/Categoryproduct';
 import Footer from './client/components/footer';
-import Batchproduct from './admin/components/Batchproduct';
 
 import { SessionRoute } from './admin/login/auth';
-import Login from './admin/login/Login'
-import Admindash from './admin/pages/Admindash';
-import Adduser from './admin/pages/Adduser';
-import Openstreet from './client/components/Openstreet';
-import SalesList from './admin/pages/SalesList';
-import OutOfStock from './admin/pages/OutOfStock';
-import Dispatched from './admin/components/Dispatched';
-import ProductsPharmacy from './admin/pages/ProductsPharmacy';
-import OrderDetails from './admin/pages/OrderDetails';
-import DisabledList from './admin/pages/DisabledList';
-import SettingsPage from './admin/pages/SettingsPage';
-import Contact from './client/pages/Contact';
-import OutOfStockPharmacy from './admin/pages/OutOfStockPharmacy';
-import WhatsappMessaging from './admin/pages/WhatsappMessaging';
-import Cancelled from './admin/components/Cancelled';
 
-import ProductDetails from './client/pages/ProductDetails';
-
-
-
-
+const About = lazy(() => import('./client/pages/About'));
+const Products = lazy(() => import('./client/pages/Products'));
+const Categories = lazy(() => import('./client/pages/Categories'));
+const Cart = lazy(() => import('./client/pages/Cart'));
+const Checkout = lazy(() => import('./client/components/Checkout'));
+const DealPage = lazy(() => import('./client/pages/DealPage'));
+const BannerForm = lazy(() => import('./admin/components/BannerForm'));
+const Dashboard = lazy(() => import('./admin/pages/dashboard'));
+const NotFound = lazy(() => import('./client/pages/NotFound'));
+const ProductUpload = lazy(() => import('./admin/components/ProductUpload'));
+const CategoryUpload = lazy(() => import('./admin/components/CategoryUpload'));
+const Products_list = lazy(() => import('./admin/pages/Products_list'));
+const Categoryupdate = lazy(() => import('./admin/components/Categoryupdate'));
+const ProductUpdate = lazy(() => import('./admin/components/ProductUpdate'));
+const Orderlist = lazy(() => import('./admin/components/Orderlist'));
+const CategoryPage = lazy(() => import('./client/pages/Categoryproduct'));
+const Batchproduct = lazy(() => import('./admin/components/Batchproduct'));
+const Login = lazy(() => import('./admin/login/Login'));
+const Admindash = lazy(() => import('./admin/pages/Admindash'));
+const Adduser = lazy(() => import('./admin/pages/Adduser'));
+const Openstreet = lazy(() => import('./client/components/Openstreet'));
+const SalesList = lazy(() => import('./admin/pages/SalesList'));
+const OutOfStock = lazy(() => import('./admin/pages/OutOfStock'));
+const Dispatched = lazy(() => import('./admin/components/Dispatched'));
+const ProductsPharmacy = lazy(() => import('./admin/pages/ProductsPharmacy'));
+const OrderDetails = lazy(() => import('./admin/pages/OrderDetails'));
+const DisabledList = lazy(() => import('./admin/pages/DisabledList'));
+const SettingsPage = lazy(() => import('./admin/pages/SettingsPage'));
+const Contact = lazy(() => import('./client/pages/Contact'));
+const OutOfStockPharmacy = lazy(() => import('./admin/pages/OutOfStockPharmacy'));
+const WhatsappMessaging = lazy(() => import('./admin/pages/WhatsappMessaging'));
+const Cancelled = lazy(() => import('./admin/components/Cancelled'));
+const ProductDetails = lazy(() => import('./client/pages/ProductDetails'));
 
 const DashboardContext = React.createContext()
 const DashProvider =  DashboardContext.Provider
@@ -113,7 +109,6 @@ const MaintenanceLanding = () => {
   );
 };
 
-
 const Adminroutes = ({ children }) => <SessionRoute>{children}</SessionRoute>;
 const AdminProtectedRoute = ({ children }) => <SessionRoute role="admin">{children}</SessionRoute>;
 
@@ -147,6 +142,7 @@ const App = () => {
     <HelmetProvider>
     <BrowserRouter>
       <main>
+        <RouteLoadingBoundary>
         <Routes>
           <Route path='/cart' element={
             <>
@@ -224,7 +220,6 @@ const App = () => {
   </CartProvider>
 } />
 
-
           <Route path='about' element={
            <CartProvider>
              <Navbar />
@@ -242,8 +237,6 @@ const App = () => {
 <Route path='admin/login' element={
             <Login />
           } />
-
-
 
           <Route path='admin' element={
             <Adminroutes>
@@ -323,7 +316,6 @@ const App = () => {
             </DashProvider>
             </Adminroutes>
           } />
-
 
           <Route path='admindash' element={
               <AdminProtectedRoute>
@@ -443,9 +435,6 @@ const App = () => {
             </AdminProtectedRoute>
           } />
 
-
-
-
           <Route path='admindash/batch' element={
             <AdminProtectedRoute>
             <AdminDashProvider value= {<>
@@ -466,17 +455,12 @@ const App = () => {
             </AdminProtectedRoute>
           } />
 
-
-
-
-
           {/* <Route path='upload' element={<FilesUpload />} /> */}
           <Route path='/admin/categories/update/:id' element=
           
           {<Adminroutes>
             <Categoryupdate />
             </Adminroutes>} />
-
 
             <Route path='/admindash/categories/update/:id' element={
               <AdminProtectedRoute>
@@ -497,7 +481,6 @@ const App = () => {
               </AdminProtectedRoute>
           } />
 
-
           <Route path='/admin/productlist/update/:id' element={
           <Adminroutes>
             <ProductUpdate />
@@ -513,13 +496,12 @@ const App = () => {
           <Route path="/map" element={<Openstreet/>} />
 
         </Routes>
+        </RouteLoadingBoundary>
         
         
       </main>
     </BrowserRouter>
     </HelmetProvider>
-
-
 
   );
 }

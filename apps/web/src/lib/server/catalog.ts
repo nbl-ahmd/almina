@@ -2,14 +2,15 @@ import 'server-only';
 import { cache } from 'react';
 import { getWebEnvironment } from './env';
 import { readCategory, readProduct, objectId, publicId, slugIdentity, type Product } from '../catalog/model';
+import { catalogReadPolicy } from '../catalog/cache-policy';
 
 export class CatalogUnavailable extends Error {
   constructor() { super('Catalog service unavailable'); }
 }
-export async function legacyRead(path: string): Promise<unknown> {
+export async function legacyRead(path: string, content = false): Promise<unknown> {
   try {
     const response = await fetch(new URL(path, getWebEnvironment().LEGACY_API_ORIGIN), {
-      cache: 'no-store', signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json' },
+      ...catalogReadPolicy(path, content), signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json' },
       redirect: 'error',
     });
     if (response.status === 404) return null;
@@ -22,12 +23,15 @@ function array(value: unknown): unknown[] {
   return value;
 }
 // Missing legacy disabled fields are public too; normalize before exposing anything.
-export const getCategories = cache(async () => array(await legacyRead('/api/category'))
+export const getCategories = cache(async () => array(await legacyRead('/api/category', true))
+  .map(readCategory).filter(category => category !== null));
+const getFreshCategories = cache(async () => array(await legacyRead('/api/category'))
   .map(readCategory).filter(category => category !== null));
 export async function getCategory(identity: string) {
   if (!objectId.test(identity)) return null;
   // The legacy single-category handler returns 500 for missing IDs. Resolve against the public list instead.
-  return (await getCategories()).find(category => category._id === identity) ?? null;
+  // Identity/visibility and cart checks bypass the presentation cache.
+  return (await getFreshCategories()).find(category => category._id === identity) ?? null;
 }
 export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string } = {}) {
   const page = Math.max(1, Math.min(1000, options.page ?? 1));
@@ -80,7 +84,7 @@ export function categoryImage(image: string | undefined) {
   return name ? `https://cdn.alminapharmacy.com/cdn/categories/${name}` : '/product-placeholder.svg';
 }
 export async function getBanners() {
-  return array(await legacyRead('/api/banners')).flatMap(value => {
+  return array(await legacyRead('/api/banners', true)).flatMap(value => {
     if (!value || typeof value !== 'object') return [];
     const raw = value as Record<string, unknown>;
     const name = fileName(typeof raw.image === 'string' ? raw.image : undefined);

@@ -1,0 +1,901 @@
+{
+  "capturedAt": "2026-10-03T07:47:46.156Z",
+  "origin": "http://127.0.0.1:3200",
+  "profile": {
+    "width": 390,
+    "height": 844,
+    "cpuSlowdown": 4,
+    "latencyMs": 150,
+    "downloadBytesPerSecond": 200000,
+    "cache": "cold browser / warm server",
+    "coverage": "best-effort V8 coverage in UTF-16 code units, not exact executed bytes",
+    "inp": "single search-focus/type interaction lab proxy; null if no eligible interaction"
+  },
+  "results": [
+    {
+      "path": "/",
+      "run": 1,
+      "lcp": 704,
+      "cls": 0.00003809075136106902,
+      "inp": 24,
+      "shiftStart": 2933.39999999851,
+      "shiftLast": 2933.39999999851,
+      "shiftValue": 0.00003809075136106902,
+      "ttfbMs": 98.69999999925494,
+      "serverWaitMs": 97.80000000074506,
+      "htmlMs": 180.60000000149012,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 261,
+      "fontTransferredBytes": 234160,
+      "title": "Al Mina Pharmacy Ras Al Khaimah",
+      "body": "Al Mina Pharmacy\nShop by category\nSkin Care\nAll categories\nFeatured products\nSale\nSkin Care\nDaily Ca",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 380.618,
+      "coveredJsCodeUnits": 341516
+    },
+    {
+      "path": "/",
+      "run": 2,
+      "lcp": 668,
+      "cls": 0.00003809075136106902,
+      "inp": null,
+      "shiftStart": 2924.7000000011176,
+      "shiftLast": 2924.7000000011176,
+      "shiftValue": 0.00003809075136106902,
+      "ttfbMs": 94,
+      "serverWaitMs": 93.19999999925494,
+      "htmlMs": 180.90000000037253,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 261,
+      "fontTransferredBytes": 234160,
+      "title": "Al Mina Pharmacy Ras Al Khaimah",
+      "body": "Al Mina Pharmacy\nShop by category\nSkin Care\nAll categories\nFeatured products\nSale\nSkin Care\nDaily Ca",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 430.29,
+      "coveredJsCodeUnits": 299875
+    },
+    {
+      "path": "/",
+      "run": 3,
+      "lcp": 668,
+      "cls": 0.00003809075136106902,
+      "inp": null,
+      "shiftStart": 2925.4000000003725,
+      "shiftLast": 2925.4000000003725,
+      "shiftValue": 0.00003809075136106902,
+      "ttfbMs": 94.59999999962747,
+      "serverWaitMs": 93.90000000037253,
+      "htmlMs": 181.5,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 261,
+      "fontTransferredBytes": 234160,
+      "title": "Al Mina Pharmacy Ras Al Khaimah",
+      "body": "Al Mina Pharmacy\nShop by category\nSkin Care\nAll categories\nFeatured products\nSale\nSkin Care\nDaily Ca",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 415.094,
+      "coveredJsCodeUnits": 301053
+    },
+    {
+      "path": "/",
+      "run": 4,
+      "lcp": 636,
+      "cls": 0.00003809075136106902,
+      "inp": null,
+      "shiftStart": 2919.699999999255,
+      "shiftLast": 2919.699999999255,
+      "shiftValue": 0.00003809075136106902,
+      "ttfbMs": 92.39999999850988,
+      "serverWaitMs": 91.5,
+      "htmlMs": 174.60000000149012,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 261,
+      "fontTransferredBytes": 234160,
+      "title": "Al Mina Pharmacy Ras Al Khaimah",
+      "body": "Al Mina Pharmacy\nShop by category\nSkin Care\nAll categories\nFeatured products\nSale\nSkin Care\nDaily Ca",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 422.546,
+      "coveredJsCodeUnits": 299875
+    },
+    {
+      "path": "/",
+      "run": 5,
+      "lcp": 640,
+      "cls": 0.00003809075136106902,
+      "inp": null,
+      "shiftStart": 2923.9000000003725,
+      "shiftLast": 2923.9000000003725,
+      "shiftValue": 0.00003809075136106902,
+      "ttfbMs": 95.09999999962747,
+      "serverWaitMs": 94.09999999962747,
+      "htmlMs": 180,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 261,
+      "fontTransferredBytes": 234160,
+      "title": "Al Mina Pharmacy Ras Al Khaimah",
+      "body": "Al Mina Pharmacy\nShop by category\nSkin Care\nAll categories\nFeatured products\nSale\nSkin Care\nDaily Ca",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 422.39700000000005,
+      "coveredJsCodeUnits": 301053
+    },
+    {
+      "path": "/products",
+      "run": 1,
+      "lcp": 688,
+      "cls": 0.0000973196903010046,
+      "inp": null,
+      "shiftStart": 2933,
+      "shiftLast": 2933,
+      "shiftValue": 0.0000973196903010046,
+      "ttfbMs": 9.799999998882413,
+      "serverWaitMs": 8.900000000372529,
+      "htmlMs": 188.7000000011176,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "All products | Al Mina Pharmacy",
+      "body": "Home / All products\nAll products\nSearch products\nCategory\nAll categories\nSkin Care\nApply\nSale\nSkin C",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 396.024,
+      "coveredJsCodeUnits": 306360
+    },
+    {
+      "path": "/products",
+      "run": 2,
+      "lcp": 680,
+      "cls": 0.0000973196903010046,
+      "inp": null,
+      "shiftStart": 2925.5999999996275,
+      "shiftLast": 2925.5999999996275,
+      "shiftValue": 0.0000973196903010046,
+      "ttfbMs": 8.400000000372529,
+      "serverWaitMs": 7.700000001117587,
+      "htmlMs": 182,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "All products | Al Mina Pharmacy",
+      "body": "Home / All products\nAll products\nSearch products\nCategory\nAll categories\nSkin Care\nApply\nSale\nSkin C",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 395.98699999999997,
+      "coveredJsCodeUnits": 305182
+    },
+    {
+      "path": "/products",
+      "run": 3,
+      "lcp": 700,
+      "cls": 0.0000973196903010046,
+      "inp": null,
+      "shiftStart": 2931,
+      "shiftLast": 2931,
+      "shiftValue": 0.0000973196903010046,
+      "ttfbMs": 9.199999999254942,
+      "serverWaitMs": 8.299999998882413,
+      "htmlMs": 188.7999999988824,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "All products | Al Mina Pharmacy",
+      "body": "Home / All products\nAll products\nSearch products\nCategory\nAll categories\nSkin Care\nApply\nSale\nSkin C",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 386.227,
+      "coveredJsCodeUnits": 305182
+    },
+    {
+      "path": "/products",
+      "run": 4,
+      "lcp": 688,
+      "cls": 0.0000973196903010046,
+      "inp": null,
+      "shiftStart": 2932.800000000745,
+      "shiftLast": 2932.800000000745,
+      "shiftValue": 0.0000973196903010046,
+      "ttfbMs": 9,
+      "serverWaitMs": 8.099999999627471,
+      "htmlMs": 191.19999999925494,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "All products | Al Mina Pharmacy",
+      "body": "Home / All products\nAll products\nSearch products\nCategory\nAll categories\nSkin Care\nApply\nSale\nSkin C",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 391.863,
+      "coveredJsCodeUnits": 305182
+    },
+    {
+      "path": "/products",
+      "run": 5,
+      "lcp": 680,
+      "cls": 0.0000973196903010046,
+      "inp": null,
+      "shiftStart": 2925.4000000003725,
+      "shiftLast": 2925.4000000003725,
+      "shiftValue": 0.0000973196903010046,
+      "ttfbMs": 9.5,
+      "serverWaitMs": 8.799999998882413,
+      "htmlMs": 181.89999999850988,
+      "jsTransferredBytes": 234597,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "All products | Al Mina Pharmacy",
+      "body": "Home / All products\nAll products\nSearch products\nCategory\nAll categories\nSkin Care\nApply\nSale\nSkin C",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/16um3uelw7jit.js",
+          "bytes": 708
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 387.839,
+      "coveredJsCodeUnits": 305182
+    },
+    {
+      "path": "/products/daily-care--PD0001",
+      "run": 1,
+      "lcp": 468,
+      "cls": 0.00032598911475944224,
+      "inp": null,
+      "shiftStart": 2941.300000000745,
+      "shiftLast": 2941.300000000745,
+      "shiftValue": 0.00032598911475944224,
+      "ttfbMs": 173.30000000074506,
+      "serverWaitMs": 172.5,
+      "htmlMs": 196.30000000074506,
+      "jsTransferredBytes": 235212,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "Daily Care | Al Mina Pharmacy",
+      "body": "Home / Categories / Skin Care / Daily Care\nDaily Care\nSkin Care\n\nAED 20.00 AED 25.00\n\nQuantity\nAdd t",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/43y9bnli9bhsv.js",
+          "bytes": 1323
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 381.73699999999997,
+      "coveredJsCodeUnits": 301409
+    },
+    {
+      "path": "/products/daily-care--PD0001",
+      "run": 2,
+      "lcp": 480,
+      "cls": 0.00032598911475944224,
+      "inp": null,
+      "shiftStart": 2947.800000000745,
+      "shiftLast": 2947.800000000745,
+      "shiftValue": 0.00032598911475944224,
+      "ttfbMs": 175,
+      "serverWaitMs": 174.30000000074506,
+      "htmlMs": 204.30000000074506,
+      "jsTransferredBytes": 235212,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "Daily Care | Al Mina Pharmacy",
+      "body": "Home / Categories / Skin Care / Daily Care\nDaily Care\nSkin Care\n\nAED 20.00 AED 25.00\n\nQuantity\nAdd t",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/43y9bnli9bhsv.js",
+          "bytes": 1323
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 380.332,
+      "coveredJsCodeUnits": 301409
+    },
+    {
+      "path": "/products/daily-care--PD0001",
+      "run": 3,
+      "lcp": 468,
+      "cls": 0.00032598911475944224,
+      "inp": null,
+      "shiftStart": 2939.10000000149,
+      "shiftLast": 2939.10000000149,
+      "shiftValue": 0.00032598911475944224,
+      "ttfbMs": 173.5,
+      "serverWaitMs": 172.59999999962747,
+      "htmlMs": 195.7000000011176,
+      "jsTransferredBytes": 235212,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "Daily Care | Al Mina Pharmacy",
+      "body": "Home / Categories / Skin Care / Daily Care\nDaily Care\nSkin Care\n\nAED 20.00 AED 25.00\n\nQuantity\nAdd t",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/43y9bnli9bhsv.js",
+          "bytes": 1323
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 394.148,
+      "coveredJsCodeUnits": 302587
+    },
+    {
+      "path": "/products/daily-care--PD0001",
+      "run": 4,
+      "lcp": 524,
+      "cls": 0.00032598911475944224,
+      "inp": null,
+      "shiftStart": 2954,
+      "shiftLast": 2954,
+      "shiftValue": 0.00032598911475944224,
+      "ttfbMs": 174.80000000074506,
+      "serverWaitMs": 174.19999999925494,
+      "htmlMs": 204.39999999850988,
+      "jsTransferredBytes": 235212,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "Daily Care | Al Mina Pharmacy",
+      "body": "Home / Categories / Skin Care / Daily Care\nDaily Care\nSkin Care\n\nAED 20.00 AED 25.00\n\nQuantity\nAdd t",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/43y9bnli9bhsv.js",
+          "bytes": 1323
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 394.489,
+      "coveredJsCodeUnits": 301409
+    },
+    {
+      "path": "/products/daily-care--PD0001",
+      "run": 5,
+      "lcp": 472,
+      "cls": 0.00032598911475944224,
+      "inp": null,
+      "shiftStart": 2939.5999999996275,
+      "shiftLast": 2939.5999999996275,
+      "shiftValue": 0.00032598911475944224,
+      "ttfbMs": 174,
+      "serverWaitMs": 173.30000000074506,
+      "htmlMs": 196.7000000011176,
+      "jsTransferredBytes": 235212,
+      "imageTransferredBytes": 0,
+      "fontTransferredBytes": 234160,
+      "title": "Daily Care | Al Mina Pharmacy",
+      "body": "Home / Categories / Skin Care / Daily Care\nDaily Care\nSkin Care\n\nAED 20.00 AED 25.00\n\nQuantity\nAdd t",
+      "resources": [
+        {
+          "path": "/_next/static/chunks/2rx93pbd63k49.js",
+          "bytes": 4927
+        },
+        {
+          "path": "/_next/static/chunks/2ki-ijhjmuq0j.js",
+          "bytes": 47779
+        },
+        {
+          "path": "/_next/static/chunks/turbopack-1gdai928qnjfp.js",
+          "bytes": 3836
+        },
+        {
+          "path": "/_next/static/chunks/19vax2ypgrtg1.js",
+          "bytes": 422
+        },
+        {
+          "path": "/_next/static/chunks/0rq89m5vohk1-.js",
+          "bytes": 11578
+        },
+        {
+          "path": "/_next/static/chunks/0a37caasaw7-7.js",
+          "bytes": 73278
+        },
+        {
+          "path": "/_next/static/chunks/43y9bnli9bhsv.js",
+          "bytes": 1323
+        },
+        {
+          "path": "/_next/static/chunks/03r3qeqih2gxi.js",
+          "bytes": 403
+        },
+        {
+          "path": "/_next/static/chunks/1pyiqk7luoywj.js",
+          "bytes": 91666
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 388.393,
+      "coveredJsCodeUnits": 302587
+    }
+  ]
+}

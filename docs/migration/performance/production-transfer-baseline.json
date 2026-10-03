@@ -1,0 +1,73 @@
+{
+  "capturedAt": "2026-10-03T08:10:51.438Z",
+  "origin": "https://www.alminapharmacy.com",
+  "profile": {
+    "width": 390,
+    "height": 844,
+    "cpuSlowdown": 4,
+    "latencyMs": 150,
+    "downloadBytesPerSecond": 200000,
+    "cache": "cold browser / warm server",
+    "coverage": "best-effort V8 coverage in UTF-16 code units, not exact executed bytes",
+    "inp": "single search-focus/type interaction lab proxy; null if no eligible interaction"
+  },
+  "results": [
+    {
+      "path": "/",
+      "run": 1,
+      "lcp": 7772,
+      "cls": 0.023740619028315077,
+      "inp": 16,
+      "shiftStart": 10168.599999999627,
+      "shiftLast": 10168.599999999627,
+      "shiftValue": 0.000005334561218301475,
+      "ttfbMs": 250.89999999850988,
+      "serverWaitMs": 154.5,
+      "htmlMs": 183.10000000149012,
+      "jsTransferredBytes": 664649,
+      "imageTransferredBytes": 121325,
+      "fontTransferredBytes": 158488,
+      "title": "Al Mina Pharmacy Ras Al Khaimah | Your Reliable Choice for Premium Products. From Vitamin C Serums to Advil 12 Hour Extended Release | Free Delivery in Ras Al Khaimah",
+      "body": "Free Home Delivery across Ras Al Khaimah *\n\nDelivery timing :\n\n8 am - 12 pm\n\nHome\nAll Products\nCateg",
+      "resources": [
+        {
+          "path": "/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js",
+          "bytes": 4120
+        },
+        {
+          "path": "/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "bytes": 0
+        },
+        {
+          "path": "/static/js/main.da5ef101.js",
+          "bytes": 487735
+        },
+        {
+          "path": "/09be7d0d79.js",
+          "bytes": 0
+        },
+        {
+          "path": "/en_US/fbevents.js",
+          "bytes": 112721
+        },
+        {
+          "path": "/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js",
+          "bytes": 24143
+        },
+        {
+          "path": "/signals/config/791200429445805",
+          "bytes": 35930
+        }
+      ],
+      "overflow": false,
+      "scriptDurationMs": 930.5,
+      "coveredJsCodeUnits": 391069,
+      "hadInteraction": true,
+      "jsNetworkBytes": 882450,
+      "imageNetworkBytes": 128393,
+      "failedRequests": 2,
+      "runtimeErrors": 0,
+      "httpErrors": 0
+    }
+  ]
+}

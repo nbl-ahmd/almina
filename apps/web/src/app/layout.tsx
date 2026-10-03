@@ -7,7 +7,7 @@ import './globals.css';
 import { getWebEnvironment } from '../lib/server/env';
 import { siteDescription, siteName, organizationData } from '../lib/seo';
 import { StructuredData } from '../components/structured-data';
-const ptSans = localFont({ src: './fonts/PTSans-Regular.ttf', weight: '400', display: 'swap' });
+const ptSans = localFont({ src: './fonts/PTSans-Regular.woff2', weight: '400', display: 'swap' });
 export function generateMetadata(): Metadata {
   const env = getWebEnvironment();
   return { metadataBase: new URL(env.WEB_ORIGIN),

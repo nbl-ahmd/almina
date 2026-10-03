@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { CartContext } from '../../context/cartcontext';
 import { Link } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
@@ -8,16 +8,6 @@ function ProductCard({ product }) {
   const { addToCart } = useContext(CartContext);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  useEffect(() => {
-    const image = new Image();
-    const defaultImage = "fb634ad3-7062-4baf-a08d-4f8f04abb459.webp";
-    image.src = `https://cdn.alminapharmacy.com/cdn/products/${product.image || defaultImage}`;
-   
-    // image.onload = () => {
-    //   setImageLoaded(true);
-    // };
-  }, [product.image]);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -55,10 +45,9 @@ function ProductCard({ product }) {
                 
               </div>
 
-              <Link to={`/productdetails/${product.product_id}`} className="text-decoration-none">
+              <Link to={`/productdetails/${product.product_id}`} className="text-decoration-none product-image-frame">
                 {!imageLoaded && (
                   <div className="skeleton-image skeleton">
-                    {/* Loading skeleton or spinner goes here */}
                   </div>
                 )}
                 
@@ -73,6 +62,9 @@ function ProductCard({ product }) {
                   alt={product.name || 'Product image'}
                   className="card-img img-fluid product-image"
                   loading="lazy"
+                  decoding="async"
+                  width="240"
+                  height="240"
                   onLoad={handleImageLoad}
                 />
 

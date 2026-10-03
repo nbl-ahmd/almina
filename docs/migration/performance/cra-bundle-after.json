@@ -1,0 +1,520 @@
+{
+  "capturedAt": "2026-10-03T08:19:43.526Z",
+  "initialGzipBytes": 180206,
+  "totalGzipBytes": 356711,
+  "chunks": [
+    {
+      "file": "static/js/104.67454eef.chunk.js",
+      "initial": false,
+      "bytes": 43224,
+      "gzipBytes": 13171,
+      "mappedCodeUnits": {
+        "engine.io-client": 19264,
+        "socket.io-client": 13140,
+        "socket.io-parser": 5698,
+        "engine.io-parser": 3606,
+        "@socket.io/component-emitter": 1310
+      }
+    },
+    {
+      "file": "static/js/159.3912c499.chunk.js",
+      "initial": false,
+      "bytes": 9161,
+      "gzipBytes": 2862,
+      "mappedCodeUnits": {
+        "@mui/material": 8454,
+        "@mui/system": 520
+      }
+    },
+    {
+      "file": "static/js/179.315bdbe0.chunk.js",
+      "initial": false,
+      "bytes": 2455,
+      "gzipBytes": 999,
+      "mappedCodeUnits": {
+        "application": 2328
+      }
+    },
+    {
+      "file": "static/js/194.53e522ac.chunk.js",
+      "initial": false,
+      "bytes": 9160,
+      "gzipBytes": 3338,
+      "mappedCodeUnits": {
+        "@mui/material": 8932
+      }
+    },
+    {
+      "file": "static/js/215.328314e9.chunk.js",
+      "initial": false,
+      "bytes": 5926,
+      "gzipBytes": 1695,
+      "mappedCodeUnits": {
+        "application": 5790
+      }
+    },
+    {
+      "file": "static/js/231.0b381491.chunk.js",
+      "initial": false,
+      "bytes": 10045,
+      "gzipBytes": 2373,
+      "mappedCodeUnits": {
+        "application": 9919
+      }
+    },
+    {
+      "file": "static/js/252.a504f362.chunk.js",
+      "initial": false,
+      "bytes": 5995,
+      "gzipBytes": 2373,
+      "mappedCodeUnits": {
+        "@mui/system": 5390,
+        "@mui/material": 398
+      }
+    },
+    {
+      "file": "static/js/254.7787bb62.chunk.js",
+      "initial": false,
+      "bytes": 493,
+      "gzipBytes": 347,
+      "mappedCodeUnits": {
+        "application": 356
+      }
+    },
+    {
+      "file": "static/js/285.2ba035c1.chunk.js",
+      "initial": false,
+      "bytes": 22292,
+      "gzipBytes": 7941,
+      "mappedCodeUnits": {
+        "@restart/ui": 8582,
+        "react-bootstrap": 7649,
+        "dom-helpers": 3238,
+        "prop-types": 811,
+        "classnames": 663,
+        "@mui/material": 553,
+        "@restart/hooks": 522
+      }
+    },
+    {
+      "file": "static/js/292.1161e68e.chunk.js",
+      "initial": false,
+      "bytes": 11589,
+      "gzipBytes": 4296,
+      "mappedCodeUnits": {
+        "react-infinite-scroll-component": 7551,
+        "application": 3844
+      }
+    },
+    {
+      "file": "static/js/323.21a5419a.chunk.js",
+      "initial": false,
+      "bytes": 18811,
+      "gzipBytes": 6431,
+      "mappedCodeUnits": {
+        "@mui/material": 8133,
+        "application": 7489,
+        "@mui/system": 2428,
+        "@mui/icons-material": 625
+      }
+    },
+    {
+      "file": "static/js/331.d8967a09.chunk.js",
+      "initial": false,
+      "bytes": 3667,
+      "gzipBytes": 1581,
+      "mappedCodeUnits": {
+        "application": 2169,
+        "@mui/material": 1282
+      }
+    },
+    {
+      "file": "static/js/350.88f11a5f.chunk.js",
+      "initial": false,
+      "bytes": 12694,
+      "gzipBytes": 3392,
+      "mappedCodeUnits": {
+        "application": 12395
+      }
+    },
+    {
+      "file": "static/js/358.74048ae5.chunk.js",
+      "initial": false,
+      "bytes": 1041,
+      "gzipBytes": 617,
+      "mappedCodeUnits": {
+        "application": 915
+      }
+    },
+    {
+      "file": "static/js/370.5a709fcf.chunk.js",
+      "initial": false,
+      "bytes": 14534,
+      "gzipBytes": 3797,
+      "mappedCodeUnits": {
+        "application": 14415
+      }
+    },
+    {
+      "file": "static/js/378.d0af3fab.chunk.js",
+      "initial": false,
+      "bytes": 5265,
+      "gzipBytes": 2117,
+      "mappedCodeUnits": {
+        "@mui/material": 2519,
+        "application": 2505
+      }
+    },
+    {
+      "file": "static/js/41.ccdfca71.chunk.js",
+      "initial": false,
+      "bytes": 2496,
+      "gzipBytes": 1262,
+      "mappedCodeUnits": {
+        "application": 1637,
+        "@mui/system": 520,
+        "@mui/material": 195
+      }
+    },
+    {
+      "file": "static/js/429.2143fd1e.chunk.js",
+      "initial": false,
+      "bytes": 13475,
+      "gzipBytes": 4719,
+      "mappedCodeUnits": {
+        "react-infinite-scroll-component": 7551,
+        "application": 5730
+      }
+    },
+    {
+      "file": "static/js/439.a3229f69.chunk.js",
+      "initial": false,
+      "bytes": 10902,
+      "gzipBytes": 3209,
+      "mappedCodeUnits": {
+        "@mui/material": 10725
+      }
+    },
+    {
+      "file": "static/js/453.4c34efc3.chunk.js",
+      "initial": false,
+      "bytes": 4448,
+      "gzipBytes": 1759,
+      "mappedCodeUnits": {
+        "web-vitals": 4296
+      }
+    },
+    {
+      "file": "static/js/469.ff6fc57d.chunk.js",
+      "initial": false,
+      "bytes": 13870,
+      "gzipBytes": 3447,
+      "mappedCodeUnits": {
+        "application": 13700
+      }
+    },
+    {
+      "file": "static/js/496.377d7ae5.chunk.js",
+      "initial": false,
+      "bytes": 7164,
+      "gzipBytes": 1899,
+      "mappedCodeUnits": {
+        "application": 6999
+      }
+    },
+    {
+      "file": "static/js/527.a4081998.chunk.js",
+      "initial": false,
+      "bytes": 5250,
+      "gzipBytes": 1722,
+      "mappedCodeUnits": {
+        "application": 5124
+      }
+    },
+    {
+      "file": "static/js/595.6ef71ab0.chunk.js",
+      "initial": false,
+      "bytes": 19708,
+      "gzipBytes": 4781,
+      "mappedCodeUnits": {
+        "application": 19557
+      }
+    },
+    {
+      "file": "static/js/605.e683a22a.chunk.js",
+      "initial": false,
+      "bytes": 19643,
+      "gzipBytes": 6939,
+      "mappedCodeUnits": {
+        "@mui/material": 16235,
+        "@mui/system": 2033,
+        "@mui/utils": 663,
+        "@mui/private-theming": 504
+      }
+    },
+    {
+      "file": "static/js/62.e95a8743.chunk.js",
+      "initial": false,
+      "bytes": 4923,
+      "gzipBytes": 1929,
+      "mappedCodeUnits": {
+        "application": 4751
+      }
+    },
+    {
+      "file": "static/js/642.f9d8f342.chunk.js",
+      "initial": false,
+      "bytes": 8639,
+      "gzipBytes": 4549,
+      "mappedCodeUnits": {
+        "application": 7725,
+        "@mui/material": 658
+      }
+    },
+    {
+      "file": "static/js/666.8042be53.chunk.js",
+      "initial": false,
+      "bytes": 18556,
+      "gzipBytes": 6966,
+      "mappedCodeUnits": {
+        "react-hot-toast": 9929,
+        "application": 5493,
+        "goober": 2215,
+        "@mui/material": 658
+      }
+    },
+    {
+      "file": "static/js/71.6c35e001.chunk.js",
+      "initial": false,
+      "bytes": 9124,
+      "gzipBytes": 3271,
+      "mappedCodeUnits": {
+        "react-infinite-scroll-component": 7550,
+        "@restart/ui": 972,
+        "react-bootstrap": 392
+      }
+    },
+    {
+      "file": "static/js/712.5072c419.chunk.js",
+      "initial": false,
+      "bytes": 830,
+      "gzipBytes": 555,
+      "mappedCodeUnits": {
+        "application": 713
+      }
+    },
+    {
+      "file": "static/js/718.e3134376.chunk.js",
+      "initial": false,
+      "bytes": 2603,
+      "gzipBytes": 1299,
+      "mappedCodeUnits": {
+        "application": 2485
+      }
+    },
+    {
+      "file": "static/js/719.7a22b91d.chunk.js",
+      "initial": false,
+      "bytes": 57290,
+      "gzipBytes": 16839,
+      "mappedCodeUnits": {
+        "@mui/material": 56583,
+        "@mui/system": 520
+      }
+    },
+    {
+      "file": "static/js/723.bcaf9463.chunk.js",
+      "initial": false,
+      "bytes": 2584,
+      "gzipBytes": 1284,
+      "mappedCodeUnits": {
+        "application": 1489,
+        "@mui/material": 896
+      }
+    },
+    {
+      "file": "static/js/749.0f089ea9.chunk.js",
+      "initial": false,
+      "bytes": 7768,
+      "gzipBytes": 3489,
+      "mappedCodeUnits": {
+        "@mui/material": 3163,
+        "application": 3107,
+        "@mui/system": 1380
+      }
+    },
+    {
+      "file": "static/js/751.d1b03460.chunk.js",
+      "initial": false,
+      "bytes": 16621,
+      "gzipBytes": 5440,
+      "mappedCodeUnits": {
+        "@mui/material": 9139,
+        "application": 7196
+      }
+    },
+    {
+      "file": "static/js/774.daab1743.chunk.js",
+      "initial": false,
+      "bytes": 12895,
+      "gzipBytes": 3504,
+      "mappedCodeUnits": {
+        "application": 12776
+      }
+    },
+    {
+      "file": "static/js/829.c11f1465.chunk.js",
+      "initial": false,
+      "bytes": 2784,
+      "gzipBytes": 1060,
+      "mappedCodeUnits": {
+        "application": 2635
+      }
+    },
+    {
+      "file": "static/js/838.0d86e244.chunk.js",
+      "initial": false,
+      "bytes": 10552,
+      "gzipBytes": 3405,
+      "mappedCodeUnits": {
+        "application": 9781,
+        "@mui/material": 631
+      }
+    },
+    {
+      "file": "static/js/843.9fa32cba.chunk.js",
+      "initial": false,
+      "bytes": 6797,
+      "gzipBytes": 2552,
+      "mappedCodeUnits": {
+        "@mui/material": 6720
+      }
+    },
+    {
+      "file": "static/js/877.702325a3.chunk.js",
+      "initial": false,
+      "bytes": 5226,
+      "gzipBytes": 2195,
+      "mappedCodeUnits": {
+        "application": 4400,
+        "@mui/material": 631
+      }
+    },
+    {
+      "file": "static/js/903.fcbeefaf.chunk.js",
+      "initial": false,
+      "bytes": 5437,
+      "gzipBytes": 2128,
+      "mappedCodeUnits": {
+        "@mui/material": 5238
+      }
+    },
+    {
+      "file": "static/js/919.14603764.chunk.js",
+      "initial": false,
+      "bytes": 13482,
+      "gzipBytes": 3509,
+      "mappedCodeUnits": {
+        "application": 13335
+      }
+    },
+    {
+      "file": "static/js/933.43f1a9be.chunk.js",
+      "initial": false,
+      "bytes": 12526,
+      "gzipBytes": 3499,
+      "mappedCodeUnits": {
+        "application": 12407
+      }
+    },
+    {
+      "file": "static/js/937.9ca4d055.chunk.js",
+      "initial": false,
+      "bytes": 31206,
+      "gzipBytes": 10930,
+      "mappedCodeUnits": {
+        "papaparse": 18754,
+        "@mui/material": 10097,
+        "@mui/system": 1908,
+        "@mui/icons-material": 290
+      }
+    },
+    {
+      "file": "static/js/961.26b62c4c.chunk.js",
+      "initial": false,
+      "bytes": 13032,
+      "gzipBytes": 4801,
+      "mappedCodeUnits": {
+        "application": 8177,
+        "@mui/material": 1331,
+        "@restart/ui": 972,
+        "@mui/system": 802,
+        "react-bootstrap": 722,
+        "classnames": 663
+      }
+    },
+    {
+      "file": "static/js/978.56b21ac0.chunk.js",
+      "initial": false,
+      "bytes": 6017,
+      "gzipBytes": 2440,
+      "mappedCodeUnits": {
+        "application": 5103,
+        "@mui/material": 658
+      }
+    },
+    {
+      "file": "static/js/993.d0d4a813.chunk.js",
+      "initial": false,
+      "bytes": 14522,
+      "gzipBytes": 3794,
+      "mappedCodeUnits": {
+        "application": 14403
+      }
+    },
+    {
+      "file": "static/js/main.868c374c.js",
+      "initial": true,
+      "bytes": 583195,
+      "gzipBytes": 180206,
+      "mappedCodeUnits": {
+        "swiper": 178230,
+        "react-dom": 129784,
+        "@mui/material": 56195,
+        "axios": 52019,
+        "application": 48376,
+        "@mui/system": 22460,
+        "react-helmet-async": 12075,
+        "@mui/utils": 10415,
+        "react-router": 8864,
+        "@remix-run/router": 8822,
+        "react": 7103,
+        "react-transition-group": 6327,
+        "@emotion/cache": 4388,
+        "@emotion/is-prop-valid": 4250,
+        "stylis": 3953,
+        "scheduler": 3856,
+        "hoist-non-react-statics": 3205,
+        "@emotion/styled": 2912,
+        "react-router-dom": 2863,
+        "@emotion/react": 2439,
+        "@emotion/serialize": 1884,
+        "react-fast-compare": 1824,
+        "@babel/runtime": 1543,
+        "ssr-window": 1515,
+        "@emotion/sheet": 1313,
+        "@mui/styled-engine": 1232,
+        "@mui/icons-material": 919,
+        "react-is": 831,
+        "@emotion/unitless": 677,
+        "@emotion/hash": 549,
+        "shallowequal": 516,
+        "invariant": 442,
+        "@emotion/utils": 407,
+        "clsx": 384,
+        "@emotion/memoize": 253,
+        "@emotion/use-insertion-effect-with-fallbacks": 193
+      }
+    }
+  ]
+}

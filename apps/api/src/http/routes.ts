@@ -16,10 +16,11 @@ import type { GetDb } from '../database.js';
 import { createAuthService } from '../modules/auth/service.js';
 import { createStaffRepository } from '../modules/auth/repository.js';
 import { createOrderRepository } from '../modules/orders/repository.js';
+import type { CatalogQueryObserver } from '../modules/catalog/timing.js';
 
-export function apiRoutes(getDb: GetDb, webOrigin: string, development = false) {
+export function apiRoutes(getDb: GetDb, webOrigin: string, development = false, observeCatalogQuery?: CatalogQueryObserver) {
   const router = Router();
-  const catalog = createCatalogRepository(getDb);
+  const catalog = createCatalogRepository(getDb, observeCatalogQuery);
   const auth = createAuthService(getDb);
   const orders = createOrderRepository(getDb);
   const commerce = createCommerceService(getDb);
