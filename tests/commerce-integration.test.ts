@@ -233,6 +233,9 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
           const read = await fetch(`${origin}/api/orders/${result.id}`, { headers: browserHeaders });
           assert.equal(read.status, 200); const body = await read.json();
           assert.equal(body.cartItems[0]._id.name, 'Original fixture'); assert.equal(body.snapshotAvailable, true);
+          for (const query of ['limit=0', 'limit=101', 'offset=-1', 'filter=%7B%22%24where%22%3A%22x%22%7D', 'status=invalid']) assert.equal((await fetch(`${origin}/api/orders?${query}`, { headers: browserHeaders })).status, 400);
+          const page = await fetch(`${origin}/api/orders?limit=1&offset=0&status=pending`, { headers: browserHeaders });
+          assert.equal(page.status, 200); const listed = await page.json(); assert.equal(listed.length, 1); assert.equal(listed[0].status, 'pending');
           const cancelled = await fetch(`${origin}/api/orders/cancel/${result.id}`, { method: 'PUT', headers: browserHeaders, body: '{"cancelled":true}' });
           assert.equal(cancelled.status, 200);
         });

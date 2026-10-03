@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Icon } from './icon';
 import Link from 'next/link';
-import { checkAddition } from '../app/cart/actions';
+import { checkAddition } from '../app/(storefront)/cart/actions';
 export function AddToCart({ id, stock, quantityPicker = false, name }: { id: string; stock: number; quantityPicker?: boolean; name?: string }) {
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);

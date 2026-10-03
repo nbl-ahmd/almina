@@ -1,8 +1,18 @@
 import { readWebEnvironment } from '@almina/config/env';
 import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
+import { legacyAdminDestination } from './lib/admin/redirects';
 import { hasDuplicateQuery, isPublicPath } from './lib/seo';
 export function proxy(request: NextRequest) {
+  const destination = legacyAdminDestination(request.nextUrl.pathname);
+  if (destination) {
+    const target = new URL(destination, request.url);
+    for (const [key, value] of request.nextUrl.searchParams) if (!target.searchParams.has(key)) target.searchParams.set(key, value);
+    const response = NextResponse.redirect(target, 307);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
+  }
   const environment = readWebEnvironment(process.env);
   const mediaOrigin = new URL(environment.LEGACY_API_ORIGIN).origin;
   const nonce = randomBytes(16).toString('base64');
@@ -13,7 +23,7 @@ export function proxy(request: NextRequest) {
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
     `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${mediaOrigin}`,
-    "font-src 'self'", `connect-src 'self'${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
+    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), `connect-src 'self'${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),
   ].join('; ');
@@ -26,7 +36,7 @@ export function proxy(request: NextRequest) {
   response.headers.set('Cache-Control', 'private, no-store');
   const indexable = environment.APP_ENV === 'production' && isPublicPath(request.nextUrl.pathname)
     && !hasDuplicateQuery(Object.fromEntries(request.nextUrl.searchParams));
-  if (!indexable) response.headers.set('X-Robots-Tag', environment.APP_ENV === 'production' ? 'noindex, follow' : 'noindex, nofollow');
+  if (!indexable) response.headers.set('X-Robots-Tag', environment.APP_ENV === 'production' && !request.nextUrl.pathname.startsWith('/admin') ? 'noindex, follow' : 'noindex, nofollow');
   return response;
 }
 export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] };

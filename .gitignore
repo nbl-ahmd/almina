@@ -16,3 +16,5 @@ backend/.env.local
 backend/routes/cred.json
 
 .next-verification/
+
+.next-admin-dev/

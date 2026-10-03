@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { loadCart, checkAddition } from '../app/cart/actions';
+import { loadCart, checkAddition } from '../app/(storefront)/cart/actions';
 import { money, type CartLine } from '../lib/catalog/model';
 import { Icon } from './icon';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';

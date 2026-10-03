@@ -1,5 +1,5 @@
 const { readSessionCookie } = require('./sessions.cjs');
-function secureRealtime(io, auth, origins, development = false) {
+function secureRealtime(io, auth, origins, development = false, eventBus) {
   io.use(async (socket, next) => {
     try {
       if (!origins.includes(socket.handshake.headers.origin)) throw new Error();
@@ -12,7 +12,7 @@ function secureRealtime(io, auth, origins, development = false) {
   });
   // Authenticate again immediately before delivery: logout, expiry, deletion and role changes take effect.
   // The facade replaces raw io.emit in legacy integrations without changing event names/payloads.
-  return { emit(event, payload) {
+  const deliver = (event, payload) => {
     void Promise.all([...io.sockets.sockets.values()].map(async socket => {
       try {
         const user = await auth.authenticate(socket.data.session);
@@ -20,6 +20,13 @@ function secureRealtime(io, auth, origins, development = false) {
         socket.emit(event, payload);
       } catch { socket.disconnect(true); }
     }));
-  } };
+  };
+  // A deployment-supplied shared bus fans events out to every instance. Each instance
+  // still authenticates its own sockets at delivery; never use raw cluster-wide io.emit.
+  const unsubscribe = eventBus?.subscribe(deliver);
+  return { emit(event, payload) {
+    if (eventBus) return eventBus.publish(event, payload);
+    deliver(event, payload);
+  }, close() { unsubscribe?.(); } };
 }
 module.exports = { secureRealtime };

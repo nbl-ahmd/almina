@@ -77,7 +77,8 @@ whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
   // save the resized filename to the database
 
   whatsappRouter.get('/image', (req, res) => {
-  WhatsappPoster.find()
+  const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
+  WhatsappPoster.find().sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
     .then(poster => {
       res.status(200).json(poster);
     })
@@ -158,6 +159,7 @@ whatsappRouter.delete('/image/:id', async (req, res) => {
 
 
 whatsappRouter.post('/s', function(req, res, next) {
+  require('../security/admin-input.cjs').messageInput(req.body, true);
   const { recipient, template, link } = req.body;
   var data = getTemplatedMessageInput(recipient, template, link);
 
@@ -196,6 +198,7 @@ whatsappRouter.post('/', function(req, res, next) {
 
 
 whatsappRouter.post('/text', function(req, res, next) {
+  require('../security/admin-input.cjs').messageInput(req.body);
   const { recipient, name, text } = req.body;
 
 
@@ -219,13 +222,19 @@ whatsappRouter.post('/text', function(req, res, next) {
   whatsappRouter.get('/recipients', async (req, res) => {
   try {
     // Fetch all distinct usernames from the database
-    const recipients = await Whatsapp.find({});
+    const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
+    const recipients = await Whatsapp.find({}).select('from name promotionStatus').sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0);
     res.json(recipients);
   } catch (error) {
 
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+  whatsappRouter.get('/reports', async (req, res) => {
+    const page = require('../security/admin-pagination.cjs').adminPagination(req.query) ?? { limit: 25, offset: 0 };
+    const reports = await whatsappBulkReportModel.find().select({ broadcast: { $slice: -100 } }).sort({ _id: -1 }).skip(page.offset).limit(page.limit);
+    res.json(reports);
+  });
   whatsappRouter.get('/messages/:recipient', async (req, res) => {
     const recipient = req.params.recipient;
 

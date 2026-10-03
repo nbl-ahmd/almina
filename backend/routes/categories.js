@@ -109,7 +109,8 @@ categoryRouter.post('/', upload.single('image'), async (req, res) => {
 
 categoryRouter.get('/', async (req, res) => {
   const filter = catalogFilter(req.query.filter, false, true);
-    const categoryList = await Category.find(filter).sort({ name: 1 });
+    const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
+    const categoryList = await Category.find(filter).sort({ name: 1, _id: 1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0);
 
     if (!categoryList) {
         res.status(500).json({ succes: false })
@@ -280,11 +281,9 @@ categoryRouter.delete('/:id', async (req, res) => {
       }
 
       // Delete the image file from the server's file system
-      fs.unlink(path.join(uploadDir, category.image), (error) => {
-        if (error) {
-
-        }
-      });
+      if (typeof category.image === 'string' && /^[A-Za-z0-9_-]+\.webp$/.test(category.image)) {
+        fs.unlink(path.join(__dirname, '..', 'public', 'category', category.image), () => {});
+      }
 
       return res.status(200).json({ success: true, message: 'The category and image are deleted!' });
     } catch (error) {

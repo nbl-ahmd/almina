@@ -3,7 +3,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 import shared from './packages/config/eslint.mjs';
 
 export default defineConfig([
-  globalIgnores(['**/node_modules/**', '**/.next/**', '**/.next-verification/**', '**/dist/**', '**/next-env.d.ts', 'frontend/**', 'backend/**']),
+  globalIgnores(['**/node_modules/**', '**/.next/**', '**/.next-verification/**', '**/.next-admin-dev/**', '**/dist/**', '**/next-env.d.ts', 'frontend/**', 'backend/**']),
   ...shared,
   ...nextVitals.map((config) => ({ ...config, files: ['apps/web/**/*.{js,mjs,ts,tsx}', 'packages/ui/**/*.tsx'] })),
   { settings: { next: { rootDir: 'apps/web/' } } },

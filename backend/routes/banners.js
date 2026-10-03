@@ -70,7 +70,8 @@ router.post('/', upload.single('image'), async (req, res) => {
   // save the resized filename to the database
 
 router.get('/', (req, res) => {
-  Banner.find()
+  const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
+  Banner.find().sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
     .then(banners => {
       res.status(200).json(banners);
     })

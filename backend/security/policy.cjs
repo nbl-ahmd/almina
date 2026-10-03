@@ -20,7 +20,7 @@ const routePolicies = [
   ['POST', '/api/whatsapp/image', 'admin'], ['GET', '/api/whatsapp/image', 'admin'],
   ['GET', '/api/whatsapp/image/:filename', 'public'], ['DELETE', '/api/whatsapp/image/:id', 'admin'],
   ['POST', '/api/whatsapp/s', 'admin'], ['POST', '/api/whatsapp/sr', 'admin'], ['POST', '/api/whatsapp', 'admin'],
-  ['POST', '/api/whatsapp/text', 'admin'], ['GET', '/api/whatsapp/recipients', 'admin'], ['GET', '/api/whatsapp/messages/:recipient', 'admin'],
+  ['POST', '/api/whatsapp/text', 'admin'], ['GET', '/api/whatsapp/reports', 'admin'], ['GET', '/api/whatsapp/recipients', 'admin'], ['GET', '/api/whatsapp/messages/:recipient', 'admin'],
   ['POST', '/api/whatsapp/webhook', 'webhook'], ['GET', '/api/whatsapp/webhook', 'verification'],
 ].map(([method, path, policy]) => ({ method, path, policy,
   pattern: new RegExp(`^${path.replace(/:[A-Za-z]+/g, '[^/]+')}/?$`, 'i') }));

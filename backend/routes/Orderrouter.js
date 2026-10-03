@@ -89,7 +89,10 @@ catch (error) {
 })
 
 Orderrouter.get('/', (req, res) => {
-  Order.find(req.identity.role === 'admin' ? {} : { 'customer.city': { $in: req.identity.cities } })
+  const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
+  if (Object.keys(req.query).some(key => !['limit', 'offset', 'status'].includes(key)) || (req.query.status && !['pending', 'confirmed', 'packed', 'dispatched', 'cancelled', 'refunded'].includes(req.query.status))) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const statusFilter = req.query.status ? { $or: [{ status: req.query.status }, { status: { $exists: false }, ...(req.query.status === 'pending' ? { dispatched: { $ne: true }, canceled: { $ne: true } } : req.query.status === 'dispatched' ? { dispatched: true, canceled: { $ne: true } } : req.query.status === 'cancelled' ? { canceled: true, dispatched: { $ne: true } } : { _id: null }) }] } : {};
+  Order.find({ ...(req.identity.role === 'admin' ? {} : { 'customer.city': { $in: req.identity.cities } }), ...statusFilter })
   .populate({
     path: 'cartItems._id', // Populates the cartItems._id field
     model: 'Product',      // Specifies the model to populate from
@@ -97,7 +100,7 @@ Orderrouter.get('/', (req, res) => {
       path: 'category',    // Populates the category field within the Product schema
       model: 'Category'    // Replace 'Category' with your actual Category model name
     }
-  }).lean().sort({ createdAt: -1 }) // Sort by 'createdAt' field in descending order;
+  }).lean().sort({ createdAt: -1, _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0) // Sort by 'createdAt' field in descending order;
     .then(orders => {
       res.status(200).json(orders.map(legacyOrderDto));
     })
