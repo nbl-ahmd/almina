@@ -23,6 +23,8 @@
     "start:web": "npm run start --workspace @almina/web --",
     "start:api": "npm run start --workspace @almina/api",
     "docs:next": "node scripts/tooling/next-docs.mjs",
+    "release:gate": "tsx scripts/migrations/release-gate.ts",
+    "test:release": "tsx --test tests/release-gate.test.ts",
     "db:indexes:plan": "tsx scripts/migrations/api-indexes.ts",
     "db:indexes:apply": "tsx scripts/migrations/api-indexes.ts --apply",
     "smoke:foundation": "node scripts/tooling/smoke-foundation.mjs",

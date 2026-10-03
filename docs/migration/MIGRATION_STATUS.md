@@ -2,6 +2,16 @@
 
 Last updated: 2026-10-03.
 
+## Production migration readiness — blocked
+
+Prepared on `codex/production-migration-readiness`: [Render cutover/recovery runbook](PRODUCTION_CUTOVER_2026-10-03.md), three-phase fail-closed release evidence validator (`npm run release:gate`), and CI regression coverage for missing/skipped evidence, exact SHAs, deployment readbacks, post-cutover timestamps, 24-hour observation and retained legacy fields. Includes all twelve staging/production journeys, environment/provider/media/SEO gates, reconciliation, explicit monitoring thresholds and safe rollback. The validator checks attestations, not provider truth; production deployment controls and telemetry are not configured by it.
+
+Owner confirmed backend `https://almina-of4b.onrender.com`, storefront `https://www.alminapharmacy.com/`, and Render deployment from `master` (correcting initial `main`). Read-only GitHub verification confirms `master` protection requires up-to-date `verify`; source branches remain unmerged. Current live Render SHA and new deployed SHA remain unverified. No deployment, provider send, database migration, credential rotation or legacy field removal occurred.
+
+Fresh local verification: 7 release-gate regressions, 59 focused security, 20 disposable real-database/load and 12 Chromium smoke tests passed; lint and workspace typecheck passed. CLI template parsing and the pending release's nonzero preflight exit were verified. Strict audit still fails: root 19 high/2 critical, backend 13 high/0 critical, frontend 64 high/1 critical dependency entries. These are release blockers, not waived findings.
+
+Anonymous read-only production probes returned homepage 200, robots.txt 200 text/plain, sitemap.xml 200 XML and backend root 500. Homepage raw HTML contained the CRA root with no canonical link detected. These probes do not prove catalog, checkout, notification or admin health and did not inspect customer data. No production order was created. Backup/restoration, secret revocation, exact Render artifacts/config, staging/provider acceptance, production journeys/SEO/security and monitored order/stock reconciliation remain pending. **Do not merge to trigger production yet; migration is not complete.**
+
 ## Production verification suite review
 
 Expanded on `codex/production-verification-review`, 2026-10-03. Retained `.github/workflows/foundation.yml` and its `verify` check, removed path-filter gaps, installed backend dependencies/build adapters in the correct order, and added mandatory disposable MongoDB integration/load tests and pinned Chromium E2E against compiled Next/CRA applications. Coverage includes commercial policy edges, lifecycle transitions, real catalog mutations, stock/checkout races, retry idempotency, customer/mobile checkout, Next admin auth/order updates, webhook validation and decoded upload abuse. The review fixed image format spoofing before media effects and made the WhatsApp verification challenge strictly validated plain text.
