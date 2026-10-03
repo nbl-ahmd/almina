@@ -46,6 +46,7 @@ try {
   const apiOrigin = `http://127.0.0.1:${apiPort}`;
   const webOrigin = `http://127.0.0.1:${webPort}`;
   const env = { APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: webOrigin,
+    AL_MINA_ISOLATED_BUILD: process.env.AL_MINA_ISOLATED_BUILD,
     DATABASE_MODE: 'disabled', NEXT_TELEMETRY_DISABLED: '1' };
   const api = launch(['dist/server.js'], new URL('apps/api/', root), {
     ...env, API_HOST: '127.0.0.1', PORT: String(apiPort),

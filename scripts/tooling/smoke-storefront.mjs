@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { performance } from 'node:perf_hooks';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:net';
@@ -32,6 +33,25 @@ try {
     assert.equal(response.status, 200, path); assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.ok((await response.text()).includes(text), `SSR content absent for ${path}`);
   }
+  // Coarse hosted-CI regression budget for synthetic SSR routes, not a production
+  // latency SLO. Keep checkout in the sample while ordering remains disabled.
+  const performanceRoutes = ['/', '/products', '/search?q=Daily', '/products/daily-care--PD0001', '/checkout'];
+  const timings = new Map(performanceRoutes.map(path => [path, []]));
+  for (let sample = 0; sample < 5; sample++) {
+    for (const path of performanceRoutes) {
+      const started = performance.now();
+      const response = await fetch(`${origin}${path}`);
+      assert.equal(response.status, 200, `performance route ${path}`);
+      await response.arrayBuffer();
+      timings.get(path).push(performance.now() - started);
+    }
+  }
+  const p95 = Object.fromEntries([...timings].map(([path, values]) => {
+    values.sort((a, b) => a - b);
+    return [path, Math.round(values[Math.ceil(values.length * 0.95) - 1])];
+  }));
+  assert.ok(Object.values(p95).every(duration => duration < 5000), `Synthetic SSR p95 exceeded 5000ms: ${JSON.stringify(p95)}`);
+  console.log(`Synthetic SSR p95 (ms): ${JSON.stringify(p95)}`);
   assert.match(await (await fetch(`${origin}/robots.txt`)).text(), /Disallow: \//);
   for (const path of ['/sitemap.xml', '/sitemaps/products/first.xml']) {
     const response = await fetch(`${origin}${path}`);

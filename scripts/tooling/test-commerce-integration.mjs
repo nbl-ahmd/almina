@@ -5,9 +5,13 @@ import { join } from 'node:path';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { MongoClient } from 'mongodb';
+import { MongoBinary } from 'mongodb-memory-server-core';
 
 // Start a brand-new loopback-only replica set. Never read an application URI or dotenv file.
-const mongodPath = process.argv[2] ?? 'mongod';
+const args = process.argv.slice(2);
+const explicitBinary = args[0] && !args[0].endsWith('.test.ts') ? args.shift() : process.env.TEST_MONGOD_PATH;
+// Download a pinned test-only binary on demand; installation/build never starts MongoDB.
+const mongodPath = explicitBinary ?? await MongoBinary.getPath({ version: '8.0.17' });
 const directory = await mkdtemp(join(tmpdir(), 'almina-commerce-test-'));
 const probe = createServer();
 await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
@@ -31,14 +35,22 @@ try {
     if (Date.now() > deadline) throw new Error('Disposable primary not ready');
     await delay(100);
   }
-  const tests = spawn(process.execPath, ['--import', 'tsx', '--test', ...(process.argv.slice(3).length ? process.argv.slice(3) : ['tests/commerce-integration.test.ts'])], {
-    stdio: 'inherit', env: { ...process.env, COMMERCE_TEST_URI: uri },
+  const tests = spawn(process.execPath, ['--import', 'tsx', '--test', ...(args.length ? args : [
+    'tests/commerce-integration.test.ts', 'tests/seo-database.test.ts', 'tests/catalog-integration.test.ts', 'tests/performance-api.test.ts',
+  ])], {
+    stdio: 'inherit', env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
+      COMMERCE_TEST_URI: uri, REQUIRE_DATABASE_TESTS: '1' },
   });
-  const code = await new Promise(resolve => tests.on('exit', resolve));
+  const code = await new Promise((resolve, reject) => { tests.on('exit', resolve); tests.on('error', reject); });
   process.exitCode = code ?? 1;
 } finally {
   await client.close();
-  child.kill('SIGTERM');
-  if (child.exitCode === null && !failure) await new Promise(resolve => child.once('exit', resolve));
+  if (child.exitCode === null && child.signalCode === null && !failure) {
+    child.kill('SIGTERM');
+    await Promise.race([new Promise(resolve => child.once('exit', resolve)), delay(5000)]);
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill('SIGKILL'); await new Promise(resolve => child.once('exit', resolve));
+    }
+  }
   await rm(directory, { recursive: true, force: true });
 }

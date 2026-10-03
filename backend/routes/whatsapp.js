@@ -32,7 +32,7 @@ const drive = google.drive({ version: 'v3', auth });
 // Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
 const FOLDER_ID = '11wB-C-ZmixvTLZnrFVkRfokTQmBmLlmv';
 
-whatsappRouter.post('/image', upload.single('image'), async (req, res) => {
+whatsappRouter.post('/image', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const image = req.file;
   const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })
     .toBuffer();
@@ -550,13 +550,17 @@ whatsappRouter.get("/webhook", (req, res) => {
   let token = req.query["hub.verify_token"];
   let challenge = req.query["hub.challenge"];
 
+  if (Object.keys(req.query).some(key => !['hub.mode', 'hub.verify_token', 'hub.challenge'].includes(key))
+    || typeof mode !== 'string' || typeof token !== 'string' || token.length > 256
+    || typeof challenge !== 'string' || !challenge.length || challenge.length > 256) return res.sendStatus(400);
+
   // Check if a token and mode were sent
   if (mode && token && verify_token) {
     // Check the mode and token sent are correct
     if (mode === "subscribe" && token === verify_token) {
       // Respond with 200 OK and challenge token from the request
 
-      res.status(200).send(challenge);
+      res.type('text/plain').status(200).send(challenge);
     } else {
       // Responds with '403 Forbidden' if verify tokens do not match
       res.sendStatus(403);

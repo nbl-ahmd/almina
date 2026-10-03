@@ -12,6 +12,7 @@ import { orderDetailDto } from '../apps/api/src/modules/orders/dto.js';
 import { migrateCommerce } from '../scripts/migrations/commerce.js';
 
 const uri = process.env.COMMERCE_TEST_URI;
+assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
 const require = createRequire(import.meta.url);
 const customer = { name: 'Synthetic', mobile: '0501234567', email: 'synthetic@example.invalid',
   emirate: 'Ras al-Khaimah', city: 'City A', address: 'Synthetic address', payment: 'cash' };
@@ -240,6 +241,30 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
           assert.equal(cancelled.status, 200);
         });
       } finally { await mongoose.disconnect(); }
+    });
+
+    await t.test('every lifecycle transition follows the approved state machine and failed transitions are immutable', async () => {
+      const allowed: Record<string, readonly string[]> = {
+        pending: ['confirmed', 'cancelled'], confirmed: ['packed', 'cancelled'], packed: ['dispatched', 'cancelled'],
+        dispatched: ['refunded'], cancelled: [], refunded: [],
+      };
+      for (const from of Object.keys(allowed)) for (const to of Object.keys(allowed)) {
+        const productId = await product(2);
+        const created = await commerce.checkout(intent(productId));
+        const _id = new ObjectId(created.id);
+        await db.collection('orders').updateOne({ _id }, { $set: { status: from,
+          dispatched: ['dispatched', 'refunded'].includes(from), canceled: from === 'cancelled' } });
+        const before = await db.collection('orders').findOne({ _id });
+        const command = { status: to, ...(to === 'dispatched' ? { billno: '12345', billamount: 10 } : {}) };
+        if (from === to || allowed[from]!.includes(to)) {
+          assert.equal((await commerce.transition(created.id, command, admin)).status, to, `${from} -> ${to}`);
+          if (from === to) assert.deepEqual(await db.collection('orders').findOne({ _id }), before);
+        } else {
+          await assert.rejects(commerce.transition(created.id, command, admin), { code: 'INVALID_TRANSITION' }, `${from} -> ${to}`);
+          assert.deepEqual(await db.collection('orders').findOne({ _id }), before);
+          assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 1);
+        }
+      }
     });
 
     await t.test('notification failure retries durable jobs independently of order persistence', async () => {

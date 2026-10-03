@@ -32,6 +32,7 @@
     "uuid": "^11.1.1",
     "web-push": "^3.6.6"
   },
+  "allowScripts": { "sharp@0.32.6": true, "fsevents": false },
   "devDependencies": {
     "nodemon": "^2.0.22"
   }

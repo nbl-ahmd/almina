@@ -27,7 +27,7 @@ const drive = google.drive({ version: 'v3', auth });
 // Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
 const FOLDER_ID = '10jn65wQMomVYMAAy4TuH8iVgiFa8IhxJ';
 
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const { name, link } = req.body;
   const image = req.file;
   const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })

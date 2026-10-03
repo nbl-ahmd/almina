@@ -182,7 +182,7 @@ async function generateProductID() {
 
 
 
-productRouter.post('/', upload.array('images', 5), async (req, res) => {
+productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   require('../security/admin-input.cjs').productInput(req.body, true);
   const category = await Category.findById(req.body.category);
   const { name, price, stock, barcode, description } = req.body;
@@ -570,7 +570,7 @@ productRouter.put('/publish/:productId', async (req, res) => {
 
 
 
-productRouter.put('/:id', upload.array('images', 5), async (req, res) => {
+productRouter.put('/:id', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   require('../security/admin-input.cjs').productInput(req.body);
   const { id } = req.params;
   const updateFields = {};

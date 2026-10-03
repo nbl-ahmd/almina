@@ -18,3 +18,6 @@ backend/routes/cred.json
 .next-verification/
 
 .next-admin-dev/
+.verification-results/
+playwright-report/
+test-results/

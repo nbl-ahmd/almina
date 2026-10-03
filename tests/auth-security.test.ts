@@ -184,6 +184,29 @@ test('webhook rejects absent/invalid signatures, changed bodies and duplicate si
   });
 });
 
+test('WhatsApp verification challenge requires the configured token and bounded scalar parameters', async () => {
+  const previous = process.env.VERIFY_TOKEN;
+  process.env.VERIFY_TOKEN = 'synthetic-verification-token';
+  try {
+    await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true }), async origin => {
+      const valid = 'hub.mode=subscribe&hub.verify_token=synthetic-verification-token&hub.challenge=123456';
+      const response = await fetch(origin + '/api/whatsapp/webhook?' + valid);
+      assert.equal(response.status, 200); assert.equal(await response.text(), '123456');
+      assert.match(response.headers.get('content-type')!, /^text\/plain/);
+      const opaque = await fetch(origin + '/api/whatsapp/webhook?' + valid.replace('123456', '%3Cscript%3E'));
+      assert.equal(opaque.status, 200); assert.equal(await opaque.text(), '<script>');
+      assert.match(opaque.headers.get('content-type')!, /^text\/plain/);
+      assert.equal((await fetch(origin + '/api/whatsapp/webhook?' + valid.replace('synthetic-verification-token', 'wrong-token'))).status, 403);
+      for (const query of [valid + '&hub.verify_token=duplicate', valid + '&$where=unsafe',
+        valid.replace('123456', '1'.repeat(257)), 'hub.mode=subscribe']) {
+        assert.equal((await fetch(origin + '/api/whatsapp/webhook?' + query)).status, 400);
+      }
+      delete process.env.VERIFY_TOKEN;
+      assert.equal((await fetch(origin + '/api/whatsapp/webhook?' + valid)).status, 403);
+    });
+  } finally { if (previous === undefined) delete process.env.VERIFY_TOKEN; else process.env.VERIFY_TOKEN = previous; }
+});
+
 test('realtime rejects anonymous/staff/cross-origin connections and rechecks admin role before every broadcast', async () => {
   let middleware: (socket: unknown, next: (error?: Error) => void) => Promise<void> = async () => undefined;
   let role = 'admin'; let sent = 0; let disconnected = 0;

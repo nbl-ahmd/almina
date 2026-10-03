@@ -5,6 +5,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { createCatalogRepository } from '../apps/api/src/modules/catalog/repository';
 
 const uri = process.env.COMMERCE_TEST_URI;
+assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
 test('SEO sitemap pagination against a disposable real database', { skip: !uri }, async () => {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client = new MongoClient(uri!);

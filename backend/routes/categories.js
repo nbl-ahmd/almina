@@ -45,7 +45,7 @@ const storage = multer.memoryStorage();
 const fs = require('fs');
 
 
-categoryRouter.post('/', upload.single('image'), async (req, res) => {
+categoryRouter.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const { name } = req.body;
   const image = req.file;
   const color = randomColor();
@@ -160,7 +160,7 @@ categoryRouter.get('/:id', async(req,res)=>{
 
 
 
-categoryRouter.put('/disable/:id', upload.single('image'), async (req, res) => {
+categoryRouter.put('/disable/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const { id } = req.params;
   try {
     // Find the product by its ID
@@ -183,7 +183,7 @@ categoryRouter.put('/disable/:id', upload.single('image'), async (req, res) => {
     res.status(500).json({ error: 'Failed to update the category' });
   }
   });
-categoryRouter.put('/:id', upload.single('image'), async (req, res) => {
+categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
     const { id } = req.params;
     const updateFields = {};
 

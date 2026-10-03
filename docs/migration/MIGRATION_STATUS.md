@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-03.
 
+## Production verification suite review
+
+Expanded on `codex/production-verification-review`, 2026-10-03. Retained `.github/workflows/foundation.yml` and its `verify` check, removed path-filter gaps, installed backend dependencies/build adapters in the correct order, and added mandatory disposable MongoDB integration/load tests and pinned Chromium E2E against compiled Next/CRA applications. Coverage includes commercial policy edges, lifecycle transitions, real catalog mutations, stock/checkout races, retry idempotency, customer/mobile checkout, Next admin auth/order updates, webhook validation and decoded upload abuse. The review fixed image format spoofing before media effects and made the WhatsApp verification challenge strictly validated plain text.
+
+Local verification: 43 unit, 95 API, 59 overlapping focused security, 20 real database/load and 12 Chromium tests passed, together with clean installation, lint/typecheck, production foundation build and compiled smoke. No production database/provider/migration/deployment operation occurred. Full-lockfile high/critical audits deliberately fail on existing dependency debt and block the final gate; see [review evidence, commands, budgets, CI, deployment prerequisites and rollback](PRODUCTION_VERIFICATION_2026-10-03.md).
+
+GitHub `master` now requires up-to-date GitHub Actions `verify`, including administrators, with force pushes/deletion disabled; readback confirmed the rule. Code has not been pushed, so the expanded workflow is pending merge. Provider-side direct production deployment controls and new hosted preview/staging deployments remain pending confirmed provider/project access, sanitized staging configuration and successful audits. Next customer checkout remains disabled; the current legacy checkout owner is covered by real browser/database tests.
+
+
 ## Storefront design system and redesign
 
 Implemented locally on `codex/storefront-design-system`, 2026-10-03, using ui-ux-pro-max: one CSS token system, self-hosted typography, shared stroke icons, mobile/desktop navigation, editorial homepage/category discovery, product cards/grids, labelled search/filters, details/gallery, cart and the gated checkout review, footer and loading/error/empty states. Existing catalog/pricing/stock/cart/URL behavior remains; order placement was not activated. No production application, DB, API, media reference or deployment changed.
