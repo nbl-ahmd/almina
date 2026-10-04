@@ -32,9 +32,9 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
     if (req.method === 'OPTIONS') {
       const headers = String(req.headers['access-control-request-headers'] ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
       if (!origins.includes(req.headers.origin) || !lookupPolicy(req.headers['access-control-request-method'], req.path)
-        || headers.some(header => !['content-type', 'x-csrf-protection'].includes(header))) return next(fail(403, 'FORBIDDEN'));
+        || headers.some(header => !['content-type', 'x-csrf-protection', 'idempotency-key'].includes(header))) return next(fail(403, 'FORBIDDEN'));
       return res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE',
-        'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection', 'Access-Control-Max-Age': '600' }).status(204).end();
+        'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection, Idempotency-Key', 'Access-Control-Max-Age': '600' }).status(204).end();
     }
     next();
   });

@@ -18,3 +18,4 @@ export * from './modules/auth/administration.js';
 export * from './modules/notifications/email.js';
 export * from './modules/operations/runtime.js';
 export * from './modules/media/drive.js';
+export * from './modules/notifications/whatsapp-outbound.js';

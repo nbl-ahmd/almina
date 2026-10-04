@@ -1,5 +1,5 @@
 var express = require('express');
-const { sendMessage, getTemplatedMessageInput, getTextMessageInput } = require("../messageHelper");
+const { whatsappSender } = require("../integrations/whatsapp.cjs");
 const whatsappRouter = express.Router();
 const Whatsapp = require('../models/Whatsapp');
 const multer = require('multer');
@@ -72,65 +72,26 @@ whatsappRouter.delete('/image/:id', async (req, res) => {
 
 
 
-whatsappRouter.post('/s', function(req, res, next) {
-  require('../security/admin-input.cjs').messageInput(req.body, true);
-  const { recipient, template, link } = req.body;
-  var data = getTemplatedMessageInput(recipient, template, link);
-
-  sendMessage(data)
-  .then(function (response) {
-    res.status(200).json({ status: "success", recipient });
-    return;
-  })
-  .catch(function (error) {
-    res.status(500).json({ status: "fail", recipient });
-
-    return;
-  });
+async function outbound(req, kind) {
+  const domain = require('../commerce/dist/service.cjs');
+  domain.whatsappOutboundInput(req.body, kind);
+  const send = whatsappSender(req);
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const result = await domain.sendWhatsapp(db, req.body, kind, req.identity.id, req.get('Idempotency-Key'), send);
+  if (result.notification) req.app.locals.io?.emit(result.notification.name, result.notification.payload);
+  return result;
+}
+whatsappRouter.post('/s', async (req, res) => {
+  const result = await outbound(req, 'template');
+  res.json({ status: 'success', recipient: result.recipient });
 });
-
-whatsappRouter.post('/sr', function(req, res, next) {
-
-    const recipient = Object.keys(req.body)[0];
-    res.status(201).json({ message: 'product created successfully' });
-
+whatsappRouter.post('/text', async (req, res) => {
+  await outbound(req, 'text');
+  res.redirect('/catalog');
 });
-
-whatsappRouter.post('/', function(req, res, next) {
-  var data = getTextMessageInput(process.env.RECIPIENT_WAID, 'Welcome to the Movie Ticket Demo App for Node.js!');
-
-  sendMessage(data)
-    .then(function (response) {
-      res.redirect('/catalog');
-      return;
-    })
-    .catch(function (error) {
-
-      return;
-    });
-});
-
-
-whatsappRouter.post('/text', function(req, res, next) {
-  require('../security/admin-input.cjs').messageInput(req.body);
-  const { recipient, name, text } = req.body;
-
-
-    var data = getTextMessageInput(recipient, text);
-
-    sendMessage(data)
-      .then(function (response) {
-        res.redirect('/catalog');
-        return;
-      })
-      .catch(function (error) {
-
-        return;
-      });
-      saveAdminMessage(req, recipient, name, text)
-  });
-
-
+// Retain authenticated URLs with explicit retirement; demo routes never send messages or report fake success.
+whatsappRouter.post('/sr', (_req, res) => res.status(410).json({ error: 'Retired demo endpoint' }));
+whatsappRouter.post('/', (_req, res) => res.status(410).json({ error: 'Retired demo endpoint' }));
 
   // Express route to fetch all recipients
   whatsappRouter.get('/recipients', async (req, res) => {
@@ -170,55 +131,6 @@ whatsappRouter.post('/text', function(req, res, next) {
 
   });
 
-
-const saveAdminMessage = async (req, from, name, msg_body)=>{
-  try {
-    // Check if the conversation exists
-    const conversation = await Whatsapp.findOne({ from: from });
-
-    if (conversation) {
-
-
-      // Conversation exists, append the new message to the existing conversation
-      conversation.messages.push({
-        content: msg_body,
-        timestamp: new Date(),
-        sender: 'admin',
-      });
-      await conversation.save(); // Returns a promise, no callback needed
-
-
-      // Emit the new message to all connected clients
-  req.app.locals.io.emit('newMessage', {
-    recipient: from,
-    message: { content: msg_body, sender: 'admin' },
-  });
-    } else {
-      // Conversation doesn't exist, create a new conversation
-      const newConversation = new Whatsapp({
-        from: from,
-        name: name,
-        messages: [
-          {
-            content: msg_body,
-            timestamp: new Date(),
-            sender: 'admin',
-          },
-        ],
-      });
-      await newConversation.save();
-
-        // Emit the new message to all connected clients
-  req.app.locals.io.emit('newMessage', {
-    recipient: from,
-    message: { content: msg_body, sender: 'admin' },
-  });
-    }
-  } catch (error) {
-
-  }
-
-}
 
 whatsappRouter.post('/webhook', async (req, res) => {
   const db = req.app.locals.getWebhookDb ? await req.app.locals.getWebhookDb() : require('mongoose').connection.db;

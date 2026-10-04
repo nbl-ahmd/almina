@@ -242,7 +242,7 @@ test('realtime rejects anonymous/staff/cross-origin connections and rechecks adm
 test('source auth contracts do not persist tokens or embed provider/signing credentials', () => {
   const source = readFileSync('apps/web/src/components/admin/controls.tsx', 'utf8');
   assert.ok(!/setItem\(['"]token/.test(source)); assert.ok(!/getItem\(['"]token/.test(source));
-  for (const file of ['backend/messageHelper.js', ...readdirSync('backend/routes').filter(file => file.endsWith('.js')).map(file => 'backend/routes/' + file)]) {
+  for (const file of ['backend/integrations/whatsapp.cjs', 'apps/api/src/modules/notifications/whatsapp-outbound.ts', ...readdirSync('backend/routes').filter(file => file.endsWith('.js')).map(file => 'backend/routes/' + file)]) {
     const text = readFileSync(file, 'utf8');
     assert.ok(!/Bearer [A-Za-z0-9._-]{20,}|(?:secretKey|privateKey|pass)\s*[:=]\s*['"][^'"]+['"]/.test(text), file);
   }

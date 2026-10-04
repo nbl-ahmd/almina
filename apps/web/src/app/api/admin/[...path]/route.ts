@@ -62,6 +62,8 @@ async function handle(
       throw new AdminError(400);
     }
     const type = request.headers.get("content-type") ?? "";
+    const retryKey = request.headers.get('idempotency-key');
+    if (retryKey !== null && (!['whatsapp/s', 'whatsapp/text'].includes(path) || !/^[A-Za-z0-9_-]{16,128}$/.test(retryKey))) throw new AdminError(400);
     const body = mutation ? await boundedBody(request) : undefined;
     if (
       body?.length &&
@@ -74,7 +76,7 @@ async function handle(
     const result = await upstream(path + (query ? `?${query}` : ""), {
       method: request.method,
       ...(body?.length ? { body } : {}),
-      headers: type ? { "content-type": type } : {},
+      headers: { ...(type ? { "content-type": type } : {}), ...(retryKey ? { 'idempotency-key': retryKey } : {}) },
     });
     // Legacy WhatsApp text sends a same-origin redirect after provider acceptance. Never follow it.
     const acceptedRedirect = path === "whatsapp/text" && result.status === 302;

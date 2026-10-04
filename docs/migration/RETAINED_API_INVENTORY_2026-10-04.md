@@ -55,10 +55,10 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | GET | /api/whatsapp/image | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/image/:filename | public | whatsapp.js → Meta/Drive/conversation/report adapters |
 | DELETE | /api/whatsapp/image/:id | admin | maintained media/retention.ts archive; references retained |
-| POST | /api/whatsapp/s | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| POST | /api/whatsapp/sr | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| POST | /api/whatsapp | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| POST | /api/whatsapp/text | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
+| POST | /api/whatsapp/s | admin | Maintained bounded sender and actor/digest receipt; compatibility JSON adapter |
+| POST | /api/whatsapp/sr | admin | Explicit 410 retired demo URL; no provider/database effect |
+| POST | /api/whatsapp | admin | Explicit 410 retired demo URL; no provider/database effect |
+| POST | /api/whatsapp/text | admin | Maintained accepted-message transaction and bounded sender; compatibility redirect adapter |
 | GET | /api/whatsapp/reports | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/recipients | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/messages/:recipient | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
@@ -71,8 +71,8 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 - Maintained notification workers lease/drain order jobs; `notifications/email.ts` owns confirmation content and bounded SMTP delivery through retained Nodemailer/socket adapters. At least once; acceptance/crash can duplicate delivery. Legacy persistent process owns worker. Administrative email is bounded but has no durable retry receipt.
 - `security/realtime.cjs` authenticates/rechecks Socket.IO and SSE invalidations; shared deployment bus pending.
 - Maintained `auth/administration.ts` provisions password hashes and deactivates accounts with actor audits, serialized privilege checks and transactional session revocation; `Login.js` retains the URLs. `sessions.cjs` owns sessions and quotas. Existing identifiers/history are never deleted by account removal.
-- Drive creates/streams products/categories/banners/WhatsApp posters. All four media removal adapters now archive documents/assets. Category/Drive product replacements record prior references; old product/category filenames resolve through history. Maintained Cloudinary upload/reconciliation is additive; Drive upload/stream ownership and hosted provider parity remain retained gates.
-- Meta template/text/broadcast sends persist conversations/reports. Signed webhook receipts prevent duplicates; receipt-before-processing failure requires operator recovery.
+- Drive creates/streams products/categories/banners/WhatsApp posters. All four media removal adapters now archive documents/assets. Category/Drive product replacements record prior references; old product/category filenames resolve through history. Maintained Cloudinary upload/reconciliation is additive; bounded Drive transport ownership is maintained; hosted provider parity remains a gate.
+- Maintained Meta sender/actor-key receipts bound acceptance, uncertain sends and local transaction retries. Signed inbox receipts commit effects and processed state together. Retained realtime/report readers preserve contracts; real delivery and uncertain-send reconciliation require operator evidence.
 - Push subscriptions belong to current staff; real delivery configuration/parity remains hosting gate.
 - Recovery/bootstrap/commerce/index CLI apply operations are explicit maintenance actions, never builds/startup. Recovery creates no lost history.
 
@@ -82,10 +82,10 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 
 ## Fallback dependencies
 
-- `frontend/` now builds with Vite/React; retains complete storefront/admin router, cookie client, compatibility checkout, media/static assets. Preserve all URLs and identities.
-- `e2e-servers.mjs` builds/serves frontend/build. Commerce/admin browser regressions, verify-commerce-browser and bundle/performance fixtures depend on retained client.
+- Held source-retirement candidate removes `frontend/` after route/caller/browser parity, under the renewed owner instruction. Byte-verified brand assets and public URLs remain; rollback source/artifact is `871bf4f`. This candidate cannot merge before hosted acceptance.
+- Active `e2e-servers.mjs`, commerce/admin/customer browser regressions and bundle budgets now use compiled Next. No active old frontend build consumer remains.
 - Root build/start remain retained backend contracts. Backend dependencies support Express/Mongoose, sessions/bcrypt, Google Drive/Sharp/Multer, SMTP, Socket.IO, Meta and CSV.
-- Retirement requires Next route/business/provider parity, migrated tests/callers/assets, hosted acceptance, production observation/rollback and separate deletion PR. A new UI does not authorize retirement.
+- Production retirement still requires hosted acceptance, traffic observation and rollback; source deletion is confined to a held separately reviewed candidate. Compatibility database fields and surviving media have not contracted.
 - CDN scalar/array filenames, Drive IDs, Cloudinary URLs, historical order lines/snapshots, cookie names, outbox/receipt/counter collections are compatibility contracts. Preserve all until replacements pass.
 
 ## Verification

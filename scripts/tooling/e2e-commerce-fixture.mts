@@ -29,12 +29,14 @@ await mongoose.connect(uri, { dbName });
 const password = await hash('synthetic-test-password', 4);
 let delayNext = false;
 let fixtureCase = 0;
+let whatsappSends = 0, whatsappFailure = false;
 const mediaAssets = new Map<string, object>();
 const timers = new Set<ReturnType<typeof setTimeout>>();
 async function reset() {
   if (!/^almina_e2e_test_[a-f0-9]{32}$/.test(dbName)) throw new Error('Unsafe fixture database');
   await db.dropDatabase();
   delayNext = false;
+  whatsappSends = 0; whatsappFailure = false;
   fixtureCase++; mediaAssets.clear();
   const category = new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');
   await db.collection('categories').insertOne({ _id: category, name: 'Synthetic category', disabled: false });
@@ -42,6 +44,7 @@ async function reset() {
     category, name: 'Synthetic care product', barcode: '123', description: 'Synthetic product',
     price: 25, sale: true, salePrice: 20, vat: true, stock: 4, disabled: false, images: [] });
   await db.collection('stores').insertOne({ status: 'open' });
+  await db.collection('conversations').insertOne({ from: '971500000001', name: 'Synthetic Recipient', promotionStatus: 'true', messages: [] });
   await db.collection('users').insertMany([
     { username: 'synthetic-admin', name: 'Synthetic Admin', role: 'admin', cities: ['City A'], password },
     { username: 'synthetic-staff', name: 'Synthetic Staff', role: 'user', cities: ['City B'], password },
@@ -53,6 +56,11 @@ const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
 app.get('/__fixture/health', (_req, res) => res.send('almina-verification-commerce'));
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
+app.post('/__fixture/whatsapp/failure', (_req, res) => { whatsappFailure = true; res.sendStatus(204); });
+app.get('/__fixture/whatsapp/state', async (_req, res, next) => {
+  try { res.json({ sends: whatsappSends, receipts: await db.collection('whatsapp_outbound').countDocuments(),
+    messages: (await db.collection('conversations').findOne({ from: '971500000001' }))?.messages.length }); } catch (error) { next(error); }
+});
 app.post('/__fixture/stock', async (req, res, next) => {
   try {
     if (!Number.isSafeInteger(req.body?.stock) || req.body.stock < 0 || req.body.stock > 100) { res.sendStatus(400); return; }
@@ -109,7 +117,7 @@ const mediaTransport: typeof fetch = async (url, options) => {
     secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp` };
   mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
 };
-const legacy = createLegacyApp({ mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
+const legacy = createLegacyApp({ whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);

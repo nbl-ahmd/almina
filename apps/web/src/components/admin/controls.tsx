@@ -6,6 +6,7 @@ export async function adminRequest(
   path: string,
   method = "GET",
   body?: FormData | object,
+  idempotencyKey?: string,
 ) {
   const payload = body ?? (method !== "GET" ? {} : undefined);
   const result = await fetch(`/api/admin/${path}`, {
@@ -13,6 +14,7 @@ export async function adminRequest(
     cache: "no-store",
     headers: {
       "x-csrf-protection": "1",
+      ...(idempotencyKey ? { 'idempotency-key': idempotencyKey } : {}),
       ...(payload && !(payload instanceof FormData)
         ? { "content-type": "application/json" }
         : {}),
