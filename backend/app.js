@@ -26,18 +26,9 @@ function createLegacyApp(options) {
   } }));
   app.post('/api/whatsapp/webhook', wrap(async (req, res, next) => {
     verifyWebhook(req, options.webhookSecret);
-    if (!req.body || req.body.object !== 'whatsapp_business_account' || !Array.isArray(req.body.entry)) throw fail(400, 'INVALID_REQUEST');
-    // Upstream-signed events may be replayed. Unique _id gives a durable receipt.
-    // Marking before processing provides at-most-once effects; failed processing requires operator recovery.
-    const value = req.body?.entry?.[0]?.changes?.[0]?.value;
-    if (!value || req.body.entry.length !== 1 || req.body.entry[0].changes.length !== 1
-      || (value.messages?.length > 1) || (value.statuses?.length > 1)) throw fail(400, 'INVALID_REQUEST');
-    const message = value.messages?.[0] ?? value.statuses?.[0];
-    if (message) {
-      if (typeof message.id !== 'string' || message.id.length > 512) throw fail(400, 'INVALID_REQUEST');
-      try { await (options.getWebhookDb ? await options.getWebhookDb() : mongoose.connection.db).collection('webhook_receipts').insertOne({ _id: message.id + (value.statuses ? ':' + message.status + ':' + message.timestamp : ''), receivedAt: new Date() }); }
-      catch (error) { if (error.code === 11000) return res.sendStatus(200); throw error; }
-    }
+    const db = await (options.getWebhookDb ? options.getWebhookDb() : mongoose.connection.db);
+    req.whatsappReceiptId = await require('./commerce/dist/service.cjs').receiveWhatsappEvent(db, req.body);
+    if (!req.whatsappReceiptId) return res.sendStatus(200);
     next();
   }));
   const routers = options.routers ?? {
@@ -76,6 +67,7 @@ function createLegacyApp(options) {
   app.locals.recoveryAllowed = options.recoveryAllowed ?? process.env.RECOVERY_CATALOG_ALLOWED === 'true';
   app.locals.recoveryCloudName = options.recoveryCloudName ?? process.env.CLOUDINARY_CLOUD_NAME;
   app.locals.getCommerceDb = options.getCommerceDb;
+  app.locals.getWebhookDb = options.getWebhookDb;
   app.locals.auth = auth;
   return app;
 }

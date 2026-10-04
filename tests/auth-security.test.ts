@@ -169,18 +169,23 @@ test('admin-only provisioning validates roles and hashes passwords; duplicate us
   });
 });
 
-test('webhook rejects absent/invalid signatures, changed bodies and duplicate signed events before effects', async () => {
-  const fixture = securityDb(); const secret = randomBytes(32).toString('hex'); let effects = 0;
-  const router = express.Router(); router.post('/webhook', (_req, res) => { effects++; res.sendStatus(200); });
+test('webhook rejects invalid signatures and retains pending events through failure before suppressing processed duplicates', async () => {
+  const fixture = securityDb(); const secret = randomBytes(32).toString('hex'); let effects = 0, attempts = 0;
+  const router = express.Router(); router.post('/webhook', (_req, res) => {
+    if (attempts++ === 0) return res.sendStatus(500);
+    effects++; fixture.data.webhook_receipts![0]!.state = 'processed'; res.sendStatus(200);
+  });
   const app = createLegacyApp({ origins: [browserHeaders.Origin], webhookSecret: secret, getWebhookDb: async () => fixture.db, routers: { whatsapp: router } });
   await serve(app, async origin => {
-    const body = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ value: { messages: [{ id: 'synthetic-message' }] } }] }] });
+    const body = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ value: { messages: [{ id: 'synthetic-message', from: '971501234567', text: { body: 'Synthetic text' } }] } }] }] });
     const signature = 'sha256=' + createHmac('sha256', secret).update(body).digest('hex');
     for (const signed of [undefined, 'sha256=invalid', 'sha256=' + '0'.repeat(64)]) assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(signed ? { 'X-Hub-Signature-256': signed } : {}) }, body })).status, 403);
     const headers = { 'Content-Type': 'application/json', 'X-Hub-Signature-256': signature };
     assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers, body: body + ' ' })).status, 403);
+    assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers, body })).status, 500);
+    assert.equal(fixture.data.webhook_receipts![0]!.state, 'pending');
     for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers, body })).status, 200);
-    assert.equal(effects, 1);
+    assert.equal(effects, 1); assert.equal(attempts, 2);
   });
 });
 

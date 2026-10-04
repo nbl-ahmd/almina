@@ -61,7 +61,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | GET | /api/whatsapp/reports | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/recipients | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/messages/:recipient | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| POST | /api/whatsapp/webhook | webhook | whatsapp.js → Meta/Drive/conversation/report adapters |
+| POST | /api/whatsapp/webhook | webhook | Maintained signed normalized inbox/receipt transaction; retained realtime adapter |
 | GET | /api/whatsapp/webhook | verification | whatsapp.js → Meta/Drive/conversation/report adapters |
 
 ## Background and provider operations
