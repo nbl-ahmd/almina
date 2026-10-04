@@ -17,19 +17,19 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | GET | /api/auth/users | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | DELETE | /api/auth/users/:id | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | POST | /api/products | admin | Maintained catalog creation/ID/initial-stock ledger transaction; retained Drive upload adapter |
-| GET | /api/products | public | products.js → Mongoose catalog and Drive; extraction pending |
-| GET | /api/products/search | public | products.js → Mongoose catalog and Drive; extraction pending |
+| GET | /api/products | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
+| GET | /api/products/search | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/images/:filename | public | products.js → Mongoose catalog and Drive; extraction pending |
-| GET | /api/products/category/:categoryId | public | products.js → Mongoose catalog and Drive; extraction pending |
-| GET | /api/products/details/:productId | public | products.js → Mongoose catalog and Drive; extraction pending |
-| GET | /api/products/:id | public | products.js → Mongoose catalog and Drive; extraction pending |
+| GET | /api/products/category/:categoryId | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
+| GET | /api/products/details/:productId | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
+| GET | /api/products/:id | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | DELETE | /api/products/:id | admin | maintained media/retention.ts archive; references retained |
 | PUT | /api/products/publish/:productId | admin | Maintained transactional visibility/money validation and actor audit |
 | PUT | /api/products/:id | admin | maintained inventory transaction/ledger; retained Drive upload adapter |
 | POST | /api/category | admin | Maintained media metadata/reference creation; retained Drive upload |
-| GET | /api/category | public | categories.js → Mongoose categories and Drive |
+| GET | /api/category | public | Maintained bounded category reads; anonymous visibility enforced, verified staff drafts |
 | GET | /api/category/images/:filename | public | categories.js → Mongoose categories and Drive |
-| GET | /api/category/:id | public | categories.js → Mongoose categories and Drive |
+| GET | /api/category/:id | public | Maintained bounded category reads; anonymous visibility enforced, verified staff drafts |
 | PUT | /api/category/disable/:id | admin | Maintained transactional visibility and actor audit |
 | PUT | /api/category/:id | admin | Maintained metadata validation and reference-preserving replacement; retained Drive upload |
 | DELETE | /api/category/:id | admin | maintained media/retention.ts archive; references retained |

@@ -13,3 +13,4 @@ export * from './modules/media/metadata.js';
 export * from './modules/notifications/whatsapp-inbox.js';
 export * from './modules/operations/metrics.js';
 export * from './modules/operations/snapshot.js';
+export * from './modules/catalog/compatibility-reads.js';

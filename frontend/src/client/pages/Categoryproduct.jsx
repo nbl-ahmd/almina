@@ -12,43 +12,37 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const [products, setProducts] = useState([]);
   const [catname, setCatname] = useState('');
-
+  const [pagination, setPagination] = useState({ categoryId, offset: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const offset = pagination.categoryId === categoryId ? pagination.offset : 0;
 
   useEffect(() => {
-    axios.get(`${baseURL}/api/category/${categoryId}`).then((response) => {
-       
-        setCatname(response.data.name);
-      })
-   
-
-    fetchProductsByCategory(categoryId);
-  }, [categoryId]);
-
-  const fetchProductsByCategory = async (categoryId) => {
-    try {
-      const filter = {"category": categoryId, "disabled": false };
-    const filterString = JSON.stringify(filter);
-        const response = await axios.get(`${baseURL}/api/products?filter=${encodeURIComponent(filterString)}`, {
-          params: {
-            disabledCat: false,
-            
-          },
-        });
-        setProducts(response.data);
-       
-       
-     
-    } catch (error) {
-      console.error('Error fetching products by category:', error);
-    }
-  };
+    const controller = new AbortController();
+    setLoading(true); setError(false);
+    if (offset === 0) { setProducts([]); setCatname(''); }
+    const category = offset === 0 ? axios.get(`${baseURL}/api/category/${categoryId}`, { signal: controller.signal }) : Promise.resolve(null);
+    const catalog = axios.get(`${baseURL}/api/products`, { signal: controller.signal, params: {
+      filter: JSON.stringify({ category: categoryId, disabled: false }), disabledCat: false, limit: 30, offset,
+    } });
+    Promise.all([category, catalog]).then(([categoryResult, result]) => {
+      if (controller.signal.aborted) return;
+      if (categoryResult) setCatname(categoryResult.data.name);
+      setProducts(previous => offset === 0 ? result.data : [...previous, ...result.data.filter(item => !previous.some(old => old._id === item._id))]);
+      setHasNext(result.data.length === 30 && offset + 30 <= 10000);
+    }).catch(() => { if (!controller.signal.aborted) setError(true); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [categoryId, offset, retry]);
 
 
   return (
 <>
 <CustomHelmet 
     title ={catname}
-    description = {`Explore a diverse range of products for ${catname} at Al Mina Pharmacy. Shop high-quality essentials, including ${products?.[0]?.name} and more. Our curated selection caters to your skincare needs, ensuring you have access to the best solutions. Discover effective products for a radiant and healthy skin routine. Shop now for expert-recommended solutions at Al Mina Pharmacy.`}
+    description = {`Browse ${catname || "category"} products at Al Mina Pharmacy. Review product details and current AED prices.`}
     url = {`https://www.alminapharmacy.com/categories/${categoryId}`}
     image = {`${baseURL}/api/category/images/${products?.[0]?.category?.image || ''}`}
     />
@@ -59,7 +53,7 @@ const CategoryPage = () => {
       </div>
       <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 mt-3">
 
-      {products.length === 0 && Array.from({ length: 10 }).map((_, index) => (
+      {loading && products.length === 0 && Array.from({ length: 10 }).map((_, index) => (
         <Productskeleton key={index} />
       ))}
       {products.length > 0 ? (
@@ -68,9 +62,12 @@ const CategoryPage = () => {
         <ProductCard key={product._id} product={product} />
       ))}
       </>): (
-          <p>No products found in this category.</p>
+          !loading && !error ? <p>No products found in this category.</p> : null
         )}
     </div>
+    {error ? <div role="alert"><p>Products could not be loaded.</p><button type="button" className="btn btn-outline-secondary" onClick={() => setRetry(value => value + 1)}>Try again</button></div> : null}
+    {loading ? <p role="status">Loading products…</p> : null}
+    {!loading && !error && hasNext ? <button type="button" className="btn btn-outline-secondary" onClick={() => setPagination({ categoryId, offset: offset + 30 })}>Load more products</button> : null}
     <BackToTopButton />
   </section>
 

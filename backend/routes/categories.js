@@ -1,4 +1,3 @@
-const { catalogFilter } = require('../security/catalog-query.cjs');
 const Category = require('../models/Category');
 const express = require('express');
 const categoryRouter = express.Router();
@@ -47,27 +46,18 @@ categoryRouter.post('/', upload.single('image'), require('../security/uploads.cj
   res.status(201).json({ message: 'category created successfully' });
 });
 
+const catalogDomain = () => require('../commerce/dist/service.cjs');
+const catalogDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+const staffRead = req => ['admin', 'user'].includes(req.identity?.role);
 categoryRouter.get('/', async (req, res) => {
-  const filter = catalogFilter(req.query.filter, false, true);
-    const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-    const categoryList = await Category.find(filter).sort({ name: 1, _id: 1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0);
-
-    if (!categoryList) {
-        res.status(500).json({ succes: false })
-    }
-    res.status(200).send(categoryList);
-})
-
-categoryRouter.get('/:id', async(req,res)=>{
-    const category = await Category.findById(req.params.id);
-
-    if(!category){
-        res.status(500).json({message: 'The category with the given ID was not found.'})
-    }
-    res.status(200).send(category);
-})
-
-
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery(req.query, 'categories');
+  res.json(await domain.retainedCategoryList(await catalogDb(req), query, staffRead(req)));
+});
+categoryRouter.get('/:id', async (req, res) => {
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().retainedCategoryDetail(await catalogDb(req), req.params.id, staffRead(req)));
+});
 
   categoryRouter.get('/images/:filename', async(req, res) => {
     const { filename } = req.params;

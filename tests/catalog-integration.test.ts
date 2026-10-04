@@ -61,6 +61,49 @@ async function serve(app: Express, run: (url: string) => Promise<void>) {
   try { await run(`http://127.0.0.1:${address.port}`); }
   finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 }
+test('retained public reads hide drafts, unpublished products, hidden categories, orphans and archives while verified staff retain editor access', { skip: !uri }, async () => {
+  assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client = await new MongoClient(uri!).connect(), dbName = `almina_visibility_test_${randomUUID().replaceAll('-', '')}`;
+  const db = client.db(dbName), mongoose = require('mongoose');
+  const { createLegacyApp } = require('./app.js');
+  await mongoose.connect(uri, { dbName });
+  const category = new ObjectId(), hidden = new ObjectId(), archived = new ObjectId(), actor = String(new ObjectId());
+  const base = { category, name: 'Synthetic visibility', price: 1, stock: 0 };
+  const docs = ['VISIBLE', 'DRAFT', 'UNPUBLISHED', 'HIDDEN_CATEGORY', 'ORPHAN', 'ARCHIVED', 'ARCHIVED_CATEGORY'].map(product_id => ({ ...base, _id: new ObjectId(), product_id,
+    ...(product_id === 'DRAFT' ? { disabled: true } : product_id === 'UNPUBLISHED' ? { published: false } : product_id === 'HIDDEN_CATEGORY' ? { category: hidden }
+      : product_id === 'ORPHAN' ? { category: new ObjectId() } : product_id === 'ARCHIVED' ? { archivedAt: new Date() }
+        : product_id === 'ARCHIVED_CATEGORY' ? { category: archived } : {}) }));
+  try {
+    await db.collection('categories').insertMany([{ _id: category, name: 'Visible' }, { _id: hidden, name: 'Hidden', disabled: true }, { _id: archived, name: 'Archived', archivedAt: new Date() }]);
+    await db.collection('products').insertMany(docs);
+    const token = 'a'.repeat(43), auth = { authenticate: async (value: string) => {
+      if (value !== token) throw Object.assign(new Error('Expired'), { statusCode: 401 }); return { id: actor, role: 'user', cities: [] };
+    } };
+    await serve(createLegacyApp({ origins: ['http://localhost:3000'], development: true, auth }), async origin => {
+      for (const path of ['/api/products', '/api/products/search?q=Synthetic', `/api/products/category/${category}`]) {
+        const response = await fetch(origin + path, { headers: { 'x-role': 'admin' } }); assert.equal(response.status, 200);
+        assert.deepEqual((await response.json()).map((value: { product_id: string }) => value.product_id), ['VISIBLE']);
+      }
+      const hiddenFilter = new URLSearchParams({ filter: '{"disabled":true}' });
+      assert.deepEqual(await (await fetch(`${origin}/api/products?${hiddenFilter}`)).json(), []);
+      const publicCategories = await (await fetch(origin + '/api/category')).json(); assert.deepEqual(publicCategories.map((value: { name: string }) => value.name), ['Visible']);
+      for (const doc of docs.slice(1)) {
+        assert.equal((await fetch(`${origin}/api/products/details/${doc.product_id}`)).status, 404, doc.product_id);
+        assert.equal((await fetch(`${origin}/api/products/${doc._id}`)).status, 404, doc.product_id);
+      }
+      for (const id of [hidden, archived]) assert.equal((await fetch(`${origin}/api/category/${id}`)).status, 404);
+      const headers = { Cookie: `almina_session=${token}` };
+      assert.equal((await fetch(`${origin}/api/products/details/DRAFT`, { headers })).status, 200);
+      const draft = await (await fetch(`${origin}/api/products/${docs[1]!._id}`, { headers })).json(); assert.equal(draft.disabled, true); assert.equal(draft.category, String(category));
+      assert.equal((await fetch(`${origin}/api/category/${hidden}`, { headers })).status, 200);
+      assert.equal((await fetch(`${origin}/api/products/details/ARCHIVED`, { headers })).status, 404);
+      const visible = await (await fetch(`${origin}/api/products/details/VISIBLE`)).json(); assert.equal(visible.relatedProducts.length, 0);
+      assert.deepEqual((await (await fetch(origin + '/api/products', { headers: { Cookie: `almina_session=${'b'.repeat(43)}` } })).json()).map((value: { product_id: string }) => value.product_id), ['VISIBLE']);
+      for (const path of ['/api/products?limit=101', '/api/products?filter=%7B%22%24where%22%3A%22x%22%7D', '/api/products/search?q=x&offset=10001', `/api/products/${docs[0]!._id}?raw=true`]) assert.equal((await fetch(origin + path)).status, 400);
+      assert.equal(await db.collection('products').countDocuments(), 7);
+    });
+  } finally { await mongoose.disconnect(); await db.dropDatabase(); await client.close(); }
+});
 test('real catalog reads and legacy product mutations preserve validation, visibility and stock rules', { skip: !uri }, async () => {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client = await new MongoClient(uri!).connect();

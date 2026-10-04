@@ -1,4 +1,3 @@
-const { catalogFilter, escapeSearch } = require('../security/catalog-query.cjs');
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -149,205 +148,28 @@ productRouter.get('/images/:filename', async (req, res) => {
 });
 
 
-// productRouter.get('/images/:filename', async(req, res) => {
-//   const { filename } = req.params;
-
-
-//   try {
-//     // Retrieve the product by filename from the database
-//     const product = await Product.findOne({ image: filename });
-//     if (!product) {
-//       return res.status(404).json({ error: 'product not found' });
-//     }
-
-//
-
-
-
-//     // Retrieve the image file from Google Drive
-//     const response = await drive.files.get(
-//       { fileId: product.gdriveFileId, alt: 'media' },
-//       { responseType: 'stream' }
-//     );
-
-//     // Set the appropriate Content-Type header for the image
-//     res.set('Content-Type', 'image/webp');
-
-//     // Pipe the image stream from Google Drive to the response stream
-//     response.data.pipe(res);
-//   } catch (error) {
-//
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
-
-
-
+const catalogDomain = () => require('../commerce/dist/service.cjs');
+const catalogDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+const staffRead = req => ['admin', 'user'].includes(req.identity?.role);
 productRouter.get('/', async (req, res) => {
-  const filter = catalogFilter(req.query.filter); // Parse the filter JSON string if provided
-  const limit = Number(req.query.limit); // Remove default limit
-  const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-  const disabledCategory = (req.query.disabledCat);
-  try {
-    let products;
-
- if (limit) {
-      // Fetch products with pagination
-
-      let sortQuery = {}; // Define an empty object to store the sorting query
-
-      if (filter.sale === true) {
-        // If sale is true, sort by createdAt in descending order
-        sortQuery = { createdAt: -1, _id: 1 };
-      } else {
-        // Otherwise, sort by stock in descending order
-        sortQuery = { stock: -1, _id: 1 };
-      }
-
-      products = await Product.find(filter)
-      .sort(sortQuery)
-        .skip(offset)
-        .limit(limit)
-        .populate('category');
-    } else {
-      // Fetch all products without pagination
-      products = await Product.find(filter).populate('category');
-    }
-
-
-    if(disabledCategory === 'false'){
-      // Filter products where category.disabled is false
-const filteredProducts = products.filter((product) => {
-  // If a product has a category and category.disabled is false, include it
-  if (product.category && product.category.disabled === false) {
-    return true;
-  }
-  return false;
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery(req.query, 'products');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
-res.status(200).json(filteredProducts);
-
-    }
-    else if(disabledCategory === 'true'){
-      // Filter products where category.disabled is false
-const filteredProducts = products.filter((product) => {
-  // If a product has a category and category.disabled is false, include it
-  if (product.category && product.category.disabled === true) {
-    return true;
-  }
-  return false;
-});
-res.status(200).json(filteredProducts);
-
-    }
-    else{
-
-      res.status(200).json(products);
-    }
-
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 productRouter.get('/search', async (req, res) => {
-  const filter = Object.entries(catalogFilter(req.query.filter, true)).map(([key, value]) => ({ [key]: value })); // Parse the filter JSON string if provided
-  const searchQuery = escapeSearch(req.query.q);
-  const limit = Number(req.query.limit); // Remove default limit
-  const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-  const disabledCategory = (req.query.disabledCat);
-
-  try {
-    // Perform the search query against the name and description fields
-
-    let searchResults;
-    if (limit) {
-      const searchQueryConditions = {
-        $or: [
-          { name: { $regex: searchQuery, $options: 'i' } },
-          { description: { $regex: searchQuery, $options: 'i' } },
-        ],
-      };
-      const combinedConditions = {
-        $and: [searchQueryConditions, ...filter],
-      };
-
-
-
-     searchResults = await Product.find(combinedConditions)
-    .skip(offset)
-        .limit(limit)
-        .populate('category');
-  }
-  else{
-     searchResults = await Product.find({
-      $or: [
-        { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the name field
-        { description: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the description field
-      ],
-    }).populate('category');
-
-  }
-
-
-   if(disabledCategory === 'false'){
-      // Filter products where category.disabled is false
-const filteredProducts = searchResults.filter((searchResults) => {
-  // If a product has a category and category.disabled is false, include it
-  if (searchResults.category && searchResults.category.disabled === false) {
-    return true;
-  }
-  return false;
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery(req.query, 'search');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
-res.status(200).json(filteredProducts);
-
-    }
-    else if(disabledCategory === 'true'){
-      // Filter products where category.disabled is false
-const filteredSearchResults = searchResults.filter((searchResults) => {
-  // If a product has a category and category.disabled is false, include it
-  if (searchResults.category && searchResults.category.disabled === true) {
-    return true;
-  }
-  return false;
+productRouter.get('/:id', async (req, res) => {
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { id: req.params.id }, staffRead(req)));
 });
-res.status(200).json(filteredSearchResults);
-
-    }
-    else{
-
-      res.status(200).json(searchResults);
-    }
-
-
-  } catch (error) {
-
-    res.status(500).json({ error: 'An error occurred while searching for products' });
-  }
-});
-
-
-
-productRouter.get('/:id', async(req,res)=>{
-    const product = await Product.findById(req.params.id);
-
-    if(!product){
-        res.status(500).json({message: 'The product with the given ID was not found.'})
-    }
-    res.status(200).send(product);
-})
-
 productRouter.get('/category/:categoryId', async (req, res) => {
-  const { categoryId } = req.params;
-
-  try {
-    const products = await Product.find({ 'category': categoryId, archivedAt: { $exists: false } }).populate('category');
-    res.json(products);
-
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  if (req.query.filter !== undefined) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery({ ...req.query, filter: JSON.stringify({ category: req.params.categoryId }) }, 'products');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
 
 productRouter.delete('/:id', async (req, res) => {
@@ -430,40 +252,11 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
 
 
 productRouter.get('/details/:productId', async (req, res) => {
-
-  const { productId } = req.params;
-
-  try {
-    // Find the product by its product_id (custom field)
-    const product = await Product.findOne({ product_id: productId, archivedAt: { $exists: false } }).populate('category');
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Find all products in the same category except the current product
-    const relatedProducts = await Product.find({
-      archivedAt: { $exists: false },
-      category: product.category._id,
-      product_id: { $ne: productId }, // Exclude the current product
-    }).populate('category');
-
-    res.status(200).json({
-      product,
-      relatedProducts,
-    });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { productId: req.params.productId }, staffRead(req)));
 });
 
-
-
-
-
 module.exports = productRouter;
-
 
 
 

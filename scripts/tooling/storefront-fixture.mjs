@@ -6,7 +6,14 @@ export const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care', di
 export const product = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', product_id: 'PD0001', name: 'Daily Care',
   category, price: 25, salePrice: 20, stock: 4, disabled: false, featured: true, sale: true,
   images: ['fixture.svg'], description: 'Daily care product description.' };
-export function createStorefrontFixture(tls) {
+export const recoveredProducts = [
+  { ...product, _id: 'cccccccccccccccccccccccc', product_id: 'RECOVERY--0001', name: 'Recovery Example', price: 12.50, salePrice: 0, stock: 0,
+    images: [], cloudinaryImages: ['https://res.cloudinary.com/synthetic/image/upload/v1/recovery-example.webp'], description: 'Synthetic reviewed recovery fixture.' },
+  { ...product, _id: 'dddddddddddddddddddddddd', product_id: product._id, name: 'Numeric Identity Example', price: 9.99, sale: false, salePrice: 1,
+    stock: 0, images: [], description: 'Synthetic namespace fixture.' },
+];
+export function createStorefrontFixture(tls, { includeRecovered = false } = {}) {
+  const products = includeRecovered ? [product, ...recoveredProducts] : [product];
   let closed = false;
   let failed = false;
   const requests = [];
@@ -27,19 +34,21 @@ export function createStorefrontFixture(tls) {
     if (url.pathname === '/api/v1/catalog/sitemap') {
       const kind = url.searchParams.get('kind');
       res.end(JSON.stringify({ requestId: '00000000-0000-4000-8000-000000000000', data: {
-        items: kind === 'products' ? [{ id: product._id, productId: product.product_id, name: product.name }]
+        items: kind === 'products' ? products.map(value => ({ id: value._id, productId: value.product_id, name: value.name }))
           : [{ id: category._id, name: category.name }], nextCursor: null,
       } })); return;
     }
     if (url.pathname === '/api/category') { res.end(JSON.stringify([category])); return; }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }
     if (url.pathname === '/api/store/status') { res.end(JSON.stringify({ status: closed ? 'closed' : 'open' })); return; }
-    if (url.pathname === `/api/products/${product._id}`) { res.end(JSON.stringify({ ...product, category: category._id })); return; }
-    if (url.pathname === '/api/products/details/PD0001') { res.end(JSON.stringify({ product, relatedProducts: [] })); return; }
+    const byMongoId = products.find(value => url.pathname === `/api/products/${value._id}`);
+    if (byMongoId) { res.end(JSON.stringify({ ...byMongoId, category: category._id })); return; }
+    const byBusinessId = products.find(value => url.pathname === `/api/products/details/${value.product_id}`);
+    if (byBusinessId) { res.end(JSON.stringify({ product: byBusinessId, relatedProducts: [] })); return; }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
-      const match = !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(product.name);
-      res.end(JSON.stringify(match && Number(url.searchParams.get('offset')) === 0 ? [product] : [])); return;
+      const matching = products.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
+      res.end(JSON.stringify(Number(url.searchParams.get('offset')) === 0 ? matching : [])); return;
     }
     res.writeHead(404); res.end('null');
   });

@@ -32,8 +32,8 @@ export const paginationQuerySchema = z.object({
 }).strict();
 export const emptyQuerySchema = z.object({}).strict();
 
-// Business IDs and MongoDB IDs stay separate; no money/commerce policy is invented here.
-export const productBusinessIdSchema = z.string().regex(/^PD\d+$/);
+// Namespace selection belongs to the explicit route, not the spelling of an ID.
+export { productBusinessIdSchema, productBusinessIdPattern } from './identifiers';
 export const mongoIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/);
 
 export * from './api';

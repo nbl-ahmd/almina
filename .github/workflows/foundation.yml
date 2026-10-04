@@ -86,6 +86,8 @@ jobs:
         run: npm run build:foundation
       - run: npm run smoke:foundation
       - run: npm run smoke:storefront
+      - name: Raw crawler HTML and recovered product URL/price compatibility
+        run: npm run smoke:seo
       - name: Chromium customer and admin workflows
         run: npm run test:e2e:smoke
       - uses: actions/upload-artifact@v4

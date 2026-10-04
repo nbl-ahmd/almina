@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { orderStatusSchema, lineSnapshotSchema, quoteDtoSchema } from './commerce';
+import { productBusinessIdSchema } from './identifiers';
 
 const id = z.string().regex(/^[a-fA-F0-9]{24}$/);
 const booleanQuery = z.enum(['true', 'false']).transform(value => value === 'true');
@@ -12,7 +13,7 @@ export const sitemapQuerySchema = z.object({
   cursor: cursorQuerySchema.shape.cursor,
 }).strict();
 export const sitemapPageSchema = z.object({
-  items: z.array(z.object({ id, name: z.string().min(1), productId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/).optional() }).strict()).max(1000),
+  items: z.array(z.object({ id, name: z.string().min(1), productId: productBusinessIdSchema.optional() }).strict()).max(1000),
   nextCursor: z.string().max(512).regex(/^[A-Za-z0-9_-]+$/).nullable(),
 }).strict();
 export const catalogQuerySchema = cursorQuerySchema.extend({
@@ -25,7 +26,7 @@ export const orderQuerySchema = cursorQuerySchema.extend({
   city: z.string().trim().min(1).max(100).optional(),
 }).strict();
 export const resourceParamsSchema = z.object({ id }).strict();
-export const businessProductParamsSchema = z.object({ productId: z.string().regex(/^PD\d{1,20}$/) }).strict();
+export const businessProductParamsSchema = z.object({ productId: productBusinessIdSchema }).strict();
 export const loginBodySchema = z.object({
   username: z.string().min(1).max(100),
   // bcrypt uses at most 72 UTF-8 bytes. Avoid silently accepting equivalent passwords.

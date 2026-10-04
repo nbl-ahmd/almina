@@ -50,6 +50,16 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
       req.identity = await auth.authenticate(readSessionCookie(req.headers, development));
       if (route.policy === 'admin' && req.identity.role !== 'admin') throw fail(403, 'FORBIDDEN');
     }
+    // Compatibility catalog reads share URLs with staff editors. Only a verified
+    // server session may read drafts; anonymous filters cannot override publication.
+    if (route.policy === 'public' && ['GET', 'HEAD'].includes(req.method)
+      && /^\/api\/(products|category)(?:\/|$)/.test(route.path) && !route.path.includes('/images/')) {
+      const token = readSessionCookie(req.headers, development);
+      if (token) {
+        try { req.identity = await auth.authenticate(token); }
+        catch (error) { if ((error.status ?? error.statusCode) !== 401) throw error; }
+      }
+    }
     const actualParts = req.originalUrl.split('?')[0].replace(/\/$/, '').split('/');
     const routeParts = route.path.split('/');
     for (let i = 0; i < routeParts.length; i++) {

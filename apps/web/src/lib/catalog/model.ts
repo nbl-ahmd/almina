@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { productBusinessIdPattern } from '@almina/contracts';
 
 export const objectId = /^[a-f0-9]{24}$/i;
-export const publicId = /^[A-Za-z0-9_-]{1,80}$/;
+export const publicId = productBusinessIdPattern;
 const categorySchema = z.object({ _id: z.string().regex(objectId), name: z.string().min(1),
   image: z.string().optional(), disabled: z.boolean().optional() });
 const productSchema = z.object({ _id: z.string().regex(objectId), product_id: z.string().regex(publicId),
@@ -29,16 +30,19 @@ function nameSlug(name: string) {
 export const productSlug = (product: Product) => `${nameSlug(product.name)}--${product.product_id}`;
 export const categorySlug = (category: Category) => `${nameSlug(category.name)}--${category._id}`;
 export function slugIdentity(slug: string): string | null {
-  const identity = slug.split('--').at(-1);
-  return slug.includes('--') && identity && publicId.test(identity) ? identity : null;
+  // Generated readable prefixes cannot contain "--"; reviewed IDs can.
+  const separator = slug.indexOf('--');
+  const identity = separator >= 0 ? slug.slice(separator + 2) : '';
+  return identity && publicId.test(identity) ? identity : null;
 }
 export const productHref = (product: Product) => `/products/${productSlug(product)}`;
 export const categoryHref = (category: Category) => `/categories/${categorySlug(category)}`;
 export const productPath = (name: string, id: string) => `/products/${nameSlug(name)}--${id}`;
 export const categoryPath = (name: string, id: string) => `/categories/${nameSlug(name)}--${id}`;
 export const money = (value: number) => `AED ${value.toFixed(2)}`;
-// Preserve legacy displayed sale-price behavior; this is not a checkout quote.
-export const displayPrice = (product: Product) => product.salePrice || product.price;
+// Match the server's active-sale rule, including a valid zero-price sale.
+// Presentation remains a catalog value, not an authoritative checkout quote.
+export const displayPrice = (product: Product) => product.sale === true && product.salePrice !== undefined ? product.salePrice : product.price;
 export const cartLineSchema = z.object({ id: z.string().regex(objectId), quantity: z.number().int().min(1).max(999) });
 export const cartSchema = z.array(cartLineSchema).max(100).refine(lines => new Set(lines.map(line => line.id)).size === lines.length);
 export type CartLine = z.infer<typeof cartLineSchema>;

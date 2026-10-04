@@ -16,7 +16,7 @@ test('production public SEO and preview/filter exclusion agree', () => {
 });
 test('JSON-LD cannot terminate its script; catalog prices match the page without invented reviews or availability', () => {
   const product = { _id: 'b'.repeat(24), product_id: 'PD1', name: '</script><script>alert(1)</script>',
-    price: 25, salePrice: 20, stock: 4, description: 'Real description', category: { _id: 'a'.repeat(24), name: 'Skin care' } };
+    price: 25, sale: true, salePrice: 20, stock: 4, description: 'Real description', category: { _id: 'a'.repeat(24), name: 'Skin care' } };
   const data = productData('https://shop.example.invalid', product, ['https://cdn.example.invalid/product.jpg']);
   const json = serializeJsonLd(data);
   assert.ok(!json.includes('<'));
@@ -24,6 +24,8 @@ test('JSON-LD cannot terminate its script; catalog prices match the page without
   assert.equal(data.offers.price, '20.00');
   assert.equal(data.offers.priceCurrency, 'AED');
   assert.ok(!('availability' in data.offers) && !('aggregateRating' in data));
+  assert.equal(productData('https://shop.example.invalid', { ...product, salePrice: 0 }, []).offers.price, '0.00');
+  assert.equal(productData('https://shop.example.invalid', { ...product, sale: false }, []).offers.price, '25.00');
   assert.equal(breadcrumbData('https://shop.example.invalid', [{ name: 'Home', path: '/' }]).itemListElement[0]!.position, 1);
 });
 test('replacement mappings reject cycles, chains, unsafe targets and malformed JSON', () => {

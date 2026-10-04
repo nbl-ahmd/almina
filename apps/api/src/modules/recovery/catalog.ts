@@ -1,12 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { productBusinessIdSchema } from '@almina/contracts';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { cloudinaryImage } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 import { recoveryCsv } from './csv.js';
 const money = z.string().regex(/^\d{1,7}(\.\d{1,2})?$/).transform(value => Number(value));
 const row = z.object({
-  product_id: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),
+  product_id: productBusinessIdSchema,
   name: z.string().trim().min(1).max(200), category: z.string().trim().min(1).max(200),
   barcode: z.string().trim().min(1).max(100), price: money, salePrice: money.optional(),
   vat: z.boolean(), featured: z.boolean().default(false),
