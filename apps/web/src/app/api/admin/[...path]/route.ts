@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getWebEnvironment } from "../../../../lib/server/env";
 import {
   accessPolicy,
-  project,
+  projectAdminResponse,
   upstreamQuery,
 } from "../../../../lib/admin/policy";
 import {
@@ -87,7 +87,7 @@ async function handle(
       result.status === 204
         ? new NextResponse(null, { status: 204, headers })
         : NextResponse.json(
-            acceptedRedirect ? { success: true } : project(await result.json()),
+            acceptedRedirect ? { success: true } : projectAdminResponse(path, await result.json()),
             { status: result.status === 302 ? 200 : result.status, headers },
           );
     // Only the expected session cookie, with locally controlled attributes, can be issued to this host.

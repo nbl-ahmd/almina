@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { operationsSnapshotSchema } from '@almina/contracts';
 export const identitySchema = z.object({
   id: z.string().regex(/^[a-f0-9]{24}$/i),
   username: z.string(),
@@ -10,6 +11,7 @@ export type Identity = z.infer<typeof identitySchema>;
 export type AdminRecord = Record<string, unknown>;
 export const sections = [
   "dashboard",
+  "operations",
   "products",
   "categories",
   "banners",
@@ -29,6 +31,7 @@ export function canVisit(role: Identity["role"], section: string) {
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET', 'operations', 'admin'],
   ["POST", "auth/login", "login"],
   ["GET", "auth/me", "staff"],
   ["POST", "auth/logout", "staff"],
@@ -267,4 +270,7 @@ export function project(value: unknown): unknown {
         .map(([key, entry]) => [key, project(entry)]),
     );
   return value;
+}
+export function projectAdminResponse(path: string, value: unknown): unknown {
+  return path === 'operations' ? operationsSnapshotSchema.parse(value) : project(value);
 }

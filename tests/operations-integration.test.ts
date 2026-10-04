@@ -4,8 +4,45 @@ import { randomUUID, createHmac } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
 import { orderOutbox } from '../apps/api/src/modules/notifications/outbox';
 import { retainedReadiness } from '../apps/api/src/modules/operations/lifecycle';
+import { createOperationalMetrics } from '../apps/api/src/modules/operations/metrics';
+import { operationsSnapshot } from '../apps/api/src/modules/operations/snapshot';
+import { operationsSnapshotSchema } from '@almina/contracts';
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
+test('operations snapshot identifies integrity/backlog candidates without returning PII or changing data', { skip: !uri }, async () => {
+  assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client = await new MongoClient(uri!).connect(); const db = client.db('almina_snapshot_test_' + randomUUID().replaceAll('-', ''));
+  let clock = Date.now() - 11 * 60000; const metrics = createOperationalMetrics('retained-api', () => clock); clock += 11 * 60000;
+  const first = new ObjectId(), second = new ObjectId();
+  try {
+    await db.collection('products').insertMany([{ stock: -1 }, { stock: 1.5 }, { stock: '2' }, { name: 'synthetic-private-product' }, { stock: 7 }]);
+    await db.collection('orders').insertMany([{ _id: first, schemaVersion: 2, orderId: 'SAME', customer: { name: 'synthetic-private-name' } },
+      { _id: second, schemaVersion: 2, orderId: 'SAME' }, { orderId: 'LEGACY_SAME' }, { orderId: 'LEGACY_SAME' }]);
+    await db.collection('checkout_requests').insertMany([{ orderId: first }, { orderId: new ObjectId() }]);
+    await db.collection<{ _id: string; state: string; receivedAt: Date }>('webhook_receipts').insertOne({ _id: 'synthetic-pending', state: 'pending', receivedAt: new Date(Date.now() - 6 * 60000) });
+    await db.collection<{ _id: string; state: string; createdAt: Date }>('order_outbox').insertMany([
+      { _id: `confirmation:${first}`, state: 'pending', createdAt: new Date(Date.now() - 15 * 60000) }, { _id: 'synthetic-failed', state: 'failed', createdAt: new Date() }]);
+    for (let i = 0; i < 100; i++) metrics.record('catalog', i < 3 ? 503 : 200, 1501);
+    for (let i = 0; i < 20; i++) metrics.record('checkout', i === 0 ? 503 : 200, 3001);
+    metrics.databaseError();
+    const snapshot = operationsSnapshotSchema.parse(await operationsSnapshot(db, metrics));
+    assert.equal(snapshot.database.invalidStockValues, 4); assert.equal(snapshot.database.maintainedDuplicateOrderNumbers, 1);
+    assert.equal(snapshot.database.legacyDuplicateOrderNumbers, 1); assert.equal(snapshot.database.orphanCheckoutReceipts, 1);
+    assert.equal(snapshot.database.ordersMissingReceipts, 1); assert.equal(snapshot.database.ordersMissingConfirmationJobs, 1);
+    assert.equal(snapshot.database.pendingWebhookEvents, 1); assert.equal(snapshot.database.stockOrderReconciliation, 'operator-required');
+    for (const alert of ['COMMERCE_INTEGRITY_REVIEW', 'HTTP_5XX_THRESHOLD', 'CHECKOUT_FAILURE_THRESHOLD', 'CATALOG_LATENCY_THRESHOLD', 'CHECKOUT_LATENCY_THRESHOLD', 'WEBHOOK_BACKLOG', 'OUTBOX_REVIEW', 'DATABASE_ERRORS']) assert.ok(snapshot.alerts.includes(alert as typeof snapshot.alerts[number]));
+    assert.ok(!JSON.stringify(snapshot).includes('synthetic-private')); assert.ok(!JSON.stringify(snapshot).includes('SAME'));
+    assert.equal(await db.collection('orders').countDocuments(), 4); assert.equal((await db.collection('products').findOne({ stock: -1 }))!.stock, -1);
+    assert.throws(() => operationsSnapshotSchema.parse({ ...snapshot, customer: 'untrusted' }));
+    const unavailable = new Proxy(db, { get(target, property) {
+      if (property === 'collection') return () => { throw new Error('Synthetic database outage'); };
+      const value = Reflect.get(target, property, target); return typeof value === 'function' ? value.bind(target) : value;
+    } });
+    await assert.rejects(operationsSnapshot(unavailable, metrics), { code: 'SERVICE_UNAVAILABLE' });
+  } finally {
+    await db.dropDatabase(); await client.close();
+  }
+});
 test('signed WhatsApp events retry failed transactions, deduplicate concurrent deliveries and preserve opt-outs and legacy receipts', { skip: !uri }, async () => {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const { createRequire } = await import('node:module');

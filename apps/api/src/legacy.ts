@@ -11,3 +11,5 @@ export * from './modules/media/cloudinary.js';
 export * from './modules/catalog/creation.js';
 export * from './modules/media/metadata.js';
 export * from './modules/notifications/whatsapp-inbox.js';
+export * from './modules/operations/metrics.js';
+export * from './modules/operations/snapshot.js';

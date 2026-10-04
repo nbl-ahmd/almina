@@ -41,3 +41,4 @@ export * from './api';
 export * from './commerce';
 
 export { cloudinaryImage } from './media';
+export * from './operations';

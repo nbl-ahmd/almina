@@ -21,6 +21,8 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
     { name: 'media_previous_single', key: { collection: 1, 'previousAssets.image': 1, createdAt: -1 } },
     { name: 'media_previous_multiple', key: { collection: 1, 'previousAssets.images': 1, createdAt: -1 } }],
   inventory_adjustments: [{ name: 'inventory_product_history', key: { productId: 1, createdAt: -1 } }],
+  checkout_requests: [{ name: 'operations_checkout_order', key: { orderId: 1 } }],
+  webhook_receipts: [{ name: 'operations_webhook_pending', key: { state: 1, receivedAt: 1 } }],
   order_outbox: [{ name: 'commerce_outbox_claim', key: { state: 1, leaseUntil: 1, createdAt: 1 } }],
   auth_rate_limits: [{ name: 'auth_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
   api_sessions: [

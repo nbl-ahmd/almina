@@ -4,6 +4,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 
 | Method | Retained URL | Boundary | Current owner/effects |
 | --- | --- | --- | --- |
+| GET | /api/operations | admin | Maintained process metrics and bounded read-only integrity/queue snapshot |
 | GET | /api/recovery/template | admin | maintained recovery/csv.ts; no provider effects |
 | POST | /api/media/products/:id | admin | Maintained signed Cloudinary upload/reference ledger; bounded authenticated adapter |
 | POST | /api/recovery/preview | admin | maintained recovery/catalog.ts; actor-bound preview |

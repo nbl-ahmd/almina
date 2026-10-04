@@ -3,6 +3,23 @@ import assert from 'node:assert/strict';
 import type { Db } from 'mongodb';
 import { drainRetainedService, retainedReadiness } from '../apps/api/src/modules/operations/lifecycle';
 import { whatsappEvent } from '../apps/api/src/modules/notifications/whatsapp-inbox';
+import { createOperationalMetrics, operationGroup } from '../apps/api/src/modules/operations/metrics';
+test('operational counters stay bounded, retain no request identity and treat empty/warmup samples as unknown', () => {
+  let clock = 0; const metrics = createOperationalMetrics('api', () => clock);
+  assert.equal(metrics.snapshot().groups.checkout.failureRate, null); assert.equal(metrics.snapshot().warmupComplete, false);
+  metrics.record(operationGroup('POST', '/api/v1/checkout'), 409, 300); // Expected conflicts are not checkout server failures.
+  metrics.record('checkout', 503, 3100); metrics.record('checkout', 499, 1000, true); metrics.databaseError();
+  const sample = metrics.snapshot();
+  assert.equal(sample.groups.checkout.count, 3); assert.equal(sample.groups.checkout.failures, 1); assert.equal(sample.groups.checkout.aborted, 1);
+  assert.equal(sample.groups.checkout.p95UpperBoundMs, 6000); assert.equal(sample.databaseErrors, 1);
+  assert.equal(sample.clientJavaScriptErrors, null); assert.equal(sample.scope, 'this-process-only');
+  assert.equal(operationGroup('GET', '/api/products/search'), 'catalog');
+  assert.equal(operationGroup('GET', '/api/products/images/synthetic.webp'), 'other');
+  metrics.record('other', Number.NaN, 1); metrics.record('catalog', 200, Number.NaN);
+  clock = 31 * 60000; metrics.record('other', 200, 11000);
+  assert.equal(metrics.snapshot().groups.checkout.count, 0); assert.equal(metrics.snapshot().groups.other.p95Over10Seconds, true);
+  assert.ok(!JSON.stringify(metrics.snapshot()).includes('/api/'));
+});
 test('WhatsApp normalization bounds signed payloads and never invents text, recipients or opt-in state', () => {
   const wrap = (value: unknown) => ({ object: 'whatsapp_business_account', entry: [{ changes: [{ value }] }] });
   assert.equal(whatsappEvent(wrap({ messages: [{ id: 'synthetic', from: '971501234567', image: { id: 'opaque' } }] }))!.kind, 'ignored');

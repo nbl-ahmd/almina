@@ -3,10 +3,12 @@ import { MongoError } from 'mongodb';
 import type { ApiError } from '@almina/contracts';
 import type { Logger } from '@almina/config/logger';
 import { HttpError, errorMessages } from '../errors.js';
+import type { OperationalMetrics } from '../modules/operations/metrics.js';
 
-export function errorHandler(logger: Logger): ErrorRequestHandler {
+export function errorHandler(logger: Logger, metrics?: OperationalMetrics): ErrorRequestHandler {
   return (error: unknown, _req, res, _next) => {
     void _next; // Express identifies error middleware by its four-argument arity.
+    if (error instanceof MongoError) metrics?.databaseError();
     if (res.writableEnded) return;
     if (res.headersSent) {
       logger.log('error', 'request_failed', { requestId: res.locals.requestId as string, status: 500 });

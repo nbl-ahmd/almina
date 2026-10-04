@@ -2,6 +2,27 @@ import { randomUUID } from 'node:crypto';
 import { test, expect, reset, state, login, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
 
 test.beforeEach(async ({ request }) => { await reset(request); });
+test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
+  await login(page);
+  for (const width of [360, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(adminOrigin + '/admin/operations');
+    await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible();
+    await expect(page.getByRole('table', { name: 'Database integrity candidates' })).toBeVisible();
+    await expect(page.locator('main')).toContainText('Stock/order reconciliation requires');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await page.getByRole('region', { name: 'API requests — five-minute buckets' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible();
+  }
+  const response = await page.request.get(adminOrigin + '/api/admin/operations'); expect(response.status()).toBe(200);
+  expect(JSON.stringify(await response.json())).not.toContain('customer');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page).toHaveURL(adminOrigin + '/admin/login');
+  await login(page, 'synthetic-staff');
+  expect((await page.request.get(adminOrigin + '/api/admin/operations')).status()).toBe(403);
+});
 test('admin login persists through reload and staff access remains scoped', async ({ page }) => {
   await page.goto(adminOrigin + '/admin/orders');
   await expect(page).toHaveURL(adminOrigin + '/admin/login');

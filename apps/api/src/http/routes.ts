@@ -17,8 +17,11 @@ import { createAuthService } from '../modules/auth/service.js';
 import { createStaffRepository } from '../modules/auth/repository.js';
 import { createOrderRepository } from '../modules/orders/repository.js';
 import type { CatalogQueryObserver } from '../modules/catalog/timing.js';
+import { operationsSnapshotSchema } from '@almina/contracts';
+import { operationsSnapshot } from '../modules/operations/snapshot.js';
+import type { OperationalMetrics } from '../modules/operations/metrics.js';
 
-export function apiRoutes(getDb: GetDb, webOrigin: string, development = false, observeCatalogQuery?: CatalogQueryObserver) {
+export function apiRoutes(getDb: GetDb, webOrigin: string, development = false, observeCatalogQuery?: CatalogQueryObserver, metrics?: OperationalMetrics) {
   const router = Router();
   const catalog = createCatalogRepository(getDb, observeCatalogQuery);
   const auth = createAuthService(getDb);
@@ -39,6 +42,11 @@ export function apiRoutes(getDb: GetDb, webOrigin: string, development = false, 
     router.get(route, (req, _res, next) => { noBody(req); next(); }, handler);
     router.all(route, (_req, res, next) => { res.set('Allow', 'GET, HEAD'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
   }
+  read('/admin/operations', async (req, res) => {
+    await identity(req, true); validate(emptyQuerySchema, req.query);
+    if (!metrics) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
+    send(res, operationsSnapshotSchema, await operationsSnapshot(await getDb(), metrics));
+  });
   read('/catalog/products', async (req, res) => {
     send(res, pageSchema(productDtoSchema), await catalog.products(validate(catalogQuerySchema, req.query)));
   });

@@ -69,15 +69,19 @@ Lost customers and orders remain lost unless an independent export/backup is fou
 9. Observe errors, readiness, checkout rejection/duplicate rates, stock drift, slow queries, outbox backlog/delivery, auth failures, crawler errors and performance. Use the runbook's observation duration and rollback triggers. Do not enable customer analytics that includes addresses, prescription/health data, credentials or complete checkout payloads.
 10. Roll back application routing and binaries to the last verified compatible release if acceptance fails; pause writers as necessary. Preserve committed orders, receipts, stock and outbox records. Do not reverse stock by restoring an old database snapshot over new transactions. Reconcile the notification queue and compare counters before reopening.
 
+## Focused continuation evidence
+
+Recovery preview/commit, immutable stock adjustments, retained readiness/drain, signed product media replacement/archive, catalog creation/metadata persistence and transactional WhatsApp inbox processing are now implemented in stacked focused PRs. See the current [migration status](MIGRATION_STATUS.md) for exact scopes and CI runs. The [operations dashboard](OPERATIONS_DASHBOARD_2026-10-04.md) adds administrator-only process snapshots and bounded database candidates; hosting-wide collection, external alerts and ledger reconciliation remain required. Earlier counts below describe the integrated baseline. No hosting acceptance or production cutover is claimed.
+
 ## Remaining implementation gates
 
 | Area | Work required before completion |
 | --- | --- |
 | Dependency gate | Resolved locally: zero high/critical across lockfiles; require the same result from protected CI and keep monitoring. |
 | Backend ownership | Migrate catalog/category/banner/staff/store/import writes and provider/media operations into maintained modules, or explicitly accept documented retained components at cutover. |
-| Inventory admin | Atomic stale-stock protection and product price precision are implemented. Add an immutable actor/reason/delta ledger and extend decimal-money validation to every sale/invoice input. |
+| Inventory admin | Implemented: stale-stock protection, immutable actor/reason/delta receipts and exact stock-edit replay; creation, sale and invoice decimal-money validation. Hosted races/reconciliation remain required. |
 | Media/admin | Verify recovered Cloudinary preview/gallery/SEO delivery on the host; implement safe replacement, signed uploads and orphan review without deleting surviving assets. |
-| Product recovery UX | Spreadsheet conversion, authenticated preview, row errors, controlled corrections and verified publishing; keep the legacy batch route out of recovery. |
+| Product recovery UX | Implemented: spreadsheet/CSV templates, authenticated preview, row errors and hash-bound transactional commits. Verify hosted recovery/publishing; the legacy batch route remains blocked for recovery. |
 | Operations | Named Atlas backups, restore rehearsal, protected secrets, health checks, graceful draining, provider retries, outbox monitoring, alerts and fulfillment reconciliation. |
 | UI | Complete component-by-component Tailwind adoption and coherent pharmacy design; verify all storefront/admin forms, errors, empty states and image layouts. |
 | SEO/performance | Hosted canonical/redirect/robots/sitemap/schema validation against recovered IDs; measurements and budgets against representative products/images. |

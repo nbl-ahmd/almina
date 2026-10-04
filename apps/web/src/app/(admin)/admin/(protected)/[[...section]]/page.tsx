@@ -1,4 +1,6 @@
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
+import { operationsSnapshotSchema } from '@almina/contracts';
+import { OperationsView } from '../../../../../components/admin/operations-view';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -81,6 +83,7 @@ export default async function AdminPage({
     !["products", "categories", "orders", "whatsapp"].includes(section)
   )
     notFound();
+  if (section === 'operations') return <OperationsView snapshot={operationsSnapshotSchema.parse(await adminRead('operations'))} />;
   if (section === "dashboard") {
     const orders = rows(await adminRead("orders"));
     return (

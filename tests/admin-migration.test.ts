@@ -24,7 +24,7 @@ test("admin gateway is default deny and distinguishes staff from administrators"
     "auth/me",
   ])
     assert.equal(accessPolicy("GET", path), "staff");
-  for (const path of ["category", "banners", "auth/users", "whatsapp/reports"])
+  for (const path of ["operations", "category", "banners", "auth/users", "whatsapp/reports"])
     assert.equal(accessPolicy("GET", path), "admin");
   for (const path of [
     "../auth/me",

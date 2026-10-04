@@ -4,6 +4,9 @@ const { createSessionService } = require('./security/sessions.cjs');
 const { installBoundary, verifyWebhook, wrap, fail } = require('./security/boundary.cjs');
 function createLegacyApp(options) {
   const app = express();
+  const { createOperationalMetrics, installOperationalMetrics } = require('./commerce/dist/service.cjs');
+  app.locals.operationsMetrics = createOperationalMetrics('retained-api');
+  installOperationalMetrics(app, app.locals.operationsMetrics);
   const auth = options.auth ?? createSessionService(async () => {
     if (!mongoose.connection.db || mongoose.connection.readyState !== 1) throw fail(503, 'SERVICE_UNAVAILABLE');
     return mongoose.connection.db;
@@ -32,6 +35,7 @@ function createLegacyApp(options) {
     next();
   }));
   const routers = options.routers ?? {
+    operations: require('./routes/operations'),
     media: require('./routes/media'), recovery: require('./routes/recovery'), category: require('./routes/categories'), banners: require('./routes/banners'), products: require('./routes/products'),
     orders: require('./routes/Orderrouter'), batch: require('./routes/batchProductRouter'), store: require('./routes/storeRouter'),
     whatsapp: require('./routes/whatsapp'), auth: require('./routes/Login')(auth, options.development),
@@ -50,6 +54,7 @@ function createLegacyApp(options) {
   }
   app.use((_req, _res, next) => next(fail(404, 'NOT_FOUND')));
   app.use((error, _req, res, _next) => {
+    if (typeof error?.name === 'string' && error.name.startsWith('Mongo')) app.locals.operationsMetrics.databaseError();
     if (res.headersSent) return res.destroy();
     const proposedStatus = (typeof error.code === 'string' && error.code.startsWith('LIMIT_')) ? 413 : error.statusCode ?? error.status;
     const status = proposedStatus >= 400 && proposedStatus < 600 ? proposedStatus : 500;
