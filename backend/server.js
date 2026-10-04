@@ -18,9 +18,30 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
-mongoose.connect(process.env.MONGODB_URI).then(() => {
-  require('./commerce/outbox.cjs').startOrderOutbox(async () => mongoose.connection.db);
+let worker;
+let shutdown;
+mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000, maxPoolSize: 20 }).then(() => {
+  if (app.locals.draining) return mongoose.disconnect();
+  worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => mongoose.connection.db);
   server.listen(process.env.PORT || 4000, () => console.log('Legacy API listening'));
 }).catch(() => { console.error('Database connection failed'); process.exitCode = 1; });
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
+
+function stop() {
+  if (shutdown) return shutdown;
+  shutdown = require('./commerce/dist/service.cjs').drainRetainedService({
+    markDraining: () => { app.locals.draining = true; },
+    closeHttp: () => new Promise(resolve => {
+      io.disconnectSockets(true);
+      io.close(() => resolve());
+      server.closeIdleConnections();
+    }),
+    stopWorkers: async () => { await worker?.stop(); },
+    closeDatabase: async () => { await mongoose.disconnect(); },
+    forceConnections: () => { io.disconnectSockets(true); server.closeAllConnections(); },
+  }).catch(() => { console.error('Retained shutdown deadline failed'); process.exit(1); });
+  return shutdown;
+}
+process.once('SIGTERM', stop);
+process.once('SIGINT', stop);

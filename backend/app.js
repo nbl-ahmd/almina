@@ -8,6 +8,17 @@ function createLegacyApp(options) {
     if (!mongoose.connection.db || mongoose.connection.readyState !== 1) throw fail(503, 'SERVICE_UNAVAILABLE');
     return mongoose.connection.db;
   });
+  app.locals.draining = false;
+  const healthHeaders = require('./security/boundary.cjs').securityHeaders(options.development);
+  app.get('/health/live', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').json({ status: 'live' }));
+  app.get('/health/ready', healthHeaders, wrap(async (_req, res) => {
+    const ready = await require('./commerce/dist/service.cjs').retainedReadiness(
+      options.getCommerceDb ?? (() => mongoose.connection.db), app.locals.draining);
+    const sha = process.env.RENDER_GIT_COMMIT;
+    res.status(ready ? 200 : 503).set('Cache-Control', 'no-store').json({ status: ready ? 'ready' : 'unavailable',
+      commitSha: /^[a-f0-9]{40}$/.test(sha ?? '') ? sha : null });
+  }));
+  app.use((_req, res, next) => app.locals.draining ? res.status(503).set('Retry-After', '30').json({ error: 'Service draining' }) : next());
   installBoundary(app, { ...options, auth });
   app.use('/api/recovery', express.json({ limit: '4mb', inflate: false }));
   app.use(express.json({ limit: '128kb', inflate: false, verify(req, _res, buffer) {

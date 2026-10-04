@@ -4,3 +4,5 @@ export * from './modules/store/service.js';
 export * from './modules/recovery/catalog.js';
 export { recoveryTemplate } from './modules/recovery/csv.js';
 export * from './modules/inventory/adjustments.js';
+export * from './modules/operations/lifecycle.js';
+export * from './modules/notifications/outbox.js';

@@ -12,6 +12,8 @@ Second focused recovery change on `codex/recovery-import-workflow` adds authenti
 
 Third focused inventory change on `codex/admin-inventory-ledger` adds transaction-bound actor/reason/delta receipts and exact stock-edit retries while preserving stale-form protection, plus sale/invoice precision validation and both admin callers. [Scope, evidence and retained creation/batch gates](INVENTORY_LEDGER_2026-10-04.md). Recovery PR #4 hosted foundation runs `37178900854` and `37178870184` passed including `verify`. Hosted acceptance remains incomplete.
 
+Retained lifecycle follow-up on `codex/retained-api-lifecycle` adds transaction-capable readiness, bounded drain and maintained notification leases/retry/deadline behavior. [Operational contract and evidence](RETAINED_LIFECYCLE_2026-10-04.md). Inventory PR #5 hosted runs `37179300779` and `37179264768` passed `verify`. Signed media/references, remaining retained writers and hosted provider/drain acceptance remain gates.
+
 ## Production migration readiness — blocked
 
 Prepared on `codex/production-migration-readiness`: [Render cutover/recovery runbook](PRODUCTION_CUTOVER_2026-10-03.md), three-phase fail-closed release evidence validator (`npm run release:gate`), and CI regression coverage for missing/skipped evidence, exact SHAs, deployment readbacks, post-cutover timestamps, 24-hour observation and retained legacy fields. Includes all twelve staging/production journeys, environment/provider/media/SEO gates, reconciliation, explicit monitoring thresholds and safe rollback. The validator checks attestations, not provider truth; production deployment controls and telemetry are not configured by it.
