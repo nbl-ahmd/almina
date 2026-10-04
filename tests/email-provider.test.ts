@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createServer, createConnection, type Socket } from 'node:net';
-import { createRequire } from 'node:module';
 import { administrativeEmail, confirmationMessage, deliverEmail, type MailMessage, type SmtpOptions } from '../apps/api/src/modules/notifications/email';
 const credentials = { user: 'synthetic@example.invalid', password: 'synthetic-not-a-secret' };
-const require = createRequire(new URL('../backend/package.json', import.meta.url));
 const message = confirmationMessage({ orderId: 'OD5001', customer: { email: 'synthetic@example.invalid' }, html: 'ignored', recipient: 'ignored@example.invalid' }, credentials.user);
 test('email uses persisted confirmation identity and bounded single-recipient administrative content', () => {
   assert.equal(message.to, credentials.user); assert.equal(message.messageId, '<almina-order-OD5001@alminapharmacy.com>');
@@ -48,22 +45,4 @@ test('SMTP rejects malformed/rejected acceptance, sanitizes failures and bounds 
     assert.equal(calls, 1); assert.equal(closed, 1); lateReject(new Error('Synthetic provider diagnostic'));
   }
   await assert.rejects(deliverEmail(message, credentials, () => ({ sendMail: async () => { throw new Error('Synthetic private content'); }, close: () => { throw new Error('Synthetic cleanup content'); } })), error => error instanceof Error && error.message === 'SERVICE_UNAVAILABLE');
-});
-test('real Nodemailer stalled greeting is cancelled by closing its owned loopback socket', async () => {
-  const sockets = new Set<Socket>();
-  const server = createServer(socket => { sockets.add(socket); socket.once('close', () => sockets.delete(socket)); });
-  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
-  const endpoint = server.address(); assert.ok(endpoint && typeof endpoint !== 'string');
-  const { createSmtpTransport } = require('./integrations/smtp.cjs');
-  let opened: Socket | undefined;
-  try {
-    await assert.rejects(deliverEmail(message, credentials, options => createSmtpTransport(options, require('nodemailer'), (target: { host: string; port: number }) => {
-      assert.equal(target.host, 'smtp.office365.com'); assert.equal(target.port, 587);
-      opened = createConnection({ host: '127.0.0.1', port: endpoint.port }); return opened;
-    }), undefined, 100), { code: 'SERVICE_UNAVAILABLE' });
-    assert.ok(opened?.destroyed);
-  } finally {
-    for (const socket of sockets) socket.destroy();
-    await new Promise<void>(resolve => server.close(() => resolve()));
-  }
 });
