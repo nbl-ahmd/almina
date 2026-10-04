@@ -23,6 +23,21 @@ function createLegacyApp(options) {
     res.status(ready ? 200 : 503).set('Cache-Control', 'no-store').json({ status: ready ? 'ready' : 'unavailable',
       commitSha: /^[a-f0-9]{40}$/.test(sha ?? '') ? sha : null });
   }));
+  // Additive API ownership: one persistent listener, pool, outbox lifecycle and metrics window.
+  const domain = require('./commerce/dist/service.cjs');
+  const getDb = async () => {
+    const db = await (options.getCommerceDb ? options.getCommerceDb() : mongoose.connection.db);
+    if (!db) throw new domain.HttpError(503, 'SERVICE_UNAVAILABLE');
+    return db;
+  };
+  const versioned = domain.createVersionedApp({ getDb,
+    database: { mode: 'enabled', checkReadiness: () => domain.retainedReadiness(getDb, app.locals.draining) },
+    logger: options.logger ?? domain.createLogger({ service: 'api', environment: options.development ? 'development' : 'production', level: 'warn' }),
+    webOrigins: options.origins, development: options.development, trustProxy: Array.isArray(options.trustProxy) ? options.trustProxy : [],
+    draining: () => app.locals.draining, metrics: app.locals.operationsMetrics, observeRequests: false,
+    onOrderCreated: order => app.locals.io?.emit('newOrder', { _id: order.id, orderId: order.orderId }),
+  });
+  app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });
   app.use((_req, res, next) => app.locals.draining ? res.status(503).set('Retry-After', '30').json({ error: 'Service draining' }) : next());
   installBoundary(app, { ...options, auth });
   app.use('/api/recovery', express.json({ limit: '4mb', inflate: false }));

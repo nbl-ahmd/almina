@@ -36,7 +36,7 @@ try {
     await delay(100);
   }
   const tests = spawn(process.execPath, ['--import', 'tsx', '--test', ...(args.length ? args : [
-    'tests/migration-integration.test.ts', 'tests/commerce-integration.test.ts', 'tests/seo-database.test.ts', 'tests/catalog-integration.test.ts', 'tests/performance-api.test.ts', 'tests/operations-integration.test.ts', 'tests/media-integration.test.ts', 'tests/staff-administration-integration.test.ts', 'tests/retained-runtime-integration.test.ts', 'tests/drive-integration.test.ts', 'tests/whatsapp-outbound-integration.test.ts',
+    'tests/migration-integration.test.ts', 'tests/commerce-integration.test.ts', 'tests/seo-database.test.ts', 'tests/catalog-integration.test.ts', 'tests/performance-api.test.ts', 'tests/operations-integration.test.ts', 'tests/media-integration.test.ts', 'tests/staff-administration-integration.test.ts', 'tests/retained-runtime-integration.test.ts', 'tests/drive-integration.test.ts', 'tests/whatsapp-outbound-integration.test.ts', 'tests/persistent-api-integration.test.ts',
   ])], {
     stdio: 'inherit', env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
       COMMERCE_TEST_URI: uri, REQUIRE_DATABASE_TESTS: '1' },

@@ -42,6 +42,10 @@ test('real retained production startup uses injected config, leaves historical i
     }
     assert.ok(ready, 'Isolated production runtime did not become ready');
     assert.equal((await fetch(`http://127.0.0.1:${port}/health/live`)).status, 200);
+    const versioned = await fetch(`http://127.0.0.1:${port}/api/v1/status`);
+    assert.equal(versioned.status, 200); assert.equal((await versioned.json()).data.database, 'ready');
+    const catalog = await fetch(`http://127.0.0.1:${port}/api/v1/catalog/products`);
+    assert.equal(catalog.status, 200); assert.deepEqual((await catalog.json()).data.items, []);
     await delay(100);
     assert.deepEqual(await db.collection('conversations').find().toArray(), before);
     assert.deepEqual((await db.collection('conversations').indexes()).map(value => value.name), ['_id_']);

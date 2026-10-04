@@ -7,9 +7,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { hash } from 'bcryptjs';
 import type { Express } from 'express';
 import { migrateCommerce } from '../migrations/commerce.js';
-import { createApp } from '../../apps/api/src/app.js';
 import { cloudinarySignature } from '../../apps/api/src/modules/media/cloudinary.js';
-import { createLogger } from '@almina/config/logger';
 
 const require = createRequire(import.meta.url);
 const express = require('../../backend/node_modules/express');
@@ -106,10 +104,6 @@ app.use((req, res, next) => {
 });
 // Use the retained service’s Mongoose-owned connection for compatibility writes.
 // The standalone MongoDB 7 client seeds/inspects the same isolated database.
-const versioned = createApp({ getDb: async () => db, database: { checkReadiness: async () => true, mode: 'enabled' },
-  logger: createLogger({ service: 'api', environment: 'development', level: 'error' }),
-  webOrigin: 'http://127.0.0.1:4740', development: true });
-app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });
 const mediaTransport: typeof fetch = async (url, options) => {
   if (options?.method !== 'POST') { const publicId = decodeURIComponent(String(url).split('/upload/')[1]!); return mediaAssets.has(publicId) ? Response.json(mediaAssets.get(publicId)) : new Response('{}', { status: 404 }); }
   const form = options.body as FormData, publicId = String(form.get('public_id'));
