@@ -6,7 +6,7 @@ import { emptyQuerySchema, catalogQuerySchema, adminProductQuerySchema, cursorQu
   storeDtoSchema, staffDtoSchema, loginDtoSchema, orderSummaryDtoSchema, orderDetailDtoSchema, pageSchema, successSchema,
   quoteDtoSchema, checkoutDtoSchema, statusInputSchema, orderStatusSchema, type Staff } from '@almina/contracts';
 import { sitemapQuerySchema, sitemapPageSchema } from '@almina/contracts';
-import { cookieOptions, cookieName, readSessionCookie, verifyBrowserMutation } from '../../../../backend/security/sessions.cjs';
+import { cookieOptions, cookieName, readSessionCookie, verifyBrowserMutation } from '../modules/auth/cookies.js';
 import { createCommerceService } from '../modules/orders/commerce.js';
 import { ObjectId } from 'mongodb';
 import { HttpError } from '../errors.js';
