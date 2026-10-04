@@ -1,16 +1,18 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const { createSessionService } = require('./security/sessions.cjs');
 const { installBoundary, verifyWebhook, wrap, fail } = require('./security/boundary.cjs');
 function createLegacyApp(options) {
   const app = express();
-  const { createOperationalMetrics, installOperationalMetrics } = require('./commerce/dist/service.cjs');
+  const domain = require('./commerce/dist/service.cjs');
+  const { createOperationalMetrics, installOperationalMetrics } = domain;
+  const getDb = async () => {
+    const db = await options.getCommerceDb?.();
+    if (!db) throw new domain.HttpError(503, 'SERVICE_UNAVAILABLE');
+    return db;
+  };
   app.locals.operationsMetrics = createOperationalMetrics('retained-api');
   installOperationalMetrics(app, app.locals.operationsMetrics);
-  const auth = options.auth ?? createSessionService(async () => {
-    if (!mongoose.connection.db || mongoose.connection.readyState !== 1) throw fail(503, 'SERVICE_UNAVAILABLE');
-    return mongoose.connection.db;
-  });
+  const auth = options.auth ?? createSessionService(getDb);
   app.locals.draining = false;
   app.locals.driveMedia = options.driveMedia;
   app.locals.whatsappSender = options.whatsappSender;
@@ -18,18 +20,12 @@ function createLegacyApp(options) {
   app.get('/health/live', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').json({ status: 'live' }));
   app.get('/health/ready', healthHeaders, wrap(async (_req, res) => {
     const ready = await require('./commerce/dist/service.cjs').retainedReadiness(
-      options.getCommerceDb ?? (() => mongoose.connection.db), app.locals.draining);
+      getDb, app.locals.draining);
     const sha = process.env.RENDER_GIT_COMMIT;
     res.status(ready ? 200 : 503).set('Cache-Control', 'no-store').json({ status: ready ? 'ready' : 'unavailable',
       commitSha: /^[a-f0-9]{40}$/.test(sha ?? '') ? sha : null });
   }));
   // Additive API ownership: one persistent listener, pool, outbox lifecycle and metrics window.
-  const domain = require('./commerce/dist/service.cjs');
-  const getDb = async () => {
-    const db = await (options.getCommerceDb ? options.getCommerceDb() : mongoose.connection.db);
-    if (!db) throw new domain.HttpError(503, 'SERVICE_UNAVAILABLE');
-    return db;
-  };
   const versioned = domain.createVersionedApp({ getDb,
     database: { mode: 'enabled', checkReadiness: () => domain.retainedReadiness(getDb, app.locals.draining) },
     logger: options.logger ?? domain.createLogger({ service: 'api', environment: options.development ? 'development' : 'production', level: 'warn' }),
@@ -46,7 +42,7 @@ function createLegacyApp(options) {
   } }));
   app.post('/api/whatsapp/webhook', wrap(async (req, res, next) => {
     verifyWebhook(req, options.webhookSecret);
-    const db = await (options.getWebhookDb ? options.getWebhookDb() : mongoose.connection.db);
+    const db = await (options.getWebhookDb ? options.getWebhookDb() : getDb());
     req.whatsappReceiptId = await require('./commerce/dist/service.cjs').receiveWhatsappEvent(db, req.body);
     if (!req.whatsappReceiptId) return res.sendStatus(200);
     next();
@@ -55,7 +51,7 @@ function createLegacyApp(options) {
     operations: require('./routes/operations'),
     media: require('./routes/media'), recovery: require('./routes/recovery'), category: require('./routes/categories'), banners: require('./routes/banners'), products: require('./routes/products'),
     orders: require('./routes/Orderrouter'), batch: require('./routes/batchProductRouter'), store: require('./routes/storeRouter'),
-    whatsapp: require('./routes/whatsapp'), auth: require('./routes/Login')(auth, options.development),
+    whatsapp: require('./routes/whatsapp'), auth: require('./routes/Login')(auth, options.development, getDb),
   };
   for (const [name, router] of Object.entries(routers)) {
     app.use(`/api/${name}`, router);
@@ -84,7 +80,7 @@ function createLegacyApp(options) {
   app.locals.mediaTransport = options.mediaTransport;
   app.locals.recoveryAllowed = options.recoveryAllowed ?? process.env.RECOVERY_CATALOG_ALLOWED === 'true';
   app.locals.recoveryCloudName = options.recoveryCloudName ?? process.env.CLOUDINARY_CLOUD_NAME;
-  app.locals.getCommerceDb = options.getCommerceDb;
+  app.locals.getCommerceDb = getDb;
   app.locals.getWebhookDb = options.getWebhookDb;
   app.locals.auth = auth;
   return app;

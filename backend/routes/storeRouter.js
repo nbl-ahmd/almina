@@ -1,8 +1,7 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
 const { setStoreStatus, storeStatus } = require('../commerce/dist/service.cjs');
 const { fail } = require('../security/boundary.cjs');
-const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : mongoose.connection.db;
+const getDb = req => req.app.locals.getCommerceDb();
 const noQuery = req => { if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST'); };
 // The retained boundary independently authorizes before this adapter.
 router.put('/status', async (req, res) => {

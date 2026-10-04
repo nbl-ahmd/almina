@@ -20,13 +20,13 @@ categoryRouter.post('/', upload.single('image'), require('../security/uploads.cj
     const asset = await driveMedia(req).upload(bytes, filename, FOLDER_ID);
     assets = { image: filename, gdriveFileId: asset.fileId };
   }
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   await domain.createMediaMetadata(db, 'categories', req.body, req.identity.id, assets);
   res.status(201).json({ message: 'category created successfully' });
 });
 
 const catalogDomain = () => require('../commerce/dist/service.cjs');
-const catalogDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+const catalogDb = req => req.app.locals.getCommerceDb();
 const staffRead = req => ['admin', 'user'].includes(req.identity?.role);
 categoryRouter.get('/', async (req, res) => {
   const domain = catalogDomain();
@@ -45,7 +45,7 @@ categoryRouter.get('/images/:filename', async (req, res) => {
 });
 
 categoryRouter.put('/disable/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').toggleCatalogVisibility(db, 'categories', req.params.id, req.identity.id));
 });
 categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
@@ -93,7 +93,7 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
   });
 
 categoryRouter.delete('/:id', async (req, res) => {
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'categories', req.params.id, req.identity.id));
 });
 

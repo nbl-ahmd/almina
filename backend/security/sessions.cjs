@@ -54,7 +54,7 @@ function createSessionService(getDb, error = failure) {
           { _id: `login:${kind}:${digest(String(value))}:${window}` },
           { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date((window + 2) * 15 * 60 * 1000) } },
           { ...queryOptions, upsert: true, returnDocument: 'after' });
-        // Mongoose 7 uses driver 5 (ModifyResult); the v1 service uses driver 7 (document).
+        // Preserve the historical ModifyResult adapter alongside current native driver documents.
         const count = result?.count ?? result?.value?.count;
         if (typeof count !== 'number') throw error(503, 'SERVICE_UNAVAILABLE');
         if (count > limit) throw error(429, 'RATE_LIMITED');

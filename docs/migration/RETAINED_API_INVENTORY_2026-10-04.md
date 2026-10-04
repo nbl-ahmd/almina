@@ -84,7 +84,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 
 - Held source-retirement candidate removes `frontend/` after route/caller/browser parity, under the renewed owner instruction. Byte-verified brand assets and public URLs remain; rollback source/artifact is `871bf4f`. This candidate cannot merge before hosted acceptance.
 - Active `e2e-servers.mjs`, commerce/admin/customer browser regressions and bundle budgets now use compiled Next. No active old frontend build consumer remains.
-- Root build/start remain retained backend contracts. Backend dependencies support Express/Mongoose, sessions/bcrypt, Google Drive/Sharp/Multer, SMTP, Socket.IO, Meta and CSV.
+- Root build/start remain retained backend contracts. Backend dependencies support Express/native MongoDB, sessions/bcrypt, Google Drive/Sharp/Multer, SMTP, Socket.IO, Meta and CSV.
 - Production retirement still requires hosted acceptance, traffic observation and rollback; source deletion is confined to a held separately reviewed candidate. Compatibility database fields and surviving media have not contracted.
 - CDN scalar/array filenames, Drive IDs, Cloudinary URLs, historical order lines/snapshots, cookie names, outbox/receipt/counter collections are compatibility contracts. Preserve all until replacements pass.
 
@@ -99,3 +99,5 @@ The unreferenced Whatsapp/WhatsappPoster/whatsappBulkReport Mongoose source sche
 Order reads now have maintained compatibility-reads.ts ownership with preserved DTO/status/RBAC contracts and bounded native reference batches. The unused source Order schema is removed, without removing any database fields/indexes/documents. Omitted-limit external callers and unusually large historical reference batches remain explicit hosted gates. See ORDER_READ_OWNERSHIP_2026-10-04.md.
 
 All application Mongoose model queries and the remaining model source files are removed following maintained business read/write ownership. Catalog upload prechecks now use native maintained validation. The retained pool still uses Mongoose 9 at this step; provider transports/shared boundary/session/realtime/startup adapters remain explicit runtime dependencies. No database fields/indexes/assets are contracted. See CATALOG_MEDIA_READ_OWNERSHIP_2026-10-04.md.
+
+The native persistent pool now replaces ambient Mongoose connection fallbacks. Both API contracts, sessions, signed inbox and workers receive the same URI-selected database. Mongoose runtime/lockfile ownership is retired without deleting stored fields, indexes or receipts. Source adapters remain for production URLs/security/provider transport until hosted parity. See NATIVE_PERSISTENT_DATABASE_2026-10-04.md.

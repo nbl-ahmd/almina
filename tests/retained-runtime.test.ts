@@ -6,10 +6,11 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { retainedRuntimeConfiguration, loadRetainedEnvironment } from '../apps/api/src/modules/operations/runtime';
 const valid = { APP_ENV: 'production', NODE_ENV: 'production', AUTH_ALLOWED_ORIGINS: 'https://shop.example.invalid', MONGODB_URI: 'mongodb://127.0.0.1:27017/synthetic' };
-test('retained startup bounds ports, exact origins, explicit proxy trust and disables implicit index/collection creation', () => {
+test('retained startup bounds ports, exact origins, explicit proxy trust and uses bounded native options without ODM index/collection flags', () => {
   const config = retainedRuntimeConfiguration(valid);
   assert.equal(config.port, 4000); assert.equal(config.development, false); assert.deepEqual(config.trustProxy, []);
-  assert.equal(config.mongoOptions.autoIndex, false); assert.equal(config.mongoOptions.autoCreate, false);
+  assert.equal(config.mongoOptions.minPoolSize, 0); assert.equal(config.mongoOptions.maxPoolSize, 20);
+  assert.ok(!('autoIndex' in config.mongoOptions)); assert.ok(!('autoCreate' in config.mongoOptions));
   assert.deepEqual(retainedRuntimeConfiguration({ ...valid, AUTH_TRUST_PROXY: '127.0.0.1,::1' }).trustProxy, ['127.0.0.1', '::1']);
   assert.equal(retainedRuntimeConfiguration({ ...valid, APP_ENV: 'development', NODE_ENV: 'development', AUTH_ALLOWED_ORIGINS: 'http://127.0.0.1:3000' }).development, true);
   for (const patch of [{ APP_ENV: undefined }, { APP_ENV: 'staging', NODE_ENV: 'development' }, { PORT: '0' }, { PORT: '65536' }, { PORT: '3.5' },

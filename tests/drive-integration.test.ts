@@ -14,9 +14,8 @@ test('all retained Drive writers preserve folders, raster URLs, archived referen
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client = await new MongoClient(uri!).connect();
   const dbName = `almina_drive_test_${randomUUID().replaceAll('-', '')}`, db = client.db(dbName);
-  const mongoose = require('mongoose'), sharp = require('sharp');
+  const sharp = require('sharp');
   const { createLegacyApp } = require('./app.js');
-  await mongoose.connect(uri, { dbName, autoIndex: false, autoCreate: false });
   const assets = new Map<string, Buffer>(), folders: string[] = [];
   let uncertain = false;
   const driveMedia = createDriveMedia({ files: {
@@ -29,7 +28,7 @@ test('all retained Drive writers preserve folders, raster URLs, archived referen
     },
     get: async input => { const bytes = assets.get(input.fileId); assert.ok(bytes); return { data: Readable.from([bytes]) }; },
   } });
-  const app = createLegacyApp({ origins: ['http://localhost:3000'], development: true, driveMedia,
+  const app = createLegacyApp({ getCommerceDb: () => db, origins: ['http://localhost:3000'], development: true, driveMedia,
     auth: { authenticate: async () => ({ id: String(new ObjectId()), role: 'admin', cities: [] }) } });
   const server = createServer(app);
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -80,6 +79,6 @@ test('all retained Drive writers preserve folders, raster URLs, archived referen
     assert.equal(await db.collection('inventory_adjustments').countDocuments(), 1);
   } finally {
     server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
-    await mongoose.disconnect(); await db.dropDatabase(); await client.close();
+    await db.dropDatabase(); await client.close();
   }
 });

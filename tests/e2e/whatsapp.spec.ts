@@ -55,7 +55,7 @@ for (const width of [360, 390, 768, 1280]) test(`WhatsApp history stays accessib
   await expect(history).toContainText('Synthetic history 0'); await expect(pages.getByRole('link', { name: 'Older messages' })).toHaveCount(0);
   await pages.getByRole('link', { name: 'Newer messages' }).click(); await expect(page).toHaveURL(/offset=25/);
   await page.goto(adminOrigin + '/admin/whatsapp/971500000001?offset=75'); await expect(history.getByRole('row')).toHaveCount(2);
-  await expect(page.getByText('No records found.', { exact: true })).toBeVisible();
+  await expect(history.getByRole('cell', { name: 'No records found.', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.locator('body')).not.toContainText('private-provider');
 });

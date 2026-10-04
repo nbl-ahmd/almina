@@ -1,8 +1,7 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
 const { previewRecoveryCatalog, commitRecoveryCatalog, recoveryTemplate } = require('../commerce/dist/service.cjs');
 const { fail } = require('../security/boundary.cjs');
-const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : mongoose.connection.db;
+const getDb = req => req.app.locals.getCommerceDb();
 function configured(req) {
   if (!req.app.locals.recoveryAllowed || !req.app.locals.recoveryCloudName) throw fail(503, 'SERVICE_UNAVAILABLE');
   if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');

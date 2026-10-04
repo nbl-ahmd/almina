@@ -11,7 +11,6 @@ import { cloudinarySignature } from '../../apps/api/src/modules/media/cloudinary
 
 const require = createRequire(import.meta.url);
 const express = require('../../backend/node_modules/express');
-const mongoose = require('../../backend/node_modules/mongoose');
 const { createLegacyApp } = require('../../backend/app.js');
 const origin = 'http://127.0.0.1:4730';
 const replica = await MongoMemoryReplSet.create({
@@ -23,7 +22,6 @@ if (!/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/.test(uri)) throw
 const dbName = `almina_e2e_test_${randomUUID().replaceAll('-', '')}`;
 const client = await new MongoClient(uri).connect();
 const db = client.db(dbName);
-await mongoose.connect(uri, { dbName });
 const password = await hash('synthetic-test-password', 4);
 let delayNext = false;
 let fixtureCase = 0;
@@ -114,7 +112,7 @@ const mediaTransport: typeof fetch = async (url, options) => {
     secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp` };
   mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
 };
-const legacy = createLegacyApp({ whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
+const legacy = createLegacyApp({ getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);
@@ -124,7 +122,7 @@ async function stop() {
   for (const timer of timers) clearTimeout(timer);
   server.closeAllConnections();
   await new Promise<void>(resolve => server.close(() => resolve()));
-  await mongoose.disconnect(); await client.close(); await replica.stop();
+  await client.close(); await replica.stop();
 }
 for (const signal of ['SIGTERM', 'SIGINT'] as const) process.once(signal, () => { void stop().then(() => process.exit(0)); });
 console.log('Disposable real commerce browser fixture ready on loopback :4730');

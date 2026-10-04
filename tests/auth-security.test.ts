@@ -296,15 +296,12 @@ test('guest checkout cannot set administrative order flags and raw catalog opera
   });
 });
 
-test('push subscription writes are owned by the current staff identity and reject arbitrary callback destinations', async t => {
-  const mongoose = require('../backend/node_modules/mongoose');
+test('push subscription writes are owned by the current staff identity and reject arbitrary callback destinations', async () => {
   let owner: unknown;
-  const prior = mongoose.connection.db;
-  mongoose.connection.db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); } }) };
-  t.after(() => { mongoose.connection.db = prior; });
+  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
   const curve = createECDH('prime256v1'); curve.generateKeys();
-  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => mongoose.connection.db }), async origin => {
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
     for (const endpoint of ['http://127.0.0.1/private', 'https://evil.example.invalid', 'https://fcm.googleapis.com.evil.example.invalid']) {
       assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ subscription: { endpoint } }) })).status, 400);
     }
@@ -351,13 +348,11 @@ test('retained administrator email rejects recipient/header/content abuse before
   });
 });
 
-test('push unsubscribe deletes only the current staff subscription', async t => {
-  const mongoose = require('../backend/node_modules/mongoose');
-  let owner: unknown; let update: unknown; const prior = mongoose.connection.db;
-  mongoose.connection.db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; } }) };
-  t.after(() => { mongoose.connection.db = prior; });
+test('push unsubscribe deletes only the current staff subscription', async () => {
+  let owner: unknown; let update: unknown;
+  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
-  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => mongoose.connection.db }), async origin => {
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
     assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'DELETE', headers: browserHeaders })).status, 204);
     assert.equal(owner, id.toHexString()); assert.deepEqual(update, { $unset: { subscription: '' } });
   });

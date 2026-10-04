@@ -5,7 +5,7 @@ import { PushFailure, pushSubscription, type PushSubscription } from './push.js'
 
 type RecordDocument = Document & { _id: string };
 function cursorId(value: unknown): ObjectId | undefined {
-  // The retained Mongoose driver has its own BSON constructor; instanceof crosses neither package copy.
+  // The persistent service has its own installed BSON constructor; instanceof crosses neither package copy.
   if (!value || typeof value !== 'object' || !('_bsontype' in value) || value._bsontype !== 'ObjectId' || !('toHexString' in value) || typeof value.toHexString !== 'function') return;
   try { const hex: unknown = value.toHexString(); return typeof hex === 'string' && /^[a-f0-9]{24}$/.test(hex) ? new ObjectId(hex) : undefined; } catch { return; }
 }

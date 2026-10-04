@@ -56,7 +56,7 @@ productRouter.get('/images/:filename', async (req, res) => {
 });
 
 const catalogDomain = () => require('../commerce/dist/service.cjs');
-const catalogDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+const catalogDb = req => req.app.locals.getCommerceDb();
 const staffRead = req => ['admin', 'user'].includes(req.identity?.role);
 productRouter.get('/', async (req, res) => {
   const domain = catalogDomain();
@@ -80,12 +80,12 @@ productRouter.get('/category/:categoryId', async (req, res) => {
 });
 
 productRouter.delete('/:id', async (req, res) => {
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'products', req.params.id, req.identity.id));
 });
 
 productRouter.put('/publish/:productId', async (req, res) => {
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').toggleCatalogVisibility(db, 'products', req.params.productId, req.identity.id));
 });
 
@@ -95,7 +95,7 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
   const files = req.files;
 
   try {
-      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+      const db = await req.app.locals.getCommerceDb();
       const assetHash = files?.length ? require('node:crypto').createHash('sha256').update(JSON.stringify(files.map(file => require('node:crypto').createHash('sha256').update(file.buffer).digest('hex')))).digest('hex') : undefined;
       const replay = await require('../commerce/dist/service.cjs').replayProductMutation(db, id, req.body, req.identity.id, assetHash);
       if (replay) return res.json(replay);

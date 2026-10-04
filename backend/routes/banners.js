@@ -15,12 +15,12 @@ router.post('/', upload.single('image'), require('../security/uploads.cjs').vali
   const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().webp().toBuffer();
   const filename = randomUUID() + '.webp';
   const asset = await driveMedia(req).upload(bytes, filename, FOLDER_ID);
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   await domain.createMediaMetadata(db, 'banners', req.body, req.identity.id, { image: filename, gdriveFileId: asset.fileId });
   res.status(201).json({ message: 'Banner created successfully' });
 });
 
-const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+const getDb = req => req.app.locals.getCommerceDb();
 router.get('/', async (req, res) => {
   res.json(await require('../commerce/dist/service.cjs').retainedBannerList(await getDb(req), req.query));
 });
@@ -31,7 +31,7 @@ router.get('/images/:filename', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'banners', req.params.id, req.identity.id));
 });
 

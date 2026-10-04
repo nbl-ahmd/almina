@@ -1,9 +1,8 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const { wrap, fail } = require('../security/boundary.cjs');
 const { cookieName, cookieOptions, readSessionCookie } = require('../security/sessions.cjs');
 
-module.exports = function loginRoutes(auth, development = false, getDb = () => mongoose.connection.db) {
+module.exports = function loginRoutes(auth, development = false, getDb = async () => { throw fail(503, 'SERVICE_UNAVAILABLE'); }) {
   const router = express.Router();
   const cookie = cookieName(development);
   router.post('/login', wrap(async (req, res) => {
@@ -27,7 +26,7 @@ module.exports = function loginRoutes(auth, development = false, getDb = () => m
     res.clearCookie(cookie, options).status(204).end();
   }));
   router.post('/logout-all', wrap(async (req, res) => {
-    await auth.revokeUser(new mongoose.Types.ObjectId(req.identity.id));
+    await auth.revokeUser(new (require('mongodb').ObjectId)(req.identity.id));
     const { maxAge, ...options } = cookieOptions(development);
     res.clearCookie(cookie, options).status(204).end();
   }));

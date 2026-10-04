@@ -16,9 +16,9 @@ function subscription(suffix = 'synthetic') {
 }
 async function fixture() {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
-  // Exercise the retained driver's separate BSON constructors, as production Mongoose getDb does.
+  // Exercise the retained driver's separate BSON constructors, as production native getDb does.
   const require = createRequire(new URL('../backend/package.json', import.meta.url));
-  const NativeClient = require('mongoose').mongo.MongoClient as typeof MongoClient;
+  const NativeClient = require('mongodb').MongoClient as typeof MongoClient;
   const client = await new NativeClient(uri!).connect(), db = client.db('almina_push_' + randomUUID().replaceAll('-', ''));
   const workers: Awaited<ReturnType<typeof staffPushOutbox>>[] = [];
   return { db, workers, async close() { for (const worker of workers) await worker.stop(); await db.dropDatabase(); await client.close(); } };

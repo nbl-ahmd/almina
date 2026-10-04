@@ -12,8 +12,7 @@ const require = createRequire(new URL('../backend/package.json', import.meta.url
 test('one persistent Express stack shares both API contracts, authorization, checkout receipts, inventory, outbox, metrics and drain', { skip: !uri }, async () => {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client = await new MongoClient(uri!).connect(), dbName = `almina_persistent_test_${randomUUID().replaceAll('-', '')}`, db = client.db(dbName);
-  const mongoose = require('mongoose'), { hash } = require('bcryptjs'), { createLegacyApp } = require('./app.js');
-  await mongoose.connect(uri, { dbName, autoIndex: false, autoCreate: false });
+  const { hash } = require('bcryptjs'), { createLegacyApp } = require('./app.js');
   const origins = ['http://localhost:3000', 'http://localhost:3001'];
   const events: { name: string; payload: { _id: string; orderId: string } }[] = [];
   const app = createLegacyApp({ origins, development: true, getCommerceDb: () => db });
@@ -64,6 +63,6 @@ test('one persistent Express stack shares both API contracts, authorization, che
     assert.equal((await fetch(url + '/api/products')).status, 503);
   } finally {
     await worker?.stop(); server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
-    await mongoose.disconnect(); await db.dropDatabase(); await client.close();
+    await db.dropDatabase(); await client.close();
   }
 });

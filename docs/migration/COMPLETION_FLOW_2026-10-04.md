@@ -1,5 +1,7 @@
 # Migration completion and database recovery
 
+Current held-candidate update: the owner subsequently requested complete Next frontend/source retirement. All active browser/CI consumers now use Next; the old frontend source is removed only in held draft #20, with rollback source/artifact at `871bf4f`. See [retirement scope and production hold](NEXT_FRONTEND_RETIREMENT_2026-10-04.md). The persistent Express candidate now serves both HTTP contracts with one native pool and workers; `API_ORIGIN` and `LEGACY_API_ORIGIN` may point to that same staged service after hosted verification. Earlier separate-service/Vite instructions below record the original baseline, not current candidate acceptance. Two lockfiles remain. No production retirement or hosting acceptance is claimed.
+
 ## Current result
 
 The migration is not complete. The Next.js 16.3.8 storefront and admin exist, and this branch adds Tailwind 4, operational Next checkout, reviewed-total protection, recovery tooling and a staging deployment workflow. The catalog/admin write APIs, Drive media, notifications and several provider integrations still depend on the legacy backend. The retained React fallback now builds with Vite; CRA tooling is removed. The fallback itself remains until those replacements and the hosted cutover are verified.

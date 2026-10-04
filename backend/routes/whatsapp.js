@@ -16,13 +16,13 @@ whatsappRouter.post('/image', upload.single('image'), require('../security/uploa
   const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().jpeg().toBuffer();
   const filename = randomUUID() + '.jpeg';
   const asset = await driveMedia(req).upload(bytes, filename, FOLDER_ID);
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   await domain.createMediaMetadata(db, 'whatsappposters', req.body, req.identity.id, { image: filename, gdriveFileId: asset.fileId });
   req.app.locals.io?.emit('newPoster', { image: filename });
   res.status(201).json({ message: 'poster created successfully' });
 });
 
-const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+const getDb = req => req.app.locals.getCommerceDb();
 whatsappRouter.get('/image', async (req, res) => {
   res.json(await require('../commerce/dist/service.cjs').retainedWhatsappList(await getDb(req), 'posters', req.query));
 });
@@ -33,7 +33,7 @@ whatsappRouter.get('/image/:filename', async (req, res) => {
 });
 
 whatsappRouter.delete('/image/:id', async (req, res) => {
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'whatsappposters', req.params.id, req.identity.id));
 });
 
@@ -41,7 +41,7 @@ async function outbound(req, kind) {
   const domain = require('../commerce/dist/service.cjs');
   domain.whatsappOutboundInput(req.body, kind);
   const send = whatsappSender(req);
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const db = await req.app.locals.getCommerceDb();
   const result = await domain.sendWhatsapp(db, req.body, kind, req.identity.id, req.get('Idempotency-Key'), send);
   if (result.notification) req.app.locals.io?.emit(result.notification.name, result.notification.payload);
   return result;
@@ -69,7 +69,7 @@ whatsappRouter.get('/messages/:recipient', async (req, res) => {
 });
 
 whatsappRouter.post('/webhook', async (req, res) => {
-  const db = req.app.locals.getWebhookDb ? await req.app.locals.getWebhookDb() : require('mongoose').connection.db;
+  const db = req.app.locals.getWebhookDb ? await req.app.locals.getWebhookDb() : await req.app.locals.getCommerceDb();
   const event = await require('../commerce/dist/service.cjs').processWhatsappEvent(db, req.whatsappReceiptId);
   // Best-effort realtime happens only after durable effects commit; admin reads reconcile after disconnects.
   if (event) req.app.locals.io?.emit(event.name, event.payload);

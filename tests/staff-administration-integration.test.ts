@@ -56,11 +56,10 @@ test('staff creation and deactivation retain IDs/history, serialize privileges, 
     assert.equal(await db.collection('users').countDocuments({ role: 'admin' }), 2);
   } finally { await db.dropDatabase(); await client.close(); }
 });
-test('retained Mongoose HTTP staff adapter preserves provisioning response and deactivates without deleting accounts', { skip: !uri }, async () => {
+test('retained native HTTP staff adapter preserves provisioning response and deactivates without deleting accounts', { skip: !uri }, async () => {
   const client = await new MongoClient(uri!).connect(), dbName = 'almina_staff_http_' + randomUUID().replaceAll('-', ''), db = client.db(dbName);
-  const mongoose = require('mongoose'); await mongoose.connect(uri, { dbName });
   const { createLegacyApp } = require('./app.js');
-  const server = createServer(createLegacyApp({ origins: ['http://localhost:3000'], development: true }));
+  const server = createServer(createLegacyApp({ getCommerceDb: () => db, origins: ['http://localhost:3000'], development: true }));
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address(); assert.ok(address && typeof address !== 'string'); const origin = `http://127.0.0.1:${address.port}`;
   const browser = { Origin: 'http://localhost:3000', 'X-CSRF-Protection': '1', 'Content-Type': 'application/json' };
@@ -77,6 +76,6 @@ test('retained Mongoose HTTP staff adapter preserves provisioning response and d
     assert.equal(await db.collection('users').countDocuments(), 2); assert.equal(await db.collection('auth_administration_audit').countDocuments(), 2);
     assert.equal((await fetch(origin + '/api/auth/login', { method: 'POST', headers: browser, body: JSON.stringify({ username: input.username, password: input.password }) })).status, 401);
   } finally {
-    server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await mongoose.disconnect(); await db.dropDatabase(); await client.close();
+    server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await db.dropDatabase(); await client.close();
   }
 });

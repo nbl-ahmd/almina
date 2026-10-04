@@ -5,24 +5,30 @@ try {
   loadRetainedEnvironment(path.join(__dirname, '.env.local'));
   runtime = retainedRuntimeConfiguration(process.env);
 } catch { console.error('Retained runtime configuration invalid'); process.exit(1); }
-const mongoose = require('mongoose');
+const domain = require('./commerce/dist/service.cjs');
+const database = domain.createPersistentDatabase(runtime);
 const { createLegacyApp } = require('./app');
 const { secureRealtime } = require('./security/realtime.cjs');
 const { development, origins, trustProxy } = runtime;
-const app = createLegacyApp({ origins, development, trustProxy: trustProxy.length ? trustProxy : false, webhookSecret: process.env.WHATSAPP_APP_SECRET });
+const app = createLegacyApp({ getCommerceDb: () => database.getDb(), origins, development, trustProxy: trustProxy.length ? trustProxy : false, webhookSecret: process.env.WHATSAPP_APP_SECRET });
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
 let worker, pushWorker;
 let shutdown;
-mongoose.connect(runtime.mongoUri, runtime.mongoOptions).then(async () => {
-  if (app.locals.draining) return mongoose.disconnect();
-  pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => mongoose.connection.db);
-  if (app.locals.draining) { await pushWorker?.stop(); return mongoose.disconnect(); }
-  worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => mongoose.connection.db);
+database.connect().then(async () => {
+  if (app.locals.draining) return database.close();
+  if (!await domain.retainedReadiness(() => database.getDb(), false)) throw new Error('Database unavailable');
+  if (app.locals.draining) return database.close();
+  pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb());
+  if (app.locals.draining) { await pushWorker?.stop(); return database.close(); }
+  worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb());
   server.listen(runtime.port, () => console.log('Express API listening'));
-}).catch(async () => { console.error('API initialization failed'); await pushWorker?.stop(); await mongoose.disconnect(); process.exitCode = 1; });
+}).catch(async () => {
+  if (!app.locals.draining) { console.error('API initialization failed'); process.exitCode = 1; }
+  await pushWorker?.stop(); await database.close();
+});
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
 server.keepAliveTimeout = 5000;
@@ -39,7 +45,7 @@ function stop() {
       server.closeIdleConnections();
     }),
     stopWorkers: async () => { await Promise.all([worker?.stop(), pushWorker?.stop()]); },
-    closeDatabase: async () => { await mongoose.disconnect(); },
+    closeDatabase: async () => { await database.close(); },
     forceConnections: () => { io.disconnectSockets(true); server.closeAllConnections(); },
   }).catch(() => { console.error('Retained shutdown deadline failed'); process.exit(1); });
   return shutdown;

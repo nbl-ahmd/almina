@@ -64,9 +64,8 @@ async function serve(app: Express, run: (url: string) => Promise<void>) {
 test('retained public reads hide drafts, unpublished products, hidden categories, orphans and archives while verified staff retain editor access', { skip: !uri }, async () => {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client = await new MongoClient(uri!).connect(), dbName = `almina_visibility_test_${randomUUID().replaceAll('-', '')}`;
-  const db = client.db(dbName), mongoose = require('mongoose');
+  const db = client.db(dbName);
   const { createLegacyApp } = require('./app.js');
-  await mongoose.connect(uri, { dbName });
   const category = new ObjectId(), hidden = new ObjectId(), archived = new ObjectId(), actor = String(new ObjectId());
   const base = { category, name: 'Synthetic visibility', price: 1, stock: 0 };
   const docs = ['VISIBLE', 'DRAFT', 'UNPUBLISHED', 'HIDDEN_CATEGORY', 'ORPHAN', 'ARCHIVED', 'ARCHIVED_CATEGORY'].map(product_id => ({ ...base, _id: new ObjectId(), product_id,
@@ -79,7 +78,7 @@ test('retained public reads hide drafts, unpublished products, hidden categories
     const token = 'a'.repeat(43), auth = { authenticate: async (value: string) => {
       if (value !== token) throw Object.assign(new Error('Expired'), { statusCode: 401 }); return { id: actor, role: 'user', cities: [] };
     } };
-    await serve(createLegacyApp({ origins: ['http://localhost:3000'], development: true, auth }), async origin => {
+    await serve(createLegacyApp({ getCommerceDb: () => db, origins: ['http://localhost:3000'], development: true, auth }), async origin => {
       for (const path of ['/api/products', '/api/products/search?q=Synthetic', `/api/products/category/${category}`]) {
         const response = await fetch(origin + path, { headers: { 'x-role': 'admin' } }); assert.equal(response.status, 200);
         assert.deepEqual((await response.json()).map((value: { product_id: string }) => value.product_id), ['VISIBLE']);
@@ -102,23 +101,21 @@ test('retained public reads hide drafts, unpublished products, hidden categories
       for (const path of ['/api/products?limit=101', '/api/products?filter=%7B%22%24where%22%3A%22x%22%7D', '/api/products/search?q=x&offset=10001', `/api/products/${docs[0]!._id}?raw=true`]) assert.equal((await fetch(origin + path)).status, 400);
       assert.equal(await db.collection('products').countDocuments(), 7);
     });
-  } finally { await mongoose.disconnect(); await db.dropDatabase(); await client.close(); }
+  } finally { await db.dropDatabase(); await client.close(); }
 });
 test('real catalog reads and legacy product mutations preserve validation, visibility and stock rules', { skip: !uri }, async () => {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client = await new MongoClient(uri!).connect();
   const dbName = `almina_catalog_test_${randomUUID().replaceAll('-', '')}`;
   const db = client.db(dbName);
-  const mongoose = require('mongoose');
   const { createLegacyApp } = require('./app.js');
-  await mongoose.connect(uri, { dbName });
   try {
     const category = new ObjectId();
     await db.collection('categories').insertOne({ _id: category, name: 'Synthetic category' });
     await db.collection('stores').insertOne({ status: 'open' });
     await migrateCommerce(db);
     const admin = { id: String(new ObjectId()), role: 'admin', cities: [] };
-    const legacy = createLegacyApp({ origins: ['http://localhost:3000'], development: true, auth: { authenticate: async () => admin } });
+    const legacy = createLegacyApp({ getCommerceDb: () => db, origins: ['http://localhost:3000'], development: true, auth: { authenticate: async () => admin } });
     const api = createApp({ database: { mode: 'enabled', checkReadiness: async () => true }, getDb: async () => db,
       webOrigin: 'http://localhost:3000', development: true,
       logger: createLogger({ service: 'api', environment: 'development', write: () => undefined }) });
@@ -160,7 +157,7 @@ test('real catalog reads and legacy product mutations preserve validation, visib
       });
     });
   } finally {
-    await mongoose.disconnect(); await db.dropDatabase(); await client.close();
+    await db.dropDatabase(); await client.close();
   }
 });
 

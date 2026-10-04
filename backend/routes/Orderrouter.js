@@ -1,27 +1,22 @@
 const express = require('express');
 const Orderrouter = express.Router();
-const mongoose = require('mongoose');
 const { createCommerceService } = require('../commerce/dist/service.cjs');
-const getLegacyDb = async () => {
-  if (!mongoose.connection.db || mongoose.connection.readyState !== 1) throw Object.assign(new Error('Unavailable'), { status: 503 });
-  return mongoose.connection.db;
-};
-const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb ?? getLegacyDb);
+const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb);
 
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
   const subscription = require('../commerce/dist/service.cjs').pushSubscription(req.body?.subscription);
-  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  const db = await req.app.locals.getCommerceDb();
   await db.collection('users').updateOne(
-    { _id: new (require('mongoose').Types.ObjectId)(req.identity.id) },
+    { _id: new (require('mongodb').ObjectId)(req.identity.id) },
     { $set: { subscription } });
   res.status(204).end();
 }));
 
 Orderrouter.delete('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
-  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  const db = await req.app.locals.getCommerceDb();
   await db.collection('users').updateOne(
-    { _id: new (require('mongoose').Types.ObjectId)(req.identity.id) }, { $unset: { subscription: '' } });
+    { _id: new (require('mongodb').ObjectId)(req.identity.id) }, { $unset: { subscription: '' } });
   res.status(204).end();
 }));
 
@@ -47,11 +42,11 @@ Orderrouter.post('/email', require('../security/boundary.cjs').wrap(async (req, 
 }));
 
 Orderrouter.get('/', async (req, res) => {
-  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').retainedOrderList(db, req.query, req.identity));
 });
 Orderrouter.get('/:id', async (req, res) => {
-  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').retainedOrderDetail(db, req.params.id, req.query, req.identity));
 });
 
