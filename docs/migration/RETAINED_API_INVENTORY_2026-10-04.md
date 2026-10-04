@@ -46,8 +46,8 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/orders/email | admin | Maintained bounded administrative email/SMTP policy; retained Nodemailer/socket adapter |
 | POST | /api/orders/subscribe | staff | Maintained strict push subscription validation; current authenticated owner only |
 | DELETE | /api/orders/subscribe | staff | Retained authenticated current-owner unsubscribe adapter |
-| GET | /api/orders | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
-| GET | /api/orders/:id | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
+| GET | /api/orders | orders | Maintained bounded native legacy order list, server city scope and historical/snapshot compatibility |
+| GET | /api/orders/:id | orders | Maintained scoped native order detail; immutable snapshots and explicit missing legacy references |
 | PUT | /api/orders/edit/:orderId | admin | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | PUT | /api/orders/:orderId | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | PUT | /api/orders/cancel/:orderId | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
@@ -95,3 +95,5 @@ Inventory regression compares mounted routers with every documented policy/route
 Staff push sender/worker ownership now resides in maintained notifications/push.ts and push-outbox.ts behind integrations/push.cjs. It is explicitly disabled pending provider/key/browser acceptance. Additive committed-job fields and majority delivery receipts preserve email and commerce contracts; uncertain outcomes never auto-replay. See STAFF_PUSH_DELIVERY_2026-10-04.md.
 
 The unreferenced Whatsapp/WhatsappPoster/whatsappBulkReport Mongoose source schemas are removed after native maintained write/read ownership. No database schema contraction/index removal or media deletion occurs. All WhatsApp reads now have maintained owners; external omitted-limit consumers and hosted history/provider parity remain acceptance gates. See WHATSAPP_READ_OWNERSHIP_2026-10-04.md.
+
+Order reads now have maintained compatibility-reads.ts ownership with preserved DTO/status/RBAC contracts and bounded native reference batches. The unused source Order schema is removed, without removing any database fields/indexes/documents. Omitted-limit external callers and unusually large historical reference batches remain explicit hosted gates. See ORDER_READ_OWNERSHIP_2026-10-04.md.

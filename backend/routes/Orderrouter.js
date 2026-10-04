@@ -1,16 +1,12 @@
 const express = require('express');
 const Orderrouter = express.Router();
-const Order = require('../models/Order');
 const mongoose = require('mongoose');
-const { createCommerceService, legacyOrderDto } = require('../commerce/dist/service.cjs');
+const { createCommerceService } = require('../commerce/dist/service.cjs');
 const getLegacyDb = async () => {
   if (!mongoose.connection.db || mongoose.connection.readyState !== 1) throw Object.assign(new Error('Unavailable'), { status: 503 });
   return mongoose.connection.db;
 };
 const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb ?? getLegacyDb);
-
-
-
 
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
@@ -50,44 +46,14 @@ Orderrouter.post('/email', require('../security/boundary.cjs').wrap(async (req, 
   res.status(204).end();
 }));
 
-Orderrouter.get('/', (req, res) => {
-  const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-  if (Object.keys(req.query).some(key => !['limit', 'offset', 'status'].includes(key)) || (req.query.status && !['pending', 'confirmed', 'packed', 'dispatched', 'cancelled', 'refunded'].includes(req.query.status))) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
-  const statusFilter = req.query.status ? { $or: [{ status: req.query.status }, { status: { $exists: false }, ...(req.query.status === 'pending' ? { dispatched: { $ne: true }, canceled: { $ne: true } } : req.query.status === 'dispatched' ? { dispatched: true, canceled: { $ne: true } } : req.query.status === 'cancelled' ? { canceled: true, dispatched: { $ne: true } } : { _id: null }) }] } : {};
-  Order.find({ ...(req.identity.role === 'admin' ? {} : { 'customer.city': { $in: req.identity.cities } }), ...statusFilter })
-  .populate({
-    path: 'cartItems._id', // Populates the cartItems._id field
-    model: 'Product',      // Specifies the model to populate from
-    populate: {
-      path: 'category',    // Populates the category field within the Product schema
-      model: 'Category'    // Replace 'Category' with your actual Category model name
-    }
-  }).lean().sort({ createdAt: -1, _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0) // Sort by 'createdAt' field in descending order;
-    .then(orders => {
-      res.status(200).json(orders.map(legacyOrderDto));
-    })
-    .catch(error => {
-
-      res.status(500).json({ error: 'Internal server error' });
-    });
+Orderrouter.get('/', async (req, res) => {
+  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  res.json(await require('../commerce/dist/service.cjs').retainedOrderList(db, req.query, req.identity));
 });
-
-Orderrouter.get('/:id', async(req,res)=>{
-  const order = await Order.findOne({ _id: req.params.id, ...(req.identity.role === 'admin' ? {} : { 'customer.city': { $in: req.identity.cities } }) }).populate({
-    path: 'cartItems._id', // Populates the cartItems._id field
-    model: 'Product',      // Specifies the model to populate from
-    populate: {
-      path: 'category',    // Populates the category field within the Product schema
-      model: 'Category'    // Replace 'Category' with your actual Category model name
-    }
-  }).lean();
-
-
-  if(!order){
-      return res.status(404).json({message: 'Order not found'})
-  }
-  res.status(200).send(legacyOrderDto(order));
-})
+Orderrouter.get('/:id', async (req, res) => {
+  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  res.json(await require('../commerce/dist/service.cjs').retainedOrderDetail(db, req.params.id, req.query, req.identity));
+});
 
 // Legacy URL adapters accept lifecycle/billing commands only. Commercial snapshots cannot be edited.
 Orderrouter.put('/edit/:orderId', async (req, res) => {

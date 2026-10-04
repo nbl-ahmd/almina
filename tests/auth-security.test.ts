@@ -248,8 +248,7 @@ test('source auth contracts do not persist tokens or embed provider/signing cred
   }
 });
 
-test('legacy order reads and transactional commands enforce city scope and reject forged fields', async t => {
-  const Order = require('../backend/models/Order');
+test('legacy order reads and transactional commands enforce city scope and reject forged fields', async () => {
   let cities = ['City A']; let saved = 0;
   const found = { _id: id, customer: { city: 'City B', totalAmount: 12 }, status: 'pending' };
   const filters: Record<string, unknown>[] = [];
@@ -257,7 +256,6 @@ test('legacy order reads and transactional commands enforce city scope and rejec
     filters.push(filter);
     return (filter['customer.city'] as { $in: string[] }).$in.includes(found.customer.city) ? found : null;
   }
-  t.mock.method(Order, 'findOne', (filter: Record<string, unknown>) => ({ populate() { return this; }, lean: async () => find(filter) }));
   const db = { client: { startSession: () => ({ withTransaction: async (run: () => Promise<void>) => run(), endSession: async () => undefined }) },
     collection: () => ({ findOne: async (filter: Record<string, unknown>) => find(filter),
       updateOne: async (_filter: unknown, update: { $set: Record<string, unknown> }) => { Object.assign(found, update.$set); saved++; return { modifiedCount: 1 }; } }) };
