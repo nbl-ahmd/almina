@@ -5,7 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 const run = promisify(execFile);
 await mkdir('.verification-results', { recursive: true });
 let failed = false;
-for (const name of ['root', 'backend', 'frontend']) {
+for (const name of ['root', 'backend']) {
   let output;
   try {
     const result = await run('npm', ['audit', '--json', '--audit-level=high', ...(name === 'root' ? [] : ['--prefix', name])], { maxBuffer: 10 * 1024 * 1024 });

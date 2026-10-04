@@ -1,7 +1,7 @@
 {
   "name": "almina",
   "version": "1.0.0",
-  "description": "Al Mina incremental modernization workspace with preserved legacy deployment commands",
+  "description": "Al Mina Next.js storefront and administration with maintained Express commerce API",
   "scripts": {
     "build": "npm ci --include=dev && npm ci --prefix backend && npm run build:commerce",
     "start": "node backend/server.js",
@@ -33,7 +33,6 @@
     "smoke:storefront": "node scripts/tooling/smoke-storefront.mjs",
     "verify:storefront:browser": "node scripts/tooling/verify-storefront-browser.mjs",
     "smoke:catalog-cache": "node scripts/tooling/smoke-catalog-cache.mjs",
-    "analyze:legacy": "node scripts/tooling/analyze-legacy-bundle.mjs",
     "build:commerce": "node scripts/tooling/build-commerce.mjs",
     "pretest": "npm run build:commerce",
     "prestart": "npm run check:commerce",
@@ -44,7 +43,8 @@
     "db:commerce:apply": "tsx scripts/migrations/commerce.ts --apply",
     "test:commerce:integration": "npm run build:commerce && node scripts/tooling/test-commerce-integration.mjs",
     "check:commerce": "node scripts/tooling/check-commerce-build.mjs",
-    "verify:commerce:browser": "node scripts/tooling/verify-commerce-browser.mjs"
+    "verify:commerce:browser": "playwright test tests/e2e/next-checkout.spec.ts tests/e2e/commerce.spec.ts",
+    "analyze:web": "node scripts/tooling/analyze-web-bundle.mjs"
   },
   "repository": {
     "type": "git",

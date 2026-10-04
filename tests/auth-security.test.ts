@@ -364,18 +364,23 @@ test('push unsubscribe deletes only the current staff subscription', async t => 
   });
 });
 
-test('native push worker handles plain and FCM notification envelopes without executing remote scripts', async () => {
+test('both maintained push worker URLs ignore incoming PII and execute no remote scripts', async () => {
   const { runInNewContext } = await import('node:vm');
-  const source = readFileSync('frontend/public/service-worker.js', 'utf8');
-  const handlers: Record<string, (event: unknown) => void> = {};
-  const notifications: { title: string; options: { body: string } }[] = [];
-  runInNewContext(source, { self: { addEventListener: (type: string, handler: (event: unknown) => void) => { handlers[type] = handler; },
-    registration: { showNotification: (title: string, options: { body: string }) => { notifications.push({ title, options }); return Promise.resolve(); } } } });
-  for (const payload of [{ title: 'Synthetic', body: 'Body' }, { notification: { title: 'Synthetic', body: 'Body' } }]) {
-    handlers.push!({ data: { json: () => payload }, waitUntil: () => undefined });
-    assert.deepEqual(JSON.parse(JSON.stringify(notifications.at(-1))), { title: 'Synthetic', options: { body: 'Body', icon: '/android-chrome-192x192.png' } });
+  for (const file of ['apps/web/public/service-worker.js', 'apps/web/public/admin/worker.js']) {
+    const source = readFileSync(file, 'utf8');
+    const handlers: Record<string, (event: unknown) => void> = {};
+    const notifications: { title: string; options: { body: string } }[] = [];
+    const opened: string[] = [];
+    runInNewContext(source, { self: { addEventListener: (type: string, handler: (event: unknown) => void) => { handlers[type] = handler; },
+      registration: { showNotification: (title: string, options: { body: string }) => { notifications.push({ title, options }); return Promise.resolve(); } },
+      clients: { openWindow: (path: string) => { opened.push(path); return Promise.resolve(); } } } });
+    for (const payload of [{ title: 'Synthetic PII', body: 'Sensitive detail' }, { notification: { title: 'Synthetic PII', body: 'Sensitive detail' } }]) {
+      handlers.push!({ data: { json: () => payload }, waitUntil: () => undefined });
+      assert.deepEqual(JSON.parse(JSON.stringify(notifications.at(-1))), { title: 'Al Mina Pharmacy', options: { body: 'Order updates are available. Sign in to review them.' } });
+    }
+    handlers.notificationclick!({ notification: { close: () => undefined }, waitUntil: () => undefined });
+    assert.deepEqual(opened, ['/admin/orders']); assert.ok(!source.includes('importScripts'));
   }
-  assert.ok(!source.includes('importScripts'));
 });
 
 test('published poster media remains public for Meta while poster listings stay private', async () => {

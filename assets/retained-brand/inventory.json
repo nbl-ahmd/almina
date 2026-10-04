@@ -1,0 +1,101 @@
+{
+  "sourceCommit": "871bf4f",
+  "purpose": "Unserved preserved brand assets; do not infer product identity, price or stock from filenames.",
+  "files": [
+    {
+      "source": "frontend/src/client/assets/a.mp3",
+      "retained": "assets/retained-brand/a.mp3",
+      "sha256": "108d6c7e664e2368a1eb1c29f316ba257e3fd20136d4ad9357845e54a1c7b6ec"
+    },
+    {
+      "source": "frontend/src/client/assets/b1.png",
+      "retained": "assets/retained-brand/b1.png",
+      "sha256": "a7bdf95c5e06fedfb8070c5de7149efc63aad21de9f0a8e55254e01fb161f347"
+    },
+    {
+      "source": "frontend/src/client/assets/b2.png",
+      "retained": "assets/retained-brand/b2.png",
+      "sha256": "e3707ff351df50b642497463999872097f08a455cb72bebb4a0d9aaf56d4abb9"
+    },
+    {
+      "source": "frontend/src/client/assets/b3.png",
+      "retained": "assets/retained-brand/b3.png",
+      "sha256": "a5a4ba7db166d27a3fac6f8f0d1070d4aa1eb57cb46a012fa42278990c15c8af"
+    },
+    {
+      "source": "frontend/src/client/assets/banner-sm01.png",
+      "retained": "assets/retained-brand/banner-sm01.png",
+      "sha256": "a5a4ba7db166d27a3fac6f8f0d1070d4aa1eb57cb46a012fa42278990c15c8af"
+    },
+    {
+      "source": "frontend/src/client/assets/banner-sm02.png",
+      "retained": "assets/retained-brand/banner-sm02.png",
+      "sha256": "774b57fe09174bf7099f99b6bb72e99b7d12ecc5ae5dedd80cad69f826c51f7b"
+    },
+    {
+      "source": "frontend/src/client/assets/banner-sm03.png",
+      "retained": "assets/retained-brand/banner-sm03.png",
+      "sha256": "e3707ff351df50b642497463999872097f08a455cb72bebb4a0d9aaf56d4abb9"
+    },
+    {
+      "source": "frontend/src/client/assets/logo.png",
+      "retained": "assets/retained-brand/logo.png",
+      "sha256": "9c5f46927d8f5cdea874710a5d94781f3055be882fbab2089128d267cf837878"
+    },
+    {
+      "source": "frontend/src/client/assets/logo.svg",
+      "retained": "assets/retained-brand/logo.svg",
+      "sha256": "577db96eb696f717709fcbaf4fde44f711a220d1f648034f0222a2d106a0676a"
+    },
+    {
+      "source": "frontend/src/client/assets/notification.mp3",
+      "retained": "assets/retained-brand/notification.mp3",
+      "sha256": "d5411edd726bdef412f59d68da9d9ce99808d7a638ca8a3121ca1db4f1937d8a"
+    },
+    {
+      "source": "frontend/src/client/assets/p1.jpg",
+      "retained": "assets/retained-brand/p1.jpg",
+      "sha256": "3a181843067fa732d7fa4cf07e2df92b32c4603c1f8a22842a9da5c818412d3e"
+    },
+    {
+      "source": "frontend/src/client/assets/p1.webp",
+      "retained": "assets/retained-brand/p1.webp",
+      "sha256": "21d7e1f50305dbb2543e17f4a3378d279b496d57a53ba534ee0ad5d87a53273c"
+    },
+    {
+      "source": "frontend/src/client/assets/p2.jpg",
+      "retained": "assets/retained-brand/p2.jpg",
+      "sha256": "d7a9d0dea19988689d9d4e49d089e7d27ddb059f21a78c02374d31211f73c740"
+    },
+    {
+      "source": "frontend/src/client/assets/p3.jpeg",
+      "retained": "assets/retained-brand/p3.jpeg",
+      "sha256": "8cfd2a45de4a5acf65e05091b800bb6c9db942341e94c2e33072c32b943e25ce"
+    },
+    {
+      "source": "frontend/src/client/assets/product.webp",
+      "retained": "assets/retained-brand/product.webp",
+      "sha256": "394607e760eb308ccf51565707150ba886cf8b1d8ef39b108758a0e25f7fd8c7"
+    },
+    {
+      "source": "frontend/src/client/assets/slide2.png",
+      "retained": "assets/retained-brand/slide2.png",
+      "sha256": "1c3d5b21f6a9648cad72a9c74550458207de8fe91f10fb7936ead39202580b72"
+    },
+    {
+      "source": "frontend/src/client/assets/slide3.png",
+      "retained": "assets/retained-brand/slide3.png",
+      "sha256": "0293f0fa8fb122dc916ceae8042710816dcc07ac0306a0f4b8a4e8e17ea10957"
+    },
+    {
+      "source": "frontend/src/client/assets/slider1.png",
+      "retained": "assets/retained-brand/slider1.png",
+      "sha256": "869b0e0af0fc49ec5fc94e2d5dd66cd5db3703bf7b0ea3f2331ef8d7f21409cb"
+    },
+    {
+      "source": "frontend/src/client/assets/subtle_notification.mp3",
+      "retained": "assets/retained-brand/subtle_notification.mp3",
+      "sha256": "451bf706e5aabfd718c918ae1423d387da89df7847b0647dfd55a64341d1e1a2"
+    }
+  ]
+}
