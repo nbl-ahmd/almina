@@ -1,0 +1,31 @@
+import { test, expect } from './fixtures';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const localRequire = createRequire(resolve('package.json'));
+const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
+for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigation supports keyboard search, current routes and contrast at ${width}px`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 900 }); await page.goto('/');
+  const navigation = page.getByRole('navigation', { name: 'Main navigation', exact: true });
+  await expect(navigation).toHaveCount(1); await expect(navigation).toBeVisible();
+  await expect(navigation.getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('aria-current', 'page');
+  await page.keyboard.press('Tab'); const skip = page.getByRole('link', { name: 'Skip to content' });
+  await expect(skip).toBeFocused(); await page.keyboard.press('Enter'); await expect(page.locator('#main-content')).toBeFocused();
+  const search = page.getByRole('search', { name: 'Product search' }); const input = search.getByRole('searchbox', { name: 'Search products' });
+  await expect(input).toHaveAttribute('maxlength', '80'); await input.focus(); await input.fill('Daily'); await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/search\?q=Daily$/); await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await page.reload(); await expect(search).toBeVisible();
+  await navigation.getByRole('link', { name: 'Categories', exact: true }).focus(); await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/categories$/); await expect(navigation.getByRole('link', { name: 'Categories', exact: true })).toHaveAttribute('aria-current', 'page');
+  const link = navigation.getByRole('link', { name: 'Cart', exact: true });
+  expect(await link.evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(48);
+  await link.focus(); await page.keyboard.press('Enter'); await expect(page).toHaveURL(/\/cart$/);
+  await expect(page.getByRole('heading', { name: 'Your cart is currently empty' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.evaluate(axe);
+  const violations = await page.evaluate(async () => {
+    const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
+    return (await audit.run(document.body)).violations.map(item => item.id);
+  });
+  expect(violations).toEqual([]);
+});
