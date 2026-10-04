@@ -34,6 +34,8 @@ SMTP follow-up on `codex/smtp-provider-ownership` moves confirmation/admin conte
 
 The owner renewed the target as a complete Next.js frontend and maintained Express backend, removing obsolete dependencies/code after parity. Express follow-up on `codex/express5-backend` upgrades the retained service to 5.2.1, removes unused packages/private-stack async wrapping and replaces uuid with Node crypto. [Scope, migration notes and acceptance](EXPRESS5_2026-10-04.md). SMTP PR #15 required runs `37199820986` and `37199818863` passed at `056dd0f`. Complete frontend route/test/asset parity and backend consolidation remain repository work; production acceptance remains incomplete.
 
+Database-library follow-up on `codex/mongoose9-backend` pins Mongoose 9.10.4 with MongoDB driver 7 after reviewing both intervening major migration guides. No collection, schema, identifier, index or legacy field changes. [Compatibility and evidence](MONGOOSE9_2026-10-04.md). Express PR #16 runs `37205388662` and `37205420781` passed required hosted `verify`. Full frontend retirement and backend provider ownership remain repository work; hosted acceptance remains incomplete.
+
 ## Production migration readiness — blocked
 
 Prepared on `codex/production-migration-readiness`: [Render cutover/recovery runbook](PRODUCTION_CUTOVER_2026-10-03.md), three-phase fail-closed release evidence validator (`npm run release:gate`), and CI regression coverage for missing/skipped evidence, exact SHAs, deployment readbacks, post-cutover timestamps, 24-hour observation and retained legacy fields. Includes all twelve staging/production journeys, environment/provider/media/SEO gates, reconciliation, explicit monitoring thresholds and safe rollback. The validator checks attestations, not provider truth; production deployment controls and telemetry are not configured by it.
@@ -43,6 +45,7 @@ Owner confirmed backend `https://almina-of4b.onrender.com`, storefront `https://
 Fresh local verification: 7 release-gate regressions, 59 focused security, 20 disposable real-database/load and 12 Chromium smoke tests passed; lint and workspace typecheck passed. CLI template parsing and the pending release's nonzero preflight exit were verified. Strict audit still fails: root 19 high/2 critical, backend 13 high/0 critical, frontend 64 high/1 critical dependency entries. These are release blockers, not waived findings.
 
 Anonymous read-only production probes returned homepage 200, robots.txt 200 text/plain, sitemap.xml 200 XML and backend root 500. Homepage raw HTML contained the CRA root with no canonical link detected. These probes do not prove catalog, checkout, notification or admin health and did not inspect customer data. No production order was created. Backup/restoration, secret revocation, exact Render artifacts/config, staging/provider acceptance, production journeys/SEO/security and monitored order/stock reconciliation remain pending. **Do not merge to trigger production yet; migration is not complete.**
+
 
 ## Production verification suite review
 

@@ -98,8 +98,8 @@ app.use((req, res, next) => {
   }
   next();
 });
-// The bundled legacy writer uses driver 5/BSON 5; use its Mongoose-owned DB,
-// while driver 7 seeds/inspects the same isolated database independently.
+// Use the retained service’s Mongoose-owned connection for compatibility writes.
+// The standalone MongoDB 7 client seeds/inspects the same isolated database.
 const versioned = createApp({ getDb: async () => db, database: { checkReadiness: async () => true, mode: 'enabled' },
   logger: createLogger({ service: 'api', environment: 'development', level: 'error' }),
   webOrigin: 'http://127.0.0.1:4740', development: true });
