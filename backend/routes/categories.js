@@ -134,7 +134,12 @@ categoryRouter.get('/:id', async(req,res)=>{
 
     try {
       // Retrieve the category by filename from the database
-      const category = await Category.findOne({ image: filename });
+      let category = await Category.findOne({ image: filename });
+    if (!category) {
+      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+      const fileId = await require('../commerce/dist/service.cjs').resolveRetainedAsset(db, 'categories', filename);
+      if (fileId) category = { image: filename, gdriveFileId: fileId };
+    }
       if (!category) {
         return res.status(404).json({ error: 'category not found' });
       }
@@ -171,6 +176,7 @@ categoryRouter.put('/disable/:id', upload.single('image'), require('../security/
     }
 
     // Update the 'disabled' property of the product
+    if (category.archivedAt) return res.status(409).json({ error: 'Archived category cannot be enabled' });
     category.disabled = !category.disabled;
 
     // Save the updated product
@@ -190,8 +196,7 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
     try {
       // Retrieve the previous image filename from the database
       const prevCategory = await Category.findById(id);
-      const prevImage = prevCategory.image;
-      const prevGdriveFileId = prevCategory.gdriveFileId;
+      if (!prevCategory) return res.status(404).json({ error: 'Category not found' });
 
       // Check if each field is present in the request body and update the corresponding field
       if (req.body.name) {
@@ -207,16 +212,7 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
       if (req.file) {
         const image = req.file;
 
-       // Delete the previous image from Google Drive
-       if (prevGdriveFileId && prevGdriveFileId !== '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL') {
-        await drive.files.delete({
-          fileId: prevGdriveFileId,
-        });
-      }
-
-
-
-
+       // Preserve the old asset. The maintained transaction records every reference.
         // Crop the image into a square
         const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })
     .resize({ width: 500, height: 500, fit: 'cover' })
@@ -248,7 +244,8 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
 
       }
 
-      const category = await Category.findByIdAndUpdate(id, updateFields, { new: true });
+      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+      const category = await require('../commerce/dist/service.cjs').replaceCategory(db, id, updateFields, req.identity.id);
 
       if (!category) {
         return res.status(400).send('The category cannot be updated!');
@@ -257,40 +254,16 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
       res.send(category);
     } catch (error) {
 
+      if (error.status) throw error;
       res.status(500).send('An error occurred while updating the category');
     }
   });
 
 
 categoryRouter.delete('/:id', async (req, res) => {
-    const categoryId = req.params.id;
-
-    try {
-      // Find the category by ID
-      const category = await Category.findById(categoryId);
-      if (!category) {
-        return res.status(404).json({ success: false, message: 'category not found!' });
-      }
-
-      // Delete the category from the database
-      await Category.findByIdAndRemove(categoryId);
-
-      // If applicable, delete the image file from Google Drive
-      if (category.gdriveFileId && category.gdriveFileId !== '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL') {
-        await drive.files.delete({ fileId: category.gdriveFileId });
-      }
-
-      // Delete the image file from the server's file system
-      if (typeof category.image === 'string' && /^[A-Za-z0-9_-]+\.webp$/.test(category.image)) {
-        fs.unlink(path.join(__dirname, '..', 'public', 'category', category.image), () => {});
-      }
-
-      return res.status(200).json({ success: true, message: 'The category and image are deleted!' });
-    } catch (error) {
-
-      return res.status(500).json({ success: false, error: 'Internal server error' });
-    }
-  });
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'categories', req.params.id, req.identity.id));
+});
 
 
 module.exports = categoryRouter;

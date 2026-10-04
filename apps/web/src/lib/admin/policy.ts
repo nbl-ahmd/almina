@@ -40,6 +40,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ["GET", "products/search", "staff"],
   ["GET", `products/${id}`, "staff"],
   ["POST", "products", "admin"],
+  ["POST", `media/products/${id}`, "admin"],
   ["PUT", `products/${id}`, "admin"],
   ["PUT", `products/publish/${id}`, "admin"],
   ["DELETE", `products/${id}`, "admin"],
@@ -255,7 +256,7 @@ const fields = new Set([
   "recipient",
   "success",
   "count",
-  "message", "cloudinaryImages", "rows", "errors", "row", "field", "previewId", "hash", "batch", "created", "replayed",
+  "message", "cloudinaryImages", "mediaRevision", "rows", "errors", "row", "field", "previewId", "hash", "batch", "created", "replayed",
 ]);
 export function project(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(project);

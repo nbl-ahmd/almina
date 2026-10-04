@@ -121,8 +121,8 @@ test('cursor validates format, version and filter/identity scope; pagination nev
 
 test('public catalog enforces visibility and uses indexed text predicates; no request-derived Mongo filters', () => {
   assert.deepEqual(productFilter(catalogQuerySchema.parse({ q: 'vitamin c', sale: 'true', categoryId: categoryId.toHexString() }), false),
-    { disabled: { $ne: true }, category: categoryId, sale: true, $text: { $search: 'vitamin c', $language: 'none' } });
-  assert.deepEqual(productFilter(adminProductQuerySchema.parse({ disabled: 'true' }), true), { disabled: true });
+    { archivedAt: { $exists: false }, disabled: { $ne: true }, category: categoryId, sale: true, $text: { $search: 'vitamin c', $language: 'none' } });
+  assert.deepEqual(productFilter(adminProductQuerySchema.parse({ disabled: 'true' }), true), { archivedAt: { $exists: false }, disabled: true });
 });
 
 test('catalog join excludes hidden/missing categories before limit, projects fields and bounds execution', async () => {

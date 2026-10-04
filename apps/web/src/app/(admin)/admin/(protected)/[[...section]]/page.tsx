@@ -211,9 +211,9 @@ export default async function AdminPage({
                 <Command
                   path={`products/${display(item._id)}`}
                   method="DELETE"
-                  confirm="Permanently delete this product and its media?"
+                  confirm="Archive this product while preserving history and images?"
                 >
-                  Delete product
+                  Archive product
                 </Command>
               </>
             )
@@ -297,7 +297,7 @@ export default async function AdminPage({
                 method="DELETE"
                 confirm="Permanently delete this category and its media?"
               >
-                Delete category
+                Archive category
               </Command>
             </>
           )}
@@ -347,9 +347,9 @@ export default async function AdminPage({
               <Command
                 path={`banners/${display(item._id)}`}
                 method="DELETE"
-                confirm="Delete this banner and its media?"
+                confirm="Archive this banner and preserve its images?"
               >
-                Delete banner
+                Archive banner
               </Command>
             </>
           )}
@@ -635,9 +635,9 @@ export default async function AdminPage({
               <Command
                 path={`whatsapp/image/${display(item._id)}`}
                 method="DELETE"
-                confirm="Delete this poster and its media?"
+                confirm="Archive this poster and preserve its images?"
               >
-                Delete poster
+                Archive poster
               </Command>
             </>
           )}

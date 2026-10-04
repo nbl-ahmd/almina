@@ -1,5 +1,6 @@
 // Complete legacy HTTP allowlist. Unlisted paths/methods never reach a handler.
 const routePolicies = [
+  ['POST', '/api/media/products/:id', 'admin'],
   ['GET', '/api/recovery/template', 'admin'], ['POST', '/api/recovery/preview', 'admin'], ['POST', '/api/recovery/commit', 'admin'],
   ['POST', '/api/auth/login', 'login'], ['POST', '/api/auth/logout', 'staff'],
   ['POST', '/api/auth/logout-all', 'staff'], ['GET', '/api/auth/me', 'staff'],

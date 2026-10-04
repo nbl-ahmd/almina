@@ -1,13 +1,13 @@
 const { fail } = require('./boundary.cjs');
 // Compatibility input is reconstructed from typed fields, never forwarded as a raw Mongo filter.
 function catalogFilter(input, search = false, category = false) {
-  if (input === undefined) return {};
+  if (input === undefined) return { archivedAt: { $exists: false } };
   if (typeof input !== 'string' || input.length > 2000) throw fail(400, 'INVALID_REQUEST');
   let parsed;
   try { parsed = JSON.parse(input); } catch { throw fail(400, 'INVALID_REQUEST'); }
   const parts = search && Array.isArray(parsed) ? parsed : [parsed];
   if (parts.length > 10) throw fail(400, 'INVALID_REQUEST');
-  const result = {};
+  const result = { archivedAt: { $exists: false } };
   for (const part of parts) {
     if (!part || typeof part !== 'object' || Array.isArray(part)) throw fail(400, 'INVALID_REQUEST');
     for (const [key, value] of Object.entries(part)) {

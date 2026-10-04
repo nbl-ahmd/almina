@@ -78,7 +78,7 @@ whatsappRouter.post('/image', upload.single('image'), require('../security/uploa
 
   whatsappRouter.get('/image', (req, res) => {
   const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-  WhatsappPoster.find().sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
+  WhatsappPoster.find({ archivedAt: { $exists: false } }).sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
     .then(poster => {
       res.status(200).json(poster);
     })
@@ -116,35 +116,8 @@ whatsappRouter.get('/image/:filename', async (req, res) => {
 });
 
 whatsappRouter.delete('/image/:id', async (req, res) => {
-  const posterId = req.params.id;
-
-  try {
-    // Find the poster by ID
-    const poster = await WhatsappPoster.findById(posterId);
-    if (!poster) {
-      return res.status(404).json({ success: false, message: 'poster not found!' });
-    }
-
-    // Delete the poster from the database
-    await WhatsappPoster.findByIdAndRemove(posterId);
-
-    // If applicable, delete the image file from Google Drive
-    if (poster.gdriveFileId) {
-      await drive.files.delete({ fileId: poster.gdriveFileId });
-    }
-
-    // Delete the image file from the server's file system
-    fs.unlink(path.join(uploadDir, poster.image), (error) => {
-      if (error) {
-
-      }
-    });
-
-    return res.status(200).json({ success: true, message: 'The poster and image are deleted!' });
-  } catch (error) {
-
-    return res.status(500).json({ success: false, error: 'Internal server error' });
-  }
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'whatsappposters', req.params.id, req.identity.id));
 });
 
 

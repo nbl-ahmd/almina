@@ -34,7 +34,7 @@ export const loginBodySchema = z.object({
 
 export const productDtoSchema = z.object({
   id, productId: z.string().min(1), categoryId: id, name: z.string(),
-  images: z.array(z.string()), gdriveFileIds: z.array(z.string()),
+  images: z.array(z.string()), cloudinaryImages: z.array(z.string().max(1000)).max(8).default([]), gdriveFileIds: z.array(z.string()),
   price: z.number().finite().nonnegative(), stock: z.number().int().nonnegative(),
   vat: z.boolean(), sale: z.boolean(), featured: z.boolean(), disabled: z.boolean(),
   salePrice: z.number().finite().nonnegative().nullable(),

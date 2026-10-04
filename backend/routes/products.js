@@ -267,15 +267,20 @@ productRouter.get('/images/:filename', async (req, res) => {
 
   try {
     // Retrieve the product by filename
-    const product = await Product.findOne({
+    let product = await Product.findOne({
       $or: [{ image: filename }, { images: filename }],
     });
 
     if (!product) {
+      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+      const fileId = await require('../commerce/dist/service.cjs').resolveRetainedAsset(db, 'products', filename);
+      if (fileId) product = { image: filename, gdriveFileId: fileId };
+    }
+    if (!product) {
       return res.status(404).json({ error: 'Product or image not found' });
     }
 
-    if (product.gdriveFileId) {
+    if (product.image === filename && product.gdriveFileId) {
       // For old products with a single gdriveFileId
       const response = await drive.files.get(
         { fileId: product.gdriveFileId, alt: 'media' },
@@ -510,7 +515,7 @@ productRouter.get('/category/:categoryId', async (req, res) => {
   const { categoryId } = req.params;
 
   try {
-    const products = await Product.find({ 'category': categoryId }).populate('category');
+    const products = await Product.find({ 'category': categoryId, archivedAt: { $exists: false } }).populate('category');
     res.json(products);
 
   } catch (error) {
@@ -520,28 +525,8 @@ productRouter.get('/category/:categoryId', async (req, res) => {
 });
 
 productRouter.delete('/:id', async (req, res) => {
-  const productId = req.params.id;
-
-  try {
-    // Find the product by ID
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'product not found!' });
-    }
-
-    // Delete the product from the database
-    await Product.findByIdAndRemove(productId);
-
-    // If applicable, delete the image file from Google Drive
-    if (product.gdriveFileId &&  product.gdriveFileId!== '1Ru3bJPvlSfkEJ74gEjdgO9jSQtJNFtCu') {
-      await drive.files.delete({ fileId: product.gdriveFileId });
-    }
-
-    return res.status(200).json({ success: true, message: 'The product and image are deleted!' });
-  } catch (error) {
-
-    return res.status(500).json({ success: false, error: 'Internal server error' });
-  }
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'products', req.params.id, req.identity.id));
 });
 
 
@@ -555,8 +540,15 @@ productRouter.put('/publish/:productId', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    if (product.archivedAt) return res.status(409).json({ error: 'Archived product cannot be published' });
+    require('../commerce/dist/service.cjs').moneyMinor(product.price);
+    if (product.sale) {
+      const money = require('../commerce/dist/service.cjs').moneyMinor;
+      if (money(product.salePrice) > money(product.price)) return res.status(400).json({ error: 'Invalid sale price' });
+    }
     // Update the 'disabled' property of the product
     product.disabled = !product.disabled;
+    product.published = !product.disabled;
 
     // Save the updated product
     await product.save();
@@ -645,7 +637,7 @@ productRouter.get('/details/:productId', async (req, res) => {
 
   try {
     // Find the product by its product_id (custom field)
-    const product = await Product.findOne({ product_id: productId }).populate('category');
+    const product = await Product.findOne({ product_id: productId, archivedAt: { $exists: false } }).populate('category');
 
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -653,6 +645,7 @@ productRouter.get('/details/:productId', async (req, res) => {
 
     // Find all products in the same category except the current product
     const relatedProducts = await Product.find({
+      archivedAt: { $exists: false },
       category: product.category._id,
       product_id: { $ne: productId }, // Exclude the current product
     }).populate('category');

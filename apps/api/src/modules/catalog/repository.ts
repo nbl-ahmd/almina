@@ -7,7 +7,7 @@ import { productProjection, categoryProjection, bannerProjection, productDto, ca
 import { queryOptions, type GetDb } from '../../database.js';
 import { measureCatalogQuery, type CatalogQueryObserver } from './timing.js';
 export function productFilter(query: AdminProductQuery, admin: boolean): Filter<Document> {
-  const filter: Filter<Document> = {};
+  const filter: Filter<Document> = { archivedAt: { $exists: false } };
   if (!admin) filter.disabled = { $ne: true }; // Missing legacy disabled fields remain visible.
   else if (query.disabled !== undefined) filter.disabled = query.disabled;
   if (query.categoryId) filter.category = new ObjectId(query.categoryId);
@@ -18,7 +18,7 @@ export function productFilter(query: AdminProductQuery, admin: boolean): Filter<
 }
 const publicCategoryJoin = [
   { $lookup: { from: 'categories', localField: 'category', foreignField: '_id',
-    pipeline: [{ $match: { disabled: { $ne: true } } }, { $project: { _id: 1 } }], as: 'visibleCategory' } },
+    pipeline: [{ $match: { archivedAt: { $exists: false }, disabled: { $ne: true } } }, { $project: { _id: 1 } }], as: 'visibleCategory' } },
   { $match: { 'visibleCategory.0': { $exists: true } } },
 ];
 
@@ -29,7 +29,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
       const after = decodeCursor(query.cursor, scope);
       const db = await getDb();
       const product = query.kind === 'products';
-      const filter: Filter<Document> = { disabled: { $ne: true }, name: { $type: 'string', $ne: '' },
+      const filter: Filter<Document> = { archivedAt: { $exists: false }, disabled: { $ne: true }, name: { $type: 'string', $ne: '' },
         _id: { $type: 'objectId', ...(after ? { $lt: after } : {}) },
         $expr: { $and: [{ $eq: [{ $type: '$name' }, 'string'] },
           ...(product ? [
@@ -47,7 +47,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
         { $match: filter }, { $sort: { _id: -1 } },
         ...(product ? [
           { $lookup: { from: 'categories', localField: 'category', foreignField: '_id',
-            pipeline: [{ $match: { disabled: { $ne: true }, name: { $type: 'string', $ne: '' } } }, { $project: { _id: 1 } }], as: 'visibleCategory' } },
+            pipeline: [{ $match: { archivedAt: { $exists: false }, disabled: { $ne: true }, name: { $type: 'string', $ne: '' } } }, { $project: { _id: 1 } }], as: 'visibleCategory' } },
           { $match: { 'visibleCategory.0': { $exists: true } } },
         ] : []),
         { $limit: 1001 }, { $project: { _id: 1, name: 1, ...(product ? { product_id: 1 } : {}) } },
@@ -74,6 +74,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
     async product(identifier: { id: string } | { productId: string }, admin = false) {
       const db = await getDb();
       const filter: Filter<Document> = 'id' in identifier ? { _id: new ObjectId(identifier.id) } : { product_id: identifier.productId };
+      filter.archivedAt = { $exists: false };
       if (!admin) filter.disabled = { $ne: true };
       const docs = await measureCatalogQuery('product', () => db.collection('products').aggregate([
         { $match: filter }, ...(admin ? [] : publicCategoryJoin), { $limit: 1 }, { $project: productProjection },
@@ -84,7 +85,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
     async categories(query: { limit: number; cursor?: string | undefined }) {
       const scope = cursorScope('categories', {});
       const after = decodeCursor(query.cursor, scope);
-      const filter: Filter<Document> = { disabled: { $ne: true }, ...(after ? { _id: { $lt: after } } : {}) };
+      const filter: Filter<Document> = { archivedAt: { $exists: false }, disabled: { $ne: true }, ...(after ? { _id: { $lt: after } } : {}) };
       const db = await getDb();
       const docs = await measureCatalogQuery('categories', () => db.collection('categories').find(filter, { ...queryOptions, projection: categoryProjection })
         .sort({ _id: -1 }).limit(query.limit + 1).toArray(), observe);
@@ -93,7 +94,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
     },
     async category(value: string) {
       const db = await getDb();
-      const doc = await measureCatalogQuery('category', () => db.collection('categories').findOne({ _id: new ObjectId(value), disabled: { $ne: true } },
+      const doc = await measureCatalogQuery('category', () => db.collection('categories').findOne({ _id: new ObjectId(value), archivedAt: { $exists: false }, disabled: { $ne: true } },
         { ...queryOptions, projection: categoryProjection }), observe);
       if (!doc) throw new HttpError(404, 'NOT_FOUND');
       return categoryDto(doc);
@@ -102,7 +103,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
       const scope = cursorScope('banners', {});
       const after = decodeCursor(query.cursor, scope);
       const db = await getDb();
-      const docs = await measureCatalogQuery('banners', () => db.collection('banners').find(after ? { _id: { $lt: after } } : {},
+      const docs = await measureCatalogQuery('banners', () => db.collection('banners').find({ archivedAt: { $exists: false }, ...(after ? { _id: { $lt: after } } : {}) },
         { ...queryOptions, projection: bannerProjection }).sort({ _id: -1 }).limit(query.limit + 1).toArray(), observe);
       const items = docs.slice(0, query.limit);
       return { items: items.map(bannerDto), nextCursor: docs.length > query.limit ? encodeCursor(items.at(-1)!._id, scope) : null };

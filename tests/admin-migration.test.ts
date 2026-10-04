@@ -207,49 +207,29 @@ test("multi-instance realtime bus reauthorizes each local recipient before deliv
   assert.equal(listeners.size, 0);
 });
 
-test("category deletion returns success without local media instead of failing after database deletion", async () => {
+test("category archive retains records and references without invoking destructive providers", async () => {
   const { createServer } = await import("node:http");
+  const { ObjectId } = await import("mongodb");
   const { createLegacyApp } = require("../backend/app.js");
-  const Category = require("../backend/models/Category");
-  const previousFind = Category.findById;
-  const previousDelete = Category.findByIdAndRemove;
-  let deleted = 0;
-  Category.findById = async () => ({ _id: "e".repeat(24) });
-  Category.findByIdAndRemove = async () => {
-    deleted++;
-  };
-  const app = createLegacyApp({
-    development: true,
-    origins: ["http://localhost:3000"],
-    auth: {
-      authenticate: async () => ({
-        id: "a".repeat(24),
-        role: "admin",
-        cities: [],
-      }),
-    },
-    routers: { category: require("../backend/routes/categories") },
-  });
-  const server = createServer(app);
-  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const document: Record<string, unknown> = { _id: new ObjectId("e".repeat(24)), image: "synthetic.webp", gdriveFileId: "synthetic-drive-id" };
+  let histories = 0;
+  const db = { client: { startSession: () => ({ withTransaction: async (run: () => Promise<void>) => run(), endSession: async () => {} }) },
+    collection: (name: string) => name === 'categories' ? {
+      findOne: async () => document,
+      updateOne: async (_filter: unknown, update: { $set: Record<string, unknown> }) => { Object.assign(document, update.$set); },
+    } : { insertOne: async () => { histories++; } } };
+  const app = createLegacyApp({ development: true, origins: ["http://localhost:3000"], getCommerceDb: () => db,
+    auth: { authenticate: async () => ({ id: "a".repeat(24), role: "admin", cities: [] }) },
+    routers: { category: require("../backend/routes/categories") } });
+  const server = createServer(app); await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   try {
-    const address = server.address();
-    assert.ok(address && typeof address !== "string");
-    const result = await fetch(
-      `http://127.0.0.1:${address.port}/api/category/${"e".repeat(24)}`,
-      {
-        method: "DELETE",
-        headers: { Origin: "http://localhost:3000", "X-CSRF-Protection": "1" },
-      },
-    );
-    assert.equal(result.status, 200);
-    assert.equal((await result.json()).success, true);
-    assert.equal(deleted, 1);
-  } finally {
-    Category.findById = previousFind;
-    Category.findByIdAndRemove = previousDelete;
-    await new Promise<void>((resolve) => server.close(() => resolve()));
-  }
+    const address = server.address(); assert.ok(address && typeof address !== "string");
+    const result = await fetch(`http://127.0.0.1:${address.port}/api/category/${"e".repeat(24)}`, {
+      method: "DELETE", headers: { Origin: "http://localhost:3000", "X-CSRF-Protection": "1" } });
+    assert.equal(result.status, 200); assert.equal((await result.json()).success, true);
+    assert.ok(document.archivedAt); assert.equal(document.disabled, true); assert.equal(histories, 1);
+    assert.equal(document.gdriveFileId, 'synthetic-drive-id'); assert.equal(document.image, 'synthetic.webp');
+  } finally { await new Promise<void>(resolve => server.close(() => resolve())); }
 });
 
 test("order stream sends only invalidations, reconciles first connection and closes on revocation", async () => {

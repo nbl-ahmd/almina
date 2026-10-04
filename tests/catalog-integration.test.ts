@@ -64,7 +64,10 @@ test('real catalog reads and legacy product mutations preserve validation, visib
           assert.equal((await fetch(apiUrl + '/api/v1/catalog/products?' + query)).status, 400);
         }
         assert.equal((await fetch(legacyUrl + '/api/products/' + product._id, { method: 'DELETE', headers })).status, 200);
-        assert.equal(await db.collection('products').countDocuments(), 0);
+        assert.equal(await db.collection('products').countDocuments(), 1);
+        assert.ok((await db.collection('products').findOne({ _id: new ObjectId(product._id) }))!.archivedAt);
+        assert.equal((await fetch(apiUrl + '/api/v1/catalog/products/' + product._id)).status, 404);
+        assert.equal((await fetch(legacyUrl + '/api/products/publish/' + product._id, { method: 'PUT', headers, body: '{}' })).status, 409);
       });
     });
   } finally {

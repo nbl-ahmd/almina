@@ -55,7 +55,7 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
     for (let i = 0; i < routeParts.length; i++) {
       const param = routeParts[i]; const value = actualParts[i];
       if ([':id', ':categoryId', ':orderId'].includes(param) && !/^[a-f0-9]{24}$/i.test(value)) throw fail(400, 'INVALID_REQUEST');
-      if (param === ':productId' && !(route.path.includes('/details/') ? /^PD[0-9]{1,20}$/i : /^[a-f0-9]{24}$/i).test(value)) throw fail(400, 'INVALID_REQUEST');
+      if (param === ':productId' && !(route.path.includes('/details/') ? /^[A-Za-z0-9_-]{1,80}$/ : /^[a-f0-9]{24}$/i).test(value)) throw fail(400, 'INVALID_REQUEST');
       if (param === ':filename' && (!/^[A-Za-z0-9_.-]{1,200}$/.test(value) || value.includes('..'))) throw fail(400, 'INVALID_REQUEST');
       if (param === ':recipient' && !/^\+?[0-9]{1,20}$/.test(value)) throw fail(400, 'INVALID_REQUEST');
     }

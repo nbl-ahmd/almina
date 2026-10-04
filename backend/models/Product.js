@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
+    archivedAt: Date, archivedBy: String, published: Boolean,
+    image: { type: String },
+    mediaRevision: Number,
     gdriveFileId:{type: String, required: false},
     product_id: {type: String, required: true },
     name: {type: String, required: true,  },

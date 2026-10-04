@@ -71,7 +71,7 @@ router.post('/', upload.single('image'), require('../security/uploads.cjs').vali
 
 router.get('/', (req, res) => {
   const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-  Banner.find().sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
+  Banner.find({ archivedAt: { $exists: false } }).sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
     .then(banners => {
       res.status(200).json(banners);
     })
@@ -109,35 +109,8 @@ router.get('/images/:filename', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-  const bannerId = req.params.id;
-
-  try {
-    // Find the banner by ID
-    const banner = await Banner.findById(bannerId);
-    if (!banner) {
-      return res.status(404).json({ success: false, message: 'Banner not found!' });
-    }
-
-    // Delete the banner from the database
-    await Banner.findByIdAndRemove(bannerId);
-
-    // If applicable, delete the image file from Google Drive
-    if (banner.gdriveFileId) {
-      await drive.files.delete({ fileId: banner.gdriveFileId });
-    }
-
-    // Delete the image file from the server's file system
-    fs.unlink(path.join(uploadDir, banner.image), (error) => {
-      if (error) {
-
-      }
-    });
-
-    return res.status(200).json({ success: true, message: 'The banner and image are deleted!' });
-  } catch (error) {
-
-    return res.status(500).json({ success: false, error: 'Internal server error' });
-  }
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'banners', req.params.id, req.identity.id));
 });
 
 module.exports = router;

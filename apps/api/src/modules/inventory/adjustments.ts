@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
+import { recordMediaHistory } from '../media/retention.js';
 import { moneyMinor } from '../orders/commerce.js';
 const quantity = z.union([z.number(), z.string().regex(/^\d+$/).transform(Number)]).pipe(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER));
 const money = z.union([z.number(), z.string()]).refine(value => /^\d+(\.\d{1,2})?$/.test(String(value)) && Number(value) <= Number.MAX_SAFE_INTEGER / 100).transform(Number);
@@ -55,6 +56,7 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       if (delta !== 0 && (!input.stockReason || !input.inventoryKey)) throw new HttpError(400, 'INVALID_REQUEST');
       const fields: Document = {};
       for (const name of ['name', 'price', 'stock', 'description', 'sale', 'salePrice'] as const) if (input[name] !== undefined) fields[name] = input[name];
+      if (assets) fields.mediaRevision = (product.mediaRevision ?? 0) + 1;
       const next: Document = { ...product, ...fields, ...assets };
       const price = moneyMinor(next.price);
       if (next.salePrice !== undefined && next.salePrice !== null) {
@@ -62,6 +64,7 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       }
       if (next.sale === true && (next.salePrice === undefined || next.salePrice === null)) throw new HttpError(400, 'INVALID_REQUEST');
       if (typeof next.sale !== 'boolean' && next.sale !== undefined) throw new HttpError(400, 'INVALID_REQUEST');
+      if (assets) await recordMediaHistory(db, 'products', product, next, actor, 'Reviewed product media replacement', session);
       const result = await db.collection('products').updateOne({ _id: product._id, stock: product.stock }, { $set: { ...fields, ...assets } }, { session });
       if (result.matchedCount !== 1) throw new HttpError(409, 'STOCK_CHANGED');
       saved = next;

@@ -5,6 +5,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | Method | Retained URL | Boundary | Current owner/effects |
 | --- | --- | --- | --- |
 | GET | /api/recovery/template | admin | maintained recovery/csv.ts; no provider effects |
+| POST | /api/media/products/:id | admin | Maintained signed Cloudinary upload/reference ledger; bounded authenticated adapter |
 | POST | /api/recovery/preview | admin | maintained recovery/catalog.ts; actor-bound preview |
 | POST | /api/recovery/commit | admin | maintained recovery/catalog.ts; closed-store transaction/ledger |
 | POST | /api/auth/login | login | Login.js → shared sessions/RBAC; staff CRUD adapter |
@@ -21,20 +22,20 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | GET | /api/products/category/:categoryId | public | products.js → Mongoose catalog and Drive; extraction pending |
 | GET | /api/products/details/:productId | public | products.js → Mongoose catalog and Drive; extraction pending |
 | GET | /api/products/:id | public | products.js → Mongoose catalog and Drive; extraction pending |
-| DELETE | /api/products/:id | admin | products.js → Mongoose catalog and Drive; extraction pending |
+| DELETE | /api/products/:id | admin | maintained media/retention.ts archive; references retained |
 | PUT | /api/products/publish/:productId | admin | products.js → Mongoose catalog and Drive; extraction pending |
-| PUT | /api/products/:id | admin | products.js → Mongoose catalog and Drive; extraction pending |
+| PUT | /api/products/:id | admin | maintained inventory transaction/ledger; retained Drive upload adapter |
 | POST | /api/category | admin | categories.js → Mongoose categories and Drive |
 | GET | /api/category | public | categories.js → Mongoose categories and Drive |
 | GET | /api/category/images/:filename | public | categories.js → Mongoose categories and Drive |
 | GET | /api/category/:id | public | categories.js → Mongoose categories and Drive |
 | PUT | /api/category/disable/:id | admin | categories.js → Mongoose categories and Drive |
 | PUT | /api/category/:id | admin | categories.js → Mongoose categories and Drive |
-| DELETE | /api/category/:id | admin | categories.js → Mongoose categories and Drive |
+| DELETE | /api/category/:id | admin | maintained media/retention.ts archive; references retained |
 | POST | /api/banners | admin | banners.js → Mongoose banners and Drive |
 | GET | /api/banners | public | banners.js → Mongoose banners and Drive |
 | GET | /api/banners/images/:filename | public | banners.js → Mongoose banners and Drive |
-| DELETE | /api/banners/:id | admin | banners.js → Mongoose banners and Drive |
+| DELETE | /api/banners/:id | admin | maintained media/retention.ts archive; references retained |
 | POST | /api/batch | admin | batchProductRouter.js → legacy CSV writer; recovery replacement pending |
 | PUT | /api/store/status | admin | storeRouter.js → maintained store/service.ts |
 | GET | /api/store/status | public | storeRouter.js → maintained store/service.ts |
@@ -52,7 +53,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/whatsapp/image | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/image | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/image/:filename | public | whatsapp.js → Meta/Drive/conversation/report adapters |
-| DELETE | /api/whatsapp/image/:id | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
+| DELETE | /api/whatsapp/image/:id | admin | maintained media/retention.ts archive; references retained |
 | POST | /api/whatsapp/s | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | POST | /api/whatsapp/sr | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | POST | /api/whatsapp | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
@@ -69,7 +70,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 - `commerce/outbox.cjs` leases notification jobs and SMTP through `integrations/order-email.cjs`. At least once; acceptance/crash can duplicate delivery. Legacy persistent process owns worker.
 - `security/realtime.cjs` authenticates/rechecks Socket.IO and SSE invalidations; shared deployment bus pending.
 - `Login.js` provisions password hashes/deletes accounts/revokes sessions; `sessions.cjs` owns sessions and quotas.
-- Drive creates/streams products/categories/banners/WhatsApp posters. Category replacement and category/banner/poster removal still delete provider files. Product deletion removes records/assets. Replace with retained references/archive.
+- Drive creates/streams products/categories/banners/WhatsApp posters. All four media removal adapters now archive documents/assets. Category/Drive product replacements record prior references; old product/category filenames resolve through history. Maintained Cloudinary upload/reconciliation is additive; Drive upload/stream ownership and hosted provider parity remain retained gates.
 - Meta template/text/broadcast sends persist conversations/reports. Signed webhook receipts prevent duplicates; receipt-before-processing failure requires operator recovery.
 - Push subscriptions belong to current staff; real delivery configuration/parity remains hosting gate.
 - Recovery/bootstrap/commerce/index CLI apply operations are explicit maintenance actions, never builds/startup. Recovery creates no lost history.

@@ -56,3 +56,22 @@ test('admin stock adjustment requires a reason, preserves the retry receipt and 
   });
   expect(response.status()).toBe(409); expect((await state(request)).stock).toBe(7);
 });
+
+test('authenticated Cloudinary replacement works through the gateway and archive preserves stock', async ({ page, request }) => {
+  const { createRequire } = await import('node:module'); const require = createRequire(`${process.cwd()}/package.json`);
+  const sharp = require('./backend/node_modules/sharp');
+  const image = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#ffffff' } }).png().toBuffer();
+  await login(page); await page.goto(adminOrigin + '/admin/products/' + productId);
+  await page.getByLabel('Replacement raster images').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
+  await page.getByRole('button', { name: 'Save Cloudinary images', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Cloudinary images saved' })).toBeVisible();
+  const product = await (await page.request.get(adminOrigin + '/api/admin/products/' + productId)).json();
+  expect(product.cloudinaryImages[0]).toMatch(/^https:\/\/res.cloudinary.com\/synthetic\/image\/upload\/v1\/almina\/products\//);
+  expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);
+  await page.goto(adminOrigin + '/admin/products');
+  page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Archive product', exact: true }).click();
+  await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('No records found.');
+  expect((await state(request)).stock).toBe(4);
+  const unpublished = await page.request.put(adminOrigin + '/api/admin/products/publish/' + productId, { headers: { origin: adminOrigin, 'x-csrf-protection': '1' }, data: {} });
+  expect(unpublished.status()).toBe(409);
+});

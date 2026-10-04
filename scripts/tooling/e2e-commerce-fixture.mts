@@ -10,6 +10,7 @@ import { hash } from 'bcryptjs';
 import type { Express } from 'express';
 import { migrateCommerce } from '../migrations/commerce.js';
 import { createApp } from '../../apps/api/src/app.js';
+import { cloudinarySignature } from '../../apps/api/src/modules/media/cloudinary.js';
 import { createLogger } from '@almina/config/logger';
 
 const require = createRequire(import.meta.url);
@@ -30,12 +31,13 @@ await mongoose.connect(uri, { dbName });
 const password = await hash('synthetic-test-password', 4);
 let delayNext = false;
 let fixtureCase = 0;
+const mediaAssets = new Map<string, object>();
 const timers = new Set<ReturnType<typeof setTimeout>>();
 async function reset() {
   if (!/^almina_e2e_test_[a-f0-9]{32}$/.test(dbName)) throw new Error('Unsafe fixture database');
   await db.dropDatabase();
   delayNext = false;
-  fixtureCase++;
+  fixtureCase++; mediaAssets.clear();
   const category = new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');
   await db.collection('categories').insertOne({ _id: category, name: 'Synthetic category', disabled: false });
   await db.collection('products').insertOne({ _id: new ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'), product_id: 'PD0001',
@@ -102,7 +104,14 @@ const versioned = createApp({ getDb: async () => db, database: { checkReadiness:
   logger: createLogger({ service: 'api', environment: 'development', level: 'error' }),
   webOrigin: 'http://127.0.0.1:4740', development: true });
 app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });
-const legacy = createLegacyApp({ trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740'], development: true });
+const mediaTransport: typeof fetch = async (url, options) => {
+  if (options?.method !== 'POST') { const publicId = decodeURIComponent(String(url).split('/upload/')[1]!); return mediaAssets.has(publicId) ? Response.json(mediaAssets.get(publicId)) : new Response('{}', { status: 404 }); }
+  const form = options.body as FormData, publicId = String(form.get('public_id'));
+  const asset = { public_id: publicId, version: 1, resource_type: 'image', type: 'upload', format: 'webp', width: 500, height: 500, bytes: 100,
+    secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp` };
+  mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
+};
+const legacy = createLegacyApp({ mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);
