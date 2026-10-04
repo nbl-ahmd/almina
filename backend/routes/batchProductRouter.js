@@ -1,10 +1,7 @@
 const express = require('express');
 const batchProductRouter = express.Router();
-const csv = require('csvtojson');
-const path = require('path');
 const multer = require('multer');
-const uploadDir = path.join(__dirname, '..', 'public/csv');
-const upload = multer({ dest: uploadDir, limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 5, parts: 6 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 5, parts: 6 } });
 batchProductRouter.post('/', require('../security/boundary.cjs').wrap(async (req, _res, next) => {
   const db = await req.app.locals.getCommerceDb();
   if (!db) throw require('../security/boundary.cjs').fail(503, 'SERVICE_UNAVAILABLE');
@@ -13,15 +10,10 @@ batchProductRouter.post('/', require('../security/boundary.cjs').wrap(async (req
   }
   next();
 }), upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
-    const rows = await csv().fromFile(req.file.path);
-    const db = await req.app.locals.getCommerceDb();
-    res.json(await require('../commerce/dist/service.cjs').createLegacyCatalogBatch(db, rows, req.identity.id));
-  } finally {
-    // Only the request's bounded temporary CSV is removed; media is never deleted.
-    if (req.file) await require('node:fs/promises').unlink(req.file.path).catch(() => undefined);
-  }
+  if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const rows = require('../commerce/dist/service.cjs').retainedCatalogCsv(req.file.buffer);
+  const db = await req.app.locals.getCommerceDb();
+  res.json(await require('../commerce/dist/service.cjs').createLegacyCatalogBatch(db, rows, req.identity.id));
 });
 
 module.exports = batchProductRouter;

@@ -188,3 +188,37 @@ test('inventory ledger commits once, rejects stale concurrent edits and retains 
     assert.equal((await db.collection('inventory_adjustments').findOne({ _id: entry._id }))!.delta, entry.delta);
   } finally { await db.dropDatabase(); await client.close(); }
 });
+
+test('retained HTTP CSV converts bounded strings into atomic legacy catalog writes and blocks recovery before multipart parsing', { skip: !uri }, async () => {
+  assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_csv_test_' + randomUUID().replaceAll('-', ''));
+  const actor = String(new ObjectId());
+  const { createLegacyApp } = require('./app.js');
+  const app = createLegacyApp({ getCommerceDb: () => db, origins: ['http://localhost:3000'], development: true, recoveryAllowed: false,
+    auth: { authenticate: async () => ({ id: actor, role: 'admin', cities: [] }) } });
+  const headers = { Origin: 'http://localhost:3000', 'X-CSRF-Protection': '1' };
+  try {
+    await db.collection('stores').insertOne({ status: 'closed' });
+    await serve(app, async origin => {
+      const submit = (csv: string) => { const form = new FormData(); form.set('file', new Blob([csv], { type: 'text/csv' }), 'synthetic.csv');
+        return fetch(origin + '/api/batch', { method: 'POST', headers, body: form }); };
+      const columns = 'name,category,barcode,price,stock,vat,sale,salePrice,product_id,disabled';
+      const response = await submit(columns + '\r\n"Synthetic, care",New category,000012345678901234567890,12.50,2,TRUE,TRUE,10.01,untrusted-id,TRUE\r\n');
+      assert.equal(response.status, 200); assert.deepEqual(await response.json(), { success: true, count: 1 });
+      const product = (await db.collection('products').findOne())!;
+      assert.equal(product.product_id, 'PD5001'); assert.equal(product.barcode, '000012345678901234567890'); assert.equal(product.price, 12.50);
+      assert.equal(product.salePrice, 10.01); assert.equal(product.stock, 2); assert.equal(product.disabled, false);
+      assert.equal((await db.collection('inventory_adjustments').findOne())!.actor, actor);
+      assert.equal((await db.collection('stores').findOne())!.status, 'closed');
+      for (const invalid of [columns + '\nBad,Must not exist,001,1.001,0,FALSE,FALSE,,ignored,FALSE',
+        columns + '\nBad,Must not exist,001,1.00,-1,FALSE,FALSE,,ignored,FALSE', columns + '\n"unterminated',
+        'name,name,category,barcode,price,stock\nA,B,C,1,1.00,0']) assert.equal((await submit(invalid)).status, 400);
+      assert.equal(await db.collection('products').countDocuments(), 1); assert.equal(await db.collection('categories').countDocuments(), 1);
+      assert.equal(await db.collection('inventory_adjustments').countDocuments(), 1);
+      await db.collection<{ _id: string }>('recovery_bootstrap').insertOne({ _id: 'empty-database-v1' });
+      const blocked = await fetch(origin + '/api/batch', { method: 'POST', headers: { ...headers, 'Content-Type': 'multipart/form-data; boundary=missing' }, body: 'invalid multipart' });
+      assert.equal(blocked.status, 409); assert.equal((await blocked.json()).code, 'RECOVERY_IMPORT_REQUIRED');
+      assert.equal(await db.collection('products').countDocuments(), 1);
+    });
+  } finally { await db.dropDatabase(); await client.close(); }
+});

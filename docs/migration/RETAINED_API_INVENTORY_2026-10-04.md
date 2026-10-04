@@ -107,3 +107,5 @@ Session/cookie/CSRF ownership now lives in maintained auth/sessions.ts and auth/
 The retained default-deny route map and exact-origin/current-administrator Socket.IO facade now have maintained auth/retained-policy.ts and auth/realtime.ts ownership. CommonJS files are compatibility exports; event names/payloads and optional shared-bus contract remain. The independent retained boundary still enforces server authorization before effects. See RETAINED_AUTH_BOUNDARY_2026-10-04.md.
 
 Unreferenced admin-input/admin-pagination/catalog-query source validators and database/db.js configuration stub are retired; administrator tests now check maintained production validation owners. No active API/data/media contract changes. See UNUSED_VALIDATOR_RETIREMENT_2026-10-04.md.
+
+Retained CSV decoding now uses maintained imports/csv.ts and catalog/csv.ts with bounded memory multipart storage; csvtojson is removed. Recovery block runs before parsing and the maintained transactional creation owner still supplies commercial/identity/ledger behavior. No existing files/media are deleted. See BOUNDED_CATALOG_CSV_2026-10-04.md.
