@@ -1,5 +1,6 @@
 // Real legacy HTTP/driver stack, restricted to a new disposable loopback replica set.
 import { createRequire } from 'node:module';
+import { fixtureHealth } from './e2e-ownership.mjs';
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { MongoMemoryReplSet } from 'mongodb-memory-server-core';
@@ -50,7 +51,7 @@ async function reset() {
 await reset();
 const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
-app.get('/__fixture/health', (_req, res) => res.send('almina-verification-commerce'));
+app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
 app.post('/__fixture/whatsapp/failure', (_req, res) => { whatsappFailure = true; res.sendStatus(204); });
 app.post('/__fixture/whatsapp/history', async (_req, res, next) => {

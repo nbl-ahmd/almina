@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { fixtureHealth } from './e2e-ownership.mjs';
 import { createServer as createSecureServer } from 'node:https';
 import { pathToFileURL } from 'node:url';
 // Synthetic compatibility API only. No database, credentials or customer data.
@@ -24,7 +25,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
   const server = factory((req, res) => {
     const url = new URL(req.url, 'http://fixture.invalid');
     requests.push({ method: req.method, pathname: url.pathname });
-    if (url.pathname === '/__fixture/health') { res.end('almina-synthetic-catalog'); return; }
+    if (url.pathname === '/__fixture/health') { res.end(fixtureHealth('almina-synthetic-catalog', process.env.AL_MINA_FIXTURE_RUN_ID)); return; }
     if (url.pathname === '/__fixture/closed') { closed = !closed; res.end('OK'); return; }
     if (url.pathname === '/__fixture/failure') { failed = !failed; res.end('OK'); return; }
     if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
