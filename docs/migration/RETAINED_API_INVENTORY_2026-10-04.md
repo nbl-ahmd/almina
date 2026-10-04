@@ -105,3 +105,5 @@ The native persistent pool now replaces ambient Mongoose connection fallbacks. B
 Session/cookie/CSRF ownership now lives in maintained auth/sessions.ts and auth/cookies.ts. The retained CommonJS path only forwards compatibility exports; both HTTP contracts share current identity/receipt/quotas. No token/account/history migration or production credential rotation. See SESSION_OWNERSHIP_2026-10-04.md.
 
 The retained default-deny route map and exact-origin/current-administrator Socket.IO facade now have maintained auth/retained-policy.ts and auth/realtime.ts ownership. CommonJS files are compatibility exports; event names/payloads and optional shared-bus contract remain. The independent retained boundary still enforces server authorization before effects. See RETAINED_AUTH_BOUNDARY_2026-10-04.md.
+
+Unreferenced admin-input/admin-pagination/catalog-query source validators and database/db.js configuration stub are retired; administrator tests now check maintained production validation owners. No active API/data/media contract changes. See UNUSED_VALIDATOR_RETIREMENT_2026-10-04.md.
