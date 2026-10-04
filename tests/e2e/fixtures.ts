@@ -20,7 +20,8 @@ export const test = base.extend<{ isolatedNetwork: void; expectedReactBoundaryFa
     await use();
     if (expectedReactBoundaryFailure) {
       // React 419 reports intentional aborted SSR Suspense boundaries; every other error fails.
-      expect(errors.length).toBeGreaterThan(0); expect(errors.length).toBeLessThanOrEqual(2);
+      // Reporting depends on hydration timing; an observed error boundary is asserted in the test.
+      expect(errors.length).toBeLessThanOrEqual(2);
       for (const error of errors) expect(error).toMatch(/^Minified React error #419; visit https:\/\/react\.dev\/errors\/419 /);
     } else expect(errors, 'Unexpected JavaScript errors').toEqual([]);
   }, { auto: true }],
