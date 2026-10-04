@@ -1,14 +1,11 @@
 var express = require('express');
 const { whatsappSender } = require("../integrations/whatsapp.cjs");
 const whatsappRouter = express.Router();
-const Whatsapp = require('../models/Whatsapp');
 const multer = require('multer');
 const { randomUUID } = require('node:crypto');
-const WhatsappPoster = require('../models/WhatsappPoster');
 const sharp = require('sharp');
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-const whatsappBulkReportModel = require('../models/whatsappBulkReport');
 const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '11wB-C-ZmixvTLZnrFVkRfokTQmBmLlmv';
 
@@ -25,52 +22,20 @@ whatsappRouter.post('/image', upload.single('image'), require('../security/uploa
   res.status(201).json({ message: 'poster created successfully' });
 });
 
-  whatsappRouter.get('/image', (req, res) => {
-  const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-  WhatsappPoster.find({ archivedAt: { $exists: false } }).sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
-    .then(poster => {
-      res.status(200).json(poster);
-    })
-    .catch(error => {
-
-      res.status(500).json({ error: 'Internal server error' });
-    });
+const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+whatsappRouter.get('/image', async (req, res) => {
+  res.json(await require('../commerce/dist/service.cjs').retainedWhatsappList(await getDb(req), 'posters', req.query));
 });
-
 whatsappRouter.get('/image/:filename', async (req, res) => {
-  const { filename } = req.params;
-
-  try {
-    // Retrieve the poster by filename from the database
-    const poster = await WhatsappPoster.findOne({ image: filename });
-    if (!poster) {
-      return res.status(404).json({ error: 'poster not found' });
-    }
-
-    // Retrieve the image file from Google Drive
-    const asset = await driveMedia(req).read(poster.gdriveFileId);
-    res.type(asset.contentType).send(asset.bytes);
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  const fileId = await require('../commerce/dist/service.cjs').retainedWhatsappPoster(await getDb(req), req.params.filename, req.query);
+  const asset = await driveMedia(req).read(fileId);
+  res.type(asset.contentType).send(asset.bytes);
 });
 
 whatsappRouter.delete('/image/:id', async (req, res) => {
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'whatsappposters', req.params.id, req.identity.id));
 });
-
-
-
-
-
-
-
-
-
-
-
 
 async function outbound(req, kind) {
   const domain = require('../commerce/dist/service.cjs');
@@ -93,44 +58,15 @@ whatsappRouter.post('/text', async (req, res) => {
 whatsappRouter.post('/sr', (_req, res) => res.status(410).json({ error: 'Retired demo endpoint' }));
 whatsappRouter.post('/', (_req, res) => res.status(410).json({ error: 'Retired demo endpoint' }));
 
-  // Express route to fetch all recipients
-  whatsappRouter.get('/recipients', async (req, res) => {
-  try {
-    // Fetch all distinct usernames from the database
-    const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-    const recipients = await Whatsapp.find({}).select('from name promotionStatus').sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0);
-    res.json(recipients);
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
+whatsappRouter.get('/recipients', async (req, res) => {
+  res.json(await require('../commerce/dist/service.cjs').retainedWhatsappList(await getDb(req), 'recipients', req.query));
 });
-  whatsappRouter.get('/reports', async (req, res) => {
-    const page = require('../security/admin-pagination.cjs').adminPagination(req.query) ?? { limit: 25, offset: 0 };
-    const reports = await whatsappBulkReportModel.find().select({ broadcast: { $slice: -100 } }).sort({ _id: -1 }).skip(page.offset).limit(page.limit);
-    res.json(reports);
-  });
-  whatsappRouter.get('/messages/:recipient', async (req, res) => {
-    const recipient = req.params.recipient;
-
-    try {
-      // Find the conversation for the given recipient
-      const conversation = await Whatsapp.findOne({ from: recipient });
-      if (conversation) {
-        // Send the messages to the client
-        res.json(conversation);
-      } else {
-        res.status(404).json({ error: 'Conversation not found' });
-      }
-    } catch (error) {
-
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-
-
-
-  });
-
+whatsappRouter.get('/reports', async (req, res) => {
+  res.json(await require('../commerce/dist/service.cjs').retainedWhatsappList(await getDb(req), 'reports', req.query));
+});
+whatsappRouter.get('/messages/:recipient', async (req, res) => {
+  res.json(await require('../commerce/dist/service.cjs').retainedWhatsappConversation(await getDb(req), req.params.recipient, req.query));
+});
 
 whatsappRouter.post('/webhook', async (req, res) => {
   const db = req.app.locals.getWebhookDb ? await req.app.locals.getWebhookDb() : require('mongoose').connection.db;
@@ -171,10 +107,5 @@ whatsappRouter.get("/webhook", (req, res) => {
     }
   } else { res.sendStatus(403); }
 });
-
-
-
-
-
 
 module.exports = whatsappRouter;

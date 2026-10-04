@@ -43,3 +43,19 @@ for (const width of [360, 390, 768, 1280]) test(`single/bulk template receipts s
   await expect(page.getByRole('status').filter({ hasText: 'failed or uncertain' })).toBeVisible();
   expect(await (await request.get(commerceOrigin + '/__fixture/whatsapp/state')).json()).toEqual({ sends, receipts: sends, messages: 0 });
 });
+for (const width of [360, 390, 768, 1280]) test(`WhatsApp history stays accessible through keyboard pagination and reload at ${width}px`, async ({ page, request }) => {
+  await request.post(commerceOrigin + '/__fixture/whatsapp/history'); await login(page); await page.setViewportSize({ width, height: 900 });
+  await page.goto(adminOrigin + '/admin/whatsapp/971500000001');
+  const history = page.getByRole('table', { name: 'Conversation history' });
+  await expect(history.getByRole('row')).toHaveCount(26); await expect(history).toContainText('Synthetic history 36'); await expect(history).toContainText('Synthetic history 60');
+  const pages = page.getByRole('navigation', { name: 'Conversation history pages' });
+  await pages.getByRole('link', { name: 'Older messages' }).focus(); await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/offset=25/); await page.reload(); await expect(history).toContainText('Synthetic history 11'); await expect(history).not.toContainText('Synthetic history 60');
+  await pages.getByRole('link', { name: 'Older messages' }).click(); await expect(history.getByRole('row')).toHaveCount(12);
+  await expect(history).toContainText('Synthetic history 0'); await expect(pages.getByRole('link', { name: 'Older messages' })).toHaveCount(0);
+  await pages.getByRole('link', { name: 'Newer messages' }).click(); await expect(page).toHaveURL(/offset=25/);
+  await page.goto(adminOrigin + '/admin/whatsapp/971500000001?offset=75'); await expect(history.getByRole('row')).toHaveCount(2);
+  await expect(page.getByText('No records found.', { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.locator('body')).not.toContainText('private-provider');
+});

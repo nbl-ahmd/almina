@@ -24,3 +24,4 @@ export * from './modules/notifications/push-outbox.js';
 export { createApp as createVersionedApp } from './app.js';
 export { createLogger } from '@almina/config/logger';
 export { HttpError } from './errors.js';
+export * from './modules/notifications/whatsapp-reads.js';

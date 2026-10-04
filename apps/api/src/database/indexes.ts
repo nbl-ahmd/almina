@@ -28,6 +28,8 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
     { name: 'staff_push_job_claim', key: { createdAt: 1, pushState: 1, pushLeaseUntil: 1, pushNextAttemptAt: 1 } }],
   staff_push_deliveries: [{ name: 'staff_push_review', key: { state: 1, createdAt: 1 } }],
   users: [{ name: 'staff_push_scope', key: { role: 1, disabled: 1, _id: 1 } }],
+  conversations: [{ name: 'whatsapp_sender_lookup', key: { from: 1 } }],
+  whatsappposters: [{ name: 'whatsapp_poster_filename', key: { image: 1 } }],
   auth_rate_limits: [{ name: 'auth_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
   api_sessions: [
     { name: 'v1_session_token', key: { tokenHash: 1 }, unique: true },

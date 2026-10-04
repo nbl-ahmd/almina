@@ -52,16 +52,16 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | PUT | /api/orders/:orderId | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | PUT | /api/orders/cancel/:orderId | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | POST | /api/whatsapp/image | admin | Maintained poster metadata/reference creation; retained Drive upload and realtime adapter |
-| GET | /api/whatsapp/image | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| GET | /api/whatsapp/image/:filename | public | whatsapp.js → Meta/Drive/conversation/report adapters |
+| GET | /api/whatsapp/image | admin | Maintained bounded poster list/projection; archived assets hidden from lists |
+| GET | /api/whatsapp/image/:filename | public | Maintained bounded raster/reference lookup; archived shared URLs retained; Drive provider adapter |
 | DELETE | /api/whatsapp/image/:id | admin | maintained media/retention.ts archive; references retained |
 | POST | /api/whatsapp/s | admin | Maintained bounded sender and actor/digest receipt; compatibility JSON adapter |
 | POST | /api/whatsapp/sr | admin | Explicit 410 retired demo URL; no provider/database effect |
 | POST | /api/whatsapp | admin | Explicit 410 retired demo URL; no provider/database effect |
 | POST | /api/whatsapp/text | admin | Maintained accepted-message transaction and bounded sender; compatibility redirect adapter |
-| GET | /api/whatsapp/reports | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| GET | /api/whatsapp/recipients | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
-| GET | /api/whatsapp/messages/:recipient | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
+| GET | /api/whatsapp/reports | admin | Maintained bounded report pages; existing last-100 broadcast window |
+| GET | /api/whatsapp/recipients | admin | Maintained bounded recipient projection; existing opt-out values retained |
+| GET | /api/whatsapp/messages/:recipient | admin | Maintained validated paged conversation history; internal receipt/provider fields excluded |
 | POST | /api/whatsapp/webhook | webhook | Maintained signed normalized inbox/receipt transaction; retained realtime adapter |
 | GET | /api/whatsapp/webhook | verification | whatsapp.js → Meta/Drive/conversation/report adapters |
 
@@ -93,3 +93,5 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 Inventory regression compares mounted routers with every documented policy/route. Extraction tests verify domain and retained HTTP parity against disposable MongoDB. Provider effects require injected adapters and outage/retry tests. Security and integrity precede interface polish.
 
 Staff push sender/worker ownership now resides in maintained notifications/push.ts and push-outbox.ts behind integrations/push.cjs. It is explicitly disabled pending provider/key/browser acceptance. Additive committed-job fields and majority delivery receipts preserve email and commerce contracts; uncertain outcomes never auto-replay. See STAFF_PUSH_DELIVERY_2026-10-04.md.
+
+The unreferenced Whatsapp/WhatsappPoster/whatsappBulkReport Mongoose source schemas are removed after native maintained write/read ownership. No database schema contraction/index removal or media deletion occurs. All WhatsApp reads now have maintained owners; external omitted-limit consumers and hosted history/provider parity remain acceptance gates. See WHATSAPP_READ_OWNERSHIP_2026-10-04.md.

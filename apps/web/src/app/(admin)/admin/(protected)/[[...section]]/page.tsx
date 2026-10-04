@@ -518,11 +518,12 @@ export default async function AdminPage({
   if (section === "whatsapp") {
     if (detail) {
       const conversation = record(
-        await adminRead(`whatsapp/messages/${detail}`),
+        await adminRead(`whatsapp/messages/${detail}`, qs),
       );
       return (
         <>
           <h1>Conversation with {display(conversation.name)}</h1>
+          {conversation.messageCount !== undefined ? <p>Showing a page of {display(conversation.messageCount)} stored messages, in chronological order. The first page contains the most recent messages.</p> : null}
           <Table
             caption="Conversation history"
             data={rows(conversation.messages)}
@@ -532,6 +533,10 @@ export default async function AdminPage({
               { key: "timestamp", label: "Sent" },
             ]}
           />
+          <nav aria-label="Conversation history pages" className="admin-actions">
+            {Number(conversation.messageOffset) > 0 ? <Link href={`/admin/whatsapp/${detail}?${new URLSearchParams({ limit: String(query.limit ?? 25), offset: String(Math.max(0, Number(conversation.messageOffset) - Number(query.limit ?? 25))) })}`}>Newer messages</Link> : null}
+            {conversation.hasOlderMessages === true ? <Link href={`/admin/whatsapp/${detail}?${new URLSearchParams({ limit: String(query.limit ?? 25), offset: String(Number(conversation.messageOffset ?? 0) + Number(query.limit ?? 25)) })}`}>Older messages</Link> : null}
+          </nav>
           <AdminForm
             path="whatsapp/text"
             label="Send message"

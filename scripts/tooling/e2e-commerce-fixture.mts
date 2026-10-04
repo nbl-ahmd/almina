@@ -55,6 +55,9 @@ app.use(express.json({ limit: '128kb' }));
 app.get('/__fixture/health', (_req, res) => res.send('almina-verification-commerce'));
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
 app.post('/__fixture/whatsapp/failure', (_req, res) => { whatsappFailure = true; res.sendStatus(204); });
+app.post('/__fixture/whatsapp/history', async (_req, res, next) => {
+  try { await db.collection('conversations').updateOne({ from: '971500000001' }, { $set: { messages: Array.from({ length: 61 }, (_, i) => ({ content: `Synthetic history ${i}`, sender: 'user', timestamp: new Date(i * 1000), providerId: 'private-provider' })) } }); res.sendStatus(204); } catch (error) { next(error); }
+});
 app.get('/__fixture/whatsapp/state', async (_req, res, next) => {
   try { res.json({ sends: whatsappSends, receipts: await db.collection('whatsapp_outbound').countDocuments(),
     messages: (await db.collection('conversations').findOne({ from: '971500000001' }))?.messages.length }); } catch (error) { next(error); }

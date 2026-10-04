@@ -176,6 +176,10 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
       offset: String(query.offset),
     }).toString();
   }
+  if (/^whatsapp\/messages\/\+?[0-9]{1,20}$/.test(path)) {
+    const query = listQuery.extend({ offset: z.coerce.number().int().min(0).max(100000000).default(0) }).parse(values);
+    return new URLSearchParams({ limit: String(query.limit), offset: String(query.offset) }).toString();
+  }
   z.object({}).strict().parse(values);
   return "";
 }
@@ -250,6 +254,7 @@ const fields = new Set([
   "from",
   "promotionStatus",
   "messages",
+  "messageCount", "messageOffset", "hasOlderMessages",
   "content",
   "timestamp",
   "sender",
