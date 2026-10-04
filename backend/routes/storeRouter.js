@@ -1,66 +1,20 @@
-const express = require('express');
-const storeRouter = express.Router();
-const Store = require('../models/Store'); // Import your Store model
-
-// Route to update the store status (only accessible by admin)
-storeRouter.put('/status', async (req, res) => {
-  const { status } = req.body;
-   // Add this line for debugging
-
-  if (typeof status === 'boolean' ) {
-    try {
-
-      // Update the store status in the database
-      const result = await Store.findOneAndUpdate({}, { status: status ? 'open' : 'closed' }, { upsert: true });
-       // Log the result for debugging
-
-      res.status(200).json({ message: 'Store status updated successfully' });
-    } catch (error) {
-
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  } else {
-    res.status(400).json({ message: 'Invalid store status' });
-  }
+const router = require('express').Router();
+const mongoose = require('mongoose');
+const { setStoreStatus, storeStatus } = require('../commerce/dist/service.cjs');
+const { fail } = require('../security/boundary.cjs');
+const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : mongoose.connection.db;
+const noQuery = req => { if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST'); };
+// The retained boundary independently authorizes before this adapter.
+router.put('/status', async (req, res) => {
+  noQuery(req); await setStoreStatus(await getDb(req), req.body);
+  res.json({ message: 'Store status updated successfully' });
 });
-
-
-
-// Middleware to check if the store is closed
-storeRouter.use('/cart/add', async (req, res, next) => {
-  try {
-    // Fetch the store status from the database
-    const store = await Store.findOne({});
-    if (store && store.status === 'closed') {
-      return res.status(403).json({ message: 'Store is closed' });
-    }
-    next();
-  } catch (error) {
-
-    res.status(500).json({ message: 'Internal server error' });
-  }
+router.post('/cart/add', async (req, res) => {
+  noQuery(req);
+  if (await storeStatus(await getDb(req)) !== 'open') throw fail(403, 'FORBIDDEN');
+  res.status(204).end();
 });
-
-// Example route for adding items to the cart
-storeRouter.post('/cart/add', (req, res) => {
-  res.status(204).end(); // This legacy endpoint only checks store status.
+router.get('/status', async (req, res) => {
+  noQuery(req); res.json({ status: await storeStatus(await getDb(req)) });
 });
-
-// Route to get the store status
-storeRouter.get('/status', async (req, res) => {
-  try {
-    // Fetch the store status from the database
-    const store = await Store.findOne({});
-    if (store) {
-      res.status(200).json({ status: store.status });
-    } else {
-      res.status(404).json({ message: 'Store not found' });
-    }
-  } catch (error) {
-
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// Export the router
-module.exports = storeRouter;
+module.exports = router;

@@ -1,6 +1,12 @@
 # Migration status
 
-Last updated: 2026-10-03.
+Last updated: 2026-10-04.
+
+## Continuation from integrated master — 2026-10-04
+
+PR #2 merged at `d912a269247a63ffbd3bc55e3d9f9c20ae8d9cf2`; all twelve requested source branches are ancestors. Master foundation runs `37151757878` and `37151752130` passed, including required `verify`. Hosting acceptance remains incomplete. Older sections below are historical evidence: the retained frontend now uses Vite, all three current lockfile installs report zero vulnerabilities, and Next checkout exists behind explicit activation. No production deployment/credential/database operation is claimed.
+
+First focused extraction on `codex/retained-api-ownership`: [complete retained route/effect/fallback inventory](RETAINED_API_INVENTORY_2026-10-04.md), the previously missing [remaining migration plan](MIGRATION_PLAN.md), and maintained TypeScript store domain behind existing authenticated legacy adapters. Default-deny authorization and URL/response contracts remain. Inventory tests cover every mounted route/policy. Fresh lockfile installation, lint/typecheck, 50 unit, 95 API/security and 23 mandatory disposable database/load tests passed. No legacy fields/assets or frontend directory removed.
 
 ## Production migration readiness — blocked
 
