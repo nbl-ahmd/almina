@@ -2,6 +2,8 @@
 
 Last updated: 2026-10-04.
 
+Current continuation: staff push is implemented as a disabled-by-default held candidate on `codex/staff-push-delivery`, deriving durable generic notifications from committed jobs with scoped subscribers, conditional expiry and uncertain-response quarantine. [Contracts, exact test evidence and operator gates](STAFF_PUSH_DELIVERY_2026-10-04.md). Persistent API PR #24 passed required verify in `37215975924` / `37215995553`; Vercel/Cloudflare previews fail. Remaining bounded retained readers/adapters, component adoption, consent telemetry and all hosted acceptance remain incomplete.
+
 ## Continuation from integrated master — 2026-10-04
 
 PR #2 merged at `d912a269247a63ffbd3bc55e3d9f9c20ae8d9cf2`; all twelve requested source branches are ancestors. Master foundation runs `37151757878` and `37151752130` passed, including required `verify`. Hosting acceptance remains incomplete. Older sections below are historical evidence: the retained frontend now uses Vite, all three current lockfile installs report zero vulnerabilities, and Next checkout exists behind explicit activation. No production deployment/credential/database operation is claimed.

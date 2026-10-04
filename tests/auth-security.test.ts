@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
-import { createHmac, randomBytes } from 'node:crypto';
+import { createHmac, randomBytes, createECDH } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { test } from 'node:test';
 import { hash } from 'bcryptjs';
@@ -305,12 +305,13 @@ test('push subscription writes are owned by the current staff identity and rejec
   mongoose.connection.db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); } }) };
   t.after(() => { mongoose.connection.db = prior; });
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
-  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth }), async origin => {
+  const curve = createECDH('prime256v1'); curve.generateKeys();
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => mongoose.connection.db }), async origin => {
     for (const endpoint of ['http://127.0.0.1/private', 'https://evil.example.invalid', 'https://fcm.googleapis.com.evil.example.invalid']) {
       assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ subscription: { endpoint } }) })).status, 400);
     }
     const response = await fetch(`${origin}/api/orders/subscribe`, { method: 'POST', headers: browserHeaders,
-      body: JSON.stringify({ userId: 'caller-selected-user', subscription: { endpoint: 'https://fcm.googleapis.com/synthetic', keys: { p256dh: 'a'.repeat(87), auth: 'b'.repeat(22) } } }) });
+      body: JSON.stringify({ userId: 'caller-selected-user', subscription: { endpoint: 'https://fcm.googleapis.com/synthetic', keys: { p256dh: curve.getPublicKey().toString('base64url'), auth: randomBytes(16).toString('base64url') } } }) });
     assert.equal(response.status, 204); assert.equal(owner, id.toHexString());
   });
 });
@@ -358,7 +359,7 @@ test('push unsubscribe deletes only the current staff subscription', async t => 
   mongoose.connection.db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; } }) };
   t.after(() => { mongoose.connection.db = prior; });
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
-  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth }), async origin => {
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => mongoose.connection.db }), async origin => {
     assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'DELETE', headers: browserHeaders })).status, 204);
     assert.equal(owner, id.toHexString()); assert.deepEqual(update, { $unset: { subscription: '' } });
   });

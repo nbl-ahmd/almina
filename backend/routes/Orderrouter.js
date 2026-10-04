@@ -14,23 +14,17 @@ const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb ??
 
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
-  const subscription = req.body?.subscription;
-  let endpoint;
-  try { endpoint = new URL(subscription?.endpoint); } catch { return res.status(400).json({ error: 'Invalid subscription' }); }
-  const hosts = ['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'web.push.apple.com', 'wns.windows.com'];
-  if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.port
-    || !hosts.some(host => endpoint.hostname === host || endpoint.hostname.endsWith('.' + host))
-    || typeof subscription?.keys?.p256dh !== 'string' || !/^[A-Za-z0-9_-]{80,100}$/.test(subscription.keys.p256dh)
-    || typeof subscription?.keys?.auth !== 'string' || !/^[A-Za-z0-9_-]{20,30}$/.test(subscription.keys.auth)
-    || endpoint.href.length > 2048) return res.status(400).json({ error: 'Invalid subscription' });
-  await require('mongoose').connection.db.collection('users').updateOne(
+  const subscription = require('../commerce/dist/service.cjs').pushSubscription(req.body?.subscription);
+  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  await db.collection('users').updateOne(
     { _id: new (require('mongoose').Types.ObjectId)(req.identity.id) },
-    { $set: { subscription: { endpoint: endpoint.href, keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth } } } });
+    { $set: { subscription } });
   res.status(204).end();
 }));
 
 Orderrouter.delete('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
-  await require('mongoose').connection.db.collection('users').updateOne(
+  const db = await (req.app.locals.getCommerceDb ?? getLegacyDb)();
+  await db.collection('users').updateOne(
     { _id: new (require('mongoose').Types.ObjectId)(req.identity.id) }, { $unset: { subscription: '' } });
   res.status(204).end();
 }));

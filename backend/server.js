@@ -14,13 +14,15 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
-let worker;
+let worker, pushWorker;
 let shutdown;
-mongoose.connect(runtime.mongoUri, runtime.mongoOptions).then(() => {
+mongoose.connect(runtime.mongoUri, runtime.mongoOptions).then(async () => {
   if (app.locals.draining) return mongoose.disconnect();
+  pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => mongoose.connection.db);
+  if (app.locals.draining) { await pushWorker?.stop(); return mongoose.disconnect(); }
   worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => mongoose.connection.db);
   server.listen(runtime.port, () => console.log('Express API listening'));
-}).catch(() => { console.error('Database connection failed'); process.exitCode = 1; });
+}).catch(async () => { console.error('API initialization failed'); await pushWorker?.stop(); await mongoose.disconnect(); process.exitCode = 1; });
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
 server.keepAliveTimeout = 5000;
@@ -36,7 +38,7 @@ function stop() {
       io.close(() => resolve());
       server.closeIdleConnections();
     }),
-    stopWorkers: async () => { await worker?.stop(); },
+    stopWorkers: async () => { await Promise.all([worker?.stop(), pushWorker?.stop()]); },
     closeDatabase: async () => { await mongoose.disconnect(); },
     forceConnections: () => { io.disconnectSockets(true); server.closeAllConnections(); },
   }).catch(() => { console.error('Retained shutdown deadline failed'); process.exit(1); });

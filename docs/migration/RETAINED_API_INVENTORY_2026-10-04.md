@@ -44,8 +44,8 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/orders | public | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | POST | /api/orders/quote | public | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | POST | /api/orders/email | admin | Maintained bounded administrative email/SMTP policy; retained Nodemailer/socket adapter |
-| POST | /api/orders/subscribe | staff | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
-| DELETE | /api/orders/subscribe | staff | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
+| POST | /api/orders/subscribe | staff | Maintained strict push subscription validation; current authenticated owner only |
+| DELETE | /api/orders/subscribe | staff | Retained authenticated current-owner unsubscribe adapter |
 | GET | /api/orders | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | GET | /api/orders/:id | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | PUT | /api/orders/edit/:orderId | admin | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
@@ -91,3 +91,5 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 ## Verification
 
 Inventory regression compares mounted routers with every documented policy/route. Extraction tests verify domain and retained HTTP parity against disposable MongoDB. Provider effects require injected adapters and outage/retry tests. Security and integrity precede interface polish.
+
+Staff push sender/worker ownership now resides in maintained notifications/push.ts and push-outbox.ts behind integrations/push.cjs. It is explicitly disabled pending provider/key/browser acceptance. Additive committed-job fields and majority delivery receipts preserve email and commerce contracts; uncertain outcomes never auto-replay. See STAFF_PUSH_DELIVERY_2026-10-04.md.

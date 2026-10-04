@@ -5,7 +5,7 @@ import type { OperationalMetrics } from './metrics.js';
 export async function operationsSnapshot(db: Db, metrics: OperationalMetrics) {
   try {
     const query = { maxTimeMS: 3000 };
-    const [stock, duplicates, orphanReceipts, missingReceipts, missingJobs, outbox, inbox] = await bounded(Promise.all([
+    const [stock, duplicates, orphanReceipts, missingReceipts, missingJobs, outbox, inbox, push, pushJobs] = await bounded(Promise.all([
       db.collection('products').aggregate([{ $match: { $expr: { $eq: [{ $cond: [{ $isNumber: '$stock' },
         { $and: [{ $gte: ['$stock', 0] }, { $lte: ['$stock', Number.MAX_SAFE_INTEGER] }, { $eq: ['$stock', { $trunc: '$stock' }] }] }, false] }, false] } } }, { $count: 'count' }], query).toArray(),
       db.collection('orders').aggregate([{ $match: { orderId: { $type: 'string' } } },
@@ -24,6 +24,14 @@ export async function operationsSnapshot(db: Db, metrics: OperationalMetrics) {
         { $group: { _id: '$state', count: { $sum: 1 }, oldest: { $min: '$createdAt' } } }], query).toArray(),
       db.collection('webhook_receipts').aggregate([{ $match: { state: 'pending' } },
         { $group: { _id: null, count: { $sum: 1 }, oldest: { $min: '$receivedAt' } } }], query).toArray(),
+      db.collection('staff_push_deliveries').aggregate([{ $match: { state: { $in: ['sending', 'retry', 'failed', 'uncertain'] } } },
+        { $group: { _id: '$state', count: { $sum: 1 }, oldest: { $min: '$createdAt' } } }], query).toArray(),
+      db.collection('order_outbox').aggregate([
+        { $lookup: { from: 'notification_controls', pipeline: [{ $match: { _id: 'staff-order-push-v1' } }, { $project: { enabledAt: 1 } }], as: 'pushControl' } },
+        { $unwind: '$pushControl' }, { $match: { $expr: { $gte: ['$createdAt', '$pushControl.enabledAt'] }, $or: [
+          { pushState: 'failed' }, { pushIssues: { $gt: 0 } }, { pushState: { $ne: 'done' }, createdAt: { $lt: new Date(Date.now() - 600000) } },
+        ] } }, { $count: 'count' },
+      ], query).toArray(),
     ]), 4000);
     const count = (values: Document[]) => Number(values[0]?.count ?? 0);
     const age = (value: unknown) => value instanceof Date ? Math.max(0, Math.floor((Date.now() - value.getTime()) / 1000)) : null;
@@ -32,6 +40,8 @@ export async function operationsSnapshot(db: Db, metrics: OperationalMetrics) {
       ordersMissingReceipts: count(missingReceipts), ordersMissingConfirmationJobs: count(missingJobs),
       outbox: outbox.map(value => ({ state: String(value._id), count: Number(value.count), oldestAgeSeconds: age(value.oldest) })),
       pendingWebhookEvents: count(inbox), oldestPendingWebhookAgeSeconds: age(inbox[0]?.oldest),
+      pushDeliveries: push.map(value => ({ state: String(value._id), count: Number(value.count), oldestAgeSeconds: age(value.oldest) })),
+      pushJobsNeedingReview: count(pushJobs),
       stockOrderReconciliation: 'operator-required' as const };
     const five = metrics.snapshot(5), ten = metrics.snapshot(10), alerts: string[] = [];
     const total = Object.values(five.groups).reduce((sum, value) => sum + value.count, 0);
@@ -44,6 +54,7 @@ export async function operationsSnapshot(db: Db, metrics: OperationalMetrics) {
     if (database.invalidStockValues || database.maintainedDuplicateOrderNumbers || database.orphanCheckoutReceipts || database.ordersMissingReceipts || database.ordersMissingConfirmationJobs) alerts.push('COMMERCE_INTEGRITY_REVIEW');
     if (database.pendingWebhookEvents && (database.oldestPendingWebhookAgeSeconds ?? 0) > 300) alerts.push('WEBHOOK_BACKLOG');
     if (database.outbox.some(value => value.state === 'failed' || (value.oldestAgeSeconds ?? 0) > 600)) alerts.push('OUTBOX_REVIEW');
+    if (database.pushJobsNeedingReview || database.pushDeliveries.some(value => ['failed', 'uncertain'].includes(value.state) || (value.oldestAgeSeconds ?? 0) > 600)) alerts.push('PUSH_DELIVERY_REVIEW');
     if (five.databaseErrors) alerts.push('DATABASE_ERRORS');
     return { http: five, latency: ten, database, alerts, measurement: 'bounded-read-candidates; reconcile before action' as const };
   } catch { throw new HttpError(503, 'SERVICE_UNAVAILABLE'); }

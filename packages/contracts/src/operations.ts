@@ -10,6 +10,8 @@ export const operationsSnapshotSchema = z.object({ http, latency: http, database
   ordersMissingReceipts: count, ordersMissingConfirmationJobs: count,
   outbox: z.array(z.object({ state: z.enum(['pending', 'processing', 'failed']), count, oldestAgeSeconds: count.nullable() }).strict()).max(3),
   pendingWebhookEvents: count, oldestPendingWebhookAgeSeconds: count.nullable(), stockOrderReconciliation: z.literal('operator-required'),
+  pushDeliveries: z.array(z.object({ state: z.enum(['sending', 'retry', 'failed', 'uncertain']), count, oldestAgeSeconds: count.nullable() }).strict()).max(4).optional(),
+  pushJobsNeedingReview: count.optional(),
 }).strict(), alerts: z.array(z.enum(['HTTP_5XX_THRESHOLD', 'CHECKOUT_FAILURE_THRESHOLD', 'CATALOG_LATENCY_THRESHOLD', 'CHECKOUT_LATENCY_THRESHOLD',
-  'COMMERCE_INTEGRITY_REVIEW', 'WEBHOOK_BACKLOG', 'OUTBOX_REVIEW', 'DATABASE_ERRORS'])).max(8),
+  'COMMERCE_INTEGRITY_REVIEW', 'WEBHOOK_BACKLOG', 'OUTBOX_REVIEW', 'DATABASE_ERRORS', 'PUSH_DELIVERY_REVIEW'])).max(9),
   measurement: z.literal('bounded-read-candidates; reconcile before action'), }).strict();
