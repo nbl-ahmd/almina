@@ -43,7 +43,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/store/cart/add | public | storeRouter.js → maintained store/service.ts |
 | POST | /api/orders | public | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | POST | /api/orders/quote | public | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
-| POST | /api/orders/email | admin | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
+| POST | /api/orders/email | admin | Maintained bounded administrative email/SMTP policy; retained Nodemailer/socket adapter |
 | POST | /api/orders/subscribe | staff | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | DELETE | /api/orders/subscribe | staff | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | GET | /api/orders | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
@@ -68,7 +68,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 ## Background and provider operations
 
 - Shared `orders/commerce.ts` atomically writes product stock, orders, counter, receipts/outbox and cancellation history/restock. Both HTTP stacks use it.
-- `commerce/outbox.cjs` leases notification jobs and SMTP through `integrations/order-email.cjs`. At least once; acceptance/crash can duplicate delivery. Legacy persistent process owns worker.
+- Maintained notification workers lease/drain order jobs; `notifications/email.ts` owns confirmation content and bounded SMTP delivery through retained Nodemailer/socket adapters. At least once; acceptance/crash can duplicate delivery. Legacy persistent process owns worker. Administrative email is bounded but has no durable retry receipt.
 - `security/realtime.cjs` authenticates/rechecks Socket.IO and SSE invalidations; shared deployment bus pending.
 - Maintained `auth/administration.ts` provisions password hashes and deactivates accounts with actor audits, serialized privilege checks and transactional session revocation; `Login.js` retains the URLs. `sessions.cjs` owns sessions and quotas. Existing identifiers/history are never deleted by account removal.
 - Drive creates/streams products/categories/banners/WhatsApp posters. All four media removal adapters now archive documents/assets. Category/Drive product replacements record prior references; old product/category filenames resolve through history. Maintained Cloudinary upload/reconciliation is additive; Drive upload/stream ownership and hosted provider parity remain retained gates.

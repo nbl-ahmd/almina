@@ -329,6 +329,17 @@ test('server-owned order confirmation chooses its recipient from the persisted o
   assert.throws(() => confirmationMessage({ orderId: 'OD5001', customer: { email: 'synthetic@example.invalid\r\nBcc: caller@example.invalid' } }));
 });
 
+test('retained administrator email rejects recipient/header/content abuse before provider work', async () => {
+  const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'admin', cities: [] }) };
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth }), async origin => {
+    for (const body of [{ recipient: 'a@example.invalid,b@example.invalid', htmlContent: 'Reviewed' },
+      { recipient: 'synthetic@example.invalid', htmlContent: 'x'.repeat(65537) },
+      { recipient: 'synthetic@example.invalid', htmlContent: 'Reviewed', attachments: ['/private'] }]) {
+      assert.equal((await fetch(origin + '/api/orders/email', { method: 'POST', headers: browserHeaders, body: JSON.stringify(body) })).status, 400);
+    }
+  });
+});
+
 test('push unsubscribe deletes only the current staff subscription', async t => {
   const mongoose = require('../backend/node_modules/mongoose');
   let owner: unknown; let update: unknown; const prior = mongoose.connection.db;

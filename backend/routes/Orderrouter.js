@@ -8,7 +8,6 @@ const getLegacyDb = async () => {
   return mongoose.connection.db;
 };
 const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb ?? getLegacyDb);
-const nodemailer = require('nodemailer');
 
 
 
@@ -51,42 +50,11 @@ Orderrouter.post('/', async (req, res) => {
   }
 });
 
-Orderrouter.post('/email', async (req, res) => {
-  try {
-
-
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.office365.com',
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-    tls: {
-      // Verify the SMTP provider certificate.
-      rejectUnauthorized: true,
-    },
-  });
-  const { recipient, htmlContent } = req.body;
-
-  const options = {
-    from: '"Al Mina Pharmacy" <info@alminapharmacy.com>',
-    to: recipient,
-    subject: 'Your order has been placed successfully',
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(options);
+Orderrouter.post('/email', require('../security/boundary.cjs').wrap(async (req, res) => {
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  await require('../integrations/order-email.cjs').sendAdministrativeEmail(req.body);
   res.status(204).end();
-}
-catch (error) {
-
-  res.status(500).json({ error: 'Failed to send mail' });
-}
-
-})
+}));
 
 Orderrouter.get('/', (req, res) => {
   const page = require('../security/admin-pagination.cjs').adminPagination(req.query);

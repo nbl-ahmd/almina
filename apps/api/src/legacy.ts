@@ -15,3 +15,4 @@ export * from './modules/operations/metrics.js';
 export * from './modules/operations/snapshot.js';
 export * from './modules/catalog/compatibility-reads.js';
 export * from './modules/auth/administration.js';
+export * from './modules/notifications/email.js';
