@@ -12,6 +12,7 @@ export const errorMessages: Record<ErrorCode, string> = {
   COMMERCE_UNAVAILABLE: 'Checkout configuration is unavailable.',
   PRODUCT_UNAVAILABLE: 'A product is unavailable.',
   INSUFFICIENT_STOCK: 'Insufficient stock.',
+  STOCK_CHANGED: 'Stock changed. Reload the product before saving.',
   MINIMUM_ORDER: 'The minimum order amount was not met.',
   IDEMPOTENCY_CONFLICT: 'The checkout key was already used for a different request.',
   INVALID_TRANSITION: 'The order cannot move to that status.',

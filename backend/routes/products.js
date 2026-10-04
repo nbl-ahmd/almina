@@ -185,7 +185,7 @@ async function generateProductID() {
 productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   require('../security/admin-input.cjs').productInput(req.body, true);
   const category = await Category.findById(req.body.category);
-  const { name, price, stock, barcode, description } = req.body;
+  const { name, price, stock, barcode, description, salePrice } = req.body;
   const vat = req.body.vat === 'true';
   const sale = req.body.sale === 'true';
   const featured = req.body.featured === 'true';
@@ -246,6 +246,7 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
       vat,
       stock,
       sale,
+      ...(salePrice !== undefined ? { salePrice: Number(salePrice) } : {}),
       barcode,
       description,
   });
@@ -254,7 +255,7 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
       await product.save();
       res.status(201).json({ message: 'Product created successfully', product });
   } catch (error) {
-
+      if (error.status) throw error;
       res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -571,22 +572,19 @@ productRouter.put('/publish/:productId', async (req, res) => {
 
 
 productRouter.put('/:id', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  require('../security/admin-input.cjs').productInput(req.body);
+  require('../commerce/dist/service.cjs').inventoryInput(req.body);
   const { id } = req.params;
-  const updateFields = {};
   const files = req.files;
 
   try {
+      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+      const assetHash = files?.length ? require('node:crypto').createHash('sha256').update(JSON.stringify(files.map(file => require('node:crypto').createHash('sha256').update(file.buffer).digest('hex')))).digest('hex') : undefined;
+      const replay = await require('../commerce/dist/service.cjs').replayProductMutation(db, id, req.body, req.identity.id, assetHash);
+      if (replay) return res.json(replay);
       const prevProduct = await Product.findById(id);
       if (!prevProduct) {
           return res.status(404).json({ error: 'Product not found' });
       }
-
-      // Handle text fields
-      if (req.body.name) updateFields.name = req.body.name;
-      if (req.body.price !== undefined) updateFields.price = Number(req.body.price);
-      if (req.body.stock !== undefined) updateFields.stock = Number(req.body.stock);
-      if (req.body.description !== undefined) updateFields.description = req.body.description;
 
       let imageUrls = prevProduct.images;
       let gdriveFileIds = prevProduct.gdriveFileIds;
@@ -629,19 +627,11 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
           }
       }
 
-      if (files && files.length > 0) {
-          updateFields.images = imageUrls;
-          updateFields.gdriveFileIds = gdriveFileIds;
-      }
-      const filter = { _id: id };
-      if (req.body.stock !== undefined) filter.stock = Number(req.body.expectedStock);
-      // MongoDB evaluates this predicate atomically with the write. A checkout,
-      // cancellation or second editor changing stock makes a stale form fail.
-      const product = await Product.findOneAndUpdate(filter, { $set: updateFields }, { new: true, runValidators: true });
-      if (!product) return res.status(409).json({ code: 'STOCK_CHANGED', error: 'Stock changed. Reload the product before saving.' });
+      const product = await require('../commerce/dist/service.cjs').updateProductInventory(db, id, req.body, req.identity.id,
+        files?.length ? { images: imageUrls, gdriveFileIds } : undefined, assetHash);
       res.json(product);
   } catch (error) {
-
+      if (error.status) throw error;
       res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -70,3 +70,11 @@ test('historical rendering preserves totals, tolerates missing products and neve
   assert.equal(orderDetailDto(fresh).totalAmount, 20);
   assert.equal(legacyOrderDto({ ...fresh, cartItems: [{ _id: { name: 'Changed live catalog', price: 999 }, quantity: 2 }] }).cartItems[0]._id.name, 'Original name');
 });
+
+test('invoice amounts reject fractions of a fils and unsafe values before database access', async () => {
+  const { statusInputSchema } = await import('@almina/contracts');
+  for (const billamount of [10.001, -1, Infinity, Number.MAX_SAFE_INTEGER, '10.00']) {
+    assert.equal(statusInputSchema.safeParse({ status: 'dispatched', billno: '12345', billamount }).success, false);
+  }
+  assert.equal(statusInputSchema.safeParse({ status: 'dispatched', billno: '12345', billamount: 10.01 }).success, true);
+});

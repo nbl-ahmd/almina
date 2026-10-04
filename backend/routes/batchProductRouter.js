@@ -49,6 +49,11 @@ batchProductRouter.post('/', require('../security/boundary.cjs').wrap(async (req
     // Convert CSV to JSON
     const jsonArray = await csv().fromFile(filePath.replace(/^"(.+(?="$))"$/, '$1'));
 
+    if (jsonArray.length > 500) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+    // Validate the whole file before creating categories or products. No partial input writes.
+    for (const row of jsonArray) require('../security/admin-input.cjs').productInput({ ...row,
+      category: '000000000000000000000000', sale: row.sale === 'TRUE',
+      ...(row.salePrice === '' ? { salePrice: undefined } : {}) }, true);
     const existingProducts = await Product.find();
     let maxID = 5000;
     for (const product of existingProducts) {
@@ -82,6 +87,7 @@ batchProductRouter.post('/', require('../security/boundary.cjs').wrap(async (req
           price: data.price,
           barcode: data.barcode, // Provide the barcode field
           featured: (data.featured === 'TRUE' ? true : false),
+          ...(data.salePrice ? { salePrice: Number(data.salePrice) } : {}),
           sale: (data.sale === 'TRUE' ? true : false),
           stock: data.stock, // Provide the stock field
           product_id: productId, // Assign the generated product ID
@@ -105,7 +111,7 @@ batchProductRouter.post('/', require('../security/boundary.cjs').wrap(async (req
       res.json({ success: true, count: 0 });
     }
   } catch (error) {
-
+    if (error.statusCode) throw error;
     res.status(500).json({ error: 'Error inserting products' });
   }
 });

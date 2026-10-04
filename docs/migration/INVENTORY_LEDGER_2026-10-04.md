@@ -1,0 +1,17 @@
+# Admin inventory adjustments
+
+Existing `PUT /api/products/:id` now delegates to the maintained TypeScript inventory module. Server authorization/CSRF and multipart image decoding remain in the compatibility adapter. This is an additive change: no legacy product/order field or media is removed.
+
+A stock-changing edit requires the loaded `expectedStock`, a UUID `inventoryKey` and a 3–200 character `stockReason`. Both Next and retained Vite editors supply these. The server supplies the authenticated actor. Products with invalid stock or archived state fail closed. A replica-set transaction conditionally updates the loaded stock and inserts an append-only `inventory_adjustments` record: product identifiers, actor, reason, before, after, delta, timestamp, request digest and committed result. No HTTP route updates/deletes receipts. Configure the database role with insert/find access to the ledger; database administrators remain capable of editing data and require operational audit controls.
+
+Receipt lookup occurs before stale-stock validation and provider upload. An exact retry returns the committed result without changing current stock, even after subsequent checkout. Reusing the key for different fields, actor or file content returns a conflict. New concurrent stock changes reject with the preserved `STOCK_CHANGED` contract. Receipt lookup is also repeated inside the transaction. Existing checkout/cancellation transactions and uncertain checkout retries are unchanged.
+
+Price and optional sale price require at most two decimals and safe integer fils. Sale price cannot exceed regular price; an enabled sale requires a sale price. Next provides explicit sale controls. Creating a product and retained non-recovery CSV imports validate money before persistence; whole batch input is validated before category writes, and imports are bounded to 500 rows. Invoice precision is validated in the shared contract, and dispatch still checks the exact immutable order total.
+
+The ledger starts with these admin edits; it does not fabricate historical adjustments. Initial product creation/legacy non-recovery batch allocation remain retained operations inventoried in the ownership document, requiring further transactional extraction/parity. Recovery imports continue to insert zero stock. Duplicate initial product allocation and provider/media reconciliation are still migration gates; this PR does not claim all catalog writes are migrated.
+
+## Verification and rollout
+
+Lint/typecheck, 55 unit and 7 release tests, 98 API/security regressions, 25 mandatory disposable replica-set integration/load tests and foundation/Vite builds passed. Real tests cover concurrent editors, checkout-stale forms, actor/reason/delta, replay after later stock changes, reused-key conflicts, zero money with valid sale configuration and two-decimal invoices. Compiled Chromium covers the Next stock form and stale rejection alongside checkout/cancellation/recovery journeys. Apply the additive index plan for product/history lookup only in a reviewed maintenance window; `_id` already enforces receipt uniqueness.
+
+Deploy backend adapters and both callers together to isolated staging. Older clients without a reason/retry key must reload/update before stock edits; rejection is deliberate rather than an unaudited stock change. Roll back the compatible binaries/routing while retaining ledger entries and committed stock. Never restore a pre-adjustment snapshot over later checkout changes. Production acceptance and exact hosted SHA evidence remain pending.

@@ -54,7 +54,7 @@ test('real catalog reads and legacy product mutations preserve validation, visib
           assert.equal((await fetch(legacyUrl + '/api/products/' + product._id, { method: 'PUT', headers, body: bad })).status, 400);
         }
         assert.equal((await db.collection('products').findOne({ _id: new ObjectId(product._id) }))!.stock, 2);
-        const update = new FormData(); update.set('stock', '0'); update.set('expectedStock', '2'); update.set('price', '12.50');
+        const update = new FormData(); update.set('stock', '0'); update.set('expectedStock', '2'); update.set('price', '12.50'); update.set('stockReason', 'Physical stock count'); update.set('inventoryKey', randomUUID());
         assert.equal((await fetch(legacyUrl + '/api/products/' + product._id, { method: 'PUT', headers, body: update })).status, 200);
         const detail = await (await fetch(apiUrl + '/api/v1/catalog/products/' + product._id)).json();
         assert.equal(detail.data.stock, 0); assert.equal(detail.data.price, 12.5);
@@ -70,4 +70,32 @@ test('real catalog reads and legacy product mutations preserve validation, visib
   } finally {
     await mongoose.disconnect(); await db.dropDatabase(); await client.close();
   }
+});
+
+test('inventory ledger commits once, rejects stale concurrent edits and retains actor/reason and exact money', { skip: !uri }, async () => {
+  const { updateProductInventory } = await import('../apps/api/src/modules/inventory/adjustments');
+  const client = await new MongoClient(uri!).connect();
+  const db = client.db(`almina_inventory_test_${randomUUID().replaceAll('-', '')}`);
+  const actor = String(new ObjectId()), id = new ObjectId();
+  try {
+    await db.collection('products').insertOne({ _id: id, product_id: 'PD_ORIGINAL', price: 12.50, stock: 5, sale: false });
+    const input = { stock: '8', expectedStock: '5', stockReason: 'Physical count verified', inventoryKey: randomUUID(), price: '12.50' };
+    await assert.rejects(updateProductInventory(db, String(id), { ...input, stockReason: undefined }, actor), { status: 400 });
+    await assert.rejects(updateProductInventory(db, String(id), { ...input, price: '12.501' }, actor), { status: 400 });
+    await assert.rejects(updateProductInventory(db, String(id), { ...input, sale: 'true', salePrice: '13.00' }, actor), { status: 400 });
+    const attempts = await Promise.allSettled([updateProductInventory(db, String(id), input, actor),
+      updateProductInventory(db, String(id), { ...input, stock: '9', inventoryKey: randomUUID() }, actor)]);
+    assert.equal(attempts.filter(result => result.status === 'fulfilled').length, 1);
+    const entries = await db.collection('inventory_adjustments').find().toArray(); assert.equal(entries.length, 1);
+    const entry = entries[0]!; assert.equal(entry.actor, actor); assert.equal(entry.reason, input.stockReason);
+    assert.equal(entry.delta, entry.after - 5); assert.equal(entry.before, 5); assert.equal(entry.product_id, 'PD_ORIGINAL');
+    const winner = entry.after === 8 ? input : { ...input, stock: '9', inventoryKey: entry._id };
+    await db.collection('products').updateOne({ _id: id }, { $inc: { stock: -1 } }); // committed checkout after adjustment
+    await updateProductInventory(db, String(id), winner, actor);
+    assert.equal((await db.collection('products').findOne({ _id: id }))!.stock, entry.after - 1);
+    assert.equal(await db.collection('inventory_adjustments').countDocuments(), 1);
+    await assert.rejects(updateProductInventory(db, String(id), { ...winner, price: '12.00' }, actor), { status: 409 });
+    await assert.rejects(updateProductInventory(db, String(id), winner, String(new ObjectId())), { status: 409 });
+    assert.equal((await db.collection('inventory_adjustments').findOne({ _id: entry._id }))!.delta, entry.delta);
+  } finally { await db.dropDatabase(); await client.close(); }
 });

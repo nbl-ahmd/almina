@@ -17,6 +17,7 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
     { name: 'v1_order_state_page', key: { dispatched: 1, canceled: 1, _id: -1 } },
     { name: 'v1_order_city_state_page', key: { 'customer.city': 1, dispatched: 1, canceled: 1, _id: -1 } },
   ],
+  inventory_adjustments: [{ name: 'inventory_product_history', key: { productId: 1, createdAt: -1 } }],
   order_outbox: [{ name: 'commerce_outbox_claim', key: { state: 1, leaseUntil: 1, createdAt: 1 } }],
   auth_rate_limits: [{ name: 'auth_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
   api_sessions: [

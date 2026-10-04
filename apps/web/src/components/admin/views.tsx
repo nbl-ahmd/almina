@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AdminRecord } from "../../lib/admin/policy";
@@ -130,7 +131,13 @@ export function ProductForm({
       hint: "Up to five images, 5 MB each.",
     },
   ];
-  if (edit) fields.push({ name: "expectedStock", label: "Stock at load", type: "hidden", value: display(product?.stock ?? "") });
+  fields.push({ name: "salePrice", label: "Sale price (AED, optional)", type: "number", min: 0, step: "0.01", value: product?.salePrice == null ? "" : display(product.salePrice), hint: "Required when sale is enabled; cannot exceed the regular price." });
+  if (edit) fields.push({ name: "sale", label: "Sale", value: product?.sale === true ? "true" : "false", options: [{ value: "false", label: "No" }, { value: "true", label: "Yes" }] });
+  if (edit) fields.push(
+    { name: "expectedStock", label: "Stock at load", type: "hidden", value: display(product?.stock ?? "") },
+    { name: "inventoryKey", label: "Adjustment receipt", type: "hidden", value: randomUUID() },
+    { name: "stockReason", label: "Stock adjustment reason", required: true, hint: "Record the physical count or correction. A stale stock value requires reloading." },
+  );
   if (!edit)
     fields.push(
       { name: "barcode", label: "Barcode", required: true },

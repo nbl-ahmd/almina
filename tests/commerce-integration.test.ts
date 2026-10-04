@@ -283,14 +283,14 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
           assert.equal((await stale.json()).code, 'STOCK_CHANGED');
           assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.name, before.name);
           const live = (await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock;
-          const zero = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: JSON.stringify({ stock: 0, expectedStock: live, price: 0 }) });
+          const zero = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: JSON.stringify({ stock: 0, expectedStock: live, price: 0, sale: false, salePrice: 0, stockReason: 'Physical count verified', inventoryKey: randomUUID() }) });
           assert.equal(zero.status, 200);
           assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 0);
           const invalid = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: '{"price":"10.001"}' });
           assert.equal(invalid.status, 400);
           const noVersion = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: '{"stock":4}' });
           assert.equal(noVersion.status, 400);
-          await db.collection('products').updateOne({ _id: new ObjectId(productId) }, { $set: { stock: 10, price: before.price } });
+          await db.collection('products').updateOne({ _id: new ObjectId(productId) }, { $set: { stock: 10, price: before.price, sale: before.sale, salePrice: before.salePrice } });
           const input = intent(productId);
           const created = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(input) });
           assert.equal(created.status, 201); const result = await created.json();

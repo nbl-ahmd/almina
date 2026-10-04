@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import baseURL from '../../axiosConfig';
@@ -12,6 +12,8 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
   const [categoryList, setCategoryList] = useState([]);
   const [message, setMessage] = useState('');
+  const [stockReason, setStockReason] = useState('');
+  const inventoryKey = useRef(crypto.randomUUID());
 
   const [file, setFile] = useState('');
 
@@ -140,20 +142,23 @@ const ProductUpdate = ({id, products, editedProduct}) => {
     
     console.log(product);
     e.preventDefault();
+    if (!stockReason.trim()) { setMessage('Enter the stock adjustment reason.'); return; }
     const formDataWithImage = new FormData();
     formDataWithImage.append('name', product.name);
     formDataWithImage.append('price', product.price);
     formDataWithImage.append('stock', product.stock);
     formDataWithImage.append('expectedStock', formData.stock);
+    formDataWithImage.append('stockReason', stockReason);
+    formDataWithImage.append('inventoryKey', inventoryKey.current);
     formDataWithImage.append('category', product.category._id);
     formDataWithImage.append('vat', product.vat);
     formDataWithImage.append('sale', product.sale);
     formDataWithImage.append('featured', product.featured);
     formDataWithImage.append('disabled', product.disabled);
-    formDataWithImage.append('salePrice', product.salePrice);
-    formDataWithImage.append('salePercent', product.salePercent);
-    formDataWithImage.append('saleBadge', product.saleBadge);
-    formDataWithImage.append('saleType', product.saleType);
+    if (product.salePrice !== undefined && product.salePrice !== null) formDataWithImage.append('salePrice', product.salePrice);
+    if (product.salePercent !== undefined && product.salePercent !== null) formDataWithImage.append('salePercent', product.salePercent);
+    if (product.saleBadge !== undefined && product.saleBadge !== null) formDataWithImage.append('saleBadge', product.saleBadge);
+    if (product.saleType !== undefined && product.saleType !== null) formDataWithImage.append('saleType', product.saleType);
     if (imageFile) {
       console.log(imageFile);
       formDataWithImage.append('image', imageFile);
@@ -166,6 +171,8 @@ const ProductUpdate = ({id, products, editedProduct}) => {
         console.log('formdata: ' + formData.category);
         console.log('Product updated:', response.data);
         setMessage('Product updated successfully');
+        setFormData(response.data);
+        inventoryKey.current = crypto.randomUUID();
         
         // Perform any necessary actions after successful update
         // Access the new image name from the API response
@@ -251,7 +258,8 @@ const ProductUpdate = ({id, products, editedProduct}) => {
 
           </div>
           <div className="d-flex align-items-center">
-            <button className='btn btn-primary me-5' type='submit'>Upload</button>
+            <label>Stock adjustment reason<input required value={stockReason} onChange={e => setStockReason(e.target.value)} maxLength={200} /></label>
+          <button className='btn btn-primary me-5' type='submit'>Upload</button>
             <span className='d-block'> {message}
             </span>
           </div>

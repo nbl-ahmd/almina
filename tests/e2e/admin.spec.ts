@@ -41,3 +41,18 @@ test('admin order update reaches the real writer and prevents cancellation after
   await login(page, 'synthetic-staff');
   expect((await page.request.get(adminOrigin + '/api/admin/orders/' + order.id)).status()).toBe(404);
 });
+
+test('admin stock adjustment requires a reason, preserves the retry receipt and rejects stale stock', async ({ page, request }) => {
+  await login(page);
+  await page.goto(adminOrigin + '/admin/products/' + productId);
+  await page.getByLabel('Stock quantity', { exact: true }).fill('7');
+  await page.getByLabel(/^Stock adjustment reason/).fill('Physical count verified');
+  await page.getByRole('button', { name: 'Save product', exact: true }).click();
+  await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
+  expect((await state(request)).stock).toBe(7);
+  const response = await page.request.put(adminOrigin + '/api/admin/products/' + productId, {
+    headers: { origin: adminOrigin, 'x-csrf-protection': '1' },
+    data: { stock: 9, expectedStock: 4, stockReason: 'Outdated count', inventoryKey: randomUUID() },
+  });
+  expect(response.status()).toBe(409); expect((await state(request)).stock).toBe(7);
+});

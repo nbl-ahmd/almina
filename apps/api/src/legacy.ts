@@ -3,3 +3,4 @@ export * from './modules/orders/commerce.js';
 export * from './modules/store/service.js';
 export * from './modules/recovery/catalog.js';
 export { recoveryTemplate } from './modules/recovery/csv.js';
+export * from './modules/inventory/adjustments.js';

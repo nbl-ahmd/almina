@@ -5,7 +5,7 @@ function productInput(body, creating = false) {
     : [];
   if (!body || required.some((key) => body[key] === undefined))
     throw fail(400, "INVALID_REQUEST");
-  for (const key of ["price", "stock", "expectedStock"])
+  for (const key of ["price", "salePrice", "stock", "expectedStock"])
     if (body[key] !== undefined) {
       if (
         !["string", "number"].includes(typeof body[key]) ||
@@ -17,11 +17,13 @@ function productInput(body, creating = false) {
         body[key] === "" ||
         !Number.isFinite(value) ||
         value < 0 ||
-        (key !== "price" && !Number.isSafeInteger(value)) ||
-        (key === "price" && (!/^\d+(?:\.\d{1,2})?$/.test(String(body[key])) || value > Number.MAX_SAFE_INTEGER / 100))
+        (!["price", "salePrice"].includes(key) && !Number.isSafeInteger(value)) ||
+        (["price", "salePrice"].includes(key) && (!/^\d+(?:\.\d{1,2})?$/.test(String(body[key])) || value > Number.MAX_SAFE_INTEGER / 100))
       )
         throw fail(400, "INVALID_REQUEST");
     }
+  if ((body.sale === true || body.sale === 'true') && body.salePrice === undefined) throw fail(400, 'INVALID_REQUEST');
+  if (body.salePrice !== undefined && body.price !== undefined && Number(body.salePrice) > Number(body.price)) throw fail(400, 'INVALID_REQUEST');
   if (!creating && body.stock !== undefined && body.expectedStock === undefined)
     throw fail(400, "INVALID_REQUEST");
   for (const [key, max] of [

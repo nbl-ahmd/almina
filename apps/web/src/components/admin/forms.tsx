@@ -44,6 +44,7 @@ export function AdminForm({
     // Empty optional file parts must not masquerade as selected uploads.
     for (const [name, value] of data)
       if (value instanceof File && !value.size) data.delete(name);
+    if (data.get("salePrice") === "") data.delete("salePrice");
     const json: Record<string, unknown> = Object.fromEntries(data);
     if ("billamount" in json) json.billamount = Number(json.billamount);
     if ("cities" in json)
