@@ -1,27 +1,31 @@
-import { test, expect, commerceOrigin } from './fixtures';
-test('retained category caller pages explicitly and supports loading, retry and keyboard load-more', async ({ page }) => {
-  let failNextPage = true;
-  const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Synthetic category' };
-  await page.route(commerceOrigin + '/api/products?**', async route => {
-    const url = new URL(route.request().url());
-    expect(url.searchParams.get('limit')).toBe('30');
-    const offset = Number(url.searchParams.get('offset'));
-    if (offset === 30 && failNextPage) { failNextPage = false; await route.fulfill({ status: 503, json: { error: 'Synthetic outage' } }); return; }
-    const products = Array.from({ length: offset === 0 ? 30 : 5 }, (_, index) => ({ _id: (offset + index + 1).toString(16).padStart(24, '0'),
-      product_id: `SYNTHETIC_${offset + index}`, name: `Synthetic paged product ${offset + index}`, category, price: 1, stock: 0, images: ['synthetic.webp'] }));
-    await route.fulfill({ json: products });
-  });
-  await page.route(commerceOrigin + '/api/products/images/synthetic.webp', route => route.fulfill({ contentType: 'image/svg+xml',
-    body: '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" fill="#eee"/></svg>' }));
+import { test, expect } from './fixtures';
+test('Next category preserves legacy IDs and provides keyboard pagination with reload and empty search', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
-  await page.goto(commerceOrigin + '/categories/' + category._id);
-  await expect(page.getByRole('heading', { name: 'synthetic paged product 29', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Load more products', exact: true }).focus(); await page.keyboard.press('Enter');
-  await expect(page.getByRole('alert')).toContainText('Products could not be loaded.');
-  await page.getByRole('button', { name: 'Try again', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'synthetic paged product 34', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Load more products', exact: true })).toHaveCount(0);
+  await page.goto('/categories/aaaaaaaaaaaaaaaaaaaaaaaa?utm_source=shared');
+  await expect(page).toHaveURL('/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa?utm_source=shared');
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 28', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Next page', exact: true }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Next page', exact: true })).toHaveCount(0);
+  await page.reload(); await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Previous page', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await page.goto('/search?q=No-synthetic-match'); await expect(page.getByRole('heading', { name: 'No products found.', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test.describe('intentional server outage', () => {
+  test.use({ expectedReactBoundaryFailure: true });
+test('Next catalog outage renders its error boundary and keyboard retry recovers without empty success', async ({ page, request }) => {
+  const fixture = 'http://127.0.0.1:4711';
+  expect((await request.get(fixture + '/__fixture/failure')).status()).toBe(200);
+  try {
+    await page.goto('/products?page=2');
+    await expect(page.getByRole('heading', { name: 'Unable to load this page', exact: true })).toBeVisible();
+  } finally { expect((await request.get(fixture + '/__fixture/failure')).status()).toBe(200); }
+  await page.getByRole('button', { name: 'Try again', exact: true }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
+});
 });
 
 for (const [path, content] of [['/', 'Featured products'], ['/search?q=Daily', 'Daily Care'],

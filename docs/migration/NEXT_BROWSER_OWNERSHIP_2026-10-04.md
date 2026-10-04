@@ -1,0 +1,11 @@
+# Next browser regression ownership
+
+All active customer browser tests now run compiled Next.js, backed by the real retained Express/Mongoose and versioned APIs against a disposable loopback replica set. The API fixture no longer serves frontend/build; CI no longer installs or builds Vite. Required verify and all quality/API/browser/audit jobs remain enforced. The retained frontend directory and its audit remain in this focused change; source retirement is separate.
+
+Tests preserve server-price cart import, delivery validation, stock exhaustion after quote, exact retry after uncertain commit, current-price re-review, four widths, order/stock effects, CSRF/forged-field rejection, admin authentication/RBAC/session revocation, recovery, inventory and media. Category tests now exercise server pagination, legacy-ID canonical redirects, keyboard links, refresh, empty search and real upstream outage/error-boundary retry. The fixture contains 35 extra explicitly synthetic products only for browser pagination; raw SEO smoke fixtures remain unchanged. No lost catalog/customer/order data is fabricated.
+
+Intentional upstream outage can abort two SSR Suspense boundaries: [React 419](https://react.dev/errors/419) documents this recovery. Only that controlled test accepts one or two exact 419 errors; all other errors in that test and every JavaScript error in other tests fail. This is not a general console/error waiver. Initial new cart test assumed read-time storage mutation; it now checks the actual contract: legacy IDs render with authoritative prices, first quantity edit persists sanitized IDs/quantities, and reload preserves them. Legacy saved representation is not deleted.
+
+Verification: 103 API/security and 36 mandatory real MongoDB/load regressions, lint/typecheck pass. Final compiled Next whole-suite readback: all 34 Chromium scenarios passed in 59.2 seconds. All 67 unit, seven release and three lockfile audits also pass. Public route PR #18 runs 37206259542 and 37206284843 passed hosted verify at 871bf4f.
+
+No production provider, database, credentials, deployment or master merge. Hosted journeys/traffic/SEO/provider acceptance and reconciliation remain mandatory. Original Vite artifact/source commit remains a rollback reference until hosted observation passes.

@@ -12,8 +12,11 @@ export const recoveredProducts = [
   { ...product, _id: 'dddddddddddddddddddddddd', product_id: product._id, name: 'Numeric Identity Example', price: 9.99, sale: false, salePrice: 1,
     stock: 0, images: [], description: 'Synthetic namespace fixture.' },
 ];
-export function createStorefrontFixture(tls, { includeRecovered = false } = {}) {
+export function createStorefrontFixture(tls, { includeRecovered = false, includePagination = false } = {}) {
   const products = includeRecovered ? [product, ...recoveredProducts] : [product];
+  if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
+    _id: (index + 100).toString(16).padStart(24, '0'), product_id: `SYNTHETIC_${index}`, name: `Synthetic paged product ${index}`,
+    stock: 0, sale: false, featured: false, price: 1 })));
   let closed = false;
   let failed = false;
   const requests = [];
@@ -48,13 +51,14 @@ export function createStorefrontFixture(tls, { includeRecovered = false } = {}) 
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
       const matching = products.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
-      res.end(JSON.stringify(Number(url.searchParams.get('offset')) === 0 ? matching : [])); return;
+      const offset = Number(url.searchParams.get('offset')); const limit = Number(url.searchParams.get('limit') ?? '30');
+      res.end(JSON.stringify(matching.slice(offset, offset + limit))); return;
     }
     res.writeHead(404); res.end('null');
   });
   return { server, requests };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { server } = createStorefrontFixture();
+  const { server } = createStorefrontFixture(undefined, { includePagination: process.env.PAGINATED_FIXTURE === '1' });
   server.listen(Number(process.env.PORT ?? 4100), '127.0.0.1', () => console.log('Synthetic catalog fixture listening on loopback.'));
 }

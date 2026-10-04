@@ -2,8 +2,6 @@
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { MongoMemoryReplSet } from 'mongodb-memory-server-core';
 import { MongoClient, ObjectId } from 'mongodb';
 import { hash } from 'bcryptjs';
@@ -116,12 +114,6 @@ app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);
 });
-const html = readFileSync('frontend/build/index.html', 'utf8');
-const csp = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/i)?.[1];
-if (!csp) throw new Error('Build the legacy frontend before E2E tests');
-app.use((_req, res, next) => { res.set('Content-Security-Policy', csp.replaceAll('&#x27;', "'").replaceAll('&apos;', "'") + "; frame-ancestors 'none'"); next(); });
-app.use(express.static(path.resolve('frontend/build')));
-app.get('/{*path}', (_req, res) => res.sendFile(path.resolve('frontend/build/index.html')));
 const server = createServer(app).listen(4730, '127.0.0.1');
 async function stop() {
   for (const timer of timers) clearTimeout(timer);

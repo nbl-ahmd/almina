@@ -38,6 +38,8 @@ Database-library follow-up on `codex/mongoose9-backend` pins Mongoose 9.10.4 wit
 
 Next route parity on `codex/next-public-route-parity` completes public about/contact pages, an explicit map-to-delivery-enquiries redirect, static icons/manifest and generic compatibility worker, plus all retained admin alias browser checks. [Scope and verified limits](NEXT_ROUTE_PARITY_2026-10-04.md). Mongoose PR #17 runs `37205816268` and `37205845454` passed hosted `verify`. Frontend consumer retirement, remaining backend provider ownership and hosted acceptance remain incomplete.
 
+Next browser ownership on `codex/next-browser-ownership` moves every active customer browser scenario and CI build to compiled Next, retaining API compatibility/database guarantees and real error retry coverage. [Scope and evidence](NEXT_BROWSER_OWNERSHIP_2026-10-04.md). Route PR #18 runs `37206259542` and `37206284843` passed required hosted `verify`. The retained directory remains pending separate reviewed source retirement; hosted acceptance remains incomplete.
+
 ## Production migration readiness — blocked
 
 Prepared on `codex/production-migration-readiness`: [Render cutover/recovery runbook](PRODUCTION_CUTOVER_2026-10-03.md), three-phase fail-closed release evidence validator (`npm run release:gate`), and CI regression coverage for missing/skipped evidence, exact SHAs, deployment readbacks, post-cutover timestamps, 24-hour observation and retained legacy fields. Includes all twelve staging/production journeys, environment/provider/media/SEO gates, reconciliation, explicit monitoring thresholds and safe rollback. The validator checks attestations, not provider truth; production deployment controls and telemetry are not configured by it.

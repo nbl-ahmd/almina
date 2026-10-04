@@ -53,7 +53,7 @@ async function stop() {
 }
 for (const signal of ['SIGTERM', 'SIGINT']) process.once(signal, () => { void stop().then(() => process.exit(0)); });
 try {
-  const catalog = launch(['scripts/tooling/storefront-fixture.mjs'], root, { PORT: '4711' });
+  const catalog = launch(['scripts/tooling/storefront-fixture.mjs'], root, { PORT: '4711', PAGINATED_FIXTURE: '1' });
   const commerce = launch(['--import', 'tsx', 'scripts/tooling/e2e-commerce-fixture.mts'], root);
   await Promise.all([wait('http://127.0.0.1:4711/__fixture/health', catalog, 'almina-synthetic-catalog'),
     wait('http://127.0.0.1:4730/__fixture/health', commerce, 'almina-verification-commerce')]);
