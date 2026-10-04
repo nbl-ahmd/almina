@@ -19,7 +19,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/products | admin | Maintained catalog creation/ID/initial-stock ledger transaction; retained Drive upload adapter |
 | GET | /api/products | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/search | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
-| GET | /api/products/images/:filename | public | products.js → Mongoose catalog and Drive; extraction pending |
+| GET | /api/products/images/:filename | public | Maintained exact current/history raster reference lookup; bounded Drive provider |
 | GET | /api/products/category/:categoryId | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/details/:productId | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/:id | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
@@ -28,14 +28,14 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | PUT | /api/products/:id | admin | maintained inventory transaction/ledger; retained Drive upload adapter |
 | POST | /api/category | admin | Maintained media metadata/reference creation; retained Drive upload |
 | GET | /api/category | public | Maintained bounded category reads; anonymous visibility enforced, verified staff drafts |
-| GET | /api/category/images/:filename | public | categories.js → Mongoose categories and Drive |
+| GET | /api/category/images/:filename | public | Maintained exact current/history raster reference lookup; bounded Drive provider |
 | GET | /api/category/:id | public | Maintained bounded category reads; anonymous visibility enforced, verified staff drafts |
 | PUT | /api/category/disable/:id | admin | Maintained transactional visibility and actor audit |
 | PUT | /api/category/:id | admin | Maintained metadata validation and reference-preserving replacement; retained Drive upload |
 | DELETE | /api/category/:id | admin | maintained media/retention.ts archive; references retained |
 | POST | /api/banners | admin | Maintained metadata/destination validation/reference creation; retained Drive upload |
-| GET | /api/banners | public | banners.js → Mongoose banners and Drive |
-| GET | /api/banners/images/:filename | public | banners.js → Mongoose banners and Drive |
+| GET | /api/banners | public | Maintained bounded banner list or exact current/history raster lookup; bounded Drive provider |
+| GET | /api/banners/images/:filename | public | Maintained bounded banner list or exact current/history raster lookup; bounded Drive provider |
 | DELETE | /api/banners/:id | admin | maintained media/retention.ts archive; references retained |
 | POST | /api/batch | admin | Maintained bounded catalog batch transaction; blocked during recovery before upload |
 | PUT | /api/store/status | admin | storeRouter.js → maintained store/service.ts |
@@ -97,3 +97,5 @@ Staff push sender/worker ownership now resides in maintained notifications/push.
 The unreferenced Whatsapp/WhatsappPoster/whatsappBulkReport Mongoose source schemas are removed after native maintained write/read ownership. No database schema contraction/index removal or media deletion occurs. All WhatsApp reads now have maintained owners; external omitted-limit consumers and hosted history/provider parity remain acceptance gates. See WHATSAPP_READ_OWNERSHIP_2026-10-04.md.
 
 Order reads now have maintained compatibility-reads.ts ownership with preserved DTO/status/RBAC contracts and bounded native reference batches. The unused source Order schema is removed, without removing any database fields/indexes/documents. Omitted-limit external callers and unusually large historical reference batches remain explicit hosted gates. See ORDER_READ_OWNERSHIP_2026-10-04.md.
+
+All application Mongoose model queries and the remaining model source files are removed following maintained business read/write ownership. Catalog upload prechecks now use native maintained validation. The retained pool still uses Mongoose 9 at this step; provider transports/shared boundary/session/realtime/startup adapters remain explicit runtime dependencies. No database fields/indexes/assets are contracted. See CATALOG_MEDIA_READ_OWNERSHIP_2026-10-04.md.

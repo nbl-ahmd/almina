@@ -1,7 +1,6 @@
 const express = require('express');
 const multer = require('multer');
 const { randomUUID } = require('node:crypto');
-const Banner = require('../models/Banner');
 const sharp = require('sharp');
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -21,35 +20,14 @@ router.post('/', upload.single('image'), require('../security/uploads.cjs').vali
   res.status(201).json({ message: 'Banner created successfully' });
 });
 
-router.get('/', (req, res) => {
-  const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
-  Banner.find({ archivedAt: { $exists: false } }).sort({ _id: -1 }).skip(page?.offset ?? 0).limit(page?.limit ?? 0)
-    .then(banners => {
-      res.status(200).json(banners);
-    })
-    .catch(error => {
-
-      res.status(500).json({ error: 'Internal server error' });
-    });
+const getDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+router.get('/', async (req, res) => {
+  res.json(await require('../commerce/dist/service.cjs').retainedBannerList(await getDb(req), req.query));
 });
-
 router.get('/images/:filename', async (req, res) => {
-  const { filename } = req.params;
-
-  try {
-    // Retrieve the banner by filename from the database
-    const banner = await Banner.findOne({ image: filename });
-    if (!banner) {
-      return res.status(404).json({ error: 'Banner not found' });
-    }
-
-    // Retrieve the image file from Google Drive
-    const asset = await driveMedia(req).read(banner.gdriveFileId);
-    res.type(asset.contentType).send(asset.bytes);
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  const fileId = await require('../commerce/dist/service.cjs').retainedCatalogAsset(await getDb(req), 'banners', req.params.filename, req.query);
+  const asset = await driveMedia(req).read(fileId);
+  res.type(asset.contentType).send(asset.bytes);
 });
 
 router.delete('/:id', async (req, res) => {

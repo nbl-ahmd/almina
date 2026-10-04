@@ -26,3 +26,4 @@ export { createLogger } from '@almina/config/logger';
 export { HttpError } from './errors.js';
 export * from './modules/notifications/whatsapp-reads.js';
 export * from './modules/orders/compatibility-reads.js';
+export * from './modules/media/compatibility-reads.js';

@@ -8,6 +8,8 @@ WhatsApp read follow-up on `codex/whatsapp-read-ownership` moves all five retain
 
 Order read follow-up on `codex/order-read-ownership` moves retained list/detail into maintained bounded queries with current server city scope, immutable version 2 snapshot rendering, legacy reference compatibility and unchanged historical totals. [Exact evidence, lookup limits and deployment hold](ORDER_READ_OWNERSHIP_2026-10-04.md). WhatsApp PR #26 at `91f43d3` passed required verify in `37217830376` / `37217854409`. Remaining banner/media readers, design adoption, consent telemetry and all hosted acceptance remain incomplete.
 
+Catalog/media read follow-up on `codex/catalog-media-read-ownership` completes maintained product/category/banner reference reads and upload target prechecks, then removes the unused remaining model source files. [Parity evidence, preserved historical assets and connection hold](CATALOG_MEDIA_READ_OWNERSHIP_2026-10-04.md). Order PR #27 at `7041dcf` passed required verify in `37218379661` / `37218397635`. Mongoose still owns the retained pool; native connection/adapter cleanup, design adoption, consent telemetry and hosted acceptance remain incomplete.
+
 ## Continuation from integrated master — 2026-10-04
 
 PR #2 merged at `d912a269247a63ffbd3bc55e3d9f9c20ae8d9cf2`; all twelve requested source branches are ancestors. Master foundation runs `37151757878` and `37151752130` passed, including required `verify`. Hosting acceptance remains incomplete. Older sections below are historical evidence: the retained frontend now uses Vite, all three current lockfile installs report zero vulnerabilities, and Next checkout exists behind explicit activation. No production deployment/credential/database operation is claimed.

@@ -4,6 +4,8 @@ import type { Db, IndexDescription } from 'mongodb';
 export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = {
   products: [
     { name: 'v1_product_business_id', key: { product_id: 1 } },
+    { name: 'retained_product_image', key: { image: 1 } },
+    { name: 'retained_product_images', key: { images: 1 } },
     { name: 'v1_product_category_page', key: { category: 1, _id: -1, disabled: 1 } },
     { name: 'v1_product_featured_page', key: { featured: 1, _id: -1, disabled: 1 } },
     { name: 'v1_product_sale_page', key: { sale: 1, _id: -1, disabled: 1 } },
@@ -34,6 +36,8 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
   users: [{ name: 'staff_push_scope', key: { role: 1, disabled: 1, _id: 1 } }],
   conversations: [{ name: 'whatsapp_sender_lookup', key: { from: 1 } }],
   whatsappposters: [{ name: 'whatsapp_poster_filename', key: { image: 1 } }],
+  categories: [{ name: 'retained_category_image', key: { image: 1 } }],
+  banners: [{ name: 'retained_banner_image', key: { image: 1 } }],
   auth_rate_limits: [{ name: 'auth_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
   api_sessions: [
     { name: 'v1_session_token', key: { tokenHash: 1 }, unique: true },

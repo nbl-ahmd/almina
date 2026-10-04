@@ -1,4 +1,3 @@
-const Category = require('../models/Category');
 const express = require('express');
 const categoryRouter = express.Router();
 const multer = require('multer');
@@ -7,11 +6,9 @@ const { randomUUID } = require('node:crypto');
 const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '1EFfxTRU7EamU46cCl-NXrSnMz7H-Ivh4';
 
-
 const storage = multer.memoryStorage();
 
   const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-
 
 categoryRouter.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const domain = require('../commerce/dist/service.cjs');
@@ -41,33 +38,11 @@ categoryRouter.get('/:id', async (req, res) => {
   res.json(await catalogDomain().retainedCategoryDetail(await catalogDb(req), req.params.id, staffRead(req)));
 });
 
-  categoryRouter.get('/images/:filename', async(req, res) => {
-    const { filename } = req.params;
-
-    try {
-      // Retrieve the category by filename from the database
-      let category = await Category.findOne({ image: filename });
-    if (!category) {
-      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
-      const fileId = await require('../commerce/dist/service.cjs').resolveRetainedAsset(db, 'categories', filename);
-      if (fileId) category = { image: filename, gdriveFileId: fileId };
-    }
-      if (!category) {
-        return res.status(404).json({ error: 'category not found' });
-      }
-
-      // Retrieve the image file from Google Drive
-      const asset = await driveMedia(req).read(category.gdriveFileId);
-      res.type(asset.contentType).send(asset.bytes);
-    } catch (error) {
-
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-
-
-
+categoryRouter.get('/images/:filename', async (req, res) => {
+  const fileId = await catalogDomain().retainedCatalogAsset(await catalogDb(req), 'categories', req.params.filename, req.query);
+  const asset = await driveMedia(req).read(fileId);
+  res.type(asset.contentType).send(asset.bytes);
+});
 
 categoryRouter.put('/disable/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
@@ -79,8 +54,8 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
 
     try {
       // Retrieve the previous image filename from the database
-      const prevCategory = await Category.findById(id);
-      if (!prevCategory) return res.status(404).json({ error: 'Category not found' });
+      const db = await catalogDb(req);
+      await catalogDomain().catalogUploadTarget(db, 'categories', id);
 
       if (req.file) {
         const image = req.file;
@@ -103,7 +78,6 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
 
       }
 
-      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
       const category = await require('../commerce/dist/service.cjs').replaceCategory(db, id, updateFields, req.identity.id);
 
       if (!category) {
@@ -118,11 +92,9 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
     }
   });
 
-
 categoryRouter.delete('/:id', async (req, res) => {
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'categories', req.params.id, req.identity.id));
 });
-
 
 module.exports = categoryRouter;

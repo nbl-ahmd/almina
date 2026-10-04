@@ -2,8 +2,6 @@ const express = require('express');
 const multer = require('multer');
 const { randomUUID } = require('node:crypto');
 const sharp = require('sharp');
-const Product = require('../models/Product');
-const Category = require('../models/Category');
 const productRouter = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
@@ -14,8 +12,8 @@ const FOLDER_ID = '1I8HpwJ_iaOx_r7ZsOOETYcQbpMFpLUH6';
 productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   const domain = require('../commerce/dist/service.cjs');
   domain.catalogCreationInput(req.body);
-  const category = await Category.findById(req.body.category);
-  if (!category || category.archivedAt) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const db = await catalogDb(req);
+  await domain.catalogUploadTarget(db, 'categories', req.body.category, true);
   const files = req.files;
 
   let imageUrls = [];
@@ -37,8 +35,6 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
               // Save to Google Drive
               const asset = await driveMedia(req).upload(croppedImage, filename, FOLDER_ID);
 
-
-
               // Store URLs and Google Drive IDs
               imageUrls.push(filename);
               gdriveFileIds.push(asset.fileId);
@@ -49,57 +45,15 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
       }
   }
 
-  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
   const product = await domain.createCatalogProduct(db, req.body, req.identity.id, { images: imageUrls, gdriveFileIds });
   res.status(201).json({ message: 'Product created successfully', product });
 });
 
-
-
 productRouter.get('/images/:filename', async (req, res) => {
-  const { filename } = req.params;
-
-  try {
-    // Retrieve the product by filename
-    let product = await Product.findOne({
-      $or: [{ image: filename }, { images: filename }],
-    });
-
-    if (!product) {
-      const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
-      const fileId = await require('../commerce/dist/service.cjs').resolveRetainedAsset(db, 'products', filename);
-      if (fileId) product = { image: filename, gdriveFileId: fileId };
-    }
-    if (!product) {
-      return res.status(404).json({ error: 'Product or image not found' });
-    }
-
-    if (product.image === filename && product.gdriveFileId) {
-      // For old products with a single gdriveFileId
-      const asset = await driveMedia(req).read(product.gdriveFileId);
-      res.type(asset.contentType).send(asset.bytes);
-    } else if (product.gdriveFileIds) {
-      // For new products with multiple gdriveFileIds
-
-
-      // Find the index of the requested filename in the `images` array
-      const imageIndex = product.images.indexOf(filename);
-      if (imageIndex === -1 || !product.gdriveFileIds[imageIndex]) {
-        return res.status(404).json({ error: 'Image not found in product' });
-      }
-
-      const gdriveFileId = product.gdriveFileIds[imageIndex];
-      const asset = await driveMedia(req).read(gdriveFileId);
-      res.type(asset.contentType).send(asset.bytes);
-    } else {
-      return res.status(404).json({ error: 'No valid Google Drive file ID found' });
-    }
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  const fileId = await catalogDomain().retainedCatalogAsset(await catalogDb(req), 'products', req.params.filename, req.query);
+  const asset = await driveMedia(req).read(fileId);
+  res.type(asset.contentType).send(asset.bytes);
 });
-
 
 const catalogDomain = () => require('../commerce/dist/service.cjs');
 const catalogDb = req => req.app.locals.getCommerceDb ? req.app.locals.getCommerceDb() : require('mongoose').connection.db;
@@ -130,7 +84,6 @@ productRouter.delete('/:id', async (req, res) => {
   res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'products', req.params.id, req.identity.id));
 });
 
-
 productRouter.put('/publish/:productId', async (req, res) => {
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
   res.json(await require('../commerce/dist/service.cjs').toggleCatalogVisibility(db, 'products', req.params.productId, req.identity.id));
@@ -146,10 +99,7 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
       const assetHash = files?.length ? require('node:crypto').createHash('sha256').update(JSON.stringify(files.map(file => require('node:crypto').createHash('sha256').update(file.buffer).digest('hex')))).digest('hex') : undefined;
       const replay = await require('../commerce/dist/service.cjs').replayProductMutation(db, id, req.body, req.identity.id, assetHash);
       if (replay) return res.json(replay);
-      const prevProduct = await Product.findById(id);
-      if (!prevProduct) {
-          return res.status(404).json({ error: 'Product not found' });
-      }
+      const prevProduct = await catalogDomain().catalogUploadTarget(db, 'products', id);
 
       let imageUrls = prevProduct.images;
       let gdriveFileIds = prevProduct.gdriveFileIds;
@@ -189,18 +139,10 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
   }
 });
 
-
-
-
 productRouter.get('/details/:productId', async (req, res) => {
   if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { productId: req.params.productId }, staffRead(req)));
 });
 
 module.exports = productRouter;
-
-
-
-
-
 
