@@ -464,9 +464,9 @@ export default async function AdminPage({
               <Command
                 path={`auth/users/${display(item._id)}`}
                 method="DELETE"
-                confirm="Delete this staff account and revoke all of its sessions?"
+                confirm="Deactivate this staff account and revoke all of its sessions? The account history will be retained."
               >
-                Delete account
+                Deactivate account
               </Command>
             )
           }

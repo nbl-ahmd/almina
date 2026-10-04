@@ -2,6 +2,30 @@ import { randomUUID } from 'node:crypto';
 import { test, expect, reset, state, login, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
 
 test.beforeEach(async ({ request }) => { await reset(request); });
+test('staff provisioning clears credentials and deactivation revokes access at every required width', async ({ page, request }) => {
+  await login(page);
+  const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
+  for (const width of [360, 390, 768, 1280]) {
+    const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
+    await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
+    await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
+    await page.getByLabel('Username', { exact: true }).fill(username);
+    await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
+    await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption('user');
+    await page.getByRole('textbox', { name: /^Assigned cities/ }).fill('City A');
+    await page.getByRole('button', { name: 'Create staff account', exact: true }).focus(); await page.keyboard.press('Enter');
+    const row = page.getByRole('row').filter({ hasText: username }); await expect(row).toBeVisible();
+    await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');
+    expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(200);
+    expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(200);
+    page.once('dialog', dialog => dialog.accept()); await row.getByRole('button', { name: 'Deactivate account', exact: true }).click();
+    await expect(row).toHaveCount(0);
+    expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
+    expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.reload(); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
+  }
+});
 test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
   await login(page);
   for (const width of [360, 390, 768, 1280]) {
@@ -82,7 +106,16 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   const { createRequire } = await import('node:module'); const require = createRequire(`${process.cwd()}/package.json`);
   const sharp = require('./backend/node_modules/sharp');
   const image = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#ffffff' } }).png().toBuffer();
-  await login(page); await page.goto(adminOrigin + '/admin/products/' + productId);
+  await login(page);
+  let releaseScripts!: () => void;
+  const scriptsReady = new Promise<void>(resolve => { releaseScripts = resolve; });
+  await page.route('**/*.js', async route => { await scriptsReady; await route.continue(); });
+  await page.goto(adminOrigin + '/admin/products/' + productId, { waitUntil: 'commit' });
+  try {
+    await expect(page.getByRole('button', { name: 'Save Cloudinary images', exact: true })).toBeDisabled();
+    await expect(page.getByLabel('Replacement raster images')).toBeDisabled();
+  } finally { releaseScripts(); }
+  await expect(page.getByLabel('Replacement raster images')).toBeEnabled();
   await page.getByLabel('Replacement raster images').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
   await page.getByRole('button', { name: 'Save Cloudinary images', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Cloudinary images saved' })).toBeVisible();

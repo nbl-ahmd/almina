@@ -71,14 +71,14 @@ Lost customers and orders remain lost unless an independent export/backup is fou
 
 ## Focused continuation evidence
 
-Recovery preview/commit, immutable stock adjustments, retained readiness/drain, signed product media replacement/archive, catalog creation/metadata persistence and transactional WhatsApp inbox processing are now implemented in stacked focused PRs. See the current [migration status](MIGRATION_STATUS.md) for exact scopes and CI runs. The [operations dashboard](OPERATIONS_DASHBOARD_2026-10-04.md) adds administrator-only process snapshots and bounded database candidates; hosting-wide collection, external alerts and ledger reconciliation remain required. Earlier counts below describe the integrated baseline. No hosting acceptance or production cutover is claimed.
+Recovery preview/commit, immutable stock adjustments, retained readiness/drain, signed product media replacement/archive, catalog creation/metadata persistence, transactional WhatsApp inbox processing and staff administration are now implemented in stacked focused PRs. Staff removal deactivates accounts and revokes sessions without deleting identifiers/history. Recovered-ID redirects, raw SEO HTML, bounded retained reads and anonymous publication rules are verified locally. See the current [migration status](MIGRATION_STATUS.md) for exact scopes and CI runs. The [operations dashboard](OPERATIONS_DASHBOARD_2026-10-04.md) adds administrator-only process snapshots and bounded database candidates; hosting-wide collection, external alerts and ledger reconciliation remain required. Earlier counts below describe the integrated baseline. No hosting acceptance or production cutover is claimed.
 
 ## Remaining implementation gates
 
 | Area | Work required before completion |
 | --- | --- |
 | Dependency gate | Resolved locally: zero high/critical across lockfiles; require the same result from protected CI and keep monitoring. |
-| Backend ownership | Migrate catalog/category/banner/staff/store/import writes and provider/media operations into maintained modules, or explicitly accept documented retained components at cutover. |
+| Backend ownership | Catalog/category/banner/staff/store/import writers have maintained owners behind retained adapters; move remaining outbound notification/Drive operations incrementally and verify hosted parity. Shared retained sessions/realtime contracts remain. |
 | Inventory admin | Implemented: stale-stock protection, immutable actor/reason/delta receipts and exact stock-edit replay; creation, sale and invoice decimal-money validation. Hosted races/reconciliation remain required. |
 | Media/admin | Verify recovered Cloudinary preview/gallery/SEO delivery on the host; implement safe replacement, signed uploads and orphan review without deleting surviving assets. |
 | Product recovery UX | Implemented: spreadsheet/CSV templates, authenticated preview, row errors and hash-bound transactional commits. Verify hosted recovery/publishing; the legacy batch route remains blocked for recovery. |

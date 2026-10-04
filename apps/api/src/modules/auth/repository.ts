@@ -9,7 +9,7 @@ export function createStaffRepository(getDb: GetDb) {
       const scope = cursorScope('users', {}, user.id);
       const after = decodeCursor(query.cursor, scope);
       const db = await getDb();
-      const docs = await db.collection('users').find(after ? { _id: { $lt: after } } : {},
+      const docs = await db.collection('users').find({ disabled: { $ne: true }, ...(after ? { _id: { $lt: after } } : {}) },
         { ...queryOptions, projection: staffProjection }).sort({ _id: -1 }).limit(query.limit + 1).toArray();
       const items = docs.slice(0, query.limit);
       return { items: items.map(staffDto), nextCursor: docs.length > query.limit ? encodeCursor(items.at(-1)!._id, scope) : null };

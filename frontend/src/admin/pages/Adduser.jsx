@@ -83,13 +83,13 @@ const AddUser = () => {
   const handleDeleteUser = async (user) => {
     // Implement delete user functionality
     // Prompt the user for confirmation, and then make a DELETE request
-    if (window.confirm(`Are you sure you want to delete user ${user.username}?`)) {
+    if (window.confirm(`Are you sure you want to deactivate user ${user.username} and revoke their sessions?`)) {
       try {
         const response = await axios.delete(`${baseURL}/api/auth/users/${user._id}`);
         if (response.status === 200) {
-          // User deleted successfully
+          // User deactivated successfully
           setUserDetails(userDetails.filter((u) => u._id !== user._id));
-          console.log(`User ${user.username} deleted.`);
+          setMessage('Account deactivated.');
         } else {
           console.error('Failed to delete user');
         }
@@ -115,7 +115,8 @@ const AddUser = () => {
 
       if (response.ok) {
         // Signup successful, navigate to admin dashboard
-        setMessage('User created');
+        setPassword('');
+        setMessage('User provisioning request processed');
       } else {
         // Handle signup error
         console.error('Signup failed');
@@ -218,7 +219,7 @@ const AddUser = () => {
                     <div className="d-flex flex-fill justify-content-end">
                     
                     <button className="btn btn-sm btn-danger " onClick={() => handleDeleteUser(user)}>
-                      Delete
+                      Deactivate
                     </button>
                     </div>
                   </div>

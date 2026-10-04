@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { createHmac, randomBytes } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { test } from 'node:test';
-import { hash, compare } from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import express from 'express';
 import { createLogger } from '@almina/config/logger';
 import { createAuthService } from '../apps/api/src/modules/auth/service.js';
@@ -154,18 +154,18 @@ test('distributed quotas persist across service instances and combine per-accoun
   assert.ok(!JSON.stringify(fixture.data).includes('203.0.113.1'));
 });
 
-test('admin-only provisioning validates roles and hashes passwords; duplicate usernames use the same response', async () => {
+test('admin provisioning rejects malformed privileges and credentials before database or password work', async () => {
   const fixture = securityDb();
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'admin', cities: [] }) };
   const loginRouter = require('../backend/routes/Login')(auth, true, () => fixture.db);
   const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, routers: { auth: loginRouter } });
   await serve(app, async origin => {
     const body = { username: user.username, password: 'synthetic-long-password', name: 'Synthetic', role: 'user', cities: [] };
-    for (const role of ['superadmin', { $ne: null }]) assert.equal((await fetch(`${origin}/api/auth/signup`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ ...body, role }) })).status, 400);
-    for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/auth/signup`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(body) })).status, 202);
-    assert.equal(fixture.data.users!.length, 1); assert.equal(fixture.data.users![0]!.role, 'user');
-    assert.equal(await compare(body.password, fixture.data.users![0]!.password), true);
-    assert.match(fixture.data.users![0]!.password, /^\$2b\$12\$/);
+    for (const patch of [{ role: 'superadmin' }, { role: { $ne: null } }, { password: 'short' }, { password: '🔒'.repeat(19) },
+      { name: '   ' }, { cities: ['City A', 'City A'] }, { cities: [{ $where: 'x' }] }, { username: '$where' }, { disabled: false }]) {
+      assert.equal((await fetch(`${origin}/api/auth/signup`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ ...body, ...patch }) })).status, 400);
+    }
+    assert.equal(fixture.calls.length, 0);
   });
 });
 

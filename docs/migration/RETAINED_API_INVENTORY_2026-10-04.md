@@ -13,9 +13,9 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/auth/logout | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | POST | /api/auth/logout-all | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | GET | /api/auth/me | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| POST | /api/auth/signup | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| GET | /api/auth/users | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| DELETE | /api/auth/users/:id | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
+| POST | /api/auth/signup | admin | Maintained serialized staff provisioning and actor audit; retained URL adapter |
+| GET | /api/auth/users | admin | Maintained bounded active staff projection; retained URL adapter |
+| DELETE | /api/auth/users/:id | admin | Maintained transactional deactivation/session revocation and actor audit; no deletion |
 | POST | /api/products | admin | Maintained catalog creation/ID/initial-stock ledger transaction; retained Drive upload adapter |
 | GET | /api/products | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/search | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
@@ -70,7 +70,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 - Shared `orders/commerce.ts` atomically writes product stock, orders, counter, receipts/outbox and cancellation history/restock. Both HTTP stacks use it.
 - `commerce/outbox.cjs` leases notification jobs and SMTP through `integrations/order-email.cjs`. At least once; acceptance/crash can duplicate delivery. Legacy persistent process owns worker.
 - `security/realtime.cjs` authenticates/rechecks Socket.IO and SSE invalidations; shared deployment bus pending.
-- `Login.js` provisions password hashes/deletes accounts/revokes sessions; `sessions.cjs` owns sessions and quotas.
+- Maintained `auth/administration.ts` provisions password hashes and deactivates accounts with actor audits, serialized privilege checks and transactional session revocation; `Login.js` retains the URLs. `sessions.cjs` owns sessions and quotas. Existing identifiers/history are never deleted by account removal.
 - Drive creates/streams products/categories/banners/WhatsApp posters. All four media removal adapters now archive documents/assets. Category/Drive product replacements record prior references; old product/category filenames resolve through history. Maintained Cloudinary upload/reconciliation is additive; Drive upload/stream ownership and hosted provider parity remain retained gates.
 - Meta template/text/broadcast sends persist conversations/reports. Signed webhook receipts prevent duplicates; receipt-before-processing failure requires operator recovery.
 - Push subscriptions belong to current staff; real delivery configuration/parity remains hosting gate.
