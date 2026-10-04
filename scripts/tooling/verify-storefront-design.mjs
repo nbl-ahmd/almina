@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 const origin = process.env.STOREFRONT_URL ?? 'http://127.0.0.1:3120';
 const fixture = process.env.FIXTURE_URL ?? 'http://127.0.0.1:4120';
 for (const value of [origin, fixture]) {
@@ -10,7 +10,7 @@ for (const value of [origin, fixture]) {
 }
 function fixtureRequest(path) { return fetch(`${fixture}${path}`, { headers: { Connection: 'close' } }); }
 assert.equal(await (await fixtureRequest('/__fixture/design-health')).text(), 'almina-synthetic-design');
-const directory = process.env.VISUAL_OUTPUT ?? '/tmp/almina-storefront-design';
+const directory = resolve(process.env.VISUAL_OUTPUT ?? '/tmp/almina-storefront-design');
 mkdirSync(directory, { recursive: true });
 const session = execFileSync('agent-browser', ['session', 'id', '--scope', 'worktree', '--prefix', 'next-dev-loop-design'], { encoding: 'utf8' }).trim();
 function browser(...args) {
@@ -39,7 +39,7 @@ const routes = [
   ['offers', '/offers'], ['search', '/search?q=daily'], ['details', '/products/daily-care--VIS001'], ['cart', '/cart'], ['checkout', '/checkout'],
 ];
 const results = [];
-for (const width of [360, 390, 768, 1024, 1440]) {
+for (const width of [360, 390, 768, 1024, 1280, 1440]) {
   browser('set', 'viewport', String(width), '900');
   for (const [name, path] of routes) {
     open(path); settle();

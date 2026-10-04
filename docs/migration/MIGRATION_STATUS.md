@@ -14,7 +14,9 @@ Third focused inventory change on `codex/admin-inventory-ledger` adds transactio
 
 Retained lifecycle follow-up on `codex/retained-api-lifecycle` adds transaction-capable readiness, bounded drain and maintained notification leases/retry/deadline behavior. [Operational contract and evidence](RETAINED_LIFECYCLE_2026-10-04.md). Inventory PR #5 hosted runs `37179300779` and `37179264768` passed `verify`. Signed media/references, remaining retained writers and hosted provider/drain acceptance remain gates.
 
-Media follow-up on `codex/media-retention-cloudinary` adds signed raster uploads with provider reconciliation, reference history, revision-bound replacement and archive instead of destructive product/category/banner/poster removal. [Scope/evidence and live-provider gates](MEDIA_RETENTION_2026-10-04.md). Lifecycle PR #6 runs `37179603482` and `37179568676` passed hosted `verify`; production acceptance remains incomplete.
+Media follow-up on `codex/media-retention-cloudinary` adds signed raster uploads with provider reconciliation, reference history, revision-bound replacement and archive instead of destructive product/category/banner/poster removal. [Scope/evidence and live-provider gates](MEDIA_RETENTION_2026-10-04.md). Lifecycle PR #6 runs `37179603482` and `37179568676` and media PR #7 runs `37180455355` and `37180493841` passed hosted `verify`; production acceptance remains incomplete.
+
+Pharmacy component follow-up on `codex/pharmacy-tailwind-components` ports catalog cards, compact category tiles, stock labels, gallery and loading grid to palette-backed Tailwind utilities. [Scope and browser evidence](PHARMACY_TAILWIND_2026-10-04.md): 54 compiled route/viewport checks including all four requested widths, keyboard/empty/error/loading checks and clean running Turbopack diagnostics. Navigation/admin/checkout styling remains incremental; recovered-product and hosted acceptance remain gates.
 
 ## Production migration readiness — blocked
 
