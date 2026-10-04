@@ -34,7 +34,7 @@ routers.orders.post('/', async (req: { body: unknown }, res: { json: (body: unkn
   res.status(replayed ? 200 : 201); res.json({ ...order, replayed });
 });
 const app = createLegacyApp({ origins: [origin], development: true, routers });
-const terminal = app._router.stack.splice(-2);
+const terminal = app.router.stack.splice(-2);
 const html = readFileSync('frontend/build/index.html', 'utf8');
 const csp = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/i)?.[1];
 if (!csp) throw new Error('Build the legacy frontend first');
@@ -45,6 +45,6 @@ app.get('/__fixture/health', (_req: unknown, res: { send: (body: unknown) => voi
 app.get('/__fixture/orders', (_req: unknown, res: { json: (body: unknown) => void }) => res.json({ count: attempts.size, lastIntent }));
 app.post('/__fixture/delay', (_req: unknown, res: { end: () => void }) => { delayNext = true; res.end(); });
 app.use(express.static(path.resolve('frontend/build')));
-app.get('*', (_req: unknown, res: { sendFile: (file: string) => void }) => res.sendFile(path.resolve('frontend/build/index.html')));
-app._router.stack.push(...terminal);
+app.get('/{*path}', (_req: unknown, res: { sendFile: (file: string) => void }) => res.sendFile(path.resolve('frontend/build/index.html')));
+app.router.stack.push(...terminal);
 createServer(app).listen(4501, '127.0.0.1', () => console.log('Synthetic commerce UI fixture on loopback port 4501'));

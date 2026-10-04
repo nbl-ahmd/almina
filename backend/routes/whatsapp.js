@@ -1,12 +1,10 @@
 var express = require('express');
-var axios = require('axios');
 const { sendMessage, getTemplatedMessageInput, getTextMessageInput } = require("../messageHelper");
 const whatsappRouter = express.Router();
 const Whatsapp = require('../models/Whatsapp');
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const cors = require('cors');
+const { randomUUID } = require('node:crypto');
 const WhatsappPoster = require('../models/WhatsappPoster');
 const sharp = require('sharp');
 const router = express.Router();
@@ -37,7 +35,7 @@ whatsappRouter.post('/image', upload.single('image'), require('../security/uploa
   domain.mediaMetadataInput('whatsappposters', req.body);
   if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().jpeg().toBuffer();
-  const filename = uuidv4() + '.jpeg';
+  const filename = randomUUID() + '.jpeg';
   const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
     media: { mimeType: 'image/jpeg', body: Readable.from(bytes) }, fields: 'id' });
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;

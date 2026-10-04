@@ -41,10 +41,6 @@ function createLegacyApp(options) {
     whatsapp: require('./routes/whatsapp'), auth: require('./routes/Login')(auth, options.development),
   };
   for (const [name, router] of Object.entries(routers)) {
-    // Express 4 does not catch rejected async handlers by itself.
-    for (const layer of router.stack ?? []) for (const handler of layer.route?.stack ?? []) {
-      if (handler.handle.constructor.name === 'AsyncFunction') handler.handle = wrap(handler.handle);
-    }
     app.use(`/api/${name}`, router);
   }
   // Static delivery is limited to catalog images. No CSV, WhatsApp posters, private files or source mounts.

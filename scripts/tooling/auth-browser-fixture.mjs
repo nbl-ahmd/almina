@@ -17,13 +17,13 @@ const routers = { auth: require('../../backend/routes/Login')(auth, true, () => 
 for (const resource of ['products', 'category', 'banners', 'orders', 'whatsapp', 'store', 'batch']) {
   const router = express.Router();
   router.get('/status', (_req, res) => res.json({ status: 'open' }));
-  router.get('*', (_req, res) => res.json([]));
-  router.post('*', (_req, res) => res.status(204).end());
+  router.get('/{*path}', (_req, res) => res.json([]));
+  router.post('/{*path}', (_req, res) => res.status(204).end());
   routers[resource] = router;
 }
 const app = createLegacyApp({ origins: [origin], development: true, auth, routers });
 // Mount synthetic static UI before the app's terminal 404/error handlers.
-const terminal = app._router.stack.splice(-2);
+const terminal = app.router.stack.splice(-2);
 const html = readFileSync('frontend/build/index.html', 'utf8');
 const metaCsp = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/i)?.[1];
 if (!metaCsp || !html.includes('script-src &#x27;self&#x27;') && !html.includes("script-src 'self'")) throw new Error('Build the hardened legacy frontend first');
@@ -32,8 +32,8 @@ app.use((_req, res, next) => {
 });
 app.get('/__fixture/health', (_req, res) => res.send('almina-synthetic-auth'));
 app.use(express.static(path.resolve('frontend/build')));
-app.get('*', (_req, res) => res.sendFile(path.resolve('frontend/build/index.html')));
-app._router.stack.push(...terminal);
+app.get('/{*path}', (_req, res) => res.sendFile(path.resolve('frontend/build/index.html')));
+app.router.stack.push(...terminal);
 const server = createServer(app);
 const io = require('../../backend/node_modules/socket.io')(server, { cors: { origin, credentials: true } });
 secureRealtime(io, auth, [origin], true);

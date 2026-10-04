@@ -65,7 +65,7 @@ test('all admin legacy endpoints reject authenticated staff even with forged rol
 
 test('route authorization allowlist covers every real legacy handler and denies unlisted methods/path encodings', () => {
   const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true });
-  const mounts = app._router.stack.filter((layer: { name: string }) => layer.name === 'router');
+  const mounts = app.router.stack.filter((layer: { name: string }) => layer.name === 'router');
   const names = ['operations', 'media', 'recovery', 'category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
   let count = 0;
   mounts.forEach((mount: { handle: { stack: { route?: { path: string; methods: Record<string, boolean> } }[] } }, index: number) => {
@@ -79,6 +79,18 @@ test('route authorization allowlist covers every real legacy handler and denies 
   assert.equal(count, routePolicies.length);
   for (const path of ['/api/products//abc', '/api/%70roducts/abc', '/api/products\\abc']) assert.equal(lookupPolicy('PUT', path), undefined);
   assert.equal(lookupPolicy('PATCH', '/api/products/abc'), undefined);
+});
+
+test('Express 5 catches returned promise failures without private-stack wrapping or exposing diagnostics', async () => {
+  const express = require('../backend/node_modules/express');
+  const router = express.Router();
+  router.get('/status', () => Promise.reject(new Error('Synthetic private provider diagnostic')));
+  const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true, routers: { store: router } });
+  await serve(app, async origin => {
+    const response = await fetch(origin + '/api/store/status');
+    assert.equal(response.status, 500); assert.deepEqual(await response.json(), { error: 'Request failed' });
+    assert.equal((await fetch(origin + '/health/live')).status, 200);
+  });
 });
 
 test('cookie attributes, duplicate-cookie rejection and raw bearer rejection fail closed', () => {

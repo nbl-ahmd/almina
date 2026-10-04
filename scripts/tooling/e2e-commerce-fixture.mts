@@ -121,7 +121,7 @@ const csp = html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/i
 if (!csp) throw new Error('Build the legacy frontend before E2E tests');
 app.use((_req, res, next) => { res.set('Content-Security-Policy', csp.replaceAll('&#x27;', "'").replaceAll('&apos;', "'") + "; frame-ancestors 'none'"); next(); });
 app.use(express.static(path.resolve('frontend/build')));
-app.get('*', (_req, res) => res.sendFile(path.resolve('frontend/build/index.html')));
+app.get('/{*path}', (_req, res) => res.sendFile(path.resolve('frontend/build/index.html')));
 const server = createServer(app).listen(4730, '127.0.0.1');
 async function stop() {
   for (const timer of timers) clearTimeout(timer);

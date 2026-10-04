@@ -1,10 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const cors = require('cors');
+const { randomUUID } = require('node:crypto');
 const sharp = require('sharp');
-const ExifImage = require('exif').ExifImage;
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const productRouter = express.Router();
@@ -51,7 +49,7 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
                   .toBuffer();
 
               // Generate a filename
-              const filename = uuidv4() + '.webp';
+              const filename = randomUUID() + '.webp';
 
               // Save to Google Drive
               const fileMetadata = {
@@ -214,7 +212,7 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
                       .webp()
                       .toBuffer();
 
-                  const filename = uuidv4() + '.webp';
+                  const filename = randomUUID() + '.webp';
 
                   const fileMetadata = {
                       name: filename,

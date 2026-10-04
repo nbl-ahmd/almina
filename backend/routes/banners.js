@@ -1,8 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const cors = require('cors');
+const { randomUUID } = require('node:crypto');
 const Banner = require('../models/Banner');
 const sharp = require('sharp');
 const router = express.Router();
@@ -32,7 +31,7 @@ router.post('/', upload.single('image'), require('../security/uploads.cjs').vali
   domain.mediaMetadataInput('banners', req.body);
   if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().webp().toBuffer();
-  const filename = uuidv4() + '.webp';
+  const filename = randomUUID() + '.webp';
   const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
     media: { mimeType: 'image/webp', body: Readable.from(bytes) }, fields: 'id' });
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;

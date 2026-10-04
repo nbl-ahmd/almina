@@ -4,7 +4,7 @@ const categoryRouter = express.Router();
 const multer = require('multer');
 const path = require('path');
 const sharp= require('sharp')
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('node:crypto');
 // Generate a random color
 //google
 const { Readable } = require('stream');
@@ -35,7 +35,7 @@ categoryRouter.post('/', upload.single('image'), require('../security/uploads.cj
   domain.mediaMetadataInput('categories', req.body);
   let assets;
   if (req.file) {
-    const filename = uuidv4() + '.webp';
+    const filename = randomUUID() + '.webp';
     const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().resize({ width: 500, height: 500, fit: 'cover' }).webp().toBuffer();
     const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
       media: { mimeType: 'image/webp', body: Readable.from(bytes) }, fields: 'id' });
@@ -119,7 +119,7 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
     .toBuffer();
 
         // Generate a new filename for the resized image
-        const filename = uuidv4() + '.webp'; //
+        const filename = randomUUID() + '.webp'; //
 
          // Save the updated image to Google Drive
          const fileMetadata = {
