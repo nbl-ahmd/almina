@@ -31,165 +31,11 @@ const drive = google.drive({ version: 'v3', auth });
 // Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
 const FOLDER_ID = '1I8HpwJ_iaOx_r7ZsOOETYcQbpMFpLUH6';
 
-// Function to generate a unique product ID
-async function generateProductID() {
-  try {
-    const existingProducts = await Product.find();
-    let maxID = 0;
-    for (const product of existingProducts) {
-      const productID = parseInt(product.product_id.substring(2));
-      if (productID > maxID) {
-        maxID = productID;
-      }
-    }
-    return `PD${String(maxID + 1).padStart(4, '0')}`;
-  } catch (error) {
-
-    throw error;
-  }
-}
-
-
-// productRouter.post('/', upload.single('image'), async (req, res) => {
-//   const category = await Category.findById(req.body.category);
-//   const {
-//     name,
-//     price,
-//     stock,
-//     barcode,
-//     description
-//   } = req.body;
-//   const vat = req.body.vat == 'true';
-//   const sale = req.body.sale == 'true';
-//   const featured = req.body.featured == 'true';
-//   const image = req.file;
-//   const product_id = await generateProductID();
-//   let orientation = 1;
-//   if (image) {
-//     try {
-//       const exifData = await sharp(image.buffer).metadata();
-//       orientation = exifData.orientation || 1;
-//     } catch (error) {
-//
-//     }
-
-//     // crop the image into a square
-//     const croppedImage = await sharp(image.buffer)
-//       .resize({ width: 500, height: 500, fit: 'cover' })
-//       .rotate()
-//       .webp()
-//       .toBuffer();
-
-//     // generate a new filename for the resized image
-//     const Filename = uuidv4() + '.webp';
-
-//     const product = new Product({
-//       product_id,
-//       name,
-//       image: Filename,
-//       category,
-//       featured,
-//       price,
-//       vat,
-//       stock,
-//       sale,
-//       barcode,
-//       description
-//     }); // save the resized filename to the database
-
-//     try {
-//       const fileMetadata = {
-//         name: Filename,
-//         parents: [FOLDER_ID], // Set the parent folder ID
-//       };
-
-//       const media = {
-//         mimeType: 'image/webp',
-//         body: Readable.from(croppedImage),
-//       };
-
-//       const response = await drive.files.create({
-//         resource: fileMetadata,
-//         media: media,
-//         fields: 'id',
-//       });
-
-//       product.gdriveFileId = response.data.id; // Save the Google Drive file ID to the product document
-
-//       // Save the product document to the database
-//       await product.save();
-
-//       res.status(201).json({ message: 'product created successfully' });
-//     } catch (error) {
-//
-//       res.status(500).json({ error: 'Internal server error' });
-//     }
-//   } else {
-//     const product = new Product({
-//       product_id,
-//       name,
-//       category,
-//       featured,
-//       price,
-//       vat,
-//       stock,
-//       sale,
-//       barcode,
-//       description
-//     });
-
-//     try {
-//       // Save the product document to the database without an image
-//       await product.save();
-
-//       res.status(201).json({ message: 'product created successfully' });
-//     } catch (error) {
-//
-//       res.status(500).json({ error: 'Internal server error' });
-//     }
-//   }
-// });
-
-
-// productRouter.get('/', (req, res) => {
-//     Product.find().populate('category')
-//         .then(products => {
-//             res.status(200).json(products);
-//         })
-//         .catch(error => {
-//
-//             res.status(500).json({ error: 'Internal server error' });
-//         });
-// });
-
-// productRouter.get('/', (req, res) => {
-//   const filter = catalogFilter(req.query.filter); // Parse the filter JSON string if provided
-//   const limit = Number(req.query.limit) || 10; // Default limit is 10 if not provided
-//   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-
-//   Product.find(filter)
-//     .skip(offset)
-//     .limit(limit)
-//     .populate('category')
-//     .then(products => {
-//       res.status(200).json(products);
-//     })
-//     .catch(error => {
-//
-//       res.status(500).json({ error: 'Internal server error' });
-//     });
-// });
-
-
-
 productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  require('../security/admin-input.cjs').productInput(req.body, true);
+  const domain = require('../commerce/dist/service.cjs');
+  domain.catalogCreationInput(req.body);
   const category = await Category.findById(req.body.category);
-  const { name, price, stock, barcode, description, salePrice } = req.body;
-  const vat = req.body.vat === 'true';
-  const sale = req.body.sale === 'true';
-  const featured = req.body.featured === 'true';
-  const product_id = await generateProductID();
+  if (!category || category.archivedAt) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   const files = req.files;
 
   let imageUrls = [];
@@ -235,29 +81,9 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
       }
   }
 
-  const product = new Product({
-      product_id,
-      name,
-      images: imageUrls, // Save array of image URLs
-      gdriveFileIds, // Save array of Google Drive file IDs
-      category,
-      featured,
-      price,
-      vat,
-      stock,
-      sale,
-      ...(salePrice !== undefined ? { salePrice: Number(salePrice) } : {}),
-      barcode,
-      description,
-  });
-
-  try {
-      await product.save();
-      res.status(201).json({ message: 'Product created successfully', product });
-  } catch (error) {
-      if (error.status) throw error;
-      res.status(500).json({ error: 'Internal server error' });
-  }
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  const product = await domain.createCatalogProduct(db, req.body, req.identity.id, { images: imageUrls, gdriveFileIds });
+  res.status(201).json({ message: 'Product created successfully', product });
 });
 
 

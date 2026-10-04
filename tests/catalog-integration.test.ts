@@ -8,10 +8,52 @@ import type { Express } from 'express';
 import { createApp } from '../apps/api/src/app';
 import { createLogger } from '@almina/config/logger';
 import { migrateCommerce } from '../scripts/migrations/commerce';
+import { createCatalogProduct, createLegacyCatalogBatch } from '../apps/api/src/modules/catalog/creation';
 
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
 const require = createRequire(new URL('../backend/package.json', import.meta.url));
+test('maintained catalog creation serializes single/batch IDs and rolls back categories, initial stock and ledger together', { skip: !uri }, async () => {
+  assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client = await new MongoClient(uri!).connect();
+  const db = client.db(`almina_creation_test_${randomUUID().replaceAll('-', '')}`);
+  const actor = String(new ObjectId()), category = new ObjectId();
+  const input = { name: 'Synthetic', category: String(category), barcode: '0000123', price: '12.50', stock: '2', sale: false };
+  const batchRow = { name: 'Synthetic batch', category: 'New category', barcode: '0000987', price: '10.01', stock: '3', vat: 'TRUE', sale: 'FALSE' };
+  try {
+    await db.collection('stores').insertOne({ status: 'closed' });
+    await db.collection('categories').insertOne({ _id: category, name: 'Existing category' });
+    await db.collection('products').insertOne({ product_id: 'PD6000', name: 'Retained', stock: 7, price: 9.99 });
+    await db.collection('products').insertOne({ product_id: 'RECOVERED_999999', name: 'Recovered', stock: 0, price: 1 });
+    const outcomes = await Promise.all([
+      ...Array.from({ length: 4 }, () => createCatalogProduct(db, input, actor)),
+      ...Array.from({ length: 3 }, () => createLegacyCatalogBatch(db, [batchRow, batchRow], actor)),
+    ]);
+    assert.equal(outcomes.length, 7);
+    const products = await db.collection('products').find({ product_id: { $nin: ['PD6000', 'RECOVERED_999999'] } }).toArray();
+    assert.equal(products.length, 10); assert.equal(new Set(products.map(value => value.product_id)).size, 10);
+    assert.deepEqual(products.map(value => Number(value.product_id.substring(2))).sort((a, b) => a - b), Array.from({ length: 10 }, (_, i) => 6001 + i));
+    assert.equal(await db.collection('inventory_adjustments').countDocuments({ actor }), 10);
+    assert.equal(await db.collection('categories').countDocuments({ name: 'New category' }), 1);
+    assert.ok(products.every(value => ['0000123', '0000987'].includes(value.barcode)));
+    assert.equal((await db.collection('products').findOne({ product_id: 'PD6000' }))!.stock, 7);
+    const previousCounter = await db.collection('catalog_counters').findOne();
+    await db.collection('categories').insertMany([{ name: 'Ambiguous' }, { name: 'Ambiguous' }]);
+    await assert.rejects(createLegacyCatalogBatch(db, [{ ...batchRow, category: 'Must roll back' }, { ...batchRow, category: 'Ambiguous' }], actor), { code: 'IDEMPOTENCY_CONFLICT' });
+    assert.equal(await db.collection('categories').countDocuments({ name: 'Must roll back' }), 0);
+    assert.equal(await db.collection('products').countDocuments(), 12);
+    assert.equal(await db.collection('inventory_adjustments').countDocuments(), 10);
+    assert.deepEqual(await db.collection('catalog_counters').findOne(), previousCounter);
+    for (const invalid of [{ price: '1.001' }, { price: '1', sale: true, salePrice: '2' }, { stock: '1.5' }, { barcode: 123 }, { category: String(new ObjectId()) }]) {
+      await assert.rejects(createCatalogProduct(db, { ...input, ...invalid }, actor), { code: 'INVALID_REQUEST' });
+    }
+    await assert.rejects(createLegacyCatalogBatch(db, [batchRow, { ...batchRow, category: 'No partial category', price: '1.001' }], actor));
+    assert.equal(await db.collection('categories').countDocuments({ name: 'No partial category' }), 0);
+    await db.collection<{ _id: string }>('recovery_bootstrap').insertOne({ _id: 'empty-database-v1' });
+    await assert.rejects(createLegacyCatalogBatch(db, [batchRow], actor), { code: 'RECOVERY_IMPORT_REQUIRED' });
+    assert.equal((await db.collection('stores').findOne())!.status, 'closed');
+  } finally { await db.dropDatabase(); await client.close(); }
+});
 async function serve(app: Express, run: (url: string) => Promise<void>) {
   const server = createServer(app);
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));

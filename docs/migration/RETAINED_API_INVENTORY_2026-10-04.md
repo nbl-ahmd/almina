@@ -15,7 +15,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/auth/signup | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | GET | /api/auth/users | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | DELETE | /api/auth/users/:id | admin | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| POST | /api/products | admin | products.js → Mongoose catalog and Drive; extraction pending |
+| POST | /api/products | admin | Maintained catalog creation/ID/initial-stock ledger transaction; retained Drive upload adapter |
 | GET | /api/products | public | products.js → Mongoose catalog and Drive; extraction pending |
 | GET | /api/products/search | public | products.js → Mongoose catalog and Drive; extraction pending |
 | GET | /api/products/images/:filename | public | products.js → Mongoose catalog and Drive; extraction pending |
@@ -36,7 +36,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | GET | /api/banners | public | banners.js → Mongoose banners and Drive |
 | GET | /api/banners/images/:filename | public | banners.js → Mongoose banners and Drive |
 | DELETE | /api/banners/:id | admin | maintained media/retention.ts archive; references retained |
-| POST | /api/batch | admin | batchProductRouter.js → legacy CSV writer; recovery replacement pending |
+| POST | /api/batch | admin | Maintained bounded catalog batch transaction; blocked during recovery before upload |
 | PUT | /api/store/status | admin | storeRouter.js → maintained store/service.ts |
 | GET | /api/store/status | public | storeRouter.js → maintained store/service.ts |
 | POST | /api/store/cart/add | public | storeRouter.js → maintained store/service.ts |

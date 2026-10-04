@@ -8,3 +8,4 @@ export * from './modules/operations/lifecycle.js';
 export * from './modules/notifications/outbox.js';
 export * from './modules/media/retention.js';
 export * from './modules/media/cloudinary.js';
+export * from './modules/catalog/creation.js';

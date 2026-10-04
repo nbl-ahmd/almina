@@ -10,6 +10,8 @@ Price and optional sale price require at most two decimals and safe integer fils
 
 The ledger starts with these admin edits; it does not fabricate historical adjustments. Initial product creation/legacy non-recovery batch allocation remain retained operations inventoried in the ownership document, requiring further transactional extraction/parity. Recovery imports continue to insert zero stock. Duplicate initial product allocation and provider/media reconciliation are still migration gates; this PR does not claim all catalog writes are migrated.
 
+Continuation: [catalog creation ownership](CATALOG_CREATION_2026-10-04.md) now moves single/non-recovery batch allocation and initial-stock ledger persistence into maintained transactions; [media retention](MEDIA_RETENTION_2026-10-04.md) adds signed reconciliation. Initial legacy creation response retries and remaining retained providers still require the documented reconciliation/hosting gates.
+
 ## Verification and rollout
 
 Lint/typecheck, 55 unit and 7 release tests, 98 API/security regressions, 25 mandatory disposable replica-set integration/load tests and foundation/Vite builds passed. Real tests cover concurrent editors, checkout-stale forms, actor/reason/delta, replay after later stock changes, reused-key conflicts, zero money with valid sale configuration and two-decimal invoices. Compiled Chromium covers the Next stock form and stale rejection alongside checkout/cancellation/recovery journeys. Apply the additive index plan for product/history lookup only in a reviewed maintenance window; `_id` already enforces receipt uniqueness.
