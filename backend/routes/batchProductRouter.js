@@ -29,7 +29,14 @@ const randomColor = () => {
   return `${r}, ${g}, ${b}`;
 };
 
-batchProductRouter.post('/', upload.single('file'), async (req, res) => {
+batchProductRouter.post('/', require('../security/boundary.cjs').wrap(async (req, _res, next) => {
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  if (!db) throw require('../security/boundary.cjs').fail(503, 'SERVICE_UNAVAILABLE');
+  if (req.app.locals.recoveryAllowed || await db.collection('recovery_bootstrap').findOne({ _id: 'empty-database-v1' })) {
+    throw require('../security/boundary.cjs').fail(409, 'RECOVERY_IMPORT_REQUIRED');
+  }
+  next();
+}), upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });

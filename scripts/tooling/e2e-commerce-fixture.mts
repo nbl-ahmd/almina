@@ -29,11 +29,13 @@ const db = client.db(dbName);
 await mongoose.connect(uri, { dbName });
 const password = await hash('synthetic-test-password', 4);
 let delayNext = false;
+let fixtureCase = 0;
 const timers = new Set<ReturnType<typeof setTimeout>>();
 async function reset() {
   if (!/^almina_e2e_test_[a-f0-9]{32}$/.test(dbName)) throw new Error('Unsafe fixture database');
   await db.dropDatabase();
   delayNext = false;
+  fixtureCase++;
   const category = new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');
   await db.collection('categories').insertOne({ _id: category, name: 'Synthetic category', disabled: false });
   await db.collection('products').insertOne({ _id: new ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'), product_id: 'PD0001',
@@ -58,6 +60,14 @@ app.post('/__fixture/stock', async (req, res, next) => {
     res.sendStatus(204);
   } catch (error) { next(error); }
 });
+app.post('/__fixture/recovery', async (_req, res, next) => {
+  try {
+    await reset();
+    await db.collection('stores').updateOne({}, { $set: { status: 'closed' } });
+    await db.collection<{ _id: string }>('recovery_bootstrap').insertOne({ _id: 'empty-database-v1' });
+    res.sendStatus(204);
+  } catch (error) { next(error); }
+});
 app.post('/__fixture/delay', (_req, res) => { delayNext = true; res.sendStatus(204); });
 app.post('/__fixture/price', async (_req, res, next) => {
   try {
@@ -73,6 +83,9 @@ app.get('/__fixture/state', async (_req, res, next) => {
   } catch (error) { next(error); }
 });
 app.use((req, res, next) => {
+  // Each reset is a distinct synthetic client. Preserve real quotas without accumulating
+  // unrelated test cases on one loopback IP; never accept a caller's forwarded identity.
+  req.headers['x-forwarded-for'] = `127.0.1.${fixtureCase % 250 + 1}`;
   if (req.method === 'POST' && ['/api/orders', '/api/v1/checkout'].includes(req.path) && delayNext) {
     delayNext = false;
     const send = res.json.bind(res);
@@ -89,7 +102,7 @@ const versioned = createApp({ getDb: async () => db, database: { checkReadiness:
   logger: createLogger({ service: 'api', environment: 'development', level: 'error' }),
   webOrigin: 'http://127.0.0.1:4740', development: true });
 app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });
-const legacy = createLegacyApp({ origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740'], development: true });
+const legacy = createLegacyApp({ trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);

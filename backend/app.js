@@ -9,6 +9,7 @@ function createLegacyApp(options) {
     return mongoose.connection.db;
   });
   installBoundary(app, { ...options, auth });
+  app.use('/api/recovery', express.json({ limit: '4mb', inflate: false }));
   app.use(express.json({ limit: '128kb', inflate: false, verify(req, _res, buffer) {
     if (/^\/api\/whatsapp\/webhook\/?$/i.test(req.originalUrl.split('?')[0])) req.rawBody = Buffer.from(buffer);
   } }));
@@ -29,7 +30,7 @@ function createLegacyApp(options) {
     next();
   }));
   const routers = options.routers ?? {
-    category: require('./routes/categories'), banners: require('./routes/banners'), products: require('./routes/products'),
+    recovery: require('./routes/recovery'), category: require('./routes/categories'), banners: require('./routes/banners'), products: require('./routes/products'),
     orders: require('./routes/Orderrouter'), batch: require('./routes/batchProductRouter'), store: require('./routes/storeRouter'),
     whatsapp: require('./routes/whatsapp'), auth: require('./routes/Login')(auth, options.development),
   };
@@ -57,6 +58,8 @@ function createLegacyApp(options) {
     res.status(status).json({ ...(code ? { code } : {}), error: status === 401 ? 'Invalid credentials or session' : status === 403 ? 'Access denied'
       : status === 400 ? 'Invalid request' : status === 404 ? 'Not found' : status === 429 ? 'Too many requests' : 'Request failed' });
   });
+  app.locals.recoveryAllowed = options.recoveryAllowed ?? process.env.RECOVERY_CATALOG_ALLOWED === 'true';
+  app.locals.recoveryCloudName = options.recoveryCloudName ?? process.env.CLOUDINARY_CLOUD_NAME;
   app.locals.getCommerceDb = options.getCommerceDb;
   app.locals.auth = auth;
   return app;

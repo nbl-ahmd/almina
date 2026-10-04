@@ -62,6 +62,9 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ["GET", "store/status", "admin"],
   ["PUT", "store/status", "admin"],
   ["POST", "batch", "admin"],
+  ["GET", "recovery/template", "admin"],
+  ["POST", "recovery/preview", "admin"],
+  ["POST", "recovery/commit", "admin"],
   ["GET", "whatsapp/recipients", "admin"],
   ["GET", "whatsapp/reports", "admin"],
   ["GET", "whatsapp/image", "admin"],
@@ -252,7 +255,7 @@ const fields = new Set([
   "recipient",
   "success",
   "count",
-  "message",
+  "message", "cloudinaryImages", "rows", "errors", "row", "field", "previewId", "hash", "batch", "created", "replayed",
 ]);
 export function project(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(project);

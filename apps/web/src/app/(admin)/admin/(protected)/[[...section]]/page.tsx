@@ -1,3 +1,4 @@
+import { RecoveryImport } from "../../../../../components/admin/recovery-import";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -491,32 +492,7 @@ export default async function AdminPage({
       </>
     );
   }
-  if (section === "batch")
-    return (
-      <>
-        <h1>Batch product upload</h1>
-        <p>
-          CSV columns: name, category, price, stock, barcode, vat, featured,
-          sale. Boolean columns use TRUE or FALSE. This creates products using
-          the existing import workflow.
-        </p>
-        <AdminForm
-          path="batch"
-          multipart
-          fields={[
-            {
-              name: "file",
-              label: "Product CSV",
-              type: "file",
-              required: true,
-              hint: "Maximum 2 MB. Review the file before importing.",
-            },
-          ]}
-          label="Import products"
-          confirm="Create products from this CSV using the existing import workflow?"
-        />
-      </>
-    );
+  if (section === "batch") return <><h1>Product recovery</h1><RecoveryImport /></>;
   if (section === "notifications")
     return (
       <>

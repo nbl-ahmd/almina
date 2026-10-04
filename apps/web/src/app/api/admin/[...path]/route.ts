@@ -69,7 +69,7 @@ async function handle(
       !type.startsWith("multipart/form-data; boundary=")
     )
       throw new AdminError(415);
-    if (type.startsWith("application/json") && body && body.length > 128 * 1024)
+    if (type.startsWith("application/json") && body && body.length > (path === "recovery/preview" ? 4 * 1024 * 1024 : 128 * 1024))
       throw new AdminError(413);
     const result = await upstream(path + (query ? `?${query}` : ""), {
       method: request.method,
@@ -80,6 +80,9 @@ async function handle(
     const acceptedRedirect = path === "whatsapp/text" && result.status === 302;
     if (!result.ok && !acceptedRedirect)
       throw new AdminError(result.status >= 400 ? result.status : 502);
+    if (path === "recovery/template") return new NextResponse(await result.text(), {
+      headers: { ...headers, "Content-Type": "text/csv", "Content-Disposition": 'attachment; filename="recovery-products.csv"' },
+    });
     const response =
       result.status === 204
         ? new NextResponse(null, { status: 204, headers })

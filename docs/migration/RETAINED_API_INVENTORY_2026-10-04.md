@@ -4,6 +4,9 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 
 | Method | Retained URL | Boundary | Current owner/effects |
 | --- | --- | --- | --- |
+| GET | /api/recovery/template | admin | maintained recovery/csv.ts; no provider effects |
+| POST | /api/recovery/preview | admin | maintained recovery/catalog.ts; actor-bound preview |
+| POST | /api/recovery/commit | admin | maintained recovery/catalog.ts; closed-store transaction/ledger |
 | POST | /api/auth/login | login | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | POST | /api/auth/logout | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
 | POST | /api/auth/logout-all | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
