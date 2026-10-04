@@ -3,31 +3,13 @@ const { sendMessage, getTemplatedMessageInput, getTextMessageInput } = require("
 const whatsappRouter = express.Router();
 const Whatsapp = require('../models/Whatsapp');
 const multer = require('multer');
-const path = require('path');
 const { randomUUID } = require('node:crypto');
 const WhatsappPoster = require('../models/WhatsappPoster');
 const sharp = require('sharp');
-const router = express.Router();
-const uploadDir = path.join(__dirname, '..', 'public/WhatsappPoster');
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-const fs = require('fs');
-//google
-const { Readable } = require('stream');
-const { google } = require('googleapis');
 const whatsappBulkReportModel = require('../models/whatsappBulkReport');
-// Load the JSON key file
-const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-// Create a new instance of the drive API
-const auth = new google.auth.GoogleAuth({
-  keyFile,
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-
-const drive = google.drive({ version: 'v3', auth });
-
-// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '11wB-C-ZmixvTLZnrFVkRfokTQmBmLlmv';
 
 whatsappRouter.post('/image', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
@@ -36,10 +18,9 @@ whatsappRouter.post('/image', upload.single('image'), require('../security/uploa
   if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().jpeg().toBuffer();
   const filename = randomUUID() + '.jpeg';
-  const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
-    media: { mimeType: 'image/jpeg', body: Readable.from(bytes) }, fields: 'id' });
+  const asset = await driveMedia(req).upload(bytes, filename, FOLDER_ID);
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
-  await domain.createMediaMetadata(db, 'whatsappposters', req.body, req.identity.id, { image: filename, gdriveFileId: response.data.id });
+  await domain.createMediaMetadata(db, 'whatsappposters', req.body, req.identity.id, { image: filename, gdriveFileId: asset.fileId });
   req.app.locals.io?.emit('newPoster', { image: filename });
   res.status(201).json({ message: 'poster created successfully' });
 });
@@ -67,16 +48,8 @@ whatsappRouter.get('/image/:filename', async (req, res) => {
     }
 
     // Retrieve the image file from Google Drive
-    const response = await drive.files.get(
-      { fileId: poster.gdriveFileId, alt: 'media' },
-      { responseType: 'stream' }
-    );
-
-    // Set the appropriate Content-Type header for the image
-    res.set('Content-Type', 'image/jpeg');
-
-    // Pipe the image stream from Google Drive to the response stream
-    response.data.pipe(res);
+    const asset = await driveMedia(req).read(poster.gdriveFileId);
+    res.type(asset.contentType).send(asset.bytes);
   } catch (error) {
 
     res.status(500).json({ error: 'Internal server error' });

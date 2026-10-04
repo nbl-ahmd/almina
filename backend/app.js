@@ -12,6 +12,7 @@ function createLegacyApp(options) {
     return mongoose.connection.db;
   });
   app.locals.draining = false;
+  app.locals.driveMedia = options.driveMedia;
   const healthHeaders = require('./security/boundary.cjs').securityHeaders(options.development);
   app.get('/health/live', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').json({ status: 'live' }));
   app.get('/health/ready', healthHeaders, wrap(async (_req, res) => {

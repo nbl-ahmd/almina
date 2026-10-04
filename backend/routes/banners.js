@@ -1,29 +1,12 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const { randomUUID } = require('node:crypto');
 const Banner = require('../models/Banner');
 const sharp = require('sharp');
 const router = express.Router();
-const uploadDir = path.join(__dirname, '..', 'public/banner');
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-const fs = require('fs');
-//google
-const { Readable } = require('stream');
-const { google } = require('googleapis');
-// Load the JSON key file
-const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-// Create a new instance of the drive API
-const auth = new google.auth.GoogleAuth({
-  keyFile,
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-
-const drive = google.drive({ version: 'v3', auth });
-
-// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '10jn65wQMomVYMAAy4TuH8iVgiFa8IhxJ';
 
 router.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
@@ -32,10 +15,9 @@ router.post('/', upload.single('image'), require('../security/uploads.cjs').vali
   if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().webp().toBuffer();
   const filename = randomUUID() + '.webp';
-  const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
-    media: { mimeType: 'image/webp', body: Readable.from(bytes) }, fields: 'id' });
+  const asset = await driveMedia(req).upload(bytes, filename, FOLDER_ID);
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
-  await domain.createMediaMetadata(db, 'banners', req.body, req.identity.id, { image: filename, gdriveFileId: response.data.id });
+  await domain.createMediaMetadata(db, 'banners', req.body, req.identity.id, { image: filename, gdriveFileId: asset.fileId });
   res.status(201).json({ message: 'Banner created successfully' });
 });
 
@@ -62,16 +44,8 @@ router.get('/images/:filename', async (req, res) => {
     }
 
     // Retrieve the image file from Google Drive
-    const response = await drive.files.get(
-      { fileId: banner.gdriveFileId, alt: 'media' },
-      { responseType: 'stream' }
-    );
-
-    // Set the appropriate Content-Type header for the image
-    res.set('Content-Type', 'image/webp');
-
-    // Pipe the image stream from Google Drive to the response stream
-    response.data.pipe(res);
+    const asset = await driveMedia(req).read(banner.gdriveFileId);
+    res.type(asset.contentType).send(asset.bytes);
   } catch (error) {
 
     res.status(500).json({ error: 'Internal server error' });

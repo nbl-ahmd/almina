@@ -1,31 +1,14 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const { randomUUID } = require('node:crypto');
 const sharp = require('sharp');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 const productRouter = express.Router();
-const uploadDir = path.join(__dirname, '..', 'public/products');
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-const fs = require('fs');
 
-//google
-const { Readable } = require('stream');
-const { google } = require('googleapis');
-// Load the JSON key file
-const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-// Create a new instance of the drive API
-const auth = new google.auth.GoogleAuth({
-  keyFile,
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-
-const drive = google.drive({ version: 'v3', auth });
-
-// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '1I8HpwJ_iaOx_r7ZsOOETYcQbpMFpLUH6';
 
 productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
@@ -52,25 +35,13 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
               const filename = randomUUID() + '.webp';
 
               // Save to Google Drive
-              const fileMetadata = {
-                  name: filename,
-                  parents: [FOLDER_ID],
-              };
-              const media = {
-                  mimeType: 'image/webp',
-                  body: Readable.from(croppedImage),
-              };
-              const response = await drive.files.create({
-                  resource: fileMetadata,
-                  media: media,
-                  fields: 'id',
-              });
+              const asset = await driveMedia(req).upload(croppedImage, filename, FOLDER_ID);
 
 
 
               // Store URLs and Google Drive IDs
               imageUrls.push(filename);
-              gdriveFileIds.push(response.data.id);
+              gdriveFileIds.push(asset.fileId);
           } catch (error) {
 
               return res.status(500).json({ error: 'Failed to upload images' });
@@ -105,16 +76,8 @@ productRouter.get('/images/:filename', async (req, res) => {
 
     if (product.image === filename && product.gdriveFileId) {
       // For old products with a single gdriveFileId
-      const response = await drive.files.get(
-        { fileId: product.gdriveFileId, alt: 'media' },
-        { responseType: 'stream' }
-      );
-
-      // Set the appropriate Content-Type header for the image
-      res.set('Content-Type', 'image/webp');
-
-      // Pipe the image stream from Google Drive to the response stream
-      response.data.pipe(res);
+      const asset = await driveMedia(req).read(product.gdriveFileId);
+      res.type(asset.contentType).send(asset.bytes);
     } else if (product.gdriveFileIds) {
       // For new products with multiple gdriveFileIds
 
@@ -126,16 +89,8 @@ productRouter.get('/images/:filename', async (req, res) => {
       }
 
       const gdriveFileId = product.gdriveFileIds[imageIndex];
-      const response = await drive.files.get(
-        { fileId: gdriveFileId, alt: 'media' },
-        { responseType: 'stream' }
-      );
-
-      // Set the appropriate Content-Type header for the image
-      res.set('Content-Type', 'image/webp');
-
-      // Pipe the image stream from Google Drive to the response stream
-      response.data.pipe(res);
+      const asset = await driveMedia(req).read(gdriveFileId);
+      res.type(asset.contentType).send(asset.bytes);
     } else {
       return res.status(404).json({ error: 'No valid Google Drive file ID found' });
     }
@@ -214,22 +169,10 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
 
                   const filename = randomUUID() + '.webp';
 
-                  const fileMetadata = {
-                      name: filename,
-                      parents: [FOLDER_ID],
-                  };
-                  const media = {
-                      mimeType: 'image/webp',
-                      body: Readable.from(croppedImage),
-                  };
-                  const response = await drive.files.create({
-                      resource: fileMetadata,
-                      media: media,
-                      fields: 'id',
-                  });
+                  const asset = await driveMedia(req).upload(croppedImage, filename, FOLDER_ID);
 
                   imageUrls.push(filename);
-                  gdriveFileIds.push(response.data.id);
+                  gdriveFileIds.push(asset.fileId);
               } catch (error) {
 
                   return res.status(500).json({ error: 'Failed to upload new images' });

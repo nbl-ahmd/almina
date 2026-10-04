@@ -2,32 +2,15 @@ const Category = require('../models/Category');
 const express = require('express');
 const categoryRouter = express.Router();
 const multer = require('multer');
-const path = require('path');
-const sharp= require('sharp')
+const sharp = require('sharp');
 const { randomUUID } = require('node:crypto');
-// Generate a random color
-//google
-const { Readable } = require('stream');
-const { google } = require('googleapis');
-// Load the JSON key file
-const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-// Create a new instance of the drive API
-const auth = new google.auth.GoogleAuth({
-  keyFile,
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-
-const drive = google.drive({ version: 'v3', auth });
-
-// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '1EFfxTRU7EamU46cCl-NXrSnMz7H-Ivh4';
 
 
 const storage = multer.memoryStorage();
 
   const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-const fs = require('fs');
 
 
 categoryRouter.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
@@ -37,9 +20,8 @@ categoryRouter.post('/', upload.single('image'), require('../security/uploads.cj
   if (req.file) {
     const filename = randomUUID() + '.webp';
     const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().resize({ width: 500, height: 500, fit: 'cover' }).webp().toBuffer();
-    const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
-      media: { mimeType: 'image/webp', body: Readable.from(bytes) }, fields: 'id' });
-    assets = { image: filename, gdriveFileId: response.data.id };
+    const asset = await driveMedia(req).upload(bytes, filename, FOLDER_ID);
+    assets = { image: filename, gdriveFileId: asset.fileId };
   }
   const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
   await domain.createMediaMetadata(db, 'categories', req.body, req.identity.id, assets);
@@ -75,16 +57,8 @@ categoryRouter.get('/:id', async (req, res) => {
       }
 
       // Retrieve the image file from Google Drive
-      const response = await drive.files.get(
-        { fileId: category.gdriveFileId, alt: 'media' },
-        { responseType: 'stream' }
-      );
-
-      // Set the appropriate Content-Type header for the image
-      res.set('Content-Type', 'image/webp');
-
-      // Pipe the image stream from Google Drive to the response stream
-      response.data.pipe(res);
+      const asset = await driveMedia(req).read(category.gdriveFileId);
+      res.type(asset.contentType).send(asset.bytes);
     } catch (error) {
 
       res.status(500).json({ error: 'Internal server error' });
@@ -122,24 +96,10 @@ categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.
         const filename = randomUUID() + '.webp'; //
 
          // Save the updated image to Google Drive
-         const fileMetadata = {
-          name: filename,
-          parents: [FOLDER_ID], // Set the parent folder ID
-        };
-
-        const media = {
-          mimeType: 'image/webp',
-          body: Readable.from(croppedImage),
-        };
-
-        const response = await drive.files.create({
-          resource: fileMetadata,
-          media: media,
-          fields: 'id',
-        });
+         const asset = await driveMedia(req).upload(croppedImage, filename, FOLDER_ID);
 
         updateFields.image = filename;
-        updateFields.gdriveFileId = response.data.id; // Save the updated Google Drive file ID to the product document
+        updateFields.gdriveFileId = asset.fileId; // Save the updated Google Drive file ID to the product document
 
       }
 
