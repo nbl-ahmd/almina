@@ -36,6 +36,8 @@ The owner renewed the target as a complete Next.js frontend and maintained Expre
 
 Database-library follow-up on `codex/mongoose9-backend` pins Mongoose 9.10.4 with MongoDB driver 7 after reviewing both intervening major migration guides. No collection, schema, identifier, index or legacy field changes. [Compatibility and evidence](MONGOOSE9_2026-10-04.md). Express PR #16 runs `37205388662` and `37205420781` passed required hosted `verify`. Full frontend retirement and backend provider ownership remain repository work; hosted acceptance remains incomplete.
 
+Next route parity on `codex/next-public-route-parity` completes public about/contact pages, an explicit map-to-delivery-enquiries redirect, static icons/manifest and generic compatibility worker, plus all retained admin alias browser checks. [Scope and verified limits](NEXT_ROUTE_PARITY_2026-10-04.md). Mongoose PR #17 runs `37205816268` and `37205845454` passed hosted `verify`. Frontend consumer retirement, remaining backend provider ownership and hosted acceptance remain incomplete.
+
 ## Production migration readiness — blocked
 
 Prepared on `codex/production-migration-readiness`: [Render cutover/recovery runbook](PRODUCTION_CUTOVER_2026-10-03.md), three-phase fail-closed release evidence validator (`npm run release:gate`), and CI regression coverage for missing/skipped evidence, exact SHAs, deployment readbacks, post-cutover timestamps, 24-hour observation and retained legacy fields. Includes all twelve staging/production journeys, environment/provider/media/SEO gates, reconciliation, explicit monitoring thresholds and safe rollback. The validator checks attestations, not provider truth; production deployment controls and telemetry are not configured by it.

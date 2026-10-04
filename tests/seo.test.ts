@@ -12,7 +12,7 @@ test('production public SEO and preview/filter exclusion agree', () => {
   for (const key of ['q', 'page', 'category', 'sort', 'anything']) assert.ok(hasDuplicateQuery({ [key]: 'value' }));
   assert.equal(hasDuplicateQuery({ utm_source: ['one', 'two'], fbclid: 'x' }), false);
   for (const path of ['/cart', '/checkout', '/admin', '/admin/orders', '/login', '/authentication', '/search', '/foundation/status']) assert.equal(isPublicPath(path), false);
-  for (const path of ['/', '/products', '/products/name--PD1', '/categories', '/categories/name--abc', '/offers']) assert.ok(isPublicPath(path));
+  for (const path of ['/', '/products', '/products/name--PD1', '/categories', '/categories/name--abc', '/offers', '/about', '/contact']) assert.ok(isPublicPath(path));
 });
 test('JSON-LD cannot terminate its script; catalog prices match the page without invented reviews or availability', () => {
   const product = { _id: 'b'.repeat(24), product_id: 'PD1', name: '</script><script>alert(1)</script>',
