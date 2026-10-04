@@ -23,16 +23,16 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | GET | /api/products/details/:productId | public | products.js → Mongoose catalog and Drive; extraction pending |
 | GET | /api/products/:id | public | products.js → Mongoose catalog and Drive; extraction pending |
 | DELETE | /api/products/:id | admin | maintained media/retention.ts archive; references retained |
-| PUT | /api/products/publish/:productId | admin | products.js → Mongoose catalog and Drive; extraction pending |
+| PUT | /api/products/publish/:productId | admin | Maintained transactional visibility/money validation and actor audit |
 | PUT | /api/products/:id | admin | maintained inventory transaction/ledger; retained Drive upload adapter |
-| POST | /api/category | admin | categories.js → Mongoose categories and Drive |
+| POST | /api/category | admin | Maintained media metadata/reference creation; retained Drive upload |
 | GET | /api/category | public | categories.js → Mongoose categories and Drive |
 | GET | /api/category/images/:filename | public | categories.js → Mongoose categories and Drive |
 | GET | /api/category/:id | public | categories.js → Mongoose categories and Drive |
-| PUT | /api/category/disable/:id | admin | categories.js → Mongoose categories and Drive |
-| PUT | /api/category/:id | admin | categories.js → Mongoose categories and Drive |
+| PUT | /api/category/disable/:id | admin | Maintained transactional visibility and actor audit |
+| PUT | /api/category/:id | admin | Maintained metadata validation and reference-preserving replacement; retained Drive upload |
 | DELETE | /api/category/:id | admin | maintained media/retention.ts archive; references retained |
-| POST | /api/banners | admin | banners.js → Mongoose banners and Drive |
+| POST | /api/banners | admin | Maintained metadata/destination validation/reference creation; retained Drive upload |
 | GET | /api/banners | public | banners.js → Mongoose banners and Drive |
 | GET | /api/banners/images/:filename | public | banners.js → Mongoose banners and Drive |
 | DELETE | /api/banners/:id | admin | maintained media/retention.ts archive; references retained |
@@ -50,7 +50,7 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | PUT | /api/orders/edit/:orderId | admin | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | PUT | /api/orders/:orderId | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | PUT | /api/orders/cancel/:orderId | orders | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
-| POST | /api/whatsapp/image | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
+| POST | /api/whatsapp/image | admin | Maintained poster metadata/reference creation; retained Drive upload and realtime adapter |
 | GET | /api/whatsapp/image | admin | whatsapp.js → Meta/Drive/conversation/report adapters |
 | GET | /api/whatsapp/image/:filename | public | whatsapp.js → Meta/Drive/conversation/report adapters |
 | DELETE | /api/whatsapp/image/:id | admin | maintained media/retention.ts archive; references retained |

@@ -13,20 +13,6 @@ const { google } = require('googleapis');
 // Load the JSON key file
 const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-const randomColor = () => {
-  // Generate random RGB values between 0 and 255
-  const r = Math.floor(Math.random() * 256);
-  const g = Math.floor(Math.random() * 256);
-  const b = Math.floor(Math.random() * 256);
-
-  // Return the RGB color string
-  return `${r}, ${g}, ${b}`;
-};
-
-
-
-
-const color = randomColor();
 // Create a new instance of the drive API
 const auth = new google.auth.GoogleAuth({
   keyFile,
@@ -46,66 +32,20 @@ const fs = require('fs');
 
 
 categoryRouter.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  const { name } = req.body;
-  const image = req.file;
-  const color = randomColor();
-
-  if (image) {
-    try {
-      const fileMetadata = {
-        name: image.originalname,
-        parents: [FOLDER_ID], // Set the parent folder ID
-      };
-
-      const media = {
-        mimeType: 'application/octet-stream', // Set the media type as 'application/octet-stream'
-        body: Readable.from(image.buffer),
-      };
-
-      const response = await drive.files.create({
-        resource: fileMetadata,
-        media: media,
-        fields: 'id',
-      });
-
-      const gdriveFileId = response.data.id; // Save the Google Drive file ID to the category document
-
-      // Create a new category document with the Google Drive file ID
-      const Filename = uuidv4() + '.webp';
-      const category = new Category({
-        name,
-        color,
-        gdriveFileId,
-        image: Filename,
-      });
-
-      // Save the category document to the database
-      await category.save();
-
-      res.status(201).json({ message: 'category created successfully' });
-    } catch (error) {
-
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  } else {
-    try {
-      // Create a new category document without an image
-      const category = new Category({
-        name,
-        color,
-      });
-
-      // Save the category document to the database
-      await category.save();
-
-      res.status(201).json({ message: 'category created successfully' });
-    } catch (error) {
-
-      res.status(500).json({ error: 'Internal server error' });
-    }
+  const domain = require('../commerce/dist/service.cjs');
+  domain.mediaMetadataInput('categories', req.body);
+  let assets;
+  if (req.file) {
+    const filename = uuidv4() + '.webp';
+    const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().resize({ width: 500, height: 500, fit: 'cover' }).webp().toBuffer();
+    const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
+      media: { mimeType: 'image/webp', body: Readable.from(bytes) }, fields: 'id' });
+    assets = { image: filename, gdriveFileId: response.data.id };
   }
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  await domain.createMediaMetadata(db, 'categories', req.body, req.identity.id, assets);
+  res.status(201).json({ message: 'category created successfully' });
 });
-
 
 categoryRouter.get('/', async (req, res) => {
   const filter = catalogFilter(req.query.filter, false, true);
@@ -166,48 +106,17 @@ categoryRouter.get('/:id', async(req,res)=>{
 
 
 categoryRouter.put('/disable/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  const { id } = req.params;
-  try {
-    // Find the product by its ID
-    const category = await Category.findById(id);
-
-    if (!category) {
-      return res.status(404).json({ error: 'category not found' });
-    }
-
-    // Update the 'disabled' property of the product
-    if (category.archivedAt) return res.status(409).json({ error: 'Archived category cannot be enabled' });
-    category.disabled = !category.disabled;
-
-    // Save the updated product
-    await category.save();
-
-
-    res.json({ message: 'category updated successfully' });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Failed to update the category' });
-  }
-  });
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  res.json(await require('../commerce/dist/service.cjs').toggleCatalogVisibility(db, 'categories', req.params.id, req.identity.id));
+});
 categoryRouter.put('/:id', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
     const { id } = req.params;
-    const updateFields = {};
+    const updateFields = require('../commerce/dist/service.cjs').categoryMetadataInput(req.body, true);
 
     try {
       // Retrieve the previous image filename from the database
       const prevCategory = await Category.findById(id);
       if (!prevCategory) return res.status(404).json({ error: 'Category not found' });
-
-      // Check if each field is present in the request body and update the corresponding field
-      if (req.body.name) {
-        updateFields.name = req.body.name;
-      }
-
-      if (req.body.color) {
-        updateFields.color = req.body.color;
-      }
-
-
 
       if (req.file) {
         const image = req.file;

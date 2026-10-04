@@ -4,8 +4,37 @@ import { randomUUID } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
 import { archiveEntity, replaceCategory, resolveRetainedAsset } from '../apps/api/src/modules/media/retention';
 import { replaceCloudinaryImages, cloudinarySignature } from '../apps/api/src/modules/media/cloudinary';
+import { createMediaMetadata, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
+test('media metadata records creation references and atomic visibility changes without altering stock or archived history', { skip: !uri }, async () => {
+  assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client = await new MongoClient(uri!).connect();
+  const db = client.db('almina_media_metadata_test_' + randomUUID().replaceAll('-', ''));
+  const actor = String(new ObjectId());
+  try {
+    const category = await createMediaMetadata(db, 'categories', { name: 'Care' }, actor);
+    assert.equal(category.image, '305dd291-e32e-4d7f-9abb-aae212c434a4.webp');
+    const banner = await createMediaMetadata(db, 'banners', { name: 'Care', link: '/products' }, actor, { image: 'synthetic.webp', gdriveFileId: 'synthetic-drive' });
+    await createMediaMetadata(db, 'whatsappposters', {}, actor, { image: 'synthetic.jpeg', gdriveFileId: 'synthetic-poster-drive' });
+    assert.equal(await db.collection('media_history').countDocuments({ actor }), 3);
+    assert.equal((await db.collection('media_history').findOne({ entityId: banner._id }))!.nextAssets.gdriveFileId, 'synthetic-drive');
+    const id = new ObjectId();
+    await db.collection('products').insertOne({ _id: id, product_id: 'RECOVERED_STABLE', price: 12.5, sale: true, salePrice: 10.01, stock: 0, disabled: true, published: false, category: category._id });
+    await Promise.all([toggleCatalogVisibility(db, 'products', String(id), actor), toggleCatalogVisibility(db, 'products', String(id), actor)]);
+    const after = (await db.collection('products').findOne({ _id: id }))!;
+    assert.equal(after.disabled, true); assert.equal(after.published, false); assert.equal(after.stock, 0);
+    assert.equal(await db.collection('catalog_audit').countDocuments({ actor }), 2);
+    await db.collection('products').updateOne({ _id: id }, { $set: { salePrice: 10.001 } });
+    await assert.rejects(toggleCatalogVisibility(db, 'products', String(id), actor));
+    assert.equal(await db.collection('catalog_audit').countDocuments(), 2);
+    await archiveEntity(db, 'categories', String(category._id), actor);
+    await assert.rejects(toggleCatalogVisibility(db, 'categories', String(category._id), actor), { code: 'PRODUCT_UNAVAILABLE' });
+    assert.equal((await db.collection('categories').findOne({ _id: category._id }))!.image, category.image);
+    await assert.rejects(createMediaMetadata(db, 'banners', { name: 'Invalid', link: 'javascript:alert(1)' }, actor, { image: 'synthetic.webp', gdriveFileId: 'synthetic-drive' }));
+    assert.equal(await db.collection('banners').countDocuments(), 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
 test('signed media retries reconcile provider acceptance and preserve old references, revisions, stock and history', { skip: !uri }, async () => {
   const client = await new MongoClient(uri!).connect(); const db = client.db('almina_media_test_' + randomUUID().replaceAll('-', ''));
   const id = new ObjectId(), category = new ObjectId(), actor = String(new ObjectId());

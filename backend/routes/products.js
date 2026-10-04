@@ -357,37 +357,9 @@ productRouter.delete('/:id', async (req, res) => {
 
 
 productRouter.put('/publish/:productId', async (req, res) => {
-  const { productId } = req.params;
-  try {
-    // Find the product by its ID
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    if (product.archivedAt) return res.status(409).json({ error: 'Archived product cannot be published' });
-    require('../commerce/dist/service.cjs').moneyMinor(product.price);
-    if (product.sale) {
-      const money = require('../commerce/dist/service.cjs').moneyMinor;
-      if (money(product.salePrice) > money(product.price)) return res.status(400).json({ error: 'Invalid sale price' });
-    }
-    // Update the 'disabled' property of the product
-    product.disabled = !product.disabled;
-    product.published = !product.disabled;
-
-    // Save the updated product
-    await product.save();
-
-
-    res.json({ message: 'Product updated successfully' });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Failed to update the product' });
-  }
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  res.json(await require('../commerce/dist/service.cjs').toggleCatalogVisibility(db, 'products', req.params.productId, req.identity.id));
 });
-
-
 
 productRouter.put('/:id', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
   require('../commerce/dist/service.cjs').inventoryInput(req.body);

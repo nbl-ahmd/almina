@@ -28,46 +28,17 @@ const drive = google.drive({ version: 'v3', auth });
 const FOLDER_ID = '10jn65wQMomVYMAAy4TuH8iVgiFa8IhxJ';
 
 router.post('/', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  const { name, link } = req.body;
-  const image = req.file;
-  const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })
-    .webp()
-    .toBuffer();
-  const resizedFilename = uuidv4() + '.webp';
-  // save the resized image to the directory
-
-  const banner = new Banner({ name, image: resizedFilename, link });
-
-   // Upload the file to Google Drive
-   try {
-    const fileMetadata = {
-      name: resizedFilename,
-      parents: [FOLDER_ID], // Set the parent folder ID
-    };
-
-    const media = {
-      mimeType: 'image/webp',
-      body: Readable.from(croppedImage),
-    };
-
-    const response = await drive.files.create({
-      resource: fileMetadata,
-      media: media,
-      fields: 'id',
-    });
-
-    banner.gdriveFileId = response.data.id; // Save the Google Drive file ID to the banner document
-
-    // Save the banner document to the database
-    await banner.save();
-
-    res.status(201).json({ message: 'Banner created successfully' });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  const domain = require('../commerce/dist/service.cjs');
+  domain.mediaMetadataInput('banners', req.body);
+  if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().webp().toBuffer();
+  const filename = uuidv4() + '.webp';
+  const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
+    media: { mimeType: 'image/webp', body: Readable.from(bytes) }, fields: 'id' });
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  await domain.createMediaMetadata(db, 'banners', req.body, req.identity.id, { image: filename, gdriveFileId: response.data.id });
+  res.status(201).json({ message: 'Banner created successfully' });
 });
-  // save the resized filename to the database
 
 router.get('/', (req, res) => {
   const page = require('../security/admin-pagination.cjs').adminPagination(req.query);

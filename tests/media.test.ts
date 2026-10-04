@@ -1,4 +1,16 @@
 import { test } from 'node:test';
+import { categoryMetadataInput, mediaMetadataInput } from '../apps/api/src/modules/media/metadata';
+
+test('media metadata rejects executable destinations, unsafe colors and caller asset references while retaining editor echoes', () => {
+  assert.deepEqual(categoryMetadataInput({ name: 'Care', image: 'retained.webp' }, true), { name: 'Care' });
+  for (const link of ['javascript:alert(1)', '//example.invalid/a', '/\\example.invalid', 'http://example.invalid/a', 'https://user:password@example.invalid/a', '/a\n']) {
+    assert.throws(() => mediaMetadataInput('banners', { name: 'Banner', link }), { code: 'INVALID_REQUEST' });
+  }
+  for (const color of ['256, 0, 0', 'red', '0, 0', '0, 0, 0; background:red']) assert.throws(() => categoryMetadataInput({ name: 'Care', color }));
+  assert.deepEqual(mediaMetadataInput('banners', { name: 'Banner', link: '/productdetails/PD001' }), { name: 'Banner', link: '/productdetails/PD001' });
+  assert.deepEqual(mediaMetadataInput('whatsappposters', { name: '', link: '' }), {});
+  assert.throws(() => mediaMetadataInput('categories', { name: 'Care', gdriveFileId: 'untrusted' }));
+});
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { cloudinarySignature, signedRasterUpload } from '../apps/api/src/modules/media/cloudinary';

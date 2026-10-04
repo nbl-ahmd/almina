@@ -81,6 +81,10 @@ test('real catalog reads and legacy product mutations preserve validation, visib
       logger: createLogger({ service: 'api', environment: 'development', write: () => undefined }) });
     await serve(legacy, async legacyUrl => {
       const headers = { origin: 'http://localhost:3000', 'x-csrf-protection': '1' };
+      const categoryBody = new FormData(); categoryBody.set('name', 'Created through retained driver');
+      assert.equal((await fetch(legacyUrl + '/api/category', { method: 'POST', headers, body: categoryBody })).status, 201);
+      assert.equal(await db.collection('categories').countDocuments({ name: 'Created through retained driver' }), 1);
+      assert.equal(await db.collection('media_history').countDocuments({ collection: 'categories' }), 1);
       const body = new FormData();
       for (const [key, value] of Object.entries({ name: 'Synthetic tablet', category: String(category), barcode: '123', price: '10.50', stock: '2' })) body.set(key, value);
       const created = await fetch(legacyUrl + '/api/products', { method: 'POST', headers, body });

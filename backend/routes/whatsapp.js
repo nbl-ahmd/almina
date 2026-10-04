@@ -33,48 +33,18 @@ const drive = google.drive({ version: 'v3', auth });
 const FOLDER_ID = '11wB-C-ZmixvTLZnrFVkRfokTQmBmLlmv';
 
 whatsappRouter.post('/image', upload.single('image'), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  const image = req.file;
-  const croppedImage = await sharp(image.buffer, { limitInputPixels: 20000000 })
-    .toBuffer();
-  const resizedFilename = uuidv4() + '.jpeg';
-  // save the resized image to the directory
-
-  const poster = new WhatsappPoster({ image: resizedFilename });
-
-   // Upload the file to Google Drive
-   try {
-    const fileMetadata = {
-      name: resizedFilename,
-      parents: [FOLDER_ID], // Set the parent folder ID
-    };
-
-    const media = {
-      mimeType: 'image/jpeg',
-      body: Readable.from(croppedImage),
-    };
-
-    const response = await drive.files.create({
-      resource: fileMetadata,
-      media: media,
-      fields: 'id',
-    });
-
-    poster.gdriveFileId = response.data.id; // Save the Google Drive file ID to the poster document
-
-    // Save the poster document to the database
-    await poster.save();
-
-    res.status(201).json({ message: 'poster created successfully' });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
-
-  req.app.locals.io.emit('newPoster', {
-    image: resizedFilename,
-  });
+  const domain = require('../commerce/dist/service.cjs');
+  domain.mediaMetadataInput('whatsappposters', req.body);
+  if (!req.file) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const bytes = await sharp(req.file.buffer, { limitInputPixels: 20000000 }).rotate().jpeg().toBuffer();
+  const filename = uuidv4() + '.jpeg';
+  const response = await drive.files.create({ resource: { name: filename, parents: [FOLDER_ID] },
+    media: { mimeType: 'image/jpeg', body: Readable.from(bytes) }, fields: 'id' });
+  const db = req.app.locals.getCommerceDb ? await req.app.locals.getCommerceDb() : require('mongoose').connection.db;
+  await domain.createMediaMetadata(db, 'whatsappposters', req.body, req.identity.id, { image: filename, gdriveFileId: response.data.id });
+  req.app.locals.io?.emit('newPoster', { image: filename });
+  res.status(201).json({ message: 'poster created successfully' });
 });
-  // save the resized filename to the database
 
   whatsappRouter.get('/image', (req, res) => {
   const page = require('../security/admin-pagination.cjs').adminPagination(req.query);
