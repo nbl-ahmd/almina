@@ -96,6 +96,16 @@
       "source": "frontend/src/client/assets/subtle_notification.mp3",
       "retained": "assets/retained-brand/subtle_notification.mp3",
       "sha256": "451bf706e5aabfd718c918ae1423d387da89df7847b0647dfd55a64341d1e1a2"
+    },
+    {
+      "source": "frontend/src/admin/assets/notification.mp3",
+      "retained": "assets/retained-brand/admin-notification.mp3",
+      "sha256": "d5411edd726bdef412f59d68da9d9ce99808d7a638ca8a3121ca1db4f1937d8a"
+    },
+    {
+      "source": "frontend/src/admin/assets/subtlenotification.mp3",
+      "retained": "assets/retained-brand/admin-subtlenotification.mp3",
+      "sha256": "451bf706e5aabfd718c918ae1423d387da89df7847b0647dfd55a64341d1e1a2"
     }
   ]
 }
