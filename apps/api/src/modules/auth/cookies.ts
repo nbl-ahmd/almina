@@ -15,6 +15,6 @@ export function readSessionCookie(headers: { cookie?: string | undefined }, deve
 }
 export function verifyBrowserMutation(req: Pick<Request, 'headers'>, origins: readonly string[],
   error: (status: number, code: ErrorCode) => Error = (status, code) => new HttpError(status, code)) {
-  if (!origins.includes(String(req.headers.origin ?? '')) || req.headers['x-csrf-protection'] !== '1'
+  if (typeof req.headers.origin !== 'string' || !origins.includes(req.headers.origin) || req.headers['x-csrf-protection'] !== '1'
     || req.headers['sec-fetch-site'] === 'cross-site') throw error(403, 'FORBIDDEN');
 }

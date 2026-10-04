@@ -33,6 +33,7 @@ test('malformed login, bearer tokens and duplicate cookies fail before database 
   assert.equal(readSessionCookie({ cookie: 'almina_session=' + 'a'.repeat(43) + '; almina_session=' + 'a'.repeat(43) }, true), undefined);
   verifyBrowserMutation({ headers: { origin: 'https://shop.example.invalid', 'x-csrf-protection': '1' } }, ['https://shop.example.invalid']);
   assert.throws(() => verifyBrowserMutation({ headers: { origin: 'https://shop.example.invalid.evil.invalid', 'x-csrf-protection': '1' } }, ['https://shop.example.invalid']), { status: 403 });
+  assert.throws(() => verifyBrowserMutation({ headers: { origin: ['https://shop.example.invalid'] as unknown as string, 'x-csrf-protection': '1' } }, ['https://shop.example.invalid']), { status: 403 });
 });
 test('distributed quota retains historical ModifyResult compatibility and fails closed on malformed counts', async () => {
   for (const result of [{ count: 1 }, { value: { count: 1 } }, null, { count: 0 }, { count: 0.5 }, { count: '1' }, { count: 21 }]) {

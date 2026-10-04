@@ -30,3 +30,5 @@ export * from './modules/media/compatibility-reads.js';
 export * from './modules/operations/persistent-database.js';
 export * from './modules/auth/sessions.js';
 export * from './modules/auth/cookies.js';
+export { retainedRoutePolicies, lookupPolicy } from './modules/auth/retained-policy.js';
+export * from './modules/auth/realtime.js';

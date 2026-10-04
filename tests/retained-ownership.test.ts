@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
+import { retainedRoutePolicies as routePolicies } from '../apps/api/src/modules/auth/retained-policy';
 test('retained route inventory covers every independently authorized contract', () => {
-  const { routePolicies } = require('../backend/security/policy.cjs') as { routePolicies: { method: string; path: string }[] };
   const inventory = readFileSync('docs/migration/RETAINED_API_INVENTORY_2026-10-04.md', 'utf8');
   for (const route of routePolicies) assert.ok(inventory.includes(`| ${route.method} | ${route.path} |`), route.path);
   const files = { operations: 'operations.js', media: 'media.js', recovery: 'recovery.js', auth: 'Login.js', products: 'products.js', category: 'categories.js', banners: 'banners.js',
