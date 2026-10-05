@@ -38,7 +38,7 @@ export default async function ProtectedLayout({
             ))}
           <Link href="/">View storefront</Link>
         </nav>
-        <main id="admin-main">
+        <main id="admin-main" tabIndex={-1}>
           <OrderMonitor />
           {children}
         </main>

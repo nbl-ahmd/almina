@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-location-assign-relative-destination -- Session changes need a full reload to discard privileged router state. */
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { adminFormClass } from '../../lib/admin/styles';
 export async function adminRequest(
   path: string,
   method = "GET",
@@ -67,7 +68,7 @@ export function LoginForm() {
     }
   }
   return (
-    <form className="admin-form" onSubmit={submit}>
+    <form className={adminFormClass} onSubmit={submit} aria-busy={pending}>
       <label htmlFor="username">
         Username
         <input

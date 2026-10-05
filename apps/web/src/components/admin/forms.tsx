@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { adminRequest } from "./controls";
 import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';
+import { adminFormClass } from '../../lib/admin/styles';
 export type Field = {
   name: string;
   label: string;
@@ -71,7 +72,7 @@ export function AdminForm({
     }
   }
   return (
-    <form className="admin-form" onSubmit={submit} aria-busy={pending}>
+    <form className={adminFormClass} onSubmit={submit} aria-busy={pending}>
       {fields.map((field) => {
         const id = `${path.replace(/[^a-z0-9]/gi, "-")}-${field.name}`;
         const props = {
@@ -363,7 +364,7 @@ export function BulkTemplates({
           );
         })}
       </fieldset>
-      <div className="admin-form">
+      <div className={adminFormClass}>
         <label htmlFor="bulk-template">
           Template name
           <input id="bulk-template" name="template" required />

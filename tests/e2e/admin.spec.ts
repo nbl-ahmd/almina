@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { test, expect, reset, state, login, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
+const localRequire = createRequire(process.cwd() + '/package.json');
+const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
 
 test.beforeEach(async ({ request }) => { await reset(request); });
 test('staff provisioning clears credentials and deactivation revokes access at every required width', async ({ page, request }) => {
@@ -8,6 +12,14 @@ test('staff provisioning clears credentials and deactivation revokes access at e
   for (const width of [360, 390, 768, 1280]) {
     const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
     await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
+    await page.getByRole('link', { name: 'Skip to content', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(page.locator('#admin-main')).toBeFocused();
+    await page.evaluate(axe);
+    const violations = await page.evaluate(async () => {
+      const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
+      return (await audit.run(document.body)).violations.map(violation => violation.id);
+    });
+    expect(violations).toEqual([]);
     await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
     await page.getByLabel('Username', { exact: true }).fill(username);
     await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);

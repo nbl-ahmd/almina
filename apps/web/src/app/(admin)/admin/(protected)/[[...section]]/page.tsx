@@ -14,6 +14,7 @@ import {
   type Section,
 } from "../../../../../lib/admin/policy";
 import { getWebEnvironment } from "../../../../../lib/server/env";
+import { adminFormClass } from '../../../../../lib/admin/styles';
 import {
   Table,
   rows,
@@ -162,7 +163,7 @@ export default async function AdminPage({
         ) : (
           <p>Read-only inventory</p>
         )}
-        <form className="admin-form">
+        <form className={adminFormClass}>
           <label htmlFor="q">
             Search products
             <input
