@@ -33,3 +33,4 @@ export * from './modules/auth/cookies.js';
 export { retainedRoutePolicies, lookupPolicy } from './modules/auth/retained-policy.js';
 export * from './modules/auth/realtime.js';
 export * from './modules/catalog/csv.js';
+export * from './modules/notifications/subscriptions.js';

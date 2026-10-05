@@ -1,0 +1,13 @@
+# Maintained staff push subscription persistence
+
+The isolated foundation production build also passed.
+
+Held candidate `codex/staff-push-subscriptions`, after checkout PR #37 at `39ef022`. No deployment, master merge, real provider/database/credential action or stored contraction.
+
+`notifications/subscriptions.ts` now owns both retained subscription writes. Existing `/api/orders/subscribe` POST/DELETE URLs and 204 success, staff cookie/Origin/CSRF enforcement and push subscription raster-independent key/endpoint validation remain. A bounded historical string userId echo is ignored; only the authenticated actor selects the account. Unknown body/query fields now fail before a database write. POST stores the validated canonical subscription; DELETE unsets only that account's subscription. Neither creates an account or modifies commerce data.
+
+Each bounded majority update atomically matches the actor ID, current staff role and non-disabled state. A revoked, removed or malformed account cannot silently succeed after middleware authentication. Exact registration/unregistration repeats remain successful no-ops for active staff. The push worker's separate reference-bound expiry removal, durable receipts, disabled-by-default activation and uncertain-send quarantine remain unchanged; no image/order/customer/media state is deleted. API shutdown and outbox contracts are unchanged.
+
+Tests cover invalid payload/endpoint/query/actor before effects, ignored caller identity, unmatched current-staff writes, real retained HTTP ownership and unsubscribe, plus a real disposable MongoDB regression for exact repeats, disabled/missing/non-staff accounts, preservation of another subscriber and unchanged price/stock/orders. The first new unit run exposed validation evaluation after collection access for a malformed actor; owner validation now precedes collection access and the full rerun passed. Backend configuration examples now list the two already-required explicit WhatsApp version/sender fields; values remain operator-owned and rotation is unverified.
+
+Local lint/typecheck, 102 unit, 108 API/security, 52 mandatory disposable database/load and seven release-gate tests passed; both lockfile audits have zero high/critical. Parent #37 required verify passed in `37252719609` / `37252732911`, including all 50 compiled browser cases. Required full CI remains mandatory for this new candidate. Real existing VAPID credentials, browser provider compatibility and controlled-recipient/device delivery remain hosted gates; provider acceptance is not delivery. Other component/consent telemetry and hosted traffic/SEO/security/reconciliation work remain incomplete. Roll back source/artifacts with subscription/data history intact.

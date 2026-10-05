@@ -44,8 +44,8 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/orders | public | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | POST | /api/orders/quote | public | Orderrouter.js → maintained transaction commerce; subscription/email adapters |
 | POST | /api/orders/email | admin | Maintained bounded administrative email/SMTP policy; retained Nodemailer/socket adapter |
-| POST | /api/orders/subscribe | staff | Maintained strict push subscription validation; current authenticated owner only |
-| DELETE | /api/orders/subscribe | staff | Retained authenticated current-owner unsubscribe adapter |
+| POST | /api/orders/subscribe | staff | Maintained notifications/subscriptions.ts; validated endpoint/keys and atomic current active staff ownership |
+| DELETE | /api/orders/subscribe | staff | Maintained notifications/subscriptions.ts; bounded atomic current active staff unsubscribe behind retained adapter |
 | GET | /api/orders | orders | Maintained bounded native legacy order list, server city scope and historical/snapshot compatibility |
 | GET | /api/orders/:id | orders | Maintained scoped native order detail; immutable snapshots and explicit missing legacy references |
 | PUT | /api/orders/edit/:orderId | admin | Orderrouter.js → maintained transaction commerce; subscription/email adapters |

@@ -298,7 +298,7 @@ test('guest checkout cannot set administrative order flags and raw catalog opera
 
 test('push subscription writes are owned by the current staff identity and reject arbitrary callback destinations', async () => {
   let owner: unknown;
-  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); } }) };
+  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); return { matchedCount: 1 }; } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
   const curve = createECDH('prime256v1'); curve.generateKeys();
   await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
@@ -350,7 +350,7 @@ test('retained administrator email rejects recipient/header/content abuse before
 
 test('push unsubscribe deletes only the current staff subscription', async () => {
   let owner: unknown; let update: unknown;
-  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; } }) };
+  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; return { matchedCount: 1 }; } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
   await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
     assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'DELETE', headers: browserHeaders })).status, 204);

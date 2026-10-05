@@ -8,8 +8,35 @@ import { PushFailure } from '../apps/api/src/modules/notifications/push';
 import { operationsSnapshot } from '../apps/api/src/modules/operations/snapshot';
 import { createOperationalMetrics } from '../apps/api/src/modules/operations/metrics';
 import { operationsSnapshotSchema } from '@almina/contracts';
+import { registerStaffSubscription, removeStaffSubscription } from '../apps/api/src/modules/notifications/subscriptions';
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
+test('subscription persistence is current-staff-only, repeatable and never overwrites another account or commerce data', { skip: !uri }, async () => {
+  const f = await fixture();
+  const actor = new ObjectId(), other = new ObjectId(), original = subscription('other'), value = subscription('self');
+  try {
+    await f.db.collection('users').insertMany([{ _id: actor, role: 'user' }, { _id: other, role: 'admin', subscription: original }]);
+    await f.db.collection('products').insertOne({ product_id: 'PD0001', stock: 4, price: 12.5 });
+    for (let attempt = 0; attempt < 2; attempt++) await registerStaffSubscription(f.db, { subscription: value, userId: other.toHexString() }, actor.toHexString(), {});
+    assert.deepEqual((await f.db.collection('users').findOne({ _id: actor }))!.subscription, value);
+    assert.deepEqual((await f.db.collection('users').findOne({ _id: other }))!.subscription, original);
+    await f.db.collection('users').updateOne({ _id: actor }, { $set: { disabled: true } });
+    await assert.rejects(registerStaffSubscription(f.db, { subscription: subscription('replacement') }, actor.toHexString(), {}), { status: 401 });
+    await assert.rejects(removeStaffSubscription(f.db, {}, actor.toHexString(), {}), { status: 401 });
+    assert.deepEqual((await f.db.collection('users').findOne({ _id: actor }))!.subscription, value);
+    await f.db.collection('users').updateOne({ _id: actor }, { $unset: { disabled: '' } });
+    for (let attempt = 0; attempt < 2; attempt++) await removeStaffSubscription(f.db, { userId: other.toHexString() }, actor.toHexString(), {});
+    assert.equal((await f.db.collection('users').findOne({ _id: actor }))!.subscription, undefined);
+    assert.deepEqual((await f.db.collection('users').findOne({ _id: other }))!.subscription, original);
+    await assert.rejects(registerStaffSubscription(f.db, { subscription: value }, new ObjectId().toHexString(), {}), { status: 401 });
+    await f.db.collection('users').updateOne({ _id: actor }, { $set: { role: 'customer' } });
+    await assert.rejects(registerStaffSubscription(f.db, { subscription: value }, actor.toHexString(), {}), { status: 401 });
+    assert.equal(await f.db.collection('users').countDocuments(), 2);
+    assert.equal(await f.db.collection('orders').countDocuments(), 0);
+    const product = await f.db.collection('products').findOne({ product_id: 'PD0001' });
+    assert.equal(product!.stock, 4); assert.equal(product!.price, 12.5);
+  } finally { await f.close(); }
+});
 function subscription(suffix = 'synthetic') {
   const curve = createECDH('prime256v1'); curve.generateKeys();
   return { endpoint: 'https://fcm.googleapis.com/' + suffix, keys: { p256dh: curve.getPublicKey().toString('base64url'), auth: randomBytes(16).toString('base64url') } };

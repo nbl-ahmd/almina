@@ -5,18 +5,16 @@ const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb);
 
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
-  const subscription = require('../commerce/dist/service.cjs').pushSubscription(req.body?.subscription);
-  const db = await req.app.locals.getCommerceDb();
-  await db.collection('users').updateOne(
-    { _id: new (require('mongodb').ObjectId)(req.identity.id) },
-    { $set: { subscription } });
+  const domain = require('../commerce/dist/service.cjs');
+  domain.staffSubscriptionInput(req.body, req.query);
+  await domain.registerStaffSubscription(await req.app.locals.getCommerceDb(), req.body, req.identity.id, req.query);
   res.status(204).end();
 }));
 
 Orderrouter.delete('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
-  const db = await req.app.locals.getCommerceDb();
-  await db.collection('users').updateOne(
-    { _id: new (require('mongodb').ObjectId)(req.identity.id) }, { $unset: { subscription: '' } });
+  const domain = require('../commerce/dist/service.cjs');
+  domain.staffUnsubscriptionInput(req.body, req.query);
+  await domain.removeStaffSubscription(await req.app.locals.getCommerceDb(), req.body, req.identity.id, req.query);
   res.status(204).end();
 }));
 
