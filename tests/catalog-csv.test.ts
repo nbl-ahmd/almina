@@ -1,8 +1,25 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { Db } from 'mongodb';
+import { assertRetainedBatchAllowed } from '../apps/api/src/modules/catalog/creation';
 import { retainedCatalogCsv } from '../apps/api/src/modules/catalog/csv';
 const header = 'name,category,barcode,price,stock,vat,sale,salePrice,featured,product_id,disabled';
 const csv = (text: string) => retainedCatalogCsv(Buffer.from(text));
+test('pre-upload recovery guard fails before CSV conversion and bounds the bootstrap lookup', async () => {
+  let reads = 0, recovered = false;
+  const db = { collection: (name: string) => ({ findOne: async (filter: unknown, options: unknown) => {
+    reads++; assert.equal(name, 'recovery_bootstrap');
+    assert.deepEqual(filter, { _id: 'empty-database-v1' });
+    assert.deepEqual(options, { projection: { _id: 1 }, maxTimeMS: 3000, timeoutMS: 4000 });
+    return recovered ? { _id: 'empty-database-v1' } : null;
+  } }) } as unknown as Db;
+  await assert.rejects(assertRetainedBatchAllowed(db, true), { status: 409, code: 'RECOVERY_IMPORT_REQUIRED' });
+  assert.equal(reads, 0);
+  await assertRetainedBatchAllowed(db, false); assert.equal(reads, 1);
+  recovered = true;
+  await assert.rejects(assertRetainedBatchAllowed(db, false), { status: 409, code: 'RECOVERY_IMPORT_REQUIRED' });
+  assert.equal(reads, 2);
+});
 test('retained CSV preserves scalar identifiers/barcodes/decimal text, legacy trimming and uppercase flags without evaluating formulas', () => {
   const result = csv('\uFEFF' + header + '\r\n"Synthetic, care",Category,000012345678901234567890, 12.50 ,0,TRUE,FALSE,,TRUE,old-client-id,TRUE\r\n');
   assert.deepEqual(result, [{ name: 'Synthetic, care', category: 'Category', barcode: '000012345678901234567890', price: '12.50', stock: '0',

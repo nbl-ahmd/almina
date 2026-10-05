@@ -16,6 +16,13 @@ export function catalogCreationInput(raw: unknown) {
 }
 type ProductInput = ReturnType<typeof catalogCreationInput>;
 type Assets = { images: string[]; gdriveFileIds: string[] };
+// Reject before multipart conversion; the transaction repeats this check to
+// protect against recovery activation between preflight and catalog commit.
+export async function assertRetainedBatchAllowed(db: Db, recoveryAllowed: boolean) {
+  if (recoveryAllowed || await db.collection<Document & { _id: string }>('recovery_bootstrap').findOne(
+    { _id: 'empty-database-v1' }, { projection: { _id: 1 }, maxTimeMS: 3000, timeoutMS: 4000 },
+  )) throw new HttpError(409, 'RECOVERY_IMPORT_REQUIRED');
+}
 async function serializeCatalog(db: Db, session: ClientSession, batch: boolean) {
   if (batch && await db.collection<Document & { _id: string }>('recovery_bootstrap').findOne({ _id: 'empty-database-v1' }, { session })) throw new HttpError(409, 'RECOVERY_IMPORT_REQUIRED');
   const store = await db.collection('stores').findOne({}, { session });
