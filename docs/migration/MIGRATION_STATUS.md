@@ -1,6 +1,8 @@
 # Migration status
 
-Last updated: 2026-10-04.
+Last updated: 2026-10-05.
+
+Cart/footer follow-up on `codex/pharmacy-cart-footer` adopts the shared Tailwind tokens, responsive rows and server-rendered contact/navigation footer while preserving cart quantity/storage/checkout contracts. [Visual findings, exact evidence and deployment hold](PHARMACY_CART_FOOTER_2026-10-05.md). Local lint/typecheck/build, 100 unit, seven release-gate, all 50 compiled Chromium cases and both audits pass. Parent #35 at `b57d45f` passed required verify in `37222534270` / `37222537992`; #33 second run `37221757025` passed. Checkout/admin utility adoption, consent telemetry and all hosted acceptance remain incomplete.
 
 Current continuation: staff push is implemented as a disabled-by-default held candidate on `codex/staff-push-delivery`, deriving durable generic notifications from committed jobs with scoped subscribers, conditional expiry and uncertain-response quarantine. [Contracts, exact test evidence and operator gates](STAFF_PUSH_DELIVERY_2026-10-04.md). Persistent API PR #24 passed required verify in `37215975924` / `37215995553`; Vercel/Cloudflare previews fail. Remaining bounded retained readers/adapters, component adoption, consent telemetry and all hosted acceptance remain incomplete.
 

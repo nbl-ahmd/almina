@@ -15,8 +15,13 @@ export function Navigation() {
     </header></>;
 }
 export function Footer() {
-  return <footer className="site-footer"><div className="footer-content"><div><p className="footer-brand">Al Mina Pharmacy<span>Care for your everyday.</span></p><p>Ras Al Khaimah, United Arab Emirates</p><div className="footer-contact"><a href="tel:+971504825007">+971 50 482 5007</a><a href="mailto:info@alminapharmacy.com">info@alminapharmacy.com</a></div></div>
-    <nav aria-label="Footer shop"><h2>Explore the pharmacy</h2><Link href="/products">All products</Link><Link href="/categories">Shop by category</Link><Link href="/offers">Current offers</Link><Link href="/about">About us</Link><Link href="/contact">Contact us</Link></nav>
-    <nav aria-label="Footer shopping"><h2>Your shopping</h2><Link href="/search">Search products</Link><Link href="/cart">View your cart</Link><Link href="/checkout">Checkout review</Link></nav></div>
-    <div className="footer-bottom"><span>Al Mina Pharmacy · Ras Al Khaimah</span><span>Health, skincare &amp; wellness essentials.</span></div></footer>;
+  const navClass = 'flex flex-col items-start [&_a]:flex [&_a]:min-h-11 [&_a]:items-center [&_a]:text-sm';
+  return <footer className="border-t border-border bg-subtle">
+    <div className="mx-auto grid max-w-[1280px] gap-8 px-[var(--gutter)] py-8 md:grid-cols-[1.5fr_1fr_1fr] md:py-12">
+      <div><p className="mb-4 text-2xl font-bold">Al Mina Pharmacy<span className="mt-2 block text-base font-normal text-muted">Care for your everyday.</span></p><p className="text-sm text-muted">Ras Al Khaimah, United Arab Emirates</p><div className="flex flex-col items-start text-sm [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center [&_a]:wrap-anywhere"><a href="tel:+971504825007">+971 50 482 5007</a><a href="mailto:info@alminapharmacy.com">info@alminapharmacy.com</a></div></div>
+      <nav className={navClass} aria-label="Footer shop"><h2 className="mb-2 text-base">Explore the pharmacy</h2><Link href="/products">All products</Link><Link href="/categories">Shop by category</Link><Link href="/offers">Current offers</Link><Link href="/about">About us</Link><Link href="/contact">Contact us</Link></nav>
+      <nav className={navClass} aria-label="Footer shopping"><h2 className="mb-2 text-base">Your shopping</h2><Link href="/search">Search products</Link><Link href="/cart">View your cart</Link><Link href="/checkout">Checkout review</Link></nav>
+    </div>
+    <div className="mx-auto flex max-w-[1280px] flex-wrap justify-between gap-4 border-t border-border px-[var(--gutter)] py-6 text-xs text-muted"><span>Al Mina Pharmacy · Ras Al Khaimah</span><span>Health, skincare &amp; wellness essentials.</span></div>
+  </footer>;
 }
