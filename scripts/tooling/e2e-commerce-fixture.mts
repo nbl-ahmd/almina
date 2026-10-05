@@ -104,8 +104,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-// Use the retained service’s Mongoose-owned connection for compatibility writes.
-// The standalone MongoDB 7 client seeds/inspects the same isolated database.
+// Maintained compatibility writes and fixture inspection share the native MongoDB database.
 const mediaTransport: typeof fetch = async (url, options) => {
   if (options?.method !== 'POST') { const publicId = decodeURIComponent(String(url).split('/upload/')[1]!); return mediaAssets.has(publicId) ? Response.json(mediaAssets.get(publicId)) : new Response('{}', { status: 404 }); }
   const form = options.body as FormData, publicId = String(form.get('public_id'));
@@ -113,7 +112,7 @@ const mediaTransport: typeof fetch = async (url, options) => {
     secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp` };
   mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
 };
-const legacy = createLegacyApp({ getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
+const legacy = createLegacyApp({ commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);

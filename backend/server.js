@@ -10,7 +10,7 @@ const database = domain.createPersistentDatabase(runtime);
 const { createLegacyApp } = require('./app');
 const { secureRealtime } = require('./security/realtime.cjs');
 const { development, origins, trustProxy } = runtime;
-const app = createLegacyApp({ getCommerceDb: () => database.getDb(), origins, development, trustProxy: trustProxy.length ? trustProxy : false, webhookSecret: process.env.WHATSAPP_APP_SECRET });
+const app = createLegacyApp({ getCommerceDb: () => database.getDb(), origins, development, trustProxy: trustProxy.length ? trustProxy : false, webhookSecret: process.env.WHATSAPP_APP_SECRET, commerceTelemetryEnabled: runtime.commerceTelemetryEnabled });
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });

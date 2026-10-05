@@ -44,6 +44,7 @@ export async function operationsSnapshot(db: Db, metrics: OperationalMetrics) {
       pushJobsNeedingReview: count(pushJobs),
       stockOrderReconciliation: 'operator-required' as const };
     const five = metrics.snapshot(5), ten = metrics.snapshot(10), alerts: string[] = [];
+    if (ten.clientJavaScriptErrors !== null && ten.clientJavaScriptErrors > 0) alerts.push('CLIENT_ERROR_REPORTS');
     const total = Object.values(five.groups).reduce((sum, value) => sum + value.count, 0);
     const failures = Object.values(five.groups).reduce((sum, value) => sum + value.failures, 0);
     if (five.warmupComplete && total >= 100 && failures / total > .01) alerts.push('HTTP_5XX_THRESHOLD');

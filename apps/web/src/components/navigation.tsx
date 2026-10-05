@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { NavigationLinks } from './navigation-links';
 import { Icon } from './icon';
+import { UsagePreferences } from './usage-preferences';
 export function Navigation() {
   return <><a className="fixed top-2 left-2 z-[100] -translate-y-[160%] rounded-lg bg-surface px-4 py-3 text-brand shadow-sm focus:translate-y-0" href="#main-content">Skip to content</a>
     <header className="border-b border-border bg-surface">
@@ -14,7 +15,7 @@ export function Navigation() {
       <div className="mx-auto max-w-[1280px] px-[var(--gutter)] md:flex md:items-center md:justify-between"><NavigationLinks /><span className="hidden text-xs text-muted lg:inline">Health, beauty &amp; everyday essentials</span></div>
     </header></>;
 }
-export function Footer() {
+export function Footer({ telemetryEnabled = false }: { telemetryEnabled?: boolean }) {
   const navClass = 'flex flex-col items-start [&_a]:flex [&_a]:min-h-11 [&_a]:items-center [&_a]:text-sm';
   return <footer className="border-t border-border bg-subtle">
     <div className="mx-auto grid max-w-[1280px] gap-8 px-[var(--gutter)] py-8 md:grid-cols-[1.5fr_1fr_1fr] md:py-12">
@@ -22,6 +23,7 @@ export function Footer() {
       <nav className={navClass} aria-label="Footer shop"><h2 className="mb-2 text-base">Explore the pharmacy</h2><Link href="/products">All products</Link><Link href="/categories">Shop by category</Link><Link href="/offers">Current offers</Link><Link href="/about">About us</Link><Link href="/contact">Contact us</Link></nav>
       <nav className={navClass} aria-label="Footer shopping"><h2 className="mb-2 text-base">Your shopping</h2><Link href="/search">Search products</Link><Link href="/cart">View your cart</Link><Link href="/checkout">Checkout review</Link></nav>
     </div>
+    {telemetryEnabled ? <UsagePreferences /> : null}
     <div className="mx-auto flex max-w-[1280px] flex-wrap justify-between gap-4 border-t border-border px-[var(--gutter)] py-6 text-xs text-muted"><span>Al Mina Pharmacy · Ras Al Khaimah</span><span>Health, skincare &amp; wellness essentials.</span></div>
   </footer>;
 }

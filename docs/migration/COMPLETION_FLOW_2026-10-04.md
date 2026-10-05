@@ -75,26 +75,30 @@ Lost customers and orders remain lost unless an independent export/backup is fou
 
 Recovery preview/commit, immutable stock adjustments, retained readiness/drain, signed product media replacement/archive, catalog creation/metadata persistence, transactional WhatsApp inbox processing and staff administration are now implemented in stacked focused PRs. Staff removal deactivates accounts and revokes sessions without deleting identifiers/history. Recovered-ID redirects, raw SEO HTML, bounded retained reads and anonymous publication rules are verified locally. See the current [migration status](MIGRATION_STATUS.md) for exact scopes and CI runs. The [operations dashboard](OPERATIONS_DASHBOARD_2026-10-04.md) adds administrator-only process snapshots and bounded database candidates; hosting-wide collection, external alerts and ledger reconciliation remain required. Earlier counts below describe the integrated baseline. No hosting acceptance or production cutover is claimed.
 
-## Remaining implementation gates
+## Current local implementation and owner handoff (2026-10-05)
+
+The owner requested local verification only and will handle hosting. [Current local results and setup](LOCAL_VERIFICATION_2026-10-05.md) supersede the historical baseline below. Required production evidence remains in the release gate; it does not block local completion.
+
+## Production acceptance gates
 
 | Area | Work required before completion |
 | --- | --- |
 | Dependency gate | Resolved locally: zero high/critical across lockfiles; require the same result from protected CI and keep monitoring. |
-| Backend ownership | Catalog/category/banner/staff/store/import writers have maintained owners behind retained adapters; move remaining outbound notification/Drive operations incrementally and verify hosted parity. Shared retained sessions/realtime contracts remain. |
+| Backend ownership | Catalog/category/banner/staff/store/import writers have maintained owners behind retained adapters; notification/Drive/session/read ownership is now maintained and locally tested; verify hosted parity. Shared retained sessions/realtime contracts remain. |
 | Inventory admin | Implemented: stale-stock protection, immutable actor/reason/delta receipts and exact stock-edit replay; creation, sale and invoice decimal-money validation. Hosted races/reconciliation remain required. |
-| Media/admin | Verify recovered Cloudinary preview/gallery/SEO delivery on the host; implement safe replacement, signed uploads and orphan review without deleting surviving assets. |
+| Media/admin | Verify recovered Cloudinary preview/gallery/SEO delivery on the host; safe replacement, signed uploads and reference-preserving archives are implemented and locally tested; review orphans without deleting surviving assets. |
 | Product recovery UX | Implemented: spreadsheet/CSV templates, authenticated preview, row errors and hash-bound transactional commits. Verify hosted recovery/publishing; the legacy batch route remains blocked for recovery. |
 | Operations | Named Atlas backups, restore rehearsal, protected secrets, health checks, graceful draining, provider retries, outbox monitoring, alerts and fulfillment reconciliation. |
-| UI | Complete component-by-component Tailwind adoption and coherent pharmacy design; verify all storefront/admin forms, errors, empty states and image layouts. |
+| UI | Implemented and verified across storefront/admin components, four widths, keyboard/accessibility, errors and empty states; verify hosted rendering. |
 | SEO/performance | Hosted canonical/redirect/robots/sitemap/schema validation against recovered IDs; measurements and budgets against representative products/images. |
-| Analytics | Consent-aware, PII-free commerce events, checkout funnel and operational metrics; keep prescription/customer details out of analytics. |
+| Analytics | Implemented as default-off bounded anonymous consented events and partial client-error counters; configure instance aggregation/alert destinations separately. No prescription/customer/product/order details are collected. |
 | Cutover | Hosting project/config access, green protected CI, exact-release staging/business acceptance, rollback evidence and observation. |
 
-## CRA retirement condition
+## Frontend source retirement and production contraction
 
-Do not delete `frontend/` now. CRA tooling has been removed. Current browser regression tests build and exercise the retained React checkout through Vite as a compatibility baseline; the hosted replacement is unverified. After Next hosts all required routes and business/provider behavior, migration callers and tests to Next are complete, and production observation/rollback requirements pass, remove the fallback client in a separate reviewed commit. Preserve reusable assets, templates and URL redirects before deletion. Then verify no script/import/CI/hosting path references `frontend`, rebuild and run the full replacement suite. Only that later commit can claim CRA retirement.
+The owner-renewed full Next migration moved every active route, caller and browser test to Next. Old frontend source removal is a held draft (#20), with rollback source/artifact at `871bf4f`, preserved public assets and redirects. Production retirement remains separate: verify hosted parity, observe traffic and preserve rollback before approving contraction. Historical database fields and compatibility adapters remain. Do not remove them solely because local tests pass.
 
-## Verification recorded locally
+## Historical local verification baseline (2026-10-04)
 
 Lint/typecheck, 49 unit tests, 7 release-gate tests, 95 API/security/upload regressions, 22 real disposable-replica-set integration checks, Vite compatibility build and Next production foundation build pass. The Chromium suite passes all 19 scenarios, including Next checkout at 360/390/768/1280 px without overflow, changed-price rejection, retry after a committed response is lost, CSRF/tampering, and retained admin/React behavior. Recovery plan/validation commands operate without connecting. These results are local evidence; hosted providers/deployment and production cutover remain unverified. The dependency audit now passes across all three lockfiles. Hosted integration/provider and production release evidence are still absent.
 

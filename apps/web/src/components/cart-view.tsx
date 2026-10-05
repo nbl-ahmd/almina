@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { recordCommerceEvent } from '../lib/telemetry/browser';
 import { loadCart, checkAddition } from '../app/(storefront)/cart/actions';
 import { money, type CartLine } from '../lib/catalog/model';
 import { Icon } from './icon';
@@ -40,6 +41,7 @@ export function CartView({ checkout = false }: { checkout?: boolean }) {
       }
       if (JSON.stringify(latest) !== JSON.stringify(storedCart())) { setError('Your cart changed. Please try again.'); return; }
       saveCart(quantity === 0 ? latest.filter(line => line.id !== id) : latest.map(line => line.id === id ? { id, quantity } : line));
+      recordCommerceEvent('cart_updated');
     } catch { setError('Unable to save your cart.'); }
     finally { setPending(false); }
   }

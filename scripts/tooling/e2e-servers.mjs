@@ -68,7 +68,7 @@ for (const signal of ['SIGTERM', 'SIGINT']) process.once(signal, () => { void st
 try {
   await assertExclusiveLoopbackPorts([4709, 4710, 4711, 4720, 4730, 4740]);
   const catalog = launch(['scripts/tooling/storefront-fixture.mjs'], root, { PORT: '4711', PAGINATED_FIXTURE: '1' });
-  const commerce = launch(['--import', 'tsx', 'scripts/tooling/e2e-commerce-fixture.mts'], root);
+  const commerce = launch(['--import', 'tsx', 'scripts/tooling/e2e-commerce-fixture.mts'], root, { COMMERCE_TELEMETRY_ENABLED: 'true' });
   await Promise.all([wait('http://127.0.0.1:4711/__fixture/health', catalog, fixtureHealth('almina-synthetic-catalog', runId)),
     wait('http://127.0.0.1:4730/__fixture/health', commerce, fixtureHealth('almina-verification-commerce', runId))]);
   const next = require.resolve('next/dist/bin/next');
@@ -79,7 +79,7 @@ try {
     WEB_ORIGIN: 'http://127.0.0.1:4720', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730',
   });
   const checkout = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4740'], new URL('apps/web/', root), {
-    WEB_ORIGIN: 'http://127.0.0.1:4740', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CHECKOUT_ENABLED: 'true',
+    WEB_ORIGIN: 'http://127.0.0.1:4740', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CHECKOUT_ENABLED: 'true', COMMERCE_TELEMETRY_ENABLED: 'true',
   });
   await Promise.all([wait('http://127.0.0.1:4710/cart', storefront), wait('http://127.0.0.1:4720/admin/login', admin), wait('http://127.0.0.1:4740/checkout', checkout)]);
   ready = createServer((_req, res) => res.end('almina-e2e-ready'));

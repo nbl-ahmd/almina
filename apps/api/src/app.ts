@@ -2,10 +2,11 @@ import { randomUUID } from 'node:crypto';
 import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
-import { emptyQuerySchema, statusSchema, successSchema } from '@almina/contracts';
+import { commerceEventSchema, emptyQuerySchema, statusSchema, successSchema } from '@almina/contracts';
 import type { Logger } from '@almina/config/logger';
 import type { DatabaseProbe, GetDb } from './database.js';
 import { HttpError } from './errors.js';
+import { verifyBrowserMutation } from './modules/auth/cookies.js';
 import { errorHandler } from './http/errors.js';
 import { apiRoutes } from './http/routes.js';
 import { validate, noBody } from './http/validation.js';
@@ -15,10 +16,11 @@ export function createApp(options: {
   database: DatabaseProbe; logger: Logger; getDb?: GetDb; webOrigin?: string;
   development?: boolean; trustProxy?: string[]; rateLimit?: number; draining?: () => boolean; requestDeadlineMs?: number;
   webOrigins?: readonly string[]; metrics?: OperationalMetrics; observeRequests?: boolean;
+  commerceTelemetryEnabled?: boolean;
   onOrderCreated?: (order: { id: string; orderId: string }) => void;
 }) {
   const app = express();
-  const metrics = options.metrics ?? createOperationalMetrics('api');
+  const metrics = options.metrics ?? createOperationalMetrics('api', Date.now, options.commerceTelemetryEnabled === true);
   if (options.observeRequests !== false) installOperationalMetrics(app, metrics);
   const origins = options.webOrigins ?? (options.webOrigin ? [options.webOrigin] : []);
   app.disable('x-powered-by');
@@ -97,6 +99,17 @@ export function createApp(options: {
       next(new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE')); return;
     }
     next();
+  });
+  app.use('/api/v1/commerce-events', (_req, _res, next) => {
+    next(options.commerceTelemetryEnabled === true ? undefined : new HttpError(404, 'NOT_FOUND'));
+  }, express.json({ limit: '128b', strict: true, inflate: false }));
+  app.post('/api/v1/commerce-events', (req, res) => {
+    verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));
+    if (req.headers['sec-gpc'] === '1' || req.headers.dnt === '1') throw new HttpError(403, 'FORBIDDEN');
+    validate(emptyQuerySchema, req.query);
+    const value = validate(commerceEventSchema, req.body);
+    if (!metrics.recordCommerceEvent(value.event)) throw new HttpError(429, 'RATE_LIMITED');
+    res.status(204).end();
   });
   app.use(express.json({ limit: '16kb', strict: true, inflate: false }));
   app.all(routes, (_req, res, next) => {

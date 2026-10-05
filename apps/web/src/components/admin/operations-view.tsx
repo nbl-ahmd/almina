@@ -23,7 +23,11 @@ export function OperationsView({ snapshot }: { snapshot: z.infer<typeof operatio
     <Table caption="Notification queue" columns={[{ key: 'state', label: 'State' }, { key: 'count', label: 'Jobs' }, { key: 'oldest', label: 'Oldest age' }]}
       data={database.outbox.map(value => ({ ...value, oldest: value.oldestAgeSeconds === null ? 'Unknown' : `${value.oldestAgeSeconds} seconds` }))} />
     <section className="admin-panel"><h2>Acceptance still required</h2>
-      <p>Stock/order reconciliation requires the paused baseline and committed-event ledger. Zero invalid stock values do not prove that quantities reconcile. Client JavaScript errors, frontend latency, provider delivery and hosting alerts are not measured here.</p>
+      <p>Stock/order reconciliation requires the paused baseline and committed-event ledger. Zero invalid stock values do not prove that quantities reconcile. Frontend latency, provider delivery and hosting alerts require independent monitoring.</p>
+      {snapshot.http.commerceEvents ? <><h2>Optional usage reports</h2><p>Consented storefront reports only; untrusted, partial coverage. These counts are not orders, customers or affected sessions. Replays can report twice; missing reports do not prove healthy journeys.</p>
+        <dl>{Object.entries(snapshot.http.commerceEvents).map(([event, count]) => <div key={event}><dt>{event.replaceAll('_', ' ')}</dt><dd>{count}</dd></div>)}</dl>
+        <p>Client JavaScript reports: {snapshot.http.clientJavaScriptErrors}. Investigate alerts by reproducing critical journeys; collect every deployed instance.</p></>
+        : <p>Client JavaScript errors and optional usage reports are not configured.</p>}
       <p>Retained-process counters reset on restart and use minute buckets. An empty sample is unknown. The modular API exposes its independently authenticated operations snapshot; the hosting monitor must collect it and retain evidence for the observation window.</p>
     </section>
   </>;

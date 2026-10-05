@@ -7,6 +7,7 @@ const source = z.object({
   AUTH_TRUST_PROXY: z.string().max(4096).default(''),
   MONGODB_URI: z.string().min(1).max(16384).regex(/^mongodb(?:\+srv)?:\/\/[^\s]+$/),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  COMMERCE_TELEMETRY_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
 });
 function invalid(): never { throw new Error('Retained runtime configuration invalid'); }
 // Explicit source only: importing this module never loads a file, starts a server or connects MongoDB.
@@ -25,7 +26,7 @@ export function retainedRuntimeConfiguration(raw: Readonly<Record<string, string
     } catch { return true; }
   })) return invalid();
   if (trustProxy.length > 10 || new Set(trustProxy).size !== trustProxy.length || trustProxy.some(ip => !isIP(ip))) return invalid();
-  return { development, origins, trustProxy, port: value.PORT, mongoUri: value.MONGODB_URI,
+  return { development, origins, trustProxy, port: value.PORT, mongoUri: value.MONGODB_URI, commerceTelemetryEnabled: value.COMMERCE_TELEMETRY_ENABLED,
     mongoOptions: { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000, maxPoolSize: 20, minPoolSize: 0, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 3000, socketTimeoutMS: 15000 } };
 }
 export function loadRetainedEnvironment(path: string, load: (path: string) => void = process.loadEnvFile): boolean {

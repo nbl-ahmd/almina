@@ -1,6 +1,6 @@
 # Remaining repository migration plan
 
-Updated 2026-10-04. Production acceptance remains incomplete.
+Updated 2026-10-05. The ordered repository work below is implemented and locally verified; see [current local scope and commands](LOCAL_VERIFICATION_2026-10-05.md). The owner handles hosting; production acceptance remains separate and incomplete. The numbered sequence records the implementation order.
 
 PR #2 merged at `d912a269247a63ffbd3bc55e3d9f9c20ae8d9cf2`. All twelve source branches are ancestors. Protected `verify` passed on master in runs `37151757878` and `37151752130`. This plan was missing from the integration commit; this document records the owner's ordered continuation.
 

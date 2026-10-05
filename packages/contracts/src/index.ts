@@ -42,3 +42,5 @@ export * from './commerce';
 
 export { cloudinaryImage } from './media';
 export * from './operations';
+export * from './telemetry';
+export * from './commerce-events';

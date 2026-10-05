@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
 import { z } from 'zod';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
+import { recordCommerceEvent } from '../lib/telemetry/browser';
 
 const pendingKey = 'almina.checkout.pending.v1';
 const emirates = ['Ras al-Khaimah', 'Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm al-Quwain', 'Fujairah'];
@@ -75,7 +76,9 @@ export function CheckoutForm() {
       const input = intent();
       const response = acknowledgment.parse(await send('/api/checkout/quote', input));
       setReviewed({ ...response, ...input });
+      recordCommerceEvent('checkout_reviewed');
     } catch (failure) {
+      recordCommerceEvent('checkout_failed');
       setError(failure instanceof CheckoutFailure ? messages[failure.code] ?? 'Unable to review your order. Please try again.'
         : failure instanceof Error && failure.message.startsWith('Your cart') ? failure.message : 'Check your contact details and address.');
     } finally { busy.current = false; setWorking(false); }
@@ -99,12 +102,14 @@ export function CheckoutForm() {
       submitted = true;
       const committed = checkoutDtoSchema.parse(await send('/api/checkout', input));
       setResult(committed); setAttempt(null); setReviewed(null);
+      recordCommerceEvent('checkout_confirmed');
       try { sessionStorage.removeItem(pendingKey); } catch { /* A replay is safe if storage fails. */ }
       try {
         const purchased = new Map(input.items.map(item => [item.productId, item.quantity]));
         saveCart(storedCart().map(line => ({ id: line.id, quantity: Math.max(0, line.quantity - (purchased.get(line.id) ?? 0)) })).filter(line => line.quantity > 0));
       } catch { /* Committed order remains successful; cart storage cannot undo it. */ }
     } catch (failure) {
+      recordCommerceEvent('checkout_failed');
       if (failure instanceof CheckoutFailure && failure.definite) {
         try { sessionStorage.removeItem(pendingKey); } catch { /* Same key still cannot duplicate a committed order. */ }
         setAttempt(null); setReviewed(null);

@@ -1,0 +1,41 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { chooseUsage, consentKey, enableUsageReports, privacyBlocked, recordCommerceEvent, usageChoice } from '../lib/telemetry/browser';
+import type { Choice } from '../lib/telemetry/reporter';
+export function UsagePreferences() {
+  const [choice, setChoice] = useState<Choice>('unset');
+  const [blocked, setBlocked] = useState(true);
+  const [ready, setReady] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let mounted = true;
+    const synchronize = () => {
+      const value = usageChoice(), privacy = privacyBlocked();
+      enableUsageReports(value === 'allowed' && !privacy);
+      setChoice(value); setBlocked(privacy); setReady(true);
+    };
+    void Promise.resolve().then(() => { if (mounted) synchronize(); });
+    const storage = (event: StorageEvent) => { if (event.key === consentKey || event.key === null) synchronize(); };
+    const failure = () => recordCommerceEvent('client_error');
+    window.addEventListener('storage', storage); window.addEventListener('error', failure); window.addEventListener('unhandledrejection', failure);
+    return () => {
+      mounted = false; enableUsageReports(false); window.removeEventListener('storage', storage);
+      window.removeEventListener('error', failure); window.removeEventListener('unhandledrejection', failure);
+    };
+  }, []);
+  function select(value: 'allowed' | 'declined') {
+    if (value === 'allowed' && privacyBlocked()) return;
+    if (!chooseUsage(value)) { setError('Your preference could not be saved. Optional reports remain disabled.'); return; }
+    setChoice(value); setEditing(false); setError('');
+  }
+  return <section className="mx-auto max-w-[1280px] border-t border-border px-[var(--gutter)] py-6 text-sm" aria-label="Optional usage reports">
+    {!ready ? <p role="status">Loading usage preferences…</p> : choice === 'unset' || editing ? <>
+      <h2 className="mb-2 text-base">Optional usage reports</h2>
+      <p className="max-w-[70ch] text-muted">Help improve shopping and checkout with optional usage reports. Reports exclude products you view or buy, contact details and order details. Changing your preference stops future reports.</p>
+      {blocked ? <p role="status">Your browser’s privacy preference disables optional reports.</p> : null}
+      <div className="flex flex-wrap gap-3"><button type="button" disabled={blocked} onClick={() => select('allowed')}>Allow optional reports</button><button type="button" className="button-secondary" onClick={() => select('declined')}>Decline optional reports</button></div>
+    </> : <div className="flex flex-wrap items-center gap-3"><span>Optional usage reports: {blocked || choice !== 'allowed' ? 'off' : 'on'}.</span><button type="button" className="button-secondary" onClick={() => setEditing(true)}>Usage preferences</button></div>}
+    {error ? <p role="alert">{error}</p> : null}
+  </section>;
+}

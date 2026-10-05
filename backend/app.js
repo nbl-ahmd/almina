@@ -10,7 +10,7 @@ function createLegacyApp(options) {
     if (!db) throw new domain.HttpError(503, 'SERVICE_UNAVAILABLE');
     return db;
   };
-  app.locals.operationsMetrics = createOperationalMetrics('retained-api');
+  app.locals.operationsMetrics = createOperationalMetrics('retained-api', Date.now, options.commerceTelemetryEnabled === true);
   installOperationalMetrics(app, app.locals.operationsMetrics);
   const auth = options.auth ?? createSessionService(getDb);
   app.locals.draining = false;
@@ -30,7 +30,7 @@ function createLegacyApp(options) {
     database: { mode: 'enabled', checkReadiness: () => domain.retainedReadiness(getDb, app.locals.draining) },
     logger: options.logger ?? domain.createLogger({ service: 'api', environment: options.development ? 'development' : 'production', level: 'warn' }),
     webOrigins: options.origins, development: options.development, trustProxy: Array.isArray(options.trustProxy) ? options.trustProxy : [],
-    draining: () => app.locals.draining, metrics: app.locals.operationsMetrics, observeRequests: false,
+    draining: () => app.locals.draining, metrics: app.locals.operationsMetrics, observeRequests: false, commerceTelemetryEnabled: options.commerceTelemetryEnabled === true,
     onOrderCreated: order => app.locals.io?.emit('newOrder', { _id: order.id, orderId: order.orderId }),
   });
   app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });

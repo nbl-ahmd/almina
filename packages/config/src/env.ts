@@ -57,6 +57,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
     API_ORIGIN: originSchema,
     CLOUDINARY_CLOUD_NAME: z.string().regex(/^[A-Za-z0-9_-]{1,100}$/).optional(),
     CHECKOUT_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+    COMMERCE_TELEMETRY_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     LEGACY_API_ORIGIN: originSchema,
     STOREFRONT_REDIRECTS_VERIFIED: z.enum(['true', 'false']).default('true').transform(value => value === 'true'),
     STOREFRONT_PRODUCT_REPLACEMENTS: z.string().default('{}').transform((value, ctx) => {
@@ -72,6 +73,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
   }), {
     API_ORIGIN: source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
     CHECKOUT_ENABLED: source.CHECKOUT_ENABLED,
+    COMMERCE_TELEMETRY_ENABLED: source.COMMERCE_TELEMETRY_ENABLED,
     CLOUDINARY_CLOUD_NAME: source.CLOUDINARY_CLOUD_NAME,
     STOREFRONT_REDIRECTS_VERIFIED: source.STOREFRONT_REDIRECTS_VERIFIED,
     STOREFRONT_PRODUCT_REPLACEMENTS: source.STOREFRONT_PRODUCT_REPLACEMENTS,
@@ -90,6 +92,7 @@ export function readApiEnvironment(source: EnvironmentSource) {
     API_HOST: z.enum(['127.0.0.1', '0.0.0.0']).default(shared.APP_ENV === 'development' ? '127.0.0.1' : '0.0.0.0'),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     DATABASE_MODE: z.enum(['disabled', 'enabled']).default('disabled'),
+    COMMERCE_TELEMETRY_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     API_TRUST_PROXY: z.string().default('').transform(value => value ? value.split(',').map(item => item.trim()) : [])
       .refine(values => values.length <= 10 && values.every(value => isIP(value) !== 0)),
   }), source);

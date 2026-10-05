@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Icon } from './icon';
 import Link from 'next/link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
+import { recordCommerceEvent } from '../lib/telemetry/browser';
 export function AddToCart({ id, stock, quantityPicker = false, name }: { id: string; stock: number; quantityPicker?: boolean; name?: string }) {
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
@@ -19,6 +20,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name }: { id: str
       // A different tab may have changed storage while the stock request was in flight.
       if (JSON.stringify(lines) !== JSON.stringify(storedCart())) { setMessage('Your cart changed. Please try again.'); return; }
       saveCart([...lines.filter(line => line.id !== id), { id, quantity: previous + quantity }]);
+      recordCommerceEvent('cart_updated');
       setMessage('Added to cart.');
     } catch { setMessage('Unable to save your cart in this browser.'); }
     finally { setPending(false); }
