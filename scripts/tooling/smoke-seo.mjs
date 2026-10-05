@@ -51,7 +51,7 @@ try {
       const html = await response.text(), head = html.match(/<head>([\s\S]*?)<\/head>/)?.[1];
       assert.ok(head.includes(`<link rel="canonical" href="${canonical}${path}"`), path);
       const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
-      assert.ok(visible.includes(`<h1>${recovered.name}</h1>`));
+      assert.ok(visible.match(/<h1\b[^>]*>([^<]*)<\/h1>/)?.[1] === recovered.name);
       assert.ok(visible.includes(index === 0 ? 'AED 0.00' : 'AED 9.99'));
       assert.ok(visible.includes('Out of stock'));
       const data = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
@@ -86,7 +86,7 @@ try {
       if (path.includes('daily-care')) {
         // Discard all executable/RSC script text: this must be real visible SSR markup.
         const visibleHtml = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
-        assert.ok(visibleHtml.includes('<h1>Daily Care</h1>'));
+        assert.ok(visibleHtml.match(/<h1\b[^>]*>([^<]*)<\/h1>/)?.[1] === 'Daily Care');
         assert.ok(visibleHtml.includes('Daily care product description.'));
         assert.ok(visibleHtml.includes('AED 20.00'));
         const data = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
