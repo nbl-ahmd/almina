@@ -11,6 +11,14 @@ test('Next category preserves legacy IDs and provides keyboard pagination with r
   await page.getByRole('link', { name: 'Previous page', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.goto('/search?q=No-synthetic-match'); await expect(page.getByRole('heading', { name: 'No products found.', exact: true })).toBeVisible();
+  await page.goto('/search?q=' + 'A'.repeat(100));
+  const filter = page.getByRole('search', { name: 'Filter products' });
+  await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveAttribute('maxlength', '80');
+  await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('A'.repeat(80));
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await filter.getByRole('link', { name: 'Clear filters' }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
