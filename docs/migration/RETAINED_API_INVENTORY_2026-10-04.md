@@ -2,6 +2,8 @@
 
 Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently governed by the default-deny server boundary. GET/HEAD media and webhook paths may perform provider reads/signed-event writes. This first extraction moves store behavior behind retained URLs.
 
+Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry candidate. All retained domain/provider/session/read operations below have maintained owners and local regression evidence; the CommonJS adapters preserve production URL, upload, cookie, realtime and notification contracts. [Local verification and owner hosting handoff](LOCAL_VERIFICATION_2026-10-05.md) supersedes the original baseline. No live field/media contraction occurred. The additional anonymous POST `/api/v1/commerce-events` uses maintained bounded validation/metrics (feature disabled by default); Next `/api/commerce-events` is a fixed-origin, consent/privacy-aware gateway. Readiness/drain ownership is maintained in operations/lifecycle.ts and database/persistent.ts.
+
 | Method | Retained URL | Boundary | Current owner/effects |
 | --- | --- | --- | --- |
 | GET | /api/operations | admin | Maintained process metrics and bounded read-only integrity/queue snapshot |
@@ -9,10 +11,10 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 | POST | /api/media/products/:id | admin | Maintained signed Cloudinary upload/reference ledger; bounded authenticated adapter |
 | POST | /api/recovery/preview | admin | maintained recovery/catalog.ts; actor-bound preview |
 | POST | /api/recovery/commit | admin | maintained recovery/catalog.ts; closed-store transaction/ledger |
-| POST | /api/auth/login | login | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| POST | /api/auth/logout | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| POST | /api/auth/logout-all | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
-| GET | /api/auth/me | staff | Login.js → shared sessions/RBAC; staff CRUD adapter |
+| POST | /api/auth/login | login | Login.js → maintained auth/sessions.ts and auth/cookies.ts; compatibility URL adapter |
+| POST | /api/auth/logout | staff | Login.js → maintained auth/sessions.ts and auth/cookies.ts; compatibility URL adapter |
+| POST | /api/auth/logout-all | staff | Login.js → maintained auth/sessions.ts and auth/cookies.ts; compatibility URL adapter |
+| GET | /api/auth/me | staff | Login.js → maintained auth/sessions.ts and auth/cookies.ts; compatibility URL adapter |
 | POST | /api/auth/signup | admin | Maintained serialized staff provisioning and actor audit; retained URL adapter |
 | GET | /api/auth/users | admin | Maintained bounded active staff projection; retained URL adapter |
 | DELETE | /api/auth/users/:id | admin | Maintained transactional deactivation/session revocation and actor audit; no deletion |
@@ -68,12 +70,12 @@ Inspected at master `d912a269`, 2026-10-04. Every mounted route is independently
 ## Background and provider operations
 
 - Shared `orders/commerce.ts` atomically writes product stock, orders, counter, receipts/outbox and cancellation history/restock. Both HTTP stacks use it.
-- Maintained notification workers lease/drain order jobs; `notifications/email.ts` owns confirmation content and bounded SMTP delivery through retained Nodemailer/socket adapters. At least once; acceptance/crash can duplicate delivery. Legacy persistent process owns worker. Administrative email is bounded but has no durable retry receipt.
-- `security/realtime.cjs` authenticates/rechecks Socket.IO and SSE invalidations; shared deployment bus pending.
-- Maintained `auth/administration.ts` provisions password hashes and deactivates accounts with actor audits, serialized privilege checks and transactional session revocation; `Login.js` retains the URLs. `sessions.cjs` owns sessions and quotas. Existing identifiers/history are never deleted by account removal.
+- Maintained notification workers lease/drain order jobs; `notifications/email.ts` owns confirmation content and bounded SMTP delivery through retained Nodemailer/socket adapters. At least once; acceptance/crash can duplicate delivery. The persistent Express entry point owns and drains the worker. Administrative email is bounded but has no durable retry receipt.
+- `auth/realtime.ts` authenticates/rechecks Socket.IO behind compatibility exports; SSE invalidations reauthorize every recipient. The optional shared-bus contract is locally tested; deployment bus/instance monitoring configuration belongs to the host.
+- Maintained `auth/administration.ts` provisions password hashes and deactivates accounts with actor audits, serialized privilege checks and transactional session revocation; `Login.js` retains the URLs. `auth/sessions.ts` and `auth/cookies.ts` own sessions/quotas through compatibility exports. Existing identifiers/history are never deleted by account removal.
 - Drive creates/streams products/categories/banners/WhatsApp posters. All four media removal adapters now archive documents/assets. Category/Drive product replacements record prior references; old product/category filenames resolve through history. Maintained Cloudinary upload/reconciliation is additive; bounded Drive transport ownership is maintained; hosted provider parity remains a gate.
 - Maintained Meta sender/actor-key receipts bound acceptance, uncertain sends and local transaction retries. Signed inbox receipts commit effects and processed state together. Retained realtime/report readers preserve contracts; real delivery and uncertain-send reconciliation require operator evidence.
-- Push subscriptions belong to current staff; real delivery configuration/parity remains hosting gate.
+- Maintained notifications/subscriptions.ts and push-outbox.ts own current-staff atomic preferences, durable delivery receipts, retry/backoff, expiry and uncertain-response quarantine. Real delivery configuration/parity remains a hosting gate.
 - Recovery/bootstrap/commerce/index CLI apply operations are explicit maintenance actions, never builds/startup. Recovery creates no lost history.
 
 ## Next admin routes and consumers
