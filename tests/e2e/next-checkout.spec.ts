@@ -1,25 +1,25 @@
-import { test, expect, reset, state, customer, productId, commerceOrigin } from './fixtures';
-import type { Page } from '@playwright/test';
-
-const origin = 'http://127.0.0.1:4740';
-async function prepare(page: Page) {
-  await page.goto(origin + '/checkout');
-  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
-  for (const [name, value] of Object.entries(customer)) {
-    const field = page.locator(`[name="${name}"]`);
-    if (name === 'emirate' || name === 'payment') await field.selectOption(value);
-    else await field.fill(value);
-  }
-  await page.getByRole('button', { name: 'Review order', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
-}
+import { test, expect, reset, state, customer, productId, commerceOrigin, nextCheckoutPage, checkoutOrigin } from './fixtures';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+const localRequire = createRequire(process.cwd() + '/apps/web/package.json');
+const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
+const origin = checkoutOrigin;
+const prepare = nextCheckoutPage;
 test.beforeEach(async ({ request }) => { await reset(request); });
 for (const width of [360, 390, 768, 1280]) test(`Next checkout at ${width}px confirms current totals without overflow`, async ({ page, request }) => {
   await page.setViewportSize({ width, height: 900 });
   await prepare(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  await expect(page.getByRole('group', { name: 'Contact and delivery details' })).toBeVisible();
+  await page.evaluate(axe);
+  const violations = await page.evaluate(async () => {
+    const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
+    return (await audit.run(document.body)).violations.map(violation => violation.id);
+  });
+  expect(violations).toEqual([]);
   const submitted = page.waitForRequest(req => req.method() === 'POST' && new URL(req.url()).pathname === '/api/checkout');
-  await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
+  await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).focus();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Order received' })).toBeVisible();
   const input = (await submitted).postDataJSON();
   expect(Object.keys(input).sort()).toEqual(['acceptedQuoteHash', 'customer', 'idempotencyKey', 'items']);

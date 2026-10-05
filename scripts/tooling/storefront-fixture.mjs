@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { fixtureHealth } from './e2e-ownership.mjs';
 import { createServer as createSecureServer } from 'node:https';
 import { pathToFileURL } from 'node:url';
 // Synthetic compatibility API only. No database, credentials or customer data.
@@ -6,7 +7,17 @@ export const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care', di
 export const product = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', product_id: 'PD0001', name: 'Daily Care',
   category, price: 25, salePrice: 20, stock: 4, disabled: false, featured: true, sale: true,
   images: ['fixture.svg'], description: 'Daily care product description.' };
-export function createStorefrontFixture(tls) {
+export const recoveredProducts = [
+  { ...product, _id: 'cccccccccccccccccccccccc', product_id: 'RECOVERY--0001', name: 'Recovery Example', price: 12.50, salePrice: 0, stock: 0,
+    images: [], cloudinaryImages: ['https://res.cloudinary.com/synthetic/image/upload/v1/recovery-example.webp'], description: 'Synthetic reviewed recovery fixture.' },
+  { ...product, _id: 'dddddddddddddddddddddddd', product_id: product._id, name: 'Numeric Identity Example', price: 9.99, sale: false, salePrice: 1,
+    stock: 0, images: [], description: 'Synthetic namespace fixture.' },
+];
+export function createStorefrontFixture(tls, { includeRecovered = false, includePagination = false } = {}) {
+  const products = includeRecovered ? [product, ...recoveredProducts] : [product];
+  if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
+    _id: (index + 100).toString(16).padStart(24, '0'), product_id: `SYNTHETIC_${index}`, name: `Synthetic paged product ${index}`,
+    stock: 0, sale: false, featured: false, price: 1 })));
   let closed = false;
   let failed = false;
   const requests = [];
@@ -14,7 +25,7 @@ export function createStorefrontFixture(tls) {
   const server = factory((req, res) => {
     const url = new URL(req.url, 'http://fixture.invalid');
     requests.push({ method: req.method, pathname: url.pathname });
-    if (url.pathname === '/__fixture/health') { res.end('almina-synthetic-catalog'); return; }
+    if (url.pathname === '/__fixture/health') { res.end(fixtureHealth('almina-synthetic-catalog', process.env.AL_MINA_FIXTURE_RUN_ID)); return; }
     if (url.pathname === '/__fixture/closed') { closed = !closed; res.end('OK'); return; }
     if (url.pathname === '/__fixture/failure') { failed = !failed; res.end('OK'); return; }
     if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
@@ -27,25 +38,28 @@ export function createStorefrontFixture(tls) {
     if (url.pathname === '/api/v1/catalog/sitemap') {
       const kind = url.searchParams.get('kind');
       res.end(JSON.stringify({ requestId: '00000000-0000-4000-8000-000000000000', data: {
-        items: kind === 'products' ? [{ id: product._id, productId: product.product_id, name: product.name }]
+        items: kind === 'products' ? products.map(value => ({ id: value._id, productId: value.product_id, name: value.name }))
           : [{ id: category._id, name: category.name }], nextCursor: null,
       } })); return;
     }
     if (url.pathname === '/api/category') { res.end(JSON.stringify([category])); return; }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }
     if (url.pathname === '/api/store/status') { res.end(JSON.stringify({ status: closed ? 'closed' : 'open' })); return; }
-    if (url.pathname === `/api/products/${product._id}`) { res.end(JSON.stringify({ ...product, category: category._id })); return; }
-    if (url.pathname === '/api/products/details/PD0001') { res.end(JSON.stringify({ product, relatedProducts: [] })); return; }
+    const byMongoId = products.find(value => url.pathname === `/api/products/${value._id}`);
+    if (byMongoId) { res.end(JSON.stringify({ ...byMongoId, category: category._id })); return; }
+    const byBusinessId = products.find(value => url.pathname === `/api/products/details/${value.product_id}`);
+    if (byBusinessId) { res.end(JSON.stringify({ product: byBusinessId, relatedProducts: [] })); return; }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
-      const match = !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(product.name);
-      res.end(JSON.stringify(match && Number(url.searchParams.get('offset')) === 0 ? [product] : [])); return;
+      const matching = products.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
+      const offset = Number(url.searchParams.get('offset')); const limit = Number(url.searchParams.get('limit') ?? '30');
+      res.end(JSON.stringify(matching.slice(offset, offset + limit))); return;
     }
     res.writeHead(404); res.end('null');
   });
   return { server, requests };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { server } = createStorefrontFixture();
+  const { server } = createStorefrontFixture(undefined, { includePagination: process.env.PAGINATED_FIXTURE === '1' });
   server.listen(Number(process.env.PORT ?? 4100), '127.0.0.1', () => console.log('Synthetic catalog fixture listening on loopback.'));
 }

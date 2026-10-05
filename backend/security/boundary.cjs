@@ -32,9 +32,9 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
     if (req.method === 'OPTIONS') {
       const headers = String(req.headers['access-control-request-headers'] ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
       if (!origins.includes(req.headers.origin) || !lookupPolicy(req.headers['access-control-request-method'], req.path)
-        || headers.some(header => !['content-type', 'x-csrf-protection'].includes(header))) return next(fail(403, 'FORBIDDEN'));
+        || headers.some(header => !['content-type', 'x-csrf-protection', 'idempotency-key'].includes(header))) return next(fail(403, 'FORBIDDEN'));
       return res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE',
-        'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection', 'Access-Control-Max-Age': '600' }).status(204).end();
+        'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection, Idempotency-Key', 'Access-Control-Max-Age': '600' }).status(204).end();
     }
     next();
   });
@@ -50,12 +50,22 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
       req.identity = await auth.authenticate(readSessionCookie(req.headers, development));
       if (route.policy === 'admin' && req.identity.role !== 'admin') throw fail(403, 'FORBIDDEN');
     }
+    // Compatibility catalog reads share URLs with staff editors. Only a verified
+    // server session may read drafts; anonymous filters cannot override publication.
+    if (route.policy === 'public' && ['GET', 'HEAD'].includes(req.method)
+      && /^\/api\/(products|category)(?:\/|$)/.test(route.path) && !route.path.includes('/images/')) {
+      const token = readSessionCookie(req.headers, development);
+      if (token) {
+        try { req.identity = await auth.authenticate(token); }
+        catch (error) { if ((error.status ?? error.statusCode) !== 401) throw error; }
+      }
+    }
     const actualParts = req.originalUrl.split('?')[0].replace(/\/$/, '').split('/');
     const routeParts = route.path.split('/');
     for (let i = 0; i < routeParts.length; i++) {
       const param = routeParts[i]; const value = actualParts[i];
       if ([':id', ':categoryId', ':orderId'].includes(param) && !/^[a-f0-9]{24}$/i.test(value)) throw fail(400, 'INVALID_REQUEST');
-      if (param === ':productId' && !(route.path.includes('/details/') ? /^PD[0-9]{1,20}$/i : /^[a-f0-9]{24}$/i).test(value)) throw fail(400, 'INVALID_REQUEST');
+      if (param === ':productId' && !(route.path.includes('/details/') ? /^[A-Za-z0-9_-]{1,80}$/ : /^[a-f0-9]{24}$/i).test(value)) throw fail(400, 'INVALID_REQUEST');
       if (param === ':filename' && (!/^[A-Za-z0-9_.-]{1,200}$/.test(value) || value.includes('..'))) throw fail(400, 'INVALID_REQUEST');
       if (param === ':recipient' && !/^\+?[0-9]{1,20}$/.test(value)) throw fail(400, 'INVALID_REQUEST');
     }

@@ -15,7 +15,7 @@ export const quoteInputSchema = z.object({ customer: customerInputSchema, items 
 // Optional only for retained legacy clients; the Next gateway requires acknowledgment.
 export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid(), acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
 export const statusInputSchema = z.object({ status: orderStatusSchema,
-  billno: z.string().regex(/^\d{5,30}$/).optional(), billamount: z.number().finite().nonnegative().optional(),
+  billno: z.string().regex(/^\d{5,30}$/).optional(), billamount: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100).refine(value => /^\d+(\.\d{1,2})?$/.test(String(value))).optional(),
 }).strict();
 const minor = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const lineSnapshotSchema = z.object({

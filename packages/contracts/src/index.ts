@@ -3,8 +3,8 @@ import { z } from 'zod';
 export const requestIdSchema = z.uuid();
 export const errorCodeSchema = z.enum([
   'INVALID_REQUEST', 'NOT_FOUND', 'METHOD_NOT_ALLOWED', 'SERVICE_UNAVAILABLE', 'INTERNAL_ERROR',
-  'UNAUTHORIZED', 'FORBIDDEN', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA_TYPE', 'RATE_LIMITED', 'REQUEST_TIMEOUT', 'COMMERCE_UNAVAILABLE', 'PRODUCT_UNAVAILABLE', 'INSUFFICIENT_STOCK',
-  'MINIMUM_ORDER', 'IDEMPOTENCY_CONFLICT', 'INVALID_TRANSITION', 'PRICE_CHANGED',
+  'UNAUTHORIZED', 'FORBIDDEN', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA_TYPE', 'RATE_LIMITED', 'REQUEST_TIMEOUT', 'COMMERCE_UNAVAILABLE', 'PRODUCT_UNAVAILABLE', 'INSUFFICIENT_STOCK', 'STOCK_CHANGED', 'RECOVERY_IMPORT_REQUIRED',
+  'MINIMUM_ORDER', 'IDEMPOTENCY_CONFLICT', 'INVALID_TRANSITION', 'PRICE_CHANGED', 'DELIVERY_UNCERTAIN',
 ]);
 export const apiErrorSchema = z.object({
   error: z.object({ code: errorCodeSchema, message: z.string().max(200) }).strict(),
@@ -32,10 +32,15 @@ export const paginationQuerySchema = z.object({
 }).strict();
 export const emptyQuerySchema = z.object({}).strict();
 
-// Business IDs and MongoDB IDs stay separate; no money/commerce policy is invented here.
-export const productBusinessIdSchema = z.string().regex(/^PD\d+$/);
+// Namespace selection belongs to the explicit route, not the spelling of an ID.
+export { productBusinessIdSchema, productBusinessIdPattern } from './identifiers';
 export const mongoIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/);
 
 export * from './api';
 
 export * from './commerce';
+
+export { cloudinaryImage } from './media';
+export * from './operations';
+export * from './telemetry';
+export * from './commerce-events';

@@ -11,7 +11,7 @@ async function main() {
   const database = createDatabase(env.database);
   let stopping = false;
   const server = createServer(createApp({ database, logger, webOrigin: env.WEB_ORIGIN, development: env.APP_ENV === 'development',
-    trustProxy: env.API_TRUST_PROXY, draining: () => stopping,
+    trustProxy: env.API_TRUST_PROXY, draining: () => stopping, commerceTelemetryEnabled: env.COMMERCE_TELEMETRY_ENABLED,
     getDb: async () => {
       try { return await database.getDb(); }
       catch { throw new HttpError(503, 'SERVICE_UNAVAILABLE'); }

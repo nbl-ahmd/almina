@@ -1,0 +1,17 @@
+# Retained API lifecycle and notification worker
+
+The retained service now exposes uncached `/health/live` and `/health/ready` probes before the administrative boundary. Ready requires a successful bounded database ping and a writable replica-set/mongos primary suitable for commerce transactions; missing database, outage, secondary/standalone topology or draining returns 503 without provider/database details. `commitSha` is the validated 40-character Render commit environment value, or null. A null value cannot satisfy hosted exact-SHA acceptance. Liveness does not claim database readiness.
+
+SIGTERM/SIGINT set draining, reject new ordinary requests, disconnect realtime clients and close HTTP intake. Notification workers stop acquiring jobs and await the active send; the database pool closes after both HTTP and workers complete. The drain has a 25-second deadline and a separate 3-second pool-close deadline. Failure forces connections and exits nonzero; claimed jobs remain durably recoverable. The connection pool and connection selection are bounded. Verify platform termination grace exceeds these deadlines before deployment.
+
+The TypeScript outbox worker owns atomic conditional leases, backoff, bounded sends and drain state; the retained SMTP adapter owns provider configuration. Sends have a 15-second overall deadline and cancellation closes SMTP transport. A lease is 60 seconds. Outages back off from 10 seconds to at most one hour; after eight attempts jobs enter `failed` for operator review, instead of retrying forever. A stopped worker cannot claim again. Competing workers cannot send the same active lease. Orders/stock are never written by this worker.
+
+SMTP remains at-least-once. A provider acceptance followed by a lost acknowledgment/process crash can cause another email. A deterministic per-order Message-ID assists provider deduplication; it does not guarantee it. Review failed/expired jobs against delivery logs before retrying, and never manufacture a new order to resend. The transaction's outbox contract and SMTP destinations/content remain compatible. WhatsApp/push delivery acceptance and durable recovery of failed signed webhook processing remain separate gates.
+
+## Rollout and evidence
+
+Use retained `/health/ready` as the staging/production platform health path. Confirm exact commit readback, writable topology, intentional closed-store recovery state, provider credentials and termination grace. Exercise outage, rolling restart, active checkout, active notification, SSE/Socket.IO reconnect and outbox reconciliation on isolated staging. No hosted service/configuration was changed by this PR.
+
+Local lint/typecheck, 57 unit, 98 API/security and 27 disposable real MongoDB worker/commerce tests passed; the API build and shared adapter manifest check passed. Regression tests cover topology failure/draining, database close ordering/deadline force, competing worker leases, retry delay, exhausted retries, send cancellation and unchanged orders. HTTP health outage/drain acceptance is tested without credentials. Existing invoice/checkout/cancellation and idempotency regressions remain in the required verify pipeline.
+
+Do not contract legacy fields, restore an old snapshot over committed transactions, or enable deployment until hosted gates pass. Roll back binaries/routing, preserve outbox/ledger state, pause writers if required and reconcile delivery/stock/orders before reopening. Production completion is unverified.

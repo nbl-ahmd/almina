@@ -1,7 +1,64 @@
 import { randomUUID } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { test, expect, reset, state, login, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
+const localRequire = createRequire(process.cwd() + '/package.json');
+const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
 
 test.beforeEach(async ({ request }) => { await reset(request); });
+test('staff provisioning clears credentials and deactivation revokes access at every required width', async ({ page, request }) => {
+  await login(page);
+  const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
+  for (const width of [360, 390, 768, 1280]) {
+    const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
+    await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
+    await page.getByRole('link', { name: 'Skip to content', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(page.locator('#admin-main')).toBeFocused();
+    await page.evaluate(axe);
+    const violations = await page.evaluate(async () => {
+      const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
+      return (await audit.run(document.body)).violations.map(violation => violation.id);
+    });
+    expect(violations).toEqual([]);
+    await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
+    await page.getByLabel('Username', { exact: true }).fill(username);
+    await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
+    await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption('user');
+    await page.getByRole('textbox', { name: /^Assigned cities/ }).fill('City A');
+    await page.getByRole('button', { name: 'Create staff account', exact: true }).focus(); await page.keyboard.press('Enter');
+    const row = page.getByRole('row').filter({ hasText: username }); await expect(row).toBeVisible();
+    await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');
+    expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(200);
+    expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(200);
+    page.once('dialog', dialog => dialog.accept()); await row.getByRole('button', { name: 'Deactivate account', exact: true }).click();
+    await expect(row).toHaveCount(0);
+    expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
+    expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.reload(); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
+  }
+});
+test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
+  await login(page);
+  for (const width of [360, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(adminOrigin + '/admin/operations');
+    await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible();
+    await expect(page.getByRole('table', { name: 'Database integrity candidates' })).toBeVisible();
+    await expect(page.locator('main')).toContainText('Stock/order reconciliation requires');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await page.getByRole('region', { name: 'API requests — five-minute buckets' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible();
+  }
+  const response = await page.request.get(adminOrigin + '/api/admin/operations'); expect(response.status()).toBe(200);
+  expect(JSON.stringify(await response.json())).not.toContain('customer');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page).toHaveURL(adminOrigin + '/admin/login');
+  await login(page, 'synthetic-staff');
+  expect((await page.request.get(adminOrigin + '/api/admin/operations')).status()).toBe(403);
+});
 test('admin login persists through reload and staff access remains scoped', async ({ page }) => {
   await page.goto(adminOrigin + '/admin/orders');
   await expect(page).toHaveURL(adminOrigin + '/admin/login');
@@ -40,4 +97,47 @@ test('admin order update reaches the real writer and prevents cancellation after
   await expect(page.getByLabel('Username', { exact: true })).toBeVisible();
   await login(page, 'synthetic-staff');
   expect((await page.request.get(adminOrigin + '/api/admin/orders/' + order.id)).status()).toBe(404);
+});
+
+test('admin stock adjustment requires a reason, preserves the retry receipt and rejects stale stock', async ({ page, request }) => {
+  await login(page);
+  await page.goto(adminOrigin + '/admin/products/' + productId);
+  await page.getByLabel('Stock quantity', { exact: true }).fill('7');
+  await page.getByLabel(/^Stock adjustment reason/).fill('Physical count verified');
+  await page.getByRole('button', { name: 'Save product', exact: true }).click();
+  await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
+  expect((await state(request)).stock).toBe(7);
+  const response = await page.request.put(adminOrigin + '/api/admin/products/' + productId, {
+    headers: { origin: adminOrigin, 'x-csrf-protection': '1' },
+    data: { stock: 9, expectedStock: 4, stockReason: 'Outdated count', inventoryKey: randomUUID() },
+  });
+  expect(response.status()).toBe(409); expect((await state(request)).stock).toBe(7);
+});
+
+test('authenticated Cloudinary replacement works through the gateway and archive preserves stock', async ({ page, request }) => {
+  const { createRequire } = await import('node:module'); const require = createRequire(`${process.cwd()}/package.json`);
+  const sharp = require('./backend/node_modules/sharp');
+  const image = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#ffffff' } }).png().toBuffer();
+  await login(page);
+  let releaseScripts!: () => void;
+  const scriptsReady = new Promise<void>(resolve => { releaseScripts = resolve; });
+  await page.route('**/*.js', async route => { await scriptsReady; await route.continue(); });
+  await page.goto(adminOrigin + '/admin/products/' + productId, { waitUntil: 'commit' });
+  try {
+    await expect(page.getByRole('button', { name: 'Save Cloudinary images', exact: true })).toBeDisabled();
+    await expect(page.getByLabel('Replacement raster images')).toBeDisabled();
+  } finally { releaseScripts(); }
+  await expect(page.getByLabel('Replacement raster images')).toBeEnabled();
+  await page.getByLabel('Replacement raster images').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
+  await page.getByRole('button', { name: 'Save Cloudinary images', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Cloudinary images saved' })).toBeVisible();
+  const product = await (await page.request.get(adminOrigin + '/api/admin/products/' + productId)).json();
+  expect(product.cloudinaryImages[0]).toMatch(/^https:\/\/res.cloudinary.com\/synthetic\/image\/upload\/v1\/almina\/products\//);
+  expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);
+  await page.goto(adminOrigin + '/admin/products');
+  page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Archive product', exact: true }).click();
+  await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('No records found.');
+  expect((await state(request)).stock).toBe(4);
+  const unpublished = await page.request.put(adminOrigin + '/api/admin/products/publish/' + productId, { headers: { origin: adminOrigin, 'x-csrf-protection': '1' }, data: {} });
+  expect(unpublished.status()).toBe(409);
 });

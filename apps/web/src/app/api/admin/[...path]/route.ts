@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getWebEnvironment } from "../../../../lib/server/env";
 import {
   accessPolicy,
-  project,
+  projectAdminResponse,
   upstreamQuery,
 } from "../../../../lib/admin/policy";
 import {
@@ -62,6 +62,8 @@ async function handle(
       throw new AdminError(400);
     }
     const type = request.headers.get("content-type") ?? "";
+    const retryKey = request.headers.get('idempotency-key');
+    if (retryKey !== null && (!['whatsapp/s', 'whatsapp/text'].includes(path) || !/^[A-Za-z0-9_-]{16,128}$/.test(retryKey))) throw new AdminError(400);
     const body = mutation ? await boundedBody(request) : undefined;
     if (
       body?.length &&
@@ -69,22 +71,25 @@ async function handle(
       !type.startsWith("multipart/form-data; boundary=")
     )
       throw new AdminError(415);
-    if (type.startsWith("application/json") && body && body.length > 128 * 1024)
+    if (type.startsWith("application/json") && body && body.length > (path === "recovery/preview" ? 4 * 1024 * 1024 : 128 * 1024))
       throw new AdminError(413);
     const result = await upstream(path + (query ? `?${query}` : ""), {
       method: request.method,
       ...(body?.length ? { body } : {}),
-      headers: type ? { "content-type": type } : {},
+      headers: { ...(type ? { "content-type": type } : {}), ...(retryKey ? { 'idempotency-key': retryKey } : {}) },
     });
     // Legacy WhatsApp text sends a same-origin redirect after provider acceptance. Never follow it.
     const acceptedRedirect = path === "whatsapp/text" && result.status === 302;
     if (!result.ok && !acceptedRedirect)
       throw new AdminError(result.status >= 400 ? result.status : 502);
+    if (path === "recovery/template") return new NextResponse(await result.text(), {
+      headers: { ...headers, "Content-Type": "text/csv", "Content-Disposition": 'attachment; filename="recovery-products.csv"' },
+    });
     const response =
       result.status === 204
         ? new NextResponse(null, { status: 204, headers })
         : NextResponse.json(
-            acceptedRedirect ? { success: true } : project(await result.json()),
+            acceptedRedirect ? { success: true } : projectAdminResponse(path, await result.json()),
             { status: result.status === 302 ? 200 : result.status, headers },
           );
     // Only the expected session cookie, with locally controlled attributes, can be issued to this host.

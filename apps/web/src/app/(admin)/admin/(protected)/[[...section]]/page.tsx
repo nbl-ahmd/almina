@@ -1,3 +1,6 @@
+import { RecoveryImport } from "../../../../../components/admin/recovery-import";
+import { operationsSnapshotSchema } from '@almina/contracts';
+import { OperationsView } from '../../../../../components/admin/operations-view';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -11,6 +14,7 @@ import {
   type Section,
 } from "../../../../../lib/admin/policy";
 import { getWebEnvironment } from "../../../../../lib/server/env";
+import { adminFormClass } from '../../../../../lib/admin/styles';
 import {
   Table,
   rows,
@@ -80,6 +84,7 @@ export default async function AdminPage({
     !["products", "categories", "orders", "whatsapp"].includes(section)
   )
     notFound();
+  if (section === 'operations') return <OperationsView snapshot={operationsSnapshotSchema.parse(await adminRead('operations'))} />;
   if (section === "dashboard") {
     const orders = rows(await adminRead("orders"));
     return (
@@ -158,7 +163,7 @@ export default async function AdminPage({
         ) : (
           <p>Read-only inventory</p>
         )}
-        <form className="admin-form">
+        <form className={adminFormClass}>
           <label htmlFor="q">
             Search products
             <input
@@ -210,9 +215,9 @@ export default async function AdminPage({
                 <Command
                   path={`products/${display(item._id)}`}
                   method="DELETE"
-                  confirm="Permanently delete this product and its media?"
+                  confirm="Archive this product while preserving history and images?"
                 >
-                  Delete product
+                  Archive product
                 </Command>
               </>
             )
@@ -296,7 +301,7 @@ export default async function AdminPage({
                 method="DELETE"
                 confirm="Permanently delete this category and its media?"
               >
-                Delete category
+                Archive category
               </Command>
             </>
           )}
@@ -346,9 +351,9 @@ export default async function AdminPage({
               <Command
                 path={`banners/${display(item._id)}`}
                 method="DELETE"
-                confirm="Delete this banner and its media?"
+                confirm="Archive this banner and preserve its images?"
               >
-                Delete banner
+                Archive banner
               </Command>
             </>
           )}
@@ -460,9 +465,9 @@ export default async function AdminPage({
               <Command
                 path={`auth/users/${display(item._id)}`}
                 method="DELETE"
-                confirm="Delete this staff account and revoke all of its sessions?"
+                confirm="Deactivate this staff account and revoke all of its sessions? The account history will be retained."
               >
-                Delete account
+                Deactivate account
               </Command>
             )
           }
@@ -491,32 +496,7 @@ export default async function AdminPage({
       </>
     );
   }
-  if (section === "batch")
-    return (
-      <>
-        <h1>Batch product upload</h1>
-        <p>
-          CSV columns: name, category, price, stock, barcode, vat, featured,
-          sale. Boolean columns use TRUE or FALSE. This creates products using
-          the existing import workflow.
-        </p>
-        <AdminForm
-          path="batch"
-          multipart
-          fields={[
-            {
-              name: "file",
-              label: "Product CSV",
-              type: "file",
-              required: true,
-              hint: "Maximum 2 MB. Review the file before importing.",
-            },
-          ]}
-          label="Import products"
-          confirm="Create products from this CSV using the existing import workflow?"
-        />
-      </>
-    );
+  if (section === "batch") return <><h1>Product recovery</h1><RecoveryImport /></>;
   if (section === "notifications")
     return (
       <>
@@ -539,11 +519,12 @@ export default async function AdminPage({
   if (section === "whatsapp") {
     if (detail) {
       const conversation = record(
-        await adminRead(`whatsapp/messages/${detail}`),
+        await adminRead(`whatsapp/messages/${detail}`, qs),
       );
       return (
         <>
           <h1>Conversation with {display(conversation.name)}</h1>
+          {conversation.messageCount !== undefined ? <p>Showing a page of {display(conversation.messageCount)} stored messages, in chronological order. The first page contains the most recent messages.</p> : null}
           <Table
             caption="Conversation history"
             data={rows(conversation.messages)}
@@ -553,6 +534,10 @@ export default async function AdminPage({
               { key: "timestamp", label: "Sent" },
             ]}
           />
+          <nav aria-label="Conversation history pages" className="admin-actions">
+            {Number(conversation.messageOffset) > 0 ? <Link href={`/admin/whatsapp/${detail}?${new URLSearchParams({ limit: String(query.limit ?? 25), offset: String(Math.max(0, Number(conversation.messageOffset) - Number(query.limit ?? 25))) })}`}>Newer messages</Link> : null}
+            {conversation.hasOlderMessages === true ? <Link href={`/admin/whatsapp/${detail}?${new URLSearchParams({ limit: String(query.limit ?? 25), offset: String(Number(conversation.messageOffset ?? 0) + Number(query.limit ?? 25)) })}`}>Older messages</Link> : null}
+          </nav>
           <AdminForm
             path="whatsapp/text"
             label="Send message"
@@ -659,9 +644,9 @@ export default async function AdminPage({
               <Command
                 path={`whatsapp/image/${display(item._id)}`}
                 method="DELETE"
-                confirm="Delete this poster and its media?"
+                confirm="Archive this poster and preserve its images?"
               >
-                Delete poster
+                Archive poster
               </Command>
             </>
           )}

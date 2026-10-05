@@ -8,10 +8,13 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  DELIVERY_UNCERTAIN: 'Delivery is uncertain. Review provider records before sending again.',
   PRICE_CHANGED: 'The quote changed. Review the updated total before ordering.',
   COMMERCE_UNAVAILABLE: 'Checkout configuration is unavailable.',
   PRODUCT_UNAVAILABLE: 'A product is unavailable.',
   INSUFFICIENT_STOCK: 'Insufficient stock.',
+  RECOVERY_IMPORT_REQUIRED: 'Use the reviewed recovery import workflow.',
+  STOCK_CHANGED: 'Stock changed. Reload the product before saving.',
   MINIMUM_ORDER: 'The minimum order amount was not met.',
   IDEMPOTENCY_CONFLICT: 'The checkout key was already used for a different request.',
   INVALID_TRANSITION: 'The order cannot move to that status.',

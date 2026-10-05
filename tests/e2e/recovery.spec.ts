@@ -1,0 +1,51 @@
+import { test, expect, login, commerceOrigin, adminOrigin } from './fixtures';
+const csv = 'product_id,name,category,barcode,price,salePrice,vat,featured,description,cloudinaryImages\nRECOVERY--0001,Reviewed care,Care,000001234567890123,12.50,0.00,true,false,Reviewed,https://res.cloudinary.com/synthetic/image/upload/v1/care.webp\n';
+for (const width of [360, 390, 768, 1280]) test(`recovery preview and commit preserves reviewed identifiers at ${width}px`, async ({ page, request }) => {
+  expect((await request.post(commerceOrigin + '/__fixture/recovery')).status()).toBe(204);
+  await page.setViewportSize({ width, height: 900 });
+  await login(page);
+  await page.goto(adminOrigin + '/admin/batch');
+  await page.getByLabel('Reviewed product file').setInputFiles({ name: 'recovery.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
+  await page.getByRole('button', { name: 'Preview products', exact: true }).click();
+  await expect(page.getByRole('cell', { name: '000001234567890123', exact: true })).toBeVisible();
+  await expect(page.getByRole('cell', { name: '12.50', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('button', { name: 'Import reviewed drafts', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('status').filter({ hasText: 'products saved' })).toContainText('1 products saved as disabled drafts with zero stock');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Product recovery', exact: true })).toBeVisible();
+  const products = await (await page.request.get(adminOrigin + '/api/admin/products')).json() as { _id: string; product_id: string; category: { _id: string } }[];
+  const recovered = products.find(value => value.product_id === 'RECOVERY--0001'); expect(recovered).toBeTruthy();
+  expect((await request.get(commerceOrigin + '/api/products/details/RECOVERY--0001')).status()).toBe(404);
+  const headers = { origin: adminOrigin, 'x-csrf-protection': '1' };
+  for (const path of [`products/publish/${recovered!._id}`, `category/disable/${recovered!.category._id}`]) {
+    expect((await page.request.put(adminOrigin + '/api/admin/' + path, { headers, data: {} })).status()).toBe(200);
+  }
+  await page.goto(adminOrigin + '/productdetails/RECOVERY--0001?utm_source=recovery');
+  await expect(page).toHaveURL(adminOrigin + '/products/reviewed-care--RECOVERY--0001?utm_source=recovery');
+  await expect(page.getByRole('heading', { name: 'Reviewed care', exact: true })).toBeVisible();
+  await expect(page.locator('.product-information .price')).toContainText('AED 0.00');
+  await expect(page.getByText('Out of stock', { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Out of stock', exact: true }).first()).toBeDisabled();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.reload(); await expect(page.getByRole('heading', { name: 'Reviewed care', exact: true })).toBeVisible();
+  expect((await (await request.get(commerceOrigin + '/api/store/status')).json()).status).toBe('closed');
+});
+test('row errors block commit and interrupted response retries the saved review without a new import', async ({ page, request }) => {
+  expect((await request.post(commerceOrigin + '/__fixture/recovery')).status()).toBe(204);
+  await login(page); await page.goto(adminOrigin + '/admin/batch');
+  await page.getByLabel('Reviewed product file').setInputFiles({ name: 'bad.csv', mimeType: 'text/csv', buffer: Buffer.from(csv.replace('12.50', '12.501')) });
+  await page.getByRole('button', { name: 'Preview products', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Import errors' })).toContainText('Row 1');
+  await expect(page.getByRole('button', { name: 'Import reviewed drafts' })).toHaveCount(0);
+  await page.getByLabel('Reviewed product file').setInputFiles({ name: 'good.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
+  await page.getByRole('button', { name: 'Preview products', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Import reviewed drafts' })).toBeEnabled();
+  await page.route('**/api/admin/recovery/commit', async route => { await route.fetch(); await route.abort('failed'); }, { times: 1 });
+  await page.getByRole('button', { name: 'Import reviewed drafts' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Retry the same review' })).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Retry interrupted import' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'already saved' })).toContainText('already saved');
+});

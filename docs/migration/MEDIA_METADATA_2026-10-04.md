@@ -1,0 +1,13 @@
+# Media metadata and publication ownership
+
+Category/banner/poster creation and product/category visibility toggles now delegate to maintained TypeScript modules. Existing URLs, identifiers, response messages, decoded upload boundaries and server admin/CSRF authorization remain. Category replacement validates its metadata before provider work and still records surviving references through the existing maintained retention transaction. The old category editor's filename echo is recognized and ignored; only a decoded server upload can replace the asset reference.
+
+Category names and RGB colors are bounded. New banner destinations allow relative site paths or credential-free HTTPS, rejecting executable schemes, protocol-relative links and backslashes/control characters. Existing stored URLs are not rewritten. Poster name/link compatibility input remains ignored as before. Creation and initial media-reference history commit together with the server-authenticated actor. Product/category toggles serialize in transactions and append actor/before/after audit entries. Archived entities cannot be enabled. Product publication checks decimal money and sale rules without changing stock.
+
+Category uploads previously named original raster bytes as WebP; they now decode/rotate/resize and encode actual WebP before upload. Posters now encode actual JPEG rather than labeling arbitrary original bytes JPEG. Their opaque filename URL contract and Drive delivery remain. New poster realtime events are emitted only after persistence succeeds. Existing images and legacy fallback fields are retained.
+
+## Evidence and remaining gates
+
+60 unit, 99 API/security/upload and 30 mandatory real disposable-MongoDB/load tests passed; lint/typecheck, foundation build and all 26 Chromium regressions passed. Tests cover unsafe destination/color/asset input, editor echoes, creation reference history, concurrent visibility toggles, corrupt money, archive behavior and retained-driver category creation. No lockfile/dependency change was made; the parent branch and its hosted audit jobs passed all three lockfiles.
+
+Drive operations remain compatibility adapters pending maintained provider deadlines/reconciliation and actual account/rendering acceptance. A provider upload followed by database failure may leave a retained unreferenced image; never delete automatically. Legacy create/toggle calls have no retry-key contract: reconcile current admin state after an uncertain response before repeating. Recovery, inventory, signed product replacements and checkout retain their explicit retry receipts. No existing data, URL, historical image or fallback frontend was removed, and no production deployment occurred.

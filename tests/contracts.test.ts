@@ -11,11 +11,12 @@ test('pagination is bounded and unknown/raw database predicates are rejected', (
   }
 });
 
-test('business IDs cannot be confused with MongoDB IDs', () => {
+test('reviewed business IDs are bounded and their namespace is selected by the route', () => {
   assert.equal(productBusinessIdSchema.safeParse('PD123').success, true);
   assert.equal(mongoIdSchema.safeParse('0123456789abcdef01234567').success, true);
   assert.equal(mongoIdSchema.safeParse('PD123').success, false);
-  assert.equal(productBusinessIdSchema.safeParse('0123456789abcdef01234567').success, false);
+  for (const id of ['RECOVERY--0001', '0000123', '0123456789abcdef01234567', 'x'.repeat(80)]) assert.equal(productBusinessIdSchema.safeParse(id).success, true);
+  for (const id of ['', 'x'.repeat(81), '$where', '../PD1', 'with space', 'with%2fslash']) assert.equal(productBusinessIdSchema.safeParse(id).success, false);
 });
 
 test('response envelopes forbid extra data and require a request ID', () => {

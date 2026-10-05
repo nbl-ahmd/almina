@@ -8,7 +8,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ kin
   try {
     const env = getWebEnvironment();
     if (env.APP_ENV !== 'production') return xmlResponse('urlset', []);
-    const paths = kind === 'static' ? ['/', '/products', '/categories', '/offers']
+    const paths = kind === 'static' ? ['/', '/products', '/categories', '/offers', '/about', '/contact']
       : (await sitemapPage(kind as 'products' | 'categories', page === 'first.xml' ? undefined : page.slice(0, -4))).paths;
     return xmlResponse('urlset', paths.map(path => new URL(path, env.WEB_ORIGIN).href));
   } catch { return unavailableSitemap(); }

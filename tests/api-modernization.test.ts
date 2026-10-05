@@ -121,8 +121,8 @@ test('cursor validates format, version and filter/identity scope; pagination nev
 
 test('public catalog enforces visibility and uses indexed text predicates; no request-derived Mongo filters', () => {
   assert.deepEqual(productFilter(catalogQuerySchema.parse({ q: 'vitamin c', sale: 'true', categoryId: categoryId.toHexString() }), false),
-    { disabled: { $ne: true }, category: categoryId, sale: true, $text: { $search: 'vitamin c', $language: 'none' } });
-  assert.deepEqual(productFilter(adminProductQuerySchema.parse({ disabled: 'true' }), true), { disabled: true });
+    { archivedAt: { $exists: false }, disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false }, category: categoryId, sale: true, $text: { $search: 'vitamin c', $language: 'none' } });
+  assert.deepEqual(productFilter(adminProductQuerySchema.parse({ disabled: 'true' }), true), { archivedAt: { $exists: false }, disabled: true });
 });
 
 test('catalog join excludes hidden/missing categories before limit, projects fields and bounds execution', async () => {
@@ -204,7 +204,7 @@ test('deleted/disabled users cannot continue using an existing session', async (
 
 test('HTTP negative tests reject unauthorized admin routes before database access or PII disclosure', async () => {
   await httpFixture(async origin => {
-    for (const route of ['/admin/orders', `/admin/orders/${uid}`, '/admin/users', '/admin/products', '/auth/me', '/auth/logout']) {
+    for (const route of ['/admin/operations', '/admin/orders', `/admin/orders/${uid}`, '/admin/users', '/admin/products', '/auth/me', '/auth/logout']) {
       const response = await fetch(`${origin}/api/v1${route}`, route === '/auth/logout' ? { method: 'POST' } : {});
       assert.equal(response.status, 401);
       assert.equal(response.headers.get('www-authenticate'), null); apiErrorSchema.parse(await response.json());
@@ -224,7 +224,7 @@ test('HTTP staff cannot read admin users/products; order lists are scoped and sc
     assert.equal(loginResponse.status, 200);
     const { data: login } = await loginResponse.json();
     const headers = { Cookie: loginResponse.headers.get('set-cookie')!.split(';')[0]! };
-    for (const route of ['/admin/products', '/admin/users']) assert.equal((await fetch(`${origin}/api/v1${route}`, { headers })).status, 403);
+    for (const route of ['/admin/operations', '/admin/products', '/admin/users']) assert.equal((await fetch(`${origin}/api/v1${route}`, { headers })).status, 403);
     const response = await fetch(`${origin}/api/v1/admin/orders`, { headers });
     assert.equal(response.status, 200); const body = await response.json();
     assert.equal(body.data.items.length, 1); assert.ok(!JSON.stringify(body).includes('fake-sensitive-marker'));

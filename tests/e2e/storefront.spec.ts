@@ -1,4 +1,40 @@
 import { test, expect } from './fixtures';
+test('Next category preserves legacy IDs and provides keyboard pagination with reload and empty search', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto('/categories/aaaaaaaaaaaaaaaaaaaaaaaa?utm_source=shared');
+  await expect(page).toHaveURL('/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa?utm_source=shared');
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 28', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Next page', exact: true }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Next page', exact: true })).toHaveCount(0);
+  await page.reload(); await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Previous page', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await page.goto('/search?q=No-synthetic-match'); await expect(page.getByRole('heading', { name: 'No products found.', exact: true })).toBeVisible();
+  await page.goto('/search?q=' + 'A'.repeat(100));
+  const filter = page.getByRole('search', { name: 'Filter products' });
+  await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveAttribute('maxlength', '80');
+  await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('A'.repeat(80));
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await filter.getByRole('link', { name: 'Clear filters' }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test.describe('intentional server outage', () => {
+  test.use({ expectedReactBoundaryFailure: true });
+test('Next catalog outage renders its error boundary and keyboard retry recovers without empty success', async ({ page, request }) => {
+  const fixture = 'http://127.0.0.1:4711';
+  expect((await request.get(fixture + '/__fixture/failure')).status()).toBe(200);
+  try {
+    await page.goto('/products?page=2');
+    await expect(page.getByRole('heading', { name: 'Unable to load this page', exact: true })).toBeVisible();
+  } finally { expect((await request.get(fixture + '/__fixture/failure')).status()).toBe(200); }
+  await page.getByRole('button', { name: 'Try again', exact: true }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
+});
+});
 
 for (const [path, content] of [['/', 'Featured products'], ['/search?q=Daily', 'Daily Care'],
   ['/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', 'Daily Care'], ['/products/daily-care--PD0001', 'Daily care product description.']]) {

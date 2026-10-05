@@ -2,6 +2,8 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { adminRequest } from "./controls";
+import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';
+import { adminFormClass } from '../../lib/admin/styles';
 export type Field = {
   name: string;
   label: string;
@@ -44,6 +46,7 @@ export function AdminForm({
     // Empty optional file parts must not masquerade as selected uploads.
     for (const [name, value] of data)
       if (value instanceof File && !value.size) data.delete(name);
+    if (data.get("salePrice") === "") data.delete("salePrice");
     const json: Record<string, unknown> = Object.fromEntries(data);
     if ("billamount" in json) json.billamount = Number(json.billamount);
     if ("cities" in json)
@@ -52,22 +55,24 @@ export function AdminForm({
         .map((city) => city.trim())
         .filter(Boolean);
     try {
-      const result = await adminRequest(path, method, multipart ? data : json);
+      const isWhatsapp = ['whatsapp/text', 'whatsapp/s'].includes(path);
+      const key = isWhatsapp ? await whatsappRetryKey(path, json) : undefined;
+      const result = await adminRequest(path, method, multipart ? data : json, key);
       setMessage(
         result && typeof result === "object" && "count" in result
           ? `Saved ${String(result.count)} products.`
-          : "Saved successfully.",
+          : isWhatsapp ? 'Accepted by provider. Delivery requires a delivery report.' : "Saved successfully.",
       );
       if (method === "POST") form.reset();
       router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Request failed.");
+      setError(['whatsapp/text', 'whatsapp/s'].includes(path) ? 'Send failed or uncertain. Review delivery reports; identical input in this tab reuses the recovery receipt.' : error instanceof Error ? error.message : "Request failed.");
     } finally {
       setPending(false);
     }
   }
   return (
-    <form className="admin-form" onSubmit={submit} aria-busy={pending}>
+    <form className={adminFormClass} onSubmit={submit} aria-busy={pending}>
       {fields.map((field) => {
         const id = `${path.replace(/[^a-z0-9]/gi, "-")}-${field.name}`;
         const props = {
@@ -260,11 +265,12 @@ export function BulkTemplates({
     setResults([]);
     for (const recipient of selected) {
       try {
-        await adminRequest("whatsapp/s", "POST", {
+        const payload = {
           recipient,
           template: data.get("template"),
           link: data.get("link"),
-        });
+        };
+        await adminRequest("whatsapp/s", "POST", payload, await whatsappRetryKey('whatsapp/s', payload));
         setResults((previous) => [
           ...previous,
           `${recipient}: accepted by provider`,
@@ -328,8 +334,9 @@ export function BulkTemplates({
         </p>
       ) : null}
       <p>
-        Select recipients on this page. Each send uses the existing template
-        API.
+        Select recipients on this page. Identical sends in this tab reuse their
+        recovery receipt, including after reload. Review delivery reports before
+        starting another campaign or closing this tab after an uncertain send.
       </p>
       <fieldset disabled={pending}>
         <legend>Recipients</legend>
@@ -357,7 +364,7 @@ export function BulkTemplates({
           );
         })}
       </fieldset>
-      <div className="admin-form">
+      <div className={adminFormClass}>
         <label htmlFor="bulk-template">
           Template name
           <input id="bulk-template" name="template" required />

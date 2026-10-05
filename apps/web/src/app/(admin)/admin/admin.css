@@ -1,9 +1,9 @@
 .admin-app {
-  --admin-ink: #182c35;
-  --admin-border: #ccd8db;
-  --admin-accent: #075e55;
+  --admin-ink: var(--color-ink);
+  --admin-border: var(--color-border);
+  --admin-accent: var(--color-brand);
   color: var(--admin-ink);
-  background: #f4f7f7;
+  background: var(--color-page);
   min-height: 100dvh;
   font-size: 1rem;
 }
@@ -16,7 +16,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: white;
+  background: var(--color-surface);
   border-bottom: 1px solid var(--admin-border);
 }
 .admin-header > a {
@@ -32,7 +32,7 @@
   flex-direction: column;
   gap: 0.25rem;
   padding: 1rem;
-  background: #e7efee;
+  background: var(--color-subtle);
 }
 .admin-shell > nav a {
   padding: 0.65rem;
@@ -40,7 +40,7 @@
   min-height: 44px;
 }
 .admin-shell > nav a:hover {
-  background: white;
+  background: var(--color-surface);
 }
 .admin-shell > main {
   min-width: 0;
@@ -56,7 +56,7 @@
 }
 .admin-panel,
 .admin-login {
-  background: white;
+  background: var(--color-surface);
   border: 1px solid var(--admin-border);
   border-radius: 10px;
   padding: 1.5rem;
@@ -66,26 +66,14 @@
   max-width: 480px;
   margin: 3rem auto;
 }
-.admin-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
-}
-.admin-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  font-weight: 600;
-}
 .admin-app input,
 .admin-app select,
 .admin-app textarea {
   width: 100%;
   font: inherit;
-  background: white;
+  background: var(--color-surface);
   color: var(--admin-ink);
-  border: 1px solid #70888f;
+  border: 1px solid var(--color-muted);
   border-radius: 5px;
   padding: 0.6rem;
   min-height: 44px;
@@ -98,7 +86,7 @@
   padding: 0.6rem 1rem;
   min-height: 44px;
   background: var(--admin-accent);
-  color: white;
+  color: var(--color-surface);
   border: 1px solid var(--admin-accent);
   border-radius: 5px;
   cursor: pointer;
@@ -108,7 +96,7 @@
   cursor: wait;
 }
 .admin-app :focus-visible {
-  outline: 3px solid #a15c00;
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .admin-actions {
@@ -121,7 +109,7 @@
   overflow-x: auto;
   border: 1px solid var(--admin-border);
   border-radius: 8px;
-  background: white;
+  background: var(--color-surface);
   margin: 1rem 0;
 }
 .admin-app table {
@@ -142,7 +130,7 @@
   min-width: 100px;
 }
 .admin-app th {
-  background: #e7efee;
+  background: var(--color-subtle);
 }
 .admin-app dl {
   display: grid;
@@ -155,7 +143,7 @@
 }
 .admin-status {
   padding: 0.75rem;
-  background: #e7efee;
+  background: var(--color-subtle);
   border-radius: 6px;
 }
 .admin-skip {
@@ -164,7 +152,7 @@
 }
 .admin-skip:focus {
   top: 8px;
-  background: white;
+  background: var(--color-surface);
   padding: 1rem;
   z-index: 100;
 }

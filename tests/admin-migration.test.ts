@@ -10,11 +10,9 @@ import {
 } from "../apps/web/src/lib/admin/policy";
 import { legacyAdminDestination } from "../apps/web/src/lib/admin/redirects";
 const require = createRequire(import.meta.url);
-const {
-  productInput,
-  messageInput,
-} = require("../backend/security/admin-input.cjs");
-const { adminPagination } = require("../backend/security/admin-pagination.cjs");
+import { catalogCreationInput } from '../apps/api/src/modules/catalog/creation';
+import { whatsappOutboundInput } from '../apps/api/src/modules/notifications/whatsapp-outbound';
+import { retainedOrderQuery } from '../apps/api/src/modules/orders/compatibility-reads';
 const { lookupPolicy } = require("../backend/security/policy.cjs");
 test("admin gateway is default deny and distinguishes staff from administrators", () => {
   for (const path of [
@@ -24,7 +22,7 @@ test("admin gateway is default deny and distinguishes staff from administrators"
     "auth/me",
   ])
     assert.equal(accessPolicy("GET", path), "staff");
-  for (const path of ["category", "banners", "auth/users", "whatsapp/reports"])
+  for (const path of ["operations", "category", "banners", "auth/users", "whatsapp/reports"])
     assert.equal(accessPolicy("GET", path), "admin");
   for (const path of [
     "../auth/me",
@@ -78,12 +76,13 @@ test("admin queries rebuild explicit catalog filters and bounded pagination", ()
     ).get("status"),
     "cancelled",
   );
-  assert.deepEqual(adminPagination({ limit: "25", offset: "50" }), {
+  assert.deepEqual(retainedOrderQuery({ limit: "25", offset: "50" }), {
     limit: 25,
     offset: 50,
+    status: undefined,
   });
   for (const limit of ["-1", "0", "101", "NaN", ["25", "50"]])
-    assert.throws(() => adminPagination({ limit }));
+    assert.throws(() => retainedOrderQuery({ limit }));
 });
 test("recursive admin projection removes credentials, subscriptions and provider internals", () => {
   assert.deepEqual(
@@ -122,47 +121,20 @@ test("legacy admin URLs map to explicit reversible destinations", () => {
 });
 test("API independently protects new WhatsApp reports and validates administrative money/stock/message input", () => {
   assert.equal(lookupPolicy("GET", "/api/whatsapp/reports").policy, "admin");
-  productInput(
-    {
-      name: "Synthetic",
-      price: "12.50",
-      stock: "0",
-      barcode: "123",
-      category: "a".repeat(24),
-    },
-    true,
-  );
-  for (const stock of ["-1", "1.2", "Infinity", {}, [], null, true, ""])
-    assert.throws(() => productInput({ stock }));
-  for (const price of ["-1", "NaN", "Infinity", "10.001", "1e3", {}])
-    assert.throws(() => productInput({ price }));
-  messageInput({
-    recipient: "971501234567",
-    name: "Synthetic",
-    text: "Synthetic test",
-  });
-  messageInput(
-    {
-      recipient: "971501234567",
-      template: "approved_template",
-      link: "https://example.invalid/image.jpg",
-    },
-    true,
-  );
-  for (const recipient of [{ $ne: "" }, "abc", "1".repeat(21)])
-    assert.throws(() =>
-      messageInput({ recipient, name: "Synthetic", text: "test" }),
-    );
-  assert.throws(() =>
-    messageInput(
-      {
-        recipient: "123",
-        template: "approved_template",
-        link: "javascript:alert(1)",
-      },
-      true,
-    ),
-  );
+  const product = { name: 'Synthetic', price: '12.50', stock: '0', barcode: '00123', category: 'a'.repeat(24) };
+  assert.equal(catalogCreationInput(product).barcode, '00123');
+  for (const stock of ['-1', '1.2', 'Infinity', {}, [], null, true, ''])
+    assert.throws(() => catalogCreationInput({ ...product, stock }));
+  for (const price of ['-1', 'NaN', 'Infinity', '10.001', '1e3', {}])
+    assert.throws(() => catalogCreationInput({ ...product, price }));
+  assert.throws(() => catalogCreationInput({ ...product, sale: true, salePrice: '12.51' }));
+  assert.throws(() => catalogCreationInput({ ...product, actor: 'forged' }));
+  whatsappOutboundInput({ recipient: '971501234567', name: 'Synthetic', text: 'Synthetic test' }, 'text');
+  whatsappOutboundInput({ recipient: '971501234567', template: 'approved_template', link: 'https://example.invalid/image.jpg' }, 'template');
+  for (const recipient of [{ $ne: '' }, 'abc', '1'.repeat(21)])
+    assert.throws(() => whatsappOutboundInput({ recipient, name: 'Synthetic', text: 'test' }, 'text'));
+  assert.throws(() => whatsappOutboundInput({ recipient: '123', template: 'approved_template', link: 'javascript:alert(1)' }, 'template'));
+
 });
 test("multi-instance realtime bus reauthorizes each local recipient before delivery", async () => {
   const { secureRealtime } = require("../backend/security/realtime.cjs");
@@ -207,49 +179,29 @@ test("multi-instance realtime bus reauthorizes each local recipient before deliv
   assert.equal(listeners.size, 0);
 });
 
-test("category deletion returns success without local media instead of failing after database deletion", async () => {
+test("category archive retains records and references without invoking destructive providers", async () => {
   const { createServer } = await import("node:http");
+  const { ObjectId } = await import("mongodb");
   const { createLegacyApp } = require("../backend/app.js");
-  const Category = require("../backend/models/Category");
-  const previousFind = Category.findById;
-  const previousDelete = Category.findByIdAndRemove;
-  let deleted = 0;
-  Category.findById = async () => ({ _id: "e".repeat(24) });
-  Category.findByIdAndRemove = async () => {
-    deleted++;
-  };
-  const app = createLegacyApp({
-    development: true,
-    origins: ["http://localhost:3000"],
-    auth: {
-      authenticate: async () => ({
-        id: "a".repeat(24),
-        role: "admin",
-        cities: [],
-      }),
-    },
-    routers: { category: require("../backend/routes/categories") },
-  });
-  const server = createServer(app);
-  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const document: Record<string, unknown> = { _id: new ObjectId("e".repeat(24)), image: "synthetic.webp", gdriveFileId: "synthetic-drive-id" };
+  let histories = 0;
+  const db = { client: { startSession: () => ({ withTransaction: async (run: () => Promise<void>) => run(), endSession: async () => {} }) },
+    collection: (name: string) => name === 'categories' ? {
+      findOne: async () => document,
+      updateOne: async (_filter: unknown, update: { $set: Record<string, unknown> }) => { Object.assign(document, update.$set); },
+    } : { insertOne: async () => { histories++; } } };
+  const app = createLegacyApp({ development: true, origins: ["http://localhost:3000"], getCommerceDb: () => db,
+    auth: { authenticate: async () => ({ id: "a".repeat(24), role: "admin", cities: [] }) },
+    routers: { category: require("../backend/routes/categories") } });
+  const server = createServer(app); await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   try {
-    const address = server.address();
-    assert.ok(address && typeof address !== "string");
-    const result = await fetch(
-      `http://127.0.0.1:${address.port}/api/category/${"e".repeat(24)}`,
-      {
-        method: "DELETE",
-        headers: { Origin: "http://localhost:3000", "X-CSRF-Protection": "1" },
-      },
-    );
-    assert.equal(result.status, 200);
-    assert.equal((await result.json()).success, true);
-    assert.equal(deleted, 1);
-  } finally {
-    Category.findById = previousFind;
-    Category.findByIdAndRemove = previousDelete;
-    await new Promise<void>((resolve) => server.close(() => resolve()));
-  }
+    const address = server.address(); assert.ok(address && typeof address !== "string");
+    const result = await fetch(`http://127.0.0.1:${address.port}/api/category/${"e".repeat(24)}`, {
+      method: "DELETE", headers: { Origin: "http://localhost:3000", "X-CSRF-Protection": "1" } });
+    assert.equal(result.status, 200); assert.equal((await result.json()).success, true);
+    assert.ok(document.archivedAt); assert.equal(document.disabled, true); assert.equal(histories, 1);
+    assert.equal(document.gdriveFileId, 'synthetic-drive-id'); assert.equal(document.image, 'synthetic.webp');
+  } finally { await new Promise<void>(resolve => server.close(() => resolve())); }
 });
 
 test("order stream sends only invalidations, reconciles first connection and closes on revocation", async () => {

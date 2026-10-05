@@ -1,195 +1,19 @@
-const { catalogFilter, escapeSearch } = require('../security/catalog-query.cjs');
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const cors = require('cors');
+const { randomUUID } = require('node:crypto');
 const sharp = require('sharp');
-const ExifImage = require('exif').ExifImage;
-const Product = require('../models/Product');
-const Category = require('../models/Category');
 const productRouter = express.Router();
-const uploadDir = path.join(__dirname, '..', 'public/products');
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
-const fs = require('fs');
 
-//google
-const { Readable } = require('stream');
-const { google } = require('googleapis');
-// Load the JSON key file
-const keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-// Create a new instance of the drive API
-const auth = new google.auth.GoogleAuth({
-  keyFile,
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-
-const drive = google.drive({ version: 'v3', auth });
-
-// Replace 'FOLDER_ID' with the ID of your target folder in Google Drive
+const { driveMedia } = require('../integrations/drive.cjs');
 const FOLDER_ID = '1I8HpwJ_iaOx_r7ZsOOETYcQbpMFpLUH6';
 
-// Function to generate a unique product ID
-async function generateProductID() {
-  try {
-    const existingProducts = await Product.find();
-    let maxID = 0;
-    for (const product of existingProducts) {
-      const productID = parseInt(product.product_id.substring(2));
-      if (productID > maxID) {
-        maxID = productID;
-      }
-    }
-    return `PD${String(maxID + 1).padStart(4, '0')}`;
-  } catch (error) {
-
-    throw error;
-  }
-}
-
-
-// productRouter.post('/', upload.single('image'), async (req, res) => {
-//   const category = await Category.findById(req.body.category);
-//   const {
-//     name,
-//     price,
-//     stock,
-//     barcode,
-//     description
-//   } = req.body;
-//   const vat = req.body.vat == 'true';
-//   const sale = req.body.sale == 'true';
-//   const featured = req.body.featured == 'true';
-//   const image = req.file;
-//   const product_id = await generateProductID();
-//   let orientation = 1;
-//   if (image) {
-//     try {
-//       const exifData = await sharp(image.buffer).metadata();
-//       orientation = exifData.orientation || 1;
-//     } catch (error) {
-//
-//     }
-
-//     // crop the image into a square
-//     const croppedImage = await sharp(image.buffer)
-//       .resize({ width: 500, height: 500, fit: 'cover' })
-//       .rotate()
-//       .webp()
-//       .toBuffer();
-
-//     // generate a new filename for the resized image
-//     const Filename = uuidv4() + '.webp';
-
-//     const product = new Product({
-//       product_id,
-//       name,
-//       image: Filename,
-//       category,
-//       featured,
-//       price,
-//       vat,
-//       stock,
-//       sale,
-//       barcode,
-//       description
-//     }); // save the resized filename to the database
-
-//     try {
-//       const fileMetadata = {
-//         name: Filename,
-//         parents: [FOLDER_ID], // Set the parent folder ID
-//       };
-
-//       const media = {
-//         mimeType: 'image/webp',
-//         body: Readable.from(croppedImage),
-//       };
-
-//       const response = await drive.files.create({
-//         resource: fileMetadata,
-//         media: media,
-//         fields: 'id',
-//       });
-
-//       product.gdriveFileId = response.data.id; // Save the Google Drive file ID to the product document
-
-//       // Save the product document to the database
-//       await product.save();
-
-//       res.status(201).json({ message: 'product created successfully' });
-//     } catch (error) {
-//
-//       res.status(500).json({ error: 'Internal server error' });
-//     }
-//   } else {
-//     const product = new Product({
-//       product_id,
-//       name,
-//       category,
-//       featured,
-//       price,
-//       vat,
-//       stock,
-//       sale,
-//       barcode,
-//       description
-//     });
-
-//     try {
-//       // Save the product document to the database without an image
-//       await product.save();
-
-//       res.status(201).json({ message: 'product created successfully' });
-//     } catch (error) {
-//
-//       res.status(500).json({ error: 'Internal server error' });
-//     }
-//   }
-// });
-
-
-// productRouter.get('/', (req, res) => {
-//     Product.find().populate('category')
-//         .then(products => {
-//             res.status(200).json(products);
-//         })
-//         .catch(error => {
-//
-//             res.status(500).json({ error: 'Internal server error' });
-//         });
-// });
-
-// productRouter.get('/', (req, res) => {
-//   const filter = catalogFilter(req.query.filter); // Parse the filter JSON string if provided
-//   const limit = Number(req.query.limit) || 10; // Default limit is 10 if not provided
-//   const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-
-//   Product.find(filter)
-//     .skip(offset)
-//     .limit(limit)
-//     .populate('category')
-//     .then(products => {
-//       res.status(200).json(products);
-//     })
-//     .catch(error => {
-//
-//       res.status(500).json({ error: 'Internal server error' });
-//     });
-// });
-
-
-
 productRouter.post('/', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  require('../security/admin-input.cjs').productInput(req.body, true);
-  const category = await Category.findById(req.body.category);
-  const { name, price, stock, barcode, description } = req.body;
-  const vat = req.body.vat === 'true';
-  const sale = req.body.sale === 'true';
-  const featured = req.body.featured === 'true';
-  const product_id = await generateProductID();
+  const domain = require('../commerce/dist/service.cjs');
+  domain.catalogCreationInput(req.body);
+  const db = await catalogDb(req);
+  await domain.catalogUploadTarget(db, 'categories', req.body.category, true);
   const files = req.files;
 
   let imageUrls = [];
@@ -206,28 +30,14 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
                   .toBuffer();
 
               // Generate a filename
-              const filename = uuidv4() + '.webp';
+              const filename = randomUUID() + '.webp';
 
               // Save to Google Drive
-              const fileMetadata = {
-                  name: filename,
-                  parents: [FOLDER_ID],
-              };
-              const media = {
-                  mimeType: 'image/webp',
-                  body: Readable.from(croppedImage),
-              };
-              const response = await drive.files.create({
-                  resource: fileMetadata,
-                  media: media,
-                  fields: 'id',
-              });
-
-
+              const asset = await driveMedia(req).upload(croppedImage, filename, FOLDER_ID);
 
               // Store URLs and Google Drive IDs
               imageUrls.push(filename);
-              gdriveFileIds.push(response.data.id);
+              gdriveFileIds.push(asset.fileId);
           } catch (error) {
 
               return res.status(500).json({ error: 'Failed to upload images' });
@@ -235,358 +45,61 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
       }
   }
 
-  const product = new Product({
-      product_id,
-      name,
-      images: imageUrls, // Save array of image URLs
-      gdriveFileIds, // Save array of Google Drive file IDs
-      category,
-      featured,
-      price,
-      vat,
-      stock,
-      sale,
-      barcode,
-      description,
-  });
-
-  try {
-      await product.save();
-      res.status(201).json({ message: 'Product created successfully', product });
-  } catch (error) {
-
-      res.status(500).json({ error: 'Internal server error' });
-  }
+  const product = await domain.createCatalogProduct(db, req.body, req.identity.id, { images: imageUrls, gdriveFileIds });
+  res.status(201).json({ message: 'Product created successfully', product });
 });
-
-
 
 productRouter.get('/images/:filename', async (req, res) => {
-  const { filename } = req.params;
-
-  try {
-    // Retrieve the product by filename
-    const product = await Product.findOne({
-      $or: [{ image: filename }, { images: filename }],
-    });
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product or image not found' });
-    }
-
-    if (product.gdriveFileId) {
-      // For old products with a single gdriveFileId
-      const response = await drive.files.get(
-        { fileId: product.gdriveFileId, alt: 'media' },
-        { responseType: 'stream' }
-      );
-
-      // Set the appropriate Content-Type header for the image
-      res.set('Content-Type', 'image/webp');
-
-      // Pipe the image stream from Google Drive to the response stream
-      response.data.pipe(res);
-    } else if (product.gdriveFileIds) {
-      // For new products with multiple gdriveFileIds
-
-
-      // Find the index of the requested filename in the `images` array
-      const imageIndex = product.images.indexOf(filename);
-      if (imageIndex === -1 || !product.gdriveFileIds[imageIndex]) {
-        return res.status(404).json({ error: 'Image not found in product' });
-      }
-
-      const gdriveFileId = product.gdriveFileIds[imageIndex];
-      const response = await drive.files.get(
-        { fileId: gdriveFileId, alt: 'media' },
-        { responseType: 'stream' }
-      );
-
-      // Set the appropriate Content-Type header for the image
-      res.set('Content-Type', 'image/webp');
-
-      // Pipe the image stream from Google Drive to the response stream
-      response.data.pipe(res);
-    } else {
-      return res.status(404).json({ error: 'No valid Google Drive file ID found' });
-    }
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  const fileId = await catalogDomain().retainedCatalogAsset(await catalogDb(req), 'products', req.params.filename, req.query);
+  const asset = await driveMedia(req).read(fileId);
+  res.type(asset.contentType).send(asset.bytes);
 });
 
-
-// productRouter.get('/images/:filename', async(req, res) => {
-//   const { filename } = req.params;
-
-
-//   try {
-//     // Retrieve the product by filename from the database
-//     const product = await Product.findOne({ image: filename });
-//     if (!product) {
-//       return res.status(404).json({ error: 'product not found' });
-//     }
-
-//
-
-
-
-//     // Retrieve the image file from Google Drive
-//     const response = await drive.files.get(
-//       { fileId: product.gdriveFileId, alt: 'media' },
-//       { responseType: 'stream' }
-//     );
-
-//     // Set the appropriate Content-Type header for the image
-//     res.set('Content-Type', 'image/webp');
-
-//     // Pipe the image stream from Google Drive to the response stream
-//     response.data.pipe(res);
-//   } catch (error) {
-//
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
-
-
-
+const catalogDomain = () => require('../commerce/dist/service.cjs');
+const catalogDb = req => req.app.locals.getCommerceDb();
+const staffRead = req => ['admin', 'user'].includes(req.identity?.role);
 productRouter.get('/', async (req, res) => {
-  const filter = catalogFilter(req.query.filter); // Parse the filter JSON string if provided
-  const limit = Number(req.query.limit); // Remove default limit
-  const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-  const disabledCategory = (req.query.disabledCat);
-  try {
-    let products;
-
- if (limit) {
-      // Fetch products with pagination
-
-      let sortQuery = {}; // Define an empty object to store the sorting query
-
-      if (filter.sale === true) {
-        // If sale is true, sort by createdAt in descending order
-        sortQuery = { createdAt: -1, _id: 1 };
-      } else {
-        // Otherwise, sort by stock in descending order
-        sortQuery = { stock: -1, _id: 1 };
-      }
-
-      products = await Product.find(filter)
-      .sort(sortQuery)
-        .skip(offset)
-        .limit(limit)
-        .populate('category');
-    } else {
-      // Fetch all products without pagination
-      products = await Product.find(filter).populate('category');
-    }
-
-
-    if(disabledCategory === 'false'){
-      // Filter products where category.disabled is false
-const filteredProducts = products.filter((product) => {
-  // If a product has a category and category.disabled is false, include it
-  if (product.category && product.category.disabled === false) {
-    return true;
-  }
-  return false;
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery(req.query, 'products');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
-res.status(200).json(filteredProducts);
-
-    }
-    else if(disabledCategory === 'true'){
-      // Filter products where category.disabled is false
-const filteredProducts = products.filter((product) => {
-  // If a product has a category and category.disabled is false, include it
-  if (product.category && product.category.disabled === true) {
-    return true;
-  }
-  return false;
-});
-res.status(200).json(filteredProducts);
-
-    }
-    else{
-
-      res.status(200).json(products);
-    }
-
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 productRouter.get('/search', async (req, res) => {
-  const filter = Object.entries(catalogFilter(req.query.filter, true)).map(([key, value]) => ({ [key]: value })); // Parse the filter JSON string if provided
-  const searchQuery = escapeSearch(req.query.q);
-  const limit = Number(req.query.limit); // Remove default limit
-  const offset = Number(req.query.offset) || 0; // Default offset is 0 if not provided
-  const disabledCategory = (req.query.disabledCat);
-
-  try {
-    // Perform the search query against the name and description fields
-
-    let searchResults;
-    if (limit) {
-      const searchQueryConditions = {
-        $or: [
-          { name: { $regex: searchQuery, $options: 'i' } },
-          { description: { $regex: searchQuery, $options: 'i' } },
-        ],
-      };
-      const combinedConditions = {
-        $and: [searchQueryConditions, ...filter],
-      };
-
-
-
-     searchResults = await Product.find(combinedConditions)
-    .skip(offset)
-        .limit(limit)
-        .populate('category');
-  }
-  else{
-     searchResults = await Product.find({
-      $or: [
-        { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the name field
-        { description: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search on the description field
-      ],
-    }).populate('category');
-
-  }
-
-
-   if(disabledCategory === 'false'){
-      // Filter products where category.disabled is false
-const filteredProducts = searchResults.filter((searchResults) => {
-  // If a product has a category and category.disabled is false, include it
-  if (searchResults.category && searchResults.category.disabled === false) {
-    return true;
-  }
-  return false;
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery(req.query, 'search');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
-res.status(200).json(filteredProducts);
-
-    }
-    else if(disabledCategory === 'true'){
-      // Filter products where category.disabled is false
-const filteredSearchResults = searchResults.filter((searchResults) => {
-  // If a product has a category and category.disabled is false, include it
-  if (searchResults.category && searchResults.category.disabled === true) {
-    return true;
-  }
-  return false;
+productRouter.get('/:id', async (req, res) => {
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { id: req.params.id }, staffRead(req)));
 });
-res.status(200).json(filteredSearchResults);
-
-    }
-    else{
-
-      res.status(200).json(searchResults);
-    }
-
-
-  } catch (error) {
-
-    res.status(500).json({ error: 'An error occurred while searching for products' });
-  }
-});
-
-
-
-productRouter.get('/:id', async(req,res)=>{
-    const product = await Product.findById(req.params.id);
-
-    if(!product){
-        res.status(500).json({message: 'The product with the given ID was not found.'})
-    }
-    res.status(200).send(product);
-})
-
 productRouter.get('/category/:categoryId', async (req, res) => {
-  const { categoryId } = req.params;
-
-  try {
-    const products = await Product.find({ 'category': categoryId }).populate('category');
-    res.json(products);
-
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  if (req.query.filter !== undefined) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  const domain = catalogDomain();
+  const query = domain.retainedCatalogQuery({ ...req.query, filter: JSON.stringify({ category: req.params.categoryId }) }, 'products');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
 
 productRouter.delete('/:id', async (req, res) => {
-  const productId = req.params.id;
-
-  try {
-    // Find the product by ID
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'product not found!' });
-    }
-
-    // Delete the product from the database
-    await Product.findByIdAndRemove(productId);
-
-    // If applicable, delete the image file from Google Drive
-    if (product.gdriveFileId &&  product.gdriveFileId!== '1Ru3bJPvlSfkEJ74gEjdgO9jSQtJNFtCu') {
-      await drive.files.delete({ fileId: product.gdriveFileId });
-    }
-
-    return res.status(200).json({ success: true, message: 'The product and image are deleted!' });
-  } catch (error) {
-
-    return res.status(500).json({ success: false, error: 'Internal server error' });
-  }
+  const db = await req.app.locals.getCommerceDb();
+  res.json(await require('../commerce/dist/service.cjs').archiveEntity(db, 'products', req.params.id, req.identity.id));
 });
-
 
 productRouter.put('/publish/:productId', async (req, res) => {
-  const { productId } = req.params;
-  try {
-    // Find the product by its ID
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Update the 'disabled' property of the product
-    product.disabled = !product.disabled;
-
-    // Save the updated product
-    await product.save();
-
-
-    res.json({ message: 'Product updated successfully' });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Failed to update the product' });
-  }
+  const db = await req.app.locals.getCommerceDb();
+  res.json(await require('../commerce/dist/service.cjs').toggleCatalogVisibility(db, 'products', req.params.productId, req.identity.id));
 });
 
-
-
 productRouter.put('/:id', upload.array('images', 5), require('../security/uploads.cjs').validateImageUploads, async (req, res) => {
-  require('../security/admin-input.cjs').productInput(req.body);
+  require('../commerce/dist/service.cjs').inventoryInput(req.body);
   const { id } = req.params;
-  const updateFields = {};
   const files = req.files;
 
   try {
-      const prevProduct = await Product.findById(id);
-      if (!prevProduct) {
-          return res.status(404).json({ error: 'Product not found' });
-      }
-
-      // Handle text fields
-      if (req.body.name) updateFields.name = req.body.name;
-      if (req.body.price !== undefined) updateFields.price = Number(req.body.price);
-      if (req.body.stock !== undefined) updateFields.stock = Number(req.body.stock);
-      if (req.body.description !== undefined) updateFields.description = req.body.description;
+      const db = await req.app.locals.getCommerceDb();
+      const assetHash = files?.length ? require('node:crypto').createHash('sha256').update(JSON.stringify(files.map(file => require('node:crypto').createHash('sha256').update(file.buffer).digest('hex')))).digest('hex') : undefined;
+      const replay = await require('../commerce/dist/service.cjs').replayProductMutation(db, id, req.body, req.identity.id, assetHash);
+      if (replay) return res.json(replay);
+      const prevProduct = await catalogDomain().catalogUploadTarget(db, 'products', id);
 
       let imageUrls = prevProduct.images;
       let gdriveFileIds = prevProduct.gdriveFileIds;
@@ -604,24 +117,12 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
                       .webp()
                       .toBuffer();
 
-                  const filename = uuidv4() + '.webp';
+                  const filename = randomUUID() + '.webp';
 
-                  const fileMetadata = {
-                      name: filename,
-                      parents: [FOLDER_ID],
-                  };
-                  const media = {
-                      mimeType: 'image/webp',
-                      body: Readable.from(croppedImage),
-                  };
-                  const response = await drive.files.create({
-                      resource: fileMetadata,
-                      media: media,
-                      fields: 'id',
-                  });
+                  const asset = await driveMedia(req).upload(croppedImage, filename, FOLDER_ID);
 
                   imageUrls.push(filename);
-                  gdriveFileIds.push(response.data.id);
+                  gdriveFileIds.push(asset.fileId);
               } catch (error) {
 
                   return res.status(500).json({ error: 'Failed to upload new images' });
@@ -629,63 +130,19 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
           }
       }
 
-      if (files && files.length > 0) {
-          updateFields.images = imageUrls;
-          updateFields.gdriveFileIds = gdriveFileIds;
-      }
-      const filter = { _id: id };
-      if (req.body.stock !== undefined) filter.stock = Number(req.body.expectedStock);
-      // MongoDB evaluates this predicate atomically with the write. A checkout,
-      // cancellation or second editor changing stock makes a stale form fail.
-      const product = await Product.findOneAndUpdate(filter, { $set: updateFields }, { new: true, runValidators: true });
-      if (!product) return res.status(409).json({ code: 'STOCK_CHANGED', error: 'Stock changed. Reload the product before saving.' });
+      const product = await require('../commerce/dist/service.cjs').updateProductInventory(db, id, req.body, req.identity.id,
+        files?.length ? { images: imageUrls, gdriveFileIds } : undefined, assetHash);
       res.json(product);
   } catch (error) {
-
+      if (error.status) throw error;
       res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-
-
-
 productRouter.get('/details/:productId', async (req, res) => {
-
-  const { productId } = req.params;
-
-  try {
-    // Find the product by its product_id (custom field)
-    const product = await Product.findOne({ product_id: productId }).populate('category');
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Find all products in the same category except the current product
-    const relatedProducts = await Product.find({
-      category: product.category._id,
-      product_id: { $ne: productId }, // Exclude the current product
-    }).populate('category');
-
-    res.status(200).json({
-      product,
-      relatedProducts,
-    });
-  } catch (error) {
-
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { productId: req.params.productId }, staffRead(req)));
 });
 
-
-
-
-
 module.exports = productRouter;
-
-
-
-
-
-
 

@@ -6,7 +6,7 @@ import { getWebEnvironment } from "../env";
 import {
   identitySchema,
   accessPolicy,
-  project,
+  projectAdminResponse,
   upstreamQuery,
   type Identity,
 } from "../../admin/policy";
@@ -76,7 +76,8 @@ export async function adminRead(path: string, query = new URLSearchParams()) {
   const result = await upstream(path + (qs ? `?${qs}` : ""));
   if (result.status === 404) notFound();
   if (!result.ok) throw new AdminError(result.status);
-  return project(await result.json());
+  try { return projectAdminResponse(path, await result.json()); }
+  catch { throw new AdminError(503); }
 }
 
 export function adminPushPublicKey() {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { operationsSnapshotSchema } from '@almina/contracts';
 export const identitySchema = z.object({
   id: z.string().regex(/^[a-f0-9]{24}$/i),
   username: z.string(),
@@ -10,6 +11,7 @@ export type Identity = z.infer<typeof identitySchema>;
 export type AdminRecord = Record<string, unknown>;
 export const sections = [
   "dashboard",
+  "operations",
   "products",
   "categories",
   "banners",
@@ -29,6 +31,7 @@ export function canVisit(role: Identity["role"], section: string) {
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET', 'operations', 'admin'],
   ["POST", "auth/login", "login"],
   ["GET", "auth/me", "staff"],
   ["POST", "auth/logout", "staff"],
@@ -40,6 +43,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ["GET", "products/search", "staff"],
   ["GET", `products/${id}`, "staff"],
   ["POST", "products", "admin"],
+  ["POST", `media/products/${id}`, "admin"],
   ["PUT", `products/${id}`, "admin"],
   ["PUT", `products/publish/${id}`, "admin"],
   ["DELETE", `products/${id}`, "admin"],
@@ -62,6 +66,9 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ["GET", "store/status", "admin"],
   ["PUT", "store/status", "admin"],
   ["POST", "batch", "admin"],
+  ["GET", "recovery/template", "admin"],
+  ["POST", "recovery/preview", "admin"],
+  ["POST", "recovery/commit", "admin"],
   ["GET", "whatsapp/recipients", "admin"],
   ["GET", "whatsapp/reports", "admin"],
   ["GET", "whatsapp/image", "admin"],
@@ -169,6 +176,10 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
       offset: String(query.offset),
     }).toString();
   }
+  if (/^whatsapp\/messages\/\+?[0-9]{1,20}$/.test(path)) {
+    const query = listQuery.extend({ offset: z.coerce.number().int().min(0).max(100000000).default(0) }).parse(values);
+    return new URLSearchParams({ limit: String(query.limit), offset: String(query.offset) }).toString();
+  }
   z.object({}).strict().parse(values);
   return "";
 }
@@ -243,6 +254,7 @@ const fields = new Set([
   "from",
   "promotionStatus",
   "messages",
+  "messageCount", "messageOffset", "hasOlderMessages",
   "content",
   "timestamp",
   "sender",
@@ -252,7 +264,7 @@ const fields = new Set([
   "recipient",
   "success",
   "count",
-  "message",
+  "message", "cloudinaryImages", "mediaRevision", "rows", "errors", "row", "field", "previewId", "hash", "batch", "created", "replayed",
 ]);
 export function project(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(project);
@@ -263,4 +275,7 @@ export function project(value: unknown): unknown {
         .map(([key, entry]) => [key, project(entry)]),
     );
   return value;
+}
+export function projectAdminResponse(path: string, value: unknown): unknown {
+  return path === 'operations' ? operationsSnapshotSchema.parse(value) : project(value);
 }

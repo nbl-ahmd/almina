@@ -72,20 +72,16 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             backend/package-lock.json
-            frontend/package-lock.json
       - run: npm ci
       - run: npm ci --prefix backend
-      - run: npm ci --prefix frontend
       - run: npx --no-install playwright install --with-deps chromium
       - run: npm run build:commerce
-      - name: Build retained React compatibility client with maintained Vite tooling
-        run: npm --prefix frontend run build
-        env:
-          CI: 'false'
       - name: Production foundation build
         run: npm run build:foundation
       - run: npm run smoke:foundation
       - run: npm run smoke:storefront
+      - name: Raw crawler HTML and recovered product URL/price compatibility
+        run: npm run smoke:seo
       - name: Chromium customer and admin workflows
         run: npm run test:e2e:smoke
       - uses: actions/upload-artifact@v4

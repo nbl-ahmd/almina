@@ -9,7 +9,7 @@ export function hasDuplicateQuery(query: Query) {
   return Object.keys(query).some(key => !/^(utm_[a-z_]+|gclid|fbclid)$/i.test(key) && query[key] !== undefined);
 }
 export function isPublicPath(path: string) {
-  return ['/', '/products', '/categories', '/offers'].includes(path)
+  return ['/', '/products', '/categories', '/offers', '/about', '/contact'].includes(path)
     || /^\/(products|categories)\/[^/]+$/.test(path);
 }
 export function pageMetadata(origin: string, production: boolean, title: string, description: string, path: string, query: Query = {}, image = '/logo.png'): Metadata {

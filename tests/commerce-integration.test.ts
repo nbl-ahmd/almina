@@ -268,50 +268,47 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
         const result = await fetch(`${origin}/api/v1/admin/orders/${data.id}/status`, { method: 'POST', headers: { ...browserHeaders, Cookie: cookie }, body: '{"status":"cancelled"}' });
         assert.equal(result.status, 200);
       });
-      const mongoose = require('../backend/node_modules/mongoose');
-      await mongoose.connect(uri!, { dbName });
-      try {
-        const { createLegacyApp } = require('../backend/app.js');
-        const legacy = createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth: { authenticate: async () => admin } });
-        await serve(legacy, async origin => {
-          const productUrl = `${origin}/api/products/${productId}`;
-          const before = (await db.collection('products').findOne({ _id: new ObjectId(productId) }))!;
-          await commerce.checkout(intent(productId));
-          const stale = await fetch(productUrl, { method: 'PUT', headers: browserHeaders,
-            body: JSON.stringify({ stock: 99, expectedStock: before.stock, name: 'Stale' }) });
-          assert.equal(stale.status, 409);
-          assert.equal((await stale.json()).code, 'STOCK_CHANGED');
-          assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.name, before.name);
-          const live = (await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock;
-          const zero = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: JSON.stringify({ stock: 0, expectedStock: live, price: 0 }) });
-          assert.equal(zero.status, 200);
-          assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 0);
-          const invalid = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: '{"price":"10.001"}' });
-          assert.equal(invalid.status, 400);
-          const noVersion = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: '{"stock":4}' });
-          assert.equal(noVersion.status, 400);
-          await db.collection('products').updateOne({ _id: new ObjectId(productId) }, { $set: { stock: 10, price: before.price } });
-          const input = intent(productId);
-          const created = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(input) });
-          assert.equal(created.status, 201); const result = await created.json();
-          assert.equal(result.totals.totalMinor, 1000);
-          const replay = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(input) });
-          assert.equal(replay.status, 200);
-          const forged = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders,
-            body: JSON.stringify({ customer: { ...customer, totalAmount: 1, deliveryFee: 0 }, cartItems: [{ _id: productId, quantity: 1, price: 1 }] }) });
-          assert.equal(forged.status, 400);
-          const mutable = await fetch(`${origin}/api/orders/edit/${result.id}`, { method: 'PUT', headers: browserHeaders, body: '{"customer":{"totalAmount":1}}' });
-          assert.equal(mutable.status, 400);
-          const read = await fetch(`${origin}/api/orders/${result.id}`, { headers: browserHeaders });
-          assert.equal(read.status, 200); const body = await read.json();
-          assert.equal(body.cartItems[0]._id.name, 'Original fixture'); assert.equal(body.snapshotAvailable, true);
-          for (const query of ['limit=0', 'limit=101', 'offset=-1', 'filter=%7B%22%24where%22%3A%22x%22%7D', 'status=invalid']) assert.equal((await fetch(`${origin}/api/orders?${query}`, { headers: browserHeaders })).status, 400);
-          const page = await fetch(`${origin}/api/orders?limit=1&offset=0&status=pending`, { headers: browserHeaders });
-          assert.equal(page.status, 200); const listed = await page.json(); assert.equal(listed.length, 1); assert.equal(listed[0].status, 'pending');
-          const cancelled = await fetch(`${origin}/api/orders/cancel/${result.id}`, { method: 'PUT', headers: browserHeaders, body: '{"cancelled":true}' });
-          assert.equal(cancelled.status, 200);
-        });
-      } finally { await mongoose.disconnect(); }
+      const { createLegacyApp } = require('../backend/app.js');
+      const legacy = createLegacyApp({ getCommerceDb: () => db, origins: [browserHeaders.Origin], development: true, auth: { authenticate: async () => admin } });
+      await serve(legacy, async origin => {
+        const productUrl = `${origin}/api/products/${productId}`;
+        const before = (await db.collection('products').findOne({ _id: new ObjectId(productId) }))!;
+        await commerce.checkout(intent(productId));
+        const stale = await fetch(productUrl, { method: 'PUT', headers: browserHeaders,
+          body: JSON.stringify({ stock: 99, expectedStock: before.stock, name: 'Stale' }) });
+        assert.equal(stale.status, 409);
+        assert.equal((await stale.json()).code, 'STOCK_CHANGED');
+        assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.name, before.name);
+        const live = (await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock;
+        const zero = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: JSON.stringify({ stock: 0, expectedStock: live, price: 0, sale: false, salePrice: 0, stockReason: 'Physical count verified', inventoryKey: randomUUID() }) });
+        assert.equal(zero.status, 200);
+        assert.equal((await db.collection('products').findOne({ _id: new ObjectId(productId) }))!.stock, 0);
+        const invalid = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: '{"price":"10.001"}' });
+        assert.equal(invalid.status, 400);
+        const noVersion = await fetch(productUrl, { method: 'PUT', headers: browserHeaders, body: '{"stock":4}' });
+        assert.equal(noVersion.status, 400);
+        await db.collection('products').updateOne({ _id: new ObjectId(productId) }, { $set: { stock: 10, price: before.price, sale: before.sale, salePrice: before.salePrice } });
+        const input = intent(productId);
+        const created = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(input) });
+        assert.equal(created.status, 201); const result = await created.json();
+        assert.equal(result.totals.totalMinor, 1000);
+        const replay = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(input) });
+        assert.equal(replay.status, 200);
+        const forged = await fetch(`${origin}/api/orders`, { method: 'POST', headers: browserHeaders,
+          body: JSON.stringify({ customer: { ...customer, totalAmount: 1, deliveryFee: 0 }, cartItems: [{ _id: productId, quantity: 1, price: 1 }] }) });
+        assert.equal(forged.status, 400);
+        const mutable = await fetch(`${origin}/api/orders/edit/${result.id}`, { method: 'PUT', headers: browserHeaders, body: '{"customer":{"totalAmount":1}}' });
+        assert.equal(mutable.status, 400);
+        const read = await fetch(`${origin}/api/orders/${result.id}`, { headers: browserHeaders });
+        assert.equal(read.status, 200); const body = await read.json();
+        assert.equal(body.cartItems[0]._id.name, 'Original fixture'); assert.equal(body.snapshotAvailable, true);
+        for (const query of ['limit=0', 'limit=101', 'offset=-1', 'filter=%7B%22%24where%22%3A%22x%22%7D', 'status=invalid']) assert.equal((await fetch(`${origin}/api/orders?${query}`, { headers: browserHeaders })).status, 400);
+        const page = await fetch(`${origin}/api/orders?limit=1&offset=0&status=pending`, { headers: browserHeaders });
+        assert.equal(page.status, 200); const listed = await page.json(); assert.equal(listed.length, 1); assert.equal(listed[0].status, 'pending');
+        const cancelled = await fetch(`${origin}/api/orders/cancel/${result.id}`, { method: 'PUT', headers: browserHeaders, body: '{"cancelled":true}' });
+        assert.equal(cancelled.status, 200);
+      });
+
     });
 
     await t.test('every lifecycle transition follows the approved state machine and failed transitions are immutable', async () => {

@@ -1,10 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { cloudinaryImage } from '../apps/web/src/lib/catalog/media';
-import { readProduct, readCategory, productSlug, categorySlug, slugIdentity, decodeStoredCart, cartSchema } from '../apps/web/src/lib/catalog/model';
+import { readProduct, readCategory, productSlug, categorySlug, slugIdentity, displayPrice, decodeStoredCart, cartSchema } from '../apps/web/src/lib/catalog/model';
 import { readWebEnvironment } from '@almina/config/env';
+import { retainedCatalogQuery } from '../apps/api/src/modules/catalog/compatibility-reads';
 const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care' };
 const raw = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', product_id: 'PD0001', name: 'Daily Care', category, price: 25, stock: 4 };
+test('retained catalog query reconstructs only bounded compatibility fields', () => {
+  assert.equal(retainedCatalogQuery({}, 'products').limit, 30);
+  assert.deepEqual(retainedCatalogQuery({ q: 'Literal [search]', filter: '[{"disabled":false}]', limit: '10', offset: '20' }, 'search').filter, { disabled: false });
+  for (const query of [{ limit: '0' }, { limit: '101' }, { offset: '10001' }, { filter: '{"$where":"x"}' }, { filter: '{"category":{"$ne":null}}' },
+    { q: ['one', 'two'] }, { disabledCat: 'yes' }, { cursor: 'arbitrary' }]) assert.throws(() => retainedCatalogQuery(query, 'search'));
+  assert.throws(() => retainedCatalogQuery({ filter: '{"stock":1}' }, 'categories'));
+});
 test('old documents without new flags remain readable; disabled/orphan/malformed products do not leak', () => {
   assert.ok(readProduct(raw)); assert.ok(readCategory(category));
   for (const patch of [{ disabled: true }, { category: null }, { category: { ...category, disabled: true } }, { price: -1 }, { stock: -1 }]) assert.equal(readProduct({ ...raw, ...patch }), null);
@@ -17,6 +25,16 @@ test('slugs distinguish duplicate names and resolve immutable legacy IDs across 
   assert.equal(slugIdentity(productSlug({ ...product, name: 'Renamed!' })), 'PD0001');
   assert.equal(slugIdentity(categorySlug(category)), category._id);
   assert.equal(slugIdentity('bad/path'), null);
+  for (const id of ['RECOVERED--001', '--leading', '001__trailing--', 'x'.repeat(80), 'b'.repeat(24)]) {
+    assert.equal(slugIdentity(productSlug({ ...product, product_id: id, name: 'Name -- normalized' })), id);
+  }
+});
+test('catalog, cart and schema presentation use active sale prices including zero', () => {
+  const product = readProduct(raw)!;
+  assert.equal(displayPrice({ ...product, sale: true, salePrice: 0 }), 0);
+  assert.equal(displayPrice({ ...product, sale: false, salePrice: 20 }), 25);
+  assert.equal(displayPrice({ ...product, salePrice: 20 }), 25);
+  assert.equal(displayPrice({ ...product, sale: true, salePrice: 20 }), 20);
 });
 test('cart import discards client prices, stock, customer data and roles; malformed carts fail closed', () => {
   assert.deepEqual(decodeStoredCart(JSON.stringify([{ ...raw, quantity: 2, price: 0, role: 'admin', customer: 'private' }]), true), [{ id: raw._id, quantity: 2 }]);

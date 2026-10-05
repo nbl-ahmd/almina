@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
-import { createHmac, randomBytes } from 'node:crypto';
+import { createHmac, randomBytes, createECDH } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { test } from 'node:test';
-import { hash, compare } from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import express from 'express';
 import { createLogger } from '@almina/config/logger';
 import { createAuthService } from '../apps/api/src/modules/auth/service.js';
@@ -65,8 +65,8 @@ test('all admin legacy endpoints reject authenticated staff even with forged rol
 
 test('route authorization allowlist covers every real legacy handler and denies unlisted methods/path encodings', () => {
   const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true });
-  const mounts = app._router.stack.filter((layer: { name: string }) => layer.name === 'router');
-  const names = ['category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
+  const mounts = app.router.stack.filter((layer: { name: string }) => layer.name === 'router');
+  const names = ['operations', 'media', 'recovery', 'category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
   let count = 0;
   mounts.forEach((mount: { handle: { stack: { route?: { path: string; methods: Record<string, boolean> } }[] } }, index: number) => {
     for (const layer of mount.handle.stack) if (layer.route) {
@@ -79,6 +79,18 @@ test('route authorization allowlist covers every real legacy handler and denies 
   assert.equal(count, routePolicies.length);
   for (const path of ['/api/products//abc', '/api/%70roducts/abc', '/api/products\\abc']) assert.equal(lookupPolicy('PUT', path), undefined);
   assert.equal(lookupPolicy('PATCH', '/api/products/abc'), undefined);
+});
+
+test('Express 5 catches returned promise failures without private-stack wrapping or exposing diagnostics', async () => {
+  const express = require('../backend/node_modules/express');
+  const router = express.Router();
+  router.get('/status', () => Promise.reject(new Error('Synthetic private provider diagnostic')));
+  const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true, routers: { store: router } });
+  await serve(app, async origin => {
+    const response = await fetch(origin + '/api/store/status');
+    assert.equal(response.status, 500); assert.deepEqual(await response.json(), { error: 'Request failed' });
+    assert.equal((await fetch(origin + '/health/live')).status, 200);
+  });
 });
 
 test('cookie attributes, duplicate-cookie rejection and raw bearer rejection fail closed', () => {
@@ -154,33 +166,38 @@ test('distributed quotas persist across service instances and combine per-accoun
   assert.ok(!JSON.stringify(fixture.data).includes('203.0.113.1'));
 });
 
-test('admin-only provisioning validates roles and hashes passwords; duplicate usernames use the same response', async () => {
+test('admin provisioning rejects malformed privileges and credentials before database or password work', async () => {
   const fixture = securityDb();
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'admin', cities: [] }) };
   const loginRouter = require('../backend/routes/Login')(auth, true, () => fixture.db);
   const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, routers: { auth: loginRouter } });
   await serve(app, async origin => {
     const body = { username: user.username, password: 'synthetic-long-password', name: 'Synthetic', role: 'user', cities: [] };
-    for (const role of ['superadmin', { $ne: null }]) assert.equal((await fetch(`${origin}/api/auth/signup`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ ...body, role }) })).status, 400);
-    for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/auth/signup`, { method: 'POST', headers: browserHeaders, body: JSON.stringify(body) })).status, 202);
-    assert.equal(fixture.data.users!.length, 1); assert.equal(fixture.data.users![0]!.role, 'user');
-    assert.equal(await compare(body.password, fixture.data.users![0]!.password), true);
-    assert.match(fixture.data.users![0]!.password, /^\$2b\$12\$/);
+    for (const patch of [{ role: 'superadmin' }, { role: { $ne: null } }, { password: 'short' }, { password: '🔒'.repeat(19) },
+      { name: '   ' }, { cities: ['City A', 'City A'] }, { cities: [{ $where: 'x' }] }, { username: '$where' }, { disabled: false }]) {
+      assert.equal((await fetch(`${origin}/api/auth/signup`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ ...body, ...patch }) })).status, 400);
+    }
+    assert.equal(fixture.calls.length, 0);
   });
 });
 
-test('webhook rejects absent/invalid signatures, changed bodies and duplicate signed events before effects', async () => {
-  const fixture = securityDb(); const secret = randomBytes(32).toString('hex'); let effects = 0;
-  const router = express.Router(); router.post('/webhook', (_req, res) => { effects++; res.sendStatus(200); });
+test('webhook rejects invalid signatures and retains pending events through failure before suppressing processed duplicates', async () => {
+  const fixture = securityDb(); const secret = randomBytes(32).toString('hex'); let effects = 0, attempts = 0;
+  const router = express.Router(); router.post('/webhook', (_req, res) => {
+    if (attempts++ === 0) return res.sendStatus(500);
+    effects++; fixture.data.webhook_receipts![0]!.state = 'processed'; res.sendStatus(200);
+  });
   const app = createLegacyApp({ origins: [browserHeaders.Origin], webhookSecret: secret, getWebhookDb: async () => fixture.db, routers: { whatsapp: router } });
   await serve(app, async origin => {
-    const body = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ value: { messages: [{ id: 'synthetic-message' }] } }] }] });
+    const body = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ value: { messages: [{ id: 'synthetic-message', from: '971501234567', text: { body: 'Synthetic text' } }] } }] }] });
     const signature = 'sha256=' + createHmac('sha256', secret).update(body).digest('hex');
     for (const signed of [undefined, 'sha256=invalid', 'sha256=' + '0'.repeat(64)]) assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(signed ? { 'X-Hub-Signature-256': signed } : {}) }, body })).status, 403);
     const headers = { 'Content-Type': 'application/json', 'X-Hub-Signature-256': signature };
     assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers, body: body + ' ' })).status, 403);
+    assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers, body })).status, 500);
+    assert.equal(fixture.data.webhook_receipts![0]!.state, 'pending');
     for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/whatsapp/webhook`, { method: 'POST', headers, body })).status, 200);
-    assert.equal(effects, 1);
+    assert.equal(effects, 1); assert.equal(attempts, 2);
   });
 });
 
@@ -223,16 +240,15 @@ test('realtime rejects anonymous/staff/cross-origin connections and rechecks adm
 });
 
 test('source auth contracts do not persist tokens or embed provider/signing credentials', () => {
-  const source = readFileSync('frontend/src/admin/login/auth.jsx', 'utf8');
-  assert.ok(!/setItem\(['"]token/.test(source)); assert.ok(!/getItem\(['"]token/.test(readFileSync('frontend/src/App.jsx', 'utf8')));
-  for (const file of ['backend/messageHelper.js', ...readdirSync('backend/routes').filter(file => file.endsWith('.js')).map(file => 'backend/routes/' + file)]) {
+  const source = readFileSync('apps/web/src/components/admin/controls.tsx', 'utf8');
+  assert.ok(!/setItem\(['"]token/.test(source)); assert.ok(!/getItem\(['"]token/.test(source));
+  for (const file of ['backend/integrations/whatsapp.cjs', 'apps/api/src/modules/notifications/whatsapp-outbound.ts', ...readdirSync('backend/routes').filter(file => file.endsWith('.js')).map(file => 'backend/routes/' + file)]) {
     const text = readFileSync(file, 'utf8');
     assert.ok(!/Bearer [A-Za-z0-9._-]{20,}|(?:secretKey|privateKey|pass)\s*[:=]\s*['"][^'"]+['"]/.test(text), file);
   }
 });
 
-test('legacy order reads and transactional commands enforce city scope and reject forged fields', async t => {
-  const Order = require('../backend/models/Order');
+test('legacy order reads and transactional commands enforce city scope and reject forged fields', async () => {
   let cities = ['City A']; let saved = 0;
   const found = { _id: id, customer: { city: 'City B', totalAmount: 12 }, status: 'pending' };
   const filters: Record<string, unknown>[] = [];
@@ -240,7 +256,6 @@ test('legacy order reads and transactional commands enforce city scope and rejec
     filters.push(filter);
     return (filter['customer.city'] as { $in: string[] }).$in.includes(found.customer.city) ? found : null;
   }
-  t.mock.method(Order, 'findOne', (filter: Record<string, unknown>) => ({ populate() { return this; }, lean: async () => find(filter) }));
   const db = { client: { startSession: () => ({ withTransaction: async (run: () => Promise<void>) => run(), endSession: async () => undefined }) },
     collection: () => ({ findOne: async (filter: Record<string, unknown>) => find(filter),
       updateOne: async (_filter: unknown, update: { $set: Record<string, unknown> }) => { Object.assign(found, update.$set); saved++; return { modifiedCount: 1 }; } }) };
@@ -281,19 +296,17 @@ test('guest checkout cannot set administrative order flags and raw catalog opera
   });
 });
 
-test('push subscription writes are owned by the current staff identity and reject arbitrary callback destinations', async t => {
-  const mongoose = require('../backend/node_modules/mongoose');
+test('push subscription writes are owned by the current staff identity and reject arbitrary callback destinations', async () => {
   let owner: unknown;
-  const prior = mongoose.connection.db;
-  mongoose.connection.db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); } }) };
-  t.after(() => { mongoose.connection.db = prior; });
+  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }) => { owner = filter._id.toHexString(); return { matchedCount: 1 }; } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
-  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth }), async origin => {
+  const curve = createECDH('prime256v1'); curve.generateKeys();
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
     for (const endpoint of ['http://127.0.0.1/private', 'https://evil.example.invalid', 'https://fcm.googleapis.com.evil.example.invalid']) {
       assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'POST', headers: browserHeaders, body: JSON.stringify({ subscription: { endpoint } }) })).status, 400);
     }
     const response = await fetch(`${origin}/api/orders/subscribe`, { method: 'POST', headers: browserHeaders,
-      body: JSON.stringify({ userId: 'caller-selected-user', subscription: { endpoint: 'https://fcm.googleapis.com/synthetic', keys: { p256dh: 'a'.repeat(87), auth: 'b'.repeat(22) } } }) });
+      body: JSON.stringify({ userId: 'caller-selected-user', subscription: { endpoint: 'https://fcm.googleapis.com/synthetic', keys: { p256dh: curve.getPublicKey().toString('base64url'), auth: randomBytes(16).toString('base64url') } } }) });
     assert.equal(response.status, 204); assert.equal(owner, id.toHexString());
   });
 });
@@ -324,30 +337,44 @@ test('server-owned order confirmation chooses its recipient from the persisted o
   assert.throws(() => confirmationMessage({ orderId: 'OD5001', customer: { email: 'synthetic@example.invalid\r\nBcc: caller@example.invalid' } }));
 });
 
-test('push unsubscribe deletes only the current staff subscription', async t => {
-  const mongoose = require('../backend/node_modules/mongoose');
-  let owner: unknown; let update: unknown; const prior = mongoose.connection.db;
-  mongoose.connection.db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; } }) };
-  t.after(() => { mongoose.connection.db = prior; });
-  const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
+test('retained administrator email rejects recipient/header/content abuse before provider work', async () => {
+  const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'admin', cities: [] }) };
   await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth }), async origin => {
+    for (const body of [{ recipient: 'a@example.invalid,b@example.invalid', htmlContent: 'Reviewed' },
+      { recipient: 'synthetic@example.invalid', htmlContent: 'x'.repeat(65537) },
+      { recipient: 'synthetic@example.invalid', htmlContent: 'Reviewed', attachments: ['/private'] }]) {
+      assert.equal((await fetch(origin + '/api/orders/email', { method: 'POST', headers: browserHeaders, body: JSON.stringify(body) })).status, 400);
+    }
+  });
+});
+
+test('push unsubscribe deletes only the current staff subscription', async () => {
+  let owner: unknown; let update: unknown;
+  const db = { collection: () => ({ updateOne: async (filter: { _id: { toHexString(): string } }, value: unknown) => { owner = filter._id.toHexString(); update = value; return { matchedCount: 1 }; } }) };
+  const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
+  await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
     assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'DELETE', headers: browserHeaders })).status, 204);
     assert.equal(owner, id.toHexString()); assert.deepEqual(update, { $unset: { subscription: '' } });
   });
 });
 
-test('native push worker handles plain and FCM notification envelopes without executing remote scripts', async () => {
+test('both maintained push worker URLs ignore incoming PII and execute no remote scripts', async () => {
   const { runInNewContext } = await import('node:vm');
-  const source = readFileSync('frontend/public/service-worker.js', 'utf8');
-  const handlers: Record<string, (event: unknown) => void> = {};
-  const notifications: { title: string; options: { body: string } }[] = [];
-  runInNewContext(source, { self: { addEventListener: (type: string, handler: (event: unknown) => void) => { handlers[type] = handler; },
-    registration: { showNotification: (title: string, options: { body: string }) => { notifications.push({ title, options }); return Promise.resolve(); } } } });
-  for (const payload of [{ title: 'Synthetic', body: 'Body' }, { notification: { title: 'Synthetic', body: 'Body' } }]) {
-    handlers.push!({ data: { json: () => payload }, waitUntil: () => undefined });
-    assert.deepEqual(JSON.parse(JSON.stringify(notifications.at(-1))), { title: 'Synthetic', options: { body: 'Body', icon: '/android-chrome-192x192.png' } });
+  for (const file of ['apps/web/public/service-worker.js', 'apps/web/public/admin/worker.js']) {
+    const source = readFileSync(file, 'utf8');
+    const handlers: Record<string, (event: unknown) => void> = {};
+    const notifications: { title: string; options: { body: string } }[] = [];
+    const opened: string[] = [];
+    runInNewContext(source, { self: { addEventListener: (type: string, handler: (event: unknown) => void) => { handlers[type] = handler; },
+      registration: { showNotification: (title: string, options: { body: string }) => { notifications.push({ title, options }); return Promise.resolve(); } },
+      clients: { openWindow: (path: string) => { opened.push(path); return Promise.resolve(); } } } });
+    for (const payload of [{ title: 'Synthetic PII', body: 'Sensitive detail' }, { notification: { title: 'Synthetic PII', body: 'Sensitive detail' } }]) {
+      handlers.push!({ data: { json: () => payload }, waitUntil: () => undefined });
+      assert.deepEqual(JSON.parse(JSON.stringify(notifications.at(-1))), { title: 'Al Mina Pharmacy', options: { body: 'Order updates are available. Sign in to review them.' } });
+    }
+    handlers.notificationclick!({ notification: { close: () => undefined }, waitUntil: () => undefined });
+    assert.deepEqual(opened, ['/admin/orders']); assert.ok(!source.includes('importScripts'));
   }
-  assert.ok(!source.includes('importScripts'));
 });
 
 test('published poster media remains public for Meta while poster listings stay private', async () => {

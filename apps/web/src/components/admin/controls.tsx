@@ -2,10 +2,12 @@
 /* eslint-disable @next/next/no-location-assign-relative-destination -- Session changes need a full reload to discard privileged router state. */
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { adminFormClass } from '../../lib/admin/styles';
 export async function adminRequest(
   path: string,
   method = "GET",
   body?: FormData | object,
+  idempotencyKey?: string,
 ) {
   const payload = body ?? (method !== "GET" ? {} : undefined);
   const result = await fetch(`/api/admin/${path}`, {
@@ -13,6 +15,7 @@ export async function adminRequest(
     cache: "no-store",
     headers: {
       "x-csrf-protection": "1",
+      ...(idempotencyKey ? { 'idempotency-key': idempotencyKey } : {}),
       ...(payload && !(payload instanceof FormData)
         ? { "content-type": "application/json" }
         : {}),
@@ -65,7 +68,7 @@ export function LoginForm() {
     }
   }
   return (
-    <form className="admin-form" onSubmit={submit}>
+    <form className={adminFormClass} onSubmit={submit} aria-busy={pending}>
       <label htmlFor="username">
         Username
         <input
