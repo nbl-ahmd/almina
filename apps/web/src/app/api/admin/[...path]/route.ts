@@ -1,4 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidateTag } from 'next/cache';
+import { catalogMutationTags, isProductFamilyConflict, readAdminBody, GatewayBodyTooLarge } from '../../../../lib/admin/gateway-policy';
+export const runtime = 'nodejs';
+export const maxDuration = 30;
 import { getWebEnvironment } from "../../../../lib/server/env";
 import {
   accessPolicy,
@@ -15,24 +19,6 @@ const headers = {
   "Cache-Control": "private, no-store",
   "X-Robots-Tag": "noindex, nofollow",
 };
-// Bound even chunked input before parsing/forwarding; upstream upload limits still independently apply.
-async function boundedBody(request: Request) {
-  const reader = request.body?.getReader();
-  if (!reader) return undefined;
-  const chunks: Uint8Array[] = [];
-  let length = 0;
-  while (true) {
-    const item = await reader.read();
-    if (item.done) break;
-    length += item.value.length;
-    if (length > 27 * 1024 * 1024) {
-      await reader.cancel();
-      throw new AdminError(413);
-    }
-    chunks.push(item.value);
-  }
-  return Buffer.concat(chunks);
-}
 async function handle(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
@@ -64,14 +50,14 @@ async function handle(
     const type = request.headers.get("content-type") ?? "";
     const retryKey = request.headers.get('idempotency-key');
     if (retryKey !== null && (!['whatsapp/s', 'whatsapp/text'].includes(path) || !/^[A-Za-z0-9_-]{16,128}$/.test(retryKey))) throw new AdminError(400);
-    const body = mutation ? await boundedBody(request) : undefined;
+    const body = mutation ? await readAdminBody(request) : undefined;
     if (
       body?.length &&
       !type.startsWith("application/json") &&
       !type.startsWith("multipart/form-data; boundary=")
     )
       throw new AdminError(415);
-    if (type.startsWith("application/json") && body && body.length > (path === "recovery/preview" ? 4 * 1024 * 1024 : 128 * 1024))
+    if (type.startsWith("application/json") && body && body.length > (["recovery/preview","catalog-import/preview"].includes(path) ? 4 * 1024 * 1024 : 128 * 1024))
       throw new AdminError(413);
     const result = await upstream(path + (query ? `?${query}` : ""), {
       method: request.method,
@@ -80,9 +66,15 @@ async function handle(
     });
     // Legacy WhatsApp text sends a same-origin redirect after provider acceptance. Never follow it.
     const acceptedRedirect = path === "whatsapp/text" && result.status === 302;
-    if (!result.ok && !acceptedRedirect)
+    if (!result.ok && !acceptedRedirect) {
+      const failure: unknown = result.status === 409 ? await result.json().catch(() => null) : null;
+      if (result.status === 409 && failure && typeof failure === 'object' && 'code' in failure && failure.code === 'CATALOG_REVIEW_REQUIRED' && /^products(?:\/(?:publish\/)?[a-f0-9]{24})?$/i.test(path)) return NextResponse.json({error:'CATALOG_REVIEW_REQUIRED'},{status:409,headers});
+      if (result.status === 409 && isProductFamilyConflict(path, request.method, result.status, failure)) {
+        return NextResponse.json({ error: 'PRODUCT_FAMILY_CONFLICT' }, { status: 409, headers });
+      }
       throw new AdminError(result.status >= 400 ? result.status : 502);
-    if (path === "recovery/template") return new NextResponse(await result.text(), {
+    }
+    if (["recovery/template","catalog-import/template"].includes(path)) return new NextResponse(await result.text(), {
       headers: { ...headers, "Content-Type": "text/csv", "Content-Disposition": 'attachment; filename="recovery-products.csv"' },
     });
     const response =
@@ -111,9 +103,15 @@ async function handle(
         maxAge: path === "auth/login" ? 8 * 3600 : 0,
       });
     }
+    // Only invalidate after an authorized upstream mutation has succeeded.
+    // A cache failure must never turn a committed write into a retryable failure.
+    for (const tag of catalogMutationTags(request.method, path)) {
+      try { revalidateTag(tag, { expire: 0 }); }
+      catch { console.error('Catalog cache refresh failed'); response.headers.set('X-Catalog-Refresh', 'pending'); }
+    }
     return response;
   } catch (error) {
-    const failure = error instanceof AdminError ? error : new AdminError(503);
+    const failure = error instanceof GatewayBodyTooLarge ? new AdminError(413) : error instanceof AdminError ? error : new AdminError(503);
     return NextResponse.json(
       { error: failure.message },
       { status: failure.status, headers },

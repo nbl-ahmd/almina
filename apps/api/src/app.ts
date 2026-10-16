@@ -10,6 +10,7 @@ import { verifyBrowserMutation } from './modules/auth/cookies.js';
 import { errorHandler } from './http/errors.js';
 import { apiRoutes } from './http/routes.js';
 import { validate, noBody } from './http/validation.js';
+import type { LocationOptions } from './modules/location/reverse.js';
 import { createOperationalMetrics, installOperationalMetrics, type OperationalMetrics } from './modules/operations/metrics.js';
 
 export function createApp(options: {
@@ -17,6 +18,7 @@ export function createApp(options: {
   development?: boolean; trustProxy?: string[]; rateLimit?: number; draining?: () => boolean; requestDeadlineMs?: number;
   webOrigins?: readonly string[]; metrics?: OperationalMetrics; observeRequests?: boolean;
   commerceTelemetryEnabled?: boolean;
+  location?: LocationOptions;
   onOrderCreated?: (order: { id: string; orderId: string }) => void;
 }) {
   const app = express();
@@ -124,7 +126,7 @@ export function createApp(options: {
   }, metrics, order => {
     try { options.onOrderCreated?.(order); }
     catch { options.logger.log('warn', 'request_failed'); } // Committed commerce never depends on realtime.
-  }));
+  }, options.location));
   app.use((_req, _res, next) => next(new HttpError(404, 'NOT_FOUND')));
   app.use(errorHandler(options.logger, metrics));
   return app;

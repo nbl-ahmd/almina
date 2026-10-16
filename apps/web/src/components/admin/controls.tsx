@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { adminFormClass } from '../../lib/admin/styles';
+import { adminFileLimit } from '../../lib/admin/upload-limits';
 export async function adminRequest(
   path: string,
   method = "GET",
@@ -10,6 +11,16 @@ export async function adminRequest(
   idempotencyKey?: string,
 ) {
   const payload = body ?? (method !== "GET" ? {} : undefined);
+  if (payload instanceof FormData) {
+    let bytes = 0;
+    for (const value of payload.values()) {
+      if (value instanceof File) {
+        if (value.size > adminFileLimit) throw new Error('Choose an image or CSV smaller than 3 MB.');
+        bytes += value.size;
+      } else bytes += new TextEncoder().encode(value).length;
+    }
+    if (bytes > adminFileLimit) throw new Error('The combined upload must be smaller than 3 MB.');
+  }
   const result = await fetch(`/api/admin/${path}`, {
     method,
     cache: "no-store",
@@ -30,6 +41,13 @@ export async function adminRequest(
     window.location.assign("/admin/login");
     throw new Error("Please sign in again.");
   }
+  if (result.status === 409) {
+    const failure: unknown = await result.json().catch(() => null);
+    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'CATALOG_REVIEW_REQUIRED') throw new Error('Complete the product content, classification, image rights and physical stock review before publishing.');
+    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'PRODUCT_FAMILY_CONFLICT') {
+      throw new Error('Check the family name, brand, form, strength, category and option combinations. Each combination must be unique.');
+    }
+  }
   if (!result.ok)
     throw new Error(
       result.status === 401
@@ -41,7 +59,7 @@ export async function adminRequest(
             : result.status === 409
               ? "This record has changed or the action is unavailable. Reload and review it."
               : result.status === 413
-                ? "The upload is too large."
+                ? "The upload is too large. Use files smaller than 3 MB."
                 : result.status === 429
                   ? "Too many requests. Please wait."
                   : "Request failed. Please retry.",

@@ -1,4 +1,41 @@
 import { test, expect } from './fixtures';
+
+test('redesigned purchase stepper clamps stock and the header reflects the saved cart', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto('/products/daily-care--PD0001');
+  const quantity = page.getByRole('spinbutton', { name: 'Quantity', exact: true });
+  const increase = page.getByRole('button', { name: 'Increase purchase quantity', exact: true });
+  const decrease = page.getByRole('button', { name: 'Decrease purchase quantity', exact: true });
+  await expect(decrease).toBeDisabled();
+  await increase.click(); await expect(quantity).toHaveValue('2');
+  await decrease.click(); await expect(quantity).toHaveValue('1');
+  await quantity.fill('999'); await quantity.blur();
+  await expect(quantity).toHaveValue('4'); await expect(increase).toBeDisabled();
+  await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true })).toBeVisible();
+  await page.reload(); await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).click();
+  await expect(page.locator('.quantity')).toHaveText('4');
+  await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
+  await expect(page.getByRole('heading', { name: 'Your cart is currently empty' })).toBeVisible();
+  await expect(page.locator('.header-cart .cart-count')).toHaveCount(0);
+});
+
+test('mobile catalog exposes filters on demand and preserves applied search', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 900 });
+  await page.goto('/products');
+  const panel = page.locator('.catalog-filters');
+  await expect(panel).not.toHaveAttribute('open');
+  await panel.locator('summary').click();
+  await panel.getByRole('searchbox', { name: 'Search products' }).fill('Daily');
+  await panel.getByRole('button', { name: 'Apply', exact: true }).click();
+  await expect(page).toHaveURL(/q=Daily/);
+  await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await expect(page.locator('.catalog-filters')).toHaveAttribute('open');
+  await page.reload();
+  await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
+});
+
 test('Next category preserves legacy IDs and provides keyboard pagination with reload and empty search', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto('/categories/aaaaaaaaaaaaaaaaaaaaaaaa?utm_source=shared');
@@ -48,7 +85,7 @@ for (const [path, content] of [['/', 'Featured products'], ['/search?q=Daily', '
 }
 test('add to cart, authoritative price, stock limit and persistence work on desktop and mobile', async ({ page }) => {
   await page.goto('/products/daily-care--PD0001');
-  await page.getByRole('button', { name: 'Add to cart', exact: true }).click();
+  await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
   await expect(page.locator('main')).toContainText('Added to cart.');
   await page.goto('/cart');
   await expect(page.locator('main')).toContainText('AED 20.00 per item');

@@ -4,7 +4,8 @@ export const requestIdSchema = z.uuid();
 export const errorCodeSchema = z.enum([
   'INVALID_REQUEST', 'NOT_FOUND', 'METHOD_NOT_ALLOWED', 'SERVICE_UNAVAILABLE', 'INTERNAL_ERROR',
   'UNAUTHORIZED', 'FORBIDDEN', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA_TYPE', 'RATE_LIMITED', 'REQUEST_TIMEOUT', 'COMMERCE_UNAVAILABLE', 'PRODUCT_UNAVAILABLE', 'INSUFFICIENT_STOCK', 'STOCK_CHANGED', 'RECOVERY_IMPORT_REQUIRED',
-  'MINIMUM_ORDER', 'IDEMPOTENCY_CONFLICT', 'INVALID_TRANSITION', 'PRICE_CHANGED', 'DELIVERY_UNCERTAIN',
+  'CATALOG_REVIEW_REQUIRED', 'PRODUCT_FAMILY_CONFLICT', 'MINIMUM_ORDER', 'IDEMPOTENCY_CONFLICT', 'INVALID_TRANSITION', 'PRICE_CHANGED', 'DELIVERY_UNCERTAIN',
+  'LOCATION_NOT_FOUND', 'LOCATION_OUTSIDE_UAE',
 ]);
 export const apiErrorSchema = z.object({
   error: z.object({ code: errorCodeSchema, message: z.string().max(200) }).strict(),
@@ -44,3 +45,7 @@ export { cloudinaryImage } from './media';
 export * from './operations';
 export * from './telemetry';
 export * from './commerce-events';
+export * from './location';
+export { productFamilyFields, productFamilySchema, familyFieldNames, optionFields, optionLabels, familyProfile, validateProductFamily, variantLabel, sameFamilyIdentity, strengthSignature, type ProductFamilyFields } from './product-family';
+
+export * from './product-content';

@@ -1,0 +1,34 @@
+import {test,expect,reset,login,adminOrigin,checkoutOrigin,commerceOrigin} from './fixtures';
+test.beforeEach(async({request})=>{await reset(request);});
+const row={sourceKey:'erp-row-42',name:'Synthetic import shampoo',categoryId:'',sourceCategory:'ERP hair care',barcode:'',sourcePrice:'10.00',vatPercent:'5',price:'10.50',websiteStockProposed:4,description:'Synthetic verified description',brand:'Synthetic',saleUnit:'One bottle',packLabel:'100 ml',productType:'general',condition:'new',identifierStatus:'not-assigned'};
+for(const width of [360,390,768,1280])test(`admin previews category mapping, imports hidden drafts and rolls back at ${width}px`,async({page,request})=>{
+  await page.setViewportSize({width,height:900});await login(page);await page.getByRole('link',{name:'Catalog import',exact:true}).click();
+  await page.getByLabel('Prepared CSV or JSON').setInputFiles({name:'synthetic.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify([row]))});
+  await page.getByRole('button',{name:'Preview import',exact:true}).click();
+  await page.getByLabel('Map ERP hair care').selectOption('aaaaaaaaaaaaaaaaaaaaaaaa');
+  await page.getByRole('button',{name:'Preview import',exact:true}).click();
+  await expect(page.getByRole('cell',{name:'Synthetic import shampoo',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  await page.screenshot({path:`.verification-results/catalog-preview-${width}.png`,fullPage:true});
+  await page.getByRole('button',{name:'Import reviewed drafts',exact:true}).click();
+  await expect(page.getByRole('status').filter({hasText:'Draft import complete.'})).toBeVisible();
+  const publicProducts=await(await request.get(commerceOrigin+'/api/products')).json();expect(publicProducts).toHaveLength(1);
+  const products=await(await page.request.get(adminOrigin+'/api/admin/products')).json();const product=products.find((value:{name:string})=>value.name===row.name);expect(product.stock).toBe(4);expect(product.published).toBe(false);
+  const denied=await page.request.put(adminOrigin+'/api/admin/products/publish/'+product._id,{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{}});expect(denied.status()).toBe(409);
+  const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download change report',exact:true}).click();expect((await download).suggestedFilename()).toContain('catalog-import-');
+  await page.reload();await expect(page.getByRole('button',{name:'Resume saved import',exact:true})).toBeEnabled();
+  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Roll back saved import',exact:true}).click();
+  await expect(page.getByRole('status').filter({hasText:'Rollback complete.'})).toBeVisible();
+  expect((await(await page.request.get(adminOrigin+'/api/admin/products')).json()).some((value:{_id:string})=>value._id===product._id)).toBe(false);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  await page.screenshot({path:`.verification-results/catalog-import-${width}.png`,fullPage:true});
+  expect((await page.request.get(checkoutOrigin+'/feeds/google.xml')).status()).toBe(404);
+});
+test('catalog import endpoints reject staff and cross-origin requests before writes',async({page})=>{
+  await login(page,'synthetic-staff');
+  expect((await page.request.post(adminOrigin+'/api/admin/catalog-import/preview',{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{}})).status()).toBe(403);
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await expect(page).toHaveURL(adminOrigin+'/admin/login');
+  await login(page);
+  expect((await page.request.post(adminOrigin+'/api/admin/catalog-import/commit',{headers:{origin:'https://other.invalid','x-csrf-protection':'1'},data:{}})).status()).toBe(403);
+});

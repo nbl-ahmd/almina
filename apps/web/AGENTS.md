@@ -129,6 +129,15 @@ Specify responsive sizing appropriately.
 
 # Styling
 
+For storefront UI, read `DESIGN.md`, `PRODUCT.md` and the
+`almina-project-profile` skill. The owner approved Heroicons, a single optimized
+storefront font and Tailwind-first component styling. Impeccable is the visual
+critique/polish skill; the official shadcn skill applies to shadcn component work.
+The older overlapping design generators (`frontend-design`, `ui-ux-pro-max`,
+`ui-styling`, `design-system`, `design`, `brand`) are not default direction sources
+for this project. Use them only for a separately requested task where relevant.
+Preserve the approved Figma layouts and actual Al Mina content.
+
 Use one coherent styling/design system.
 
 Do not reintroduce overlapping styling stacks such as:

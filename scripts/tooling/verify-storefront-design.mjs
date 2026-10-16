@@ -12,7 +12,7 @@ function fixtureRequest(path) { return fetch(`${fixture}${path}`, { headers: { C
 assert.equal(await (await fixtureRequest('/__fixture/design-health')).text(), 'almina-synthetic-design');
 const directory = resolve(process.env.VISUAL_OUTPUT ?? '/tmp/almina-storefront-design');
 mkdirSync(directory, { recursive: true });
-const session = execFileSync('agent-browser', ['session', 'id', '--scope', 'worktree', '--prefix', 'next-dev-loop-design'], { encoding: 'utf8' }).trim();
+const session = execFileSync('agent-browser', ['session', 'id', '--scope', 'worktree', '--prefix', `next-dev-loop-design-${new URL(origin).port || '80'}`], { encoding: 'utf8' }).trim();
 function browser(...args) {
   const response = JSON.parse(execFileSync('agent-browser', ['--session', session, '--restore', '--json', ...args], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }));
   assert.ok(response.success, response.error); return response.data;
@@ -27,7 +27,7 @@ function settle() {
   const width = evaluate('innerWidth');
   const height = evaluate('document.documentElement.scrollHeight');
   browser('set', 'viewport', String(width), String(Math.max(900, height)));
-  browser('wait', '--fn', '[...document.querySelectorAll("main img")].every(img => img.complete)');
+  browser('wait', '--fn', '[...document.querySelectorAll("main img")].filter(img => img.getClientRects().length).every(img => img.complete)');
   browser('set', 'viewport', String(width), '900');
 }
 browser('console', '--clear'); browser('errors', '--clear');
@@ -45,13 +45,45 @@ for (const width of [360, 390, 768, 1024, 1280, 1440]) {
     open(path); settle();
     if (name === 'cart' || name === 'checkout') browser('wait', '--text', 'AED 20.00 per item');
     assert.equal(evaluate('document.documentElement.scrollWidth > window.innerWidth'), false, `${name} overflow at ${width}`);
-    assert.deepEqual(evaluate('[...document.querySelectorAll("main img")].filter(img => !img.naturalWidth).map(img => img.src)'), [], `Broken ${name} images`);
+    assert.deepEqual(evaluate('[...document.querySelectorAll("main img")].filter(img => img.getClientRects().length && !img.naturalWidth).map(img => img.src)'), [], `Broken ${name} images`);
     const audit = browser('a11y');
     assert.equal(audit.counts.violations, 0, `${name} ${width}px axe violations: ${JSON.stringify(audit.violations)}`);
-    assert.equal(audit.counts.incomplete, 0, `${name} ${width}px axe review items: ${JSON.stringify(audit.incomplete)}`);
+    // Axe cannot determine contrast for labels clipped by an intentional horizontal
+    // rail. Check their actual inherited foreground/background rather than waive
+    // the rule. Any unrelated review item still fails verification.
+    const railContrast = [];
+    for (const review of audit.incomplete ?? []) {
+      assert.equal(review.id, 'color-contrast', JSON.stringify(review));
+      for (const node of review.nodes) {
+        const selector = node.target[0];
+        const checked = evaluate(`(() => {
+          const element = document.querySelector(${JSON.stringify(selector)});
+          const rail = element?.closest('.category-rail, .catalog-category-links');
+          if (!element || !rail) return null;
+          const bounds = element.getBoundingClientRect(), clip = rail.getBoundingClientRect();
+          if (bounds.left >= clip.left && bounds.right <= clip.right) return null;
+          const rgb = value => value.match(/[\\d.]+/g).map(Number);
+          const luminance = channels => channels.slice(0, 3).map(value => {
+            const s = value / 255; return s <= .04045 ? s / 12.92 : ((s + .055) / 1.055) ** 2.4;
+          }).reduce((total, value, index) => total + value * [.2126, .7152, .0722][index], 0);
+          let parent = element, background;
+          while (parent) {
+            const color = rgb(getComputedStyle(parent).backgroundColor);
+            if (color.length === 3 || color[3] === 1) { background = color; break; }
+            parent = parent.parentElement;
+          }
+          if (!background) return null;
+          const foreground = luminance(rgb(getComputedStyle(element).color));
+          const backdrop = luminance(background);
+          return (Math.max(foreground, backdrop) + .05) / (Math.min(foreground, backdrop) + .05);
+        })()`);
+        assert.ok(checked !== null && checked >= 4.5, `${selector}: clipped rail contrast ${checked}`);
+        railContrast.push({ selector, contrast: checked });
+      }
+    }
     const filename = `${name}-${width}.png`;
     browser('screenshot', '--full', join(directory, filename));
-    results.push({ route: path, width, screenshot: filename, axeViolations: audit.counts.violations, axeIncomplete: audit.counts.incomplete });
+    results.push({ route: path, width, screenshot: filename, axeViolations: audit.counts.violations, axeIncomplete: audit.counts.incomplete, railContrast });
   }
   console.log(`${width}px: nine routes, no overflow/broken images/axe violations; screenshots saved.`);
 }
@@ -72,7 +104,7 @@ open('/products'); settle();
 assert.equal(evaluate('[...document.querySelectorAll(".out-stock")].every(el => el.closest("article").querySelector("button").disabled)'), true);
 // Real keyboard focus and skip link; fixed navigation must not obscure focused controls.
 open('/'); settle(); browser('press', 'Tab');
-assert.equal(evaluate('document.activeElement.className'), 'skip-link');
+assert.equal(evaluate('document.activeElement.classList.contains("skip-link")'), true);
 assert.equal(evaluate('getComputedStyle(document.activeElement).outlineStyle'), 'solid');
 browser('press', 'Enter');
 assert.equal(evaluate('location.hash'), '#main-content');

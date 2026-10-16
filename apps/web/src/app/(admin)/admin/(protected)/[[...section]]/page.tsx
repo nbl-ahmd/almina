@@ -1,3 +1,5 @@
+import type { AdminRecord } from '../../../../../lib/admin/policy';
+import { CatalogImport } from '../../../../../components/admin/catalog-import';
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
 import { operationsSnapshotSchema } from '@almina/contracts';
 import { OperationsView } from '../../../../../components/admin/operations-view';
@@ -495,6 +497,11 @@ export default async function AdminPage({
         </Command>
       </>
     );
+  }
+  if (section === 'catalog-import') {
+    const categories: AdminRecord[]=[];
+    for(let offset=0;offset<=10000;offset+=100){const page=rows(await adminRead('category',new URLSearchParams({limit:'100',offset:String(offset)})));categories.push(...page);if(page.length<100)break;if(offset===10000)throw new Error('Category mapping exceeds supported bounds');}
+    return <><h1>Catalog import</h1><CatalogImport categories={categories.map(category=>({id:String(category._id),name:String(category.name)}))} /></>;
   }
   if (section === "batch") return <><h1>Product recovery</h1><RecoveryImport /></>;
   if (section === "notifications")

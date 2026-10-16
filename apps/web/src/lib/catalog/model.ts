@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { productBusinessIdPattern } from '@almina/contracts';
+import { productContentFields, familyProfile, productFamilyFields, variantLabel, productBusinessIdPattern } from '@almina/contracts';
 
 export const objectId = /^[a-f0-9]{24}$/i;
 export const publicId = productBusinessIdPattern;
 const categorySchema = z.object({ _id: z.string().regex(objectId), name: z.string().min(1),
   image: z.string().optional(), disabled: z.boolean().optional() });
-const productSchema = z.object({ _id: z.string().regex(objectId), product_id: z.string().regex(publicId),
+const productSchema = z.object({ ...productFamilyFields, ...productContentFields, familyOptionCount:z.number().int().min(1).max(60).optional(),familyPriceVaries:z.boolean().optional(), _id: z.string().regex(objectId), product_id: z.string().regex(publicId),
   name: z.string().min(1), category: categorySchema, price: z.number().finite().nonnegative(),
   salePrice: z.number().finite().nonnegative().optional(), stock: z.number().int().nonnegative(),
   disabled: z.boolean().optional(), sale: z.boolean().optional(), featured: z.boolean().optional(),
@@ -19,7 +19,9 @@ export function readCategory(value: unknown): Category | null {
   return result.success && result.data.disabled !== true ? result.data : null;
 }
 export function readProduct(value: unknown): Product | null {
-  const result = productSchema.safeParse(value);
+  const raw = value && typeof value === 'object' ? value as Record<string,unknown> : {};
+  const core = Object.fromEntries(Object.entries(raw).filter(([key])=>!(key in productFamilyFields)));
+  const result = productSchema.safeParse({...core,...(familyProfile(raw)??{})});
   return result.success && result.data.disabled !== true && result.data.category.disabled !== true ? result.data : null;
 }
 function nameSlug(name: string) {
@@ -59,3 +61,5 @@ export function decodeStoredCart(raw: string | null, legacy = false): CartLine[]
     return result.success ? result.data : [];
   } catch { return []; }
 }
+
+export const productOptionLabel = (product: Product) => variantLabel(product);

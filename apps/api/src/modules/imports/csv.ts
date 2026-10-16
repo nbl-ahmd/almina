@@ -1,6 +1,6 @@
 import { HttpError } from '../../errors.js';
 // Bounded RFC 4180 subset, shared by reviewed recovery and retained CSV conversion.
-export function boundedCsvRecords(text: string, limits: { bytes: number; columns: number; trimOuterWhitespace?: boolean }): string[][] {
+export function boundedCsvRecords(text: string, limits: { bytes: number; columns: number; rows?: number; trimOuterWhitespace?: boolean }): string[][] {
   if (Buffer.byteLength(text) > limits.bytes) throw new HttpError(413, 'PAYLOAD_TOO_LARGE');
   const records: string[][] = [];
   let record: string[] = [], field = '', quoted = false, closed = false;
@@ -10,7 +10,7 @@ export function boundedCsvRecords(text: string, limits: { bytes: number; columns
     cell();
     if (record.some(value => value.length)) records.push(record);
     record = [];
-    if (records.length > 501) throw new HttpError(400, 'INVALID_REQUEST');
+    if (records.length > (limits.rows ?? 500) + 1) throw new HttpError(400, 'INVALID_REQUEST');
   }
   for (let i = 0; i < input.length; i++) {
     const char = input[i]!;

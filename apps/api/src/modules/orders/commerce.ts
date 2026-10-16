@@ -1,3 +1,4 @@
+import { familyProfile, familyFieldNames, variantLabel } from '@almina/contracts';
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
 import { checkoutInputSchema, quoteInputSchema, commercePolicySchema, statusInputSchema, type CheckoutInput,
@@ -64,7 +65,8 @@ export function calculateQuote(input: QuoteInput, products: Document[], policy: 
     const taxRateBps = product.vat === true ? policy.vatRateBps : 0;
     // Round VAT once per line, half up; inclusive tax is embedded and never added again.
     const tax = roundedRatio(charged, taxRateBps, policy.vatMode === 'inclusive' ? 10000 + taxRateBps : 10000);
-    return { ...item, sku: product.product_id, barcode: typeof product.barcode === 'string' ? product.barcode : null,
+    const family = familyProfile(product);
+    return { ...item, ...(family?{familyKey:family.familyKey!,variantLabel:variantLabel(family)}:{}), sku: product.product_id, barcode: typeof product.barcode === 'string' ? product.barcode : null,
       name: product.name, unitPriceMinor, salePriceMinor, taxRateBps, taxMinor: safe(tax),
       discountMinor: safe(BigInt(unitPriceMinor) * BigInt(item.quantity) - charged),
       lineTotalMinor: safe(charged + (policy.vatMode === 'exclusive' ? tax : 0n)) };
@@ -95,7 +97,7 @@ async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession) {
   const store = await db.collection('stores').findOne({}, queryOptions);
   if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
   const products = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
-    { ...queryOptions, projection: { product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
+    { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
       stock: 1, disabled: 1, active: 1, published: 1, category: 1 } }).toArray();
   const categories = await db.collection('categories').find({ _id: { $in: products.map(product => product.category) }, disabled: { $ne: true } }, queryOptions).toArray();
   const visible = new Set(categories.map(category => String(category._id)));

@@ -4,7 +4,7 @@ import { historicalStatus } from './status.js';
 // Compatibility view for existing staff screens. New lines always come from immutable snapshots.
 export function legacyOrderDto(order: Document): Document {
   const snapshotAvailable = order.schemaVersion === 2 && Array.isArray(order.lines);
-  const cartItems = snapshotAvailable ? order.lines.map((line: Document) => ({ quantity: line.quantity,
+  const cartItems = snapshotAvailable ? order.lines.map((line: Document) => ({ quantity: line.quantity, ...(line.variantLabel ? { variantLabel: line.variantLabel } : {}),
     _id: { _id: line.productId, product_id: line.sku, barcode: line.barcode, name: line.name,
       price: line.unitPriceMinor / 100, sale: line.salePriceMinor !== null,
       salePrice: line.salePriceMinor === null ? null : line.salePriceMinor / 100, category: { name: '' }, image: null },

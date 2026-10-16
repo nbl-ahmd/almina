@@ -1,3 +1,5 @@
+import { productContentFields } from './product-content';
+import { productFamilyFields } from './product-family';
 import { z } from 'zod';
 import { orderStatusSchema, lineSnapshotSchema, quoteDtoSchema } from './commerce';
 import { productBusinessIdSchema } from './identifiers';
@@ -33,7 +35,7 @@ export const loginBodySchema = z.object({
   password: z.string().min(1).max(72).refine(value => new TextEncoder().encode(value).length <= 72),
 }).strict();
 
-export const productDtoSchema = z.object({
+export const productDtoSchema = z.object({ ...productFamilyFields, ...productContentFields,
   id, productId: z.string().min(1), categoryId: id, name: z.string(),
   images: z.array(z.string()), cloudinaryImages: z.array(z.string().max(1000)).max(8).default([]), gdriveFileIds: z.array(z.string()),
   price: z.number().finite().nonnegative(), stock: z.number().int().nonnegative(),

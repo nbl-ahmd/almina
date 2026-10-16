@@ -33,7 +33,7 @@ export default async function ProtectedLayout({
                 key={section}
                 href={`/admin/${section === "dashboard" ? "" : section}`}
               >
-                {section.charAt(0).toUpperCase() + section.slice(1)}
+                {section === "catalog-import" ? "Catalog import" : section.charAt(0).toUpperCase() + section.slice(1)}
               </Link>
             ))}
           <Link href="/">View storefront</Link>

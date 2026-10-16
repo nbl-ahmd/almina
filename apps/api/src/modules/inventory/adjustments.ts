@@ -1,20 +1,23 @@
+import { productContentFields, productContentNames, publicationIssues } from '@almina/contracts';
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
 import { recordMediaHistory } from '../media/retention.js';
+import { productFamilyFields, familyFieldNames, validateProductFamily } from '@almina/contracts';
+import { validateFamilyMembership } from '../catalog/families.js';
 import { moneyMinor } from '../orders/commerce.js';
 const quantity = z.union([z.number(), z.string().regex(/^\d+$/).transform(Number)]).pipe(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER));
 const money = z.union([z.number(), z.string()]).refine(value => /^\d+(\.\d{1,2})?$/.test(String(value)) && Number(value) <= Number.MAX_SAFE_INTEGER / 100).transform(Number);
 const boolean = z.union([z.boolean(), z.enum(['true', 'false']).transform(value => value === 'true')]);
-const mutation = z.object({ name: z.string().trim().min(1).max(500).optional(), price: money.optional(),
+const mutation = z.object({ ...productFamilyFields, ...productContentFields, name: z.string().trim().min(1).max(500).optional(), price: money.optional(),
   stock: quantity.optional(), expectedStock: quantity.optional(), stockReason: z.string().trim().min(3).max(200).optional(), inventoryKey: z.uuid().optional(),
   description: z.string().max(4000).optional(), sale: boolean.optional(), salePrice: money.optional(),
   // Recognized compatibility fields remain ignored as in the retained update adapter.
   category: z.string().regex(/^[a-f0-9]{24}$/i).optional(), barcode: z.string().max(500).optional(), vat: boolean.optional(),
   featured: boolean.optional(), disabled: boolean.optional(), salePercent: z.union([z.string(), z.number()]).optional(),
   saleType: z.string().max(100).optional(), saleBadge: z.string().max(200).optional(),
-}).strict().refine(value => value.stock === undefined || value.expectedStock !== undefined);
+}).strict().superRefine(validateProductFamily).refine(value => value.stock === undefined || value.expectedStock !== undefined);
 type Assets = { images: string[]; gdriveFileIds: string[] };
 export function inventoryInput(raw: unknown) {
   const result = mutation.safeParse(raw);
@@ -55,9 +58,12 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       const delta = input.stock === undefined ? 0 : input.stock - product.stock;
       if (delta !== 0 && (!input.stockReason || !input.inventoryKey)) throw new HttpError(400, 'INVALID_REQUEST');
       const fields: Document = {};
-      for (const name of ['name', 'price', 'stock', 'description', 'sale', 'salePrice'] as const) if (input[name] !== undefined) fields[name] = input[name];
+      for (const name of ['name', 'price', 'stock', 'description', 'sale', 'salePrice', ...familyFieldNames, ...productContentNames] as const) if (input[name] !== undefined) fields[name] = input[name];
       if (assets) fields.mediaRevision = (product.mediaRevision ?? 0) + 1;
       const next: Document = { ...product, ...fields, ...assets };
+      if (input.stockVerified === true || input.stock !== undefined) { fields.stockReviewedAt = new Date(); fields.stockReviewedBy = actor; next.stockReviewedAt = fields.stockReviewedAt; }
+      if (product.catalogManaged === true && product.published !== false && !product.disabled && publicationIssues(next).length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      await validateFamilyMembership(db, next, session);
       const price = moneyMinor(next.price);
       if (next.salePrice !== undefined && next.salePrice !== null) {
         if (moneyMinor(next.salePrice) > price) throw new HttpError(400, 'INVALID_REQUEST');

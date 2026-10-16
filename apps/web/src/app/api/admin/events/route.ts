@@ -5,6 +5,8 @@ import {
 } from "../../../../lib/server/admin/gateway";
 import { getWebEnvironment } from "../../../../lib/server/env";
 import { orderEventStream } from "../../../../lib/admin/order-stream";
+export const runtime = 'nodejs';
+export const maxDuration = 30;
 // Every sample is independently authorized by the persistent API; SSE contains invalidations only.
 export async function GET(request: NextRequest) {
   const headers = {

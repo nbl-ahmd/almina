@@ -1,10 +1,12 @@
-"use client";
+'use client';
 import { useState } from 'react';
 import Image from 'next/image';
+import { Icon } from './icon';
 export function ProductGallery({ images, name }: { images: string[]; name: string }) {
   const [selected, setSelected] = useState(0);
-  if (!images.length) return <p className="rounded-xl border border-line bg-surface p-6 text-muted">Product photo unavailable.</p>;
+  if (!images.length) return <p className="rounded-xl border border-border bg-surface p-6 text-muted">Product photo unavailable.</p>;
   const selectedIndex = Math.min(selected, images.length - 1);
-  return <div className="gallery min-w-0"><Image className="block aspect-square h-auto w-full rounded-xl border border-line bg-surface p-6 object-contain" src={images[selectedIndex]!} alt={name} width={500} height={500} loading="eager" fetchPriority="high" sizes="(max-width: 700px) 90vw, (max-width: 1100px) 50vw, 500px" />
-    {images.length > 1 ? <div className="thumbnails mt-4 flex flex-wrap gap-3">{images.map((src, index) => <button key={src} aria-label={`View ${name} image ${index + 1}`} aria-pressed={selectedIndex === index} onClick={() => setSelected(index)}><Image src={src} alt="" width={70} height={70} sizes="70px" /></button>)}</div> : null}</div>;
+  return <div className="gallery relative min-w-0"><Image className="gallery-image block aspect-square h-auto w-full rounded-xl border border-border bg-white p-6 object-contain md:aspect-[6/5] md:p-12" src={images[selectedIndex]!} alt={name} width={560} height={560} loading="eager" fetchPriority="high" sizes="(max-width: 767px) 90vw, 45vw" />
+    {images.length>1 ? <><div className="pointer-events-none absolute inset-x-2 top-[calc(50%-35px)] flex justify-between md:hidden"><button className="pointer-events-auto size-11 rounded-full border-border bg-white p-2 text-ink shadow-sm hover:bg-subtle hover:text-ink" type="button" aria-label="Previous product photo" onClick={()=>setSelected((selectedIndex+images.length-1)%images.length)}><Icon name="back" /></button><button className="pointer-events-auto size-11 rounded-full border-border bg-white p-2 text-ink shadow-sm hover:bg-subtle hover:text-ink" type="button" aria-label="Next product photo" onClick={()=>setSelected((selectedIndex+1)%images.length)}><Icon name="arrow" /></button></div><div className="thumbnails mt-2 flex flex-wrap justify-center gap-1 md:mt-4 md:justify-start md:gap-3">{images.map((src,index)=><button className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border-0 bg-transparent p-2 aria-pressed:bg-transparent md:size-20 md:border md:border-border md:bg-white md:aria-pressed:border-brand max-md:aria-pressed:border-transparent max-md:[&:not(:focus-visible)]:outline-0 [&[aria-pressed=true]>span]:bg-brand" key={src} type="button" aria-label={`View ${name} image ${index+1}`} aria-pressed={selectedIndex===index} onClick={()=>setSelected(index)}><span className="h-1.5 w-4 rounded-full bg-border md:hidden" /><Image className="hidden size-16 object-contain md:block" src={src} alt="" width={70} height={70} sizes="70px" /></button>)}</div></> : null}
+  </div>;
 }

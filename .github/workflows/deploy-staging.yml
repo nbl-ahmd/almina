@@ -34,10 +34,6 @@ jobs:
     runs-on: ubuntu-24.04
     environment: staging
     timeout-minutes: 25
-    strategy:
-      fail-fast: true
-      matrix:
-        service: [api, legacy]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,7 +42,7 @@ jobs:
       - name: Deploy staging backend at the verified commit and await live status
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_STAGING_API_KEY }}
-          RENDER_SERVICE_ID: ${{ matrix.service == 'api' && vars.RENDER_STAGING_API_SERVICE_ID || vars.RENDER_STAGING_LEGACY_SERVICE_ID }}
+          RENDER_SERVICE_ID: ${{ vars.RENDER_STAGING_API_SERVICE_ID }}
           RELEASE_COMMIT: ${{ inputs.commit }}
           DEPLOYMENT_ENV: staging
         run: node scripts/tooling/deploy-render-staging.mjs --apply
@@ -63,8 +59,9 @@ jobs:
           node-version-file: .nvmrc
       - name: Deploy staging Next.js at the same verified commit
         env:
-          RENDER_API_KEY: ${{ secrets.RENDER_STAGING_API_KEY }}
-          RENDER_SERVICE_ID: ${{ vars.RENDER_STAGING_WEB_SERVICE_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_STAGING_TOKEN }}
+          VERCEL_STAGING_PROJECT_ID: ${{ vars.VERCEL_STAGING_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
           RELEASE_COMMIT: ${{ inputs.commit }}
           DEPLOYMENT_ENV: staging
-        run: node scripts/tooling/deploy-render-staging.mjs --apply
+        run: node scripts/tooling/deploy-vercel-staging.mjs --apply

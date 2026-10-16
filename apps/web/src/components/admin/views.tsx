@@ -1,4 +1,7 @@
-import { cloudinaryImage } from "@almina/contracts";
+import { feedIssues } from '../../lib/catalog/feed';
+import { readProduct } from '../../lib/catalog/model';
+import { productImages } from '../../lib/server/catalog';
+import { publicationIssues, cloudinaryImage } from "@almina/contracts";
 import { getWebEnvironment } from "../../lib/server/env";
 import { randomUUID } from "node:crypto";
 import { CloudinaryUpload } from "./cloudinary-upload";
@@ -7,6 +10,7 @@ import type { ReactNode } from "react";
 import type { AdminRecord } from "../../lib/admin/policy";
 import { Command } from "./controls";
 import { AdminForm, type Field } from "./forms";
+import { orderLinePresentation } from '../../lib/admin/order-lines';
 export function record(value: unknown): AdminRecord {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as AdminRecord)
@@ -134,6 +138,24 @@ export function ProductForm({
       hint: "Up to five images, 5 MB each.",
     },
   ];
+  fields.push(
+    {name:'familyKey',label:'Product family key (optional)',value:display(product?.familyKey??''),hint:'Same key for verified size/flavour/pack variants. Clear all family fields to keep this product standalone.'},
+    {name:'familyName',label:'Family display name',value:display(product?.familyName??'')},
+    {name:'familyBrand',label:'Family brand',value:display(product?.familyBrand??'')},
+    {name:'familyForm',label:'Family form / model',value:display(product?.familyForm??''),hint:'Must match across all family members.'},
+    {name:'familyStrength',label:'Family strength identity',value:display(product?.familyStrength??''),hint:'Use the verified strength, or not-applicable for non-medicines. Different strengths stay separate.'},
+    {name:'variantSize',label:'Variant size',value:display(product?.variantSize??'')},
+    {name:'variantFlavour',label:'Variant flavour',value:display(product?.variantFlavour??'')},
+    {name:'variantPackSize',label:'Variant pack size',value:display(product?.variantPackSize??''),hint:'Each combination needs its own SKU and stock. Shared barcodes do not establish family membership.'},
+  );
+  for (const [name,label] of [['brand','Brand'],['manufacturer','Manufacturer'],['gtin','Verified GTIN (optional)'],['mpn','Manufacturer part number (optional)'],['saleUnit','Saleable unit'],['packLabel','Pack / specification'],['productForm','Product form'],['strength','Strength (display only)'],['summary','Short product summary'],['ingredients','Ingredients / materials'],['usage','Usage information'],['warnings','Warnings'],['storage','Storage'],['seoTitle','SEO title override'],['seoDescription','SEO description override'],['imageSource','Image source URL'],['googleProductCategory','Google product category']] as const) fields.push({name,label,value:display(product?.[name]??''),...(['ingredients','usage','warnings','storage'].includes(name)?{type:'textarea'}:{})});
+  for (const [name,label,options] of [
+    ['productType','Product classification',['unreviewed','general','otc','prescription']],
+    ['condition','Item condition',['new','used','refurbished']],
+    ['identifierStatus','Manufacturer identifier status',['unknown','assigned','not-assigned']],
+    ['imageRights','Image usage permission',['unreviewed','authorized']],
+  ] as const) fields.push({name,label,value:display(product?.[name]??''),options:[{value:'',label:'Not reviewed'},...options.map(value=>({value,label:value}))]});
+  for (const [name,label] of [['contentReviewed','Content and exact image match reviewed'],['stockVerified','Physical stock verified'],['googleApproved','Approved for Google catalog export'],['metaApproved','Approved for Meta catalog export']] as const) fields.push({name,label,value:product?.[name]===true?'true':'false',options:[{value:'false',label:'No — pending review'},{value:'true',label:'Yes — reviewed'}]});
   fields.push({ name: "salePrice", label: "Sale price (AED, optional)", type: "number", min: 0, step: "0.01", value: product?.salePrice == null ? "" : display(product.salePrice), hint: "Required when sale is enabled; cannot exceed the regular price." });
   if (edit) fields.push({ name: "sale", label: "Sale", value: product?.sale === true ? "true" : "false", options: [{ value: "false", label: "No" }, { value: "true", label: "Yes" }] });
   if (edit) fields.push(
@@ -143,7 +165,7 @@ export function ProductForm({
   );
   if (!edit)
     fields.push(
-      { name: "barcode", label: "Barcode", required: true },
+      { name: "barcode", label: "Barcode (optional)", hint: "An ERP barcode is not automatically a verified GTIN." },
       {
         name: "category",
         label: "Category",
@@ -166,8 +188,11 @@ export function ProductForm({
         ],
       })),
     );
+  const readinessProduct = edit ? readProduct({...product,disabled:false,category:typeof product.category==='object'?product.category:categories.find(category=>String(category._id)===String(product.category))}) : null;
   return (
     <>
+    {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h3>{channel==='google'?'Google':'Meta'}</h3>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
+    {edit && product.catalogManaged===true ? <section className="admin-panel"><h2>Catalog review</h2><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{publicationIssues(product).length?<ul>{publicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Required publication checks complete. Publishing is a separate action.</p>}</section>:null}
     <AdminForm
       path={edit ? `products/${display(product._id)}` : "products"}
       method={edit ? "PUT" : "POST"}
@@ -230,12 +255,13 @@ export function OrderDetail({
             ? "Recorded order lines"
             : "Historical lines (current product labels; original snapshots unavailable)"
         }
-        data={rows(order.cartItems)}
+        data={rows(order.cartItems).map(line => orderLinePresentation(line, order.snapshotAvailable === true))}
         columns={[
           { key: "_id.name", label: "Product" },
+          { key: "variantLabel", label: "Selected option" },
           { key: "quantity", label: "Quantity" },
-          { key: "_id.price", label: "Unit price (AED)" },
-          { key: "lineTotalMinor", label: "Recorded line total (fils)" },
+          { key: "displayedUnitPrice", label: order.snapshotAvailable ? "Charged unit price (AED)" : "Current unit price (AED)" },
+          { key: "recordedLineTotal", label: "Recorded line total (AED)" },
         ]}
       />
       <section className="admin-panel">
@@ -266,12 +292,14 @@ export function OrderDetail({
         </Command>
         {admin ? (
           <AdminForm
+            key={`${id}-${display(order.status)}`}
             path={`orders/edit/${id}`}
             method="PUT"
             fields={[
               {
                 name: "status",
                 label: "Order status",
+                value: display(order.status),
                 options: [
                   "pending",
                   "confirmed",

@@ -1,13 +1,13 @@
 import 'server-only';
-import { cartSchema, displayPrice, productHref, type CartLine } from '../catalog/model';
+import { cartSchema, productOptionLabel, displayPrice, productHref, type CartLine } from '../catalog/model';
 import { getProductById, legacyRead, productImage } from './catalog';
 export async function readCart(lines: CartLine[]) {
   const parsed = cartSchema.parse(lines);
   return Promise.all(parsed.map(async line => {
     const product = await getProductById(line.id);
-    return product ? { ...line, name: product.name, price: displayPrice(product), stock: product.stock,
+    return product ? { ...line, name: product.name, variantLabel: productOptionLabel(product), price: displayPrice(product), stock: product.stock,
       image: productImage(product), href: productHref(product), available: product.stock >= line.quantity } :
-      { ...line, name: 'Unavailable product', price: null, stock: 0, image: '/product-placeholder.svg', href: '/products', available: false };
+      { ...line, name: 'Unavailable product', variantLabel: '', price: null, stock: 0, image: '/product-placeholder.svg', href: '/products', available: false };
   }));
 }
 export async function validateCartAddition(id: string, quantity: number) {

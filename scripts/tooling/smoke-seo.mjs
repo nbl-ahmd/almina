@@ -90,7 +90,7 @@ try {
         assert.ok(visibleHtml.includes('Daily care product description.'));
         assert.ok(visibleHtml.includes('AED 20.00'));
         const data = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
-        assert.deepEqual(data.map(item => item['@type']).sort(), ['BreadcrumbList', 'Organization', 'Product']);
+        assert.deepEqual(data.flatMap(item => item['@type']).sort(), ['BreadcrumbList', 'Organization', 'Pharmacy', 'Product']);
         const product = data.find(item => item['@type'] === 'Product');
         assert.equal(product.name, 'Daily Care'); assert.equal(product.sku, 'PD0001');
         assert.equal(product.offers.price, '20.00');
@@ -101,11 +101,14 @@ try {
       }
     }
   }
-  for (const path of ['/cart', '/checkout', '/search?q=Daily', '/admin', '/login', '/register', '/auth/login', '/foundation/status', '/products?category=aaaaaaaaaaaaaaaaaaaaaaaa', '/products?page=2', '/products/daily-care--PD0001?sort=price', '/offers?q=Daily']) {
+  for (const path of ['/cart', '/checkout', '/search?q=Daily', '/admin', '/login', '/register', '/auth/login', '/foundation/status', '/products?category=aaaaaaaaaaaaaaaaaaaaaaaa', '/products/daily-care--PD0001?sort=price', '/offers?q=Daily']) {
     const response = await fetch(`${origin}${path}`);
     assert.equal(response.headers.get('x-robots-tag'), path.startsWith('/admin') ? 'noindex, nofollow' : 'noindex, follow', path);
     assert.match(await response.text(), /name="robots" content="noindex/);
   }
+  const paginated=await fetch(`${origin}/products?page=2`);
+  assert.equal(paginated.headers.get('x-robots-tag'),null);
+  const pageHtml=await paginated.text();assert.ok(pageHtml.includes(`<link rel="canonical" href="${canonical}/products?page=2"`));assert.match(pageHtml,/name="robots" content="index, follow"/);
   const tracking = await fetch(`${origin}/products/daily-care--PD0001?utm_source=test`);
   assert.equal(tracking.headers.get('x-robots-tag'), null);
   assert.ok((await tracking.text()).includes(`<link rel="canonical" href="${canonical}/products/daily-care--PD0001"`));
@@ -126,6 +129,7 @@ try {
     assert.equal(location.pathname + location.search, destination);
   }
   const robots = await (await fetch(`${origin}/robots.txt`)).text();
+  assert.ok(!robots.includes('Disallow: /_next/'));
   assert.ok(robots.includes('Allow: /') && robots.includes(`Sitemap: ${canonical}/sitemap.xml`));
   const index = await (await fetch(`${origin}/sitemap.xml`)).text();
   const maps = [...index.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => new URL(match[1]).pathname);
