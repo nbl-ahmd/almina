@@ -76,6 +76,12 @@ test('route authorization allowlist covers every real legacy handler and denies 
       }
     }
   });
+  for (const layer of app.router.stack) if (layer.route?.path.startsWith('/api/catalog-export/')) {
+    for (const method of Object.keys(layer.route.methods)) {
+      assert.ok(routePolicies.some(route => route.method === method.toUpperCase() && route.path === layer.route.path), layer.route.path);
+      count++;
+    }
+  }
   assert.equal(count, routePolicies.length);
   for (const path of ['/api/products//abc', '/api/%70roducts/abc', '/api/products\\abc']) assert.equal(lookupPolicy('PUT', path), undefined);
   assert.equal(lookupPolicy('PATCH', '/api/products/abc'), undefined);
