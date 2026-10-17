@@ -21,12 +21,14 @@ export function indexingQuery(path:string,query:Query):Query {
   return catalogPageNumber(path,query)!==null?Object.fromEntries(Object.entries(query).filter(([key])=>key!=='page')):query;
 }
 export function pageMetadata(origin: string, production: boolean, title: string, description: string, path: string, query: Query = {}, image = '/logo.png'): Metadata {
+  // Imported titles may already contain the suffix supplied by the root template.
+  const pageTitle = title.replace(/\s*\|\s*Al Mina Pharmacy\s*$/i, '').trim() || siteName;
   const pageNumber=catalogPageNumber(path,query);
   const page=pageNumber!==null&&pageNumber>1?String(pageNumber):null;
   const url = new URL(`${path}${page?`?page=${page}`:''}`, origin).href;
-  const socialTitle = `${title} | ${siteName}`;
+  const socialTitle = `${pageTitle} | ${siteName}`;
   return {
-    title: page ? `${title} — Page ${page}` : title, description, alternates: { canonical: url },
+    title: page ? `${pageTitle} — Page ${page}` : pageTitle, description, alternates: { canonical: url },
     robots: { index: production && !hasDuplicateQuery(indexingQuery(path,query)), follow: true },
     openGraph: { type: 'website', title: socialTitle, description, url, siteName, locale: 'en_AE', images: [{ url: new URL(image, origin).href, alt: title }] },
     twitter: { card: 'summary_large_image', title: socialTitle, description, images: [new URL(image, origin).href] },

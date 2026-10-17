@@ -6,6 +6,7 @@ import {previewCatalogImport,commitCatalogImport,rollbackCatalogImport,catalogIm
 import {toggleCatalogVisibility} from '../apps/api/src/modules/media/metadata';
 import {updateProductInventory} from '../apps/api/src/modules/inventory/adjustments';
 import {catalogExportPage} from '../apps/api/src/modules/catalog/export';
+import {retainedProductList} from '../apps/api/src/modules/catalog/compatibility-reads';
 import {migrateCommerce} from '../scripts/migrations/commerce';
 const uri=process.env.COMMERCE_TEST_URI;
 assert.ok(uri||process.env.REQUIRE_DATABASE_TESTS!=='1','Disposable DB required');
@@ -29,6 +30,10 @@ test('draft import validates gross VAT, source identity, replay, stale edits, pu
     await assert.rejects(toggleCatalogVisibility(db,'products',String(product._id),actor),{code:'CATALOG_REVIEW_REQUIRED'});
     const again=await previewCatalogImport(db,input([{...row,summary:'Updated draft'}]),actor);assert.equal(again.rows[0]!.action,'update');
     await commitCatalogImport(db,{previewId:again.previewId},actor);assert.equal(await db.collection('products').countDocuments(),1);
+    const updated=(await db.collection('products').findOne())!;
+    assert.ok(updated.category instanceof ObjectId);assert.equal(String(updated.category),String(category));
+    const listing=await retainedProductList(db,{filter:{},limit:10,offset:0},true);
+    assert.equal(String(listing[0]!.category._id),String(category));
     await rollbackCatalogImport(db,{previewId:again.previewId},actor);assert.equal((await db.collection('products').findOne())!.summary,undefined);
     const stale=await previewCatalogImport(db,input([{...row,summary:'Stale change'}]),actor);
     await updateProductInventory(db,String(product._id),{description:'Staff edited description'},actor);

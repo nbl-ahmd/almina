@@ -153,7 +153,7 @@ export async function commitCatalogImport(db:Db,raw:unknown,actor:string,cloudNa
       let product:Document;
       if(previous){
         if(previous.stockVerified===true||previous.stock!==previous.websiteStockProposed||previous.published!==false||!previous.disabled||previous.archivedAt)throw new HttpError(409,'STOCK_CHANGED');
-        product={...previous,...values,...managed};await validateFamilyMembership(db,product,session);
+        product={...previous,...values,category:new ObjectId(row.categoryId),...managed};await validateFamilyMembership(db,product,session);
         await db.collection('products').replaceOne({_id:previous._id},product,{session});
         if(product.stock!==previous.stock)await db.collection<Document & {_id:string}>('inventory_adjustments').insertOne({_id:randomUUID(),productId:product._id,product_id:product.product_id,actor,reason:'Reviewed draft import proposed stock',before:previous.stock,after:product.stock,delta:product.stock-previous.stock,createdAt:new Date()},{session});
       }else{

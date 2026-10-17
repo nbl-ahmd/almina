@@ -14,6 +14,12 @@ test('production public SEO and preview/filter exclusion agree', () => {
   for (const path of ['/cart', '/checkout', '/admin', '/admin/orders', '/login', '/authentication', '/search', '/foundation/status']) assert.equal(isPublicPath(path), false);
   for (const path of ['/', '/products', '/products/name--PD1', '/categories', '/categories/name--abc', '/offers', '/about', '/contact']) assert.ok(isPublicPath(path));
 });
+test('imported SEO titles use the site suffix once', () => {
+  const metadata = pageMetadata('https://shop.example.invalid', true, 'Example cleanser 473 ml | Al Mina Pharmacy', 'Description', '/products/example--PD1');
+  assert.equal(metadata.title, 'Example cleanser 473 ml');
+  assert.equal(metadata.openGraph?.title, 'Example cleanser 473 ml | Al Mina Pharmacy');
+  assert.equal(metadata.twitter?.title, 'Example cleanser 473 ml | Al Mina Pharmacy');
+});
 test('JSON-LD cannot terminate its script; catalog prices match the page without invented reviews or availability', () => {
   const product = { _id: 'b'.repeat(24), product_id: 'PD1', name: '</script><script>alert(1)</script>',
     price: 25, sale: true, salePrice: 20, stock: 4, description: 'Real description', category: { _id: 'a'.repeat(24), name: 'Skin care' } };
