@@ -6,6 +6,7 @@ import {previewCatalogImport,commitCatalogImport,rollbackCatalogImport,catalogIm
 import {toggleCatalogVisibility} from '../apps/api/src/modules/media/metadata';
 import {updateProductInventory} from '../apps/api/src/modules/inventory/adjustments';
 import {catalogExportPage} from '../apps/api/src/modules/catalog/export';
+import {retainedProductList} from '../apps/api/src/modules/catalog/compatibility-reads';
 import {migrateCommerce} from '../scripts/migrations/commerce';
 const uri=process.env.COMMERCE_TEST_URI;
 assert.ok(uri||process.env.REQUIRE_DATABASE_TESTS!=='1','Disposable DB required');
@@ -29,6 +30,10 @@ test('draft import validates gross VAT, source identity, replay, stale edits, pu
     await assert.rejects(toggleCatalogVisibility(db,'products',String(product._id),actor),{code:'CATALOG_REVIEW_REQUIRED'});
     const again=await previewCatalogImport(db,input([{...row,summary:'Updated draft'}]),actor);assert.equal(again.rows[0]!.action,'update');
     await commitCatalogImport(db,{previewId:again.previewId},actor);assert.equal(await db.collection('products').countDocuments(),1);
+    const updated=(await db.collection('products').findOne())!;
+    assert.ok(updated.category instanceof ObjectId);assert.equal(String(updated.category),String(category));
+    const listing=await retainedProductList(db,{filter:{},limit:10,offset:0,q:undefined,disabledCategory:undefined},true);
+    assert.equal(String(listing[0]!.category._id),String(category));
     await rollbackCatalogImport(db,{previewId:again.previewId},actor);assert.equal((await db.collection('products').findOne())!.summary,undefined);
     const stale=await previewCatalogImport(db,input([{...row,summary:'Stale change'}]),actor);
     await updateProductInventory(db,String(product._id),{description:'Staff edited description'},actor);
@@ -52,6 +57,20 @@ test('draft import validates gross VAT, source identity, replay, stale edits, pu
     assert.equal((await commitCatalogImport(db,{previewId:bulk.previewId},actor))!.processed,205);assert.equal(await db.collection('catalog_sources').countDocuments({namespace:'synthetic-erp'}),206);
     let rollbackCalls=0;while(!(await rollbackCatalogImport(db,{previewId:bulk.previewId},actor))!.complete){rollbackCalls++;assert.ok(rollbackCalls<5);}assert.equal(rollbackCalls,2);
     assert.equal(await db.collection('catalog_sources').countDocuments({namespace:'synthetic-erp'}),1);
+
+    const blankChoices=await previewCatalogImport(db,input(['blank-choices','blank-choices-2'].map(sourceKey=>({...row,sourceKey,condition:'',identifierStatus:'',imageRights:'',productType:''}))),actor);
+    assert.ok(blankChoices.previewId);
+    await assert.rejects(commitCatalogImport(db,{previewId:blankChoices.previewId},actor,undefined,101),{code:'INVALID_REQUEST'});
+    const smallChunk=await commitCatalogImport(db,{previewId:blankChoices.previewId},actor,undefined,1);
+    assert.equal(smallChunk!.complete,false);assert.equal(smallChunk!.processed,1);
+    assert.equal((await commitCatalogImport(db,{previewId:blankChoices.previewId},actor))!.complete,true);
+    const blankMapping=await db.collection('catalog_sources').findOne({sourceKey:'blank-choices'});
+    const blankProduct=await db.collection('products').findOne({_id:blankMapping!.productId});
+    assert.equal(blankProduct!.condition,undefined);assert.equal(blankProduct!.productType,undefined);
+    assert.equal(blankProduct!.published,false);assert.equal(blankProduct!.stockVerified,false);
+    const openingLedger=await db.collection('inventory_adjustments').find({productId:blankProduct!._id}).toArray();
+    assert.equal(openingLedger.length,1);assert.equal(openingLedger[0]!.before,0);assert.equal(openingLedger[0]!.after,4);assert.equal(openingLedger[0]!.delta,4);
+    await rollbackCatalogImport(db,{previewId:blankChoices.previewId},actor);
 
   }finally{await db.dropDatabase();await client.close();}
 });

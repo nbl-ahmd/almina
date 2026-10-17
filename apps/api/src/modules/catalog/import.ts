@@ -3,7 +3,7 @@ import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { productContentFields, productFamilyFields, validateProductFamily, publicationIssues, cloudinaryImage, familyFieldNames, familyProfile, sameFamilyIdentity, optionFields } from '@almina/contracts';
 import { boundedCsvRecords } from '../imports/csv.js';
-import { allocateCatalogIds, insertCatalogProduct, catalogCreationInput } from './creation.js';
+import { allocateCatalogIds, insertCatalogProduct, catalogCreationInput, catalogProductDocument } from './creation.js';
 import { validateFamilyMembership } from './families.js';
 import { HttpError } from '../../errors.js';
 const cash=z.string().regex(/^\d{1,7}(?:\.\d{1,2})?$/);
@@ -101,10 +101,15 @@ export async function previewCatalogImport(db:Db,raw:unknown,actor:string,cloudN
   }
   if(errors.length)return {errors:errors.slice(0,500),warnings:warnings.slice(0,500),rows:report.slice(0,50),total:rows.length};
   const previewId=digest([actor,input.namespace,rows,baseline,randomUUID()]);
-  await db.collection<Document & {_id:string}>('catalog_imports').updateOne({_id:previewId},{$setOnInsert:{actor,namespace:input.namespace,rows,baseline,report,offset:0,createdAt:new Date(),expiresAt:new Date(Date.now()+86400000),status:'preview'}},{upsert:true});
+  // Blank optional CSV choices parse to undefined. Preserve their absence through
+  // BSON storage so a later commit does not receive invalid null enum values.
+  await db.collection<Document & {_id:string}>('catalog_imports').updateOne({_id:previewId},{$setOnInsert:{actor,namespace:input.namespace,rows,baseline,report,offset:0,createdAt:new Date(),expiresAt:new Date(Date.now()+86400000),status:'preview'}},{upsert:true,ignoreUndefined:true});
   return {previewId,errors:[],warnings:warnings.slice(0,500),rows:report.slice(0,50),total:rows.length};
 }
-export async function commitCatalogImport(db:Db,raw:unknown,actor:string,cloudName?:string) {
+export async function commitCatalogImport(db:Db,raw:unknown,actor:string,cloudName?:string,chunkSize=100) {
+  // Remote maintenance callers can reduce round trips per transaction without
+  // changing the public endpoint's bounded default or resumable offset logic.
+  const limit=inputValue(z.number().int().min(1).max(100),chunkSize);
   const {previewId}=inputValue(command,raw); if(!ObjectId.isValid(actor))throw new HttpError(400,'INVALID_REQUEST');
   const session=db.client.startSession();let result:Document|undefined;
   try{await session.withTransaction(async()=>{
@@ -116,9 +121,30 @@ export async function commitCatalogImport(db:Db,raw:unknown,actor:string,cloudNa
     await db.collection('stores').updateOne({_id:store._id},{$inc:{catalogRevision:1}},{session});
     const policy=await db.collection('commerce_policies').findOne({active:true},{session});
     if(!policy||policy.vatMode!=='inclusive'||policy.vatRateBps!==500)throw new HttpError(409,'COMMERCE_UNAVAILABLE');
-    const chunk=(batch.rows as Row[]).slice(batch.offset,batch.offset+100);
+    const chunk=(batch.rows as Row[]).slice(batch.offset,batch.offset+limit);
     const ids=chunk.some(row=>batch.baseline[row.sourceKey]===null)?await allocateCatalogIds(db,chunk.filter(row=>batch.baseline[row.sourceKey]===null).length,0,session):[];
-    for(const row of chunk){
+    // Initial, independent drafts can be validated and inserted together. Keep
+    // family membership and updates on the existing per-product path. This
+    // avoids hundreds of network round trips inside Atlas's transaction limit.
+    const bulkInitial=chunk.every(row=>batch.baseline[row.sourceKey]===null&&!row.familyKey);
+    if(bulkInitial){
+      const keys=chunk.map(row=>sourceId(batch.namespace,row.sourceKey));
+      if(await db.collection<Document & {_id:string}>('catalog_sources').findOne({_id:{$in:keys}},{session}))throw new HttpError(409,'STOCK_CHANGED');
+      const categoryIds=[...new Set(chunk.map(row=>row.categoryId))].map(id=>new ObjectId(id));
+      const categories=await db.collection('categories').find({_id:{$in:categoryIds},archivedAt:{$exists:false}},{session,projection:{_id:1}}).toArray();
+      if(categories.length!==categoryIds.length)throw new HttpError(400,'INVALID_REQUEST');
+      const products=chunk.map((row,index)=>{
+        const values=productValues(row);
+        return {...catalogProductDocument(values,ids[index]!,new ObjectId(row.categoryId)),catalogManaged:true,published:false,disabled:true,websiteStockProposed:row.websiteStockProposed,cloudinaryImages:images(row,cloudName),updatedAt:new Date()};
+      });
+      // Still validate family fields (including partial/invalid metadata) before
+      // any write; an independent product performs no family query.
+      for(const product of products)await validateFamilyMembership(db,product,session);
+      await db.collection('products').insertMany(products,{session});
+      await db.collection<Document & {_id:string}>('inventory_adjustments').insertMany(products.map((product,index)=>({_id:randomUUID(),productId:product._id,product_id:product.product_id,actor,reason:'Initial catalog stock',delta:chunk[index]!.websiteStockProposed,before:0,after:chunk[index]!.websiteStockProposed,createdAt:new Date()})),{session});
+      await db.collection<Document & {_id:string}>('catalog_sources').insertMany(products.map((product,index)=>({_id:keys[index]!,namespace:batch.namespace,sourceKey:chunk[index]!.sourceKey,productId:product._id,createdAt:new Date()})),{session});
+      await db.collection<Document & {_id:string}>('catalog_import_changes').insertMany(products.map((product,index)=>{const row=chunk[index]!;return {_id:digest([previewId,row.sourceKey]),previewId,sourceId:keys[index]!,productId:product._id,actor,previous:null,afterDigest:digest(product),sourcePrice:row.sourcePrice,vatPercent:row.vatPercent,sourcePacking:row.sourcePacking??null,sourceStock:row.sourceStock??null,createdAt:new Date()};}),{session});
+    }else for(const row of chunk){
       const key=sourceId(batch.namespace,row.sourceKey),mapping=await db.collection<Document & {_id:string}>('catalog_sources').findOne({_id:key},{session});
       const previous=mapping?await db.collection('products').findOne({_id:mapping.productId},{session}):null;
       if((previous?digest(previous):null)!==batch.baseline[row.sourceKey])throw new HttpError(409,'STOCK_CHANGED');
@@ -127,7 +153,7 @@ export async function commitCatalogImport(db:Db,raw:unknown,actor:string,cloudNa
       let product:Document;
       if(previous){
         if(previous.stockVerified===true||previous.stock!==previous.websiteStockProposed||previous.published!==false||!previous.disabled||previous.archivedAt)throw new HttpError(409,'STOCK_CHANGED');
-        product={...previous,...values,...managed};await validateFamilyMembership(db,product,session);
+        product={...previous,...values,category:new ObjectId(row.categoryId),...managed};await validateFamilyMembership(db,product,session);
         await db.collection('products').replaceOne({_id:previous._id},product,{session});
         if(product.stock!==previous.stock)await db.collection<Document & {_id:string}>('inventory_adjustments').insertOne({_id:randomUUID(),productId:product._id,product_id:product.product_id,actor,reason:'Reviewed draft import proposed stock',before:previous.stock,after:product.stock,delta:product.stock-previous.stock,createdAt:new Date()},{session});
       }else{
