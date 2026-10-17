@@ -53,5 +53,19 @@ test('draft import validates gross VAT, source identity, replay, stale edits, pu
     let rollbackCalls=0;while(!(await rollbackCatalogImport(db,{previewId:bulk.previewId},actor))!.complete){rollbackCalls++;assert.ok(rollbackCalls<5);}assert.equal(rollbackCalls,2);
     assert.equal(await db.collection('catalog_sources').countDocuments({namespace:'synthetic-erp'}),1);
 
+    const blankChoices=await previewCatalogImport(db,input(['blank-choices','blank-choices-2'].map(sourceKey=>({...row,sourceKey,condition:'',identifierStatus:'',imageRights:'',productType:''}))),actor);
+    assert.ok(blankChoices.previewId);
+    await assert.rejects(commitCatalogImport(db,{previewId:blankChoices.previewId},actor,undefined,101),{code:'INVALID_REQUEST'});
+    const smallChunk=await commitCatalogImport(db,{previewId:blankChoices.previewId},actor,undefined,1);
+    assert.equal(smallChunk!.complete,false);assert.equal(smallChunk!.processed,1);
+    assert.equal((await commitCatalogImport(db,{previewId:blankChoices.previewId},actor))!.complete,true);
+    const blankMapping=await db.collection('catalog_sources').findOne({sourceKey:'blank-choices'});
+    const blankProduct=await db.collection('products').findOne({_id:blankMapping!.productId});
+    assert.equal(blankProduct!.condition,undefined);assert.equal(blankProduct!.productType,undefined);
+    assert.equal(blankProduct!.published,false);assert.equal(blankProduct!.stockVerified,false);
+    const openingLedger=await db.collection('inventory_adjustments').find({productId:blankProduct!._id}).toArray();
+    assert.equal(openingLedger.length,1);assert.equal(openingLedger[0]!.before,0);assert.equal(openingLedger[0]!.after,4);assert.equal(openingLedger[0]!.delta,4);
+    await rollbackCatalogImport(db,{previewId:blankChoices.previewId},actor);
+
   }finally{await db.dropDatabase();await client.close();}
 });
