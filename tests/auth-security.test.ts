@@ -66,7 +66,7 @@ test('all admin legacy endpoints reject authenticated staff even with forged rol
 test('route authorization allowlist covers every real legacy handler and denies unlisted methods/path encodings', () => {
   const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true });
   const mounts = app.router.stack.filter((layer: { name: string }) => layer.name === 'router');
-  const names = ['operations', 'media', 'recovery', 'category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
+  const names = ['catalog-import', 'operations', 'media', 'recovery', 'category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
   let count = 0;
   mounts.forEach((mount: { handle: { stack: { route?: { path: string; methods: Record<string, boolean> } }[] } }, index: number) => {
     for (const layer of mount.handle.stack) if (layer.route) {
@@ -76,6 +76,12 @@ test('route authorization allowlist covers every real legacy handler and denies 
       }
     }
   });
+  for (const layer of app.router.stack) if (layer.route?.path.startsWith('/api/catalog-export/')) {
+    for (const method of Object.keys(layer.route.methods)) {
+      assert.ok(routePolicies.some(route => route.method === method.toUpperCase() && route.path === layer.route.path), layer.route.path);
+      count++;
+    }
+  }
   assert.equal(count, routePolicies.length);
   for (const path of ['/api/products//abc', '/api/%70roducts/abc', '/api/products\\abc']) assert.equal(lookupPolicy('PUT', path), undefined);
   assert.equal(lookupPolicy('PATCH', '/api/products/abc'), undefined);

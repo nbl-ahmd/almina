@@ -2,6 +2,9 @@
 export type RetainedAccess = 'admin' | 'staff' | 'public' | 'orders' | 'login' | 'webhook' | 'verification';
 export const routePolicies = [
   ['GET', '/api/operations', 'admin'],
+  ['GET','/api/catalog-export/state','public'],['GET','/api/catalog-export/products','public'],
+  ['GET','/api/catalog-import/template','admin'],
+  ...['preview','commit','report','rollback'].map(action=>['POST',`/api/catalog-import/${action}`,'admin'] as [string,string,RetainedAccess]),
   ['POST', '/api/media/products/:id', 'admin'],
   ['GET', '/api/recovery/template', 'admin'], ['POST', '/api/recovery/preview', 'admin'], ['POST', '/api/recovery/commit', 'admin'],
   ['POST', '/api/auth/login', 'login'], ['POST', '/api/auth/logout', 'staff'],

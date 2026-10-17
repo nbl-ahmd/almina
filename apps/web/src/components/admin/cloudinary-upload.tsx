@@ -2,6 +2,7 @@
 import { useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminRequest } from './controls';
+import { adminFileLimit } from '../../lib/admin/upload-limits';
 const subscribe = () => () => {};
 const clientReady = () => true;
 const serverReady = () => false;
@@ -13,7 +14,7 @@ export function CloudinaryUpload({ productId, revision }: { productId: string; r
   async function submit(event: FormEvent) {
     event.preventDefault(); setFailure(''); setMessage('');
     const files = Array.from(input.current?.files ?? []);
-    if (!files.length || files.length > 5 || files.some(file => file.size > 5 * 1024 * 1024)) { setFailure('Choose one to five raster images, at most 5 MiB each.'); return; }
+    if (!files.length || files.length > 5 || files.reduce((total, file) => total + file.size, 0) > adminFileLimit) { setFailure('Choose one to five raster images, smaller than 3 MB in total.'); return; }
     setPending(true);
     try {
       const saved = sessionStorage.getItem(receiptKey);
@@ -29,10 +30,10 @@ export function CloudinaryUpload({ productId, revision }: { productId: string; r
   }
   return <form onSubmit={event => { void submit(event); }} className="space-y-4 rounded-lg border border-teal-200 bg-white p-4" aria-busy={pending}>
     <h3 className="text-lg font-bold text-teal-950">Cloudinary product images</h3>
-    <p>Choose reviewed product photos. Replacing the gallery preserves earlier Cloudinary and legacy images for historical references.</p>
+    <p>Choose reviewed product photos, smaller than 3 MB in total. Replacing the gallery preserves earlier Cloudinary and legacy images for historical references.</p>
     <label className="block font-semibold">Replacement raster images<input ref={input} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" disabled={!ready || pending} required className="mt-2 block w-full min-w-0 rounded border border-slate-300 p-3" /></label>
     <button disabled={!ready || pending} className="min-h-11 rounded bg-teal-800 px-5 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'Uploading…' : 'Save Cloudinary images'}</button>
-    <button type="button" disabled={!ready || pending} onClick={() => { sessionStorage.removeItem(receiptKey); setFailure(''); setMessage('Local retry review cleared. Check the gallery before replacing it. All uploaded assets remain retained.'); }} className="min-h-11 rounded border border-slate-300 px-4 py-3">Clear local upload review</button>
+    <button type="button" disabled={!ready || pending} onClick={() => { sessionStorage.removeItem(receiptKey); setFailure(''); setMessage('Local retry review cleared. Check the gallery before replacing it. All uploaded assets remain retained.'); }} className="min-h-11 rounded border border-slate-300 bg-surface px-4 py-3 text-brand">Clear local upload review</button>
     {failure ? <p role="alert" className="text-red-900">{failure}</p> : null}{message ? <p role="status" className="text-teal-950">{message}</p> : null}
   </form>;
 }

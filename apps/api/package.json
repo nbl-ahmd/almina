@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file-if-exists=.env.local src/server.ts",
+    "dev": "node ../../scripts/tooling/dev.mjs --api-only",
+    "dev:foundation": "tsx watch --env-file-if-exists=.env.local src/server.ts",
     "build": "node ../../scripts/tooling/build-api.mjs",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit"

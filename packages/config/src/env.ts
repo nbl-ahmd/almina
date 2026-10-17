@@ -56,6 +56,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
   const value = parse(z.object({
     API_ORIGIN: originSchema,
     CLOUDINARY_CLOUD_NAME: z.string().regex(/^[A-Za-z0-9_-]{1,100}$/).optional(),
+    CATALOG_FEEDS_ENABLED: z.enum(['true','false']).default('false').transform(value=>value==='true'),
     CHECKOUT_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     COMMERCE_TELEMETRY_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     LEGACY_API_ORIGIN: originSchema,
@@ -72,6 +73,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
     }),
   }), {
     API_ORIGIN: source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
+    CATALOG_FEEDS_ENABLED: source.CATALOG_FEEDS_ENABLED,
     CHECKOUT_ENABLED: source.CHECKOUT_ENABLED,
     COMMERCE_TELEMETRY_ENABLED: source.COMMERCE_TELEMETRY_ENABLED,
     CLOUDINARY_CLOUD_NAME: source.CLOUDINARY_CLOUD_NAME,

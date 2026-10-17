@@ -63,6 +63,7 @@ try {
   assert.ok(csp?.includes("frame-ancestors 'none'"));
   assert.ok(!csp.includes("'unsafe-eval'"));
   assert.ok(!csp.split(';').find(part => part.trim().startsWith('script-src')).includes("'unsafe-inline'"));
+  assert.ok(!csp.split(';').find(part => part.trim().startsWith('style-src ')).includes("'unsafe-inline'"), 'Compiled production-mode pages retain nonce-only style elements');
   const nonce = csp.match(/'nonce-([^']+)'/)?.[1];
   assert.ok(nonce && nonce !== 'caller-selected-nonce');
   const secureHtml = await secure.text();

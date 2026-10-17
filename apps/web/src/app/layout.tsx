@@ -5,7 +5,8 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { getWebEnvironment } from '../lib/server/env';
 import { siteDescription, siteName } from '../lib/seo';
-const ptSans = localFont({ src: './fonts/PTSans-Regular.woff2', weight: '400', display: 'swap' });
+// Retained admin/base face loads only if used; storefront preloads its own family.
+const ptSans = localFont({ src: './fonts/PTSans-Regular.woff2', weight: '400', display: 'swap', preload: false });
 export function generateMetadata(): Metadata {
   const env = getWebEnvironment();
   return { metadataBase: new URL(env.WEB_ORIGIN),

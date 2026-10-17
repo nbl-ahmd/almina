@@ -1,3 +1,4 @@
+import { productContentNames } from '@almina/contracts';
 import { z } from "zod";
 import { operationsSnapshotSchema } from '@almina/contracts';
 export const identitySchema = z.object({
@@ -21,6 +22,7 @@ export const sections = [
   "notifications",
   "settings",
   "batch",
+  "catalog-import",
 ] as const;
 export type Section = (typeof sections)[number];
 export function canVisit(role: Identity["role"], section: string) {
@@ -32,6 +34,8 @@ export function canVisit(role: Identity["role"], section: string) {
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['GET', 'operations', 'admin'],
+  ['GET','catalog-import/template','admin'],
+  ...['preview','commit','report','rollback'].map(action=>['POST',`catalog-import/${action}`,'admin'] as [string,string,'admin']),
   ["POST", "auth/login", "login"],
   ["GET", "auth/me", "staff"],
   ["POST", "auth/logout", "staff"],
@@ -185,6 +189,9 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
 }
 // Explicit recursive projection: provider IDs, hashes, subscriptions and unexpected fields never reach a browser.
 const fields = new Set([
+  ...productContentNames,
+  "published","active","catalogManaged","websiteStockProposed","stockReviewedAt","previewId","errors","warnings","rows","row","field","message","sourceKey","action","productId","total","processed","complete","report","namespace","offset","nextOffset","previousPrice","previousStock","changedFields","unmappedCategories",
+  "variantLabel", "familyKey", "familyName", "familyBrand", "familyForm", "familyStrength", "variantSize", "variantFlavour", "variantPackSize",
   "_id",
   "id",
   "username",

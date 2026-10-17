@@ -3,6 +3,9 @@ import type { Db, IndexDescription } from 'mongodb';
 // Additive only. No uniqueness changes without a production duplicate inventory.
 export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = {
   products: [
+    {name:'catalog_google_export',key:{googleApproved:1,_id:1}},
+    {name:'catalog_meta_export',key:{metaApproved:1,_id:1}},
+    { name: 'product_family_members', key: { familyKey: 1, archivedAt: 1, product_id: 1 } },
     { name: 'v1_product_business_id', key: { product_id: 1 } },
     { name: 'retained_product_image', key: { image: 1 } },
     { name: 'retained_product_images', key: { images: 1 } },
@@ -36,9 +39,12 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
   users: [{ name: 'staff_push_scope', key: { role: 1, disabled: 1, _id: 1 } }],
   conversations: [{ name: 'whatsapp_sender_lookup', key: { from: 1 } }],
   whatsappposters: [{ name: 'whatsapp_poster_filename', key: { image: 1 } }],
+  catalog_import_changes:[{name:'catalog_import_change_report',key:{previewId:1,rolledBack:1,_id:1}}],
   categories: [{ name: 'retained_category_image', key: { image: 1 } }],
   banners: [{ name: 'retained_banner_image', key: { image: 1 } }],
   auth_rate_limits: [{ name: 'auth_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
+  geocoding_cache: [{ name: 'geocoding_cache_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
+  geocoding_limits: [{ name: 'geocoding_quota_expiry', key: { expiresAt: 1 }, expireAfterSeconds: 0 }],
   api_sessions: [
     { name: 'v1_session_token', key: { tokenHash: 1 }, unique: true },
     { name: 'v2_session_user', key: { userId: 1 } },

@@ -1,14 +1,17 @@
+import { productContentFields } from '@almina/contracts';
 import { randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
 import { z } from 'zod';
+import { productFamilyFields, validateProductFamily } from '@almina/contracts';
+import { validateFamilyMembership } from './families.js';
 import { HttpError } from '../../errors.js';
 
 const money = z.union([z.string(), z.number()]).refine(value => /^\d+(\.\d{1,2})?$/.test(String(value)) && Number(value) <= Number.MAX_SAFE_INTEGER / 100).transform(Number);
 const boolean = z.union([z.boolean(), z.enum(['true', 'false']).transform(value => value === 'true')]).default(false);
-const input = z.object({ name: z.string().trim().min(1).max(500), category: z.string().regex(/^[a-f0-9]{24}$/i),
-  barcode: z.string().trim().min(1).max(500), price: money, stock: z.union([z.number(), z.string().regex(/^\d+$/).transform(Number)]).pipe(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
+const input = z.object({ ...productFamilyFields, ...productContentFields, name: z.string().trim().min(1).max(500), category: z.string().regex(/^[a-f0-9]{24}$/i),
+  barcode: z.string().trim().max(500), price: money, stock: z.union([z.number(), z.string().regex(/^\d+$/).transform(Number)]).pipe(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
   vat: boolean, sale: boolean, featured: boolean, salePrice: money.optional(), description: z.string().max(4000).optional(),
-}).strict().refine(value => (!value.sale || value.salePrice !== undefined) && (value.salePrice === undefined || value.salePrice <= value.price));
+}).strict().superRefine(validateProductFamily).refine(value => (!value.sale || value.salePrice !== undefined) && (value.salePrice === undefined || value.salePrice <= value.price));
 export function catalogCreationInput(raw: unknown) {
   const parsed = input.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
@@ -30,7 +33,7 @@ async function serializeCatalog(db: Db, session: ClientSession, batch: boolean) 
   // Recovery imports write this same document. Serialize identifier allocation against them too.
   await db.collection('stores').updateOne({ _id: store._id }, { $inc: { catalogRevision: 1 } }, { session });
 }
-async function allocate(db: Db, count: number, floor: number, session: ClientSession) {
+export async function allocateCatalogIds(db: Db, count: number, floor: number, session: ClientSession) {
   // Server-side indexed prefix scan; no unbounded document download or parseInt on arbitrary IDs.
   const [maximum] = await db.collection('products').aggregate<{ value: number }>([
     { $match: { product_id: /^PD\d{1,16}$/ } },
@@ -43,10 +46,11 @@ async function allocate(db: Db, count: number, floor: number, session: ClientSes
   await counters.updateOne({ _id: 'legacy-product-sequence' }, { $set: { value: start + count } }, { session, upsert: true });
   return Array.from({ length: count }, (_, index) => `PD${String(start + index + 1).padStart(4, '0')}`);
 }
-async function insert(db: Db, value: ProductInput, id: string, actor: string, session: ClientSession, assets: Assets = { images: [], gdriveFileIds: [] }) {
+export async function insertCatalogProduct(db: Db, value: ProductInput, id: string, actor: string, session: ClientSession, assets: Assets = { images: [], gdriveFileIds: [] }) {
   const category = await db.collection('categories').findOne({ _id: new ObjectId(value.category), archivedAt: { $exists: false } }, { session });
   if (!category) throw new HttpError(400, 'INVALID_REQUEST');
-  const product = { ...value, category: category._id, product_id: id, ...assets, _id: new ObjectId(), disabled: false, createdAt: new Date() };
+  const product = { ...Object.fromEntries(Object.entries(value).filter(([,item])=>item!==undefined)), category: category._id, product_id: id, ...assets, _id: new ObjectId(), disabled: false, createdAt: new Date() };
+  await validateFamilyMembership(db, product, session);
   await db.collection('products').insertOne(product, { session });
   await db.collection<Document & { _id: string }>('inventory_adjustments').insertOne({ _id: randomUUID(), productId: product._id, product_id: id,
     actor, reason: 'Initial catalog stock', delta: value.stock, before: 0, after: value.stock, createdAt: new Date() }, { session });
@@ -60,8 +64,8 @@ export async function createCatalogProduct(db: Db, raw: unknown, actor: string, 
   try {
     await session.withTransaction(async () => {
       await serializeCatalog(db, session, false);
-      const [id] = await allocate(db, 1, 0, session);
-      const product = await insert(db, value, id!, actor, session, assets);
+      const [id] = await allocateCatalogIds(db, 1, 0, session);
+      const product = await insertCatalogProduct(db, value, id!, actor, session, assets);
       // Retain the populated create response used by older admin callers.
       result = { ...product, category: await db.collection('categories').findOne({ _id: product.category }, { session }) };
     }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
@@ -85,7 +89,7 @@ export async function createLegacyCatalogBatch(db: Db, raw: unknown, actor: stri
   try {
     await session.withTransaction(async () => {
       await serializeCatalog(db, session, true);
-      const ids = await allocate(db, rows.length, 5000, session);
+      const ids = await allocateCatalogIds(db, rows.length, 5000, session);
       const categories = new Map<string, ObjectId>();
       for (const [index, row] of rows.entries()) {
         let category = categories.get(row.category);
@@ -97,7 +101,7 @@ export async function createLegacyCatalogBatch(db: Db, raw: unknown, actor: stri
             image: '305dd291-e32e-4d7f-9abb-aae212c434a4.webp', gdriveFileId: '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL' }, { session });
           categories.set(row.category, category);
         }
-        await insert(db, { ...row.validated, category: String(category) }, ids[index]!, actor, session);
+        await insertCatalogProduct(db, { ...row.validated, category: String(category) }, ids[index]!, actor, session);
       }
       result = { success: true, count: rows.length };
     }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });

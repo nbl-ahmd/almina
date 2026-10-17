@@ -6,6 +6,22 @@ const localRequire = createRequire(process.cwd() + '/package.json');
 const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
 
 test.beforeEach(async ({ request }) => { await reset(request); });
+test('authorized category edits refresh the warmed storefront cache and oversized uploads fail before mutation', async ({ page }) => {
+  await page.goto(adminOrigin + '/categories');
+  await expect(page.getByRole('link', { name: 'Synthetic category', exact: false }).first()).toBeVisible();
+  await login(page);
+  const changed = await page.request.put(adminOrigin + '/api/admin/category/aaaaaaaaaaaaaaaaaaaaaaaa', {
+    headers: { origin: adminOrigin, 'x-csrf-protection': '1' }, data: { name: 'Updated synthetic category' },
+  });
+  expect(changed.status()).toBe(200);
+  await page.goto(adminOrigin + '/categories');
+  await expect(page.getByRole('link', { name: 'Updated synthetic category', exact: false }).first()).toBeVisible();
+  const oversized = await page.request.post(adminOrigin + '/api/admin/banners', {
+    headers: { origin: adminOrigin, 'x-csrf-protection': '1', 'content-type': 'application/json' },
+    data: 'x'.repeat(4 * 1024 * 1024 + 1),
+  });
+  expect(oversized.status()).toBe(413);
+});
 test('staff provisioning clears credentials and deactivation revokes access at every required width', async ({ page, request }) => {
   await login(page);
   const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
@@ -82,12 +98,20 @@ test('admin order update reaches the real writer and prevents cancellation after
   const order = await created.json() as { id: string };
   await login(page);
   await page.goto(adminOrigin + '/admin/orders/' + order.id);
+  const lines = page.getByRole('table', { name: 'Recorded order lines' });
+  await expect(lines.getByRole('columnheader', { name: 'Charged unit price (AED)' })).toBeVisible();
+  await expect(lines.getByRole('cell', { name: '20.00', exact: true })).toBeVisible();
+  await expect(lines.getByRole('cell', { name: '40.00', exact: true })).toBeVisible();
+  await page.screenshot({ path: '.verification-results/admin-order-price.jpg', type: 'jpeg', fullPage: true });
   await page.getByLabel('Bill number', { exact: true }).fill('12345');
   await page.getByLabel('Bill amount (AED)', { exact: true }).fill('40');
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Dispatch order', exact: true }).click();
   await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
   expect((await state(request)).orders[0]!.status).toBe('dispatched');
+  await expect(page.getByRole('combobox', { name: 'Order status', exact: true })).toHaveValue('dispatched');
+  await page.reload();
+  await expect(page.getByRole('combobox', { name: 'Order status', exact: true })).toHaveValue('dispatched');
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Cancel order', exact: true }).click();
   await expect(page.locator('main')).toContainText('This record has changed or the action is unavailable.');
@@ -128,6 +152,8 @@ test('authenticated Cloudinary replacement works through the gateway and archive
     await expect(page.getByLabel('Replacement raster images')).toBeDisabled();
   } finally { releaseScripts(); }
   await expect(page.getByLabel('Replacement raster images')).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(page.getByRole('button', { name: 'Save Cloudinary images', exact: true })).toHaveCSS('padding-left', '20px');
   await page.getByLabel('Replacement raster images').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
   await page.getByRole('button', { name: 'Save Cloudinary images', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Cloudinary images saved' })).toBeVisible();

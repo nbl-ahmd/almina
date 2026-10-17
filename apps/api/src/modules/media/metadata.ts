@@ -1,3 +1,4 @@
+import { publicationIssues } from '@almina/contracts';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
@@ -61,6 +62,7 @@ export async function toggleCatalogVisibility(db: Db, collection: 'products' | '
         if (document.sale === true && document.salePrice === undefined) throw new HttpError(400, 'INVALID_REQUEST');
         if (document.sale !== undefined && typeof document.sale !== 'boolean') throw new HttpError(400, 'INVALID_REQUEST');
       }
+      if (collection === 'products' && document.disabled && document.catalogManaged === true && publicationIssues(document).length) throw new HttpError(409,'CATALOG_REVIEW_REQUIRED');
       const fields = { disabled: !document.disabled, ...(collection === 'products' ? { published: Boolean(document.disabled) } : {}) };
       await db.collection(collection).updateOne({ _id: document._id }, { $set: fields }, { session });
       await db.collection('catalog_audit').insertOne({ entityId: document._id, collection, actor, before: { disabled: document.disabled, published: document.published },

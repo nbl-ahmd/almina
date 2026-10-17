@@ -222,3 +222,46 @@ test('retained HTTP CSV converts bounded strings into atomic legacy catalog writ
     });
   } finally { await db.dropDatabase(); await client.close(); }
 });
+
+test('families preserve SKU stock, reject mixed strengths and duplicate options, and group before pagination', {skip:!uri}, async()=>{
+  const {retainedProductList,retainedProductDetail,retainedCatalogQuery}=await import('../apps/api/src/modules/catalog/compatibility-reads');
+  const {updateProductInventory}=await import('../apps/api/src/modules/inventory/adjustments');
+  const {createCommerceService}=await import('../apps/api/src/modules/orders/commerce');
+  assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client=await new MongoClient(uri!).connect(), db=client.db(`almina_family_test_${randomUUID().replaceAll('-','')}`);
+  const actor=String(new ObjectId()),category=new ObjectId();
+  const common={name:'Synthetic support',category:String(category),barcode:'shared',price:'25',stock:'4',familyKey:'synthetic-support',familyName:'Synthetic support',familyBrand:'Synthetic',familyForm:'Support',familyStrength:'not-applicable',variantSize:'Small'};
+  try {
+    await db.collection('stores').insertOne({status:'open'});
+    await db.collection('categories').insertOne({_id:category,name:'Supports'});
+    const small=await createCatalogProduct(db,common,actor);
+    const large=await createCatalogProduct(db,{...common,variantSize:'Large',price:'30',stock:'2'},actor);
+    await assert.rejects(createCatalogProduct(db,{...common,variantSize:'small'},actor),{code:'PRODUCT_FAMILY_CONFLICT'});
+    for(const change of [{familyStrength:'10mg'},{name:'Synthetic 10mg'},{variantFlavour:'Mint'},{familyForm:'Other'}]) {
+      await assert.rejects(createCatalogProduct(db,{...common,variantSize:'Medium',...change},actor),{code:'PRODUCT_FAMILY_CONFLICT'});
+    }
+    const race=await Promise.allSettled([0,1].map(()=>createCatalogProduct(db,{...common,variantSize:'Medium'},actor)));
+    assert.equal(race.filter(result=>result.status==='fulfilled').length,1);
+    await assert.rejects(updateProductInventory(db,String(small._id),{name:'Synthetic support 5mg'},actor),{code:'PRODUCT_FAMILY_CONFLICT'});
+    await assert.rejects(updateProductInventory(db,String(small._id),{familyKey:''},actor),{code:'INVALID_REQUEST'});
+    const detail=await retainedProductDetail(db,{productId:small.product_id});
+    assert.equal(detail.variants!.length,3);
+    const grouped=await retainedProductList(db,retainedCatalogQuery({groupFamilies:'true',limit:'1'},'products'));
+    assert.equal(grouped.length,1); assert.equal(grouped[0]!.familyOptionCount,3); assert.equal(grouped[0]!.familyPriceVaries,true);
+    assert.equal((await retainedProductList(db,retainedCatalogQuery({groupFamilies:'true',limit:'1',offset:'1'},'products'))).length,0);
+    assert.equal((await retainedProductList(db,retainedCatalogQuery({},'products'))).length,3);
+    await db.collection('products').updateOne({_id:large._id},{$set:{published:false}});
+    assert.equal((await retainedProductDetail(db,{productId:small.product_id})).variants!.length,2);
+    await db.collection('products').updateOne({_id:large._id},{$unset:{published:''}});
+    await migrateCommerce(db);
+    const commerce=createCommerceService(async()=>db);
+    const input={customer:{name:'Synthetic',mobile:'0501234567',email:'synthetic@example.invalid',emirate:'Ras al-Khaimah',city:'City A',address:'Synthetic address',payment:'cash'},items:[{productId:String(large._id),quantity:1}],idempotencyKey:randomUUID()};
+    await commerce.checkout(input);
+    assert.equal((await db.collection('products').findOne({_id:large._id}))!.stock,1);
+    assert.equal((await db.collection('products').findOne({_id:small._id}))!.stock,4);
+    const order=(await db.collection('orders').findOne())!;
+    assert.equal(order.lines[0].variantLabel,'Size: Large');
+    await updateProductInventory(db,String(large._id),{...Object.fromEntries(Object.entries(common).filter(([key])=>key.startsWith('family'))),variantSize:'Extra large'},actor);
+    assert.equal((await db.collection('orders').findOne())!.lines[0].variantLabel,'Size: Large');
+  } finally {await db.dropDatabase();await client.close();}
+});

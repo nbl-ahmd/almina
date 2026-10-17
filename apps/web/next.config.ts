@@ -11,7 +11,7 @@ const catalogApiUrl = new URL(catalogApiOrigin);
 
 const config: NextConfig = {
   // Isolate visual verification/build output from a running developer session.
-  distDir: process.env.AL_MINA_ISOLATED_DEV === '1' ? '.next-admin-dev' : process.env.AL_MINA_ISOLATED_BUILD === '1' ? '.next-verification' : '.next',
+  distDir: process.env.ALMINA_LOCAL_DEMO === '1' ? '.next-demo' : process.env.AL_MINA_ISOLATED_DEV === '1' ? '.next-admin-dev' : process.env.AL_MINA_ISOLATED_BUILD === '1' ? '.next-verification' : '.next',
   turbopack: { root: workspaceRoot },
   outputFileTracingRoot: workspaceRoot,
   poweredByHeader: false,
@@ -41,7 +41,9 @@ const config: NextConfig = {
       ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }] : []),
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-    ] }];
+    ] }, ...['/', '/products/:path*', '/categories/:path*', '/search', '/offers', '/cart', '/checkout', '/about', '/contact', '/map'].map(source => ({ source, headers: [
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), payment=()' },
+    ] }))];
   },
 };
 

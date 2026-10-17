@@ -1,3 +1,5 @@
+/* Semantic defaults sit below Tailwind utilities in the declared layer order. */
+@layer components {
 .admin-app {
   --admin-ink: var(--color-ink);
   --admin-border: var(--color-border);
@@ -190,4 +192,5 @@
 }
 .admin-status {
   overflow-wrap: anywhere;
+}
 }

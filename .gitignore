@@ -13,6 +13,7 @@ coverage/
 
 # Inject secrets outside source control.
 backend/.env.local
+backend/atlas-credentials.env
 backend/routes/cred.json
 
 .next-verification/
@@ -21,3 +22,8 @@ backend/routes/cred.json
 .verification-results/
 playwright-report/
 test-results/
+.local-demo/
+.next-demo/
+
+# Local ERP exports and prepared pharmacy import files.
+outputs/

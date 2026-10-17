@@ -1,0 +1,31 @@
+/* Al Mina theme values. Component layout/state styling lives in Tailwind classes. */
+.storefront-shell {
+  --color-ink: #183b50;
+  --color-muted: #496a7d;
+  --color-brand: #ca3344;
+  --color-brand-hover: #ba283b;
+  --color-accent: #bdf2ee;
+  --color-page: #f3f9ff;
+  --color-surface: #fff;
+  --color-subtle: #e8f4ff;
+  --color-border: #d4e5f1;
+  --color-line: #d4e5f1;
+  --color-sale: #ac2632;
+  --color-sale-surface: #fff0f1;
+  --color-focus: #176784;
+  --color-ocean: #2d566a;
+  --color-teal: #007573;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --shadow-card: 0 4px 16px rgb(32 62 70 / 5%);
+  --shadow-raised: 0 10px 28px rgb(32 62 70 / 10%);
+  --content-width: 1344px;
+}
+
+/* Desktop sidebar reuses native details: the closed disclosure stays collapsed
+   on mobile, but its filter contents must remain visible on desktop. Chromium's
+   details content-visibility cannot be overridden by child display utilities. */
+@media (min-width: 1024px) {
+  .storefront-shell .catalog-filters::details-content { content-visibility: visible; }
+  .storefront-shell .catalog-filters > .filters { display: grid; }
+}

@@ -27,7 +27,7 @@ for (const width of [360, 390, 768, 1280]) test(`recovery preview and commit pre
   await expect(page.getByRole('heading', { name: 'Reviewed care', exact: true })).toBeVisible();
   await expect(page.locator('.product-information .price')).toContainText('AED 0.00');
   await expect(page.getByText('Out of stock', { exact: true }).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Out of stock', exact: true }).first()).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Out of stock: Reviewed care', exact: true }).first()).toBeDisabled();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.reload(); await expect(page.getByRole('heading', { name: 'Reviewed care', exact: true })).toBeVisible();
   expect((await (await request.get(commerceOrigin + '/api/store/status')).json()).status).toBe('closed');

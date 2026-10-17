@@ -2,7 +2,8 @@ import { readWebEnvironment } from '@almina/config/env';
 import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { legacyAdminDestination } from './lib/admin/redirects';
-import { hasDuplicateQuery, isPublicPath } from './lib/seo';
+import { hasDuplicateQuery, indexingQuery, isPublicPath } from './lib/seo';
+import { stylesheetPolicy } from './lib/security/stylesheet-policy';
 export function proxy(request: NextRequest) {
   const destination = legacyAdminDestination(request.nextUrl.pathname);
   if (destination) {
@@ -20,7 +21,7 @@ export function proxy(request: NextRequest) {
   const policy = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''}`,
-    `style-src 'self' 'nonce-${nonce}'`,
+    stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV),
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
     `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${mediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
     "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), `connect-src 'self'${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
@@ -35,7 +36,7 @@ export function proxy(request: NextRequest) {
   response.headers.set('Content-Security-Policy', policy);
   response.headers.set('Cache-Control', 'private, no-store');
   const indexable = environment.APP_ENV === 'production' && isPublicPath(request.nextUrl.pathname)
-    && !hasDuplicateQuery(Object.fromEntries(request.nextUrl.searchParams));
+    && !hasDuplicateQuery(indexingQuery(request.nextUrl.pathname,Object.fromEntries(request.nextUrl.searchParams)));
   if (!indexable) response.headers.set('X-Robots-Tag', environment.APP_ENV === 'production' && !request.nextUrl.pathname.startsWith('/admin') ? 'noindex, follow' : 'noindex, nofollow');
   return response;
 }

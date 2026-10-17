@@ -1,0 +1,39 @@
+# Catalog import foundation — 2026-10-16
+
+Implemented locally; no real catalog import, production database operation, channel account upload or deployment has occurred.
+
+## Prepared source files
+
+`outputs/catalog-import-preparation-2026-10-16/Al_Mina_Draft_Import.csv` contains 7,136 positive-stock ERP rows. `Al_Mina_Held_Missing_VAT.csv` contains only VITKID SYRUP 150 ML, original row 31872. The owner explicitly requested keeping it pending until the pharmacy confirms VAT; never infer its rate. The manifest records source hashes, namespace and the initial key assignment. Original exports remain untouched.
+
+Initial `sourceKey` values are `erp-v1-row-<original row>` within namespace `erp-2026-10-15`. Preserve these assigned keys in subsequent working files. They are not a stable ERP identity: regenerating them from a reordered export, changing the namespace, or deriving identity from name/barcode can create duplicates. Future exports need an explicit reconciliation against the source map. Duplicate or absent barcodes remain raw provenance and are never invented GTINs.
+
+Gross AED price is source price plus its 0% or 5% VAT, rounded once to fils. The import requires the existing inclusive-VAT 500-basis-point commerce policy; gross prices must never be taxed a second time. Website opening stock is `max(1, min(10, floor(positive ERP stock)))`, as approved by the owner. This is a conservative opening estimate across branches, not a verified sale-unit conversion. ERP packaging is kept separately; sale unit and pack label require review. Products stay hidden until staff verify stock and product content.
+
+All 44 source category labels remain available for explicit mapping to existing website categories. Missing brand, descriptions, images, actual sale units and product classifications are left blank/unreviewed. No medicine claims, pharmacist identities, reviews, licenses or delivery promises are fabricated. Strengths must stay separate; only reviewed size/flavour/pack options may share a family.
+
+## Admin workflow and contract
+
+Open `/admin/catalog-import` as an admin. Download the canonical template, upload CSV or JSON, map categories, preview validation and changes, and import drafts. Resume uses the saved preview reference. Download a paginated change report; rollback archives unchanged newly created drafts or restores unchanged earlier drafts. Edited, published or stock-reviewed records are protected.
+
+The maintained importer is separate from the retained legacy batch importer. Inputs are strict, bounded to 10,000 rows and 4 MB server-side (3 MB browser file limit); preview displays 50 rows, warnings/errors are capped at 500, and reports page by 500 rows. It validates the entire input before saving a preview. Money is checked in integer fils. Uploaded image references must be approved raster URLs in the configured Cloudinary account; arbitrary external fetching is not supported. Optional GTINs must pass format/checksum validation and still require exact-product verification by staff.
+
+Actor-bound previews expire after 24 hours before processing starts. Private manifests retain provenance, baselines and reports. Each transaction processes at most 100 rows; durable offsets, stable source mappings, catalog serialization and per-item digests protect retries/concurrency. Partially committed imports can resume. Every opening stock or draft stock adjustment has an inventory ledger entry. Rollback also runs in bounded transactions and refuses to overwrite subsequent edits. IDs, archived products, ledger entries and media references are retained. No destructive schema migration is needed. Deploy the reviewed additive index plan before production use; unique source/manifest identifiers use MongoDB's existing `_id` index.
+
+Imported products set `catalogManaged=true`, `disabled=true`, `published=false`. Their approved 1–10 opening stock is preserved, with the estimate also recorded as `websiteStockProposed`. Content, stock and channel approvals are forced false. Publication requires reviewed brand, sale unit, pack label, description, actual image with authorized rights, stock verification and reviewed product classification. Prescription products remain held pending a dedicated dispensing workflow. Legacy products retain compatibility; these new review requirements do not silently disable legacy listings.
+
+## SEO and channel catalogs
+
+The storefront retains server-rendered Product/Offer, ProductGroup for reviewed option families, BreadcrumbList and Organization/Pharmacy JSON-LD, canonical URLs, Open Graph/Twitter metadata and cursor-sharded sitemaps. Product metadata supports reviewed titles, summaries, brand, GTIN, MPN and condition. Offers use the displayed gross AED price. Stock availability is emitted only when checkout and live store/policy state confirm commerce is available. Page-two listing URLs have self-canonicals; filters, search, private pages and invalid pagination remain excluded. Production robots allows required Next assets. Preview/staging remains noindex.
+
+`/feeds/google.xml` produces Google RSS/XML and `/feeds/meta.csv` produces Meta catalog CSV. Feed IDs use stable website SKU IDs, links target the exact SKU, and family IDs group reviewed options. Descriptions, images, condition, current gross price and availability are validated. GTIN/MPN are never guessed. Google requires a reviewed identifier status; `identifier_exists=no` is only appropriate when identifiers truly were not assigned. Meta exports only explicitly approved general products; medicine classifications are excluded. Other regulated categories still need manual platform policy review.
+
+Feeds default off and require production mode, `CATALOG_FEEDS_ENABLED=true`, enabled checkout, an open store, valid inclusive-VAT policy, publication readiness and explicit per-channel approval. An unavailable upstream returns 503 rather than a misleading empty successful feed. Feed reads are bounded, cursor-checked and uncached. JSON-LD makes a page understandable to Google; it does not automatically enroll the store in Merchant Center or guarantee rich results. Feeds do not create or connect channel accounts.
+
+After importing drafts: review exact product identity, sale units, stock, category/family mappings, real descriptions and image rights; publish reviewed products; configure real merchant shipping/returns/business policies and domain verification; validate deployed pages using Google Rich Results Test/Search Console and feeds using Merchant Center/Meta Commerce Manager before enabling channels. Actual account acceptance and current restricted-product eligibility remain external verification gates. Do not invent shipping/returns schema or enable medicine advertising by default.
+
+## Verification
+
+Local verification covers bounded full-catalog preview (7,137 synthetic rows), VAT and stock validation, source mappings, idempotent/concurrent commits, changed-record protection, publication gating, stock ledger consistency, multi-transaction rollback, role/CSRF rejection, Google/Meta feed serialization and gate/outage behavior, metadata/indexing and real database sitemap behavior. Compiled browser checks exercise category mapping, draft import, denied publication, reports, reload/resume and rollback at 360, 390, 768 and 1280 px. Runtime verification uses isolated synthetic data only. Production account acceptance and production scale/query plans remain unverified.
+
+Final checks passed: typecheck, lint, isolated production build, 138 unit regressions, 24 disposable-database tests across the final runs, five compiled import/browser cases, and production-mode SEO smoke. Earlier compiled storefront/admin/checkout/family coverage passed 45 cases. Final refreshed Next.js Turbopack diagnostics report no compilation, configuration or session errors, and the admin import route was inspected in a separate browser session.

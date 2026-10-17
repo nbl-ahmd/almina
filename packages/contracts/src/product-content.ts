@@ -1,0 +1,34 @@
+import { z } from 'zod';
+const text = (max: number) => z.string().trim().max(max).optional();
+const choice = <T extends readonly [string, ...string[]]>(values:T) => z.preprocess(value=>value===''?undefined:value,z.enum(values).optional());
+const flag = z.union([z.boolean(),z.enum(['true','false']).transform(value=>value==='true')]).optional();
+export function validGtin(value:string) {
+  if (!/^(\d{8}|\d{12}|\d{13}|\d{14})$/.test(value)) return false;
+  const digits=[...value].map(Number),check=digits.pop()!;
+  return (10-digits.reverse().reduce((sum,digit,index)=>sum+digit*(index%2===0?3:1),0)%10)%10===check;
+}
+export const productContentFields = {
+  brand:text(100), manufacturer:text(150), gtin:z.string().trim().refine(value=>!value||validGtin(value),'Use a valid GTIN check digit; leave unknown identifiers blank.').optional(),mpn:text(70),
+  identifierStatus:choice(['unknown','assigned','not-assigned'] as const), saleUnit:text(100),packLabel:text(150),productForm:text(120),strength:text(120),
+  summary:text(300), ingredients:text(3000),usage:text(3000),warnings:text(3000),storage:text(1000),
+  seoTitle:text(150),seoDescription:text(320), productType:choice(['unreviewed','general','otc','prescription'] as const),
+  condition:choice(['new','used','refurbished'] as const), googleProductCategory:text(150),
+  imageSource:z.union([z.literal(''),z.url().refine(value=>value.startsWith('https://')&&!new URL(value).username&&!new URL(value).password)]).optional(),
+  imageRights:choice(['unreviewed','authorized'] as const), contentReviewed:flag,stockVerified:flag, googleApproved:flag,metaApproved:flag,
+};
+export const productContentNames=Object.keys(productContentFields) as (keyof typeof productContentFields)[];
+export const productContentSchema=z.object(productContentFields).strict();
+export type ProductContent=z.infer<typeof productContentSchema>;
+export function publicationIssues(product:Record<string,unknown>):string[] {
+  const issues:string[]=[];
+  if(!product.brand&&!product.familyBrand)issues.push('Brand');
+  if(!product.saleUnit)issues.push('Saleable unit');
+  if(!product.packLabel)issues.push('Pack / specification');
+  if(!product.description)issues.push('Description');
+  if(!['general','otc'].includes(String(product.productType)))issues.push('Product classification (prescription requires a separate dispensing workflow)');
+  if(product.contentReviewed!==true)issues.push('Content review');
+  if(product.stockVerified!==true)issues.push('Physical stock review');
+  if(product.imageRights!=='authorized')issues.push('Image usage permission');
+  if(![product.image,...(Array.isArray(product.images)?product.images:[]),...(Array.isArray(product.cloudinaryImages)?product.cloudinaryImages:[])].some(value=>typeof value==='string'&&value.length))issues.push('Product image');
+  return issues;
+}

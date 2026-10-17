@@ -34,3 +34,7 @@ export { retainedRoutePolicies, lookupPolicy } from './modules/auth/retained-pol
 export * from './modules/auth/realtime.js';
 export * from './modules/catalog/csv.js';
 export * from './modules/notifications/subscriptions.js';
+
+export * from './modules/catalog/import.js';
+
+export * from './modules/catalog/export.js';

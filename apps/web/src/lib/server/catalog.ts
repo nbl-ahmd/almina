@@ -4,24 +4,22 @@ import { getWebEnvironment } from './env';
 import { readCategory, readProduct, objectId, publicId, slugIdentity, type Product } from '../catalog/model';
 import { catalogReadPolicy } from '../catalog/cache-policy';
 import { cloudinaryImage } from '../catalog/media';
+import { CatalogUnavailable, catalogArray, readCatalogResponse } from './catalog-response';
 
-export class CatalogUnavailable extends Error {
-  constructor() { super('Catalog service unavailable'); }
-}
-export async function legacyRead(path: string, content = false): Promise<unknown> {
+export async function legacyRead(path: string, content = false, allowMissing = false): Promise<unknown> {
+  const env = getWebEnvironment();
+  const development = env.APP_ENV === 'development';
+  let response: Response;
   try {
-    const response = await fetch(new URL(path, getWebEnvironment().LEGACY_API_ORIGIN), {
+    response = await fetch(new URL(path, env.LEGACY_API_ORIGIN), {
       ...catalogReadPolicy(path, content), signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json' },
       redirect: 'error',
     });
-    if (response.status === 404) return null;
-    if (!response.ok) throw new CatalogUnavailable();
-    return await response.json() as unknown;
-  } catch { throw new CatalogUnavailable(); }
+  } catch { throw new CatalogUnavailable('connection', development); }
+  return readCatalogResponse(response, allowMissing, development);
 }
 function array(value: unknown): unknown[] {
-  if (!Array.isArray(value)) throw new CatalogUnavailable();
-  return value;
+  return catalogArray(value, getWebEnvironment().APP_ENV === 'development');
 }
 // Missing legacy disabled fields are public too; normalize before exposing anything.
 export const getCategories = cache(async () => array(await legacyRead('/api/category', true))
@@ -40,7 +38,7 @@ export async function getProducts(options: { page?: number; category?: string; o
   if (options.category && objectId.test(options.category)) filter.category = options.category;
   if (options.offers) filter.sale = true;
   if (options.featured) filter.featured = true;
-  const params = new URLSearchParams({ disabledCat: 'false', limit: '30', offset: String((page - 1) * 30) });
+  const params = new URLSearchParams({ disabledCat: 'false', groupFamilies:'true', limit: '30', offset: String((page - 1) * 30) });
   if (options.q) {
     // The hardened legacy API treats q as literal text and escapes it on the server.
     params.set('q', options.q.slice(0, 80));
@@ -49,15 +47,20 @@ export async function getProducts(options: { page?: number; category?: string; o
   const raw = array(await legacyRead(`/api/products${options.q ? '/search' : ''}?${params}`));
   return { products: raw.map(readProduct).filter(product => product !== null), hasNext: raw.length === 30, page };
 }
-export const getProductByPublicId = cache(async (id: string) => {
-  if (!publicId.test(id)) return null;
-  const data = await legacyRead(`/api/products/details/${encodeURIComponent(id)}`);
-  if (!data || typeof data !== 'object' || !('product' in data)) return null;
-  return readProduct(data.product);
+const getProductDetail = cache(async (id: string) => {
+  if (!publicId.test(id)) return {product:null,variants:[] as Product[]};
+  const data = await legacyRead(`/api/products/details/${encodeURIComponent(id)}`, false, true);
+  if (!data || typeof data !== 'object' || !('product' in data)) return {product:null,variants:[] as Product[]};
+  const raw = data as {product:unknown;variants?:unknown};
+  return {product:readProduct(raw.product),variants:Array.isArray(raw.variants)?raw.variants.map(readProduct).filter((item):item is Product=>item!==null):[]};
 });
+export const getProductByPublicId = cache(async (id:string)=>(await getProductDetail(id)).product);
+export async function getProductVariants(product:Product) {
+  return product.familyKey ? (await getProductDetail(product.product_id)).variants : [];
+}
 export async function getProductById(id: string): Promise<Product | null> {
   if (!objectId.test(id)) return null;
-  const data = await legacyRead(`/api/products/${id}`);
+  const data = await legacyRead(`/api/products/${id}`, false, true);
   if (!data || typeof data !== 'object') return null;
   const raw = data as Record<string, unknown>;
   const category = typeof raw.category === 'string' ? await getCategory(raw.category) : raw.category;
@@ -106,3 +109,7 @@ export function productImages(product: Product) {
   }) ?? [];
   return [...new Set([productImage(product), ...cloudinary, ...images])];
 }
+
+export const catalogAvailabilityConfirmed=cache(async()=>{
+  try{const value=await legacyRead('/api/catalog-export/state');return !!value&&typeof value==='object'&&'storeOpen' in value&&value.storeOpen===true&&'policyReady'in value&&value.policyReady===true;}catch{return false;}
+});

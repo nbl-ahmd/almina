@@ -53,6 +53,20 @@ const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
+app.post('/__fixture/families', async (_req, res, next) => {
+  try {
+    const category = new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');
+    const family = { familyKey:'synthetic-options',familyName:'Synthetic family',familyBrand:'Synthetic',familyForm:'Daily care',familyStrength:'not-applicable' };
+    const variants = [
+      { _id:new ObjectId('ccccccccccccccccccccccc1'), product_id:'PD8001',variantSize:'Small',variantFlavour:'Vanilla',price:30,stock:4 },
+      { _id:new ObjectId('ccccccccccccccccccccccc2'), product_id:'PD8002',variantSize:'Large',variantFlavour:'Vanilla',price:40,stock:0 },
+      { _id:new ObjectId('ccccccccccccccccccccccc3'), product_id:'PD8003',variantSize:'Large',variantFlavour:'Chocolate',price:35,stock:2 },
+    ].map(variant=>({...family,...variant,category,name:'Synthetic family',barcode:'shared-synthetic',vat:false,disabled:false,images:[]}));
+    await db.collection('products').insertMany(variants);
+    await db.collection('products').insertOne({_id:new ObjectId('ccccccccccccccccccccccc4'),product_id:'PD8004',category,name:'Synthetic medicine 20mg',barcode:'other',price:25,stock:2,vat:false,disabled:false});
+    res.json({ ready:true });
+  } catch(error) { next(error); }
+});
 app.post('/__fixture/whatsapp/failure', (_req, res) => { whatsappFailure = true; res.sendStatus(204); });
 app.post('/__fixture/whatsapp/history', async (_req, res, next) => {
   try { await db.collection('conversations').updateOne({ from: '971500000001' }, { $set: { messages: Array.from({ length: 61 }, (_, i) => ({ content: `Synthetic history ${i}`, sender: 'user', timestamp: new Date(i * 1000), providerId: 'private-provider' })) } }); res.sendStatus(204); } catch (error) { next(error); }
@@ -86,7 +100,7 @@ app.post('/__fixture/price', async (_req, res, next) => {
 app.get('/__fixture/state', async (_req, res, next) => {
   try {
     const product = await db.collection('products').findOne({ _id: new ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb') });
-    const orders = await db.collection('orders').find({}, { projection: { orderId: 1, status: 1, totals: 1, inventory: 1 } }).toArray();
+    const orders = await db.collection('orders').find({}, { projection: { orderId: 1, status: 1, totals: 1, inventory: 1, 'customer.maplink': 1, 'customer.address': 1, 'customer.city': 1, 'customer.emirate': 1 } }).toArray();
     res.json({ stock: product?.stock, orders, receipts: await db.collection('checkout_requests').countDocuments() });
   } catch (error) { next(error); }
 });
@@ -112,7 +126,8 @@ const mediaTransport: typeof fetch = async (url, options) => {
     secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp` };
   mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
 };
-const legacy = createLegacyApp({ commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
+const location = { enabled: true, endpoint: 'https://geocoder.example.invalid/reverse', userAgent: 'AlMinaSyntheticTest/1', dailyLimit: 100, fetch: async () => Response.json({ display_name: 'Synthetic street, Synthetic area, Ras Al Khaimah, United Arab Emirates', address: { country_code: 'ae', state: 'Ras Al Khaimah Emirate', suburb: 'Synthetic area', city: 'Ras Al Khaimah', road: 'Synthetic street' } }) };
+const legacy = createLegacyApp({ location, commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);

@@ -8,6 +8,10 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  CATALOG_REVIEW_REQUIRED: 'Complete the product content, classification, image rights and physical stock review before publishing.',
+  PRODUCT_FAMILY_CONFLICT: 'Check the family name, brand, form, strength, category and option combinations. Each combination must be unique.',
+  LOCATION_NOT_FOUND: 'A complete delivery address could not be found.',
+  LOCATION_OUTSIDE_UAE: 'Delivery is available only in the United Arab Emirates.',
   DELIVERY_UNCERTAIN: 'Delivery is uncertain. Review provider records before sending again.',
   PRICE_CHANGED: 'The quote changed. Review the updated total before ordering.',
   COMMERCE_UNAVAILABLE: 'Checkout configuration is unavailable.',

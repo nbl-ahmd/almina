@@ -19,6 +19,7 @@ export const statusInputSchema = z.object({ status: orderStatusSchema,
 }).strict();
 const minor = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const lineSnapshotSchema = z.object({
+  familyKey:z.string().max(80).optional(),variantLabel:z.string().max(500).optional(),
   productId: id, sku: z.string(), barcode: z.string().nullable(), name: z.string(), quantity: z.number().int().positive(),
   unitPriceMinor: minor, salePriceMinor: minor.nullable(), discountMinor: minor,
   taxRateBps: z.number().int().nonnegative(), taxMinor: minor, lineTotalMinor: minor,

@@ -32,11 +32,15 @@ function createLegacyApp(options) {
     webOrigins: options.origins, development: options.development, trustProxy: Array.isArray(options.trustProxy) ? options.trustProxy : [],
     draining: () => app.locals.draining, metrics: app.locals.operationsMetrics, observeRequests: false, commerceTelemetryEnabled: options.commerceTelemetryEnabled === true,
     onOrderCreated: order => app.locals.io?.emit('newOrder', { _id: order.id, orderId: order.orderId }),
+    location: options.location,
   });
   app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });
   app.use((_req, res, next) => app.locals.draining ? res.status(503).set('Retry-After', '30').json({ error: 'Service draining' }) : next());
   installBoundary(app, { ...options, auth });
   app.use('/api/recovery', express.json({ limit: '4mb', inflate: false }));
+  app.use('/api/catalog-import', express.json({ limit: '4mb', inflate: false }));
+  app.get('/api/catalog-export/state', wrap(async(_req,res)=>res.json(await domain.catalogExportState(await getDb()))));
+  app.get('/api/catalog-export/products', wrap(async(req,res)=>res.json(await domain.catalogExportPage(await getDb(),req.query))));
   app.use(express.json({ limit: '128kb', inflate: false, verify(req, _res, buffer) {
     if (/^\/api\/whatsapp\/webhook\/?$/i.test(req.originalUrl.split('?')[0])) req.rawBody = Buffer.from(buffer);
   } }));
@@ -48,6 +52,7 @@ function createLegacyApp(options) {
     next();
   }));
   const routers = options.routers ?? {
+    'catalog-import': require('./routes/catalogImport'),
     operations: require('./routes/operations'),
     media: require('./routes/media'), recovery: require('./routes/recovery'), category: require('./routes/categories'), banners: require('./routes/banners'), products: require('./routes/products'),
     orders: require('./routes/Orderrouter'), batch: require('./routes/batchProductRouter'), store: require('./routes/storeRouter'),
@@ -69,7 +74,7 @@ function createLegacyApp(options) {
     const status = proposedStatus >= 400 && proposedStatus < 600 ? proposedStatus : 500;
     if (status === 429) res.set('Retry-After', '900');
     // Never serialize provider errors, database errors, request bodies or credentials.
-    const code = ['INVALID_REQUEST', 'INSUFFICIENT_STOCK', 'PRODUCT_UNAVAILABLE', 'MINIMUM_ORDER',
+    const code = ['CATALOG_REVIEW_REQUIRED', 'PRODUCT_FAMILY_CONFLICT', 'INVALID_REQUEST', 'INSUFFICIENT_STOCK', 'PRODUCT_UNAVAILABLE', 'MINIMUM_ORDER',
       'PRICE_CHANGED', 'STOCK_CHANGED', 'RECOVERY_IMPORT_REQUIRED', 'IDEMPOTENCY_CONFLICT', 'COMMERCE_UNAVAILABLE', 'INVALID_TRANSITION', 'DELIVERY_UNCERTAIN'].includes(error.code) ? error.code : undefined;
     res.status(status).json({ ...(code ? { code } : {}), error: status === 401 ? 'Invalid credentials or session' : status === 403 ? 'Access denied'
       : status === 400 ? 'Invalid request' : status === 404 ? 'Not found' : status === 429 ? 'Too many requests' : 'Request failed' });

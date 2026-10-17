@@ -6,6 +6,13 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 
 | Method | Retained URL | Boundary | Current owner/effects |
 | --- | --- | --- | --- |
+| GET | /api/catalog-export/state | public | maintained catalog/export.ts; store/policy availability context, no customer data |
+| GET | /api/catalog-export/products | public | maintained catalog/export.ts; bounded cursor page of channel-approved public products and visible categories |
+| GET | /api/catalog-import/template | admin | maintained catalog/import.ts; prepared CSV headers |
+| POST | /api/catalog-import/preview | admin | actor-bound source mapping, VAT/category/family validation and bounded change report; no product writes |
+| POST | /api/catalog-import/commit | admin | maintained transactional draft importer, stable source IDs and stock ledger, at most 100 rows per call |
+| POST | /api/catalog-import/report | admin | actor-bound paginated change report, 500 rows per call |
+| POST | /api/catalog-import/rollback | admin | checksum-protected rollback of unchanged drafts; archives new drafts, preserves journal and inventory audits |
 | GET | /api/operations | admin | Maintained process metrics and bounded read-only integrity/queue snapshot |
 | GET | /api/recovery/template | admin | maintained recovery/csv.ts; no provider effects |
 | POST | /api/media/products/:id | admin | Maintained signed Cloudinary upload/reference ledger; bounded authenticated adapter |

@@ -19,6 +19,14 @@
   --color-warning-surface: #fff5e6;
   --color-focus: #075dc7;
   --color-line: #c9d4cf;
+  --color-ocean: #35646c;
+  --color-teal: #087775;
+  --color-care-peach: #fff0eb;
+  --color-care-lilac: #eef0fb;
+  --color-care-sun: #fff5df;
+  --shadow-card: 0 4px 16px rgb(32 62 70 / 5%);
+  --shadow-raised: 0 10px 28px rgb(32 62 70 / 10%);
+  --shadow-nav: 0 -6px 18px rgb(32 62 70 / 6%);
 }
 
 /* Keep the verified component styles while migrating components to utilities.
@@ -59,8 +67,10 @@ label input,label select { font-weight: 400; font-size: var(--text-base); }
 :focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 }
 @layer base { .icon { flex: none; width: 22px; height: 22px; vertical-align: middle; } }
+@layer base { section { margin-bottom: var(--space-12); } }
+/* Utilities must be able to override reusable component defaults. */
+@layer components {
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
-section { margin-bottom: var(--space-12); }
 .eyebrow { color: var(--color-brand); font-size: .75rem; font-weight: 700; letter-spacing: .12em; margin-bottom: var(--space-3); }
 .section-heading { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-6); }
 .section-heading .eyebrow { margin-bottom: var(--space-2); }
@@ -101,6 +111,7 @@ section { margin-bottom: var(--space-12); }
 .skeleton-image { aspect-ratio: 1; margin-bottom: var(--space-4); }
 .skeleton-line { height: 20px; margin-bottom: var(--space-3); }
 .skeleton-line:last-child { width: 60%; }
+}
 @media (min-width: 768px) {
   :root { --gutter: var(--space-6); }
   body { padding-bottom: 0; }

@@ -2,7 +2,7 @@ const path = require('path');
 const { loadRetainedEnvironment, retainedRuntimeConfiguration } = require('./commerce/dist/service.cjs');
 let runtime;
 try {
-  loadRetainedEnvironment(path.join(__dirname, '.env.local'));
+  loadRetainedEnvironment(process.env.ALMINA_RUNTIME_ENV_FILE || path.join(__dirname, '.env.local'));
   runtime = retainedRuntimeConfiguration(process.env);
 } catch { console.error('Retained runtime configuration invalid'); process.exit(1); }
 const domain = require('./commerce/dist/service.cjs');
@@ -24,7 +24,7 @@ database.connect().then(async () => {
   pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb());
   if (app.locals.draining) { await pushWorker?.stop(); return database.close(); }
   worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb());
-  server.listen(runtime.port, () => console.log('Express API listening'));
+  server.listen(runtime.port, development ? '127.0.0.1' : undefined, () => console.log('Express API listening'));
 }).catch(async () => {
   if (!app.locals.draining) { console.error('API initialization failed'); process.exitCode = 1; }
   await pushWorker?.stop(); await database.close();
