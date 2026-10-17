@@ -99,3 +99,18 @@ Cloudinary account name `drvxmb0vq` is configured for the API and storefront. Th
 API origin list includes only the existing pharmacy domain and the specifically
 approved preview origin. Four additional exact-size CeraVe packshots remain local
 because the Cloudinary upload widget did not open in the automated session.
+
+## Image upload follow-up
+
+The owner opened the Cloudinary upload widget. Its Web Address source uploaded
+four previously reviewed manufacturer packshots: CeraVe Moisturising Lotion
+236 ml (PD1199), Intensive Moisturising Lotion 236 ml (PD1196), SA Smoothing
+Cream 340 g (PD1207), and Blemish Control Cleanser 236 ml (PD1186). Every CDN file
+matched its reviewed original SHA-256 exactly. All four were attached through a
+recorded maintained-import preview, preserving product names, prices, stock and
+unpublished/disabled state. There are now five image-bearing catalogue drafts
+including Vichy; usage permissions and pharmacy publication review remain pending.
+
+The browser origin permission gate subsequently declined storefront access, so
+the final four-image browser rendering check was not completed. Database linkage
+and exact CDN file verification passed; do not describe that as visual QA.
