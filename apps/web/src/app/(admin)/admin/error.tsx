@@ -5,8 +5,12 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
     <main className="admin-panel">
       <h1>Administration unavailable</h1>
       <p role="alert">Your request could not be completed. Please try again.</p>
-      <button onClick={reset}>Try again</button>
-      <Link href="/admin/login">Sign in</Link>
+      <div className="admin-actions">
+        <button onClick={reset}>Try again</button>
+        <Link className="admin-btn--secondary" href="/admin/login">
+          Sign in
+        </Link>
+      </div>
     </main>
   );
 }

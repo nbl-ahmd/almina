@@ -1,11 +1,7 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { requireIdentity } from "../../../../lib/server/admin/gateway";
 import { canVisit, sections } from "../../../../lib/admin/policy";
-import {
-  SessionControls,
-  OrderMonitor,
-} from "../../../../components/admin/controls";
+import { AdminShell } from "../../../../components/admin/shell";
 export default async function ProtectedLayout({
   children,
 }: {
@@ -13,36 +9,11 @@ export default async function ProtectedLayout({
 }) {
   const user = await requireIdentity();
   return (
-    <>
-      <a className="admin-skip" href="#admin-main">
-        Skip to content
-      </a>
-      <header className="admin-header">
-        <Link href="/admin">Al Mina / Administration</Link>
-        <span>
-          {user.name} · {user.role}
-        </span>
-        <SessionControls />
-      </header>
-      <div className="admin-shell">
-        <nav aria-label="Admin navigation">
-          {sections
-            .filter((section) => canVisit(user.role, section))
-            .map((section) => (
-              <Link
-                key={section}
-                href={`/admin/${section === "dashboard" ? "" : section}`}
-              >
-                {section === "needs-action" ? "Needs action" : section === "catalog-import" ? "Catalog import" : section.charAt(0).toUpperCase() + section.slice(1)}
-              </Link>
-            ))}
-          <Link href="/">View storefront</Link>
-        </nav>
-        <main id="admin-main" tabIndex={-1}>
-          <OrderMonitor />
-          {children}
-        </main>
-      </div>
-    </>
+    <AdminShell
+      user={{ name: user.name, role: user.role }}
+      allowed={sections.filter((section) => canVisit(user.role, section))}
+    >
+      {children}
+    </AdminShell>
   );
 }

@@ -142,12 +142,14 @@ export function Command({
   body,
   children,
   confirm,
+  variant = "secondary",
 }: {
   path: string;
   method?: string;
   body?: object;
   children: string;
   confirm?: string;
+  variant?: "primary" | "secondary" | "danger";
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -155,6 +157,7 @@ export function Command({
   return (
     <span>
       <button
+        className={variant === "primary" ? undefined : `admin-btn--${variant}`}
         disabled={pending}
         onClick={async () => {
           if (confirm && !window.confirm(confirm)) return;
@@ -266,7 +269,10 @@ export function OrderMonitor() {
     };
   }, [router]);
   return (
-    <div className="admin-status">
+    <div
+      className="admin-status"
+      data-state={status.startsWith("Order updates connected") ? "online" : "offline"}
+    >
       <p role="status">{status}</p>
       {updates ? (
         <p role="status" aria-atomic="true">

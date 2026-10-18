@@ -179,6 +179,11 @@ assert.equal(dispatch.csrf, "1");
 assert.equal(dispatch.origin, origin);
 open("/admin/products/" + "d".repeat(24));
 browser("fill", "input[name=stock]", "0");
+browser(
+  "fill",
+  "input[name=stockReason]",
+  "Synthetic fixture physical recount",
+);
 browser("find", "role", "button", "click", "--name", "Save product");
 browser("wait", "--text", "Saved successfully.");
 commands = await (await fixtureFetch(fixture + "/__fixture/commands")).json();
