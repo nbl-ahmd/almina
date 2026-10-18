@@ -108,7 +108,6 @@ app.use((req, res, next) => {
   // Each reset is a distinct synthetic client. Preserve real quotas without accumulating
   // unrelated test cases on one loopback IP; never accept a caller's forwarded identity.
   req.headers['x-forwarded-for'] = `127.0.1.${fixtureCase % 250 + 1}`;
-  console.log(`[diag] ${Date.now()} ${req.headers['x-forwarded-for']} ${req.method} ${req.path}`);
   if (req.method === 'POST' && ['/api/orders', '/api/v1/checkout'].includes(req.path) && delayNext) {
     delayNext = false;
     const send = res.json.bind(res);
