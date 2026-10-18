@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { validGtin, productContentSchema, publicationIssues } from '@almina/contracts';
+import { validGtin, productContentSchema, publicationIssues, storePublicationIssues } from '@almina/contracts';
 import { parseCatalogImport } from '../apps/api/src/modules/catalog/import';
 import { feedProduct,feedCsv,feedXml,feedIssues } from '../apps/web/src/lib/catalog/feed';
 import { productData,pageMetadata } from '../apps/web/src/lib/seo';
@@ -9,6 +9,15 @@ test('incomplete ERP identities cannot publish even when review flags are checke
   for(const name of ['...Mxmn','…Vmx','S','***VitaSpray',''])assert.ok(publicationIssues({...item,name}).includes('Complete product name / identity'));
   assert.ok(publicationIssues({...item,productType:'prescription'}).some(issue=>issue.startsWith('Product classification')));
   assert.ok(publicationIssues({...item,productType:'unreviewed'}).some(issue=>issue.startsWith('Product classification')));
+});
+test('honest missing-photo store listings retain medical gates and stay excluded from advertising feeds',()=>{
+  const noPhoto={...item,brand:'',cloudinaryImages:[],imageRights:'unreviewed' as const};
+  assert.deepEqual(storePublicationIssues(noPhoto),[]);
+  assert.ok(publicationIssues(noPhoto).includes('Product image'));
+  assert.equal(feedProduct('https://shop.example.invalid',noPhoto,[],'google'),null);
+  for(const productType of ['unreviewed','prescription'])assert.ok(storePublicationIssues({...noPhoto,productType}).some(issue=>issue.startsWith('Product classification')));
+  assert.ok(storePublicationIssues({...noPhoto,name:'...Mxmn'}).includes('Complete product name / identity'));
+  assert.ok(storePublicationIssues({...noPhoto,cloudinaryImages:item.cloudinaryImages}).includes('Image usage permission'));
 });
 test('verified GTINs retain leading zeroes and reject invalid check digits; missing barcode is not a GTIN',()=>{
   assert.equal(validGtin('00012345600012'),true);assert.equal(validGtin('00012345600013'),false);

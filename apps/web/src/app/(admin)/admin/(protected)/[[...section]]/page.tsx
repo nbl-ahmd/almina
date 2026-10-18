@@ -93,7 +93,8 @@ export default async function AdminPage({
     qs.set('limit', '25');
     return <NeedsAction data={await adminRead('products/needs-action', qs)}
       {...(typeof query.q === 'string' ? { q: query.q } : {})}
-      {...(typeof query.reason === 'string' ? { reason: query.reason } : {})} />;
+      {...(typeof query.reason === 'string' ? { reason: query.reason } : {})}
+      {...(typeof query.status === 'string' ? { status: query.status } : {})} />;
   }
   if (section === "dashboard") {
     const orders = rows(await adminRead("orders"));
@@ -169,7 +170,7 @@ export default async function AdminPage({
     return (
       <>
         <h1>Products</h1>
-        {user.role === 'admin' ? <p><Link href="/admin/needs-action">Needs action — review unpublished products</Link></p> : null}
+        {user.role === 'admin' ? <p><Link href="/admin/needs-action">Needs action — review unpublished products</Link> · <Link href="/admin/needs-action?status=all&reason=missing-photo">Missing photos</Link></p> : null}
         {user.role === "admin" ? (
           <Link href="/admin/products/new">Create product</Link>
         ) : (

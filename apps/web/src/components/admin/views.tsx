@@ -1,7 +1,7 @@
 import { feedIssues } from '../../lib/catalog/feed';
 import { readProduct } from '../../lib/catalog/model';
 import { productImages } from '../../lib/server/catalog';
-import { publicationIssues, cloudinaryImage } from "@almina/contracts";
+import { publicationIssues, storePublicationIssues, cloudinaryImage } from "@almina/contracts";
 import { getWebEnvironment } from "../../lib/server/env";
 import { randomUUID } from "node:crypto";
 import { CloudinaryUpload } from "./cloudinary-upload";
@@ -192,7 +192,7 @@ export function ProductForm({
   return (
     <>
     {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h3>{channel==='google'?'Google':'Meta'}</h3>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
-    {edit && product.catalogManaged===true ? <section className="admin-panel"><h2>Catalog review</h2><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{publicationIssues(product).length?<ul>{publicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Required publication checks complete. Publishing is a separate action.</p>}</section>:null}
+    {edit && product.catalogManaged===true ? <section className="admin-panel"><h2>Catalog review</h2><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{storePublicationIssues(product).length?<ul>{storePublicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Store publication checks complete. Publishing is a separate action.</p>}{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).length ? <><h3>Photo and catalogue improvements</h3><p>A missing photo uses a labelled placeholder in the store. Advertising feeds still need an actual authorized photo and verified brand.</p><ul>{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).map(issue=><li key={issue}>{issue}</li>)}</ul></> : null}</section>:null}
     <AdminForm
       path={edit ? `products/${display(product._id)}` : "products"}
       method={edit ? "PUT" : "POST"}

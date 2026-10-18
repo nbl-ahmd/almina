@@ -1,4 +1,4 @@
-import { productContentFields, productContentNames, publicationIssues } from '@almina/contracts';
+import { productContentFields, productContentNames, storePublicationIssues } from '@almina/contracts';
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
@@ -62,7 +62,7 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       if (assets) fields.mediaRevision = (product.mediaRevision ?? 0) + 1;
       const next: Document = { ...product, ...fields, ...assets };
       if (input.stockVerified === true || input.stock !== undefined) { fields.stockReviewedAt = new Date(); fields.stockReviewedBy = actor; next.stockReviewedAt = fields.stockReviewedAt; }
-      if (product.catalogManaged === true && product.published !== false && !product.disabled && publicationIssues(next).length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      if (product.catalogManaged === true && product.published !== false && !product.disabled && storePublicationIssues(next).length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
       await validateFamilyMembership(db, next, session);
       const price = moneyMinor(next.price);
       if (next.salePrice !== undefined && next.salePrice !== null) {

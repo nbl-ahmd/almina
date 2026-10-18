@@ -8,8 +8,31 @@ import {updateProductInventory} from '../apps/api/src/modules/inventory/adjustme
 import {catalogExportPage} from '../apps/api/src/modules/catalog/export';
 import {retainedProductList} from '../apps/api/src/modules/catalog/compatibility-reads';
 import {catalogueNeedsAction} from '../apps/api/src/modules/catalog/needs-action';
+import {publishReviewedCatalogue,catalogueRevision} from '../scripts/backfill/reviewed-catalogue';
 import {migrateCommerce} from '../scripts/migrations/commerce';
 const uri=process.env.COMMERCE_TEST_URI;
+test('reviewed publication batches are atomic, replayable, admin-only and cannot import price or stock changes',{skip:!uri},async()=>{
+  assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client=await new MongoClient(uri!).connect(),db=client.db('almina_publication_'+randomUUID().replaceAll('-',''));
+  try{
+    const actor=new ObjectId(),category=new ObjectId();await db.collection('users').insertOne({_id:actor,role:'admin'});await db.collection('categories').insertOne({_id:category,name:'Synthetic',disabled:true});
+    const base={catalogManaged:true,published:false,disabled:true,stockVerified:true,stock:4,price:10.5,vat:true,category,productType:'unreviewed'};
+    const p1={...base,_id:new ObjectId(),product_id:'PD11',name:'Synthetic grooming tool'},p2={...base,_id:new ObjectId(),product_id:'PD12',name:'Synthetic prescription item'};await db.collection('products').insertMany([p1,p2]);
+    const fields={description:'Verified retail product details',saleUnit:'One retail unit',packLabel:'Model 1',productType:'general',contentReviewed:true};
+    const row=(p:typeof p1)=>({id:String(p._id),name:p.name,categoryId:String(category),expectedRevision:catalogueRevision(p),fields});
+    const manifest={runId:'synthetic-reviewed-run',approvalReference:'Synthetic owner-approved reviewed retail set',rows:[row(p1)]};
+    await assert.rejects(publishReviewedCatalogue(db,{...manifest,rows:[row(p1),{...row(p2),fields:{...fields,productType:'prescription'}}]},String(actor)),/review incomplete/);
+    assert.equal((await db.collection('products').findOne({_id:p1._id}))!.published,false);assert.equal(await db.collection('catalog_audit').countDocuments(),0);
+    await assert.rejects(publishReviewedCatalogue(db,{...manifest,rows:[{...row(p1),fields:{...fields,price:1}}]},String(actor)));
+    await assert.rejects(publishReviewedCatalogue(db,manifest,String(new ObjectId())),/Administrator required/);
+    assert.deepEqual(await publishReviewedCatalogue(db,manifest,String(actor)),{applied:1,replayed:0});
+    const after=(await db.collection('products').findOne({_id:p1._id}))!;assert.equal(after.stock,4);assert.equal(after.price,10.5);assert.equal(after.vat,true);assert.equal(after.published,true);assert.equal((await db.collection('categories').findOne({_id:category}))!.disabled,false);
+    assert.deepEqual(await publishReviewedCatalogue(db,manifest,String(actor)),{applied:0,replayed:1});
+    await updateProductInventory(db,String(p1._id),{stock:3,expectedStock:4,stockReason:'Synthetic order reconciliation',inventoryKey:randomUUID()},String(actor));
+    assert.deepEqual(await publishReviewedCatalogue(db,manifest,String(actor)),{applied:0,replayed:1});assert.equal((await db.collection('products').findOne({_id:p1._id}))!.stock,3);
+    await assert.rejects(publishReviewedCatalogue(db,{...manifest,rows:[{...row(p1),fields:{...fields,description:'Changed request'}}]},String(actor)),/replay conflict/);
+  }finally{await db.dropDatabase();await client.close();}
+});
 test('needs action paginates drafts, separates identity/classification/Rx and excludes live or archived products',{skip:!uri},async()=>{
   assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   const client=await new MongoClient(uri!).connect(),db=client.db('almina_review_'+randomUUID().replaceAll('-',''));
@@ -28,10 +51,21 @@ test('needs action paginates drafts, separates identity/classification/Rx and ex
       const result=await catalogueNeedsAction(db,{reason});assert.equal(result.total,1,reason);assert.equal(result.items[0].product_id,id);
     }
     const exact=await catalogueNeedsAction(db,{q:'[brackets]'});assert.equal(exact.total,1);assert.equal(exact.items[0].product_id,'PD3');
+    assert.equal((await catalogueNeedsAction(db,{status:'all'})).total,4);
+    const published=await catalogueNeedsAction(db,{status:'published'});assert.equal(published.total,1);assert.equal(published.items[0].published,true);
+    const photoQueue=await catalogueNeedsAction(db,{status:'all',reason:'missing-photo'});assert.equal(photoQueue.total,1);assert.equal(photoQueue.items[0].missingPhoto,true);
     assert.equal((await catalogueNeedsAction(db,{q:'PD1'})).items[0].product_id,'PD1');
     assert.ok((await catalogueNeedsAction(db,{reason:'identity'})).items[0].reasons.includes('Complete product name / identity'));
     for(const raw of [{limit:'101'},{limit:['2']},{offset:'10001'},{reason:'$where'},{filter:'{}'},{q:['bad']}])await assert.rejects(catalogueNeedsAction(db,raw),{status:400});
     assert.equal(await db.collection('products').countDocuments(),5); // Read-only queue.
+    const photoLess=await db.collection('products').insertOne({...base,name:'Synthetic verified retail item',productType:'general',product_id:'PD6',catalogManaged:true,brand:'',cloudinaryImages:[],imageRights:'unreviewed',price:10,stock:2});
+    const actor=String(new ObjectId());
+    await toggleCatalogVisibility(db,'products',String(photoLess.insertedId),actor);
+    await updateProductInventory(db,String(photoLess.insertedId),{description:'Updated verified retail information'},actor);
+    const livePhotoQueue=await catalogueNeedsAction(db,{status:'published',reason:'missing-photo'});assert.equal(livePhotoQueue.total,1);assert.equal(livePhotoQueue.items[0].product_id,'PD6');
+    await db.collection('products').insertOne({...base,product_id:'PD7',published:true,disabled:false,image:' /product-placeholder.svg ',images:[' '],cloudinaryImages:['product-placeholder.svg']});
+    const placeholders=await catalogueNeedsAction(db,{status:'published',reason:'missing-photo'});
+    assert.equal(placeholders.total,2);assert.ok(placeholders.items.every((item:{missingPhoto:boolean})=>item.missingPhoto));
   }finally{await db.dropDatabase();await client.close();}
 });
 assert.ok(uri||process.env.REQUIRE_DATABASE_TESTS!=='1','Disposable DB required');

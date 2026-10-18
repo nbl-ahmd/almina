@@ -21,6 +21,9 @@ export const productContentSchema=z.object(productContentFields).strict();
 export type ProductContent=z.infer<typeof productContentSchema>;
 // Conservative ERP identity flags, not a medicine or prescription classifier.
 export const incompleteProductNamePattern = /^(?:\s*(?:[.*]{2,}|…)|\s*[a-z]\s*$)/i;
+export function hasProductPhoto(product:Record<string,unknown>):boolean {
+  return [product.image,...(Array.isArray(product.images)?product.images:[]),...(Array.isArray(product.cloudinaryImages)?product.cloudinaryImages:[])].some(value=>typeof value==='string'&&value.trim().length>0&&!/^\/?product-placeholder\.svg$/.test(value.trim()));
+}
 export function publicationIssues(product:Record<string,unknown>):string[] {
   const issues:string[]=[];
   if(typeof product.name!=='string'||!product.name.trim()||incompleteProductNamePattern.test(product.name))issues.push('Complete product name / identity');
@@ -32,6 +35,11 @@ export function publicationIssues(product:Record<string,unknown>):string[] {
   if(product.contentReviewed!==true)issues.push('Content review');
   if(product.stockVerified!==true)issues.push('Physical stock review');
   if(product.imageRights!=='authorized')issues.push('Image usage permission');
-  if(![product.image,...(Array.isArray(product.images)?product.images:[]),...(Array.isArray(product.cloudinaryImages)?product.cloudinaryImages:[])].some(value=>typeof value==='string'&&value.length))issues.push('Product image');
+  if(!hasProductPhoto(product))issues.push('Product image');
   return issues;
+}
+// Store listings may honestly show a missing-photo placeholder. Advertising feeds
+// retain publicationIssues() and still require real, authorized images and brand.
+export function storePublicationIssues(product:Record<string,unknown>):string[] {
+  return publicationIssues(product).filter(issue=>issue!=='Brand'&&issue!=='Product image'&&!(issue==='Image usage permission'&&!hasProductPhoto(product)));
 }
