@@ -63,3 +63,13 @@ test('query timing preserves success/failure and emits only bounded operational 
   assert.equal(JSON.parse(logs[0]!).operation, 'products');
   assert.equal('operation' in JSON.parse(logs[1]!), false);
 });
+
+test('Cloudinary product delivery preserves account validation and creates width-specific CDN URLs', async () => {
+  const {cloudinaryDelivery}=await import('../apps/web/src/lib/catalog/image-delivery');
+  const src='https://res.cloudinary.com/example/image/upload/v123/products/one.webp';
+  assert.equal(cloudinaryDelivery(src,'example',320),'https://res.cloudinary.com/example/image/upload/c_limit,w_320,q_auto,f_auto/v123/products/one.webp');
+  assert.equal(cloudinaryDelivery(src,'example',640)?.includes('w_640'),true);
+  for(const value of [src.replace('/example/','/other/'),src+'?token=private',src.replace('https:','http:'),'/product-placeholder.svg','https://user:pass@res.cloudinary.com/example/image/upload/a.webp'])assert.equal(cloudinaryDelivery(value,'example',640),null);
+  for(const width of [0,-1,1.5,3841,Infinity])assert.equal(cloudinaryDelivery(src,'example',width),null);
+  assert.equal(cloudinaryDelivery(src,undefined,640),null);
+});

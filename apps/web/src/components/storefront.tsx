@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import { ProductImage } from './product-image';
+import { getWebEnvironment } from '../lib/server/env';
 import Link from 'next/link';
 import { categoryHref, productHref, money, displayPrice, productOptionLabel, type Category, type Product } from '../lib/catalog/model';
 import { productImage, categoryImage } from '../lib/server/catalog';
@@ -9,10 +11,11 @@ export function StockState({ stock }: { stock: number }) {
   return <p className={`stock-state mb-3 flex items-center gap-1.5 text-xs leading-relaxed ${stock > 0 ? 'in-stock text-teal' : 'out-stock text-warning'}`}>{stock > 0 ? <><span className="stock-dot size-1.5 shrink-0 rounded-full bg-teal" />In stock</> : 'Out of stock'}</p>;
 }
 export function ProductGrid({ products, headingLevel = 2, variant = 'catalog' }: { products: Product[]; headingLevel?: 2 | 3; variant?: 'catalog' | 'home' }) {
+  const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
   const Heading = headingLevel === 3 ? 'h3' : 'h2';
   return products.length ? <div className="product-grid grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-2.5 md:grid-cols-3 md:gap-5 lg:grid-cols-4">{products.map(product => <article className="product-card flex min-w-0 flex-col rounded-xl border border-border bg-surface p-2 shadow-sm md:p-5" key={product._id}>
     <div className="product-card-top mb-2 flex min-h-5 items-start justify-between gap-2"><span className={`badge inline-flex max-w-full rounded-full px-2 py-0.5 text-[10px] font-semibold wrap-anywhere ${product.sale ? 'sale-badge bg-sale text-white' : product.featured ? 'bg-accent/60 text-teal' : 'neutral-badge bg-subtle text-ocean'}`}>{product.sale ? product.saleBadge || 'Sale' : product.featured ? 'Featured' : product.category.name}</span><span className="hidden text-teal md:inline-flex"><Icon name="check" /></span></div>
-    <Link className={`product-media mb-3 flex items-center justify-center overflow-hidden rounded-lg border border-border bg-white p-3 md:aspect-[4/3] ${variant === 'home' ? 'aspect-[4/3]' : 'aspect-square'}`} href={productHref(product)} aria-label={`View ${product.name}`}><Image className="size-full object-contain" src={productImage(product)} alt={product.name} width={300} height={220} sizes="(max-width: 767px) 45vw, (max-width: 1023px) 30vw, 280px" /></Link>
+    <Link className={`product-media mb-3 flex items-center justify-center overflow-hidden rounded-lg border border-border bg-white p-3 md:aspect-[4/3] ${variant === 'home' ? 'aspect-[4/3]' : 'aspect-square'}`} href={productHref(product)} aria-label={`View ${product.name}`}><ProductImage cloudName={cloudName} className="size-full object-contain" src={productImage(product)} alt={product.name} width={300} height={220} sizes="(max-width: 767px) 45vw, (max-width: 1023px) 30vw, 280px" /></Link>
     <div className="product-card-content flex min-w-0 flex-1 flex-col"><Link className="category-name mb-1 inline-flex min-h-6 items-center text-[11px] leading-snug font-medium text-ocean" href={categoryHref(product.category)}>{product.category.name}</Link><Heading className="mb-1.5 text-base leading-snug font-bold tracking-tight wrap-anywhere md:text-lg"><Link className="inline-flex min-h-11 items-start text-ink hover:text-brand" href={productHref(product)}>{product.familyName||product.name}</Link></Heading>{product.familyKey?<p className="mb-2 text-xs text-teal">{product.familyOptionCount&&product.familyOptionCount>1?`${product.familyOptionCount} options · `:""}{productOptionLabel(product)}</p>:null}
       {product.summary || product.description ? <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-muted">{(product.summary || product.description || '').split('\n')[0]}</p> : null}
       <StockState stock={product.stock} />

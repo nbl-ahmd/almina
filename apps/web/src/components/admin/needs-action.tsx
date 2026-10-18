@@ -3,13 +3,13 @@ import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { display, record, rows } from './views';
 import { adminFormClass } from '../../lib/admin/styles';
 
-export function NeedsAction({ data, q, reason }: { data: unknown; q?: string; reason?: string }) {
+export function NeedsAction({ data, q, reason, status }: { data: unknown; q?: string; reason?: string; status?: string }) {
   const result = record(data), products = rows(result.items);
   const offset = Number(result.offset), total = Number(result.total);
-  const page = (value: number) => `/admin/needs-action?${new URLSearchParams({ offset: String(value), ...(q ? { q } : {}), ...(reason ? { reason } : {}) })}`;
+  const page = (value: number) => `/admin/needs-action?${new URLSearchParams({ offset: String(value), ...(q ? { q } : {}), ...(reason ? { reason } : {}), ...(status ? {status} : {}) })}`;
   return <>
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div><h1>Needs action</h1><p>Complete and verify these drafts before they appear in the store.</p></div>
+      <div><h1>Needs action</h1><p>Review draft readiness and finish photos or details for published products.</p></div>
       <Link href="/admin/products">All products</Link>
     </div>
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
@@ -18,22 +18,24 @@ export function NeedsAction({ data, q, reason }: { data: unknown; q?: string; re
     </div>
     <form className={adminFormClass}>
       <label>Search name or product ID<input name="q" defaultValue={q} maxLength={80} placeholder="e.g. product name or PD number" /></label>
+      <label>Listing status<select name="status" defaultValue={status ?? 'drafts'}><option value="drafts">Unpublished / drafts</option><option value="published">Published</option><option value="all">All products</option></select></label>
       <label>Action needed<select name="reason" defaultValue={reason ?? 'all'}>
-        <option value="all">All drafts</option><option value="identity">Incomplete product name</option>
+        <option value="all">All review items</option><option value="identity">Incomplete product name</option>
         <option value="classification">Classification not confirmed</option><option value="prescription">Prescription — keep as draft</option>
         <option value="content">Content needs review</option><option value="images">Image or permission needed</option>
+        <option value="missing-photo">Missing photo</option>
       </select></label>
       <button className="self-end">Apply filters</button>
     </form>
-    <p className="my-4" role="status">{total ? `${offset + 1}–${Math.min(offset + products.length, total)} of ${total.toLocaleString()} drafts` : 'No drafts match these filters.'}</p>
+    <p className="my-4" role="status">{total ? `${offset + 1}–${Math.min(offset + products.length, total)} of ${total.toLocaleString()} products` : 'No products match these filters.'}</p>
     <ul className="m-0 grid list-none gap-4 p-0">
       {products.map(product => <li key={display(product._id)} className="rounded-xl border border-slate-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0"><p className="text-sm text-slate-500">{display(product.product_id)} · Draft</p><h2 className="break-words text-lg font-semibold">{display(product.name)}</h2></div>
+          <div className="min-w-0"><p className="text-sm text-slate-500">{display(product.product_id)} · {product.published ? 'Published' : 'Draft'}{product.missingPhoto ? ' · Missing photo' : ''}</p><h2 className="break-words text-lg font-semibold">{display(product.name)}</h2></div>
           <Link className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 font-semibold" href={`/admin/products/${display(product._id)}`} aria-label={`Review ${display(product.name)}`}><ClipboardDocumentCheckIcon className="size-5 shrink-0" aria-hidden="true" />Review product</Link>
         </div>
         {product.productType === 'prescription' ? <p className="mt-3 font-semibold text-amber-800">Prescription product — publishing is blocked.</p> : null}
-        <ul className="mt-3 flex list-none flex-wrap gap-2 p-0" aria-label="Required actions">
+        <ul className="mt-3 flex list-none flex-wrap gap-2 p-0" aria-label="Review checklist">
           {(Array.isArray(product.reasons) && product.reasons.length ? product.reasons : ['Ready for final publication review']).map(value => <li key={String(value)} className="rounded-md bg-slate-100 px-2.5 py-1 text-sm text-slate-700">{String(value).startsWith('Product classification') ? product.productType === 'prescription' ? 'Prescription dispensing workflow required' : 'Confirm product classification' : String(value)}</li>)}
         </ul>
       </li>)}

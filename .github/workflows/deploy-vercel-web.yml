@@ -1,0 +1,87 @@
+name: Deploy verified storefront to Vercel
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Full master commit SHA with successful foundation verification
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: vercel-storefront-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require a verified commit already merged into master
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE: ${{ inputs.commit }}
+        run: |
+          [[ "$CANDIDATE" =~ ^[a-f0-9]{40}$ ]]
+          git merge-base --is-ancestor "$CANDIDATE" origin/master
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/foundation.yml/runs?head_sha=$CANDIDATE&event=push&per_page=10" > runs.json
+          jq -e --arg sha "$CANDIDATE" '.workflow_runs | sort_by(.run_number) | last | select(.head_sha == $sha and .status == "completed" and .conclusion == "success")' runs.json > /dev/null
+
+  web:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: vercel-production
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Check deployment identity
+        run: |
+          [[ "$VERCEL_ORG_ID" =~ ^team_[A-Za-z0-9]+$ ]]
+          [[ "$VERCEL_PROJECT_ID" == 'prj_PftjAFsj6BSwrZnXgYZBFv0alGhF' ]]
+      - name: Install the pinned official deployment CLI
+        run: npm install --global vercel@64.5.0
+      - name: Pull the existing frontend project's production configuration
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
+        run: |
+          test -n "$VERCEL_TOKEN"
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build the frontend artifact
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { parseEnv } from 'node:util';
+          const project = JSON.parse(readFileSync('.vercel/project.json', 'utf8'));
+          const env = parseEnv(readFileSync('.vercel/.env.production.local', 'utf8'));
+          if (project.projectId !== process.env.VERCEL_PROJECT_ID || project.orgId !== process.env.VERCEL_ORG_ID
+            || env.APP_ENV !== 'production' || env.CHECKOUT_ENABLED !== 'true'
+            || env.API_ORIGIN !== 'https://almina-of4b.onrender.com'
+            || env.LEGACY_API_ORIGIN !== 'https://almina-of4b.onrender.com') {
+            throw new Error('Frontend production configuration requires review');
+          }
+          NODE
+          vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Publish the verified frontend artifact
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
