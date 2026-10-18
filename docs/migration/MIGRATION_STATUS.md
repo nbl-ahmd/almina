@@ -259,3 +259,9 @@ Added an admin-only preview/resume/report/rollback importer with stable source m
 18 October media follow-up: owner-configured signed uploads verified working; three exact manufacturer packshots attached (8 verified products total, 7,128 pending), with unchanged prices/stock and unpublished draft state. Console origin still denied; provider inventory/legacy reference audit and cleanup remain pending. See `MEDIA_ACCESS_2026-10-18.md`.
 
 18 October catalogue publication/content: owner approved all 7,136 opening-stock estimates. The checked metadata batch preserved commercial values, repaired five category ObjectId references, and reconciled an idempotent dry run. Thirteen image-matched skincare/deodorant products are published and verified through the hosted public API; fifteen products have manufacturer-based structured details (two Bepanthen cream drafts remain held). 7,123 products still lack exact images/classification, and the rest are not claimed richly enriched. Product details now have semantic overview/benefits/suitability, native detail disclosures and visible specifications; SEO site suffix duplication is corrected. See `CATALOGUE_CONTENT_2026-10-18.md` for counts, sources, checks and remaining scope.
+
+### Catalogue needs-action review — 2026-10-18
+
+- Added administrator-only `/admin/needs-action` backed by a bounded read-only draft endpoint, action filters and direct product-editor links.
+- Incomplete ERP identity markers, unconfirmed medicine classifications and prescription products remain held as drafts. Publication checks reject obvious incomplete names; no Rx classification is guessed and no dispensing workflow is introduced.
+- Read-only production check: 7,123 drafts, eight incomplete-name markers, zero unsafe live listings. No catalogue data, prices or inventory changed in this release. See `CATALOGUE_CONTENT_2026-10-18.md` for the enrichment checkpoint and limits.

@@ -28,6 +28,7 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 | POST | /api/products | admin | Maintained catalog creation/ID/initial-stock ledger transaction; retained Drive upload adapter |
 | GET | /api/products | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/search | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
+| GET | /api/products/needs-action | admin | Read-only paginated draft review queue; identity, classification, prescription, content and image filters; no catalogue writes |
 | GET | /api/products/images/:filename | public | Maintained exact current/history raster reference lookup; bounded Drive provider |
 | GET | /api/products/category/:categoryId | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |
 | GET | /api/products/details/:productId | public | Maintained bounded compatibility catalog reads; anonymous publication enforced, verified staff drafts |

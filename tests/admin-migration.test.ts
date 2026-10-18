@@ -22,7 +22,7 @@ test("admin gateway is default deny and distinguishes staff from administrators"
     "auth/me",
   ])
     assert.equal(accessPolicy("GET", path), "staff");
-  for (const path of ["operations", "category", "banners", "auth/users", "whatsapp/reports"])
+  for (const path of ["products/needs-action", "operations", "category", "banners", "auth/users", "whatsapp/reports"])
     assert.equal(accessPolicy("GET", path), "admin");
   for (const path of [
     "../auth/me",
@@ -36,6 +36,7 @@ test("admin gateway is default deny and distinguishes staff from administrators"
   assert.equal(accessPolicy("POST", "orders"), undefined); // guest checkout cannot tunnel through admin
   assert.equal(accessPolicy("POST", "auth/signup"), "admin");
   assert.equal(canVisit("user", "users"), false);
+  assert.equal(canVisit("user", "needs-action"), false);
   assert.equal(canVisit("user", "orders"), true);
   assert.equal(
     identitySchema.safeParse({
@@ -49,6 +50,10 @@ test("admin gateway is default deny and distinguishes staff from administrators"
   );
 });
 test("admin queries rebuild explicit catalog filters and bounded pagination", () => {
+  const review = new URLSearchParams(upstreamQuery('products/needs-action', new URLSearchParams({ reason:'prescription',q:'PD123',offset:'25' })));
+  assert.equal(review.get('reason'),'prescription');assert.equal(review.get('q'),'PD123');assert.equal(review.get('limit'),'25');
+  for(const input of [{filter:'{}'},{reason:'$where'},{limit:'101'}])assert.throws(()=>upstreamQuery('products/needs-action',new URLSearchParams(input)));
+  assert.deepEqual(project({items:[{name:'Example',reasons:['Confirm classification'],passwordHash:'private'}],total:1}),{items:[{name:'Example',reasons:['Confirm classification']}],total:1});
   const query = new URLSearchParams(
     upstreamQuery(
       "products",

@@ -5,6 +5,11 @@ import { parseCatalogImport } from '../apps/api/src/modules/catalog/import';
 import { feedProduct,feedCsv,feedXml,feedIssues } from '../apps/web/src/lib/catalog/feed';
 import { productData,pageMetadata } from '../apps/web/src/lib/seo';
 const item={_id:'a'.repeat(24),product_id:'PD1',name:'Example shampoo 100 ml',price:10.5,stock:3,category:{_id:'b'.repeat(24),name:'Hair care'},brand:'Example',description:'Verified product description',saleUnit:'One bottle',packLabel:'100 ml',productType:'general' as const,condition:'new' as const,contentReviewed:true,stockVerified:true,imageRights:'authorized' as const,cloudinaryImages:['https://res.cloudinary.com/example/image/upload/v1/product.webp'],googleApproved:true,metaApproved:true,identifierStatus:'not-assigned' as const};
+test('incomplete ERP identities cannot publish even when review flags are checked',()=>{
+  for(const name of ['...Mxmn','…Vmx','S','***VitaSpray',''])assert.ok(publicationIssues({...item,name}).includes('Complete product name / identity'));
+  assert.ok(publicationIssues({...item,productType:'prescription'}).some(issue=>issue.startsWith('Product classification')));
+  assert.ok(publicationIssues({...item,productType:'unreviewed'}).some(issue=>issue.startsWith('Product classification')));
+});
 test('verified GTINs retain leading zeroes and reject invalid check digits; missing barcode is not a GTIN',()=>{
   assert.equal(validGtin('00012345600012'),true);assert.equal(validGtin('00012345600013'),false);
   assert.equal(productContentSchema.safeParse({gtin:'',brand:'Example'}).success,true);

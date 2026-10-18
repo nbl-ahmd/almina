@@ -14,6 +14,7 @@ export const sections = [
   "dashboard",
   "operations",
   "products",
+  "needs-action",
   "categories",
   "banners",
   "orders",
@@ -33,6 +34,7 @@ export function canVisit(role: Identity["role"], section: string) {
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET', 'products/needs-action', 'admin'],
   ['GET', 'operations', 'admin'],
   ['GET','catalog-import/template','admin'],
   ...['preview','commit','report','rollback'].map(action=>['POST',`catalog-import/${action}`,'admin'] as [string,string,'admin']),
@@ -100,6 +102,12 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
   if (new Set(input.keys()).size !== [...input.keys()].length)
     throw new Error("Invalid query");
   const values = Object.fromEntries(input);
+  if (path === 'products/needs-action') {
+    const query = listQuery.extend({ q: z.string().trim().min(1).max(80).optional(),
+      reason: z.enum(['all', 'identity', 'classification', 'prescription', 'content', 'images']).default('all'),
+    }).parse(values);
+    return new URLSearchParams(Object.entries(query).map(([key,value]) => [key,String(value)])).toString();
+  }
   if (["products", "products/search"].includes(path)) {
     const query = listQuery
       .extend({
@@ -189,6 +197,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
 }
 // Explicit recursive projection: provider IDs, hashes, subscriptions and unexpected fields never reach a browser.
 const fields = new Set([
+  "items", "reasons",
   ...productContentNames,
   "published","active","catalogManaged","websiteStockProposed","stockReviewedAt","previewId","errors","warnings","rows","row","field","message","sourceKey","action","productId","total","processed","complete","report","namespace","offset","nextOffset","previousPrice","previousStock","changedFields","unmappedCategories",
   "variantLabel", "familyKey", "familyName", "familyBrand", "familyForm", "familyStrength", "variantSize", "variantFlavour", "variantPackSize",

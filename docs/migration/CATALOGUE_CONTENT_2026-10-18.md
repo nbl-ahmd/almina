@@ -75,3 +75,13 @@ publication results, final counts and local screenshots. `catalog_enrichment_run
 and `catalog_enrichment_changes` retain the run and per-product rollback evidence.
 See `MEDIA_ACCESS_2026-10-18.md` for the conditional rollback strategy. No assets
 or database documents were deleted.
+
+## Draft review queue (18 October follow-up)
+
+The pharmacy instructed that incomplete identities, unclassified medicines and prescription products remain drafts. `/admin/needs-action` now provides a read-only administrator queue with bounded server pagination, product ID/name search, specific action filters and direct editor links. No bulk publish action is offered. Anonymous visitors and branch accounts cannot access the endpoint. Existing editor review requirements remain authoritative; obvious ERP placeholder names also block managed catalogue publication until corrected. This identity rule is conservative and does not infer a medicine's legal classification.
+
+Production read-only verification: 7,123 drafts, including eight obvious incomplete-name markers; zero live unclassified/prescription/incomplete-marker products. All drafts still require pharmacy classification. No prescription classifications were invented. Known medicine listings remain unclassified drafts pending pharmacy review. Drafts with no remaining checks are labelled for final publication review, rather than automatically published.
+
+Latest enrichment checkpoint: 18 products have source-rich detail content, 14 have exact verified images and 13 are published. All 7,136 approved opening stock checks remain recorded. This queue release does not modify catalogue content, prices, inventory or publication flags. It does not resolve unknown medicine classification, image rights or incomplete ERP identities on behalf of the pharmacy.
+
+Validation: shared publication-rule regression, real MongoDB filter/pagination/read-only checks, anonymous/staff HTTP authorization coverage, gateway allowlist tests, typechecking, lint, isolated production build and local browser verification. Rollback is a code-only revert; there is no data migration to reverse.

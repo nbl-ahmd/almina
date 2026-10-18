@@ -7,8 +7,33 @@ import {toggleCatalogVisibility} from '../apps/api/src/modules/media/metadata';
 import {updateProductInventory} from '../apps/api/src/modules/inventory/adjustments';
 import {catalogExportPage} from '../apps/api/src/modules/catalog/export';
 import {retainedProductList} from '../apps/api/src/modules/catalog/compatibility-reads';
+import {catalogueNeedsAction} from '../apps/api/src/modules/catalog/needs-action';
 import {migrateCommerce} from '../scripts/migrations/commerce';
 const uri=process.env.COMMERCE_TEST_URI;
+test('needs action paginates drafts, separates identity/classification/Rx and excludes live or archived products',{skip:!uri},async()=>{
+  assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client=await new MongoClient(uri!).connect(),db=client.db('almina_review_'+randomUUID().replaceAll('-',''));
+  try{
+    const base={name:'Synthetic product',published:false,disabled:true,brand:'Example',saleUnit:'Bottle',packLabel:'100 ml',description:'Verified synthetic information',contentReviewed:true,stockVerified:true,imageRights:'authorized',cloudinaryImages:['https://res.cloudinary.com/synthetic/image/upload/v1/item.webp']};
+    await db.collection('products').insertMany([
+      {...base,product_id:'PD1',name:'...Mxmn',productType:'unreviewed'},
+      {...base,product_id:'PD2',name:'Synthetic Rx',productType:'prescription'},
+      {...base,product_id:'PD3',name:'Synthetic [brackets]',productType:'general',contentReviewed:false,cloudinaryImages:[]},
+      {...base,product_id:'PD4',productType:'general',published:true,disabled:false},
+      {...base,product_id:'PD5',archivedAt:new Date()},
+    ]);
+    const first=await catalogueNeedsAction(db,{limit:'2'});assert.equal(first.total,3);assert.equal(first.items.length,2);
+    const second=await catalogueNeedsAction(db,{limit:'2',offset:'2'});assert.equal(second.items.length,1);assert.notEqual(String(second.items[0]._id),String(first.items[0]._id));
+    for(const [reason,id] of [['identity','PD1'],['classification','PD1'],['prescription','PD2'],['content','PD3'],['images','PD3']] as const){
+      const result=await catalogueNeedsAction(db,{reason});assert.equal(result.total,1,reason);assert.equal(result.items[0].product_id,id);
+    }
+    const exact=await catalogueNeedsAction(db,{q:'[brackets]'});assert.equal(exact.total,1);assert.equal(exact.items[0].product_id,'PD3');
+    assert.equal((await catalogueNeedsAction(db,{q:'PD1'})).items[0].product_id,'PD1');
+    assert.ok((await catalogueNeedsAction(db,{reason:'identity'})).items[0].reasons.includes('Complete product name / identity'));
+    for(const raw of [{limit:'101'},{limit:['2']},{offset:'10001'},{reason:'$where'},{filter:'{}'},{q:['bad']}])await assert.rejects(catalogueNeedsAction(db,raw),{status:400});
+    assert.equal(await db.collection('products').countDocuments(),5); // Read-only queue.
+  }finally{await db.dropDatabase();await client.close();}
+});
 assert.ok(uri||process.env.REQUIRE_DATABASE_TESTS!=='1','Disposable DB required');
 test('draft import validates gross VAT, source identity, replay, stale edits, publication review and rollback against real MongoDB',{skip:!uri},async()=>{
   assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
