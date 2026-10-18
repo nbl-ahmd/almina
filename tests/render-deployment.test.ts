@@ -39,7 +39,7 @@ test('native Node deployment gate emits the verified SHA, skips stale automation
         if(command==='gh'&&args[0]==='api'){if('${mode}'==='stale')throw Error('Stale candidate must not query verification');return JSON.stringify({workflow_runs:[{run_number:1,head_sha:'${commit}',event:'push',status:'completed',conclusion:'success'}]});}
         throw Error('Unexpected command');};syncBuiltinESMExports();`;
     return run(process.execPath, ['--import', 'data:text/javascript,' + encodeURIComponent(mock), 'scripts/tooling/verify-vercel-candidate.mts'], {
-      env: { PATH: process.env.PATH, GITHUB_EVENT_NAME: 'workflow_run', GITHUB_EVENT_PATH: '/synthetic-event.json', GITHUB_REPOSITORY: 'pharmacy/store', CANDIDATE: commit, GITHUB_OUTPUT: '/synthetic-output' },
+      env: { PATH: process.env.PATH, NODE_ENV: 'test', GITHUB_EVENT_NAME: 'workflow_run', GITHUB_EVENT_PATH: '/synthetic-event.json', GITHUB_REPOSITORY: 'pharmacy/store', CANDIDATE: commit, GITHUB_OUTPUT: '/synthetic-output' },
     });
   }
   assert.match((await gate('ready')).stdout, new RegExp(`commit=${commit}\\ndeploy=true`));
