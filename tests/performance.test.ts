@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { openBeautyPhotoCredit } from '../apps/web/src/lib/catalog/photo-credit';
 import { catalogReadPolicy } from '../apps/web/src/lib/catalog/cache-policy';
 import { authorizeCatalogRevalidation } from '../apps/web/src/lib/catalog/revalidation';
 import { measureCatalogQuery } from '../apps/api/src/modules/catalog/timing';
@@ -72,4 +73,16 @@ test('Cloudinary product delivery preserves account validation and creates width
   for(const value of [src.replace('/example/','/other/'),src+'?token=private',src.replace('https:','http:'),'/product-placeholder.svg','https://user:pass@res.cloudinary.com/example/image/upload/a.webp'])assert.equal(cloudinaryDelivery(value,'example',640),null);
   for(const width of [0,-1,1.5,3841,Infinity])assert.equal(cloudinaryDelivery(src,'example',width),null);
   assert.equal(cloudinaryDelivery(src,undefined,640),null);
+});
+
+test('licensed photo credits only link a recognized, valid product source', () => {
+  const credit = openBeautyPhotoCredit('https://world.openbeautyfacts.org/product/3401353806399');
+  assert.equal(credit?.name, 'Open Beauty Facts contributors');
+  assert.equal(credit?.licenseUrl, 'https://creativecommons.org/licenses/by-sa/3.0/');
+  for (const source of [undefined, 'javascript:alert(1)', 'https://other.invalid/product/3401353806399',
+    'https://user:secret@world.openbeautyfacts.org/product/3401353806399',
+    'https://world.openbeautyfacts.org/product/3401353806390',
+    'https://world.openbeautyfacts.org/product/3401353806399?redirect=other']) {
+    assert.equal(openBeautyPhotoCredit(source), null);
+  }
 });

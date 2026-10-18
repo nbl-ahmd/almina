@@ -1,6 +1,7 @@
 import { ProductInformation } from '../../../../components/product-information';
 import { ProductOptions } from '../../../../components/product-options';
 import { ProductGallery } from '../../../../components/product-gallery';
+import { PhotoCredit } from '../../../../components/photo-credit';
 import Link from 'next/link';
 import { permanentRedirect } from 'next/navigation';
 import { catalogAvailabilityConfirmed, getProductVariants, getProducts, productImages } from '../../../../lib/server/catalog';
@@ -42,6 +43,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
     <div className="product-detail mb-8 grid items-start gap-6 md:grid-cols-2 md:gap-6 lg:gap-10">
       <div className="product-visual min-w-0"><div className="mb-3 flex flex-wrap gap-2 text-xs text-ocean"><Link className="rounded-full border border-border bg-accent/30 px-3 py-1.5 text-ocean" href={categoryHref(product.category)}>{product.category.name}</Link><span className="rounded-full border border-border bg-subtle px-3 py-1.5">Product ID: {product.product_id}</span></div><ProductGallery images={productImages(product)} name={product.name} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
 
+        {productImages(product).some(image => !image.startsWith('/')) ? <PhotoCredit source={product.imageSource} /> : null}
       </div>
       <div className="product-information min-w-0"><div className="product-identity mb-3 flex items-center justify-between gap-3 text-xs text-ocean"><Link className="text-ocean" href={categoryHref(product.category)}>{product.category.name}</Link><span className="hidden md:block">SKU: {product.product_id}</span></div><h1 className="mb-3 text-2xl leading-tight font-bold tracking-tight wrap-anywhere md:text-3xl">{product.name}</h1>{product.summary || product.description ? <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-ocean">{product.summary || product.description?.split('\n')[0]}</p> : null}
         <div className="mb-4 flex items-center justify-between rounded-lg bg-subtle p-3"><StockState stock={product.stock} /><span className="text-xs text-ocean">Al Mina Pharmacy</span></div>
