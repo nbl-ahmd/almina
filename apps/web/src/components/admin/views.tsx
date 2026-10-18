@@ -104,9 +104,9 @@ export function Table({
               <td colSpan={columns.length + (actions ? 1 : 0)}>
                 <div className="admin-empty">
                   <p className="admin-empty__title">
-                    {empty?.title ?? "No records found"}
+                    {empty?.title ?? "No records found."}
                   </p>
-                  <p>{empty?.description ?? "Nothing matches this view yet."}</p>
+                  {empty?.description ? <p>{empty.description}</p> : null}
                 </div>
               </td>
             </tr>

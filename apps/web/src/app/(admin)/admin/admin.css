@@ -1095,6 +1095,24 @@
     display: none;
   }
   @media (max-width: 1024px) {
+    .admin-livestatus {
+      justify-content: stretch;
+    }
+    .admin-status {
+      width: 100%;
+      border-radius: var(--admin-radius-sm);
+      justify-content: flex-start;
+    }
+    .admin-shell {
+      grid-template-columns: 224px minmax(0, 1fr);
+    }
+    .admin-sidebar {
+      padding: 1rem 0.75rem;
+    }
+  }
+  /* Phones only. Tablets keep the persistent sidebar so every section stays one
+     tap away and the navigation never disappears behind a control. */
+  @media (max-width: 767px) {
     .admin-shell {
       grid-template-columns: 1fr;
     }
@@ -1103,6 +1121,7 @@
       inset: 0 auto 0 0;
       z-index: 60;
       width: min(300px, 86vw);
+      padding: 1.25rem 1rem;
       transform: translateX(-100%);
       transition: transform 240ms var(--admin-ease);
       box-shadow: var(--admin-shadow-md);
@@ -1133,14 +1152,6 @@
     .admin-app .admin-scrim[data-open="true"] {
       opacity: 1;
       pointer-events: auto;
-    }
-    .admin-livestatus {
-      justify-content: stretch;
-    }
-    .admin-status {
-      width: 100%;
-      border-radius: var(--admin-radius-sm);
-      justify-content: flex-start;
     }
   }
   @media (max-width: 640px) {

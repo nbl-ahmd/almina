@@ -1,8 +1,8 @@
-import {test,expect,reset,login,adminOrigin,checkoutOrigin,commerceOrigin} from './fixtures';
+import {test,expect,reset,login,openAdminSection,adminOrigin,checkoutOrigin,commerceOrigin} from './fixtures';
 test.beforeEach(async({request})=>{await reset(request);});
 const row={sourceKey:'erp-row-42',name:'Synthetic import shampoo',categoryId:'',sourceCategory:'ERP hair care',barcode:'',sourcePrice:'10.00',vatPercent:'5',price:'10.50',websiteStockProposed:4,description:'Synthetic verified description',brand:'Synthetic',saleUnit:'One bottle',packLabel:'100 ml',productType:'general',condition:'new',identifierStatus:'not-assigned'};
 for(const width of [360,390,768,1280])test(`admin previews category mapping, imports hidden drafts and rolls back at ${width}px`,async({page,request})=>{
-  await page.setViewportSize({width,height:900});await login(page);await page.getByRole('link',{name:'Catalog import',exact:true}).click();
+  await page.setViewportSize({width,height:900});await login(page);await openAdminSection(page,'Catalog import');
   await page.getByLabel('Prepared CSV or JSON').setInputFiles({name:'synthetic.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify([row]))});
   await page.getByRole('button',{name:'Preview import',exact:true}).click();
   await page.getByLabel('Map ERP hair care').selectOption('aaaaaaaaaaaaaaaaaaaaaaaa');

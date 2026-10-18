@@ -137,7 +137,7 @@ export function AdminShell({
           aria-label="Administration navigation"
         >
           <div className="admin-brand">
-            <Link className="admin-brand__mark" href="/admin">
+            <Link className="admin-brand__mark" href="/admin" prefetch={false}>
               <span className="admin-brand__logo" aria-hidden="true">
                 A
               </span>
@@ -159,6 +159,7 @@ export function AdminShell({
                       key={item.id}
                       className="admin-nav__link"
                       href={item.href}
+                      prefetch={false}
                       aria-current={active ? 'page' : undefined}
                       onClick={() => setOpen(false)}
                     >
@@ -171,7 +172,7 @@ export function AdminShell({
             ))}
           </nav>
           <div className="admin-sidebar__foot">
-            <Link className="admin-store-link" href="/" onClick={() => setOpen(false)}>
+            <Link className="admin-store-link" href="/" prefetch={false} onClick={() => setOpen(false)}>
               <ArrowTopRightOnSquareIcon
                 className="admin-nav__icon"
                 aria-hidden="true"
