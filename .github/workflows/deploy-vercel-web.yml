@@ -1,6 +1,10 @@
 name: Deploy verified storefront to Vercel
 
 on:
+  workflow_run:
+    workflows: [Modernization foundation]
+    types: [completed]
+    branches: [master]
   workflow_dispatch:
     inputs:
       commit:
@@ -18,25 +22,30 @@ concurrency:
 
 jobs:
   verify:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
+    outputs:
+      commit: ${{ steps.candidate.outputs.commit }}
+      deploy: ${{ steps.candidate.outputs.deploy }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: master
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
       - name: Require a verified commit already merged into master
+        id: candidate
         env:
           GH_TOKEN: ${{ github.token }}
-          CANDIDATE: ${{ inputs.commit }}
-        run: |
-          [[ "$CANDIDATE" =~ ^[a-f0-9]{40}$ ]]
-          git merge-base --is-ancestor "$CANDIDATE" origin/master
-          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/foundation.yml/runs?head_sha=$CANDIDATE&event=push&per_page=10" > runs.json
-          jq -e --arg sha "$CANDIDATE" '.workflow_runs | sort_by(.run_number) | last | select(.head_sha == $sha and .status == "completed" and .conclusion == "success")' runs.json > /dev/null
+          CANDIDATE: ${{ inputs.commit || github.event.workflow_run.head_sha }}
+        run: node scripts/tooling/verify-vercel-candidate.mts
 
   web:
     needs: verify
+    if: needs.verify.outputs.deploy == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     environment: vercel-production
@@ -47,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.commit }}
+          ref: ${{ needs.verify.outputs.commit }}
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
