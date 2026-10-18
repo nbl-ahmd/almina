@@ -68,6 +68,9 @@ productRouter.get('/search', async (req, res) => {
   const query = domain.retainedCatalogQuery(req.query, 'search');
   res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
 });
+productRouter.get('/needs-action', async (req, res) => {
+  res.json(await catalogDomain().catalogueNeedsAction(await catalogDb(req), req.query));
+});
 productRouter.get('/:id', async (req, res) => {
   if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { id: req.params.id }, staffRead(req)));

@@ -19,8 +19,11 @@ export const productContentFields = {
 export const productContentNames=Object.keys(productContentFields) as (keyof typeof productContentFields)[];
 export const productContentSchema=z.object(productContentFields).strict();
 export type ProductContent=z.infer<typeof productContentSchema>;
+// Conservative ERP identity flags, not a medicine or prescription classifier.
+export const incompleteProductNamePattern = /^(?:\s*(?:[.*]{2,}|…)|\s*[a-z]\s*$)/i;
 export function publicationIssues(product:Record<string,unknown>):string[] {
   const issues:string[]=[];
+  if(typeof product.name!=='string'||!product.name.trim()||incompleteProductNamePattern.test(product.name))issues.push('Complete product name / identity');
   if(!product.brand&&!product.familyBrand)issues.push('Brand');
   if(!product.saleUnit)issues.push('Saleable unit');
   if(!product.packLabel)issues.push('Pack / specification');

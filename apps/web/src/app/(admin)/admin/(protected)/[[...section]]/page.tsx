@@ -1,4 +1,5 @@
 import type { AdminRecord } from '../../../../../lib/admin/policy';
+import { NeedsAction } from '../../../../../components/admin/needs-action';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
 import { operationsSnapshotSchema } from '@almina/contracts';
@@ -87,6 +88,13 @@ export default async function AdminPage({
   )
     notFound();
   if (section === 'operations') return <OperationsView snapshot={operationsSnapshotSchema.parse(await adminRead('operations'))} />;
+  if (section === 'needs-action') {
+    // Fixed page size keeps count labels and navigation consistent.
+    qs.set('limit', '25');
+    return <NeedsAction data={await adminRead('products/needs-action', qs)}
+      {...(typeof query.q === 'string' ? { q: query.q } : {})}
+      {...(typeof query.reason === 'string' ? { reason: query.reason } : {})} />;
+  }
   if (section === "dashboard") {
     const orders = rows(await adminRead("orders"));
     return (
@@ -150,6 +158,7 @@ export default async function AdminPage({
             categories={categories}
             selectedCategory={selectedCategory}
           />
+          {product ? <p><Link href="/admin/needs-action">Back to Needs action</Link></p> : null}
           <Link href="/admin/products">Back to products</Link>
         </>
       );
@@ -160,6 +169,7 @@ export default async function AdminPage({
     return (
       <>
         <h1>Products</h1>
+        {user.role === 'admin' ? <p><Link href="/admin/needs-action">Needs action — review unpublished products</Link></p> : null}
         {user.role === "admin" ? (
           <Link href="/admin/products/new">Create product</Link>
         ) : (
