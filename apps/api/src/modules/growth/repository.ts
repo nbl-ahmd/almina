@@ -1,0 +1,43 @@
+import { ObjectId, type Db, type Document } from 'mongodb';
+import { growthPageSchema, pharmacyProfileSchema, cloudinaryImage, type GrowthPage } from '@almina/contracts';
+import { HttpError } from '../../errors.js';
+const key=(page:Pick<GrowthPage,'kind'|'locale'|'slug'>)=>`${page.locale}:${page.kind}:${page.slug}`;
+export async function saveGrowthPage(db:Db,raw:unknown,actor:string) {
+  if(!ObjectId.isValid(actor))throw new HttpError(400,'INVALID_REQUEST');
+  const parsed=growthPageSchema.safeParse(raw);
+  if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
+  const page=parsed.data;
+  if(page.image&&!cloudinaryImage(page.image,process.env.CLOUDINARY_CLOUD_NAME)&&!/^https:\/\/cdn\.alminapharmacy\.com\/cdn\/[a-zA-Z0-9/_-]+\.(?:png|jpe?g|webp|avif)$/.test(page.image))throw new HttpError(400,'INVALID_REQUEST');
+  const id=key(page),collection=db.collection<Document&{_id:string}>('growth_pages');
+  // First creation is atomic through deterministic _id; edits require exact revision.
+  try {
+    const result=await collection.updateOne({_id:id,revision:page.revision},{$set:{...page,revision:page.revision+1,updatedAt:new Date(),updatedBy:actor}},{upsert:page.revision===0});
+    if(!result.matchedCount&&!result.upsertedCount)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');
+  } catch(error) { if(error instanceof Error&&'code' in error&&error.code===11000)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');throw error; }
+  return {...page,revision:page.revision+1};
+}
+export async function growthPages(db:Db,admin=false,kind?:string,locale='en',offset=0) {
+  const rows=await db.collection('growth_pages').find({...(!admin?{published:true}:{}),...(kind?{kind}:{}),locale},{maxTimeMS:3000,projection:{_id:0,updatedBy:0,updatedAt:0}}).sort({updatedAt:-1}).skip(offset).limit(51).toArray();
+  return {items:rows.slice(0,50).map(row=>growthPageSchema.parse(row)),hasNext:rows.length>50};
+}
+export async function growthPage(db:Db,kind:string,slug:string,locale:string,admin=false) {
+  const row=await db.collection<Document&{_id:string}>('growth_pages').findOne({_id:`${locale}:${kind}:${slug}`,...(!admin?{published:true}:{})},{maxTimeMS:3000,projection:{_id:0,updatedBy:0,updatedAt:0}});
+  if(!row)throw new HttpError(404,'NOT_FOUND');
+  return growthPageSchema.parse(row);
+}
+export async function pharmacyProfile(db:Db,admin=false) {
+  const row=await db.collection<Document&{_id:string}>('growth_settings').findOne({_id:'pharmacy'},{maxTimeMS:3000});
+  const profile=pharmacyProfileSchema.parse(row?Object.fromEntries(Object.keys(pharmacyProfileSchema.shape).map(name=>[name,row[name]])):{});
+  return admin||profile.verified?profile:pharmacyProfileSchema.parse({});
+}
+export async function savePharmacyProfile(db:Db,raw:unknown,actor:string) {
+  if(!ObjectId.isValid(actor))throw new HttpError(400,'INVALID_REQUEST');
+  const parsed=pharmacyProfileSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
+  const value=parsed.data;
+  if(value.verified&&(!value.address||!value.openingHours||!value.licence))throw new HttpError(400,'INVALID_REQUEST');
+  try {
+    const result=await db.collection<Document&{_id:string}>('growth_settings').updateOne({_id:'pharmacy',revision:value.revision},{$set:{...value,revision:value.revision+1,updatedAt:new Date(),updatedBy:actor}},{upsert:value.revision===0});
+    if(!result.matchedCount&&!result.upsertedCount)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');
+  }catch(error){if(error instanceof Error&&'code' in error&&error.code===11000)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');throw error;}
+  return {...value,revision:value.revision+1};
+}

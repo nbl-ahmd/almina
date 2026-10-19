@@ -8,6 +8,8 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  VOUCHER_UNAVAILABLE: 'This voucher is expired, already used or not available to this account.',
+  VOUCHER_MINIMUM: 'Add enough eligible products to meet this voucher’s minimum spend.',
   CATALOG_REVIEW_REQUIRED: 'Complete the product content, classification, image rights and physical stock review before publishing.',
   PRODUCT_FAMILY_CONFLICT: 'Check the family name, brand, form, strength, category and option combinations. Each combination must be unique.',
   LOCATION_NOT_FOUND: 'A complete delivery address could not be found.',

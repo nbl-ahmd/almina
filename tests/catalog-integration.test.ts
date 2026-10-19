@@ -250,6 +250,8 @@ test('families preserve SKU stock, reject mixed strengths and duplicate options,
     assert.equal(grouped.length,1); assert.equal(grouped[0]!.familyOptionCount,3); assert.equal(grouped[0]!.familyPriceVaries,true);
     assert.equal((await retainedProductList(db,retainedCatalogQuery({groupFamilies:'true',limit:'1',offset:'1'},'products'))).length,0);
     assert.equal((await retainedProductList(db,retainedCatalogQuery({},'products'))).length,3);
+    assert.equal((await retainedProductList(db,retainedCatalogQuery({inStock:'true',minPrice:'29',sort:'price-asc'},'products'))).length,1);
+    assert.equal((await retainedProductList(db,retainedCatalogQuery({inStock:'true',sort:'price-asc'},'products')))[0]!.price,25);
     await db.collection('products').updateOne({_id:large._id},{$set:{published:false}});
     assert.equal((await retainedProductDetail(db,{productId:small.product_id})).variants!.length,2);
     await db.collection('products').updateOne({_id:large._id},{$unset:{published:''}});

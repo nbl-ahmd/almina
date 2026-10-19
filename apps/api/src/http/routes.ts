@@ -1,3 +1,18 @@
+import { createHash as growthHash } from 'node:crypto';
+import { customerMutationQuota } from '../modules/growth/limits.js';
+import { rewardsPolicySchema } from '@almina/contracts';
+import { rewardsPolicy,saveRewardsPolicy,rewardAccount,referralCode,attachReferral,redeemPoints,confirmRewardDelivery } from '../modules/growth/rewards.js';
+import { customerSaved,updateCustomerSaved } from '../modules/growth/saved.js';
+import { submitReview,publicReviews,moderateReview } from '../modules/growth/reviews.js';
+import { readDeliveryPolicy,saveDeliveryPolicy,previewDelivery } from '../modules/growth/delivery.js';
+import { commercePolicySchema } from '@almina/contracts';
+import { indexSearchBatch,suggestProducts } from '../modules/growth/search.js';
+import { customerAuthOptions,customerCookie,customerToken,requestEmailCode,verifyEmailCode,googleSignIn,customerIdentity,customerLogout,customerOrders,saveCustomerPreferences,customerAddresses,updateCustomerAddresses } from '../modules/growth/customers.js';
+import { growthPageSchema, pharmacyProfileSchema, growthKinds, growthSlug } from '@almina/contracts';
+import { growthPages, growthPage, saveGrowthPage, pharmacyProfile, savePharmacyProfile } from '../modules/growth/repository.js';
+import { z as growthZ } from 'zod';
+import { growthMetrics } from '../modules/growth/metrics.js';
+import { growthProductOptions,growthCategoryOptions } from '../modules/growth/selectors.js';
 import { Router, type Request, type RequestHandler } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import type { z } from 'zod';
@@ -129,12 +144,12 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   router.post('/checkout/quote', async (req, res) => {
     validate(emptyQuerySchema, req.query);
     verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));
-    send(res, quoteDtoSchema, await commerce.quote(req.body));
+    send(res, quoteDtoSchema, await commerce.quote(req.body,req.body?.voucherCode?(await sessionCustomer(req)).id:undefined));
   });
   router.post('/checkout', async (req, res) => {
     validate(emptyQuerySchema, req.query);
     verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));
-    const result = await commerce.checkout(req.body);
+    const result = await commerce.checkout(req.body,req.body?.voucherCode?(await sessionCustomer(req)).id:undefined);
     res.status(result.replayed ? 200 : 201);
     send(res, checkoutDtoSchema, result);
     if (!result.replayed) onOrderCreated?.({ id: result.id, orderId: result.orderId });
@@ -167,5 +182,63 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     const query = validate(cursorQuerySchema, req.query);
     send(res, pageSchema(staffDtoSchema), await staff.list(query, user));
   });
+  const customerAuthLimit=rateLimit({windowMs:15*60*1000,limit:20,keyGenerator:req=>growthHash('sha256').update(String(req.body?.email??req.body?.challenge??req.body?.idToken??'invalid').trim().toLowerCase()).digest('hex'),standardHeaders:'draft-8',legacyHeaders:false,handler:(_req,_res,next)=>next(new HttpError(429,'RATE_LIMITED'))});
+  const limitedCustomer=async(req:Request)=>{const db=await getDb(),customer=await sessionCustomer(req);await customerMutationQuota(db,customer.id);return customer;};
+  const sessionCustomer=async(req:Request)=>customerIdentity(await getDb(),customerToken(req.headers.cookie,development));
+  const customerSchema=growthZ.object({id:growthZ.string(),email:growthZ.email(),marketingEmail:growthZ.boolean().optional(),marketingWhatsapp:growthZ.boolean().optional()});
+  read('/customers/options',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,growthZ.object({googleClientId:growthZ.string().nullable(),emailEnabled:growthZ.boolean()}),customerAuthOptions());});
+  read('/customers/me',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,customerSchema,await sessionCustomer(req));});
+  read('/customers/orders',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);const orders=await customerOrders(await getDb(),customer);send(res,growthZ.array(growthZ.object({orderId:growthZ.string(),status:growthZ.string(),createdAt:growthZ.coerce.date(),totals:growthZ.object({totalMinor:growthZ.number().int().nonnegative(),lines:growthZ.array(growthZ.object({productId:growthZ.string(),name:growthZ.string(),quantity:growthZ.number().int()}))})})),orders);});
+  const addressDto=growthZ.object({id:growthZ.string().uuid(),label:growthZ.string(),name:growthZ.string(),mobile:growthZ.string(),emirate:growthZ.string(),city:growthZ.string(),address:growthZ.string(),buildingname:growthZ.string(),flatno:growthZ.string(),note:growthZ.string(),maplink:growthZ.string(),isDefault:growthZ.boolean(),createdAt:growthZ.coerce.date()});
+  read('/customers/addresses',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.array(addressDto),await customerAddresses(await getDb(),customer.id));});
+  router.post('/customers/addresses',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const customer=await limitedCustomer(req);send(res,growthZ.array(addressDto),await updateCustomerAddresses(await getDb(),customer.id,req.body));});
+  router.all('/customers/addresses',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  for(const action of ['email','verify','google','logout','preferences'] as const){
+    router.post(`/customers/${action}`,...(['email','verify','google'].includes(action)?[customerAuthLimit]:[]),async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);
+      if(action==='email'){send(res,growthZ.object({challenge:growthZ.string()}),await requestEmailCode(await getDb(),req.body));return;}
+      if(action==='verify'||action==='google'){const login=action==='verify'?await verifyEmailCode(await getDb(),req.body):await googleSignIn(await getDb(),req.body);res.cookie(customerCookie(development),login.token,{httpOnly:true,secure:!development,sameSite:'lax',path:'/',maxAge:30*86400000});send(res,customerSchema,login.customer);return;}
+      const customer=await limitedCustomer(req);
+      if(action==='logout'){await customerLogout(await getDb(),customerToken(req.headers.cookie,development));res.clearCookie(customerCookie(development),{httpOnly:true,secure:!development,sameSite:'lax',path:'/'});res.status(204).end();return;}
+      send(res,growthZ.object({marketingEmail:growthZ.boolean(),marketingWhatsapp:growthZ.boolean()}),await saveCustomerPreferences(await getDb(),customer.id,req.body));
+    });
+    router.all(`/customers/${action}`,(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  }
+  read('/growth/suggest',async(req,res)=>{const input=validate(growthZ.object({q:growthZ.string().trim().min(2).max(80)}).strict(),req.query);send(res,growthZ.array(growthZ.object({id:growthZ.string(),name:growthZ.string(),productId:growthZ.string(),category:growthZ.string()})),await suggestProducts(await getDb(),input.q));});
+  router.post('/admin/growth/search-index',async(req,res)=>{await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const input=validate(growthZ.object({cursor:growthZ.string().regex(/^[a-f0-9]{24}$/).optional()}).strict(),req.body);send(res,growthZ.object({processed:growthZ.number(),nextCursor:growthZ.string().nullable()}),await indexSearchBatch(await getDb(),input.cursor));});
+  router.all('/admin/growth/search-index',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  router.get('/admin/growth/delivery',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,commercePolicySchema,await readDeliveryPolicy(await getDb()));});
+  router.post('/admin/growth/delivery',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,commercePolicySchema,await saveDeliveryPolicy(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/delivery',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  router.post('/growth/delivery',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,growthZ.object({emirate:growthZ.string(),subtotalMinor:growthZ.number(),deliveryFeeMinor:growthZ.number(),freeAboveMinor:growthZ.number().nullable(),remainingMinor:growthZ.number().nullable(),policyVersion:growthZ.string()}),await previewDelivery(await getDb(),req.body));});
+  router.all('/growth/delivery',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  const reviewsSchema=growthZ.object({items:growthZ.array(growthZ.object({rating:growthZ.number().int(),displayName:growthZ.string(),title:growthZ.string(),body:growthZ.string(),createdAt:growthZ.coerce.date(),verifiedPurchase:growthZ.literal(true)})),ratingCount:growthZ.number().int(),average:growthZ.number().nullable()});
+  read('/growth/reviews',async(req,res)=>{const query=validate(growthZ.object({productId:growthZ.string().regex(/^[a-f0-9]{24}$/i)}).strict(),req.query);send(res,reviewsSchema,await publicReviews(await getDb(),query.productId));});
+  router.get('/customers/saved',async(req,res)=>{noBody(req);validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.object({ids:growthZ.array(growthZ.string())}),await customerSaved(await getDb(),customer.id));});
+  for(const action of ['saved','review'] as const){router.post(`/customers/${action}`,...(['email','verify','google'].includes(action)?[customerAuthLimit]:[]),async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const customer=await limitedCustomer(req);if(action==='saved')send(res,growthZ.object({ids:growthZ.array(growthZ.string())}),await updateCustomerSaved(await getDb(),customer.id,req.body));else send(res,growthZ.object({status:growthZ.literal('pending')}),await submitReview(await getDb(),customer,req.body));});router.all(`/customers/${action}`,(_req,res,next)=>{res.set('Allow',action==='saved'?'GET, HEAD, POST':'POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});}
+  read('/admin/growth/reviews',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);const rows=await(await getDb()).collection('product_reviews').find({moderation:'pending'},{maxTimeMS:3000,projection:{customerId:0,orderId:0}}).sort({createdAt:1}).limit(50).toArray();send(res,growthZ.array(growthZ.object({_id:growthZ.string(),productId:growthZ.string(),rating:growthZ.number(),displayName:growthZ.string(),title:growthZ.string(),body:growthZ.string(),verifiedPurchase:growthZ.literal(true),moderation:growthZ.literal('pending'),createdAt:growthZ.coerce.date()})),rows);});
+  router.post('/admin/growth/review',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,growthZ.object({status:growthZ.enum(['approved','rejected'])}),await moderateReview(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/review',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  read('/admin/growth/metrics',async(req,res)=>{await identity(req,true);const input=validate(growthZ.object({days:growthZ.coerce.number().int().refine(value=>[7,30,90].includes(value))}).strict(),req.query);const result=await growthMetrics(await getDb(),input);send(res,growthZ.object({days:growthZ.number(),from:growthZ.string(),to:growthZ.string(),current:growthZ.object({orders:growthZ.number(),revenueMinor:growthZ.number(),averageOrderMinor:growthZ.number(),completed:growthZ.number(),cancelled:growthZ.number()}),previous:growthZ.object({orders:growthZ.number(),revenueMinor:growthZ.number(),averageOrderMinor:growthZ.number(),completed:growthZ.number(),cancelled:growthZ.number()}),daily:growthZ.array(growthZ.object({date:growthZ.string(),orders:growthZ.number(),revenueMinor:growthZ.number()})),topProducts:growthZ.array(growthZ.object({productId:growthZ.string(),name:growthZ.string(),quantity:growthZ.number(),revenueMinor:growthZ.number()}))}),result);});
+  router.get('/admin/growth/rewards',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,rewardsPolicySchema,await rewardsPolicy(await getDb()));});
+  router.post('/admin/growth/rewards',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,rewardsPolicySchema,await saveRewardsPolicy(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/rewards',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  router.post('/admin/growth/delivered',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,growthZ.object({awarded:growthZ.number().int(),replayed:growthZ.boolean()}),await confirmRewardDelivery(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/delivered',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  read('/customers/rewards',async(req,res)=>{validate(emptyQuerySchema,req.query);const user=await sessionCustomer(req);const data=await rewardAccount(await getDb(),user.id);send(res,growthZ.object({enabled:growthZ.boolean(),points:growthZ.number().int(),pointsPerAed:growthZ.number().int(),pointsPerVoucher:growthZ.number().int(),voucherValueMinor:growthZ.number().int(),minimumSpendMinor:growthZ.number().int(),voucherDays:growthZ.number().int(),terms:growthZ.string(),referralCode:growthZ.string().nullable(),vouchers:growthZ.array(growthZ.object({code:growthZ.string(),valueMinor:growthZ.number(),expiresAt:growthZ.coerce.date(),minimumSpendMinor:growthZ.number()}))}),data);});
+  for(const action of ['redeem','referral-code','referral'] as const){router.post('/customers/'+action,async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const user=await limitedCustomer(req),db=await getDb();if(action==='redeem')send(res,growthZ.object({code:growthZ.string(),valueMinor:growthZ.number(),expiresAt:growthZ.coerce.date()}),await redeemPoints(db,user.id,req.body));else if(action==='referral-code'){validate(emptyQuerySchema,req.body);send(res,growthZ.object({code:growthZ.string()}),await referralCode(db,user.id));}else send(res,growthZ.object({attached:growthZ.boolean()}),await attachReferral(db,user,req.body));});router.all('/customers/'+action,(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});}
+  const growthQuery=growthZ.object({kind:growthZ.enum(growthKinds).optional(),locale:growthZ.enum(['en','ar']).default('en'),offset:growthZ.coerce.number().int().min(0).max(10000).default(0)}).strict();
+  const pageQuery=growthZ.object({kind:growthZ.enum(growthKinds),slug:growthSlug,locale:growthZ.enum(['en','ar']).default('en')}).strict();
+  const growthList=growthZ.object({items:growthZ.array(growthPageSchema),hasNext:growthZ.boolean()});
+  read('/growth/pages',async(req,res)=>{const query=validate(growthQuery,req.query);send(res,growthList,await growthPages(await getDb(),false,query.kind,query.locale,query.offset));});
+  read('/growth/page',async(req,res)=>{const query=validate(pageQuery,req.query);send(res,growthPageSchema,await growthPage(await getDb(),query.kind,query.slug,query.locale));});
+  read('/growth/profile',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,pharmacyProfileSchema,await pharmacyProfile(await getDb()));});
+  read('/admin/growth/pages',async(req,res)=>{await identity(req,true);const query=validate(growthQuery,req.query);send(res,growthList,await growthPages(await getDb(),true,query.kind,query.locale,query.offset));});
+  read('/admin/growth/products',async(req,res)=>{await identity(req,true);const query=validate(growthZ.object({q:growthZ.string().trim().min(2).max(80).optional(),ids:growthZ.string().max(499).optional()}).strict(),req.query);send(res,growthZ.array(growthZ.object({id:growthZ.string(),name:growthZ.string(),productId:growthZ.string(),category:growthZ.string()})),await growthProductOptions(await getDb(),query));});
+  read('/admin/growth/categories',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);send(res,growthZ.array(growthZ.object({id:growthZ.string(),name:growthZ.string()})),await growthCategoryOptions(await getDb()));});
+  router.get('/admin/growth/profile',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,pharmacyProfileSchema,await pharmacyProfile(await getDb(),true));});
+  for(const part of ['page','profile'] as const) {
+    router.post(`/admin/growth/${part}`,async(req,res)=>{const user=await identity(req,true);validate(emptyQuerySchema,req.query);verifyBrowserMutation(req,origins);if(part==='page')send(res,growthPageSchema,await saveGrowthPage(await getDb(),req.body,user.id));else send(res,pharmacyProfileSchema,await savePharmacyProfile(await getDb(),req.body,user.id));});
+    router.all(`/admin/growth/${part}`,(_req,res,next)=>{res.set('Allow',part==='profile'?'GET, HEAD, POST':'POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  }
   return router;
 }

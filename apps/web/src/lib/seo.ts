@@ -10,8 +10,8 @@ export function hasDuplicateQuery(query: Query) {
   return Object.keys(query).some(key => !/^(utm_[a-z_]+|gclid|fbclid)$/i.test(key) && query[key] !== undefined);
 }
 export function isPublicPath(path: string) {
-  return ['/', '/products', '/categories', '/offers', '/about', '/contact'].includes(path)
-    || /^\/(products|categories)\/[^/]+$/.test(path);
+  return ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', '/health-guides'].includes(path)
+    || /^\/(products|categories|brands|shop|health-guides|offers|routines|collections)\/[^/]+$/.test(path) || /^\/ar\/(brands|shop|health-guides|offers|routines)\/[^/]+$/.test(path);
 }
 export function catalogPageNumber(path:string,query:Query):number|null {
   if(!['/products','/offers'].includes(path)&&!/^\/categories\/[^/]+$/.test(path))return null;
@@ -37,6 +37,7 @@ export function pageMetadata(origin: string, production: boolean, title: string,
 export function serializeJsonLd(value: unknown) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
+export function websiteData(origin:string){return {'@context':'https://schema.org','@type':'WebSite','@id':origin+'/#website',name:siteName,url:origin,potentialAction:{'@type':'SearchAction',target:{'@type':'EntryPoint',urlTemplate:origin+'/search?q={search_term_string}'},'query-input':'required name=search_term_string'}};}
 export function organizationData(origin: string) {
   return { '@context': 'https://schema.org', '@type': ['Organization','Pharmacy'], telephone:'+971504825007', address:{'@type':'PostalAddress',addressLocality:'Ras Al Khaimah',addressCountry:'AE'}, logo:new URL('/logo.png',origin).href, '@id': `${origin}/#organization`, name: siteName, url: origin };
 }

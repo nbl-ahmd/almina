@@ -51,13 +51,13 @@ export function RecoveryImport() {
       </label>
       <button disabled={pending} onClick={() => { void inspect(); }}>{pending ? 'Working…' : 'Preview products'}</button>
     </div>
-    {failure ? <p role="alert" className="admin-note admin-note--danger" style={{ margin: 0 }}>{failure}</p> : null}
-    {message ? <p role="status" className="admin-note" style={{ margin: 0 }}>{message}</p> : null}
+    {failure ? <p role="alert" className="admin-note admin-note--danger admin-note--flush">{failure}</p> : null}
+    {message ? <p role="status" className="admin-note admin-note--flush">{message}</p> : null}
     {preview?.errors.length ? <div role="region" aria-label="Import errors"><h3>Correct these rows and preview again</h3>
-      <ul className="list-disc pl-5">{preview.errors.map((error, i) => <li key={i}>Row {error.row || 'file'} · {error.field}: {error.message}</li>)}</ul></div> : null}
+      <ul className="admin-list-disc">{preview.errors.map((error, i) => <li key={i}>Row {error.row || 'file'} · {error.field}: {error.message}</li>)}</ul></div> : null}
     {preview?.rows.length ? <><div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Product preview"><table><caption>Review {preview.rows.length} products before importing</caption>
       <thead><tr>{['Product ID', 'Name', 'Barcode', 'Price (AED)', 'Sale price (AED)', 'Category', 'VAT', 'Featured', 'Description', 'Images'].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
-      <tbody>{preview.rows.map(row => <tr key={row.product_id}><td>{row.product_id}</td><td>{row.name}</td><td>{row.barcode}</td><td>{row.price}</td><td>{row.salePrice ?? 'None'}</td><td>{row.category}</td><td>{String(row.vat)}</td><td>{String(row.featured)}</td><td>{row.description || 'None'}</td><td>{row.cloudinaryImages.length ? <ul>{row.cloudinaryImages.map(url => <li key={url} className="max-w-64 break-all">{url}</li>)}</ul> : 'None'}</td></tr>)}</tbody></table></div>
+      <tbody>{preview.rows.map(row => <tr key={row.product_id}><td>{row.product_id}</td><td>{row.name}</td><td>{row.barcode}</td><td>{row.price}</td><td>{row.salePrice ?? 'None'}</td><td>{row.category}</td><td>{String(row.vat)}</td><td>{String(row.featured)}</td><td>{row.description || 'None'}</td><td>{row.cloudinaryImages.length ? <ul className="admin-list-disc admin-break">{row.cloudinaryImages.map(url => <li key={url} className="admin-cell-clamp">{url}</li>)}</ul> : 'None'}</td></tr>)}</tbody></table></div>
       <div className="admin-actions"><button disabled={pending || !preview.hash || !preview.previewId || !!preview.errors.length} onClick={() => { void commit(); }}>Import reviewed drafts</button></div></> : null}
     <div className="admin-actions">
       <button className="admin-btn--secondary" disabled={pending} onClick={() => { void commit(true); }}>Retry interrupted import</button>

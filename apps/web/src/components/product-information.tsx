@@ -33,8 +33,8 @@ export function ProductInformation({ product }: { product: Product }) {
     ['Sold as', product.saleUnit], ['Form', product.productForm], ['Strength', product.strength],
     ['Manufacturer', product.manufacturer], ['GTIN', product.gtin], ['Product ID', product.product_id],
   ].filter((fact): fact is [string, string] => Boolean(fact[1]));
-  return <section className="product-info-panel rounded-xl border border-border bg-surface p-5 md:p-8" aria-label="Product details">
-    <nav className="mb-7 flex gap-5 overflow-x-auto border-b border-border text-sm font-semibold whitespace-nowrap" aria-label="Product information sections">
+  return <section className="product-info-panel rounded-2xl border border-border bg-surface p-5 md:p-7" aria-label="Product details">
+    <nav className="mb-7 flex gap-5 scrollbar-none overflow-x-auto border-b border-border text-sm font-semibold whitespace-nowrap" aria-label="Product information sections">
       <a className="inline-flex min-h-11 items-center border-b-2 border-teal text-teal" href="#product-description">Overview</a>
       {product.usage ? <a className="inline-flex min-h-11 items-center text-ocean hover:text-teal" href="#product-usage">How to use</a> : null}
       <a className="inline-flex min-h-11 items-center text-ocean hover:text-teal" href="#product-facts">Specifications</a>
@@ -52,7 +52,7 @@ export function ProductInformation({ product }: { product: Product }) {
           <div className="pb-5"><Description text={value} /></div>
         </details>)}
       </div>
-      <aside className="min-w-0 space-y-7">
+      <aside className="min-w-0 space-y-7 rounded-2xl bg-[#f5f4fc] p-5">
         <div id="product-facts" className="scroll-mt-6" aria-labelledby="product-specifications-title">
           <h2 id="product-specifications-title" className="mb-4 text-lg font-bold">Product specifications</h2>
           <dl className="m-0 divide-y divide-border border-y border-border text-sm">

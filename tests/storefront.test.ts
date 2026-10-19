@@ -12,6 +12,11 @@ test('retained catalog query reconstructs only bounded compatibility fields', ()
   for (const query of [{ limit: '0' }, { limit: '101' }, { offset: '10001' }, { filter: '{"$where":"x"}' }, { filter: '{"category":{"$ne":null}}' },
     { q: ['one', 'two'] }, { disabledCat: 'yes' }, { cursor: 'arbitrary' }]) assert.throws(() => retainedCatalogQuery(query, 'search'));
   assert.throws(() => retainedCatalogQuery({ filter: '{"stock":1}' }, 'categories'));
+  const filtered=retainedCatalogQuery({inStock:'true',minPrice:'5.50',maxPrice:'90',sort:'price-desc'},'products');
+  assert.equal(filtered.inStock,true); assert.equal(filtered.minPrice,5.5); assert.equal(filtered.maxPrice,90); assert.equal(filtered.sort,'price-desc');
+  for(const query of [{inStock:'yes'},{minPrice:'1e3'},{maxPrice:'1000000'},{minPrice:'20',maxPrice:'10'},{sort:'$where'}])
+    assert.throws(()=>retainedCatalogQuery(query,'products'));
+  assert.throws(()=>retainedCatalogQuery({inStock:'true'},'categories'));
 });
 test('old documents without new flags remain readable; disabled/orphan/malformed products do not leak', () => {
   assert.ok(readProduct(raw)); assert.ok(readCategory(category));

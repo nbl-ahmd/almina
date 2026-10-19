@@ -1,41 +1,198 @@
-import { Suspense } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { CatalogLoading } from '../../components/catalog-loading';
-import { CategoryGrid, ProductGrid } from '../../components/storefront';
-import { PharmacyHelp } from '../../components/pharmacy-help';
-import { Icon, type IconName } from '../../components/icon';
-import { getBanners, getCategories, getProducts } from '../../lib/server/catalog';
-import { categoryHref } from '../../lib/catalog/model';
-import { metadataFor } from '../../lib/server/seo';
-import type { Query } from '../../lib/seo';
-export async function generateMetadata({ searchParams }: { searchParams: Promise<Query> }) { return metadataFor('Al Mina Pharmacy Ras Al Khaimah', 'Healthcare, skincare and pharmacy essentials from Al Mina Pharmacy.', '/', await searchParams); }
-export default function HomePage() { return <Suspense fallback={<CatalogLoading />}><HomeContent /></Suspense>; }
-const quickLinks: {href:string;title:string;detail:string;badge:string;icon:IconName}[] = [
-  {href:'/products',title:'Shop daily essentials',detail:'Health & personal care',badge:'Shop',icon:'bag'},
-  {href:'/categories',title:'Browse categories',detail:'Find your care routine',badge:'Explore',icon:'grid'},
-  {href:'/contact',title:'Contact pharmacy',detail:'Order enquiries',badge:'Help',icon:'phone'},
-  {href:'/cart',title:'Your shopping cart',detail:'Continue your order',badge:'Cart',icon:'shop'},
-];
+import { getWebEnvironment } from '../../lib/server/env';
+import { RecentlyViewed } from '../../components/recently-viewed';
+import { ScrollReveal } from "../../components/scroll-reveal";
+import { Suspense } from "react";
+import Link from "next/link";
+import { CatalogLoading } from "../../components/catalog-loading";
+import {
+  HomeBrandStrip,
+  HomeCollectionTiles,
+  HomeCompactShelf,
+  HomeRoutine,
+  HomeCategories,
+  HomeEditorial,
+  HomeHero,
+  HomeProductCarousel,
+  HomeShelf,
+  HomeSupport,
+} from "../../components/homepage";
+import {
+  getBanners,
+  getCategories,
+  getProducts,
+  productImage,
+} from "../../lib/server/catalog";
+import { metadataFor } from "../../lib/server/seo";
+import type { Query } from "../../lib/seo";
+import {
+  homeCollections,
+  collectionHref,
+  catalogueBrands,
+  uniqueProducts,
+} from "../../lib/catalog/merchandising";
+import { getCollectionProducts } from "../../lib/server/collections";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Query>;
+}) {
+  return metadataFor(
+    "Al Mina Pharmacy Ras Al Khaimah",
+    "Shop health, skincare and everyday essentials at Al Mina Pharmacy in Ras Al Khaimah. Explore products, prices and current offers.",
+    "/",
+    await searchParams,
+  );
+}
+export default function HomePage() {
+  return (
+    <Suspense fallback={<CatalogLoading />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+function categoryRank(name: string) {
+  const index = [
+    "skincare",
+    "vitamins",
+    "baby care",
+    "oral care",
+    "hair care",
+    "first aid",
+  ].findIndex((label) => name.toLowerCase().includes(label));
+  return index < 0 ? 99 : index;
+}
 async function HomeContent() {
-  const [banners, categories, featured, offers] = await Promise.all([getBanners(), getCategories(), getProducts({ featured: true }), getProducts({ offers: true })]);
-  return <div className="home-page flex flex-col gap-6 [&>section]:mb-0 md:gap-10">
-    <nav className="-mt-6 hidden flex-wrap gap-x-7 border-b border-border py-3 text-xs text-ocean md:flex" aria-label="Homepage categories">{categories.slice(0,6).map(category=><Link className="inline-flex min-h-8 items-center text-ocean" key={category._id} href={categoryHref(category)}>{category.name}</Link>)}</nav>
-    <section className="desktop-hero hidden grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-center gap-12 bg-surface py-6 md:grid" aria-labelledby="home-heading"><div>
-      <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-subtle px-3 py-1.5 text-xs font-semibold text-ocean"><Icon name="pin" />Your neighbourhood pharmacy · Ras Al Khaimah</p>
-      <h1 id="home-heading" className="mb-4 text-4xl leading-tight font-bold tracking-tight">Everyday essentials.<br /><span className="text-brand">A little more care.</span></h1><p className="mb-6 max-w-[58ch] text-sm leading-relaxed text-ocean">Explore health, skincare and wellness essentials at Al Mina Pharmacy. Find what you need, all in one place.</p>
-      <div className="hero-discovery mb-5 rounded-lg border border-border bg-white p-2"><form className="flex items-center gap-2" action="/search" role="search" aria-label="Discover products"><Icon name="search" /><label className="sr-only" htmlFor="hero-search">Find a product</label><input className="min-w-0 flex-1 border-0 px-1 text-sm" id="hero-search" name="q" type="search" placeholder="Search products and everyday essentials…" maxLength={80} /><button className="min-h-9 rounded-md px-4 py-2 text-sm" type="submit">Search</button></form><div className="flex flex-wrap items-center gap-2 border-t border-border px-1 pt-2 text-xs text-ocean"><span className="font-semibold">Explore:</span>{categories.slice(0,4).map(category=><Link className="rounded-full border border-border px-2 py-1 text-ocean" href={categoryHref(category)} key={category._id}>{category.name}</Link>)}</div></div>
-      <div className="flex flex-wrap gap-3"><Link className="button min-h-11 rounded-full px-5 text-sm" href="/products"><Icon name="bag" />Shop products</Link><Link className="button button-secondary min-h-11 rounded-full px-5 text-sm text-ocean" href="/categories"><Icon name="grid" />Browse categories</Link></div>
-    </div><div className="hero-visual rounded-xl border border-border bg-subtle p-5"><Image className="aspect-[4/3] h-auto w-full rounded-lg object-cover" src="/design/figma/hero.png" alt="" width={512} height={279} sizes="(max-width: 767px) 1px, 40vw" loading="eager" /><div className="mt-4 flex items-start gap-3 rounded-xl border border-border p-4"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-teal"><Icon name="check" /></span><div><strong className="text-sm text-ocean">Care starts here.</strong><p className="mt-1 mb-0 text-xs leading-relaxed text-ocean">From your daily routine to your family’s essentials.</p></div></div></div></section>
-    <section className="mobile-home-intro md:hidden" aria-label="Explore Al Mina Pharmacy"><div className="grid grid-cols-2 gap-2.5">{quickLinks.map((link,index)=><Link className={`flex min-h-[146px] flex-col rounded-xl border bg-surface p-4 text-ink shadow-sm hover:no-underline ${index===0?'border-teal/30 bg-accent/10':'border-border'}`} href={link.href} key={link.href}><div className="mb-4 flex items-center justify-between gap-2"><span className="flex size-10 items-center justify-center rounded-lg border border-border bg-subtle text-teal"><Icon name={link.icon} /></span><span className="rounded-full bg-subtle px-2 py-0.5 text-[10px] font-semibold text-ocean">{link.badge}</span></div><strong className="text-base leading-snug font-semibold">{link.title}</strong><span className="mt-1 text-xs leading-relaxed text-ocean">{link.detail}</span></Link>)}</div>
-      <div className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-subtle p-4"><span className="flex size-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-teal text-white"><Icon name="check" /></span><div><p className="m-0 text-xs font-semibold text-teal">Al Mina Pharmacy · Ras Al Khaimah</p><p className="mt-1 mb-0 text-sm leading-snug">Health, skincare and everyday essentials.</p></div></div>
-      <div className="mobile-promo mt-4 rounded-2xl bg-sale p-4 text-white shadow-sm"><span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold">Al Mina Pharmacy</span><h1 className="mt-3 mb-1 text-2xl font-bold tracking-tight">Care for your everyday.</h1><p className="mb-4 text-sm">Explore the current offers at Al Mina.</p><Link className="flex min-h-10 items-center justify-between rounded-lg border border-white/30 bg-white/10 px-3 py-2 text-sm text-white" href="/offers">Discover current offers <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-sale">View offers</span></Link></div>
-    </section>
-    {banners.length ? <section className="pharmacy-banners [&_img]:h-auto [&_img]:w-full [&_img]:rounded-xl" aria-label="Pharmacy promotions">{banners.map((banner,i)=><Image key={banner.image} src={banner.image} alt={banner.name} width={1000} height={400} sizes="(max-width: 767px) 100vw, 1280px" loading={i===0?'eager':'lazy'} />)}</section>:null}
-    <section className="home-featured order-2 md:order-none md:-mx-6 md:bg-subtle md:px-6 md:py-6 lg:-mx-8 lg:px-8"><div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="mb-1 text-xl font-bold">Featured products</h2><p className="mb-0 text-xs text-ocean">Explore your daily essentials.</p></div><Link className="inline-flex min-h-11 items-center gap-2 text-xs text-ocean" href="/products">View all <Icon name="arrow" /></Link></div><ProductGrid variant="home" headingLevel={3} products={featured.products.slice(0,4)} /></section>
-    <section className="home-categories order-1 md:order-none"><div className="mb-3 flex items-center justify-between gap-3"><h2 className="m-0 text-xl font-bold">Categories</h2><Link className="inline-flex min-h-11 items-center gap-1 text-xs text-ocean" href="/categories">View all <Icon name="arrow" /></Link></div><CategoryGrid categories={categories} rail /></section>
-    <section className="offer-band hidden items-center justify-between gap-6 rounded-xl bg-linear-to-r from-ocean via-ocean via-50% to-brand p-6 text-white md:flex"><div className="max-w-[50%] bg-ocean"><h2 className="mb-2 text-xl">More care for your everyday.</h2><p className="m-0 text-sm">Explore the current offers at Al Mina Pharmacy.</p></div><Link className="button shrink-0 rounded-full bg-white px-5 text-sm text-ocean hover:bg-subtle hover:text-ink" href="/offers">Browse offers</Link></section>
-    <section className="offers-section order-3 hidden md:block"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="m-0 text-xl font-bold">Current offers</h2><Link className="inline-flex min-h-11 items-center gap-2 text-xs text-ocean" href="/offers">All offers <Icon name="arrow" /></Link></div><ProductGrid variant="home" headingLevel={3} products={offers.products.slice(0,4)} /></section>
-    <div className="order-4"><PharmacyHelp /></div>
-  </div>;
+  const [catalogue, settledCollections] = await Promise.all([
+    Promise.allSettled([
+      getCategories(),
+      getProducts({ featured: true }),
+      getProducts(),
+      getProducts({ offers: true }),
+      getBanners(),
+    ] as const),
+    Promise.allSettled(
+      homeCollections.map((collection) => getCollectionProducts(collection)),
+    ),
+  ]);
+  const collectionResults = settledCollections.map((result) =>
+    result.status === "fulfilled" ? result.value : [],
+  );
+  const categories =
+    catalogue[0].status === "fulfilled" ? catalogue[0].value : [];
+  const featured =
+    catalogue[1].status === "fulfilled" ? catalogue[1].value.products : [];
+  const general =
+    catalogue[2].status === "fulfilled" ? catalogue[2].value.products : [];
+  const offers =
+    catalogue[3].status === "fulfilled"
+      ? catalogue[3].value.products.filter((product) => product.stock > 0)
+      : [];
+  const banners = catalogue[4].status === "fulfilled" ? catalogue[4].value : [];
+  const all = uniqueProducts([
+    ...offers,
+    ...featured,
+    ...collectionResults.flat(),
+    ...general,
+  ]);
+  const available = all.filter((product) => product.stock > 0);
+  const photoReady = available.filter(
+    (product) => productImage(product) !== "/product-placeholder.svg",
+  );
+  const hero = photoReady.slice(0, 3);
+  // Prefer a varied first shelf, then fill it from photo-ready inventory.
+  const represented = new Set<string>();
+  const varied = photoReady.filter((product) => {
+    const key =
+      product.brand || product.name.split(" ")[0] || product.category._id;
+    if (represented.has(key)) return false;
+    represented.add(key);
+    return true;
+  });
+  const shelf = uniqueProducts([...varied, ...photoReady, ...available]).slice(
+    0,
+    4,
+  );
+  const skin = collectionResults[0] ?? [];
+  const daily = (collectionResults[2] ?? []).filter(
+    (product) => !shelf.some((item) => item._id === product._id),
+  );
+  const budget = collectionResults[3] ?? [];
+  const budgetCategories = new Set<string>();
+  const variedBudget = budget.filter((product) => {
+    if (budgetCategories.has(product.category._id)) return false;
+    budgetCategories.add(product.category._id);
+    return true;
+  });
+  const budgetShelf = uniqueProducts([...variedBudget, ...budget]);
+  const showBudget =
+    budget.length >= 4 &&
+    new Set(budget.map((product) => product.category._id)).size >= 2;
+  const collectionTiles = homeCollections
+    .slice(0, 3)
+    .map((collection, index) => ({
+      title: collection.title,
+      detail: collection.description,
+      href: collectionHref(collection),
+      products: (collectionResults[index] ?? []).filter(
+        (product) => productImage(product) !== "/product-placeholder.svg",
+      ),
+      tone: ["bg-[#eef0ff]", "bg-[#fff1e8]", "bg-[#eaf6f0]"][index]!,
+    }));
+  return (
+    <div className="home-page flex flex-col gap-5 pb-2 [&_section]:mb-0 md:gap-7">
+      <ScrollReveal>
+        <HomeHero
+          products={hero.length ? hero : available.slice(0, 2)}
+          banners={banners}
+        />
+        <HomeCategories
+          categories={[...categories].sort(
+            (a, b) => categoryRank(a.name) - categoryRank(b.name),
+          )}
+        />
+        <HomeShelf
+          title="Your everyday essentials"
+          description="Small essentials. A little more care, every day."
+          products={shelf}
+          href="/products"
+        />
+        {!all.length ? (
+          <section className="rounded-2xl border border-border p-6">
+            <h2 className="text-xl">The catalogue is taking a moment.</h2>
+            <p className="text-sm text-muted">
+              You can try again or contact the pharmacy for product enquiries.
+            </p>
+            <Link className="button rounded-full text-sm" href="/">
+              Try again
+            </Link>
+          </section>
+        ) : null}
+        <HomeCollectionTiles collections={collectionTiles} />
+        <HomeProductCarousel products={uniqueProducts([...varied, ...hero]).slice(0,4)} />
+        <HomeRoutine products={skin} />
+        <HomeCompactShelf
+          title="Personal care for every day"
+          description="Discover body, hair and personal care essentials."
+          products={daily.length >= 2 ? daily : []}
+          href="/collections/daily-care"
+        />
+        <HomeEditorial />
+        <HomeCompactShelf
+          title="AED 50 & under"
+          description="Available essentials within your budget."
+          products={showBudget ? budgetShelf : []}
+          href="/collections/under-50"
+        />
+        <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} />
+        <HomeShelf
+          title="A little more value"
+          description="Current offers, with the savings shown upfront."
+          products={offers}
+          href="/offers"
+        />
+        <RecentlyViewed cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} /><HomeSupport />
+      </ScrollReveal>
+    </div>
+  );
 }

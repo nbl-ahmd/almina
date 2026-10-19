@@ -1,3 +1,4 @@
+import { categoryContent } from '../../../../lib/catalog/category-content';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { resolveCategory } from '../../../../lib/server/catalog';
 import { categoryHref } from '../../../../lib/catalog/model';
@@ -10,7 +11,7 @@ type Props = { params: Promise<{ slug: string }>; searchParams: Promise<SearchPa
 export async function generateMetadata({ params, searchParams }: Props) {
   const category = await resolveCategory((await params).slug);
   if (!category) notFound();
-  return metadataFor(category.name, `Shop ${category.name} products at Al Mina Pharmacy. Browse our current healthcare and wellness catalog.`, categoryHref(category), await searchParams);
+  return metadataFor(category.name, categoryContent(category.name).description, categoryHref(category), await searchParams);
 }
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;

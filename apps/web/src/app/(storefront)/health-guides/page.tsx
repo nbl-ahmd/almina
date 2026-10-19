@@ -1,0 +1,7 @@
+import Link from 'next/link';
+import { growthPagePath } from '@almina/contracts';
+import { getGrowthPages } from '../../../lib/server/growth';
+import { StorefrontIntro } from '../../../components/storefront-intro';
+import { metadataFor } from '../../../lib/server/seo';
+export async function generateMetadata(){const {items}=await getGrowthPages('guide');return {...metadataFor('Care & buying guides','Practical product buying guides from Al Mina Pharmacy.','/health-guides',{}),...(!items.length?{robots:{index:false,follow:true}}:{})};}
+export default async function GuidesPage(){const {items}=await getGrowthPages('guide');return <><StorefrontIntro title="A little guidance for everyday care" description="Practical buying guides, connected to the products and essentials you shop for." artwork="family" />{items.length?<div className="grid gap-4 md:grid-cols-3">{items.map(page=><article key={page.slug} className="rounded-2xl border border-border bg-white p-5"><h2 className="text-xl"><Link href={growthPagePath(page)}>{page.title}</Link></h2><p className="text-sm leading-6 text-muted">{page.description}</p><Link className="inline-flex min-h-11 items-center text-sm text-brand" href={growthPagePath(page)}>Read guide →</Link></article>)}</div>:<div className="rounded-2xl bg-white p-6"><h2 className="text-xl">Our guides are being prepared.</h2><p className="text-sm text-muted">Ask the pharmacy for help choosing a product in the meantime.</p><Link className="button rounded-full text-sm" href="/contact">Contact the pharmacy</Link></div>}</>;}

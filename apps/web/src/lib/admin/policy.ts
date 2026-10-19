@@ -24,6 +24,7 @@ export const sections = [
   "settings",
   "batch",
   "catalog-import",
+  "growth",
 ] as const;
 export type Section = (typeof sections)[number];
 export function canVisit(role: Identity["role"], section: string) {

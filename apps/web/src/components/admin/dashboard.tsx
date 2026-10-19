@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import type { ComponentProps } from 'react';
 import type { z } from 'zod';
 import {
   BellAlertIcon,
   ClipboardDocumentCheckIcon,
   CubeIcon,
+  InboxIcon,
   ShoppingBagIcon,
   SignalIcon,
 } from '@heroicons/react/24/outline';
@@ -15,6 +17,7 @@ import {
   Badge,
   BarList,
   Card,
+  EmptyState,
   Note,
   PageHeader,
   StatGrid,
@@ -104,11 +107,11 @@ export async function AdminDashboard({ user }: { user: Identity }) {
     .filter((item) => item.value > 0)
     .map((item) => ({ ...item, tone: orderStatusTone(item.label) }));
 
-  const tiles = [
+  const tiles: ComponentProps<typeof StatTile>[] = [
     {
       href: '/admin/orders',
       label: 'Orders in view',
-      value: recent.length,
+      countTo: recent.length,
       meta:
         recent.length === 0
           ? 'No orders within your permissions'
@@ -118,22 +121,27 @@ export async function AdminDashboard({ user }: { user: Identity }) {
     {
       href: '/admin/orders?status=pending',
       label: 'Awaiting confirmation',
-      value: awaiting,
+      countTo: awaiting,
       meta: 'Pending orders in this view',
       icon: <SignalIcon />,
+      tone: awaiting > 0 ? 'warning' : 'brand',
+      active: awaiting > 0,
     },
     admin
       ? {
           href: '/admin/needs-action',
           label: 'Needs action',
-          value: needsAction ?? '—',
+          ...(needsAction === null
+            ? { value: '—' }
+            : { countTo: needsAction }),
           meta: 'Products waiting for review',
           icon: <ClipboardDocumentCheckIcon />,
+          tone: needsAction ? 'warning' : 'brand',
         }
       : {
           href: '/admin/orders',
           label: 'In progress',
-          value: inProgress,
+          countTo: inProgress,
           meta: 'Confirmed or packed orders',
           icon: <CubeIcon />,
         },
@@ -141,9 +149,14 @@ export async function AdminDashboard({ user }: { user: Identity }) {
       ? {
           href: '/admin/settings',
           label: 'Store',
-          value: <Badge tone={storeStatus === 'open' ? 'success' : 'danger'} dot>{storeStatus ?? 'Unknown'}</Badge>,
+          value: (
+            <Badge tone={storeStatus === 'open' ? 'success' : 'danger'} dot>
+              {storeStatus ?? 'Unknown'}
+            </Badge>
+          ),
           meta: 'Current storefront availability',
           icon: <CubeIcon />,
+          tone: storeStatus === 'open' ? 'success' : 'danger',
         }
       : {
           href: '/admin/notifications',
@@ -164,21 +177,12 @@ export async function AdminDashboard({ user }: { user: Identity }) {
             ? 'Recent orders within your current permissions. Figures reflect the single most recent order you can access unless stated otherwise.'
             : `Recent orders within your current permissions. Figures are based on the ${recent.length} most recent orders you can access unless stated otherwise.`
         }
-        actions={
-          <Link href="/admin/orders">Open orders</Link>
-        }
+        actions={<Link href="/admin/orders">Open orders</Link>}
       />
 
       <StatGrid>
         {tiles.map((tile) => (
-          <StatTile
-            key={tile.label}
-            href={tile.href}
-            label={tile.label}
-            value={tile.value}
-            meta={tile.meta}
-            icon={tile.icon}
-          />
+          <StatTile key={tile.label} {...tile} />
         ))}
       </StatGrid>
 
@@ -190,7 +194,7 @@ export async function AdminDashboard({ user }: { user: Identity }) {
           {statusBars.length ? (
             <BarList items={statusBars} />
           ) : (
-            <p className="admin-card__hint" style={{ marginBottom: 0 }}>
+            <p className="admin-card__hint admin-hint--tight">
               No orders are visible to this account yet.
             </p>
           )}
@@ -226,7 +230,7 @@ export async function AdminDashboard({ user }: { user: Identity }) {
                   <p>No thresholds triggered in this sample.</p>
                 </Note>
               )}
-              <div style={{ marginTop: '1rem' }}>
+              <div className="admin-mt">
                 <BarList
                   items={(['catalog', 'checkout', 'other'] as const).map(
                     (group) => ({
@@ -244,12 +248,12 @@ export async function AdminDashboard({ user }: { user: Identity }) {
                   )}
                 />
               </div>
-              <p className="admin-card__hint" style={{ marginBottom: 0, marginTop: '0.9rem' }}>
+              <p className="admin-hint admin-hint--tight">
                 Measured {snapshot.http.measuredAt} · source {snapshot.http.source}
               </p>
             </>
           ) : (
-            <p className="admin-card__hint" style={{ marginBottom: 0 }}>
+            <p className="admin-card__hint admin-hint--tight">
               Operations measurements are unavailable from this process right
               now.
             </p>
@@ -271,10 +275,9 @@ export async function AdminDashboard({ user }: { user: Identity }) {
 function RecentOrders({ orders }: { orders: Record<string, unknown>[] }) {
   if (!orders.length)
     return (
-      <div className="admin-empty">
-        <p className="admin-empty__title">No orders yet</p>
-        <p>Orders permitted by your role and city assignments will appear here.</p>
-      </div>
+      <EmptyState icon={<InboxIcon />} title="No orders yet">
+        Orders permitted by your role and city assignments will appear here.
+      </EmptyState>
     );
   return (
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recent orders">

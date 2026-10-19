@@ -210,7 +210,7 @@ export default async function AdminPage({
           }
         />
         {user.role === 'admin' ? (
-          <p style={{ marginTop: '-0.75rem' }}>
+          <p className="admin-hint admin-hint--tight">
             <Link href="/admin/needs-action?status=all&reason=missing-photo">
               Missing photos
             </Link>{' '}
@@ -421,7 +421,7 @@ export default async function AdminPage({
         <PageHeader
           eyebrow="Catalogue"
           title="Banners"
-          description="Promotional artwork shown across the storefront."
+          description="Upload event, offer and campaign artwork for the homepage carousel. Newest banners appear first."
         />
         <Card title="Add banner">
           <AdminForm
@@ -431,14 +431,16 @@ export default async function AdminPage({
               { name: "name", label: "Banner name", required: true },
               {
                 name: "link",
-                label: "Destination URL",
-                type: "url",
+                label: "Destination URL or storefront path",
+                type: "text",
+                hint: "Use a storefront path such as /collections/skin-essentials or a full HTTPS URL.",
                 required: true,
               },
               {
                 name: "image",
                 label: "Banner image",
                 type: "file",
+                hint: "Use wide artwork, for example 1600 × 600 pixels. Keep text readable on mobile. The full image is shown without cropping; the newest eight banners appear in the homepage carousel.",
                 required: true,
               },
             ]}

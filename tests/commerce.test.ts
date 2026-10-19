@@ -78,3 +78,11 @@ test('invoice amounts reject fractions of a fils and unsafe values before databa
   }
   assert.equal(statusInputSchema.safeParse({ status: 'dispatched', billno: '12345', billamount: 10.01 }).success, true);
 });
+
+test('optional free-delivery threshold uses server charged subtotal and exact inclusive boundary',()=>{
+ const policy={...approvedPolicy,minimumOrderMinor:0,delivery:[{emirate:'Ras al-Khaimah',feeMinor:3000,freeAboveMinor:2000}]};
+ const below=calculateQuote({...input,items:[{productId:String(id),quantity:1}]},[product],policy);
+ assert.equal(below.deliveryFeeMinor,3000);assert.equal(below.totalMinor,4000);
+ const at=calculateQuote(input,[product],policy);assert.equal(at.deliveryFeeMinor,0);assert.equal(at.totalMinor,2000);
+ const unchanged=calculateQuote(input,[product],{...policy,delivery:[{emirate:'Ras al-Khaimah',feeMinor:3000}]});assert.equal(unchanged.deliveryFeeMinor,3000);
+});

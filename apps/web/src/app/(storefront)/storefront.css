@@ -1,20 +1,20 @@
 /* Al Mina theme values. Component layout/state styling lives in Tailwind classes. */
 .storefront-shell {
-  --color-ink: #183b50;
-  --color-muted: #496a7d;
-  --color-brand: #ca3344;
-  --color-brand-hover: #ba283b;
-  --color-accent: #bdf2ee;
-  --color-page: #f3f9ff;
+  --color-ink: #19213b;
+  --color-muted: #61677a;
+  --color-brand: #3456da;
+  --color-brand-hover: #2545bf;
+  --color-accent: #e9edff;
+  --color-page: #fafaff;
   --color-surface: #fff;
-  --color-subtle: #e8f4ff;
-  --color-border: #d4e5f1;
-  --color-line: #d4e5f1;
+  --color-subtle: #f1f3fc;
+  --color-border: #e7e9f1;
+  --color-line: #e7e9f1;
   --color-sale: #ac2632;
   --color-sale-surface: #fff0f1;
   --color-focus: #176784;
-  --color-ocean: #2d566a;
-  --color-teal: #007573;
+  --color-ocean: #252b49;
+  --color-teal: #2d4dc5;
   --radius-control: 8px;
   --radius-card: 12px;
   --shadow-card: 0 4px 16px rgb(32 62 70 / 5%);
@@ -28,4 +28,24 @@
 @media (min-width: 1024px) {
   .storefront-shell .catalog-filters::details-content { content-visibility: visible; }
   .storefront-shell .catalog-filters > .filters { display: grid; }
+}
+
+
+/* Deliberate motion: manual campaign changes and direct manipulation feedback. */
+@keyframes campaign-enter { from { opacity: .8; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .campaign-frame:not([hidden]) { animation: campaign-enter 240ms cubic-bezier(.16,1,.3,1); }
+  .storefront-shell .button:active, .storefront-shell button:active:not(:disabled) { transform: scale(.98); }
+}
+.storefront-shell ::selection { background: #dce4ff; color: #19213b; }
+.storefront-shell input { caret-color: #3456da; }
+
+/* Horizontal shelves retain scrolling without decorative browser chrome. */
+.storefront-shell .scrollbar-none { scrollbar-width: none; }
+.storefront-shell .scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Purchase bars sit above mobile navigation; the help control clears both. */
+@media (max-width: 767px) {
+  .storefront-shell:has(.pdp-page) .floating-contact,
+  .storefront-shell:has(.cart-page) .floating-contact { bottom: calc(178px + env(safe-area-inset-bottom)); }
 }
