@@ -316,3 +316,7 @@ Added a private customer address book (10-address limit, default handling, add/e
 ### Storefront discovery facets — 2026-10-19
 
 Added server-validated in-stock, current-price range and sort filters across listings, categories, search and offers. Active sale price drives range and price ordering. Inputs are bounded and pagination retains chosen facets. Regression tests cover validation and disposable-database query behavior. Local only; deploy the compatible API and web together. Remaining growth work and pharmacy/external prerequisites are itemized in the implementation checklist.
+
+### GitHub check cleanup — 2026-10-19
+
+PR verification now runs once per update with quality/security, API, browser and the existing required `verify` gate. Master pushes still verify before Vercel deployment. The unused Al Mina-only Netlify and Cloudflare GitHub installations are suspended; hosting projects and Render/Vercel access are preserved. Updated the stale homepage heading assertion; compiled storefront smoke and deployment-gate tests pass. See `CI_CLEANUP_2026-10-19.md`.
