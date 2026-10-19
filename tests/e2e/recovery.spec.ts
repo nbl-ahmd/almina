@@ -5,7 +5,11 @@ for (const width of [360, 390, 768, 1280]) test(`recovery preview and commit pre
   await page.setViewportSize({ width, height: 900 });
   await login(page);
   await page.goto(adminOrigin + '/admin/batch');
-  await page.getByLabel('Reviewed product file').setInputFiles({ name: 'recovery.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
+  const file = page.getByLabel('Reviewed product file');
+  // The streamed route renders its loading fallback first; only act once the
+  // streamed form is really on screen.
+  await expect(file).toBeVisible();
+  await file.setInputFiles({ name: 'recovery.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
   await page.getByRole('button', { name: 'Preview products', exact: true }).click();
   await expect(page.getByRole('cell', { name: '000001234567890123', exact: true })).toBeVisible();
   await expect(page.getByRole('cell', { name: '12.50', exact: true })).toBeVisible();
@@ -35,7 +39,11 @@ for (const width of [360, 390, 768, 1280]) test(`recovery preview and commit pre
 test('row errors block commit and interrupted response retries the saved review without a new import', async ({ page, request }) => {
   expect((await request.post(commerceOrigin + '/__fixture/recovery')).status()).toBe(204);
   await login(page); await page.goto(adminOrigin + '/admin/batch');
-  await page.getByLabel('Reviewed product file').setInputFiles({ name: 'bad.csv', mimeType: 'text/csv', buffer: Buffer.from(csv.replace('12.50', '12.501')) });
+  const badFile = page.getByLabel('Reviewed product file');
+  // The streamed route renders its loading fallback first; only act once the
+  // streamed form is really on screen.
+  await expect(badFile).toBeVisible();
+  await badFile.setInputFiles({ name: 'bad.csv', mimeType: 'text/csv', buffer: Buffer.from(csv.replace('12.50', '12.501')) });
   await page.getByRole('button', { name: 'Preview products', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Import errors' })).toContainText('Row 1');
   await expect(page.getByRole('button', { name: 'Import reviewed drafts' })).toHaveCount(0);

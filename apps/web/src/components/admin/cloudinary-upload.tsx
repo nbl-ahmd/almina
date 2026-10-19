@@ -29,7 +29,7 @@ export function CloudinaryUpload({ productId, revision }: { productId: string; r
     finally { setPending(false); }
   }
   return <form onSubmit={event => { void submit(event); }} className="space-y-4 rounded-lg border border-teal-200 bg-white p-4" aria-busy={pending}>
-    <h3 className="text-lg font-bold text-teal-950">Cloudinary product images</h3>
+    <h2 className="text-lg font-bold text-teal-950">Cloudinary product images</h2>
     <p>Choose reviewed product photos, smaller than 3 MB in total. Replacing the gallery preserves earlier Cloudinary and legacy images for historical references.</p>
     <label className="block font-semibold">Replacement raster images<input ref={input} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" disabled={!ready || pending} required className="mt-2 block w-full min-w-0 rounded border border-slate-300 p-3" /></label>
     <button disabled={!ready || pending} className="min-h-11 rounded bg-teal-800 px-5 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'Uploading…' : 'Save Cloudinary images'}</button>

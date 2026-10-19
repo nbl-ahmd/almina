@@ -10,7 +10,9 @@ import type { ReactNode } from "react";
 import type { AdminRecord } from "../../lib/admin/policy";
 import { Command } from "./controls";
 import { AdminForm, type Field } from "./forms";
+import { Badge, Card, PageHeader, orderStatusTone } from "./ui";
 import { orderLinePresentation } from '../../lib/admin/order-lines';
+import Link from "next/link";
 export function record(value: unknown): AdminRecord {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as AdminRecord)
@@ -28,16 +30,24 @@ export function display(value: unknown): string {
         : String(record(value).name ?? record(value)._id ?? "—")
       : String(value);
 }
+export type Column = {
+  key: string;
+  label: string;
+  align?: "end";
+  render?: (row: AdminRecord) => ReactNode;
+};
 export function Table({
   caption,
   columns,
   data,
   actions,
+  empty,
 }: {
   caption: string;
-  columns: { key: string; label: string }[];
+  columns: Column[];
   data: AdminRecord[];
   actions?: (row: AdminRecord) => ReactNode;
+  empty?: { title?: string; description?: string };
 }) {
   return (
     <div
@@ -51,7 +61,11 @@ export function Table({
         <thead>
           <tr>
             {columns.map((column) => (
-              <th scope="col" key={column.key}>
+              <th
+                scope="col"
+                key={column.key}
+                className={column.align === "end" ? "admin-num" : undefined}
+              >
                 {column.label}
               </th>
             ))}
@@ -62,17 +76,25 @@ export function Table({
           {data.map((row, index) => (
             <tr key={display(row._id ?? index)}>
               {columns.map((column) => (
-                <td key={column.key}>
-                  {display(
-                    column.key
-                      .split(".")
-                      .reduce<unknown>((value, key) => record(value)[key], row),
-                  )}
+                <td
+                  key={column.key}
+                  className={column.align === "end" ? "admin-num" : undefined}
+                >
+                  {column.render
+                    ? column.render(row)
+                    : display(
+                        column.key
+                          .split(".")
+                          .reduce<unknown>(
+                            (value, key) => record(value)[key],
+                            row,
+                          ),
+                      )}
                 </td>
               ))}
               {actions ? (
                 <td>
-                  <div className="admin-actions">{actions(row)}</div>
+                  <div className="admin-row-actions">{actions(row)}</div>
                 </td>
               ) : null}
             </tr>
@@ -80,7 +102,12 @@ export function Table({
           {!data.length ? (
             <tr>
               <td colSpan={columns.length + (actions ? 1 : 0)}>
-                No records found.
+                <div className="admin-empty">
+                  <p className="admin-empty__title">
+                    {empty?.title ?? "No records found."}
+                  </p>
+                  {empty?.description ? <p>{empty.description}</p> : null}
+                </div>
               </td>
             </tr>
           ) : null}
@@ -191,7 +218,7 @@ export function ProductForm({
   const readinessProduct = edit ? readProduct({...product,disabled:false,category:typeof product.category==='object'?product.category:categories.find(category=>String(category._id)===String(product.category))}) : null;
   return (
     <>
-    {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h3>{channel==='google'?'Google':'Meta'}</h3>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
+    {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h2>{channel==='google'?'Google':'Meta'}</h2>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
     {edit && product.catalogManaged===true ? <section className="admin-panel"><h2>Catalog review</h2><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{storePublicationIssues(product).length?<ul>{storePublicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Store publication checks complete. Publishing is a separate action.</p>}{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).length ? <><h3>Photo and catalogue improvements</h3><p>A missing photo uses a labelled placeholder in the store. Advertising feeds still need an actual authorized photo and verified brand.</p><ul>{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).map(issue=><li key={issue}>{issue}</li>)}</ul></> : null}</section>:null}
     <AdminForm
       path={edit ? `products/${display(product._id)}` : "products"}
@@ -214,58 +241,107 @@ export function OrderDetail({
 }) {
   const customer = record(order.customer);
   const id = display(order._id);
+  const status = display(order.status);
   return (
     <>
-      <h1>Order {display(order.orderId)}</h1>
-      <p>Status: {display(order.status)}</p>
-      <section className="admin-panel">
-        <h2>Customer and delivery</h2>
-        <dl>
-          {[
-            "name",
-            "mobile",
-            "email",
-            "buildingname",
-            "flatno",
-            "address",
-            "city",
-            "emirate",
-            "note",
-            "payment",
-            "totalSalePrice",
-            "deliveryFee",
-            "totalAmount",
-          ].map((key) => (
-            <div key={key}>
-              <dt>{key}</dt>
-              <dd>{display(customer[key])}</dd>
-            </div>
-          ))}
-        </dl>
-        {typeof customer.maplink === "string" &&
-        /^https:\/\//.test(customer.maplink) ? (
-          <a href={customer.maplink} rel="noreferrer" target="_blank">
-            Delivery map
-          </a>
-        ) : null}
-      </section>
+      <PageHeader
+        eyebrow="Orders"
+        title={`Order ${display(order.orderId)}`}
+        description="Customer, delivery and recorded line details for this order."
+        actions={
+          <>
+            <Badge tone={orderStatusTone(status)} dot>
+              {status}
+            </Badge>
+            <Link href="/admin/orders">Back to orders</Link>
+          </>
+        }
+      />
+      <div className="admin-grid admin-grid--2">
+        <Card
+          title="Customer and delivery"
+          description="Contact and address details supplied at checkout."
+        >
+          <dl>
+            {(
+              [
+                ["name", "Customer"],
+                ["mobile", "Mobile"],
+                ["email", "Email"],
+                ["buildingname", "Building"],
+                ["flatno", "Flat / unit"],
+                ["address", "Address"],
+                ["city", "City"],
+                ["emirate", "Emirate"],
+                ["note", "Delivery note"],
+                ["payment", "Payment"],
+              ] as const
+            ).map(([key, label]) => (
+              <div key={key}>
+                <dt>{label}</dt>
+                <dd>{display(customer[key])}</dd>
+              </div>
+            ))}
+          </dl>
+          {typeof customer.maplink === "string" &&
+          /^https:\/\//.test(customer.maplink) ? (
+            <p style={{ marginBottom: 0, marginTop: "0.9rem" }}>
+              <a href={customer.maplink} rel="noreferrer" target="_blank">
+                Open delivery map
+              </a>
+            </p>
+          ) : null}
+        </Card>
+        <Card
+          title="Recorded amounts"
+          description="Stored figures only. The server remains authoritative."
+        >
+          <dl>
+            {(
+              [
+                ["totalSalePrice", "Product subtotal (AED)"],
+                ["deliveryFee", "Delivery fee (AED)"],
+                ["vatAmount", "VAT (AED)"],
+                ["totalAmount", "Order total (AED)"],
+                ["createdAt", "Received"],
+              ] as const
+            ).map(([key, label]) => (
+              <div key={key}>
+                <dt>{label}</dt>
+                <dd>{display(customer[key] ?? order[key])}</dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
+      </div>
       <Table
         caption={
           order.snapshotAvailable
             ? "Recorded order lines"
             : "Historical lines (current product labels; original snapshots unavailable)"
         }
-        data={rows(order.cartItems).map(line => orderLinePresentation(line, order.snapshotAvailable === true))}
+        data={rows(order.cartItems).map((line) =>
+          orderLinePresentation(line, order.snapshotAvailable === true),
+        )}
         columns={[
           { key: "_id.name", label: "Product" },
           { key: "variantLabel", label: "Selected option" },
-          { key: "quantity", label: "Quantity" },
-          { key: "displayedUnitPrice", label: order.snapshotAvailable ? "Charged unit price (AED)" : "Current unit price (AED)" },
-          { key: "recordedLineTotal", label: "Recorded line total (AED)" },
+          { key: "quantity", label: "Quantity", align: "end" },
+          {
+            key: "displayedUnitPrice",
+            label: order.snapshotAvailable
+              ? "Charged unit price (AED)"
+              : "Current unit price (AED)",
+            align: "end",
+          },
+          {
+            key: "recordedLineTotal",
+            label: "Recorded line total (AED)",
+            align: "end",
+          },
         ]}
       />
-      <section className="admin-panel">
-        <h2>Order actions</h2>
+      <Card title="Order actions">
         <AdminForm
           path={`orders/${id}`}
           method="PUT"
@@ -283,38 +359,57 @@ export function OrderDetail({
           label="Dispatch order"
           confirm="Dispatch this order with the entered billing details?"
         />
-        <Command
-          path={`orders/cancel/${id}`}
-          body={{ cancelled: true }}
-          confirm="Cancel this order? The server will apply the existing cancellation and restocking policy."
-        >
-          Cancel order
-        </Command>
+        <hr
+          style={{
+            border: 0,
+            borderTop: "1px solid var(--admin-hairline)",
+            margin: "1.25rem 0",
+          }}
+        />
+        <div className="admin-actions">
+          <Command
+            path={`orders/cancel/${id}`}
+            body={{ cancelled: true }}
+            variant="danger"
+            confirm="Cancel this order? The server will apply the existing cancellation and restocking policy."
+          >
+            Cancel order
+          </Command>
+        </div>
         {admin ? (
-          <AdminForm
-            key={`${id}-${display(order.status)}`}
-            path={`orders/edit/${id}`}
-            method="PUT"
-            fields={[
-              {
-                name: "status",
-                label: "Order status",
-                value: display(order.status),
-                options: [
-                  "pending",
-                  "confirmed",
-                  "packed",
-                  "dispatched",
-                  "cancelled",
-                  "refunded",
-                ].map((value) => ({ value, label: value })),
-              },
-            ]}
-            confirm="Apply this order status change?"
-            label="Update status"
-          />
+          <>
+            <hr
+              style={{
+                border: 0,
+                borderTop: "1px solid var(--admin-hairline)",
+                margin: "1.25rem 0",
+              }}
+            />
+            <AdminForm
+              key={`${id}-${status}`}
+              path={`orders/edit/${id}`}
+              method="PUT"
+              fields={[
+                {
+                  name: "status",
+                  label: "Order status",
+                  value: status,
+                  options: [
+                    "pending",
+                    "confirmed",
+                    "packed",
+                    "dispatched",
+                    "cancelled",
+                    "refunded",
+                  ].map((value) => ({ value, label: value })),
+                },
+              ]}
+              confirm="Apply this order status change?"
+              label="Update status"
+            />
+          </>
         ) : null}
-      </section>
+      </Card>
     </>
   );
 }

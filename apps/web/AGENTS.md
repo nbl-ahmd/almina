@@ -129,14 +129,29 @@ Specify responsive sizing appropriately.
 
 # Styling
 
-For storefront UI, read `DESIGN.md`, `PRODUCT.md` and the
-`almina-project-profile` skill. The owner approved Heroicons, a single optimized
-storefront font and Tailwind-first component styling. Impeccable is the visual
-critique/polish skill; the official shadcn skill applies to shadcn component work.
+For storefront UI, read `DESIGN.md`, `PRODUCT.md`,
+`docs/migration/REDESIGN_SETUP_2026-10-18.md` from the repository root and the
+`almina-project-profile` skill. The owner requested a replacement direction after
+the Life, myAster, BinSina and RAK competitor review; the old Figma/PNG layouts and
+pale-blue bordered theme are historical references, not constraints on the new
+redesign. Keep Heroicons, one optimized storefront font and Tailwind-first styling.
+Impeccable owns composition, hierarchy and critique; gpt-taste supplies creative
+alternatives within the retail brief; Emil Kowalski's skills own purposeful motion
+and interaction details. Load the relevant skill for the task, not every skill.
+The official shadcn skill applies only to shadcn component work.
 The older overlapping design generators (`frontend-design`, `ui-ux-pro-max`,
 `ui-styling`, `design-system`, `design`, `brand`) are not default direction sources
 for this project. Use them only for a separately requested task where relevant.
-Preserve the approved Figma layouts and actual Al Mina content.
+Preserve actual Al Mina content and commerce behaviour. When a new Figma frame
+is selected, extract its tokens/components before implementation. Otherwise
+establish a coherent replacement system from the competitor-based brief.
+
+Shopping task success, accessibility, truthful product information and performance
+override generic skill prescriptions. Do not force AIDA onto catalogue/PDP/cart,
+randomize layouts, simulate tool execution, mandate cinematic spacing, install
+GSAP, add scroll pinning or use unrelated placeholder imagery just because a
+skill recommends it. Choose motion only when it supports the interaction and
+honour reduced motion. Do not copy competitor assets or unsupported claims.
 
 Use one coherent styling/design system.
 

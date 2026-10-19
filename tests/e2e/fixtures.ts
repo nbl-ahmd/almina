@@ -54,3 +54,11 @@ export async function login(page: Page, username = 'synthetic-admin') {
   await expect(page).toHaveURL(adminOrigin + '/admin');
   await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
 }
+export async function openAdminSection(page: Page, name: string) {
+  // Below 768px the administration navigation is a drawer. Open it first so the
+  // test follows the same path a phone user does instead of assuming the
+  // sidebar is already on screen.
+  const toggle = page.getByRole('button', { name: 'Menu', exact: true });
+  if (await toggle.isVisible()) await toggle.click();
+  await page.getByRole('link', { name, exact: true }).click();
+}

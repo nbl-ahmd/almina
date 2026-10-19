@@ -22,37 +22,38 @@ test('authorized category edits refresh the warmed storefront cache and oversize
   });
   expect(oversized.status()).toBe(413);
 });
-test('staff provisioning clears credentials and deactivation revokes access at every required width', async ({ page, request }) => {
+// One independent viewport case per client: each case resets its own synthetic
+// client, so provisioning must stay inside the real per-IP API quota instead of
+// exhausting one bucket with four combined sessions.
+for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears credentials and deactivation revokes access at ${width}px`, async ({ page, request }) => {
   await login(page);
   const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
-  for (const width of [360, 390, 768, 1280]) {
-    const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
-    await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
-    await page.getByRole('link', { name: 'Skip to content', exact: true }).focus(); await page.keyboard.press('Enter');
-    await expect(page.locator('#admin-main')).toBeFocused();
-    await page.evaluate(axe);
-    const violations = await page.evaluate(async () => {
-      const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
-      return (await audit.run(document.body)).violations.map(violation => violation.id);
-    });
-    expect(violations).toEqual([]);
-    await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
-    await page.getByLabel('Username', { exact: true }).fill(username);
-    await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
-    await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption('user');
-    await page.getByRole('textbox', { name: /^Assigned cities/ }).fill('City A');
-    await page.getByRole('button', { name: 'Create staff account', exact: true }).focus(); await page.keyboard.press('Enter');
-    const row = page.getByRole('row').filter({ hasText: username }); await expect(row).toBeVisible();
-    await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');
-    expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(200);
-    expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(200);
-    page.once('dialog', dialog => dialog.accept()); await row.getByRole('button', { name: 'Deactivate account', exact: true }).click();
-    await expect(row).toHaveCount(0);
-    expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
-    expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.reload(); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
-  }
+  const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
+  await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
+  await page.getByRole('link', { name: 'Skip to content', exact: true }).focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('#admin-main')).toBeFocused();
+  await page.evaluate(axe);
+  const violations = await page.evaluate(async () => {
+    const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
+    return (await audit.run(document.body)).violations.map(violation => violation.id);
+  });
+  expect(violations).toEqual([]);
+  await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
+  await page.getByLabel('Username', { exact: true }).fill(username);
+  await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
+  await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption('user');
+  await page.getByRole('textbox', { name: /^Assigned cities/ }).fill('City A');
+  await page.getByRole('button', { name: 'Create staff account', exact: true }).focus(); await page.keyboard.press('Enter');
+  const row = page.getByRole('row').filter({ hasText: username }); await expect(row).toBeVisible();
+  await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');
+  expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(200);
+  expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(200);
+  page.once('dialog', dialog => dialog.accept()); await row.getByRole('button', { name: 'Deactivate account', exact: true }).click();
+  await expect(row).toHaveCount(0);
+  expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
+  expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.reload(); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
 });
 test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
   await login(page);

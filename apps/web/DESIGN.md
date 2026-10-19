@@ -1,6 +1,27 @@
-# Al Mina storefront design
+# Al Mina storefront design — redesign preparation
 
-## Approved visual direction
+## Active direction: 18 October 2026
+
+The owner requested a new design following the Life, myAster, BinSina and RAK
+competitor review. The former Figma/PNG composition, pale-blue panels and old
+visual token values below are incumbent implementation evidence, not a mandate
+for the replacement. See `docs/migration/REDESIGN_SETUP_2026-10-18.md` from the
+repository root. The original document is archived under docs/migration/.
+
+Target a distinctive, product-led health, beauty and everyday-care retailer:
+recognizable real products, useful categories, restrained promotion, warm neutral
+surfaces, strong ink typography and a deliberate deep teal/green action hierarchy
+with selective coral brand accents. This is a design direction, not final numeric
+tokens or a claim that any new UI is already implemented.
+
+Next establish the component/page concept with real product names, photos and
+empty states; record the chosen type/spacing/colour/component tokens here before
+broad implementation. Retain Tailwind-first styling, Heroicons, one optimized
+font, semantic accessible interactions and server-rendered commerce content.
+
+## Historical implementation reference — superseded visual authority
+
+## Previous visual direction
 
 Preserve the structural desktop/mobile reference layouts in Figma file
 llmDMdaminn2wcCIAZQ9U7. Make shopping and product information clear before adding
