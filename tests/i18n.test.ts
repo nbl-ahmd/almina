@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { locales, parseLocale, isRtl, t, tf, messages } from '../apps/web/src/lib/i18n';
+test('locale parsing fails back to English and only Arabic is RTL',()=>{assert.equal(parseLocale('ar'),'ar');assert.equal(parseLocale('fr'),'en');assert.equal(parseLocale(null),'en');assert.equal(isRtl('ar'),true);assert.equal(isRtl('en'),false);});
+test('every locale exposes the same keys',()=>{const keys=Object.keys(messages.en).sort();for(const locale of locales)assert.deepEqual(Object.keys(messages[locale]).sort(),keys);});
+test('placeholders interpolate in any order and unknown tokens are preserved',()=>{assert.equal(tf('en','cartRemoveAria',{name:'Daily Care'}),'Remove Daily Care from cart');assert.equal(tf('ar','cartQuantityAria',{name:'Daily Care',count:3}),'كمية Daily Care: 3');assert.equal(tf('en','cartReadyBanner',{name:'ignored'}),t('en','cartReadyBanner'));});
+test('English cart copy stays byte-identical for existing browser assertions',()=>{assert.equal(t('en','cartEmptyTitle'),'A little room for your everyday essentials.');assert.equal(t('en','cartProceed'),'Proceed to checkout');assert.equal(t('en','cartOrderSummary'),'Order summary');assert.equal(t('en','cartInStock'),'In stock');assert.equal(t('en','cartPerItem'),'per item');assert.equal(tf('en','cartCheckoutLine',{price:'AED 20.00',quantity:2}),'AED 20.00 per item · Quantity: 2');assert.equal(tf('en','cartItemsInCart',{count:1,unit:t('en','cartProductOne')}),'1 product in your cart');});

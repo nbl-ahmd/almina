@@ -18,7 +18,7 @@ behaviour is off by default.
 | 2 | Restock / price-drop / replenishment alerts + delivery worker | **Done** (same commit, verified here) |
 | 3 | Genuinely complementary curated bundles | **Done** |
 | 4 | Verified operational branch / serviceability management | **Done** |
-| 5 | Full Arabic shopping/checkout translations | **Partial** — storefront chrome (nav/footer/RTL/switcher) done; cart, checkout, catalogue and PDP interface copy remain English. See “Phase 4 continuation”. |
+| 5 | Full Arabic shopping/checkout translations | **Partial** — storefront chrome (nav/footer/RTL/switcher) and the cart surface plus checkout page shell are localized; checkout form fields/messages and catalogue/PDP copy remain English. See “Phase 4 continuation”. |
 
 Operational work that cannot be completed from code stays pharmacy-owned: Google
 Business Profile, Search Console / Merchant Center / Meta verification, advertising
@@ -110,26 +110,36 @@ Modified:
 Goal: finish the Arabic shopping/checkout interface. Product/category/health content
 stays staff-translated through the CMS (`locale: 'ar'`), never machine-invented.
 
-1. Extend `apps/web/src/lib/i18n.ts` with keys for:
-   - **Cart** (`cart-view.tsx`): empty heading/body, “Start shopping”, ready banner,
-     product count singular/plural, “Your items”, “Continue shopping”, “In stock”,
-     availability warning, “Unavailable”, “per item”, remove/decrease/increase/quantity
-     aria labels, help panel, “Order summary”, Products/Delivery/VAT rows, “At checkout”,
-     summary note, “Proceed to checkout”, mobile review note, loading/read/save/changed
-     errors, “Try again”, “Your saved items have not been removed.”
-   - **Checkout** (`checkout-form.tsx`): the `messages` map, headings, contact/delivery/
-     payment sections, every field label and placeholder, saved-address control, GPS
-     status/error strings, review/place/retry buttons, confirmation screen and summary
-     rows. `formatted()` should use `Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', …)`.
-   - **Pages**: `(storefront)/cart/page.tsx` and `(storefront)/checkout/page.tsx`
-     headings, plus the checkout-unavailable notice.
-   - **Catalogue/PDP** (optional next): `catalog-list.tsx`, `product-card.tsx`,
-     `storefront.tsx`, `homepage.tsx`.
-2. Read the locale on the server page/layout and pass it down as a prop. Client
-   components receive `locale: Locale` (default `'en'`) so unrelated call sites keep working.
-3. Keep the English values byte-identical; run `test:e2e:smoke` after each surface.
-4. Have a native Arabic speaker / the pharmacy review the copy before it is treated as
-   published. The current `ar` strings are a first pass.
+**Done since this handoff — cart slice (19 October 2026).** The cart surface and
+checkout page shell are localized: `apps/web/src/lib/i18n.ts` gained the cart/checkout
+keys and `tf()` for `{name}`/`{count}` placeholders, and `CartView` takes
+`locale?: Locale` (default `'en'`). `(storefront)/cart/page.tsx` and
+`(storefront)/checkout/page.tsx` read the locale on the server and pass it down. Cart
+headings, breadcrumb, subtitle, recommendations heading, empty/error states, item rows,
+quantity/remove aria labels, summary rows, help/support panels and checkout CTAs render
+from the dictionary. English values are byte-identical and existing e2e assertions pass
+unchanged.
+
+Remaining in Phase 4:
+
+1. **Checkout form** (`checkout-form.tsx`): the `messages` map, headings,
+   contact/delivery/payment sections, every field label and placeholder, saved-address
+   control, GPS status/error strings, review/place/retry buttons, confirmation screen
+   and summary rows. Accept a `locale` prop (default `'en'`) and pass it from
+   `checkout/page.tsx`. `formatted()` should use
+   `Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', …)`.
+2. **Cart-adjacent copy** (`delivery-progress.tsx`, `customer-reminders.tsx`): the
+   free-delivery progress sentence/labels and the reminder signup panel rendered in the
+   cart are still English. The server-side cart validation message returned by
+   `checkAddition` (stock/availability) is also API copy and needs a locale-aware
+   error mapping rather than a dictionary key.
+3. **Catalogue/PDP** (optional next): `catalog-list.tsx`, `product-card.tsx`,
+   `storefront.tsx`, `homepage.tsx` — cart recommendations therefore still show
+   “Add to cart”, “In stock”, “Out of stock” and “Currently unavailable” in English.
+4. Keep the English values byte-identical; run `test:e2e:smoke` after each surface.
+5. Have a native Arabic speaker / the pharmacy review the copy before it is treated as
+   published. Arabic plural forms currently use a two-form `one`/`other` fallback
+   (dual/few/many are not distinguished yet).
 
 ## Verification run in this pass
 
@@ -148,6 +158,18 @@ All green on this machine:
 Note for the next session: isolation env. `AL_MINA_ISOLATED_BUILD=1` builds to
 `apps/web/.next-verification`; the E2E/smoke servers must be launched with the same
 variable or they look for `.next` and fail with “Could not find a production build”.
+
+### Cart-slice verification (19 October 2026)
+
+- `npm run typecheck`, `npm run lint`, `npm run test:unit` — 157 tests pass.
+- Isolated foundation build and `AL_MINA_ISOLATED_BUILD=1 npm run test:e2e:smoke` —
+  91 passed, so English output is unchanged.
+- Live fixture-server check with `almina_lang=ar`: `/cart` and `/checkout` render with
+  `lang="ar"`, `dir="rtl"`, Arabic cart copy, Arabic aria labels (product names stay as
+  stored) and zero browser console errors. The count line resolves `1 منتج في سلتك`
+  through `Intl.PluralRules`.
+- Still English on those pages: the recommendation product cards (catalogue copy), the
+  delivery-progress sentence, and `cart`/`checkout` metadata titles.
 
 ## Storage, rollback and compatibility
 
