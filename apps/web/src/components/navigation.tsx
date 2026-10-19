@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { NavigationLinks } from "./navigation-links";
 import { CartLink } from "./cart-link";
-import { DeliveryLocation } from "./delivery-location";
+import { DeliveryAreaPrompt, DeliveryLocation } from "./delivery-location";
 import { UsagePreferences } from "./usage-preferences";
 
 export function Navigation() {
@@ -56,15 +56,21 @@ export function Navigation() {
             <NavigationLinks desktop />
           </div>
         </div>
+        <DeliveryAreaPrompt />
         <NavigationLinks />
       </header>
-      <Link
-        href="/contact"
-        aria-label="Contact Al Mina Pharmacy"
-        className="floating-contact fixed right-4 bottom-[calc(80px+env(safe-area-inset-bottom))] z-30 flex size-12 items-center justify-center rounded-full bg-brand text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 md:right-6 md:bottom-6 md:size-14"
+      <nav
+        aria-label="Quick contact"
+        className="floating-contact fixed right-4 bottom-[calc(80px+env(safe-area-inset-bottom))] z-30 md:right-6 md:bottom-6"
       >
-        <ChatBubbleLeftRightIcon className="size-6" />
-      </Link>
+        <Link
+          href="/contact"
+          aria-label="Contact Al Mina Pharmacy"
+          className="flex size-12 items-center justify-center rounded-full bg-brand text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 md:size-14"
+        >
+          <ChatBubbleLeftRightIcon className="size-6" />
+        </Link>
+      </nav>
     </>
   );
 }

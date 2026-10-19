@@ -12,7 +12,7 @@ for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigat
   else await expect(page.getByRole('banner').getByRole('link', { name: 'Al Mina Pharmacy home', exact: true })).toBeVisible();
   await page.keyboard.press('Tab'); const skip = page.getByRole('link', { name: 'Skip to content' });
   await expect(skip).toBeFocused(); await page.keyboard.press('Enter'); await expect(page.locator('#main-content')).toBeFocused();
-  const search = page.getByRole('search', { name: width < 768 ? 'Product search' : 'Header product search' }); const input = search.getByRole('searchbox', { name: 'Search products' });
+  const search = page.getByRole('search', { name: 'Product search' }); const input = search.getByRole('combobox', { name: 'Search products' });
   await expect(input).toHaveAttribute('maxlength', '80'); await input.focus(); await input.fill('Daily'); await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/search\?q=Daily$/); await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
@@ -21,7 +21,7 @@ for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigat
   const link = width < 768 ? navigation.getByRole('link', { name: 'Cart', exact: true }) : page.getByRole('banner').getByRole('link', { name: 'Your cart', exact: true });
   expect(await link.evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(width < 768 ? 48 : 44);
   await link.focus(); await page.keyboard.press('Enter'); await expect(page).toHaveURL(/\/cart$/);
-  await expect(page.getByRole('heading', { name: 'Your cart is currently empty' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.evaluate(axe);
   const violations = await page.evaluate(async () => {

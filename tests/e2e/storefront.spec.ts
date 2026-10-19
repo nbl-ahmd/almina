@@ -17,7 +17,7 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
   await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).click();
   await expect(page.locator('.quantity')).toHaveText('4');
   await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
-  await expect(page.getByRole('heading', { name: 'Your cart is currently empty' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();
   await expect(page.locator('.header-cart .cart-count')).toHaveCount(0);
 });
 
@@ -28,7 +28,7 @@ test('mobile catalog exposes filters on demand and preserves applied search', as
   await expect(panel).not.toHaveAttribute('open');
   await panel.locator('summary').click();
   await panel.getByRole('searchbox', { name: 'Search products' }).fill('Daily');
-  await panel.getByRole('button', { name: 'Apply', exact: true }).click();
+  await panel.getByRole('button', { name: 'Apply filters', exact: true }).click();
   await expect(page).toHaveURL(/q=Daily/);
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await expect(page.locator('.catalog-filters')).toHaveAttribute('open');
@@ -73,7 +73,7 @@ test('Next catalog outage renders its error boundary and keyboard retry recovers
 });
 });
 
-for (const [path, content] of [['/', 'Featured products'], ['/search?q=Daily', 'Daily Care'],
+for (const [path, content] of [['/', 'Your everyday essentials'], ['/search?q=Daily', 'Daily Care'],
   ['/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', 'Daily Care'], ['/products/daily-care--PD0001', 'Daily care product description.']]) {
   test(`storefront renders and reloads ${path}`, async ({ page }) => {
     await page.goto(path!);
