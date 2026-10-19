@@ -4,7 +4,9 @@ Frontend-only redesign of the Next.js administration module
 (`apps/web/src/app/(admin)/admin` and `apps/web/src/components/admin`).
 
 No API, contract, database, policy, route or commerce behaviour was changed.
-No dependency was added. The work is presentation, layout and information
+No dependency was added at the time of this design-system rewrite. The later
+19 October craft pass added GSAP for two JavaScript-only motion effects — see the
+follow-up section at the end. The work is presentation, layout and information
 architecture on top of the existing authorised reads and mutations.
 
 ## Why this was safe to do now
@@ -131,7 +133,9 @@ code. The script now fills the field, which is what a real operator must do.
 - No pricing, tax, delivery fee, stock, inventory or order logic.
 - No MongoDB model, index, migration or data write.
 - No route was renamed or removed; legacy admin redirects still pass.
-- No new dependency. Charts are hand-written SVG/CSS.
+- No new dependency at the time of this rewrite; charts remained hand-written
+  SVG/CSS. (The 19 October craft pass then added GSAP for the count-up and
+  sparkline draw only — see below.)
 - No cache introduced for authenticated admin data.
 - No `localStorage` use; the staff browser check still asserts `localStorage.length === 0`.
 
@@ -145,3 +149,70 @@ code. The script now fills the field, which is what a real operator must do.
   wanted later, it should be a deliberate dependency decision, not a default.
 - The sidebar `Menu` control is mobile-only; the drawer behaviour should be
   re-checked on a real touch device before considering the interaction finished.
+
+## Craft pass follow-up — 19 October 2026
+
+A full craft pass over the whole administration surface (every page and
+component in `app/(admin)/admin` and `components/admin`) on top of the
+18 October system. Same scope discipline: presentation only, green pharmacy
+brand kept, no API/contract/database/policy/commerce change.
+
+### Motion (new dependency)
+
+Two JS-driven effects that CSS cannot express precisely were added:
+
+- numeric count-up on the dashboard stat tiles;
+- measured stroke draw-on for the dashboard sparkline.
+
+To own those, **`gsap@3.15.0` and `@gsap/react@2.1.2` were pinned exactly** into
+`@almina/web` (lockfile updated). This is a deliberate dependency decision, not a
+default; nothing else in admin imports GSAP. All other entrances (header/card
+"rise", bar-list "grow") stay pure CSS in `admin.css`, because CSS animates the
+computed style React never diffs.
+
+Every motion effect is gated behind `prefers-reduced-motion: no-preference` and
+keeps its resting, fully visible state when reduced motion is requested.
+
+### Hydration safety (why the effects are leaf components)
+
+The App Router hydrates the shell before it hydrates the streamed page segment.
+A single wrapper around the page ran its effect too early and rewrote
+server-rendered DOM (the count text) before React hydrated it, producing
+`Hydration failed because the server rendered text didn't match the client`.
+
+Fix: the count-up and the sparkline draw now live on the exact nodes they
+animate (`components/admin/motion.tsx` — `CountUp`, `DrawLine`), so each effect
+runs only after its own node has hydrated. `suppressHydrationWarning` is no
+longer needed. `data-motion="count"`/`"draw"` and the wrapper were removed.
+
+Reduced-motion entrances also avoid animating `opacity`/`autoAlpha`, because axe
+contrast sampling mid-animation otherwise reports blended colours; the rise uses
+`transform` only.
+
+### Mobile topbar
+
+At 360–390 px the shell controls previously overflowed by ~1 px and pushed
+**Sign out** onto a second row. The mobile topbar now stays on one row and the
+breadcrumb (redundant with the page `<h1>`) absorbs the squeeze with an ellipsis.
+
+### Also in this pass
+
+Design-system classes replaced ad-hoc inline styles and raw Tailwind utilities
+across the admin components; the storefront's `Outfit` font was applied to admin
+via `next/font/local` (`preload: false`). Global `.admin-app` secondary button
+padding (`padding-left: 20px`) and its white background were kept so existing
+end-to-end CSS assertions still pass.
+
+### Verification
+
+- `tsc --noEmit` (web) and eslint over the admin tree — clean.
+- Isolated production Turbopack build (`AL_MINA_ISOLATED_BUILD=1`) — passes.
+- `tests/admin-migration.test.ts`, `tests/stylesheet-policy.test.ts`,
+  `tests/next-lint.test.ts` — 13/13 pass.
+- `scripts/tooling/verify-admin-browser.mjs` — passes: 15 routes, 60 responsive
+  checks and accessibility audits, plus login/logout/reload, order dispatch,
+  multipart product update, legacy redirects, order-arrival/outage recovery and
+  staff denial; zero page errors.
+- `tests/e2e/admin.spec.ts` against the isolated build — 10/10 pass, including
+  the Cloudinary button CSS assertions and the 360 px staff provisioning case.
+- Screenshots reviewed for every screen at desktop and mobile widths.

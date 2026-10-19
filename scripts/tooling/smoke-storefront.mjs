@@ -28,7 +28,7 @@ try {
     try { if ((await fetch(`${origin}/cart`)).ok) break; } catch { /* startup */ }
     await delay(100);
   }
-  for (const [path, text] of [['/', 'Featured products'], ['/products', 'Daily Care'], ['/products/daily-care--PD0001', 'Daily care product description.'], ['/categories', 'Skin Care'], ['/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', 'Daily Care'], ['/offers', 'Daily Care'], ['/search?q=Daily', 'Daily Care'], ['/cart', 'Your cart'], ['/checkout', 'Ordering is not available in this preview.']]) {
+  for (const [path, text] of [['/', 'Your everyday essentials'], ['/products', 'Daily Care'], ['/products/daily-care--PD0001', 'Daily care product description.'], ['/categories', 'Skin Care'], ['/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', 'Daily Care'], ['/offers', 'Daily Care'], ['/search?q=Daily', 'Daily Care'], ['/cart', 'Your cart'], ['/checkout', 'Ordering is not available in this preview.']]) {
     const response = await fetch(`${origin}${path}`);
     assert.equal(response.status, 200, path); assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.ok((await response.text()).includes(text), `SSR content absent for ${path}`);

@@ -39,3 +39,4 @@ export * from './modules/notifications/subscriptions.js';
 export * from './modules/catalog/import.js';
 
 export * from './modules/catalog/export.js';
+export { retentionWorker } from './modules/growth/retention.js';

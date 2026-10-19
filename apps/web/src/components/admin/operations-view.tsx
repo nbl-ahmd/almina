@@ -12,28 +12,26 @@ export function OperationsView({ snapshot }: { snapshot: z.infer<typeof operatio
   const queue = database.outbox.reduce((total, value) => total + value.count, 0);
   return (
     <>
-      <p style={{ marginTop: '-0.75rem' }} className="admin-card__hint">
+      <p className="admin-hint admin-hint--tight" data-motion="rise">
         Measured at {snapshot.http.measuredAt}. This view covers one {snapshot.http.source} process. Refresh to read current signals; collect every deployed API instance before making a release decision.
       </p>
       <StatGrid>
-        <StatTile label="Requests sampled" value={requests.toLocaleString()} meta={`${snapshot.http.windowMinutes}-minute window`} />
-        <StatTile label="Server failures" value={failures.toLocaleString()} meta="5xx within the window" />
-        <StatTile label="Alerts" value={snapshot.alerts.length} meta="Thresholds to investigate" />
-        <StatTile label="Notification queue" value={queue.toLocaleString()} meta="Pending, processing and failed jobs" />
+        <StatTile label="Requests sampled" countTo={requests} meta={`${snapshot.http.windowMinutes}-minute window`} />
+        <StatTile label="Server failures" countTo={failures} meta="5xx within the window" tone={failures > 0 ? 'warning' : 'brand'} />
+        <StatTile label="Alerts" countTo={snapshot.alerts.length} meta="Thresholds to investigate" tone={snapshot.alerts.length ? 'warning' : 'brand'} />
+        <StatTile label="Notification queue" countTo={queue} meta="Pending, processing and failed jobs" />
       </StatGrid>
       <Card title="Alerts to investigate">
         {snapshot.alerts.length ? (
           <Note tone="warning" icon={<ExclamationTriangleIcon />}>
-            <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>
+            <ul className="admin-list-disc">
               {snapshot.alerts.map(alert => <li key={alert}>{alert.replaceAll('_', ' ')}</li>)}
             </ul>
           </Note>
         ) : (
-          <p style={{ marginBottom: 0 }}>
-            No thresholds triggered in this sample. {snapshot.http.warmupComplete ? 'Five-minute sampling is available.' : 'Five-minute sampling is still warming up.'}
-          </p>
+          <p>No thresholds triggered in this sample. {snapshot.http.warmupComplete ? 'Five-minute sampling is available.' : 'Five-minute sampling is still warming up.'}</p>
         )}
-        <p className="admin-card__hint" style={{ marginBottom: 0, marginTop: '0.75rem' }}>
+        <p className="admin-hint">
           Pause commerce writers for confirmed duplicate orders, invalid stock or missing committed records. Preserve receipts and reconcile before rollback.
         </p>
       </Card>
@@ -57,13 +55,13 @@ export function OperationsView({ snapshot }: { snapshot: z.infer<typeof operatio
       </Card>
       <Card title="Acceptance still required">
         <p>Stock/order reconciliation requires the paused baseline and committed-event ledger. Zero invalid stock values do not prove that quantities reconcile. Frontend latency, provider delivery and hosting alerts require independent monitoring.</p>
-        {snapshot.http.commerceEvents ? <><h3>Optional usage reports</h3><p className="admin-card__hint">Consented storefront reports only; untrusted, partial coverage. These counts are not orders, customers or affected sessions. Replays can report twice; missing reports do not prove healthy journeys.</p>
+        {snapshot.http.commerceEvents ? <><h3>Optional usage reports</h3><p className="admin-hint">Consented storefront reports only; untrusted, partial coverage. These counts are not orders, customers or affected sessions. Replays can report twice; missing reports do not prove healthy journeys.</p>
           <dl>{Object.entries(snapshot.http.commerceEvents).map(([event, count]) => <div key={event}><dt>{event.replaceAll('_', ' ')}</dt><dd>{count}</dd></div>)}</dl>
           <p>Client JavaScript reports: {snapshot.http.clientJavaScriptErrors}. Investigate alerts by reproducing critical journeys; collect every deployed instance.</p></>
           : <p>Client JavaScript errors and optional usage reports are not configured.</p>}
-        <p style={{ marginBottom: 0 }}>Retained-process counters reset on restart and use minute buckets. An empty sample is unknown. The modular API exposes its independently authenticated operations snapshot; the hosting monitor must collect it and retain evidence for the observation window.</p>
+        <p className="admin-hint admin-hint--tight">Retained-process counters reset on restart and use minute buckets. An empty sample is unknown. The modular API exposes its independently authenticated operations snapshot; the hosting monitor must collect it and retain evidence for the observation window.</p>
       </Card>
-      <p className="admin-card__hint">
+      <p className="admin-hint" data-motion="rise">
         <Badge tone="info">One process</Badge> Measurements are bounded per-process samples, not hosting-wide totals.
       </p>
     </>

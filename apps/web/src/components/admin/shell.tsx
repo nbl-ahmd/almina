@@ -8,6 +8,7 @@ import {
   BellIcon,
   ChartBarSquareIcon,
   ChatBubbleLeftRightIcon,
+  ChevronRightIcon,
   ClipboardDocumentCheckIcon,
   Cog6ToothIcon,
   CubeIcon,
@@ -53,6 +54,7 @@ const groups: NavGroup[] = [
   {
     label: 'Engagement',
     items: [
+      { id: 'growth', label: 'Website & growth', href: '/admin/growth', icon: ChartBarSquareIcon },
       { id: 'whatsapp', label: 'WhatsApp', href: '/admin/whatsapp', icon: ChatBubbleLeftRightIcon },
       { id: 'notifications', label: 'Notifications', href: '/admin/notifications', icon: BellIcon },
     ],
@@ -206,8 +208,12 @@ export function AdminShell({
               )}
               Menu
             </button>
-            <span className="admin-topbar__section">
-              {current?.label ?? 'Administration'}
+            <span className="admin-crumbs">
+              <span className="admin-crumbs__root">Administration</span>
+              <ChevronRightIcon className="admin-crumbs__sep" aria-hidden="true" />
+              <span className="admin-crumbs__current">
+                {current?.label ?? 'Overview'}
+              </span>
             </span>
             <span className="admin-topbar__spacer" />
             <span className="admin-user">

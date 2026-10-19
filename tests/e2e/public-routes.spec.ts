@@ -6,7 +6,7 @@ const localRequire = createRequire(resolve('package.json'));
 const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
 for (const width of [360, 390, 768, 1280]) test(`public information routes preserve navigation and accessibility at ${width}px`, async ({ page }) => {
   await page.setViewportSize({ width, height: 900 });
-  for (const [path, title] of [['/about', 'Everyday care at Al Mina Pharmacy.'], ['/contact', 'Contact the pharmacy']]) {
+  for (const [path, title] of [['/about', 'A little more care for your everyday.'], ['/contact', 'Let’s talk care.']]) {
     await page.goto(path!); await expect(page.getByRole('heading', { level: 1 })).toHaveText(title!);
     await page.reload(); await expect(page.getByRole('heading', { level: 1 })).toHaveText(title!);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `http://127.0.0.1:4710${path}`);

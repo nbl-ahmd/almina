@@ -21,23 +21,39 @@ export function retainedCatalogQuery(raw: unknown, kind: 'products' | 'search' |
     limit: page.pipe(z.number().int().min(1).max(kind === 'categories' ? 1000 : 100)).optional(),
     offset: page.pipe(z.number().int().nonnegative().max(10000)).optional(),
     disabledCat: z.enum(['true', 'false']).optional(), groupFamilies: z.enum(['true','false']).optional(), q: z.string().min(1).max(80).optional(),
+    inStock: z.enum(['true','false']).optional(), minPrice: z.string().regex(/^\d{1,6}(?:\.\d{1,2})?$/).optional(),
+    maxPrice: z.string().regex(/^\d{1,6}(?:\.\d{1,2})?$/).optional(), sort: z.enum(['relevance','price-asc','price-desc','name']).optional(),
   }).strict(), raw);
   if (kind === 'search' && value.q === undefined || kind !== 'search' && value.q !== undefined
-    || kind === 'categories' && value.disabledCat !== undefined) throw new HttpError(400, 'INVALID_REQUEST');
+    || kind === 'categories' && (value.disabledCat !== undefined || value.inStock !== undefined || value.minPrice !== undefined || value.maxPrice !== undefined || value.sort !== undefined)) throw new HttpError(400, 'INVALID_REQUEST');
   let parts: unknown;
   try { parts = value.filter === undefined ? {} : JSON.parse(value.filter); } catch { throw new HttpError(400, 'INVALID_REQUEST'); }
   const values = kind === 'search' && Array.isArray(parts) ? parts : [parts];
   if (values.length > 10) throw new HttpError(400, 'INVALID_REQUEST');
   let filter: z.infer<typeof fields> = {};
   for (const part of values) filter = { ...filter, ...validate(kind === 'categories' ? fields.pick({ disabled: true }) : fields, part) };
+  const minPrice = value.minPrice === undefined ? undefined : Number(value.minPrice);
+  const maxPrice = value.maxPrice === undefined ? undefined : Number(value.maxPrice);
+  if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) throw new HttpError(400, 'INVALID_REQUEST');
   return { filter, limit: value.limit ?? (kind === 'categories' ? 1000 : 30), offset: value.offset ?? 0,
-    disabledCategory: value.disabledCat, q: value.q, groupFamilies:value.groupFamilies==='true' };
+    disabledCategory: value.disabledCat, q: value.q, groupFamilies:value.groupFamilies==='true',
+    inStock: value.inStock === undefined ? undefined : value.inStock === 'true', minPrice, maxPrice,
+    sort: value.sort ?? 'relevance' };
 }
 type Query = Omit<ReturnType<typeof retainedCatalogQuery>,'groupFamilies'> & {groupFamilies?:boolean};
 const published = { disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false } };
 function match(query: Query, staff: boolean): Document {
   const { category, ...filters } = query.filter;
+  const priceBounds = query.minPrice !== undefined || query.maxPrice !== undefined
+    ? { ...(query.minPrice !== undefined ? { $gte: query.minPrice } : {}), ...(query.maxPrice !== undefined ? { $lte: query.maxPrice } : {}) } : undefined;
+  const currentPrice = { $cond: [{ $and: [{ $eq: ['$sale', true] }, { $isNumber: '$salePrice' }, { $gte: ['$salePrice', 0] }, { $lte: ['$salePrice', '$price'] }] }, '$salePrice', '$price'] };
   return { $and: [{ ...filters, ...(category ? { category: new ObjectId(category) } : {}) },
+    ...(priceBounds ? [{ price: { $type: 'number', $gte: 0 } }, { $expr: { $and: [
+      ...(priceBounds.$gte !== undefined ? [{ $gte: [currentPrice, priceBounds.$gte] }] : []),
+      ...(priceBounds.$lte !== undefined ? [{ $lte: [currentPrice, priceBounds.$lte] }] : []),
+    ] } }] : []),
+    ...(query.inStock === true ? [{ stock: { $gt: 0 } }] : []),
+    ...(query.inStock === false ? [{ stock: { $lte: 0 } }] : []),
     { archivedAt: { $exists: false }, ...(staff ? {} : published) },
     ...(query.q ? [{ $or: ['name', 'description'].map(field => ({ [field]: { $regex: query.q!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } })) }] : []),
   ] };
@@ -59,8 +75,12 @@ export function familyListingStages(): Document[] {
 }
 export async function retainedProductList(db: Db, query: Query, staff = false) {
   return db.collection('products').aggregate([{ $match: match(query, staff) }, ...categoryJoin(staff, query.disabledCategory),
+    ...(!query.groupFamilies && (query.sort === 'price-asc' || query.sort === 'price-desc') ? [{$set:{_familySortPrice:{$cond:[{$and:[{$eq:['$sale',true]},{$isNumber:'$salePrice'},{$gte:['$salePrice',0]},{$lte:['$salePrice','$price']}]},'$salePrice','$price']}}}] : []),
     ...(query.groupFamilies&&!staff?familyListingStages():[]),
-    { $sort: query.filter.sale ? { createdAt: -1, _id: 1 } : { stock: -1, _id: 1 } },
+    { $sort: query.sort === 'price-asc' ? { _familySortPrice: 1, price: 1, _id: 1 }
+      : query.sort === 'price-desc' ? { _familySortPrice: -1, price: -1, _id: 1 }
+      : query.sort === 'name' ? { name: 1, _id: 1 }
+      : query.filter.sale ? { createdAt: -1, _id: 1 } : { stock: -1, _id: 1 } },
     { $skip: query.offset }, { $limit: query.limit }, { $project: compatibilityProductProjection }], options).toArray();
 }
 export async function retainedProductDetail(db: Db, identifier: { id: string } | { productId: string }, staff = false) {
@@ -70,7 +90,7 @@ export async function retainedProductDetail(db: Db, identifier: { id: string } |
     ...categoryJoin(staff), { $limit: 1 }, { $project: compatibilityProductProjection }], options).toArray();
   const product = products[0]; if (!product) throw new HttpError(404, 'NOT_FOUND');
   if ('id' in identifier) return { ...product, category: product.category?._id ?? null };
-  const relatedProducts = product.category?._id ? (await retainedProductList(db, { filter: { category: String(product.category._id) }, limit: 31, offset: 0, q: undefined, disabledCategory: undefined }, staff))
+  const relatedProducts = product.category?._id ? (await retainedProductList(db, { filter: { category: String(product.category._id) }, limit: 31, offset: 0, q: undefined, disabledCategory: undefined, inStock: undefined, minPrice: undefined, maxPrice: undefined, sort: 'relevance' }, staff))
     .filter(value => String(value._id) !== String(product._id)).slice(0, 30) : [];
   const profile = familyProfile(product);
   const variants = profile ? (await db.collection('products').aggregate([

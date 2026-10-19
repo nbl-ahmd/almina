@@ -91,7 +91,7 @@ test('draft import validates gross VAT, source identity, replay, stale edits, pu
     await commitCatalogImport(db,{previewId:again.previewId},actor);assert.equal(await db.collection('products').countDocuments(),1);
     const updated=(await db.collection('products').findOne())!;
     assert.ok(updated.category instanceof ObjectId);assert.equal(String(updated.category),String(category));
-    const listing=await retainedProductList(db,{filter:{},limit:10,offset:0,q:undefined,disabledCategory:undefined},true);
+    const listing=await retainedProductList(db,{filter:{},limit:10,offset:0,q:undefined,disabledCategory:undefined,inStock:undefined,minPrice:undefined,maxPrice:undefined,sort:'relevance'},true);
     assert.equal(String(listing[0]!.category._id),String(category));
     await rollbackCatalogImport(db,{previewId:again.previewId},actor);assert.equal((await db.collection('products').findOne())!.summary,undefined);
     const stale=await previewCatalogImport(db,input([{...row,summary:'Stale change'}]),actor);

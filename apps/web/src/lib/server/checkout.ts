@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import 'server-only';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
@@ -30,9 +31,12 @@ export async function checkoutRequest(request: Request, quoteOnly: boolean | 'lo
     try { raw = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return failure(400, 'INVALID_REQUEST'); }
     const parsed = (locationOnly ? reverseLocationInputSchema : quoteOnly ? quoteInputSchema : checkout).safeParse(raw);
     if (!parsed.success) return failure(400, 'INVALID_REQUEST');
+    const customerName=env.APP_ENV==='development'?'almina_customer':'__Host-almina_customer';
+    const customerCookies=(await cookies()).getAll(customerName);
+    const customerToken=customerCookies.length===1&&/^[A-Za-z0-9_-]{43}$/.test(customerCookies[0]!.value)?customerCookies[0]!.value:null;
     const result = await fetch(new URL(locationOnly ? '/api/v1/checkout/location' : quoteOnly ? '/api/v1/checkout/quote' : '/api/v1/checkout', env.API_ORIGIN), {
       method: 'POST', cache: 'no-store', redirect: 'error', credentials: 'omit',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: env.WEB_ORIGIN, 'X-CSRF-Protection': '1' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: env.WEB_ORIGIN, 'X-CSRF-Protection': '1', ...(customerToken?{Cookie:customerName+'='+customerToken}:{}) },
       body: JSON.stringify(parsed.data), signal: AbortSignal.timeout(15000),
     });
     const body: unknown = await result.json();

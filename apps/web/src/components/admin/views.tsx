@@ -52,6 +52,7 @@ export function Table({
   return (
     <div
       className="admin-table-wrap"
+      data-motion="rise"
       tabIndex={0}
       role="region"
       aria-label={caption}
@@ -262,7 +263,7 @@ export function OrderDetail({
           title="Customer and delivery"
           description="Contact and address details supplied at checkout."
         >
-          <dl>
+          <dl className="admin-dl--cards">
             {(
               [
                 ["name", "Customer"],
@@ -285,7 +286,7 @@ export function OrderDetail({
           </dl>
           {typeof customer.maplink === "string" &&
           /^https:\/\//.test(customer.maplink) ? (
-            <p style={{ marginBottom: 0, marginTop: "0.9rem" }}>
+            <p className="admin-hint admin-hint--tight">
               <a href={customer.maplink} rel="noreferrer" target="_blank">
                 Open delivery map
               </a>
@@ -296,7 +297,7 @@ export function OrderDetail({
           title="Recorded amounts"
           description="Stored figures only. The server remains authoritative."
         >
-          <dl>
+          <dl className="admin-dl--cards">
             {(
               [
                 ["totalSalePrice", "Product subtotal (AED)"],
@@ -359,13 +360,7 @@ export function OrderDetail({
           label="Dispatch order"
           confirm="Dispatch this order with the entered billing details?"
         />
-        <hr
-          style={{
-            border: 0,
-            borderTop: "1px solid var(--admin-hairline)",
-            margin: "1.25rem 0",
-          }}
-        />
+        <hr className="admin-divider" />
         <div className="admin-actions">
           <Command
             path={`orders/cancel/${id}`}
@@ -378,13 +373,7 @@ export function OrderDetail({
         </div>
         {admin ? (
           <>
-            <hr
-              style={{
-                border: 0,
-                borderTop: "1px solid var(--admin-hairline)",
-                margin: "1.25rem 0",
-              }}
-            />
+            <hr className="admin-divider" />
             <AdminForm
               key={`${id}-${status}`}
               path={`orders/edit/${id}`}

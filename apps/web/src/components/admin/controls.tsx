@@ -107,7 +107,7 @@ export function LoginForm() {
           required
         />
       </label>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <p role="alert" className="admin-alert admin-alert--danger">{error}</p> : null}
       <button disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
     </form>
   );
@@ -118,6 +118,7 @@ export function SessionControls() {
   return (
     <div className="admin-actions">
       <button
+        className="admin-btn--ghost"
         disabled={pending}
         onClick={async () => {
           setPending(true);
@@ -132,7 +133,11 @@ export function SessionControls() {
       >
         Sign out
       </button>
-      {error ? <span role="alert">{error}</span> : null}
+      {error ? (
+        <span className="admin-alert admin-alert--danger" role="alert">
+          {error}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -177,7 +182,11 @@ export function Command({
       >
         {pending ? "Saving…" : children}
       </button>
-      {error ? <span role="alert">{error}</span> : null}
+      {error ? (
+        <span className="admin-alert admin-alert--danger" role="alert">
+          {error}
+        </span>
+      ) : null}
     </span>
   );
 }

@@ -1,5 +1,7 @@
 # Migration status
 
+2026-10-19 admin craft pass: a presentation-only craft pass over the entire Next.js administration surface (`app/(admin)/admin`, `components/admin`) keeps the green pharmacy brand and changes no API, contract, database, policy, route or commerce behaviour. Motion is split: pure-CSS transform entrances, plus two JavaScript-only effects (dashboard count-up and sparkline draw) owned by pinned `gsap@3.15.0` / `@gsap/react@2.1.2` in `@almina/web`. A latent hydration mismatch (the count effect ran before the streamed page hydrated) was fixed by moving each effect onto the exact node it animates; the mobile topbar now holds one row at 360–390 px. Verification: web typecheck/eslint clean, isolated production Turbopack build, 13/13 focused unit tests, the admin browser harness (15 routes, 60 responsive/accessibility checks, functional login/dispatch/upload/redirect/recovery/staff-denial) and all 10 admin Playwright cases pass with zero page errors. No deployment, production data or provider operation occurred. See [admin console redesign and its 19 October craft pass](ADMIN_CONSOLE_2026-10-18.md).
+
 2026-10-18 owner-merge deployment: GitHub confirms `alminadev` authored PR #49's merge `f5f4994c6ca8b8567a4b4bb60953414a8999f80b`; all foundation checks passed and the manually triggered Vercel deployment succeeded (run 39108416558). The live alias and linked product-photo attribution were verified in the browser. Automatic deployment after successful same-repository master push verification is prepared in a separate PR, retaining exact-SHA, ancestry and verification gates, rejecting fork/PR events and skipping stale automatic candidates. It is not active until merged. See `VERCEL_SINGLE_REPOSITORY_2026-10-18.md`.
 
 2026-10-18 image follow-up: [media access and required configuration](MEDIA_ACCESS_2026-10-18.md) records the authenticated upload HTTP 503 and missing Cloudinary upload variables on Render. Three more exact-pack images are prepared locally; no new product image attachments or asset deletions occurred. Provider credentials and pharmacy review are pending. The existing Render tab revealed current Atlas/WhatsApp credentials in its initial UI snapshot; both require private rotation, which remains unperformed. No secret values are recorded.
@@ -282,3 +284,39 @@ Installed project-local gpt-taste and eleven web-focused Emil Kowalski skills; r
 ## Administration console redesign — 2026-10-18
 
 Owner-requested redesign of the admin dashboard, console and remaining admin screens. Frontend-only: no API, contract, policy, route, database or commerce change, and no new dependency. Added a scoped `.admin-app` design system, a sidebar/topbar shell with a mobile drawer, shared presentational primitives, a dashboard with KPI tiles and dependency-free charts, and consistent page headers, tables, badges, filters and empty states across every section. Every dashboard figure is a real existing authorised read (recent orders page, exact needs-action total, per-process operations snapshot) and is labelled as the sample it is; nothing is invented or cached. Fixed heading-order and inline-link accessibility failures surfaced by the browser audit, and corrected a pre-existing gap in `verify-admin-browser.mjs` that skipped a required field. Verified with typecheck, lint, admin unit tests, the full fixture-driven browser verification (15 routes, 60 responsive/a11y checks, login/order/product/redirect/outage/staff flows) and visual review of 14 screens at desktop, tablet and mobile widths. See [what changed, verification, limits and the harness correction](ADMIN_CONSOLE_2026-10-18.md).
+
+## Homepage product-led redesign — 2026-10-18
+
+Implemented locally: real product-led hero, category shortcuts, photo-led product shelves, conditional offers and local pharmacy support. Homepage-scoped replacement palette; other routes retain current design. No catalogue mutations/deployment. Validation and remaining campaign API work: [homepage audit](HOMEPAGE_REDESIGN_2026-10-18.md).
+
+## Storefront homepage replacement — 2026-10-19
+
+Replaced the rejected sage direction with a blue product campaign homepage, Outfit, shared navigation/footer and restrained motion. See [V2 audit](HOMEPAGE_REDESIGN_V2_2026-10-19.md) for exact verification, image provenance and campaign API gaps. Local-only; production data unchanged.
+
+## Dense homepage and commerce discovery — 2026-10-19
+
+Compact inline location + floating contact, denser merchandising, budget/brand/routine modules, safe saved banner destinations and server-rendered collection pages implemented locally. Full plan coverage/dependencies: [implementation checklist](COMMERCE_PLAN_IMPLEMENTATION_2026-10-19.md). No production data/deployment changes.
+
+## Image-led merchandising — 2026-10-19
+
+Added uploaded-banner hero priority with generated editorial fallbacks, photographic two-row category tiles, shared product-card variants and restrained scroll reveals. Final isolated build, focused lint/typecheck, twenty tests and responsive browser checks passed. Local only; no production data change or deployment. See [visual merchandising audit](VISUAL_MERCHANDISING_2026-10-19.md) for asset provenance and verification limits.
+
+## Storefront design extension — 2026-10-19
+
+Extended the approved homepage design across category/catalogue/collection, PDP, cart, checkout, offers and informational pages. Restored independent product carousel, added brand/category/section imagery and hid optional horizontal scrollbar tracks. Thirty focused tests plus build/typecheck/lint and responsive browser checks passed. Local only; no production writes. See [scope, assets and verification](STOREFRONT_EXTENSION_2026-10-19.md).
+
+## 2026-10-19 — customer/growth and points-voucher foundation (local)
+
+Added staff-managed editorial/local SEO content, indexed search suggestions, separate customer identity, owned order history/reorder, saved/recent products, moderated purchase reviews, configurable delivery thresholds and admin-controlled points/referral vouchers. Voucher redemption/checkout/reversal preserves server authority and transaction boundaries. No production activation or data backfill performed. New provider credentials/index application/approved rules remain activation requirements; broader retention/Arabic/analytics work is still open. Implementation/rollback details: `GROWTH_FOUNDATION_2026-10-19.md`; visual review scope: `GROWTH_UI_REVIEW_2026-10-19.md`.
+
+### Growth-plan completion work — 2026-10-19
+
+Added a private customer address book (10-address limit, default handling, add/edit/remove) and optional checkout prefill; admin 7/30/90-day order-value/count reporting with no customer PII; and active product/category selectors for growth CMS instead of raw IDs. No production DB, external provider or deployment was touched. Root/workspace typecheck and lint, nine disposable replica-set integration cases, API build and isolated web production build pass. Matching-API browser preview loaded demo metrics, found and selected a product, and rendered the signed-out account/guest-checkout path. The full 90-day acquisition/retention programme still has code and pharmacy-operations gates; see `COMMERCE_PLAN_IMPLEMENTATION_2026-10-19.md` and `GROWTH_FOUNDATION_2026-10-19.md` for the exact remaining scope.
+
+### Storefront discovery facets — 2026-10-19
+
+Added server-validated in-stock, current-price range and sort filters across listings, categories, search and offers. Active sale price drives range and price ordering. Inputs are bounded and pagination retains chosen facets. Regression tests cover validation and disposable-database query behavior. Local only; deploy the compatible API and web together. Remaining growth work and pharmacy/external prerequisites are itemized in the implementation checklist.
+
+### GitHub check cleanup — 2026-10-19
+
+PR verification now runs once per update with quality/security, API, browser and the existing required `verify` gate. Master pushes still verify before Vercel deployment. The unused Al Mina-only Netlify and Cloudflare GitHub installations are suspended; hosting projects and Render/Vercel access are preserved. Updated the stale homepage heading assertion; compiled storefront smoke and deployment-gate tests pass. See `CI_CLEANUP_2026-10-19.md`.

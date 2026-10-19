@@ -8,6 +8,6 @@ await build({
   target: 'node24',
   format: 'esm',
   banner: { js: "import { createRequire as createSecurityRequire } from 'node:module'; const require = createSecurityRequire(import.meta.url);" },
-  external: ['express', 'mongodb', 'zod', 'helmet', 'express-rate-limit', 'bcryptjs'],
+  external: ['express', 'mongodb', 'zod', 'helmet', 'express-rate-limit', 'bcryptjs', 'nodemailer', 'jose'],
   sourcemap: false,
 });

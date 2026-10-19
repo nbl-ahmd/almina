@@ -1,3 +1,4 @@
+import { voucherAllocation,consumeVoucher,reverseOrderRewards } from '../growth/rewards.js';
 import { familyProfile, familyFieldNames, variantLabel } from '@almina/contracts';
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
@@ -42,13 +43,13 @@ export function normalizeItems(input: QuoteInput['items']): QuoteInput['items'] 
   }
   return [...quantities].sort(([a], [b]) => a.localeCompare(b)).map(([productId, quantity]) => ({ productId, quantity }));
 }
-export function calculateQuote(input: QuoteInput, products: Document[], policy: CommercePolicy): Quote {
+export function calculateQuote(input: QuoteInput, products: Document[], policy: CommercePolicy, voucher?:{code:string;allocation:Map<string,number>}): Quote {
   const fee = policy.delivery.find(rule => rule.emirate === input.customer.emirate);
   if (!fee) throw new HttpError(400, 'INVALID_REQUEST');
   const byId = new Map(products.map(product => [String(product._id), product]));
   const lines = normalizeItems(input.items).map(item => {
     const product = byId.get(item.productId);
-    if (!product || product.disabled === true || product.active === false || product.published === false) {
+    if (!product || product.disabled === true || product.active === false || product.published === false || product.archivedAt !== undefined) {
       throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
     }
     if (!Number.isSafeInteger(product.stock) || product.stock < item.quantity) throw new HttpError(409, 'INSUFFICIENT_STOCK');
@@ -61,13 +62,16 @@ export function calculateQuote(input: QuoteInput, products: Document[], policy: 
     const unitPriceMinor = moneyMinor(product.price);
     const salePriceMinor = product.sale === true ? moneyMinor(product.salePrice) : null;
     if (salePriceMinor !== null && salePriceMinor > unitPriceMinor) throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
-    const charged = BigInt(salePriceMinor ?? unitPriceMinor) * BigInt(item.quantity);
+    const voucherDiscountMinor=voucher?.allocation.get(item.productId)??0;
+    const original = BigInt(salePriceMinor ?? unitPriceMinor) * BigInt(item.quantity);
+    if(!Number.isSafeInteger(voucherDiscountMinor)||voucherDiscountMinor<0||BigInt(voucherDiscountMinor)>original)throw new HttpError(503,'COMMERCE_UNAVAILABLE');
+    const charged = original-BigInt(voucherDiscountMinor);
     const taxRateBps = product.vat === true ? policy.vatRateBps : 0;
     // Round VAT once per line, half up; inclusive tax is embedded and never added again.
     const tax = roundedRatio(charged, taxRateBps, policy.vatMode === 'inclusive' ? 10000 + taxRateBps : 10000);
     const family = familyProfile(product);
     return { ...item, ...(family?{familyKey:family.familyKey!,variantLabel:variantLabel(family)}:{}), sku: product.product_id, barcode: typeof product.barcode === 'string' ? product.barcode : null,
-      name: product.name, unitPriceMinor, salePriceMinor, taxRateBps, taxMinor: safe(tax),
+      name: product.name, unitPriceMinor, salePriceMinor, ...(voucher?{voucherDiscountMinor}:{}), taxRateBps, taxMinor: safe(tax),
       discountMinor: safe(BigInt(unitPriceMinor) * BigInt(item.quantity) - charged),
       lineTotalMinor: safe(charged + (policy.vatMode === 'exclusive' ? tax : 0n)) };
   });
@@ -75,9 +79,10 @@ export function calculateQuote(input: QuoteInput, products: Document[], policy: 
   const taxMinor = sum('taxMinor');
   const subtotalMinor = safe(lines.reduce((total, line) => total + BigInt(line.salePriceMinor ?? line.unitPriceMinor) * BigInt(line.quantity), 0n));
   if (subtotalMinor < policy.minimumOrderMinor) throw new HttpError(422, 'MINIMUM_ORDER');
-  return { currency: 'AED', policyVersion: policy.version, vatMode: policy.vatMode, lines, subtotalMinor,
-    discountMinor: sum('discountMinor'), taxMinor, deliveryFeeMinor: fee.feeMinor, minimumOrderMinor: policy.minimumOrderMinor,
-    totalMinor: safe(BigInt(sum('lineTotalMinor')) + BigInt(fee.feeMinor)) };
+  const deliveryFeeMinor = fee.freeAboveMinor !== undefined && subtotalMinor >= fee.freeAboveMinor ? 0 : fee.feeMinor;
+  return { ...(voucher?{voucher:{code:voucher.code,discountMinor:lines.reduce((sum,line)=>sum+(line.voucherDiscountMinor??0),0)}}:{}), currency: 'AED', policyVersion: policy.version, vatMode: policy.vatMode, lines, subtotalMinor,
+    discountMinor: sum('discountMinor'), taxMinor, deliveryFeeMinor, minimumOrderMinor: policy.minimumOrderMinor,
+    totalMinor: safe(BigInt(sum('lineTotalMinor')) + BigInt(deliveryFeeMinor)) };
 }
 function parse<T>(schema: { safeParse: (input: unknown) => { success: true; data: T } | { success: false } }, input: unknown): T {
   const result = schema.safeParse(input);
@@ -92,35 +97,38 @@ async function policyFrom(db: Db, session?: ClientSession): Promise<CommercePoli
   if (!parsed.success) throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
   return parsed.data;
 }
-async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession) {
+async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, customerId?:string) {
   const queryOptions = { ...options, ...(session ? { session } : {}) };
   const store = await db.collection('stores').findOne({}, queryOptions);
   if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
   const products = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
     { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
-      stock: 1, disabled: 1, active: 1, published: 1, category: 1 } }).toArray();
+      stock: 1, disabled: 1, active: 1, published: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
   const categories = await db.collection('categories').find({ _id: { $in: products.map(product => product.category) }, disabled: { $ne: true } }, queryOptions).toArray();
   const visible = new Set(categories.map(category => String(category._id)));
   if (products.some(product => !visible.has(String(product.category)))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
-  return calculateQuote(input, products, await policyFrom(db, session));
+  const policy=await policyFrom(db,session),base=calculateQuote(input,products,policy);
+  if(!input.voucherCode)return base;
+  const {allocation}=await voucherAllocation(db,input.voucherCode,customerId,products,base.lines,session);
+  return calculateQuote(input,products,policy,{code:input.voucherCode,allocation});
 }
 function checkoutResult(doc: Document, replayed: boolean) {
   // Public response has no PII or idempotency secret, even on a retry.
   return { id: String(doc._id), orderId: doc.orderId as string, status: doc.status as OrderStatus, totals: doc.totals as Quote, replayed };
 }
-function requestHash(input: CheckoutInput) {
-  return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items) })).digest('hex');
+function requestHash(input: CheckoutInput,customerId?:string) {
+  return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ) })).digest('hex');
 }
 export function createCommerceService(getDb: () => Promise<Db>) {
   return {
-    async quote(raw: unknown) {
+    async quote(raw: unknown,customerId?:string) {
       const input = parse(quoteInputSchema, raw);
-      return quoteFrom(await getDb(), input);
+      return quoteFrom(await getDb(), input,undefined,customerId);
     },
-    async checkout(raw: unknown) {
+    async checkout(raw: unknown,customerId?:string) {
       const input = parse(checkoutInputSchema, raw);
       input.items = normalizeItems(input.items);
-      const fingerprint = requestHash(input);
+      const fingerprint = requestHash(input,customerId);
       const key = createHash('sha256').update(input.idempotencyKey).digest('hex');
       const db = await getDb();
       const session = db.client.startSession();
@@ -139,17 +147,18 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           outcome = undefined;
           const previous = await prior(session);
           if (previous) { outcome = previous; return; }
-          const totals = await quoteFrom(db, input, session);
+          const totals = await quoteFrom(db, input, session,customerId);
           if (input.acceptedQuoteHash && input.acceptedQuoteHash !== quoteHash(totals)) {
             throw new HttpError(409, 'PRICE_CHANGED');
           }
           const _id = new ObjectId();
           const now = new Date();
+          if(input.voucherCode)await consumeVoucher(db,session,input.voucherCode,customerId!,_id);
           // Claim key before stock changes. _id has a built-in unique index; receipt and order commit together.
           await db.collection<Document & { _id: string }>('checkout_requests').insertOne({ _id: key, fingerprint, orderId: _id, createdAt: now }, { session });
           for (const item of input.items) {
             const result = await db.collection('products').updateOne({ _id: new ObjectId(item.productId), stock: { $gte: item.quantity },
-              disabled: { $ne: true }, active: { $ne: false }, published: { $ne: false } },
+              disabled: { $ne: true }, active: { $ne: false }, published: { $ne: false }, archivedAt:{$exists:false} },
             { $inc: { stock: -item.quantity } }, { ...options, session });
             if (result.modifiedCount !== 1) throw new HttpError(409, 'INSUFFICIENT_STOCK');
           }
@@ -163,12 +172,12 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           if (await db.collection('orders').findOne({ orderId }, { ...options, session, projection: { _id: 1 } })) {
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
-          const order = { _id, schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
+          const order = { _id, customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
             createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
             dispatched: false, canceled: false,
-            customer: { ...input.customer, totalprice: (totals.subtotalMinor + totals.discountMinor) / 100 + '',
+            customer: { ...input.customer, totalprice: (totals.subtotalMinor + totals.discountMinor - (totals.voucher?.discountMinor??0)) / 100 + '',
               totalSalePrice: totals.subtotalMinor / 100, totalVat: totals.taxMinor / 100,
               deliveryFee: totals.deliveryFeeMinor / 100, totalAmount: totals.totalMinor / 100 },
             cartItems: input.items.map(item => ({ _id: new ObjectId(item.productId), quantity: item.quantity })) };
@@ -227,6 +236,7 @@ export function createCommerceService(getDb: () => Promise<Db>) {
             }
             fields['inventory.restored'] = true;
           }
+          if(['cancelled','refunded'].includes(input.status))await reverseOrderRewards(db,session,order);
           fields.statusHistory = [...(Array.isArray(order.statusHistory) ? order.statusHistory : []),
             ...path.map(status => ({ status, at: new Date(), actorId: new ObjectId(staff.id) }))];
           const predicate = order.status !== undefined ? { status: order.status } : { status: { $exists: false }, dispatched: order.dispatched ?? { $exists: false }, canceled: order.canceled ?? { $exists: false } };

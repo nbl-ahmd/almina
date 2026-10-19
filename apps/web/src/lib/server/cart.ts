@@ -6,8 +6,8 @@ export async function readCart(lines: CartLine[]) {
   return Promise.all(parsed.map(async line => {
     const product = await getProductById(line.id);
     return product ? { ...line, name: product.name, variantLabel: productOptionLabel(product), price: displayPrice(product), stock: product.stock,
-      image: productImage(product), href: productHref(product), available: product.stock >= line.quantity } :
-      { ...line, name: 'Unavailable product', variantLabel: '', price: null, stock: 0, image: '/product-placeholder.svg', href: '/products', available: false };
+      image: productImage(product), href: productHref(product), available: product.stock >= line.quantity, reminderEligible: product.productType === 'general' && product.contentReviewed === true } :
+      { ...line, name: 'Unavailable product', variantLabel: '', price: null, stock: 0, image: '/product-placeholder.svg', href: '/products', available: false, reminderEligible: false };
   }));
 }
 export async function validateCartAddition(id: string, quantity: number) {

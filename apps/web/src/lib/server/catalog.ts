@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { getWebEnvironment } from './env';
 import { readCategory, readProduct, objectId, publicId, slugIdentity, type Product } from '../catalog/model';
 import { catalogReadPolicy } from '../catalog/cache-policy';
+import { bannerDestination } from '../catalog/merchandising';
 import { cloudinaryImage } from '../catalog/media';
 import { CatalogUnavailable, catalogArray, readCatalogResponse } from './catalog-response';
 
@@ -32,13 +33,17 @@ export async function getCategory(identity: string) {
   // Identity/visibility and cart checks bypass the presentation cache.
   return (await getFreshCategories()).find(category => category._id === identity) ?? null;
 }
-export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string } = {}) {
+export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string; inStock?: boolean; minPrice?: number; maxPrice?: number; sort?: 'relevance'|'price-asc'|'price-desc'|'name' } = {}) {
   const page = Math.max(1, Math.min(1000, options.page ?? 1));
   const filter: Record<string, boolean | string> = { disabled: false };
   if (options.category && objectId.test(options.category)) filter.category = options.category;
   if (options.offers) filter.sale = true;
   if (options.featured) filter.featured = true;
   const params = new URLSearchParams({ disabledCat: 'false', groupFamilies:'true', limit: '30', offset: String((page - 1) * 30) });
+  if (options.inStock !== undefined) params.set('inStock', String(options.inStock));
+  if (options.minPrice !== undefined) params.set('minPrice', String(options.minPrice));
+  if (options.maxPrice !== undefined) params.set('maxPrice', String(options.maxPrice));
+  if (options.sort) params.set('sort', options.sort);
   if (options.q) {
     // The hardened legacy API treats q as literal text and escapes it on the server.
     params.set('q', options.q.slice(0, 80));
@@ -94,7 +99,7 @@ export async function getBanners() {
     if (!value || typeof value !== 'object') return [];
     const raw = value as Record<string, unknown>;
     const name = fileName(typeof raw.image === 'string' ? raw.image : undefined);
-    return name ? [{ image: `https://cdn.alminapharmacy.com/cdn/banners/${name}`, name: typeof raw.name === 'string' ? raw.name : 'Al Mina Pharmacy offers' }] : [];
+    return name ? [{ image: `https://cdn.alminapharmacy.com/cdn/banners/${name}`, name: typeof raw.name === 'string' ? raw.name : 'Al Mina Pharmacy offers', href: bannerDestination(raw.link) }] : [];
   });
 }
 

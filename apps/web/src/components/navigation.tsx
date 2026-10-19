@@ -1,35 +1,175 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { NavigationLinks } from './navigation-links';
-import { Icon } from './icon';
-import { CartLink } from './cart-link';
-import { DeliveryLocation, DeliveryAreaPrompt } from './delivery-location';
-import { UsagePreferences } from './usage-preferences';
+import { SearchBox } from "./search-box";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  PhoneIcon,
+  ChatBubbleLeftRightIcon,
+} from "@heroicons/react/24/outline";
+import { NavigationLinks } from "./navigation-links";
+import { CartLink } from "./cart-link";
+import { DeliveryAreaPrompt, DeliveryLocation } from "./delivery-location";
+import { UsagePreferences } from "./usage-preferences";
 
 export function Navigation() {
-  return <><a className="skip-link fixed left-2 top-2 z-[100] -translate-y-[160%] rounded-lg bg-surface px-4 py-3 focus:translate-y-0" href="#main-content">Skip to content</a>
-    <header className="storefront-header border-b border-border bg-surface">
-      <div className="announcement hidden bg-ocean text-xs text-white md:block"><div className="mx-auto flex min-h-8 max-w-[1344px] items-center justify-between gap-4 px-6 lg:px-8"><span className="flex items-center gap-2"><Icon name="check" />Al Mina Pharmacy · Health, skincare &amp; everyday essentials</span><a className="text-white" href="tel:+971504825007">Call the pharmacy: +971 50 482 5007</a></div></div>
-      <div className="header-content mx-auto grid max-w-[1344px] grid-cols-[1fr_auto_auto] items-center gap-1.5 px-4 pt-2 pb-3 md:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] md:gap-5 md:px-6 md:py-3 lg:px-8 max-md:group-has-[.pdp-page]/storefront:grid-cols-[44px_minmax(0,1fr)_44px] max-md:group-has-[.catalog-page]/storefront:grid-cols-[auto_minmax(0,1fr)_auto]">
-        <Link className="product-back hidden min-h-11 text-ink items-center justify-center max-md:group-has-[.pdp-page]/storefront:flex" href="/products" aria-label="Back to products"><Icon name="back" /></Link>
-        <Link className="brand-logo inline-flex w-fit max-md:group-has-[.pdp-page]/storefront:justify-self-center" href="/" aria-label="Al Mina Pharmacy home"><Image className="h-9 w-[106px] object-contain md:h-11 md:w-[120px]" src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width: 767px) 106px, 120px" loading="eager" /></Link>
-        <DeliveryLocation />
-        <form className="hidden min-w-0 items-center gap-2 rounded-xl border border-border bg-page px-3 md:flex" action="/search" role="search" aria-label="Header product search"><Icon name="search" /><label className="sr-only" htmlFor="desktop-search">Search products</label><input id="desktop-search" name="q" type="search" maxLength={80} placeholder="Search products and essentials" className="min-h-11 min-w-0 flex-1 border-0 bg-transparent px-0 py-1 text-sm" /><button type="submit" className="sr-only">Search</button></form>
-        <div className="flex items-center gap-2 max-md:group-has-[.pdp-page]/storefront:hidden"><Link className="header-help flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-accent/30 px-2.5 text-xs text-teal md:min-h-11 md:border-0 md:bg-transparent md:text-sm max-md:group-has-[.pdp-page]/storefront:hidden" href="/contact" aria-label="Contact us"><Icon name="phone" /><span className="md:hidden max-md:group-has-[.catalog-page]/storefront:hidden">Contact</span></Link></div>
-        <CartLink />
-        <form className="header-search col-span-full row-start-3 flex min-w-0 items-center gap-2 rounded-xl border border-border bg-surface p-1 pl-3 shadow-sm md:hidden max-md:group-has-[.pdp-page]/storefront:hidden max-md:group-has-[.cart-page]/storefront:hidden max-md:group-has-[.catalog-page]/storefront:hidden" action="/search" role="search" aria-label="Product search"><Icon name="search" /><label className="sr-only" htmlFor="site-search">Search products</label><input className="min-h-9 min-w-0 flex-1 border-0 bg-transparent px-1 py-2 text-sm focus-visible:outline-offset-[-3px]" id="site-search" name="q" type="search" placeholder="Search products and daily essentials" maxLength={80} /><button className="min-h-9 rounded-lg px-3 py-2 text-xs" type="submit">Search</button></form>
-      </div>
-      <div className="hidden border-t border-border md:block"><div className="mx-auto max-w-[1344px] px-6 lg:px-8"><NavigationLinks desktop /></div></div>
-      <DeliveryAreaPrompt />
-      <div className="header-navigation max-md:group-has-[.pdp-page]/storefront:hidden"><NavigationLinks /></div>
-    </header></>;
+  return (
+    <>
+      <a
+        className="skip-link fixed top-2 left-2 z-[100] -translate-y-[160%] rounded-xl bg-white px-4 py-3 text-brand focus:translate-y-0"
+        href="#main-content"
+      >
+        Skip to content
+      </a>
+      <header className="storefront-header border-b border-border bg-white">
+        <div className="hidden bg-[#eef1ff] md:block">
+          <div className="mx-auto flex min-h-8 max-w-[1344px] items-center justify-between px-6 text-[11px] text-[#3f4f83] lg:px-8">
+            <span>Health, beauty &amp; everyday care. Hello from Al Mina.</span>
+            <a
+              className="inline-flex items-center gap-2 text-[#3f4f83]"
+              href="tel:+971504825007"
+            >
+              <PhoneIcon className="size-3.5" />
+              +971 50 482 5007
+            </a>
+          </div>
+        </div>
+        <div className="header-content mx-auto grid max-w-[1344px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-5 md:px-6 lg:px-8">
+          <Link
+            href="/"
+            aria-label="Al Mina Pharmacy home"
+            className="brand-logo inline-flex w-fit"
+          >
+            <Image
+              className="h-auto w-[112px] object-contain md:w-[140px]"
+              src="/logo.png"
+              alt="Al Mina Pharmacy"
+              width={2789}
+              height={910}
+              sizes="(max-width: 767px) 112px, 140px"
+            />
+          </Link>
+          <SearchBox />
+          <DeliveryLocation />
+          <CartLink />
+        </div>
+        <div className="hidden border-t border-border md:block">
+          <div className="mx-auto max-w-[1344px] px-6 lg:px-8">
+            <NavigationLinks desktop />
+          </div>
+        </div>
+        <DeliveryAreaPrompt />
+        <NavigationLinks />
+      </header>
+      <nav
+        aria-label="Quick contact"
+        className="floating-contact fixed right-4 bottom-[calc(80px+env(safe-area-inset-bottom))] z-30 md:right-6 md:bottom-6"
+      >
+        <Link
+          href="/contact"
+          aria-label="Contact Al Mina Pharmacy"
+          className="flex size-12 items-center justify-center rounded-full bg-brand text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 md:size-14"
+        >
+          <ChatBubbleLeftRightIcon className="size-6" />
+        </Link>
+      </nav>
+    </>
+  );
 }
-
-export function Footer({ telemetryEnabled = false }: { telemetryEnabled?: boolean }) {
-  return <footer className="storefront-footer mt-10 border-t border-border bg-subtle py-8"><div className="mx-auto max-w-[1344px] px-4 md:px-6 lg:px-8">
-    <div className="grid gap-6 md:grid-cols-[1fr_2fr]"><div><Link href="/" className="inline-flex"><Image className="h-auto w-[120px] object-contain" src="/logo.png" alt="Al Mina Pharmacy home" width={2789} height={910} sizes="120px" /></Link><p className="mt-2 max-w-xs text-sm text-muted">Health, skincare and everyday essentials from your neighbourhood pharmacy.</p></div><nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ocean md:justify-end [&_a]:text-ocean [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center [&_a:hover]:text-brand" aria-label="Footer shop"><Link href="/products">All products</Link><Link href="/categories">Categories</Link><Link href="/offers">Current offers</Link><Link href="/about">About Al Mina</Link><Link href="/contact">Contact us</Link><Link href="/cart">Your cart</Link></nav></div>
-    <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-5 text-xs text-ocean"><span className="inline-flex items-center gap-2"><Icon name="pin" />Ras Al Khaimah, United Arab Emirates</span><a className="inline-flex min-h-11 items-center text-ocean" href="tel:+971504825007">+971 50 482 5007</a><a className="inline-flex min-h-11 items-center text-ocean" href="mailto:info@alminapharmacy.com">info@alminapharmacy.com</a></div>
-    {telemetryEnabled ? <UsagePreferences /> : null}
-    <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-border pt-4 text-xs text-muted"><span>Al Mina Pharmacy · Ras Al Khaimah</span><span>Care for your everyday.</span></div>
-  </div></footer>;
+const shopLinks = [
+  ["Shop brands", "/brands"],
+  ["Your account", "/account"],
+  ["Saved products", "/saved"],
+  ["All products", "/products"],
+  ["Shop by category", "/categories"],
+  ["Current offers", "/offers"],
+  ["Your shopping cart", "/cart"],
+];
+const helpLinks = [
+  ["Pharmacy in Ras Al Khaimah", "/ras-al-khaimah"],
+  ["Care & buying guides", "/health-guides"],
+  ["About Al Mina", "/about"],
+  ["Contact our team", "/contact"],
+  ["Delivery & order enquiries", "/contact"],
+];
+export function Footer({
+  telemetryEnabled = false,
+}: {
+  telemetryEnabled?: boolean;
+}) {
+  return (
+    <footer className="storefront-footer mt-7 border-t border-border bg-[#f1f3fc] pt-7 pb-5">
+      <div className="mx-auto max-w-[1344px] px-4 md:px-6 lg:px-8">
+        <div className="grid gap-8 border-b border-[#dce0ef] pb-9 md:grid-cols-[1.5fr_1fr_1fr_1.3fr]">
+          <div>
+            <Link href="/" className="inline-flex">
+              <Image
+                className="h-auto w-[145px] object-contain"
+                src="/logo.png"
+                alt="Al Mina Pharmacy home"
+                width={2789}
+                height={910}
+                sizes="145px"
+              />
+            </Link>
+            <p className="mt-4 mb-3 max-w-xs text-sm leading-6 text-muted">
+              A little more care for your everyday. Health, skincare and
+              essentials from your neighbourhood pharmacy.
+            </p>
+            <span className="text-xs text-muted">
+              Ras Al Khaimah, United Arab Emirates
+            </span>
+          </div>
+          <nav aria-label="Footer shop">
+            <h2 className="mb-3 text-base font-semibold">
+              Find your essentials
+            </h2>
+            {shopLinks.map(([name, path]) => (
+              <Link
+                key={path}
+                className="flex min-h-10 items-center text-sm text-muted hover:text-brand"
+                href={path!}
+              >
+                {name}
+              </Link>
+            ))}
+          </nav>
+          <nav aria-label="Footer help">
+            <h2 className="mb-3 text-base font-semibold">Here to help</h2>
+            {helpLinks.map(([name, path]) => (
+              <Link
+                key={name}
+                className="flex min-h-10 items-center text-sm text-muted hover:text-brand"
+                href={path!}
+              >
+                {name}
+              </Link>
+            ))}
+          </nav>
+          <div>
+            <h2 className="mb-3 text-base font-semibold">Let’s talk care.</h2>
+            <a
+              href="tel:+971504825007"
+              className="mb-2 flex min-h-11 items-center gap-2 text-sm font-medium text-brand"
+            >
+              <PhoneIcon className="size-4" />
+              +971 50 482 5007
+            </a>
+            <a
+              href="mailto:info@alminapharmacy.com"
+              className="inline-flex min-h-11 items-center text-sm text-muted hover:text-brand"
+            >
+              info@alminapharmacy.com
+            </a>
+            <p className="mt-3 mb-0 text-xs leading-5 text-muted">
+              For product availability, delivery and order support.
+            </p>
+          </div>
+        </div>
+        {telemetryEnabled ? <UsagePreferences /> : null}
+        <div className="flex flex-wrap justify-between gap-3 pt-5 text-xs text-muted">
+          <span>Al Mina Pharmacy · Ras Al Khaimah</span>
+          <span>Care that feels a little closer.</span>
+        </div>
+      </div>
+    </footer>
+  );
 }

@@ -72,7 +72,7 @@ try {
       if (source.startsWith('/productdetails/')) assert.equal(location.origin, canonical);
     }
   }
-  for (const path of ['/', '/products', '/categories', '/offers', '/about', '/contact', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa']) {
+  for (const path of ['/', '/products', '/categories', '/offers', '/about', '/contact', '/brands', '/ras-al-khaimah', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa']) {
     for (const userAgent of ['Mozilla/5.0', 'Googlebot', 'facebookexternalhit', 'Twitterbot']) {
       const response = await fetch(`${origin}${path}`, { headers: { 'User-Agent': userAgent } });
       assert.equal(response.status, 200, path);
@@ -90,7 +90,10 @@ try {
         assert.ok(visibleHtml.includes('Daily care product description.'));
         assert.ok(visibleHtml.includes('AED 20.00'));
         const data = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
-        assert.deepEqual(data.flatMap(item => item['@type']).sort(), ['BreadcrumbList', 'Organization', 'Pharmacy', 'Product']);
+        assert.deepEqual(data.flatMap(item => item['@type']).sort(), ['BreadcrumbList', 'Organization', 'Pharmacy', 'Product', 'WebSite']);
+        const website = data.find(item => item['@type'] === 'WebSite');
+        assert.equal(website.url, canonical);
+        assert.equal(website.potentialAction.target.urlTemplate, `${canonical}/search?q={search_term_string}`);
         const product = data.find(item => item['@type'] === 'Product');
         assert.equal(product.name, 'Daily Care'); assert.equal(product.sku, 'PD0001');
         assert.equal(product.offers.price, '20.00');
@@ -140,7 +143,7 @@ try {
     assert.match(response.headers.get('content-type'), /application\/xml/);
     const xml = await response.text(); allUrls.push(...[...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1]));
   }
-  assert.deepEqual(allUrls.sort(), ['/', '/products', '/categories', '/offers', '/about', '/contact', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', ...recoveredPaths].map(path => `${canonical}${path}`).sort());
+  assert.deepEqual(allUrls.sort(), ['/', '/products', '/categories', '/offers', '/about', '/contact', '/brands', '/ras-al-khaimah', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', ...recoveredPaths].map(path => `${canonical}${path}`).sort());
   assert.equal((await fetch(`${origin}/sitemaps/orders/first.xml`)).status, 404);
   const measurements = [];
   for (const path of ['/products', '/search?q=Recovery', ...recoveredPaths]) {

@@ -11,7 +11,7 @@ export const customerInputSchema = z.object({
   payment: z.enum(['cash', 'card']),
 }).strict();
 const items = z.array(z.object({ productId: id, quantity: z.number().int().min(1).max(1000) }).strict()).min(1).max(100);
-export const quoteInputSchema = z.object({ customer: customerInputSchema, items }).strict();
+export const quoteInputSchema = z.object({ customer: customerInputSchema, items, voucherCode:z.string().regex(/^AM-[A-F0-9]{24}$/).optional() }).strict();
 // Optional only for retained legacy clients; the Next gateway requires acknowledgment.
 export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid(), acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
 export const statusInputSchema = z.object({ status: orderStatusSchema,
@@ -21,11 +21,11 @@ const minor = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const lineSnapshotSchema = z.object({
   familyKey:z.string().max(80).optional(),variantLabel:z.string().max(500).optional(),
   productId: id, sku: z.string(), barcode: z.string().nullable(), name: z.string(), quantity: z.number().int().positive(),
-  unitPriceMinor: minor, salePriceMinor: minor.nullable(), discountMinor: minor,
+  unitPriceMinor: minor, salePriceMinor: minor.nullable(), discountMinor: minor, voucherDiscountMinor:minor.optional(),
   taxRateBps: z.number().int().nonnegative(), taxMinor: minor, lineTotalMinor: minor,
 }).strict();
 export const quoteDtoSchema = z.object({ currency: z.literal('AED'), policyVersion: z.string(),
-  vatMode: z.enum(['inclusive', 'exclusive']), lines: z.array(lineSnapshotSchema),
+  vatMode: z.enum(['inclusive', 'exclusive']), voucher:z.object({code:z.string().regex(/^AM-[A-F0-9]{24}$/),discountMinor:minor}).strict().optional(), lines: z.array(lineSnapshotSchema),
   subtotalMinor: minor, discountMinor: minor, taxMinor: minor, deliveryFeeMinor: minor,
   minimumOrderMinor: minor, totalMinor: minor,
 }).strict();
@@ -35,7 +35,7 @@ export const commercePolicySchema = z.object({
   active: z.literal(true), version: z.string().min(1).max(100), currency: z.literal('AED'),
   vatMode: z.enum(['inclusive', 'exclusive']), vatRateBps: z.number().int().min(0).max(10000),
   minimumOrderMinor: minor, cancellationRestocks: z.boolean(),
-  delivery: z.array(z.object({ emirate: shortText.min(1), feeMinor: minor }).strict()).min(1).max(20),
+  delivery: z.array(z.object({ emirate: shortText.min(1), feeMinor: minor, freeAboveMinor: minor.optional() }).strict()).min(1).max(20),
 }).strict();
 export type CheckoutInput = z.infer<typeof checkoutInputSchema>;
 export type QuoteInput = z.infer<typeof quoteInputSchema>;

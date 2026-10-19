@@ -57,13 +57,19 @@ function open(path) {
     browser("open", "--enable", "react-devtools", origin + path);
   }
   browser("wait", "--load", "domcontentloaded");
+  // The route streams a loading fallback (loading.tsx) that also renders an
+  // h1, so waiting on an h1 alone can resolve mid-stream and audit the
+  // skeleton. Also require the fallback (aria-busy="true") to be gone.
   browser(
     "wait",
     "--fn",
-    'document.querySelector("h1")?.getBoundingClientRect().width > 0',
+    'document.querySelector("h1")?.getBoundingClientRect().width > 0 && !document.querySelector(\'[aria-busy="true"]\')',
   );
 }
 browser("cookies", "clear");
+// Sessions are reused across runs; drop any errors buffered by earlier runs so
+// the final assertion only reflects this run.
+browser("errors", "--clear");
 open("/admin");
 assert.ok(evaluate("location.pathname").endsWith("/admin/login"));
 assert.equal((await fetch(origin + "/api/admin/auth/users")).status, 401);

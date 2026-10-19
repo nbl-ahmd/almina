@@ -1,0 +1,6 @@
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { getProductById,productImage } from '../../../lib/server/catalog';
+import { getWebEnvironment } from '../../../lib/server/env';
+import { productHref,displayPrice } from '../../../lib/catalog/model';
+export async function POST(request:Request){const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex'};if(request.headers.get('origin')!==getWebEnvironment().WEB_ORIGIN||request.headers.get('x-csrf-protection')!=='1')return NextResponse.json({error:'Access denied'},{status:403,headers});try{const raw=await request.text();if(raw.length>4000)return NextResponse.json({error:'Too large'},{status:413,headers});const {ids}=z.object({ids:z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(20)}).strict().parse(JSON.parse(raw));const result=[];for(let offset=0;offset<ids.length;offset+=5){const items=await Promise.all(ids.slice(offset,offset+5).map(id=>getProductById(id)));result.push(...items.filter(item=>item!==null).map(product=>({id:product._id,name:product.name,href:productHref(product),price:displayPrice(product),stock:product.stock,image:productImage(product)})));}return NextResponse.json({items:result},{headers});}catch{return NextResponse.json({error:'Unable to load saved products'},{status:503,headers});}}

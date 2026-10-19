@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-19T00:00:00Z",
+  "title": "Design System: Al Mina storefront",
+  "extensions": {
+    "scope": {
+      "routes": "Storefront homepage, categories, catalogue/search/offers, collections, PDP, cart, checkout, about/contact and shared shell; administration excluded.",
+      "tokenSource": "apps/web/DESIGN.md",
+      "implementationSource": "apps/web/src/app/(storefront)/storefront.css"
+    },
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ],
+    "shadows": [
+      {
+        "name": "product-hover",
+        "value": "0 8px 22px -14px rgba(37,65,120,0.25)",
+        "purpose": "Shared full product card hover."
+      },
+      {
+        "name": "shared-card",
+        "value": "0 4px 16px rgb(32 62 70 / 5%)",
+        "purpose": "Retained shared storefront token."
+      },
+      {
+        "name": "shared-raised",
+        "value": "0 10px 28px rgb(32 62 70 / 10%)",
+        "purpose": "Retained shared storefront token."
+      }
+    ],
+    "motion": [
+      {
+        "name": "campaign-enter",
+        "value": "240ms cubic-bezier(.16,1,.3,1); opacity .8 \u2192 1; translateY(5px) \u2192 0",
+        "purpose": "Manual slide changes; reduced-motion gated."
+      },
+      {
+        "name": "product-image",
+        "value": "transform 300ms; scale(1.035)",
+        "purpose": "Reduced-motion gated image hover."
+      },
+      {
+        "name": "press",
+        "value": "scale(.98)",
+        "purpose": "Reduced-motion gated button press."
+      },
+      {
+        "name": "feedback",
+        "value": "150ms",
+        "purpose": "Shared button background and border transitions."
+      },
+      {
+        "name": "contact-hover",
+        "value": "translateY(-2px)",
+        "purpose": "Floating contact hover, reduced-motion gated."
+      },
+      {
+        "name": "editorial-reveal",
+        "value": "360ms cubic-bezier(.16,1,.3,1); translateY(10px) \u2192 0; opacity .85 \u2192 1",
+        "purpose": "Once-only editorial/collection entrance at 8% intersection; visible by default, disabled for reduced motion."
+      }
+    ],
+    "focus": {
+      "value": "3px solid var(--color-focus); outline-offset:3px",
+      "purpose": "Visible keyboard focus."
+    },
+    "layout": {
+      "contentWidth": "1344px",
+      "homepageSectionGap": "20px; 28px at 768px",
+      "campaignMinHeight": "Uploaded: aspect-ratio 2/1; 2.7/1 at 768px; full contained image. Editorial fallback: min-height 230px; 310px at 768px.",
+      "compactShelf": "275px scroll cards; 2 columns at 768px; 4 at 1024px",
+      "categoryRail": "Two-row photographic atlas; minimum columns 142px, 190px at 640px; four columns at 1024px; minimum height 190px, 250px at 768px.",
+      "floatingContact": "48px; right 16px; bottom calc(80px + env(safe-area-inset-bottom)); at 768px: 56px, right/bottom 24px",
+      "hero": "3fr carousel / minmax(240px,1fr) actual product at 1024px; stacked with compact horizontal product below.",
+      "mobilePurchaseBars": "PDP/cart fixed bottom calc(62px + env(safe-area-inset-bottom)), z-index 19; floating contact bottom calc(178px + env(safe-area-inset-bottom)); purchase bars return to normal flow at 768px.",
+      "scrollbarNone": "Native horizontal overflow retained; scrollbar-width:none and ::-webkit-scrollbar display:none, scoped to storefront."
+    },
+    "merchandising": {
+      "campaignPriority": "Up to newest eight API-uploaded banners, newest identifier first; full uncropped containment. Two generated HTML-captioned editorial fallbacks only when uploads absent.",
+      "imageBoundary": "Generated campaign/category/editorial scenes are decorative; catalogue products and prices always come from API data.",
+      "sharedCards": "ProductCard and CompactProductCard share ProductPhoto/ProductPrice; full cards also appear in existing product grids.",
+      "categoryImagery": "Shared CategoryTile prefers uploaded category photography; otherwise generic scene atlas, deodorant or general/nail decoration, then icon. Generated scenes never replace exact product photos.",
+      "productSpotlight": "Separate HomeProductCarousel: up to four available real products, manual slides, actual photo/title/API summary/price; distinct from uploaded campaign artwork.",
+      "brandPhoto": "Use a real catalogue photo only when product brand/family brand matches or name begins with the brand. Without a match, show brand text; no generated logos or packs."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "description": "Blue pill shopping action.",
+      "html": "<button class=\"ds-primary\">Shop products</button>",
+      "css": ".ds-primary{font-family:Outfit,sans-serif;background:var(--color-brand,#3456da);color:var(--color-surface,#fff);border:1px solid var(--color-brand,#3456da);border-radius:9999px;min-height:44px;padding:12px 20px;font-weight:700;transition:background-color 150ms}.ds-primary:hover{background:var(--color-brand-hover,#2545bf)}.ds-primary:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}@media(prefers-reduced-motion:no-preference){.ds-primary:active{transform:scale(.98)}}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "description": "Quiet white contact action.",
+      "html": "<button class=\"ds-secondary\">Call pharmacy</button>",
+      "css": ".ds-secondary{font-family:Outfit,sans-serif;background:var(--color-surface,#fff);color:var(--color-brand,#3456da);border:1px solid var(--color-border,#e7e9f1);border-radius:9999px;min-height:48px;padding:12px 20px;font-weight:700}.ds-secondary:hover{background:var(--color-subtle,#f1f3fc)}.ds-secondary:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "Search field",
+      "kind": "input",
+      "description": "Pill search field in the shared header.",
+      "html": "<label class=\"ds-search\"><span>Search products</span><input type=\"search\" placeholder=\"Products, brands & essentials\"></label>",
+      "css": ".ds-search{font-family:Outfit,sans-serif;display:grid;gap:6px;color:var(--color-ink,#19213b);font-size:14px}.ds-search input{font-family:Outfit,sans-serif;background:#f6f7fb;color:var(--color-ink,#19213b);border:1px solid var(--color-border,#e7e9f1);border-radius:9999px;min-height:48px;padding:4px 16px}.ds-search input:hover{border-color:var(--color-brand,#3456da)}.ds-search input:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}",
+      "refersTo": "search-field"
+    },
+    {
+      "name": "Desktop navigation",
+      "kind": "nav",
+      "description": "Shared shopping links with current-page indication.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Shop navigation\"><a href=\"/products\" aria-current=\"page\">Shop products</a><a href=\"/categories\">Browse categories</a></nav>",
+      "css": ".ds-nav{font-family:Outfit,sans-serif;display:flex;flex-wrap:wrap;gap:24px;background:#fff;font-size:14px}.ds-nav a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;color:var(--color-ocean,#252b49);border-bottom:2px solid transparent}.ds-nav a[aria-current=page]{border-color:var(--color-brand,#3456da);font-weight:700}.ds-nav a:hover{color:var(--color-brand,#3456da)}.ds-nav a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}"
+    },
+    {
+      "name": "Savings badge",
+      "kind": "chip",
+      "description": "Actual monetary saving only when catalogue sale price is lower; specimen does not invent an amount.",
+      "html": "<span class=\"ds-sale\">Actual saving</span>",
+      "css": ".ds-sale{font-family:Outfit,sans-serif;display:inline-block;background:#fff0e8;color:#9b3d23;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:600}",
+      "refersTo": "savings-badge"
+    },
+    {
+      "name": "Product card",
+      "kind": "card",
+      "description": "Shared full card used by homepage and product grids; specimen omits fictional product data.",
+      "html": "<article class=\"ds-product\"><a href=\"/products\">Explore the catalogue</a><p>Real product photo, name, price and availability</p></article>",
+      "css": ".ds-product{font-family:Outfit,sans-serif;background:var(--color-surface,#fff);color:var(--color-ink,#19213b);border:1px solid var(--color-border,#e7e9f1);border-radius:16px;padding:14px;transition:border-color 200ms,box-shadow 200ms}.ds-product:hover{border-color:#c8d0fa;box-shadow:0 8px 22px -14px rgba(37,65,120,.25)}.ds-product a{color:var(--color-ink,#19213b);font-weight:500;text-decoration:none}.ds-product a:hover{color:var(--color-brand,#3456da)}.ds-product a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}.ds-product p{font-size:14px;color:var(--color-muted,#61677a)}",
+      "refersTo": "product-card"
+    },
+    {
+      "name": "Compact product card",
+      "kind": "custom",
+      "refersTo": "compact-product-card",
+      "description": "Horizontal thumbnail-first card; specimen omits fictional product data.",
+      "html": "<article class=\"ds-compact\"><span class=\"ds-thumb\" aria-hidden=\"true\"></span><div><a href=\"/products\">Explore real catalogue products</a><p>Current API price</p></div></article>",
+      "css": ".ds-compact{font-family:Outfit,sans-serif;display:grid;grid-template-columns:64px 1fr;gap:12px;max-width:275px;padding:12px;border:1px solid var(--color-border,#e7e9f1);border-radius:12px;background:#fff;color:var(--color-ink,#19213b)}.ds-thumb{width:64px;height:64px;border-radius:8px;background:#fff;border:1px solid var(--color-border,#e7e9f1)}.ds-compact a{font-size:14px;color:inherit;text-decoration:none}.ds-compact a:hover{color:var(--color-brand,#3456da)}.ds-compact a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}.ds-compact p{font-size:14px;margin:8px 0 0}"
+    },
+    {
+      "name": "Collection tile",
+      "kind": "custom",
+      "refersTo": "collection-tile",
+      "description": "Pastel introduction to a curated collection with a real catalogue image in production.",
+      "html": "<article class=\"ds-collection\"><h2>The skincare shelf</h2><p>Explore our current range.</p><a href=\"/collections/skin-essentials\">Shop collection</a></article>",
+      "css": ".ds-collection{font-family:Outfit,sans-serif;border-radius:16px;background:#eef0ff;padding:16px;color:var(--color-ink,#19213b)}.ds-collection h2{font-size:20px;font-weight:500;margin:0 0 8px}.ds-collection p{font-size:12px;line-height:20px;color:var(--color-muted,#61677a)}.ds-collection a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:500;color:var(--color-brand,#3456da);text-decoration:none}.ds-collection a:hover{color:var(--color-brand-hover,#2545bf)}.ds-collection a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}"
+    },
+    {
+      "name": "Routine wrapper",
+      "kind": "custom",
+      "refersTo": "routine",
+      "description": "Cool wrapper for real individually sold skincare matches.",
+      "html": "<section class=\"ds-routine\"><h2>Make space for daily skincare</h2><p>Explore individual products for your routine.</p><a href=\"/collections/skin-essentials\">Shop skincare</a><small>Sold individually. Check product details for suitability and directions.</small></section>",
+      "css": ".ds-routine{font-family:Outfit,sans-serif;background:#f0f2fc;color:var(--color-ink,#19213b);border-radius:16px;padding:16px}.ds-routine h2{font-size:24px;font-weight:600;margin:0 0 4px}.ds-routine p{font-size:14px;color:var(--color-muted,#61677a)}.ds-routine a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--color-brand,#3456da);text-decoration:none}.ds-routine a:hover{color:var(--color-brand-hover,#2545bf)}.ds-routine a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}.ds-routine small{display:block;font-size:12px;color:var(--color-muted,#61677a)}"
+    },
+    {
+      "name": "Floating contact",
+      "kind": "custom",
+      "refersTo": "floating-contact",
+      "description": "Blue circular contact action; production positioning clears mobile bottom navigation.",
+      "html": "<a class=\"ds-contact\" href=\"/contact\" aria-label=\"Contact Al Mina Pharmacy\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.081.159 2.175.282 3.281.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.843-.498c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228a48.394 48.394 0 0 0-14.586 0C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z\"/></svg></a>",
+      "css": ".ds-contact{display:flex;width:48px;height:48px;align-items:center;justify-content:center;border-radius:9999px;background:var(--color-brand,#3456da);color:#fff;box-shadow:0 10px 28px rgb(32 62 70 / 10%);transition:transform 150ms}.ds-contact:hover{background:var(--color-brand-hover,#2545bf)}.ds-contact:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}@media(prefers-reduced-motion:no-preference){.ds-contact:hover{transform:translateY(-2px)}}"
+    },
+    {
+      "name": "Category tile",
+      "kind": "nav",
+      "refersTo": "category-tile",
+      "description": "Shared category index/home tile; production prefers uploaded category photo then generic decorative atlas.",
+      "html": "<a class=\"ds-category-tile\" href=\"/categories\"><h2>Explore categories</h2><span aria-hidden=\"true\">\u2192</span></a>",
+      "css": ".ds-category-tile{font-family:Outfit,sans-serif;display:flex;flex-direction:column;min-height:190px;max-width:220px;border-radius:16px;padding:12px;background:#f0f3fb;color:var(--color-ink,#19213b);text-decoration:none}.ds-category-tile h2{max-width:90%;font-size:16px;font-weight:600;line-height:1.2;margin:0 0 8px}.ds-category-tile span{display:flex;width:36px;height:36px;align-items:center;justify-content:center;border-radius:9999px;background:#fff}.ds-category-tile:hover{color:var(--color-brand,#3456da)}.ds-category-tile:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}@media(min-width:768px){.ds-category-tile{min-height:250px;padding:16px}.ds-category-tile h2{font-size:20px}}"
+    },
+    {
+      "name": "Storefront introduction",
+      "kind": "custom",
+      "refersTo": "storefront-intro",
+      "description": "Shared route intro; neutral specimen omits decorative artwork.",
+      "html": "<section class=\"ds-intro\"><h1>Care for every routine</h1><p>Explore products for your health, care and daily routine.</p></section>",
+      "css": ".ds-intro{font-family:Outfit,sans-serif;border-radius:16px;background:#f1f1fc;color:var(--color-ink,#19213b);padding:20px;overflow:hidden}.ds-intro h1{font-size:24px;line-height:1.2;font-weight:600;letter-spacing:-.025em;margin:0 0 8px}.ds-intro p{max-width:55ch;font-size:14px;line-height:24px;margin:0}@media(min-width:768px){.ds-intro{padding:28px}.ds-intro h1{font-size:36px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A little care. A better day.",
+    "overview": "The approved blue Outfit/Heroicons system extends from V4 homepage merchandising through category, catalogue, PDP, cart, checkout and information routes. Shared CategoryTile, StorefrontIntro and product cards retain existing palette, real API content and commerce behavior.",
+    "keyCharacteristics": [
+      "Confident blue actions and white product surfaces.",
+      "Real products, readable prices and honest availability.",
+      "Manual campaign navigation and restrained feedback.",
+      "Compact inline delivery, two-row photographic category atlas and floating contact above bottom navigation.",
+      "Uploaded campaigns first, complete artwork preserved; once-only editorial motion with visible default.",
+      "Shared page intros/category tiles and a separate real-product spotlight carousel."
+    ],
+    "dos": [
+      "Do preserve existing commerce behavior and URLs.",
+      "Do distinguish generated editorial decoration from real product photos.",
+      "Do use Outfit and Heroicons."
+    ],
+    "donts": [
+      "Do not restore superseded green or historical screenshot authority.",
+      "Do not invent products, prices, stock or service claims.",
+      "Do not fill conditional merchandising modules with fabricated products, prices, banners or brands."
+    ]
+  }
+}

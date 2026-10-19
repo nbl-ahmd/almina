@@ -122,8 +122,8 @@ export function AdminForm({
       })}
       <div className="admin-actions">
         <button disabled={pending}>{pending ? "Saving…" : label}</button>
-        {error ? <p role="alert">{error}</p> : null}
-        {message ? <p role="status">{message}</p> : null}
+        {error ? <p role="alert" className="admin-alert admin-alert--danger">{error}</p> : null}
+        {message ? <p role="status" className="admin-alert admin-alert--success">{message}</p> : null}
       </div>
     </form>
   );
@@ -238,7 +238,7 @@ export function NotificationSettings({
           administration is open.
         </p>
       ) : null}
-      <p role="status">{message}</p>
+      <p role="status" className="admin-alert admin-alert--success">{message}</p>
     </div>
   );
 }
@@ -326,7 +326,7 @@ export function BulkTemplates({
           }}
         />
       </label>
-      {csvError ? <p role="alert">{csvError}</p> : null}
+      {csvError ? <p role="alert" className="admin-alert admin-alert--danger">{csvError}</p> : null}
       {csvNumbers.length ? (
         <p>
           Imported {csvNumbers.length} recipient numbers. Review the CSV and

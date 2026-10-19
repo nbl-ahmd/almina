@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const requestIdSchema = z.uuid();
 export const errorCodeSchema = z.enum([
+  'VOUCHER_UNAVAILABLE','VOUCHER_MINIMUM',
+  'REMINDERS_UNAVAILABLE', 'REMINDER_PRODUCT_INELIGIBLE', 'REMINDER_LIMIT',
   'INVALID_REQUEST', 'NOT_FOUND', 'METHOD_NOT_ALLOWED', 'SERVICE_UNAVAILABLE', 'INTERNAL_ERROR',
   'UNAUTHORIZED', 'FORBIDDEN', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA_TYPE', 'RATE_LIMITED', 'REQUEST_TIMEOUT', 'COMMERCE_UNAVAILABLE', 'PRODUCT_UNAVAILABLE', 'INSUFFICIENT_STOCK', 'STOCK_CHANGED', 'RECOVERY_IMPORT_REQUIRED',
   'CATALOG_REVIEW_REQUIRED', 'PRODUCT_FAMILY_CONFLICT', 'MINIMUM_ORDER', 'IDEMPOTENCY_CONFLICT', 'INVALID_TRANSITION', 'PRICE_CHANGED', 'DELIVERY_UNCERTAIN',
@@ -49,3 +51,6 @@ export * from './location';
 export { productFamilyFields, productFamilySchema, familyFieldNames, optionFields, optionLabels, familyProfile, validateProductFamily, variantLabel, sameFamilyIdentity, strengthSignature, type ProductFamilyFields } from './product-family';
 
 export * from './product-content';
+
+export * from "./growth";
+export * from './retention';

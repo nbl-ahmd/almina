@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { CountUp, DrawLine } from './motion';
 
-/* Presentational admin primitives. Server-safe: no hooks, no browser APIs. */
+/* Presentational admin primitives. Layout is server-safe: entrance motion is
+   opt-in via `data-motion` attributes that CSS animates (see admin.css). The two
+   effects CSS cannot express — the numeric count-up and the sparkline stroke
+   draw — are small client leaf components in components/admin/motion.tsx. */
 
 export type Tone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info';
 
@@ -17,7 +21,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="admin-page-head">
+    <div className="admin-page-head" data-motion="rise">
       <div className="admin-page-head__text">
         {eyebrow ? <p className="admin-page-head__eyebrow">{eyebrow}</p> : null}
         <h1>{title}</h1>
@@ -54,20 +58,42 @@ export function Card({
   ) : null;
   if (flush) {
     return (
-      <section className="admin-card admin-card--flush">
+      <section className="admin-card admin-card--flush" data-motion="rise">
         {head}
         {children}
       </section>
     );
   }
   return (
-    <section className="admin-card">
+    <section className="admin-card" data-motion="rise">
       {head}
       {description && !title ? (
         <p className="admin-card__hint">{description}</p>
       ) : null}
       {children}
     </section>
+  );
+}
+
+export function EmptyState({
+  icon,
+  title,
+  children,
+}: {
+  icon?: ReactNode;
+  title: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="admin-empty">
+      {icon ? (
+        <span className="admin-empty__icon" aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <p className="admin-empty__title">{title}</p>
+      {children ? <p>{children}</p> : null}
+    </div>
   );
 }
 
@@ -92,15 +118,23 @@ export function StatTile({
   href,
   label,
   value,
+  countTo,
   meta,
   icon,
+  tone = 'brand',
+  active = false,
 }: {
   href?: string;
   label: string;
-  value: ReactNode;
+  value?: ReactNode;
+  countTo?: number;
   meta?: ReactNode;
   icon?: ReactNode;
+  tone?: Tone;
+  active?: boolean;
 }) {
+  const accent =
+    tone === 'warning' || tone === 'danger' ? ` admin-stat--${tone}` : '';
   const body = (
     <>
       <div className="admin-stat__top">
@@ -111,18 +145,32 @@ export function StatTile({
           </span>
         ) : null}
       </div>
-      <span className="admin-stat__value">{value}</span>
+      <span className="admin-stat__value">
+        {typeof countTo === 'number' ? (
+          // CountUp animates this text after its own node hydrates, so the
+          // server-rendered number is never rewritten out from under React.
+          <CountUp to={countTo} />
+        ) : (
+          value
+        )}
+      </span>
       {meta ? <span className="admin-stat__meta">{meta}</span> : null}
     </>
   );
   return href ? (
-    <li>
-      <Link className="admin-stat" href={href}>
+    <li data-motion="rise">
+      <Link
+        className={`admin-stat${accent}`}
+        href={href}
+        data-active={active ? 'true' : undefined}
+      >
         {body}
       </Link>
     </li>
   ) : (
-    <li className="admin-stat">{body}</li>
+    <li className={`admin-stat${accent}`} data-motion="rise">
+      {body}
+    </li>
   );
 }
 
@@ -155,6 +203,7 @@ export function BarList({
             <span className="admin-bar__track">
               <span
                 className={`admin-bar__fill${variant}`}
+                data-motion="bar"
                 style={{ width: `${width}%` }}
               />
             </span>
@@ -182,18 +231,20 @@ export function TrendChart({
   const width = 100;
   const height = 32;
   const max = Math.max(1, ...points.map((point) => point.value));
-  // A single sample renders as a flat span so the chart never looks broken.
-  const series = points.length === 1 ? [points[0]!, points[0]!] : points;
+  // A single sample renders as one flat centred run instead of a fake area,
+  // so the chart never looks like a broken block.
+  const single = points.length === 1;
+  const series = single ? [points[0]!, points[0]!] : points;
   const step = width / (series.length - 1);
   const coords = series.map((point, index) => ({
     x: index * step,
-    y: height - (point.value / max) * (height - 4) - 2,
+    y: single ? height / 2 : height - (point.value / max) * (height - 4) - 2,
   }));
   const line = coords.map((point) => `${point.x},${point.y}`).join(' ');
   const area = `M ${coords[0]!.x},${height} L ${line.replaceAll(' ', ' L ')} L ${coords.at(-1)!.x},${height} Z`;
   const summary = `${label}: ${points.map((point) => `${point.label} ${format(point.value)}`).join(', ')}`;
   return (
-    <figure style={{ margin: 0 }}>
+    <figure className="admin-figure">
       <svg
         className="admin-spark"
         viewBox={`0 0 ${width} ${height}`}
@@ -201,8 +252,18 @@ export function TrendChart({
         role="img"
         aria-label={summary}
       >
-        <path className="admin-spark__area" d={area} />
-        <polyline className="admin-spark__line" points={line} vectorEffect="non-scaling-stroke" />
+        {[0.25, 0.5, 0.75].map((ratio) => (
+          <line
+            key={ratio}
+            className="admin-spark__grid"
+            x1="0"
+            x2={width}
+            y1={height * ratio}
+            y2={height * ratio}
+          />
+        ))}
+        {single ? null : <path className="admin-spark__area" d={area} />}
+        <DrawLine points={line} />
         {coords.map((point, index) => (
           <circle
             key={index}

@@ -4,12 +4,17 @@ import { createLogger } from '@almina/config/logger';
 import { createApp } from './app.js';
 import { createDatabase } from './database.js';
 import { HttpError } from './errors.js';
+import { retentionWorker } from './modules/growth/retention.js';
 
 async function main() {
   const env = readApiEnvironment(process.env);
   const logger = createLogger({ service: 'api', environment: env.APP_ENV, level: env.LOG_LEVEL });
   const database = createDatabase(env.database);
   let stopping = false;
+  const allowedOrigins = typeof env.WEB_ORIGIN === 'string' ? [env.WEB_ORIGIN] : env.WEB_ORIGIN;
+  const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || allowedOrigins[0];
+  const reminders = process.env.GROWTH_EMAIL_ENABLED === 'true' && reminderOrigin && allowedOrigins.includes(reminderOrigin)
+    ? retentionWorker(async () => database.getDb(), { origin: reminderOrigin, onFailure: () => logger.log('error', 'reminder_failed') }) : undefined;
   const server = createServer(createApp({ database, logger, webOrigin: env.WEB_ORIGIN, development: env.APP_ENV === 'development',
     trustProxy: env.API_TRUST_PROXY, draining: () => stopping, commerceTelemetryEnabled: env.COMMERCE_TELEMETRY_ENABLED,
     getDb: async () => {
@@ -34,7 +39,7 @@ async function main() {
     const deadline = setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000);
     deadline.unref();
     server.close(() => {
-      void database.close().then(() => logger.log('info', 'api_stopped'))
+      void (async () => { await reminders?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
         .catch(() => { logger.log('error', 'shutdown_failed'); process.exitCode = 1; })
         .finally(() => clearTimeout(deadline));
     });

@@ -2,7 +2,9 @@ name: Modernization foundation
 
 on:
   push:
+    branches: [master]
   pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -34,6 +36,16 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run test:release
+      - name: Audit dependency security
+        run: npm run audit:security
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-security-audit
+          include-hidden-files: true
+          path: .verification-results/audit-*.json
+          retention-days: 7
+          if-no-files-found: ignore
 
   api:
     runs-on: ubuntu-24.04
@@ -93,28 +105,10 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  audit:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-      - name: Audit every lockfile; high and critical findings block promotion
-        run: npm run audit:security
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dependency-security-audit
-          include-hidden-files: true
-          path: .verification-results/audit-*.json
-          retention-days: 7
-
   verify:
     # Preserve the existing required check name. Skipped/cancelled jobs fail this gate.
     if: always()
-    needs: [quality, api, browser, audit]
+    needs: [quality, api, browser]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -123,9 +117,7 @@ jobs:
           QUALITY_RESULT: ${{ needs.quality.result }}
           API_RESULT: ${{ needs.api.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
-          AUDIT_RESULT: ${{ needs.audit.result }}
         run: |
           test "$QUALITY_RESULT" = success
           test "$API_RESULT" = success
           test "$BROWSER_RESULT" = success
-          test "$AUDIT_RESULT" = success
