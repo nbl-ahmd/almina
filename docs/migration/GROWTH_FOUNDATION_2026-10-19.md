@@ -56,7 +56,14 @@ Final checks: 155 unit tests and 31 focused disposable-database integration test
 
 ## Broader plan still outstanding
 
-The CMS and account foundations do not make the full 90-day programme complete. Remaining development includes consented abandoned-cart recovery; restock, price-drop and replenishment subscriptions with delivery workers; full Arabic shopping/checkout translations; genuinely complementary curated bundles; and verified operational branch/serviceability management. Product listings now support bounded server-side in-stock, current-price range and sort facets. The admin report includes a limited 90-day repeat-purchase cohort view. No fake controls or automated outbound messages were added to represent the remaining items.
+The CMS and account foundations do not make the full 90-day programme complete. The state below was updated after the completion pass recorded in `GROWTH_COMPLETION_2026-10-19.md`.
+
+- **Consented abandoned-cart recovery; restock, price-drop and replenishment alerts with a delivery worker** — implemented (committed `81215ce`, hardened and tested in the completion pass). Requested reminders are owner-scoped, one-shot and consent-driven; the worker leases one row, never auto-resends an ambiguous send, and stays off until staff enable the policy and the email provider is connected.
+- **Verified operational branch/serviceability management** — implemented. Staff maintain an admin branch directory (private until directory and branches are individually verified) and a serviceability rule that the API enforces on quotes and orders. Both default to inactive so existing emirate delivery is unchanged.
+- **Genuinely complementary curated bundles** — implemented. The editorial CMS collection kind gained an explicit bundle marker and staff rationale; saving a bundle validates live, visible products across at least two categories, and the storefront offers an add-all control with no invented discount.
+- **Full Arabic shopping/checkout translations** — started, not finished. A storefront locale preference (cookie), RTL shell, `t()` dictionary and a footer/header language switcher now cover the navigation and footer chrome. Cart, checkout, catalogue filters and product-detail interface copy remain English and are the next slice; product/category/health content is translated by staff through the CMS (`locale: 'ar'`), never machine-invented. The Arabic strings already added are a first pass and need native/pharmacy review before they are published copy.
+
+Product listings support bounded server-side in-stock, current-price range and sort facets. The admin report includes a limited 90-day repeat-purchase cohort view. No fake controls or automated outbound messages were added to represent the remaining items.
 
 Google Business Profile updates, Search Console/Merchant Center/Meta account verification, advertising budgets/creatives, stock/photo/clinical content verification and approval of offers are operational work. They cannot be inferred or certified from a successful local build. Rich-result eligibility is not a promise that Google will display a rich card.
 
