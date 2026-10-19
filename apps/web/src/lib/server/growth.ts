@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { growthPageSchema, pharmacyProfileSchema, type GrowthPage } from '@almina/contracts';
+import { growthPageSchema, pharmacyProfileSchema, branchDirectorySchema, type GrowthPage } from '@almina/contracts';
 import { z } from 'zod';
 import { getWebEnvironment } from './env';
 async function read(path:string) {
@@ -10,6 +10,7 @@ async function read(path:string) {
   return (await response.json() as {data:unknown}).data;
 }
 export const getPharmacyProfile=cache(async()=>pharmacyProfileSchema.parse(await read('profile')??{}));
+export const getBranchDirectory=cache(async()=>{try{return branchDirectorySchema.parse(await read('branches')??{});}catch{return branchDirectorySchema.parse({});}});
 export async function getGrowthPages(kind?:GrowthPage['kind'],locale='en',offset=0){const query=new URLSearchParams({locale,offset:String(offset),...(kind?{kind}:{})});return z.object({items:z.array(growthPageSchema),hasNext:z.boolean()}).parse(await read('pages?'+query)??{items:[],hasNext:false});}
 export const getGrowthPage=cache(async(kind:GrowthPage['kind'],slug:string,locale='en')=>{const row=await read('page?'+new URLSearchParams({kind,slug,locale}));return row?growthPageSchema.parse(row):null;});
 

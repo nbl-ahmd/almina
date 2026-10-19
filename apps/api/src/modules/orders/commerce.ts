@@ -1,4 +1,5 @@
 import { voucherAllocation,consumeVoucher,reverseOrderRewards } from '../growth/rewards.js';
+import { assertServiceable } from '../growth/branches.js';
 import { familyProfile, familyFieldNames, variantLabel } from '@almina/contracts';
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
@@ -101,6 +102,7 @@ async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, cus
   const queryOptions = { ...options, ...(session ? { session } : {}) };
   const store = await db.collection('stores').findOne({}, queryOptions);
   if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
+  await assertServiceable(db, input.customer);
   const products = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
     { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
       stock: 1, disabled: 1, active: 1, published: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
