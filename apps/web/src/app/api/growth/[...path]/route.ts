@@ -6,7 +6,7 @@ const privateHeaders={'Cache-Control':'private, no-store','X-Robots-Tag':'noinde
 async function handle(request:NextRequest,{params}:{params:Promise<{path:string[]}>}) {
   const path=(await params).path.join('/');
   const admin=path.startsWith('admin/');
-  const allowed=request.method==='GET'?['pages','page','profile','suggest','reviews','admin/pages','admin/profile','admin/delivery','admin/reviews','admin/rewards','admin/metrics','admin/products','admin/categories']:['admin/page','admin/profile','admin/search-index','admin/delivery','delivery','admin/review','admin/rewards','admin/delivered'];
+  const allowed=request.method==='GET'?['pages','page','profile','suggest','reviews','reminder-options','admin/retention','admin/pages','admin/profile','admin/delivery','admin/reviews','admin/rewards','admin/metrics','admin/products','admin/categories']:['unsubscribe','admin/retention','admin/page','admin/profile','admin/search-index','admin/delivery','delivery','admin/review','admin/rewards','admin/delivered'];
   if(!allowed.includes(path))return NextResponse.json({error:'Not found'},{status:404,headers:privateHeaders});
   const env=getWebEnvironment();
   try{

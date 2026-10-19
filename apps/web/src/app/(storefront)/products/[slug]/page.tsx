@@ -1,4 +1,5 @@
 import { RecordProductView } from '../../../../components/recently-viewed';
+import { ReminderSignup } from '../../../../components/customer-reminders';
 import { ProductReviews } from '../../../../components/product-reviews';
 import { getProductReviews } from '../../../../lib/server/growth';
 import { SaveProduct } from '../../../../components/save-product';
@@ -57,6 +58,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <div className="mb-5 flex items-start gap-3 border-y border-border py-4"><span className="rounded-lg bg-accent p-2 text-teal"><Icon name="pin" /></span><div><h2 className="mb-1 text-base font-bold">Delivery in Ras Al Khaimah</h2><p className="m-0 text-sm leading-relaxed text-ocean">Choose your delivery address at checkout to review available delivery and the final total.</p><Link className="inline-flex min-h-9 items-center text-xs text-teal" href="/contact#delivery">Delivery enquiries <Icon name="arrow" /></Link></div></div>
         <div className="pdp-purchase fixed inset-x-0 bottom-[calc(62px+env(safe-area-inset-bottom))] z-[19] border-t border-border bg-subtle px-4 pt-3 pb-3 shadow-nav md:static md:mb-4 md:border-0 md:bg-transparent md:p-0 md:shadow-none"><AddToCart key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice)} /></div>
         <div className="mb-4"><SaveProduct id={product._id} name={product.name} /></div>
+        {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup key={product._id} productId={product._id} stock={product.stock} /> : null}
         <div className="mb-4 grid grid-cols-2 gap-2"><Link className="product-contact flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 text-xs font-semibold text-ocean" href="/cart"><Icon name="bag" />View your cart</Link><Link className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 text-xs font-semibold text-ocean" href="/contact"><Icon name="phone" />Contact pharmacy</Link></div>
 
       </div>

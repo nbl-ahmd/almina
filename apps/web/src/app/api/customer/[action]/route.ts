@@ -5,7 +5,7 @@ const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofo
 async function handle(request:NextRequest,{params}:{params:Promise<{action:string}>}){
  const {action}=await params,env=getWebEnvironment(),development=env.APP_ENV==='development';
  const name=development?'almina_customer':'__Host-almina_customer';
- if(!(request.method==='GET'?['options','me','orders','addresses','saved','rewards']:['email','verify','google','logout','preferences','addresses','saved','review','redeem','referral-code','referral']).includes(action))return NextResponse.json({error:'Not found'},{status:404,headers});
+ if(!(request.method==='GET'?['options','me','orders','addresses','saved','rewards','reminders']:['email','verify','google','logout','preferences','addresses','saved','review','redeem','referral-code','referral','reminders','recovery-cart']).includes(action))return NextResponse.json({error:'Not found'},{status:404,headers});
  if(request.nextUrl.search)return NextResponse.json({error:'Invalid request'},{status:400,headers});
  if(request.method!=='GET'&&(request.headers.get('origin')!==env.WEB_ORIGIN||request.headers.get('x-csrf-protection')!=='1'||request.headers.get('sec-fetch-site')==='cross-site'))return NextResponse.json({error:'Access denied'},{status:403,headers});
  try{const values=request.cookies.getAll(name),token=values.length===1&&/^[A-Za-z0-9_-]{43}$/.test(values[0]!.value)?values[0]!.value:'';

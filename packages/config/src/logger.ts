@@ -2,7 +2,7 @@ import type { AppEnvironment } from './env.js';
 
 type Level = 'info' | 'warn' | 'error';
 type Event = 'http_request' | 'request_failed' | 'api_started' | 'api_stopped'
-  | 'configuration_invalid' | 'database_unavailable' | 'shutdown_failed' | 'web_error' | 'catalog_query';
+  | 'configuration_invalid' | 'database_unavailable' | 'shutdown_failed' | 'web_error' | 'catalog_query' | 'reminder_failed';
 type Context = {
   requestId?: string;
   method?: string;

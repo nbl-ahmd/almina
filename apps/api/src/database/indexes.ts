@@ -38,6 +38,7 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
   staff_push_deliveries: [{ name: 'staff_push_review', key: { state: 1, createdAt: 1 } }],
   catalog_search_terms:[{name:'search_token_prefix',key:{terms:1}}],
   product_reviews:[{name:'product_approved_reviews',key:{productId:1,moderation:1,createdAt:-1}},{name:'review_moderation_queue',key:{moderation:1,createdAt:1}}],
+  customer_reminders: [{name:'reminder_owner',key:{customerId:1,updatedAt:-1}},{name:'reminder_worker',key:{state:1,nextCheckAt:1,leaseUntil:1}},{name:'reminder_expiry',key:{expiresAt:1},expireAfterSeconds:0},{name:'reminder_unsubscribe',key:{unsubscribeHash:1}}],
   customers: [{name:'customer_email_identity',key:{emailHash:1},unique:true}],
   customer_sessions:[{name:'customer_session_expiry',key:{expiresAt:1},expireAfterSeconds:0},{name:'customer_session_owner',key:{customerId:1}}],
   customer_auth_codes:[{name:'customer_code_expiry',key:{expiresAt:1},expireAfterSeconds:0}],

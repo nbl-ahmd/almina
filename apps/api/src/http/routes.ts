@@ -1,4 +1,6 @@
 import { createHash as growthHash } from 'node:crypto';
+import { retentionPolicySchema, reminderDtoSchema } from '@almina/contracts';
+import { retentionPolicy, saveRetentionPolicy, retentionProviderReady, customerReminders, updateCustomerReminder, restoreRecoveryCart, unsubscribeReminder } from '../modules/growth/retention.js';
 import { customerMutationQuota } from '../modules/growth/limits.js';
 import { rewardsPolicySchema } from '@almina/contracts';
 import { rewardsPolicy,saveRewardsPolicy,rewardAccount,referralCode,attachReferral,redeemPoints,confirmRewardDelivery } from '../modules/growth/rewards.js';
@@ -185,6 +187,17 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   const customerAuthLimit=rateLimit({windowMs:15*60*1000,limit:20,keyGenerator:req=>growthHash('sha256').update(String(req.body?.email??req.body?.challenge??req.body?.idToken??'invalid').trim().toLowerCase()).digest('hex'),standardHeaders:'draft-8',legacyHeaders:false,handler:(_req,_res,next)=>next(new HttpError(429,'RATE_LIMITED'))});
   const limitedCustomer=async(req:Request)=>{const db=await getDb(),customer=await sessionCustomer(req);await customerMutationQuota(db,customer.id);return customer;};
   const sessionCustomer=async(req:Request)=>customerIdentity(await getDb(),customerToken(req.headers.cookie,development));
+  read('/customers/reminders',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.array(reminderDtoSchema),await customerReminders(await getDb(),customer.id));});
+  router.post('/customers/reminders',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const customer=await limitedCustomer(req);send(res,growthZ.array(reminderDtoSchema),await updateCustomerReminder(await getDb(),customer.id,req.body));});
+  router.all('/customers/reminders',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  router.post('/customers/recovery-cart',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const customer=await limitedCustomer(req);send(res,growthZ.array(growthZ.object({id:growthZ.string(),quantity:growthZ.number().int().positive()})),await restoreRecoveryCart(await getDb(),customer.id,req.body));});
+  router.all('/customers/recovery-cart',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  read('/growth/reminder-options',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,retentionPolicySchema.extend({deliveryReady:growthZ.boolean()}),{...await retentionPolicy(await getDb()),deliveryReady:retentionProviderReady()});});
+  router.post('/growth/unsubscribe',rateLimit({windowMs:60000,limit:20,standardHeaders:'draft-8',legacyHeaders:false}),async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const input=validate(growthZ.object({token:growthZ.string().regex(/^[A-Za-z0-9_-]{43}$/)}).strict(),req.body);send(res,growthZ.object({cancelled:growthZ.literal(true)}),await unsubscribeReminder(await getDb(),input.token));});
+  router.all('/growth/unsubscribe',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  router.get('/admin/growth/retention',async(req,res)=>{noBody(req);validate(emptyQuerySchema,req.query);await identity(req,true);send(res,retentionPolicySchema.extend({deliveryReady:growthZ.boolean()}),{...await retentionPolicy(await getDb()),deliveryReady:retentionProviderReady()});});
+  router.post('/admin/growth/retention',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const user=await identity(req,true);send(res,retentionPolicySchema,await saveRetentionPolicy(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/retention',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   const customerSchema=growthZ.object({id:growthZ.string(),email:growthZ.email(),marketingEmail:growthZ.boolean().optional(),marketingWhatsapp:growthZ.boolean().optional()});
   read('/customers/options',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,growthZ.object({googleClientId:growthZ.string().nullable(),emailEnabled:growthZ.boolean()}),customerAuthOptions());});
   read('/customers/me',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,customerSchema,await sessionCustomer(req));});
