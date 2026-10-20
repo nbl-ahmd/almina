@@ -7,6 +7,8 @@ import { rewardsPolicy,saveRewardsPolicy,rewardAccount,referralCode,attachReferr
 import { customerSaved,updateCustomerSaved } from '../modules/growth/saved.js';
 import { submitReview,publicReviews,moderateReview } from '../modules/growth/reviews.js';
 import { readDeliveryPolicy,saveDeliveryPolicy,previewDelivery } from '../modules/growth/delivery.js';
+import { branchDirectory,saveBranchDirectory,readServiceability,saveServiceability } from '../modules/growth/branches.js';
+import { branchDirectorySchema, serviceabilityPolicySchema } from '@almina/contracts';
 import { commercePolicySchema } from '@almina/contracts';
 import { indexSearchBatch,suggestProducts } from '../modules/growth/search.js';
 import { customerAuthOptions,customerCookie,customerToken,requestEmailCode,verifyEmailCode,googleSignIn,customerIdentity,customerLogout,customerOrders,saveCustomerPreferences,customerAddresses,updateCustomerAddresses } from '../modules/growth/customers.js';
@@ -224,6 +226,13 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   router.all('/admin/growth/delivery',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   router.post('/growth/delivery',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,growthZ.object({emirate:growthZ.string(),subtotalMinor:growthZ.number(),deliveryFeeMinor:growthZ.number(),freeAboveMinor:growthZ.number().nullable(),remainingMinor:growthZ.number().nullable(),policyVersion:growthZ.string()}),await previewDelivery(await getDb(),req.body));});
   router.all('/growth/delivery',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  read('/growth/branches',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,branchDirectorySchema,await branchDirectory(await getDb()));});
+  router.get('/admin/growth/branches',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,branchDirectorySchema,await branchDirectory(await getDb(),true));});
+  router.post('/admin/growth/branches',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,branchDirectorySchema,await saveBranchDirectory(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/branches',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  router.get('/admin/growth/serviceability',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,serviceabilityPolicySchema,await readServiceability(await getDb()));});
+  router.post('/admin/growth/serviceability',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,serviceabilityPolicySchema,await saveServiceability(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/serviceability',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   const reviewsSchema=growthZ.object({items:growthZ.array(growthZ.object({rating:growthZ.number().int(),displayName:growthZ.string(),title:growthZ.string(),body:growthZ.string(),createdAt:growthZ.coerce.date(),verifiedPurchase:growthZ.literal(true)})),ratingCount:growthZ.number().int(),average:growthZ.number().nullable()});
   read('/growth/reviews',async(req,res)=>{const query=validate(growthZ.object({productId:growthZ.string().regex(/^[a-f0-9]{24}$/i)}).strict(),req.query);send(res,reviewsSchema,await publicReviews(await getDb(),query.productId));});
   router.get('/customers/saved',async(req,res)=>{noBody(req);validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.object({ids:growthZ.array(growthZ.string())}),await customerSaved(await getDb(),customer.id));});

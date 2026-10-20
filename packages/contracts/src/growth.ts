@@ -14,11 +14,16 @@ export const growthPageSchema = z.object({
   faqs:z.array(z.object({question:short.min(3),answer:z.string().trim().min(3).max(1500)})).max(15).default([]),
   published:z.boolean().default(false),healthContent:z.boolean().default(false),reviewer:short.default(''),
   startsAt:z.iso.datetime().nullable().default(null),endsAt:z.iso.datetime().nullable().default(null),
+  // A curated bundle is a genuine, staff-chosen complementary set. No discount is implied.
+  bundle:z.boolean().default(false),bundleReason:z.string().trim().max(600).default(''),
   terms:z.string().trim().max(3000).default(''),revision:z.number().int().nonnegative().default(0),
 }).strict().superRefine((page,ctx)=>{
   if(page.startsAt&&page.endsAt&&page.startsAt>=page.endsAt)ctx.addIssue({code:'custom',path:['endsAt'],message:'End must follow start.'});
   if(page.published&&(!page.description||!page.body))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
   if(page.published&&page.healthContent&&!page.reviewer)ctx.addIssue({code:'custom',path:['reviewer'],message:'Health content needs a named pharmacy reviewer.'});
+  if(page.bundle&&page.kind!=='collection')ctx.addIssue({code:'custom',path:['bundle'],message:'Only a curated collection can be a complementary bundle.'});
+  if(page.bundle&&page.productIds.length<2)ctx.addIssue({code:'custom',path:['productIds'],message:'A curated bundle needs at least two chosen products.'});
+  if(page.bundle&&page.bundleReason.trim().length<20)ctx.addIssue({code:'custom',path:['bundleReason'],message:'Explain in your own words why these products belong together.'});
 });
 export type GrowthPage=z.infer<typeof growthPageSchema>;
 export const pharmacyProfileSchema=z.object({

@@ -1,0 +1,40 @@
+'use client';
+import { useState, type FormEvent } from 'react';
+import { branchDirectorySchema, serviceabilityPolicySchema, type Branch, type BranchDirectory, type ServiceabilityPolicy } from '@almina/contracts';
+
+const blankBranch = (): Branch => ({ name: '', phone: '', address: '', hours: '', deliveryHours: '', mapUrl: '', areas: [], verified: false });
+async function call(path: string, body?: unknown) {
+  const response = await fetch('/api/growth/admin/' + path, { method: body ? 'POST' : 'GET', cache: 'no-store', headers: body ? { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' } : {}, ...(body ? { body: JSON.stringify(body) } : {}) });
+  if (!response.ok) throw new Error(response.status === 409 ? 'This was changed by another editor. Reload before saving.' : 'Operations service unavailable. Try again.');
+  return (await response.json() as { data: unknown }).data;
+}
+
+/** Staff-maintained branch directory and server-enforced serviceability. Nothing public until explicitly verified. */
+export function BranchesEditor() {
+  const [directory, setDirectory] = useState<BranchDirectory | null>(null);
+  const [serviceability, setServiceability] = useState<ServiceabilityPolicy | null>(null);
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function load() {
+    setBusy(true);
+    try {
+      const [branchData, serviceData] = await Promise.all([call('branches'), call('serviceability')]);
+      setDirectory(branchDirectorySchema.parse(branchData)); setServiceability(serviceabilityPolicySchema.parse(serviceData)); setMessage('');
+    } catch (error) { setMessage((error as Error).message); } finally { setBusy(false); }
+  }
+  function edit(index: number, patch: Partial<Branch>) { if (directory) setDirectory({ ...directory, items: directory.items.map((item, position) => position === index ? { ...item, ...patch } : item) }); }
+  async function saveBranches(event: FormEvent) {
+    event.preventDefault(); if (!directory) return; setBusy(true);
+    try { const saved = await call('branches', directory); setDirectory(branchDirectorySchema.parse(saved)); setMessage('Branch directory saved. Verified branches are shown publicly.'); }
+    catch (error) { setMessage((error as Error).message); } finally { setBusy(false); }
+  }
+  async function saveServiceability(event: FormEvent) {
+    event.preventDefault(); if (!serviceability) return; setBusy(true);
+    try { const saved = await call('serviceability', serviceability); setServiceability(serviceabilityPolicySchema.parse(saved)); setMessage('Serviceability rules saved. The server enforces them for new quotes and orders.'); }
+    catch (error) { setMessage((error as Error).message); } finally { setBusy(false); }
+  }
+  return <section className="my-6 rounded-2xl border border-border bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="mb-1 text-xl">Branches & serviceable areas</h2><p className="m-0 text-sm text-muted">Only individually verified branches and an explicit coverage note reach customers. When serviceability is off, delivery behaves exactly as today.</p></div><button className="button-secondary" type="button" disabled={busy} onClick={() => void load()}>{directory ? 'Reload operations data' : 'Manage branches & serviceability'}</button></div>{message ? <p role="status" className="mt-3 text-sm">{message}</p> : null}
+    {directory ? <form onSubmit={saveBranches} className="mt-5 grid gap-3">{directory.items.map((branch, index) => <fieldset key={index} className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-2"><legend className="px-1 text-sm font-medium">Branch {index + 1}</legend><label className="grid gap-1 text-sm">Name<input value={branch.name} required onChange={event => edit(index, { name: event.target.value })} /></label><label className="grid gap-1 text-sm">Phone<input value={branch.phone} onChange={event => edit(index, { phone: event.target.value })} /></label><label className="grid gap-1 text-sm">Address<input value={branch.address} onChange={event => edit(index, { address: event.target.value })} /></label><label className="grid gap-1 text-sm">Opening hours<input value={branch.hours} onChange={event => edit(index, { hours: event.target.value })} /></label><label className="grid gap-1 text-sm">Delivery hours<input value={branch.deliveryHours} onChange={event => edit(index, { deliveryHours: event.target.value })} /></label><label className="grid gap-1 text-sm">Map URL<input value={branch.mapUrl} onChange={event => edit(index, { mapUrl: event.target.value })} /></label><label className="grid gap-1 text-sm sm:col-span-2">Areas served (comma separated)<input value={branch.areas.join(', ')} onChange={event => edit(index, { areas: event.target.value.split(',').map(value => value.trim()).filter(Boolean) })} /></label><label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5 min-h-0 w-5" checked={branch.verified} onChange={event => edit(index, { verified: event.target.checked })} />I have verified this branch&rsquo;s details</label><button className="button-secondary w-fit text-sm" type="button" onClick={() => setDirectory({ ...directory, items: directory.items.filter((_, position) => position !== index) })}>Remove branch</button></fieldset>)}<button className="button-secondary w-fit text-sm" type="button" onClick={() => setDirectory({ ...directory, items: [...directory.items, blankBranch()] })}>Add branch</button><label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="size-5 min-h-0 w-5" checked={directory.verified} onChange={event => setDirectory({ ...directory, verified: event.target.checked })} />Publish this directory publicly</label><p className="m-0 text-xs text-muted">A directory can only be published when every listed branch is verified and has a name and phone.</p><button disabled={busy} type="submit" className="w-fit">Save branch directory</button></form> : null}
+    {serviceability ? <form onSubmit={saveServiceability} className="mt-6 grid gap-3 border-t border-border pt-5"><h3 className="m-0 text-lg">Delivery serviceability</h3><label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="size-5 min-h-0 w-5" checked={serviceability.active} onChange={event => setServiceability({ ...serviceability, active: event.target.checked })} />Enforce served emirates and cities on the server</label><label className="grid gap-1 text-sm">Served emirates (comma separated)<input value={serviceability.emirates.join(', ')} onChange={event => setServiceability({ ...serviceability, emirates: event.target.value.split(',').map(value => value.trim()).filter(Boolean) })} /></label><label className="grid gap-1 text-sm">Cities we cannot currently serve (comma separated)<input value={serviceability.blockedCities.join(', ')} onChange={event => setServiceability({ ...serviceability, blockedCities: event.target.value.split(',').map(value => value.trim()).filter(Boolean) })} /></label><label className="grid gap-1 text-sm">Coverage note (required to activate)<textarea rows={3} maxLength={1000} value={serviceability.notes} onChange={event => setServiceability({ ...serviceability, notes: event.target.value })} /></label><p className="m-0 text-xs text-muted">While inactive, checkout keeps its current emirate-based delivery rules. When active, quotes and orders outside the served areas are rejected by the API.</p><button disabled={busy} type="submit" className="w-fit">Save serviceability</button></form> : null}
+  </section>;
+}

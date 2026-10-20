@@ -9,33 +9,38 @@ import { NavigationLinks } from "./navigation-links";
 import { CartLink } from "./cart-link";
 import { DeliveryAreaPrompt, DeliveryLocation } from "./delivery-location";
 import { UsagePreferences } from "./usage-preferences";
+import { LanguageSwitcher } from "./language-switcher";
+import { t, type Locale, type MessageKey } from "../lib/i18n";
 
-export function Navigation() {
+export function Navigation({ locale = 'en' }: { locale?: Locale }) {
   return (
     <>
       <a
         className="skip-link fixed top-2 left-2 z-[100] -translate-y-[160%] rounded-xl bg-white px-4 py-3 text-brand focus:translate-y-0"
         href="#main-content"
       >
-        Skip to content
+        {t(locale, 'skipToContent')}
       </a>
       <header className="storefront-header border-b border-border bg-white">
         <div className="hidden bg-[#eef1ff] md:block">
           <div className="mx-auto flex min-h-8 max-w-[1344px] items-center justify-between px-6 text-[11px] text-[#3f4f83] lg:px-8">
-            <span>Health, beauty &amp; everyday care. Hello from Al Mina.</span>
-            <a
-              className="inline-flex items-center gap-2 text-[#3f4f83]"
-              href="tel:+971504825007"
-            >
-              <PhoneIcon className="size-3.5" />
-              +971 50 482 5007
-            </a>
+            <span>{t(locale, 'announcement')}</span>
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
+              <a
+                className="inline-flex items-center gap-2 text-[#3f4f83]"
+                href="tel:+971504825007"
+              >
+                <PhoneIcon className="size-3.5" />
+                +971 50 482 5007
+              </a>
+            </div>
           </div>
         </div>
         <div className="header-content mx-auto grid max-w-[1344px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-5 md:px-6 lg:px-8">
           <Link
             href="/"
-            aria-label="Al Mina Pharmacy home"
+            aria-label={t(locale, 'homeAria')}
             className="brand-logo inline-flex w-fit"
           >
             <Image
@@ -53,19 +58,19 @@ export function Navigation() {
         </div>
         <div className="hidden border-t border-border md:block">
           <div className="mx-auto max-w-[1344px] px-6 lg:px-8">
-            <NavigationLinks desktop />
+            <NavigationLinks desktop locale={locale} />
           </div>
         </div>
         <DeliveryAreaPrompt />
-        <NavigationLinks />
+        <NavigationLinks locale={locale} />
       </header>
       <nav
-        aria-label="Quick contact"
+        aria-label={t(locale, 'quickContactAria')}
         className="floating-contact fixed right-4 bottom-[calc(80px+env(safe-area-inset-bottom))] z-30 md:right-6 md:bottom-6"
       >
         <Link
           href="/contact"
-          aria-label="Contact Al Mina Pharmacy"
+          aria-label={t(locale, 'contactAria')}
           className="flex size-12 items-center justify-center rounded-full bg-brand text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 md:size-14"
         >
           <ChatBubbleLeftRightIcon className="size-6" />
@@ -74,26 +79,28 @@ export function Navigation() {
     </>
   );
 }
-const shopLinks = [
-  ["Shop brands", "/brands"],
-  ["Your account", "/account"],
-  ["Saved products", "/saved"],
-  ["All products", "/products"],
-  ["Shop by category", "/categories"],
-  ["Current offers", "/offers"],
-  ["Your shopping cart", "/cart"],
+const shopLinks: [MessageKey, string][] = [
+  ["linkShopBrands", "/brands"],
+  ["linkAccount", "/account"],
+  ["linkSaved", "/saved"],
+  ["linkAllProducts", "/products"],
+  ["linkCategories", "/categories"],
+  ["linkOffers", "/offers"],
+  ["linkCart", "/cart"],
 ];
-const helpLinks = [
-  ["Pharmacy in Ras Al Khaimah", "/ras-al-khaimah"],
-  ["Care & buying guides", "/health-guides"],
-  ["About Al Mina", "/about"],
-  ["Contact our team", "/contact"],
-  ["Delivery & order enquiries", "/contact"],
+const helpLinks: [MessageKey, string][] = [
+  ["linkLocal", "/ras-al-khaimah"],
+  ["linkGuides", "/health-guides"],
+  ["linkAbout", "/about"],
+  ["linkContact", "/contact"],
+  ["linkDelivery", "/contact"],
 ];
 export function Footer({
   telemetryEnabled = false,
+  locale = 'en',
 }: {
   telemetryEnabled?: boolean;
+  locale?: Locale;
 }) {
   return (
     <footer className="storefront-footer mt-7 border-t border-border bg-[#f1f3fc] pt-7 pb-5">
@@ -111,41 +118,40 @@ export function Footer({
               />
             </Link>
             <p className="mt-4 mb-3 max-w-xs text-sm leading-6 text-muted">
-              A little more care for your everyday. Health, skincare and
-              essentials from your neighbourhood pharmacy.
+              {t(locale, 'footerTagline')}
             </p>
             <span className="text-xs text-muted">
-              Ras Al Khaimah, United Arab Emirates
+              {t(locale, 'footerLocation')}
             </span>
           </div>
-          <nav aria-label="Footer shop">
+          <nav aria-label={t(locale, 'footerShopAria')}>
             <h2 className="mb-3 text-base font-semibold">
-              Find your essentials
+              {t(locale, 'footerShop')}
             </h2>
-            {shopLinks.map(([name, path]) => (
+            {shopLinks.map(([key, path]) => (
               <Link
                 key={path}
                 className="flex min-h-10 items-center text-sm text-muted hover:text-brand"
                 href={path!}
               >
-                {name}
+                {t(locale, key)}
               </Link>
             ))}
           </nav>
-          <nav aria-label="Footer help">
-            <h2 className="mb-3 text-base font-semibold">Here to help</h2>
-            {helpLinks.map(([name, path]) => (
+          <nav aria-label={t(locale, 'footerHelpAria')}>
+            <h2 className="mb-3 text-base font-semibold">{t(locale, 'footerHelp')}</h2>
+            {helpLinks.map(([key, path]) => (
               <Link
-                key={name}
+                key={key}
                 className="flex min-h-10 items-center text-sm text-muted hover:text-brand"
                 href={path!}
               >
-                {name}
+                {t(locale, key)}
               </Link>
             ))}
           </nav>
           <div>
-            <h2 className="mb-3 text-base font-semibold">Let’s talk care.</h2>
+            <h2 className="mb-3 text-base font-semibold">{t(locale, 'footerTalk')}</h2>
             <a
               href="tel:+971504825007"
               className="mb-2 flex min-h-11 items-center gap-2 text-sm font-medium text-brand"
@@ -160,14 +166,17 @@ export function Footer({
               info@alminapharmacy.com
             </a>
             <p className="mt-3 mb-0 text-xs leading-5 text-muted">
-              For product availability, delivery and order support.
+              {t(locale, 'footerSupport')}
             </p>
+            <div className="mt-3 md:hidden">
+              <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
+            </div>
           </div>
         </div>
         {telemetryEnabled ? <UsagePreferences /> : null}
         <div className="flex flex-wrap justify-between gap-3 pt-5 text-xs text-muted">
-          <span>Al Mina Pharmacy · Ras Al Khaimah</span>
-          <span>Care that feels a little closer.</span>
+          <span>{t(locale, 'footerBottom')}</span>
+          <span>{t(locale, 'footerCare')}</span>
         </div>
       </div>
     </footer>

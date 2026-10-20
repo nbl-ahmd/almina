@@ -8,6 +8,13 @@ export async function saveGrowthPage(db:Db,raw:unknown,actor:string) {
   if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
   const page=parsed.data;
   if(page.image&&!cloudinaryImage(page.image,process.env.CLOUDINARY_CLOUD_NAME)&&!/^https:\/\/cdn\.alminapharmacy\.com\/cdn\/[a-zA-Z0-9/_-]+\.(?:png|jpe?g|webp|avif)$/.test(page.image))throw new HttpError(400,'INVALID_REQUEST');
+  // A curated bundle must reference a real, visible set of products across at least two categories.
+  if(page.bundle){
+    const ids=[...new Set(page.productIds)];
+    if(ids.length!==page.productIds.length)throw new HttpError(400,'INVALID_REQUEST');
+    const rows=await db.collection('products').find({_id:{$in:ids.map(value=>new ObjectId(value))},published:{$ne:false},disabled:{$ne:true},archivedAt:{$exists:false}},{maxTimeMS:3000,projection:{category:1}}).toArray();
+    if(rows.length!==ids.length||new Set(rows.map(row=>String(row.category))).size<2)throw new HttpError(400,'INVALID_REQUEST');
+  }
   const id=key(page),collection=db.collection<Document&{_id:string}>('growth_pages');
   // First creation is atomic through deterministic _id; edits require exact revision.
   try {
