@@ -10,6 +10,30 @@ No production database migration, deployment, paid campaign, or outbound custome
 message was performed. Everything here is additive code plus tests, and every new
 behaviour is off by default.
 
+## Reading order and source plans
+
+A new session should read, in this order:
+
+1. `docs/migration/GROWTH_COMPLETION_2026-10-19.md` (this file) — current state,
+   Phase 4 checklist and the next slice.
+2. `docs/migration/GROWTH_FOUNDATION_2026-10-19.md` — implemented growth/account/
+   points surface, activation requirements and broader outstanding work.
+3. `docs/migration/COMMERCE_PLAN_IMPLEMENTATION_2026-10-19.md` — homepage/discovery
+   implementation against the commerce direction, plus its “Still needed” table.
+4. `docs/migration/MIGRATION_STATUS.md` — the running status log. Read the newest dated
+   entries at the top and the final “Growth programme completion pass” section.
+5. Source plans (research and proposals, not live status):
+   - `outputs/commerce-direction-2026-10-18/RAK_COMPETITOR_GROWTH_PLAN.md` —
+     competitive review and the 90-day phases in §9.
+   - `outputs/commerce-direction-2026-10-18/ALMINA_NEW_COMMERCE_DIRECTION.md` —
+     preceding design and commerce direction.
+6. Supporting evidence: `GROWTH_UI_REVIEW_2026-10-19.md`,
+   `STOREFRONT_EXTENSION_2026-10-19.md`, `VISUAL_MERCHANDISING_2026-10-19.md`,
+   `HOMEPAGE_REDESIGN_V2_2026-10-19.md`, `ADMIN_CONSOLE_2026-10-18.md`.
+
+The `outputs/` documents are the original brief; this file and
+`MIGRATION_STATUS.md` are the only places that record what is actually done.
+
 ## Final state of this pass
 
 | # | Item (from the foundation document) | State |
@@ -135,6 +159,17 @@ stays staff-translated through the CMS (`locale: 'ar'`), never machine-invented.
 - [ ] Native Arabic speaker / pharmacy review of every string before publication.
 - [ ] Arabic plural forms currently use a two-form `one`/`other` fallback
       (dual/few/many are not distinguished yet).
+
+### Next slice order
+
+1. Cart-adjacent panels (`delivery-progress.tsx`, `customer-reminders.tsx`) — smallest
+   shared surface, low regression risk.
+2. Storefront chrome gaps (`delivery-location.tsx`, header search/cart labels).
+3. Catalogue/PDP (`catalog-list.tsx`, `product-card.tsx`, `storefront.tsx`,
+   `homepage.tsx`).
+4. Server-returned copy (`checkAddition` message, emirate display names).
+5. Native Arabic/pharmacy review, then Arabic plural forms if the reviewed copy needs
+   dual/few/many.
 
 ### What changed
 
