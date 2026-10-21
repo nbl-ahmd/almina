@@ -1,44 +1,181 @@
-/* Al Mina theme values. Component layout/state styling lives in Tailwind classes. */
+/* Al Mina storefront theme. Component layout/state styling lives in Tailwind classes.
+   Direction: warm neutral canvas, ink actions, hairline borders, generous radii and
+   pastel bento surfaces. Tokens cascade to every shared control and route. */
 .storefront-shell {
-  --color-ink: #19213b;
-  --color-muted: #61677a;
-  --color-brand: #3456da;
-  --color-brand-hover: #2545bf;
-  --color-accent: #e9edff;
-  --color-page: #fafaff;
-  --color-surface: #fff;
-  --color-subtle: #f1f3fc;
-  --color-border: #e7e9f1;
-  --color-line: #e7e9f1;
-  --color-sale: #ac2632;
+  --color-ink: #192321;
+  --color-muted: #56605d;
+  --color-brand: #ff6363;
+  --color-brand-hover: #f35353;
+  --color-accent: #e2f1ee;
+  --color-page: #fafbfa;
+  --color-surface: #ffffff;
+  --color-subtle: #f3f6f5;
+  --color-border: #dce3e0;
+  --color-line: #dce3e0;
+  --color-sale: #a32b38;
   --color-sale-surface: #fff0f1;
-  --color-focus: #176784;
-  --color-ocean: #252b49;
-  --color-teal: #2d4dc5;
-  --radius-control: 8px;
-  --radius-card: 12px;
-  --shadow-card: 0 4px 16px rgb(32 62 70 / 5%);
-  --shadow-raised: 0 10px 28px rgb(32 62 70 / 10%);
+  --color-focus: #192321;
+  --color-ocean: #334a46;
+  --color-teal: #126157;
+  --color-warning: #79501c;
+  --color-warning-surface: #fff8e6;
+  --color-control-border: #8b9892;
+  --color-control-hover: #586d63;
+  --color-control-disabled: #eef0f4;
+  --color-care-blue: #e6f2fc;
+  --color-care-mint: #e6f3e9;
+  --color-care-peach: #fff0e9;
+  --color-care-sun: #fbf6d9;
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-panel: 20px;
+  --shadow-card: 0 6px 18px rgb(25 35 33 / 5%);
+  --shadow-raised: 0 16px 45px -18px rgb(25 35 33 / 24%);
   --content-width: 1344px;
 }
 
-/* Desktop sidebar reuses native details: the closed disclosure stays collapsed
-   on mobile, but its filter contents must remain visible on desktop. Chromium's
-   details content-visibility cannot be overridden by child display utilities. */
+/* Component defaults live in the components layer so Tailwind utilities can override. */
+@layer components {
+/* The floating mobile navigation supplies its own clearance; the footer reserves bottom space. */
+body:has(.storefront-shell) { padding-bottom: 0; }
+
+/* Typography: quieter headings, tighter display tracking. */
+.storefront-shell h1,
+.storefront-shell h2,
+.storefront-shell h3 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.storefront-shell h1 {
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 1.08;
+}
+.storefront-shell ::selection {
+  background: #ffd9d5;
+  color: #15171a;
+}
+.storefront-shell input {
+  caret-color: #a32b38;
+}
+
+/* Neutral controls by default; coral is an explicit, selective emphasis. */
+.storefront-shell button:not([data-slot]):not([role='checkbox']),
+.storefront-shell .button {
+  border-radius: 12px;
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  box-shadow: 0 1px 1px rgb(21 23 26 / 8%);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+.storefront-shell button:not([data-slot]):not([role='checkbox']):hover:not(:disabled),
+.storefront-shell .button:hover {
+  background: var(--color-subtle);
+  border-color: var(--color-control-hover);
+  text-decoration: none;
+}
+.storefront-shell button:not([data-slot]):not([role='checkbox']):active:not(:disabled),
+.storefront-shell .button:active {
+  background: var(--color-subtle);
+}
+.storefront-shell button:not([data-slot]):disabled {
+  background: var(--color-control-disabled);
+  border-color: var(--color-border);
+  color: var(--color-muted);
+  box-shadow: none;
+}
+.storefront-shell .button-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-ink);
+  box-shadow: none;
+}
+.storefront-shell .button-secondary:hover {
+  background: var(--color-subtle);
+  border-color: var(--color-control-hover);
+  color: var(--color-ink);
+}
+
+/* Inputs: soft filled fields that lift to white on focus. */
+.storefront-shell input:not([data-slot]),
+.storefront-shell select:not([data-slot]) {
+  min-height: 48px;
+  border: 1px solid var(--color-control-border);
+  border-radius: 12px;
+  background: var(--color-subtle);
+  padding: 12px 16px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.storefront-shell input:not([data-slot]):hover,
+.storefront-shell select:not([data-slot]):hover {
+  border-color: var(--color-control-hover);
+}
+.storefront-shell input:not([data-slot]):focus,
+.storefront-shell select:not([data-slot]):focus {
+  background: var(--color-surface);
+}
+.storefront-shell input[type='checkbox'],
+.storefront-shell input[type='radio'] {
+  min-height: 0;
+  width: 1.25rem;
+  padding: 0;
+}
+.storefront-shell label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+.storefront-shell :focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+}
+
+/* Fixed controls on mobile must not cover the final footer rows. */
+@media (max-width: 767px) {
+  body:has(.pdp-purchase) .storefront-footer,
+  body:has(.cart-mobile-bar) .storefront-footer {
+    padding-bottom: calc(256px + env(safe-area-inset-bottom));
+  }
+
+  /* Purchase actions dock above the floating navigation as a matching card. */
+  .mobile-action-bar {
+    position: fixed;
+    inset-inline: 0.75rem;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 19;
+    border-radius: var(--radius-panel);
+    background: rgb(255 255 255 / 94%);
+    box-shadow: var(--shadow-raised);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    padding: 0.5rem;
+  }
+}
+
+/* Desktop filters reuse native details: keep contents visible. */
 @media (min-width: 1024px) {
   .storefront-shell .catalog-filters::details-content { content-visibility: visible; }
   .storefront-shell .catalog-filters > .filters { display: grid; }
 }
 
-
 /* Deliberate motion: manual campaign changes and direct manipulation feedback. */
-@keyframes campaign-enter { from { opacity: .8; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: no-preference) {
-  .campaign-frame:not([hidden]) { animation: campaign-enter 240ms cubic-bezier(.16,1,.3,1); }
-  .storefront-shell .button:active, .storefront-shell button:active:not(:disabled) { transform: scale(.98); }
+@keyframes campaign-enter {
+  from { opacity: 0.8; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
 }
-.storefront-shell ::selection { background: #dce4ff; color: #19213b; }
-.storefront-shell input { caret-color: #3456da; }
+@media (prefers-reduced-motion: no-preference) {
+  .campaign-frame:not([hidden]) { animation: campaign-enter 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .storefront-shell .button:active,
+  .storefront-shell button:active:not(:disabled) { transform: scale(0.985); }
+}
 
 /* Horizontal shelves retain scrolling without decorative browser chrome. */
 .storefront-shell .scrollbar-none { scrollbar-width: none; }
@@ -47,5 +184,38 @@
 /* Purchase bars sit above mobile navigation; the help control clears both. */
 @media (max-width: 767px) {
   .storefront-shell:has(.pdp-page) .floating-contact,
-  .storefront-shell:has(.cart-page) .floating-contact { bottom: calc(178px + env(safe-area-inset-bottom)); }
+  .storefront-shell:has(.cart-page) .floating-contact { bottom: calc(196px + env(safe-area-inset-bottom)); }
+}
+
+@layer components {
+  .storefront-shell main { padding-bottom: 3rem; }
+  .storefront-shell a.text-brand, .storefront-shell .text-teal { color: var(--color-teal); }
+  .storefront-shell a.button, .storefront-shell .bg-brand { color: var(--color-ink); }
+  .storefront-shell .product-card { box-shadow: none; }
+  .storefront-shell .product-card:hover { border-color: var(--color-control-hover); }
+  .storefront-shell .brand-rail { scrollbar-width: none; }
+  .storefront-shell .brand-rail::-webkit-scrollbar { display: none; }
+  .storefront-shell [data-slot="field"] { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .storefront-shell [data-editorial-stack], .storefront-shell [data-reveal-word] { transform: none; opacity: 1; }
+}
+
+/* Campaign and focused product purchase actions earn the coral accent. */
+.storefront-shell .button-accent {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-ink);
+}
+.storefront-shell .button-accent:hover {
+  background: var(--color-brand-hover);
+  border-color: var(--color-brand-hover);
+}
+
+/* Navigation opens close to its trigger; commerce remains still. */
+@keyframes care-navigation-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-mega-panel[data-state='open'],
+  .storefront-menu-sheet[data-state='open'] { animation: care-navigation-enter 160ms cubic-bezier(0.16,1,0.3,1); }
+  .storefront-search-panel { animation: care-navigation-enter 160ms cubic-bezier(0.16,1,0.3,1); }
 }

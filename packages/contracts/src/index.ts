@@ -55,3 +55,5 @@ export * from './product-content';
 export * from "./growth";
 export * from './serviceability';
 export * from './retention';
+
+export * from "./wholesale";

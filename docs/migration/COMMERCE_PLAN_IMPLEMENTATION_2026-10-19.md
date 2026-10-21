@@ -22,7 +22,7 @@ This checkpoint implements the homepage/discovery portion of `outputs/commerce-d
 
 | Work | Current status / dependency |
 |---|---|
-| Full campaign CMS: live copy, product pins, dates, terms, eligibility, mobile/desktop previews | Existing banner name/image/link supported. Structured campaign scheduling/collections administration remains to be built. Collection definitions are currently code-managed. |
+| Full campaign CMS: live copy, product pins, dates, terms, eligibility, mobile/desktop previews | Implemented structured campaign editor, desktop/mobile artwork selection and shared preview, hero/supporting placements and priorities, ordered product pins, scheduling and advisory readiness. Eligibility/exclusions are staff-authored terms; no automatic discount. See [20 October campaign checkpoint](CAMPAIGN_MERCHANDISING_2026-10-20.md). Homepage collection definitions remain code-managed. |
 | Canonical shopper taxonomy, clean ERP display names, verified pack facts, broad image coverage | Existing ERP/admin content retained. Pharmacy/merchandiser must verify product facts and authorize source images; no bulk inferred clinical claims or identity changes made here. |
 | Full listing/PDP redesign, richer facets, typo-tolerant autocomplete, compatibility-aware recommendations | Listing/PDP/cart redesign and bounded search suggestions are implemented. This follow-up adds server-applied in-stock, AED price range and stable sort filters; active sale prices drive filtering and sorting. Compatibility-aware recommendations remain open. |
 | Brand landing pages | Brand discovery links currently use search; dedicated canonical brand pages require reliable canonical brand coverage. |

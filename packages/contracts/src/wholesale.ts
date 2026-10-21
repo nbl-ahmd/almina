@@ -1,0 +1,16 @@
+import { z } from 'zod';
+const mongoId = z.string().regex(/^[a-f0-9]{24}$/i).transform(value => value.toLowerCase());
+export const wholesaleTypeId = z.string().regex(/^[a-z][a-z0-9-]{1,39}$/);
+export const wholesaleTypeSchema = z.object({ id: wholesaleTypeId, name: z.string().trim().min(2).max(80), active: z.boolean(), allowMedicines: z.boolean().default(false), revision: z.number().int().nonnegative() }).strict();
+export const wholesalePriceSchema = z.object({ typeId: wholesaleTypeId, unitPriceMinor: z.number().int().min(1).max(100000000), minimumQuantity: z.number().int().min(1).max(1000), quantityMultiple: z.number().int().min(1).max(1000), maximumQuantity: z.number().int().min(1).max(1000) }).strict().refine(value => value.minimumQuantity <= value.maximumQuantity && value.minimumQuantity % value.quantityMultiple === 0 && value.maximumQuantity >= value.quantityMultiple, 'Minimum quantity must be a case multiple within the maximum.');
+export const wholesaleTermsSchema = z.object({ productId: mongoId, enabled: z.boolean(), prices: z.array(wholesalePriceSchema).max(32), revision: z.number().int().nonnegative() }).strict().refine(value => new Set(value.prices.map(price => price.typeId)).size === value.prices.length, 'Duplicate account type.');
+export const wholesaleAccountInputSchema = z.object({ email: z.email().max(254).transform(value => value.toLowerCase()), businessName: z.string().trim().min(2).max(160), typeId: wholesaleTypeId, approval: z.enum(['approved', 'suspended']), verificationReference: z.string().trim().min(3).max(500), scope: z.enum(['assigned', 'type']), productIds: z.array(mongoId).max(1000), categoryIds: z.array(mongoId).max(100), revision: z.number().int().nonnegative() }).strict();
+export const wholesaleAccountSchema = wholesaleAccountInputSchema.extend({ accepted: z.boolean() });
+export const wholesaleInviteInputSchema = z.object({ email: z.email().max(254).transform(value => value.toLowerCase()), revision: z.number().int().nonnegative() }).strict();
+export const wholesaleAcceptSchema = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{43}$/) }).strict();
+export const wholesaleQuerySchema = z.object({ cursor: mongoId.optional(), q: z.string().trim().max(80).optional() }).strict();
+export const wholesaleProductSchema = z.object({ productId: mongoId, sku: z.string(), name: z.string(), categoryName: z.string(), stock: z.number().int().nonnegative(), images: z.array(z.string()).max(8), price: wholesalePriceSchema });
+export const wholesaleCatalogSchema = z.object({ businessName: z.string(), typeName: z.string(), products: z.array(wholesaleProductSchema), nextCursor: mongoId.nullable() });
+export type WholesalePrice = z.infer<typeof wholesalePriceSchema>;
+export type WholesaleAccount = z.infer<typeof wholesaleAccountSchema>;
+export type WholesaleProduct = z.infer<typeof wholesaleProductSchema>;

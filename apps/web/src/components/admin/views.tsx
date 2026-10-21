@@ -248,7 +248,7 @@ export function OrderDetail({
       <PageHeader
         eyebrow="Orders"
         title={`Order ${display(order.orderId)}`}
-        description="Customer, delivery and recorded line details for this order."
+        description={order.channel==='wholesale'?`Wholesale · ${display(record(order.wholesale).businessName)} · ${display(record(order.wholesale).typeId)}`:"Customer, delivery and recorded line details for this order."}
         actions={
           <>
             <Badge tone={orderStatusTone(status)} dot>

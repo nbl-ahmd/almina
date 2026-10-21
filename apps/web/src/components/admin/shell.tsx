@@ -48,6 +48,7 @@ const groups: NavGroup[] = [
   {
     label: 'Commerce',
     items: [
+      { id: 'wholesale', label: 'Wholesale', href: '/admin/wholesale', icon: UsersIcon },
       { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
     ],
   },

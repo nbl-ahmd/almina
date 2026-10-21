@@ -1,3 +1,6 @@
+import { getHomepageCampaigns } from '../../lib/server/growth';
+import { getLocale } from '../../lib/server/i18n';
+import { shopText as u } from '../../lib/i18n-storefront';
 import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
 import { ScrollReveal } from "../../components/scroll-reveal";
@@ -5,6 +8,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { CatalogLoading } from "../../components/catalog-loading";
 import {
+  HomeManagedCampaigns,
+  HomeBenefits,
   HomeBrandStrip,
   HomeCollectionTiles,
   HomeCompactShelf,
@@ -29,6 +34,7 @@ import {
   collectionHref,
   catalogueBrands,
   uniqueProducts,
+  prioritizeShelf,
 } from "../../lib/catalog/merchandising";
 import { getCollectionProducts } from "../../lib/server/collections";
 
@@ -63,7 +69,8 @@ function categoryRank(name: string) {
   return index < 0 ? 99 : index;
 }
 async function HomeContent() {
-  const [catalogue, settledCollections] = await Promise.all([
+  const locale = await getLocale();
+  const [catalogue, settledCollections, campaigns] = await Promise.all([
     Promise.allSettled([
       getCategories(),
       getProducts({ featured: true }),
@@ -74,6 +81,7 @@ async function HomeContent() {
     Promise.allSettled(
       homeCollections.map((collection) => getCollectionProducts(collection)),
     ),
+    getHomepageCampaigns(locale).catch(()=>[]),
   ]);
   const collectionResults = settledCollections.map((result) =>
     result.status === "fulfilled" ? result.value : [],
@@ -113,11 +121,15 @@ async function HomeContent() {
     0,
     4,
   );
-  const skin = collectionResults[0] ?? [];
-  const daily = (collectionResults[2] ?? []).filter(
+  // Prefer new discoveries, but keep useful collections visible in a small catalogue.
+  const offerShelf = offers.filter(
     (product) => !shelf.some((item) => item._id === product._id),
   );
-  const budget = collectionResults[3] ?? [];
+  const skin = collectionResults[0] ?? [];
+  const dailyProducts = collectionResults[2] ?? [];
+  const daily = prioritizeShelf(dailyProducts, shelf);
+  const budgetProducts = collectionResults[3] ?? [];
+  const budget = prioritizeShelf(budgetProducts, [...shelf, ...daily]);
   const budgetCategories = new Set<string>();
   const variedBudget = budget.filter((product) => {
     if (budgetCategories.has(product.category._id)) return false;
@@ -125,9 +137,6 @@ async function HomeContent() {
     return true;
   });
   const budgetShelf = uniqueProducts([...variedBudget, ...budget]);
-  const showBudget =
-    budget.length >= 4 &&
-    new Set(budget.map((product) => product.category._id)).size >= 2;
   const collectionTiles = homeCollections
     .slice(0, 3)
     .map((collection, index) => ({
@@ -137,61 +146,67 @@ async function HomeContent() {
       products: (collectionResults[index] ?? []).filter(
         (product) => productImage(product) !== "/product-placeholder.svg",
       ),
-      tone: ["bg-[#eef0ff]", "bg-[#fff1e8]", "bg-[#eaf6f0]"][index]!,
+      tone: ["bg-[#eaf1ea]", "bg-[#f7ece3]", "bg-[#eceaf5]"][index]!,
     }));
   return (
-    <div className="home-page flex flex-col gap-5 pb-2 [&_section]:mb-0 md:gap-7">
+    <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
       <ScrollReveal>
         <HomeHero
-          products={hero.length ? hero : available.slice(0, 2)}
+          products={hero}
           banners={banners}
+          campaigns={campaigns}
         />
         <HomeCategories
           categories={[...categories].sort(
             (a, b) => categoryRank(a.name) - categoryRank(b.name),
           )}
         />
+        <HomeBenefits />
         <HomeShelf
-          title="Your everyday essentials"
-          description="Small essentials. A little more care, every day."
+          title={u(locale,"Your everyday essentials")}
+          description={u(locale,"Small essentials. A little more care, every day.")}
           products={shelf}
           href="/products"
         />
         {!all.length ? (
           <section className="rounded-2xl border border-border p-6">
-            <h2 className="text-xl">The catalogue is taking a moment.</h2>
+            <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
             <p className="text-sm text-muted">
-              You can try again or contact the pharmacy for product enquiries.
+              {u(locale,"You can try again or contact the pharmacy for product enquiries.")}
             </p>
             <Link className="button rounded-full text-sm" href="/">
-              Try again
+              {u(locale,"Try again")}
             </Link>
           </section>
         ) : null}
         <HomeCollectionTiles collections={collectionTiles} />
-        <HomeProductCarousel products={uniqueProducts([...varied, ...hero]).slice(0,4)} />
-        <HomeRoutine products={skin} />
+        {offerShelf.length >= 2 ? (
+          <HomeShelf
+            title={u(locale,"A little more value")}
+            description={u(locale,"Current offers, with the savings shown upfront.")}
+            products={offerShelf}
+            href="/offers"
+          />
+        ) : null}
+        <HomeProductCarousel products={photoReady.filter(product => !shelf.some(item => item._id === product._id)).slice(0,4)} />
         <HomeCompactShelf
-          title="Personal care for every day"
-          description="Discover body, hair and personal care essentials."
-          products={daily.length >= 2 ? daily : []}
+          title={u(locale,"Personal care for every day")}
+          description={u(locale,"Discover body, hair and personal care essentials.")}
+          products={daily}
           href="/collections/daily-care"
         />
+        <HomeRoutine products={skin} />
         <HomeEditorial />
         <HomeCompactShelf
-          title="AED 50 & under"
-          description="Available essentials within your budget."
-          products={showBudget ? budgetShelf : []}
+          title={u(locale,"AED 50 & under")}
+          description={u(locale,"Available essentials within your budget.")}
+          products={budgetShelf}
           href="/collections/under-50"
         />
         <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} />
-        <HomeShelf
-          title="A little more value"
-          description="Current offers, with the savings shown upfront."
-          products={offers}
-          href="/offers"
-        />
-        <RecentlyViewed cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} /><HomeSupport />
+        <HomeManagedCampaigns campaigns={campaigns} />
+        <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
+        <HomeSupport />
       </ScrollReveal>
     </div>
   );

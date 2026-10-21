@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { chooseUsage, consentKey, enableUsageReports, privacyBlocked, recordCommerceEvent, usageChoice } from '../lib/telemetry/browser';
 import type { Choice } from '../lib/telemetry/reporter';
+
+/** Optional usage reporting controls, shown inside the storefront footer panel. */
 export function UsagePreferences() {
   const [choice, setChoice] = useState<Choice>('unset');
   const [blocked, setBlocked] = useState(true);
@@ -29,13 +31,13 @@ export function UsagePreferences() {
     if (!chooseUsage(value)) { setError('Your preference could not be saved. Optional reports remain disabled.'); return; }
     setChoice(value); setEditing(false); setError('');
   }
-  return <section className="mx-auto max-w-[1280px] border-t border-border px-[var(--gutter)] py-6 text-sm" aria-label="Optional usage reports">
-    {!ready ? <p role="status">Loading usage preferences…</p> : choice === 'unset' || editing ? <>
-      <h2 className="mb-2 text-base">Optional usage reports</h2>
-      <p className="max-w-[70ch] text-muted">Help improve shopping and checkout with optional usage reports. Reports exclude products you view or buy, contact details and order details. Changing your preference stops future reports.</p>
-      {blocked ? <p role="status">Your browser’s privacy preference disables optional reports.</p> : null}
+  return <section className="border-t border-border py-6 text-sm text-ink" aria-label="Optional usage reports">
+    {!ready ? <p role="status" className="text-muted">Loading usage preferences…</p> : choice === 'unset' || editing ? <>
+      <h2 className="mb-2 text-base font-semibold text-ink">Optional usage reports</h2>
+      <p className="max-w-[70ch] leading-6 text-muted">Help improve shopping and checkout with optional usage reports. Reports exclude products you view or buy, contact details and order details. Changing your preference stops future reports.</p>
+      {blocked ? <p role="status" className="text-muted">Your browser’s privacy preference disables optional reports.</p> : null}
       <div className="flex flex-wrap gap-3"><button type="button" disabled={blocked} onClick={() => select('allowed')}>Allow optional reports</button><button type="button" className="button-secondary" onClick={() => select('declined')}>Decline optional reports</button></div>
     </> : <div className="flex flex-wrap items-center gap-3"><span>Optional usage reports: {blocked || choice !== 'allowed' ? 'off' : 'on'}.</span><button type="button" className="button-secondary" onClick={() => setEditing(true)}>Usage preferences</button></div>}
-    {error ? <p role="alert">{error}</p> : null}
+    {error ? <p role="alert" className="mt-3 text-sale">{error}</p> : null}
   </section>;
 }

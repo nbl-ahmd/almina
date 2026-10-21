@@ -11,6 +11,7 @@ for (const width of [360, 390, 768, 1280]) test(`Next checkout at ${width}px con
   await prepare(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await expect(page.getByRole('group', { name: 'Contact and delivery details' })).toBeVisible();
+  if(width===390||width===1280) await page.screenshot({path:`outputs/storefront-controls-2026-10-20/checkout-${width}.png`,fullPage:true});
   await page.evaluate(axe);
   const violations = await page.evaluate(async () => {
     const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
@@ -182,10 +183,10 @@ test('location gateway rejects cross-origin, GET and invalid coordinates', async
   expect((await request.get(origin + '/api/checkout/location')).status()).toBe(405);
 });
 
-test('delivery area prompt saves a chosen area, persists on reload and prefills checkout', async ({ page }) => {
+test('header delivery selector saves an area, persists on reload and prefills checkout', async ({ page }) => {
   await page.goto(origin + '/');
-  await expect(page.getByRole('complementary', { name: 'Choose your delivery area' })).toBeVisible();
-  await page.getByRole('button', { name: 'Choose area', exact: true }).click();
+  await expect(page.getByRole('complementary', { name: 'Choose your delivery area' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Choose delivery area', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Where are we delivering?' });
   await expect(dialog).toBeVisible();
   await dialog.getByRole('combobox', { name: 'Delivery emirate', exact: true }).selectOption('Dubai');

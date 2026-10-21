@@ -55,7 +55,7 @@ export async function confirmRewardDelivery(db:Db,raw:unknown,actor:string){
  const session=db.client.startSession();let outcome={awarded:0,replayed:false};
  try{await session.withTransaction(async()=>{
   const order=await db.collection('orders').findOne({orderId:input.data.orderId,schemaVersion:2,status:'dispatched'},{session,...opts});
-  if(!order)throw new HttpError(409,'INVALID_TRANSITION');
+  if(!order||order.channel==='wholesale')throw new HttpError(409,'INVALID_TRANSITION');
   if(order.rewardDelivery){outcome={awarded:order.rewardDelivery.points??0,replayed:true};return;}
   const policy=await rewardsPolicy(db,session);if(!policy.enabled)throw new HttpError(409,'INVALID_TRANSITION');
   const customer=await db.collection('customers').findOne({email:normalizedEmail(order.customer?.email??''),disabled:{$ne:true},verifiedAt:{$exists:true}},{session,...opts});

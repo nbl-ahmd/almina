@@ -1,3 +1,6 @@
+import { installWholesaleRoutes } from '../modules/wholesale/routes.js';
+import { homepageCampaigns, reviewCampaign } from '../modules/growth/campaigns.js';
+import { campaignReviewSchema, legacyGrowthPageSchema } from '@almina/contracts';
 import { createHash as growthHash } from 'node:crypto';
 import { retentionPolicySchema, reminderDtoSchema } from '@almina/contracts';
 import { retentionPolicy, saveRetentionPolicy, retentionProviderReady, customerReminders, updateCustomerReminder, restoreRecoveryCart, unsubscribeReminder } from '../modules/growth/retention.js';
@@ -13,7 +16,7 @@ import { commercePolicySchema } from '@almina/contracts';
 import { indexSearchBatch,suggestProducts } from '../modules/growth/search.js';
 import { customerAuthOptions,customerCookie,customerToken,requestEmailCode,verifyEmailCode,googleSignIn,customerIdentity,customerLogout,customerOrders,saveCustomerPreferences,customerAddresses,updateCustomerAddresses } from '../modules/growth/customers.js';
 import { growthPageSchema, pharmacyProfileSchema, growthKinds, growthSlug } from '@almina/contracts';
-import { growthPages, growthPage, saveGrowthPage, pharmacyProfile, savePharmacyProfile } from '../modules/growth/repository.js';
+import { growthPages, growthPage, saveGrowthPage, saveLegacyGrowthPage, pharmacyProfile, savePharmacyProfile } from '../modules/growth/repository.js';
 import { z as growthZ } from 'zod';
 import { growthMetrics } from '../modules/growth/metrics.js';
 import { growthProductOptions,growthCategoryOptions } from '../modules/growth/selectors.js';
@@ -212,8 +215,8 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     router.post(`/customers/${action}`,...(['email','verify','google'].includes(action)?[customerAuthLimit]:[]),async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);
       if(action==='email'){send(res,growthZ.object({challenge:growthZ.string()}),await requestEmailCode(await getDb(),req.body));return;}
       if(action==='verify'||action==='google'){const login=action==='verify'?await verifyEmailCode(await getDb(),req.body):await googleSignIn(await getDb(),req.body);res.cookie(customerCookie(development),login.token,{httpOnly:true,secure:!development,sameSite:'lax',path:'/',maxAge:30*86400000});send(res,customerSchema,login.customer);return;}
+      if(action==='logout'){validate(emptyQuerySchema,req.body);await customerLogout(await getDb(),customerToken(req.headers.cookie,development));res.clearCookie(customerCookie(development),{httpOnly:true,secure:!development,sameSite:'lax',path:'/'});res.status(204).end();return;}
       const customer=await limitedCustomer(req);
-      if(action==='logout'){await customerLogout(await getDb(),customerToken(req.headers.cookie,development));res.clearCookie(customerCookie(development),{httpOnly:true,secure:!development,sameSite:'lax',path:'/'});res.status(204).end();return;}
       send(res,growthZ.object({marketingEmail:growthZ.boolean(),marketingWhatsapp:growthZ.boolean()}),await saveCustomerPreferences(await getDb(),customer.id,req.body));
     });
     router.all(`/customers/${action}`,(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
@@ -248,19 +251,23 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   router.all('/admin/growth/delivered',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   read('/customers/rewards',async(req,res)=>{validate(emptyQuerySchema,req.query);const user=await sessionCustomer(req);const data=await rewardAccount(await getDb(),user.id);send(res,growthZ.object({enabled:growthZ.boolean(),points:growthZ.number().int(),pointsPerAed:growthZ.number().int(),pointsPerVoucher:growthZ.number().int(),voucherValueMinor:growthZ.number().int(),minimumSpendMinor:growthZ.number().int(),voucherDays:growthZ.number().int(),terms:growthZ.string(),referralCode:growthZ.string().nullable(),vouchers:growthZ.array(growthZ.object({code:growthZ.string(),valueMinor:growthZ.number(),expiresAt:growthZ.coerce.date(),minimumSpendMinor:growthZ.number()}))}),data);});
   for(const action of ['redeem','referral-code','referral'] as const){router.post('/customers/'+action,async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const user=await limitedCustomer(req),db=await getDb();if(action==='redeem')send(res,growthZ.object({code:growthZ.string(),valueMinor:growthZ.number(),expiresAt:growthZ.coerce.date()}),await redeemPoints(db,user.id,req.body));else if(action==='referral-code'){validate(emptyQuerySchema,req.body);send(res,growthZ.object({code:growthZ.string()}),await referralCode(db,user.id));}else send(res,growthZ.object({attached:growthZ.boolean()}),await attachReferral(db,user,req.body));});router.all('/customers/'+action,(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});}
-  const growthQuery=growthZ.object({kind:growthZ.enum(growthKinds).optional(),locale:growthZ.enum(['en','ar']).default('en'),offset:growthZ.coerce.number().int().min(0).max(10000).default(0)}).strict();
-  const pageQuery=growthZ.object({kind:growthZ.enum(growthKinds),slug:growthSlug,locale:growthZ.enum(['en','ar']).default('en')}).strict();
-  const growthList=growthZ.object({items:growthZ.array(growthPageSchema),hasNext:growthZ.boolean()});
-  read('/growth/pages',async(req,res)=>{const query=validate(growthQuery,req.query);send(res,growthList,await growthPages(await getDb(),false,query.kind,query.locale,query.offset));});
-  read('/growth/page',async(req,res)=>{const query=validate(pageQuery,req.query);send(res,growthPageSchema,await growthPage(await getDb(),query.kind,query.slug,query.locale));});
+  const growthQuery=growthZ.object({kind:growthZ.enum(growthKinds).optional(),locale:growthZ.enum(['en','ar']).default('en'),offset:growthZ.coerce.number().int().min(0).max(10000).default(0),merchandising:growthZ.literal('1').optional()}).strict();
+  const pageQuery=growthZ.object({kind:growthZ.enum(growthKinds),slug:growthSlug,locale:growthZ.enum(['en','ar']).default('en'),merchandising:growthZ.literal('1').optional()}).strict();
+  const growthList=(modern:boolean)=>growthZ.object({items:growthZ.array(modern?growthPageSchema:legacyGrowthPageSchema),hasNext:growthZ.boolean()});
+  read('/growth/campaigns',async(req,res)=>{const query=validate(growthZ.object({locale:growthZ.enum(['en','ar']).default('en')}).strict(),req.query);send(res,growthZ.array(growthPageSchema).max(12),await homepageCampaigns(await getDb(),query.locale));});
+  router.post('/admin/growth/campaign-review',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);verifyBrowserMutation(req,origins);send(res,campaignReviewSchema,await reviewCampaign(await getDb(),req.body));});
+  router.all('/admin/growth/campaign-review',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  read('/growth/pages',async(req,res)=>{const query=validate(growthQuery,req.query);send(res,growthList(query.merchandising==='1'),await growthPages(await getDb(),false,query.kind,query.locale,query.offset));});
+  read('/growth/page',async(req,res)=>{const query=validate(pageQuery,req.query);send(res,query.merchandising==='1'?growthPageSchema:legacyGrowthPageSchema,await growthPage(await getDb(),query.kind,query.slug,query.locale));});
   read('/growth/profile',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,pharmacyProfileSchema,await pharmacyProfile(await getDb()));});
-  read('/admin/growth/pages',async(req,res)=>{await identity(req,true);const query=validate(growthQuery,req.query);send(res,growthList,await growthPages(await getDb(),true,query.kind,query.locale,query.offset));});
+  read('/admin/growth/pages',async(req,res)=>{await identity(req,true);const query=validate(growthQuery,req.query);send(res,growthList(query.merchandising==='1'),await growthPages(await getDb(),true,query.kind,query.locale,query.offset));});
   read('/admin/growth/products',async(req,res)=>{await identity(req,true);const query=validate(growthZ.object({q:growthZ.string().trim().min(2).max(80).optional(),ids:growthZ.string().max(499).optional()}).strict(),req.query);send(res,growthZ.array(growthZ.object({id:growthZ.string(),name:growthZ.string(),productId:growthZ.string(),category:growthZ.string()})),await growthProductOptions(await getDb(),query));});
   read('/admin/growth/categories',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);send(res,growthZ.array(growthZ.object({id:growthZ.string(),name:growthZ.string()})),await growthCategoryOptions(await getDb()));});
   router.get('/admin/growth/profile',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,pharmacyProfileSchema,await pharmacyProfile(await getDb(),true));});
   for(const part of ['page','profile'] as const) {
-    router.post(`/admin/growth/${part}`,async(req,res)=>{const user=await identity(req,true);validate(emptyQuerySchema,req.query);verifyBrowserMutation(req,origins);if(part==='page')send(res,growthPageSchema,await saveGrowthPage(await getDb(),req.body,user.id));else send(res,pharmacyProfileSchema,await savePharmacyProfile(await getDb(),req.body,user.id));});
+    router.post(`/admin/growth/${part}`,async(req,res)=>{const user=await identity(req,true);const query=validate(part==='page'?growthZ.object({merchandising:growthZ.literal('1').optional()}).strict():emptyQuerySchema,req.query);verifyBrowserMutation(req,origins);if(part==='page'){const modern='merchandising' in query&&query.merchandising==='1';send(res,modern?growthPageSchema:legacyGrowthPageSchema,await (modern?saveGrowthPage:saveLegacyGrowthPage)(await getDb(),req.body,user.id));}else send(res,pharmacyProfileSchema,await savePharmacyProfile(await getDb(),req.body,user.id));});
     router.all(`/admin/growth/${part}`,(_req,res,next)=>{res.set('Allow',part==='profile'?'GET, HEAD, POST':'POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   }
+  installWholesaleRoutes(router,getDb,origins,req=>identity(req,true),req=>limitedCustomer(req),onOrderCreated);
   return router;
 }

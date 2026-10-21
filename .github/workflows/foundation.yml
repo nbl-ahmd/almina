@@ -118,6 +118,14 @@ jobs:
           API_RESULT: ${{ needs.api.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
         run: |
-          test "$QUALITY_RESULT" = success
-          test "$API_RESULT" = success
-          test "$BROWSER_RESULT" = success
+          failed=0
+          for result in "quality:$QUALITY_RESULT" "api:$API_RESULT" "browser:$BROWSER_RESULT"; do
+            job=${result%%:*}
+            status=${result#*:}
+            echo "$job: $status" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$status" != success ]; then
+              echo "::error::$job finished with $status. Open the $job job for the underlying failure."
+              failed=1
+            fi
+          done
+          exit "$failed"

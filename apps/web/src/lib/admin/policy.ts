@@ -25,6 +25,7 @@ export const sections = [
   "batch",
   "catalog-import",
   "growth",
+  "wholesale",
 ] as const;
 export type Section = (typeof sections)[number];
 export function canVisit(role: Identity["role"], section: string) {
@@ -230,6 +231,10 @@ const fields = new Set([
   "link",
   "status",
   "orderId",
+  "channel",
+  "wholesale",
+  "businessName",
+  "typeId",
   "snapshotAvailable",
   "buildingname",
   "flatno",

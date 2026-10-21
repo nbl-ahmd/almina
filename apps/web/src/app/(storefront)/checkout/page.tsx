@@ -3,7 +3,7 @@ import { CheckoutForm } from '../../../components/checkout-form';
 import { getWebEnvironment } from '../../../lib/server/env';
 import { getLocale } from '../../../lib/server/i18n';
 import { t } from '../../../lib/i18n';
-export const metadata = { title: 'Checkout', robots: { index: false, follow: true } };
+export async function generateMetadata() { return { title: t(await getLocale(), 'checkoutTitle'), robots: { index: false, follow: true } }; }
 export default async function CheckoutPage() {
   const locale = await getLocale();
   if (getWebEnvironment().CHECKOUT_ENABLED) return <><div className="page-heading mb-6 border-b border-border pb-5"><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h1 className="m-0 text-2xl md:text-3xl">{t(locale, 'checkoutTitle')}</h1><span className="rounded-full bg-subtle px-3 py-1.5 text-xs font-semibold text-ocean">{t(locale, 'checkoutProgress')}</span></div><p className="text-sm">{t(locale, 'checkoutIntroEnabled')}</p></div><CheckoutForm locale={locale} /></>;

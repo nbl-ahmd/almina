@@ -5,7 +5,7 @@ import { t } from '../../../lib/i18n';
 import { CartView } from '../../../components/cart-view';
 import { ProductGrid } from '../../../components/storefront';
 import { getProducts } from '../../../lib/server/catalog';
-export const metadata = { title: 'Your cart', robots: { index: false, follow: true } };
+export async function generateMetadata() { return { title: t(await getLocale(), 'cartPageTitle'), robots: { index: false, follow: true } }; }
 export default async function CartPage() {
   const locale = await getLocale();
   const products = await getProducts({featured:true}).then(result=>result.products.slice(0,2)).catch(()=>[]);

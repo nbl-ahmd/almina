@@ -1,3 +1,4 @@
+import { cloudinaryImage } from './media';
 import { z } from 'zod';
 const short = z.string().trim().max(200);
 const text = z.string().trim().max(12000);
@@ -9,6 +10,10 @@ export const growthPageSchema = z.object({
   kind:z.enum(growthKinds),slug:growthSlug,locale:z.enum(['en','ar']).default('en'),
   title:short.min(3),description:z.string().trim().max(320),body:text.default(''),
   image:safeImage.default(''),imageAlt:short.default(''),
+  mobileImage:safeImage.default(''),
+  homepagePlacement:z.enum(['none','hero','secondary']).default('none'),
+  priority:z.number().int().min(0).max(100).default(0),
+  ctaLabel:z.string().trim().max(60).default(''),
   productIds:z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(80).default([]),
   categories:z.array(z.object({label:short.min(1),href:localLink})).max(24).default([]),
   faqs:z.array(z.object({question:short.min(3),answer:z.string().trim().min(3).max(1500)})).max(15).default([]),
@@ -18,6 +23,12 @@ export const growthPageSchema = z.object({
   bundle:z.boolean().default(false),bundleReason:z.string().trim().max(600).default(''),
   terms:z.string().trim().max(3000).default(''),revision:z.number().int().nonnegative().default(0),
 }).strict().superRefine((page,ctx)=>{
+  if(page.homepagePlacement!=='none'){
+    if(page.productIds.length>40)ctx.addIssue({code:'custom',path:['productIds'],message:'Homepage campaigns support up to 40 pinned products.'});
+    if(page.kind!=='campaign')ctx.addIssue({code:'custom',path:['homepagePlacement'],message:'Only campaigns can appear in homepage campaign positions.'});
+    if(new Set(page.productIds).size!==page.productIds.length)ctx.addIssue({code:'custom',path:['productIds'],message:'Choose each campaign product once.'});
+    if(page.published&&(!page.image||!page.imageAlt||!page.ctaLabel||!page.terms))ctx.addIssue({code:'custom',path:['image'],message:'Homepage campaigns need desktop artwork, image description, button text and offer terms before publishing.'});
+  }
   if(page.startsAt&&page.endsAt&&page.startsAt>=page.endsAt)ctx.addIssue({code:'custom',path:['endsAt'],message:'End must follow start.'});
   if(page.published&&(!page.description||!page.body))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
   if(page.published&&page.healthContent&&!page.reviewer)ctx.addIssue({code:'custom',path:['reviewer'],message:'Health content needs a named pharmacy reviewer.'});
@@ -57,3 +68,23 @@ export const rewardsPolicySchema=z.object({
  terms:z.string().trim().max(6000).default(''),
 }).strict().superRefine((value,ctx)=>{if(value.enabled&&(!value.terms||!value.eligibleCategoryIds.length))ctx.addIssue({code:'custom',message:'Add programme terms and eligible categories before enabling rewards.'});});
 export type RewardsPolicy=z.infer<typeof rewardsPolicySchema>;
+
+export const campaignWarningSchema=z.object({
+  code:z.enum(['missing-artwork','unapproved-artwork','missing-mobile-artwork','missing-alt','missing-cta','missing-terms','expired','upcoming','no-products','product-unavailable','out-of-stock','missing-photo']),
+  message:z.string(),productId:z.string().optional(),
+});
+export const campaignReviewSchema=z.object({warnings:z.array(campaignWarningSchema).max(250),checkedAt:z.iso.datetime()});
+export type CampaignReview=z.infer<typeof campaignReviewSchema>;
+
+/** Same render/save policy for staff preview and both campaign artwork sizes. */
+export function campaignImageUrl(value: string, cloudName?: string): string | null {
+  const cloudinary=cloudinaryImage(value,cloudName);if(cloudinary)return cloudinary;
+  if(value.length>1000)return null;
+  try{const url=new URL(value);return url.protocol==='https:'&&url.hostname==='cdn.alminapharmacy.com'&&!url.port&&!url.username&&!url.password&&!url.search&&!url.hash&&/^\/cdn\/[a-zA-Z0-9/_-]+\.(?:png|jpe?g|webp|avif)$/.test(url.pathname)?url.href:null;}catch{return null;}
+}
+
+// Existing strict v1 clients must not receive fields they do not understand.
+export const legacyGrowthPageSchema=growthPageSchema.transform(page=>{
+ const {mobileImage,homepagePlacement,priority,ctaLabel,...legacy}=page;
+ void [mobileImage,homepagePlacement,priority,ctaLabel];return legacy;
+});

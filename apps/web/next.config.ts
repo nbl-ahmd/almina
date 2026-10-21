@@ -9,9 +9,12 @@ const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const catalogApiOrigin = process.env.LEGACY_API_ORIGIN ?? process.env.API_ORIGIN ?? 'https://almina-of4b.onrender.com';
 const catalogApiUrl = new URL(catalogApiOrigin);
 
+const verificationTag = process.env.AL_MINA_VERIFICATION_TAG;
+if (verificationTag && !/^[a-z0-9-]{1,40}$/.test(verificationTag)) throw new Error('Invalid verification build tag');
+
 const config: NextConfig = {
   // Isolate visual verification/build output from a running developer session.
-  distDir: process.env.ALMINA_LOCAL_DEMO === '1' ? '.next-demo' : process.env.AL_MINA_ISOLATED_DEV === '1' ? '.next-admin-dev' : process.env.AL_MINA_ISOLATED_BUILD === '1' ? '.next-verification' : '.next',
+  distDir: process.env.ALMINA_LOCAL_DEMO === '1' ? '.next-demo' : process.env.AL_MINA_ISOLATED_DEV === '1' ? '.next-admin-dev' : process.env.AL_MINA_ISOLATED_BUILD === '1' ? (verificationTag ? `.next-verification-${verificationTag}` : '.next-verification') : '.next',
   turbopack: { root: workspaceRoot },
   outputFileTracingRoot: workspaceRoot,
   poweredByHeader: false,

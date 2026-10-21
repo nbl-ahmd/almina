@@ -1,3 +1,5 @@
+import { prepareWholesaleProducts, wholesaleIdentity } from '../wholesale/repository.js';
+type WholesaleCustomer={id:string;email:string};
 import { voucherAllocation,consumeVoucher,reverseOrderRewards } from '../growth/rewards.js';
 import { assertServiceable } from '../growth/branches.js';
 import { familyProfile, familyFieldNames, variantLabel } from '@almina/contracts';
@@ -98,17 +100,18 @@ async function policyFrom(db: Db, session?: ClientSession): Promise<CommercePoli
   if (!parsed.success) throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
   return parsed.data;
 }
-async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, customerId?:string) {
+async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, customerId?:string, wholesale?:WholesaleCustomer) {
   const queryOptions = { ...options, ...(session ? { session } : {}) };
   const store = await db.collection('stores').findOne({}, queryOptions);
   if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
   await assertServiceable(db, input.customer);
-  const products = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
+  let products:Document[] = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
     { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
       stock: 1, disabled: 1, active: 1, published: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
   const categories = await db.collection('categories').find({ _id: { $in: products.map(product => product.category) }, disabled: { $ne: true } }, queryOptions).toArray();
   const visible = new Set(categories.map(category => String(category._id)));
   if (products.some(product => !visible.has(String(product.category)))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
+  if(wholesale){if(input.voucherCode||input.customer.email.trim().toLowerCase()!==wholesale.email.toLowerCase())throw new HttpError(403,'FORBIDDEN');products=(await prepareWholesaleProducts(db,wholesale,products,normalizeItems(input.items),session)).products;}
   const policy=await policyFrom(db,session),base=calculateQuote(input,products,policy);
   if(!input.voucherCode)return base;
   const {allocation}=await voucherAllocation(db,input.voucherCode,customerId,products,base.lines,session);
@@ -118,19 +121,19 @@ function checkoutResult(doc: Document, replayed: boolean) {
   // Public response has no PII or idempotency secret, even on a retry.
   return { id: String(doc._id), orderId: doc.orderId as string, status: doc.status as OrderStatus, totals: doc.totals as Quote, replayed };
 }
-function requestHash(input: CheckoutInput,customerId?:string) {
-  return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ) })).digest('hex');
+function requestHash(input: CheckoutInput,customerId?:string,wholesale?:WholesaleCustomer) {
+  return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(wholesale?{channel:'wholesale',owner:wholesale.id}:{}), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ) })).digest('hex');
 }
 export function createCommerceService(getDb: () => Promise<Db>) {
   return {
-    async quote(raw: unknown,customerId?:string) {
+    async quote(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer) {
       const input = parse(quoteInputSchema, raw);
-      return quoteFrom(await getDb(), input,undefined,customerId);
+      return quoteFrom(await getDb(), input,undefined,customerId,wholesale);
     },
-    async checkout(raw: unknown,customerId?:string) {
+    async checkout(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer) {
       const input = parse(checkoutInputSchema, raw);
       input.items = normalizeItems(input.items);
-      const fingerprint = requestHash(input,customerId);
+      const fingerprint = requestHash(input,customerId,wholesale);
       const key = createHash('sha256').update(input.idempotencyKey).digest('hex');
       const db = await getDb();
       const session = db.client.startSession();
@@ -147,9 +150,10 @@ export function createCommerceService(getDb: () => Promise<Db>) {
         // Driver 5 (legacy) returns commit metadata; driver 7 returns the callback value. Capture only after commit.
         await session.withTransaction(async () => {
           outcome = undefined;
+          const wholesaleAccess=wholesale?await wholesaleIdentity(db,wholesale.id,wholesale.email,session):null;
           const previous = await prior(session);
           if (previous) { outcome = previous; return; }
-          const totals = await quoteFrom(db, input, session,customerId);
+          const totals = await quoteFrom(db, input, session,customerId,wholesale);
           if (input.acceptedQuoteHash && input.acceptedQuoteHash !== quoteHash(totals)) {
             throw new HttpError(409, 'PRICE_CHANGED');
           }
@@ -174,7 +178,7 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           if (await db.collection('orders').findOne({ orderId }, { ...options, session, projection: { _id: 1 } })) {
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
-          const order = { _id, customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
+          const order = { _id, ...(wholesaleAccess?{channel:'wholesale',wholesale:{accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
             createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
@@ -192,6 +196,7 @@ export function createCommerceService(getDb: () => Promise<Db>) {
         return outcome;
       } catch (error) {
         if (typeof error === 'object' && error !== null && 'code' in error && error.code === 11000) {
+          if(wholesale)await wholesaleIdentity(db,wholesale.id,wholesale.email);
           const previous = await prior();
           if (previous) return previous;
         }

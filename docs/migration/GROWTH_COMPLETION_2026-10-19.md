@@ -42,7 +42,7 @@ The `outputs/` documents are the original brief; this file and
 | 2 | Restock / price-drop / replenishment alerts + delivery worker | **Done** (same commit, verified here) |
 | 3 | Genuinely complementary curated bundles | **Done** |
 | 4 | Verified operational branch / serviceability management | **Done** |
-| 5 | Full Arabic shopping/checkout translations | **Partial** — storefront chrome, the cart surface, the checkout form (including GPS/validation copy and the confirmation screen) and the checkout page shell are localized; catalogue/PDP and a few storefront chrome panels remain English. See “Phase 4 continuation”. |
+| 5 | Full Arabic shopping/checkout translations | **Interface code slices complete** — cart-adjacent panels, delivery/search/cart chrome, catalogue/PDP/homepage controls and server-returned cart messages/emirate labels now join the previously localized cart/checkout. Native/pharmacy review, Arabic plural review and staff-authored catalogue/editorial translations remain. See the 20 October continuation below. |
 
 Operational work that cannot be completed from code stays pharmacy-owned: Google
 Business Profile, Search Console / Merchant Center / Meta verification, advertising
@@ -113,10 +113,12 @@ Modified:
   (HTTP 422). When the rule is absent or inactive, behaviour is byte-identical to before.
 - `/ras-al-khaimah` shows the verified directory when present and otherwise keeps the
   existing four branch cards, including the Al Jazeera Al Hamra note and map link.
-- **Boundary:** this enforcement lives in the Next commerce service
-  (`apps/api/src/modules/orders/commerce.ts`). The legacy `backend/server.js` checkout
-  path is not covered. Until checkout is fully cut over, either migrate that path or
-  duplicate the rule; do not treat the browser as the boundary.
+- **Corrected boundary (20 October):** both legacy `/api/orders` quote/create and
+  v1 checkout already use `createCommerceService` from
+  `apps/api/src/modules/orders/commerce.ts`, so both enforce this rule. The legacy
+  HTTP error serializer omitted its specific code; that omission is corrected and
+  tested against all four endpoints. The checkout interface now displays the localized
+  delivery-area error. No second implementation of the policy was introduced.
 
 ### Arabic shopping/checkout (started)
 
@@ -147,15 +149,15 @@ stays staff-translated through the CMS (`locale: 'ar'`), never machine-invented.
       placeholder, saved-address control, GPS status/error strings, review/place/retry
       buttons, confirmation screen and summary rows. Currency uses
       `Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', …)`.
-- [ ] Cart-adjacent panels: `delivery-progress.tsx` free-delivery copy and
+- [x] Cart-adjacent panels: `delivery-progress.tsx` free-delivery copy and
       `customer-reminders.tsx` signup copy.
-- [ ] Storefront chrome gaps: first-visit delivery-area prompt
+- [x] Storefront chrome gaps: first-visit delivery-area prompt
       (`delivery-location.tsx`), header search placeholder/labels, cart-link label.
-- [ ] Catalogue/PDP: `catalog-list.tsx`, `product-card.tsx`, `storefront.tsx`,
-      `homepage.tsx` — cart recommendations still show “Add to cart”, “In stock”,
-      “Out of stock” and “Currently unavailable” in English.
-- [ ] Server-returned copy: the `checkAddition` cart validation message and emirate
-      option names (contract values) have no locale-aware display mapping yet.
+- [x] Catalogue/PDP: `catalog-list.tsx`, `product-card.tsx`, `storefront.tsx`,
+      `homepage.tsx` — including cart recommendations, availability, purchase and variant
+      controls, product-information panel labels and carousel controls.
+- [x] Server-returned copy: the `checkAddition` cart validation message and emirate
+      option names now have locale-aware display labels; contract values remain unchanged.
 - [ ] Native Arabic speaker / pharmacy review of every string before publication.
 - [ ] Arabic plural forms currently use a two-form `one`/`other` fallback
       (dual/few/many are not distinguished yet).
@@ -239,3 +241,61 @@ variable or they look for `.next` and fail with “Could not find a production b
 - No bundled discount, no cash value, no automatic customer messaging.
 - Do not change existing product/order identifiers, URLs or stored totals.
 - The Arabic chrome copy is a first pass and requires native/pharmacy review.
+
+
+## Phase 4 continuation — 20 October 2026
+
+Implemented the four code slices in the documented next-slice order. See
+[Arabic continuation audit](ARABIC_PHASE_FOUR_2026-10-20.md) for exact verification
+and remaining review boundaries. Earlier “still English” observations above record
+the previous checkpoint and are superseded for the named interface surfaces.
+
+- Cart-adjacent: free-delivery progress and consented reminder signup, choice labels,
+  interpolation, statuses and sign-in link. No reminder policy or email sending activated.
+- Chrome: first-visit area prompt, delivery dialog/manual/GPS messages, header search
+  and suggestion/history labels, and cart accessible names.
+- Catalogue/PDP/home: filters, pagination/empty states, card availability/options/prices,
+  add-to-cart/quantity/status controls, gallery/variant labels, information-panel labels,
+  saved/review controls, homepage built-in marketing text and carousel controls. Product,
+  category, pack, ingredient, warning, review and CMS text remains unchanged; staff owns
+  the content translations. Shared components remain server components; locale is passed
+  only to existing interactive components. English prices retain exact `AED 0.00` formatting.
+- Server copy: cart-load/stock/closed-store messages read the locale cookie. Emirate
+  display labels are Arabic while select values, stored area and API contract values stay
+  canonical English. Cart and checkout titles are localized with their robots policies intact.
+- RTL: keep fixed campaign artwork in its original visual position and give Arabic copy
+  its own clear text region; directional arrows mirror. Arabic uses an explicit system
+  sans-serif fallback; English retains the same Outfit font.
+
+Native Arabic/pharmacy approval remains required. The existing one/other unit fallback
+has not been presented as a complete Arabic dual/few/many grammar implementation. The
+account dashboard, admin and staff-authored editorial/clinical content are not certified
+as fully translated by this scoped shopping/checkout pass. No production data, prices,
+stock, order, provider configuration, publication state or deployment was changed.
+
+
+## Campaign merchandising continuation — 20 October 2026
+
+Implemented the next independently developable CMS slice while native Arabic/pharmacy
+review remains pending. Staff can select desktop/mobile artwork, choose a hero or
+supporting homepage placement and priority, reorder pinned products, preview unsaved
+artwork/copy, and run advisory readiness checks. Only published, current, matching-locale
+campaigns with available selected products appear; old content defaults to no placement.
+Existing image-banner and generated-product hero fallbacks remain available. Campaign
+presentation never creates a discount or changes stock/prices.
+
+See [campaign implementation and verification](CAMPAIGN_MERCHANDISING_2026-10-20.md)
+for compatibility, API-first release order, test evidence and remaining work. This is a
+local development checkpoint; no production content, database/index or deployment changed.
+
+
+## Customer sign-in completion — 20 October 2026
+
+The account screen now provides one first-visit/returning flow with the official Google
+button (when configured), passwordless email codes, resend/change-email, loading/error
+states and guest checkout. Existing account features remain available after sign-in.
+Google identity binding and disabled-account session creation are hardened; logout also
+clears expired sessions. See [customer account checkpoint](CUSTOMER_ACCOUNT_2026-10-20.md)
+for verification, additive index and exact provider setup. The owner confirmed Google
+OAuth has not been configured. Real Google consent and email receipt are pending; no
+production configuration, customer data, reward policy or deployment was changed.

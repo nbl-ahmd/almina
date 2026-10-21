@@ -14,5 +14,5 @@ const icons = {
 /** One Heroicons outline family. Icons supplement accessible text or control names. */
 export function Icon({ name }: { name: IconName }) {
   const Glyph = icons[name];
-  return <Glyph className="icon size-5 shrink-0" aria-hidden="true" focusable="false" />;
+  return <Glyph className={`icon size-5 shrink-0${name === 'arrow' || name === 'back' ? ' rtl:rotate-180' : ''}`} aria-hidden="true" focusable="false" />;
 }
