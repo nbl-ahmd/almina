@@ -11,9 +11,11 @@ async function read(path:string) {
 }
 export const getPharmacyProfile=cache(async()=>pharmacyProfileSchema.parse(await read('profile')??{}));
 export const getBranchDirectory=cache(async()=>{try{return branchDirectorySchema.parse(await read('branches')??{});}catch{return branchDirectorySchema.parse({});}});
-export async function getGrowthPages(kind?:GrowthPage['kind'],locale='en',offset=0){const query=new URLSearchParams({locale,offset:String(offset),...(kind?{kind}:{})});return z.object({items:z.array(growthPageSchema),hasNext:z.boolean()}).parse(await read('pages?'+query)??{items:[],hasNext:false});}
-export const getGrowthPage=cache(async(kind:GrowthPage['kind'],slug:string,locale='en')=>{const row=await read('page?'+new URLSearchParams({kind,slug,locale}));return row?growthPageSchema.parse(row):null;});
+export async function getGrowthPages(kind?:GrowthPage['kind'],locale='en',offset=0){const query=new URLSearchParams({merchandising:'1',locale,offset:String(offset),...(kind?{kind}:{})});return z.object({items:z.array(growthPageSchema),hasNext:z.boolean()}).parse(await read('pages?'+query)??{items:[],hasNext:false});}
+export const getGrowthPage=cache(async(kind:GrowthPage['kind'],slug:string,locale='en')=>{const row=await read('page?'+new URLSearchParams({kind,slug,locale,merchandising:'1'}));return row?growthPageSchema.parse(row):null;});
 
 export async function getProductReviews(productId:string){
  try{return z.object({items:z.array(z.object({rating:z.number().int().min(1).max(5),displayName:z.string(),title:z.string(),body:z.string(),createdAt:z.string(),verifiedPurchase:z.literal(true)})),ratingCount:z.number().int().nonnegative(),average:z.number().nullable()}).parse(await read('reviews?productId='+encodeURIComponent(productId)));}catch{return null;}
 }
+
+export async function getHomepageCampaigns(locale: 'en' | 'ar') { return z.array(growthPageSchema).max(12).parse(await read('campaigns?'+new URLSearchParams({locale}))??[]); }

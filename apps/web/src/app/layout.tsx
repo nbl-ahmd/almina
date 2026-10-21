@@ -16,5 +16,5 @@ export function generateMetadata(): Metadata {
 }
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await connection(); // Fresh nonce per render; HTML must never be shared from a cache.
-  return <html lang="en"><body className={ptSans.className}>{children}</body></html>;
+  return <html lang="en"><body id="top" className={ptSans.className}>{children}</body></html>;
 }

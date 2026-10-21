@@ -300,7 +300,7 @@ function RecentOrders({ orders }: { orders: Record<string, unknown>[] }) {
             const status = display(order.status);
             return (
               <tr key={display(order._id ?? index)}>
-                <td>{display(order.orderId)}</td>
+                <td>{display(order.orderId)}{order.channel==='wholesale'?<span className="mt-1 block text-xs font-semibold">Wholesale</span>:null}</td>
                 <td>{display(customer.name)}</td>
                 <td>{display(customer.city)}</td>
                 <td className="admin-num">{display(customer.totalAmount)}</td>

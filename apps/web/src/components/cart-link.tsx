@@ -1,20 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { DesignIcon } from './design-icon';
-import { storedCart } from '../lib/catalog/browser-cart';
+import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { t, tf, type Locale } from '../lib/i18n';
+import { useCartCount } from '../lib/catalog/use-cart-count';
 
-export function CartLink() {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    function refresh() {
-      try { setCount(storedCart().reduce((total, line) => total + line.quantity, 0)); }
-      catch { setCount(0); }
-    }
-    refresh();
-    window.addEventListener('storage', refresh);
-    window.addEventListener('almina-cart-change', refresh);
-    return () => { window.removeEventListener('storage', refresh); window.removeEventListener('almina-cart-change', refresh); };
-  }, []);
-  return <Link className="header-cart relative flex max-md:group-has-[.catalog-page]/storefront:hidden min-h-11 min-w-9 items-center justify-center gap-2 text-ink" href="/cart" aria-label={`Your cart${count ? `, ${count} ${count === 1 ? 'item' : 'items'}` : ''}`}><DesignIcon name="bag" /><span className="sr-only">Your cart</span>{count ? <span className="cart-count absolute -right-1 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand px-1 text-[11px] text-white" aria-hidden="true">{count}</span> : null}</Link>;
+export function CartLink({ locale = 'en' }: { locale?: Locale }) {
+  const count = useCartCount();
+  return <Link className="header-cart group relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors hover:bg-ocean md:min-h-12 md:w-auto md:gap-2 md:px-4" href="/cart" aria-label={count ? tf(locale,'headerCartCount',{count,unit:t(locale,count===1?'headerItem':'headerItems')}) : t(locale,'headerCart')}><ShoppingCartIcon className="size-[21px] shrink-0" aria-hidden="true" /><span className="hidden md:inline">{t(locale,'navCart')}</span>{count ? <span className="absolute -top-1 -end-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-ink ring-2 ring-surface md:static md:h-auto md:min-w-5 md:ring-0" aria-hidden="true">{count > 99 ? '99+' : count}</span> : null}</Link>;
 }

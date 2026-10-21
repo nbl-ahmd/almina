@@ -1,12 +1,337 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-19T00:00:00Z",
-  "title": "Design System: Al Mina storefront",
+  "generatedAt": "2026-10-21T00:00:00Z",
+  "title": "Design System: Al Mina customer storefront",
   "extensions": {
     "scope": {
-      "routes": "Storefront homepage, categories, catalogue/search/offers, collections, PDP, cart, checkout, about/contact and shared shell; administration excluded.",
+      "routes": "Customer storefront and shared customer controls; staff administration excluded.",
       "tokenSource": "apps/web/DESIGN.md",
       "implementationSource": "apps/web/src/app/(storefront)/storefront.css"
+    },
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Brand",
+        "tonalRamp": [
+          "oklch(15% 0.1907 23.40)",
+          "oklch(26% 0.1907 23.40)",
+          "oklch(38% 0.1907 23.40)",
+          "oklch(49% 0.1907 23.40)",
+          "oklch(61% 0.1907 23.40)",
+          "oklch(72% 0.1907 23.40)",
+          "oklch(84% 0.1907 23.40)",
+          "oklch(95% 0.1907 23.40)"
+        ]
+      },
+      "brand-hover": {
+        "role": "primary",
+        "displayName": "Brand Hover",
+        "tonalRamp": [
+          "oklch(15% 0.1963 24.24)",
+          "oklch(26% 0.1963 24.24)",
+          "oklch(38% 0.1963 24.24)",
+          "oklch(49% 0.1963 24.24)",
+          "oklch(61% 0.1963 24.24)",
+          "oklch(72% 0.1963 24.24)",
+          "oklch(84% 0.1963 24.24)",
+          "oklch(95% 0.1963 24.24)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0147 181.45)",
+          "oklch(26% 0.0147 181.45)",
+          "oklch(38% 0.0147 181.45)",
+          "oklch(49% 0.0147 181.45)",
+          "oklch(61% 0.0147 181.45)",
+          "oklch(72% 0.0147 181.45)",
+          "oklch(84% 0.0147 181.45)",
+          "oklch(95% 0.0147 181.45)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0133 175.83)",
+          "oklch(26% 0.0133 175.83)",
+          "oklch(38% 0.0133 175.83)",
+          "oklch(49% 0.0133 175.83)",
+          "oklch(61% 0.0133 175.83)",
+          "oklch(72% 0.0133 175.83)",
+          "oklch(84% 0.0133 175.83)",
+          "oklch(95% 0.0133 175.83)"
+        ]
+      },
+      "ocean": {
+        "role": "neutral",
+        "displayName": "Ocean",
+        "tonalRamp": [
+          "oklch(15% 0.0293 182.80)",
+          "oklch(26% 0.0293 182.80)",
+          "oklch(38% 0.0293 182.80)",
+          "oklch(49% 0.0293 182.80)",
+          "oklch(61% 0.0293 182.80)",
+          "oklch(72% 0.0293 182.80)",
+          "oklch(84% 0.0293 182.80)",
+          "oklch(95% 0.0293 182.80)"
+        ]
+      },
+      "teal": {
+        "role": "secondary",
+        "displayName": "Teal",
+        "tonalRamp": [
+          "oklch(15% 0.0739 182.15)",
+          "oklch(26% 0.0739 182.15)",
+          "oklch(38% 0.0739 182.15)",
+          "oklch(49% 0.0739 182.15)",
+          "oklch(61% 0.0739 182.15)",
+          "oklch(72% 0.0739 182.15)",
+          "oklch(84% 0.0739 182.15)",
+          "oklch(95% 0.0739 182.15)"
+        ]
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Page",
+        "tonalRamp": [
+          "oklch(15% 0.0017 145.56)",
+          "oklch(26% 0.0017 145.56)",
+          "oklch(38% 0.0017 145.56)",
+          "oklch(49% 0.0017 145.56)",
+          "oklch(61% 0.0017 145.56)",
+          "oklch(72% 0.0017 145.56)",
+          "oklch(84% 0.0017 145.56)",
+          "oklch(95% 0.0017 145.56)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "subtle": {
+        "role": "neutral",
+        "displayName": "Subtle",
+        "tonalRamp": [
+          "oklch(15% 0.0034 174.48)",
+          "oklch(26% 0.0034 174.48)",
+          "oklch(38% 0.0034 174.48)",
+          "oklch(49% 0.0034 174.48)",
+          "oklch(61% 0.0034 174.48)",
+          "oklch(72% 0.0034 174.48)",
+          "oklch(84% 0.0034 174.48)",
+          "oklch(95% 0.0034 174.48)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "tonalRamp": [
+          "oklch(15% 0.0085 168.73)",
+          "oklch(26% 0.0085 168.73)",
+          "oklch(38% 0.0085 168.73)",
+          "oklch(49% 0.0085 168.73)",
+          "oklch(61% 0.0085 168.73)",
+          "oklch(72% 0.0085 168.73)",
+          "oklch(84% 0.0085 168.73)",
+          "oklch(95% 0.0085 168.73)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Accent",
+        "tonalRamp": [
+          "oklch(15% 0.0164 182.71)",
+          "oklch(26% 0.0164 182.71)",
+          "oklch(38% 0.0164 182.71)",
+          "oklch(49% 0.0164 182.71)",
+          "oklch(61% 0.0164 182.71)",
+          "oklch(72% 0.0164 182.71)",
+          "oklch(84% 0.0164 182.71)",
+          "oklch(95% 0.0164 182.71)"
+        ]
+      },
+      "care-blue": {
+        "role": "secondary",
+        "displayName": "Care Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0186 242.97)",
+          "oklch(26% 0.0186 242.97)",
+          "oklch(38% 0.0186 242.97)",
+          "oklch(49% 0.0186 242.97)",
+          "oklch(61% 0.0186 242.97)",
+          "oklch(72% 0.0186 242.97)",
+          "oklch(84% 0.0186 242.97)",
+          "oklch(95% 0.0186 242.97)"
+        ]
+      },
+      "care-mint": {
+        "role": "secondary",
+        "displayName": "Care Mint",
+        "tonalRamp": [
+          "oklch(15% 0.0191 152.81)",
+          "oklch(26% 0.0191 152.81)",
+          "oklch(38% 0.0191 152.81)",
+          "oklch(49% 0.0191 152.81)",
+          "oklch(61% 0.0191 152.81)",
+          "oklch(72% 0.0191 152.81)",
+          "oklch(84% 0.0191 152.81)",
+          "oklch(95% 0.0191 152.81)"
+        ]
+      },
+      "care-peach": {
+        "role": "secondary",
+        "displayName": "Care Peach",
+        "tonalRamp": [
+          "oklch(15% 0.0188 46.81)",
+          "oklch(26% 0.0188 46.81)",
+          "oklch(38% 0.0188 46.81)",
+          "oklch(49% 0.0188 46.81)",
+          "oklch(61% 0.0188 46.81)",
+          "oklch(72% 0.0188 46.81)",
+          "oklch(84% 0.0188 46.81)",
+          "oklch(95% 0.0188 46.81)"
+        ]
+      },
+      "care-sun": {
+        "role": "secondary",
+        "displayName": "Care Sun",
+        "tonalRamp": [
+          "oklch(15% 0.0382 99.02)",
+          "oklch(26% 0.0382 99.02)",
+          "oklch(38% 0.0382 99.02)",
+          "oklch(49% 0.0382 99.02)",
+          "oklch(61% 0.0382 99.02)",
+          "oklch(72% 0.0382 99.02)",
+          "oklch(84% 0.0382 99.02)",
+          "oklch(95% 0.0382 99.02)"
+        ]
+      },
+      "sale": {
+        "role": "neutral",
+        "displayName": "Sale",
+        "tonalRamp": [
+          "oklch(15% 0.1554 19.52)",
+          "oklch(26% 0.1554 19.52)",
+          "oklch(38% 0.1554 19.52)",
+          "oklch(49% 0.1554 19.52)",
+          "oklch(61% 0.1554 19.52)",
+          "oklch(72% 0.1554 19.52)",
+          "oklch(84% 0.1554 19.52)",
+          "oklch(95% 0.1554 19.52)"
+        ]
+      },
+      "sale-surface": {
+        "role": "neutral",
+        "displayName": "Sale Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0163 12.78)",
+          "oklch(26% 0.0163 12.78)",
+          "oklch(38% 0.0163 12.78)",
+          "oklch(49% 0.0163 12.78)",
+          "oklch(61% 0.0163 12.78)",
+          "oklch(72% 0.0163 12.78)",
+          "oklch(84% 0.0163 12.78)",
+          "oklch(95% 0.0163 12.78)"
+        ]
+      },
+      "warning": {
+        "role": "neutral",
+        "displayName": "Warning",
+        "tonalRamp": [
+          "oklch(15% 0.0861 68.81)",
+          "oklch(26% 0.0861 68.81)",
+          "oklch(38% 0.0861 68.81)",
+          "oklch(49% 0.0861 68.81)",
+          "oklch(61% 0.0861 68.81)",
+          "oklch(72% 0.0861 68.81)",
+          "oklch(84% 0.0861 68.81)",
+          "oklch(95% 0.0861 68.81)"
+        ]
+      },
+      "warning-surface": {
+        "role": "neutral",
+        "displayName": "Warning Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0248 89.21)",
+          "oklch(26% 0.0248 89.21)",
+          "oklch(38% 0.0248 89.21)",
+          "oklch(49% 0.0248 89.21)",
+          "oklch(61% 0.0248 89.21)",
+          "oklch(72% 0.0248 89.21)",
+          "oklch(84% 0.0248 89.21)",
+          "oklch(95% 0.0248 89.21)"
+        ]
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "Control Border",
+        "tonalRamp": [
+          "oklch(15% 0.0173 166.46)",
+          "oklch(26% 0.0173 166.46)",
+          "oklch(38% 0.0173 166.46)",
+          "oklch(49% 0.0173 166.46)",
+          "oklch(61% 0.0173 166.46)",
+          "oklch(72% 0.0173 166.46)",
+          "oklch(84% 0.0173 166.46)",
+          "oklch(95% 0.0173 166.46)"
+        ]
+      },
+      "control-hover": {
+        "role": "neutral",
+        "displayName": "Control Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0296 164.74)",
+          "oklch(26% 0.0296 164.74)",
+          "oklch(38% 0.0296 164.74)",
+          "oklch(49% 0.0296 164.74)",
+          "oklch(61% 0.0296 164.74)",
+          "oklch(72% 0.0296 164.74)",
+          "oklch(84% 0.0296 164.74)",
+          "oklch(95% 0.0296 164.74)"
+        ]
+      },
+      "control-disabled": {
+        "role": "neutral",
+        "displayName": "Control Disabled",
+        "tonalRamp": [
+          "oklch(15% 0.0058 264.53)",
+          "oklch(26% 0.0058 264.53)",
+          "oklch(38% 0.0058 264.53)",
+          "oklch(49% 0.0058 264.53)",
+          "oklch(61% 0.0058 264.53)",
+          "oklch(72% 0.0058 264.53)",
+          "oklch(84% 0.0058 264.53)",
+          "oklch(95% 0.0058 264.53)"
+        ]
+      }
+    },
+    "rampPurpose": "Synthesized OKLCH swatch previews only; frontmatter and CSS retain normative colors.",
+    "typographyMeta": {
+      "display": {
+        "displayName": "Editorial hero",
+        "purpose": "Fluid promotional display only."
+      },
+      "headline": {
+        "displayName": "Route headline",
+        "purpose": "Primary route heading."
+      },
+      "arabic": {
+        "displayName": "Arabic fallback",
+        "purpose": "Actual Arabic locale family; no custom Arabic face is loaded."
+      }
     },
     "breakpoints": [
       {
@@ -24,194 +349,188 @@
     ],
     "shadows": [
       {
-        "name": "product-hover",
-        "value": "0 8px 22px -14px rgba(37,65,120,0.25)",
-        "purpose": "Shared full product card hover."
+        "name": "card",
+        "value": "0 6px 18px rgb(25 35 33 / 5%)",
+        "purpose": "Non-product surface token; product cards override to none."
       },
       {
-        "name": "shared-card",
-        "value": "0 4px 16px rgb(32 62 70 / 5%)",
-        "purpose": "Retained shared storefront token."
+        "name": "raised",
+        "value": "0 16px 45px -18px rgb(25 35 33 / 24%)",
+        "purpose": "Search overlay and contact."
       },
       {
-        "name": "shared-raised",
-        "value": "0 10px 28px rgb(32 62 70 / 10%)",
-        "purpose": "Retained shared storefront token."
+        "name": "mobile-navigation",
+        "value": "0 18px 40px -20px rgb(21 23 26 / 35%)",
+        "purpose": "Floating mobile navigation."
       }
     ],
     "motion": [
       {
+        "name": "feedback",
+        "value": "150ms",
+        "purpose": "Shared control color/border feedback."
+      },
+      {
         "name": "campaign-enter",
-        "value": "240ms cubic-bezier(.16,1,.3,1); opacity .8 \u2192 1; translateY(5px) \u2192 0",
-        "purpose": "Manual slide changes; reduced-motion gated."
+        "value": "240ms cubic-bezier(.16,1,.3,1); opacity .8 to 1; translateY 5px to 0",
+        "purpose": "Manual slide entry, reduced-motion gated."
       },
       {
         "name": "product-image",
-        "value": "transform 300ms; scale(1.035)",
-        "purpose": "Reduced-motion gated image hover."
+        "value": "300ms; hover scale(1.035)",
+        "purpose": "Reduced-motion gated product photo feedback."
+      },
+      {
+        "name": "editorial-stack",
+        "value": "translateY min(index * 5px,20px) to 0; scrub .3; top 95% to top 65%",
+        "purpose": "GSAP editorial markers only; content visible by default."
+      },
+      {
+        "name": "editorial-text",
+        "value": "opacity .75 to 1; scrub .25; top 90% to top 65%",
+        "purpose": "GSAP supporting editorial headline; reduced-motion gated."
       },
       {
         "name": "press",
-        "value": "scale(.98)",
-        "purpose": "Reduced-motion gated button press."
-      },
-      {
-        "name": "feedback",
-        "value": "150ms",
-        "purpose": "Shared button background and border transitions."
-      },
-      {
-        "name": "contact-hover",
-        "value": "translateY(-2px)",
-        "purpose": "Floating contact hover, reduced-motion gated."
-      },
-      {
-        "name": "editorial-reveal",
-        "value": "360ms cubic-bezier(.16,1,.3,1); translateY(10px) \u2192 0; opacity .85 \u2192 1",
-        "purpose": "Once-only editorial/collection entrance at 8% intersection; visible by default, disabled for reduced motion."
+        "value": "scale(.985)",
+        "purpose": "Reduced-motion gated direct button feedback."
       }
     ],
     "focus": {
-      "value": "3px solid var(--color-focus); outline-offset:3px",
-      "purpose": "Visible keyboard focus."
+      "value": "2px solid var(--color-ink); outline-offset:2px",
+      "purpose": "Storefront keyboard focus; invalid fields use sale."
     },
     "layout": {
       "contentWidth": "1344px",
-      "homepageSectionGap": "20px; 28px at 768px",
-      "campaignMinHeight": "Uploaded: aspect-ratio 2/1; 2.7/1 at 768px; full contained image. Editorial fallback: min-height 230px; 310px at 768px.",
-      "compactShelf": "275px scroll cards; 2 columns at 768px; 4 at 1024px",
-      "categoryRail": "Two-row photographic atlas; minimum columns 142px, 190px at 640px; four columns at 1024px; minimum height 190px, 250px at 768px.",
-      "floatingContact": "48px; right 16px; bottom calc(80px + env(safe-area-inset-bottom)); at 768px: 56px, right/bottom 24px",
-      "hero": "3fr carousel / minmax(240px,1fr) actual product at 1024px; stacked with compact horizontal product below.",
-      "mobilePurchaseBars": "PDP/cart fixed bottom calc(62px + env(safe-area-inset-bottom)), z-index 19; floating contact bottom calc(178px + env(safe-area-inset-bottom)); purchase bars return to normal flow at 768px.",
-      "scrollbarNone": "Native horizontal overflow retained; scrollbar-width:none and ::-webkit-scrollbar display:none, scoped to storefront."
+      "gutters": "16px; 24px at 768px; 32px at 1024px",
+      "productGrid": "2 columns; 4 at 768px",
+      "mobilePurchaseBar": "bottom calc(88px + env(safe-area-inset-bottom)); z-index 19",
+      "mobileContact": "84px + safe area; 196px + safe area on PDP/cart",
+      "footerClearance": "152px + safe area; 256px on purchase-bar routes"
     },
-    "merchandising": {
-      "campaignPriority": "Up to newest eight API-uploaded banners, newest identifier first; full uncropped containment. Two generated HTML-captioned editorial fallbacks only when uploads absent.",
-      "imageBoundary": "Generated campaign/category/editorial scenes are decorative; catalogue products and prices always come from API data.",
-      "sharedCards": "ProductCard and CompactProductCard share ProductPhoto/ProductPrice; full cards also appear in existing product grids.",
-      "categoryImagery": "Shared CategoryTile prefers uploaded category photography; otherwise generic scene atlas, deodorant or general/nail decoration, then icon. Generated scenes never replace exact product photos.",
-      "productSpotlight": "Separate HomeProductCarousel: up to four available real products, manual slides, actual photo/title/API summary/price; distinct from uploaded campaign artwork.",
-      "brandPhoto": "Use a real catalogue photo only when product brand/family brand matches or name begins with the brand. Without a match, show brand text; no generated logos or packs."
-    }
+    "checkbox": {
+      "checked": "20px square; 6px corners; coral background/border, ink check and ink focus"
+    },
+    "buttonHierarchy": "Neutral defaults and outlined product-card actions. Coral only for explicit campaign and focused PDP purchase actions.",
+    "navigationInteraction": "Desktop Radix Popover mega menu; two columns at tablet, three at large widths. Mobile Radix Dialog drawer with focus management and persistent account/language footer. Debounced search suggestions, recent searches, keyboard selection and explicit empty/loading/failure states."
   },
   "components": [
     {
       "name": "Primary button",
       "kind": "button",
-      "description": "Blue pill shopping action.",
-      "html": "<button class=\"ds-primary\">Shop products</button>",
-      "css": ".ds-primary{font-family:Outfit,sans-serif;background:var(--color-brand,#3456da);color:var(--color-surface,#fff);border:1px solid var(--color-brand,#3456da);border-radius:9999px;min-height:44px;padding:12px 20px;font-weight:700;transition:background-color 150ms}.ds-primary:hover{background:var(--color-brand-hover,#2545bf)}.ds-primary:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}@media(prefers-reduced-motion:no-preference){.ds-primary:active{transform:scale(.98)}}",
-      "refersTo": "button-primary"
+      "refersTo": "button-primary",
+      "description": "Shared primary variant; default 48px target.",
+      "html": "<button class=\"ds-button-primary\">Explore products</button>",
+      "css": ".ds-button-primary{font-family:Geist,Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background-color 150ms,border-color 150ms,color 150ms;background:var(--color-ink,#192321);border-color:var(--color-ink,#192321);color:#fff;}.ds-button-primary:hover:enabled{opacity:.9;}.ds-button-primary:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-button-primary:disabled{background:var(--color-control-disabled,#eef0f4);border-color:var(--color-border,#dce3e0);color:var(--color-muted,#56605d);cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none}}"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Shared outline variant; default 48px target.",
+      "html": "<button class=\"ds-button-outline\">Explore products</button>",
+      "css": ".ds-button-outline{font-family:Geist,Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background-color 150ms,border-color 150ms,color 150ms;background:var(--color-surface,#fff);border-color:var(--color-border,#dce3e0);color:var(--color-ink,#192321);}.ds-button-outline:hover:enabled{background:var(--color-subtle,#f3f6f5);border-color:var(--color-control-hover,#586d63);}.ds-button-outline:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-button-outline:disabled{background:var(--color-control-disabled,#eef0f4);border-color:var(--color-border,#dce3e0);color:var(--color-muted,#56605d);cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button-outline{transition:none}}"
     },
     {
       "name": "Secondary button",
       "kind": "button",
-      "description": "Quiet white contact action.",
-      "html": "<button class=\"ds-secondary\">Call pharmacy</button>",
-      "css": ".ds-secondary{font-family:Outfit,sans-serif;background:var(--color-surface,#fff);color:var(--color-brand,#3456da);border:1px solid var(--color-border,#e7e9f1);border-radius:9999px;min-height:48px;padding:12px 20px;font-weight:700}.ds-secondary:hover{background:var(--color-subtle,#f1f3fc)}.ds-secondary:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}",
-      "refersTo": "button-secondary"
+      "refersTo": "button-secondary",
+      "description": "Shared secondary variant; default 48px target.",
+      "html": "<button class=\"ds-button-secondary\">Explore products</button>",
+      "css": ".ds-button-secondary{font-family:Geist,Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background-color 150ms,border-color 150ms,color 150ms;background:var(--color-subtle,#f3f6f5);color:var(--color-ink,#192321);}.ds-button-secondary:hover:enabled{background:var(--color-accent,#e2f1ee);}.ds-button-secondary:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-button-secondary:disabled{background:var(--color-control-disabled,#eef0f4);border-color:var(--color-border,#dce3e0);color:var(--color-muted,#56605d);cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none}}"
     },
     {
-      "name": "Search field",
+      "name": "Ghost button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Shared ghost variant; default 48px target.",
+      "html": "<button class=\"ds-button-ghost\">Explore products</button>",
+      "css": ".ds-button-ghost{font-family:Geist,Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background-color 150ms,border-color 150ms,color 150ms;background:transparent;color:var(--color-muted,#56605d);}.ds-button-ghost:hover:enabled{background:var(--color-subtle,#f3f6f5);color:var(--color-ink,#192321);}.ds-button-ghost:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-button-ghost:disabled{background:var(--color-control-disabled,#eef0f4);border-color:var(--color-border,#dce3e0);color:var(--color-muted,#56605d);cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button-ghost{transition:none}}"
+    },
+    {
+      "name": "Link button",
+      "kind": "button",
+      "refersTo": "button-link",
+      "description": "Shared link variant; default 48px target.",
+      "html": "<button class=\"ds-button-link\">Explore products</button>",
+      "css": ".ds-button-link{font-family:Geist,Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background-color 150ms,border-color 150ms,color 150ms;background:transparent;color:var(--color-teal,#126157);}.ds-button-link:hover:enabled{color:var(--color-ink,#192321);}.ds-button-link:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-button-link:disabled{background:var(--color-control-disabled,#eef0f4);border-color:var(--color-border,#dce3e0);color:var(--color-muted,#56605d);cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button-link{transition:none}}"
+    },
+    {
+      "name": "Destructive button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Shared destructive variant; default 48px target.",
+      "html": "<button class=\"ds-button-destructive\">Remove item</button>",
+      "css": ".ds-button-destructive{font-family:Geist,Arial,sans-serif;font-size:14px;font-weight:600;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background-color 150ms,border-color 150ms,color 150ms;background:var(--color-sale,#a32b38);border-color:var(--color-sale,#a32b38);color:#fff;}.ds-button-destructive:hover:enabled{filter:brightness(.95);}.ds-button-destructive:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-button-destructive:disabled{background:var(--color-control-disabled,#eef0f4);border-color:var(--color-border,#dce3e0);color:var(--color-muted,#56605d);cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button-destructive{transition:none}}"
+    },
+    {
+      "name": "Input",
       "kind": "input",
-      "description": "Pill search field in the shared header.",
-      "html": "<label class=\"ds-search\"><span>Search products</span><input type=\"search\" placeholder=\"Products, brands & essentials\"></label>",
-      "css": ".ds-search{font-family:Outfit,sans-serif;display:grid;gap:6px;color:var(--color-ink,#19213b);font-size:14px}.ds-search input{font-family:Outfit,sans-serif;background:#f6f7fb;color:var(--color-ink,#19213b);border:1px solid var(--color-border,#e7e9f1);border-radius:9999px;min-height:48px;padding:4px 16px}.ds-search input:hover{border-color:var(--color-brand,#3456da)}.ds-search input:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}",
-      "refersTo": "search-field"
+      "refersTo": "input",
+      "description": "Quiet filled field with visible focus, invalid and disabled states.",
+      "html": "<label class=\"ds-field\">Email address<input type=\"email\" placeholder=\"you@example.com\"></label>",
+      "css": ".ds-field{font-family:Geist,Arial,sans-serif;display:grid;gap:8px;font-size:14px;font-weight:600;color:var(--color-ink,#192321)}.ds-field input{font:400 16px/24px Geist,Arial,sans-serif;min-height:48px;min-width:0;padding:12px 16px;border:1px solid var(--color-control-border,#8b9892);border-radius:12px;background:var(--color-subtle,#f3f6f5);color:var(--color-ink,#192321);transition:background-color 150ms,border-color 150ms}.ds-field input:hover:enabled{border-color:var(--color-control-hover,#586d63);background:#fff}.ds-field input:focus-visible{background:#fff;border-color:var(--color-ink,#192321);outline:2px solid var(--color-ink,#192321);outline-offset:2px;}.ds-field input:disabled{background:var(--color-control-disabled,#eef0f4);color:var(--color-muted,#56605d)}.ds-field input[aria-invalid=true]{border-color:var(--color-sale,#a32b38)}.ds-field input[aria-invalid=true]:focus-visible{outline-color:var(--color-sale,#a32b38)}@media(prefers-reduced-motion:reduce){.ds-field input{transition:none}}"
     },
     {
       "name": "Desktop navigation",
       "kind": "nav",
-      "description": "Shared shopping links with current-page indication.",
-      "html": "<nav class=\"ds-nav\" aria-label=\"Shop navigation\"><a href=\"/products\" aria-current=\"page\">Shop products</a><a href=\"/categories\">Browse categories</a></nav>",
-      "css": ".ds-nav{font-family:Outfit,sans-serif;display:flex;flex-wrap:wrap;gap:24px;background:#fff;font-size:14px}.ds-nav a{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;color:var(--color-ocean,#252b49);border-bottom:2px solid transparent}.ds-nav a[aria-current=page]{border-color:var(--color-brand,#3456da);font-weight:700}.ds-nav a:hover{color:var(--color-brand,#3456da)}.ds-nav a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}"
+      "description": "44px shopping links with mint current-page state.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Shop\"><a href=\"/products\" aria-current=\"page\">Shop products</a><a href=\"/categories\">Browse categories</a></nav>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;gap:4px;font:500 13px/1.375 Geist,Arial,sans-serif;background:#fff}.ds-nav a{display:inline-flex;align-items:center;min-height:44px;border-radius:9999px;padding:0 12px;color:var(--color-ink,#192321);text-decoration:none;transition:background-color 150ms}.ds-nav a:hover{background:var(--color-subtle,#f3f6f5)}.ds-nav a[aria-current=page]{background:var(--color-care-mint,#e6f3e9)}.ds-nav a:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-nav a{transition:none}}"
     },
     {
       "name": "Savings badge",
       "kind": "chip",
-      "description": "Actual monetary saving only when catalogue sale price is lower; specimen does not invent an amount.",
-      "html": "<span class=\"ds-sale\">Actual saving</span>",
-      "css": ".ds-sale{font-family:Outfit,sans-serif;display:inline-block;background:#fff0e8;color:#9b3d23;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:600}",
-      "refersTo": "savings-badge"
+      "refersTo": "savings-badge",
+      "description": "An actual lower sale price is required; specimen supplies no invented saving.",
+      "html": "<span class=\"ds-saving\">Actual saving</span>",
+      "css": ".ds-saving{font:600 12px/16px Geist,Arial,sans-serif;display:inline-block;padding:4px 10px;border-radius:9999px;background:var(--color-care-peach,#fff0e9);color:var(--color-sale,#a32b38)}"
     },
     {
       "name": "Product card",
       "kind": "card",
-      "description": "Shared full card used by homepage and product grids; specimen omits fictional product data.",
-      "html": "<article class=\"ds-product\"><a href=\"/products\">Explore the catalogue</a><p>Real product photo, name, price and availability</p></article>",
-      "css": ".ds-product{font-family:Outfit,sans-serif;background:var(--color-surface,#fff);color:var(--color-ink,#19213b);border:1px solid var(--color-border,#e7e9f1);border-radius:16px;padding:14px;transition:border-color 200ms,box-shadow 200ms}.ds-product:hover{border-color:#c8d0fa;box-shadow:0 8px 22px -14px rgba(37,65,120,.25)}.ds-product a{color:var(--color-ink,#19213b);font-weight:500;text-decoration:none}.ds-product a:hover{color:var(--color-brand,#3456da)}.ds-product a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}.ds-product p{font-size:14px;color:var(--color-muted,#61677a)}",
-      "refersTo": "product-card"
-    },
-    {
-      "name": "Compact product card",
-      "kind": "custom",
-      "refersTo": "compact-product-card",
-      "description": "Horizontal thumbnail-first card; specimen omits fictional product data.",
-      "html": "<article class=\"ds-compact\"><span class=\"ds-thumb\" aria-hidden=\"true\"></span><div><a href=\"/products\">Explore real catalogue products</a><p>Current API price</p></div></article>",
-      "css": ".ds-compact{font-family:Outfit,sans-serif;display:grid;grid-template-columns:64px 1fr;gap:12px;max-width:275px;padding:12px;border:1px solid var(--color-border,#e7e9f1);border-radius:12px;background:#fff;color:var(--color-ink,#19213b)}.ds-thumb{width:64px;height:64px;border-radius:8px;background:#fff;border:1px solid var(--color-border,#e7e9f1)}.ds-compact a{font-size:14px;color:inherit;text-decoration:none}.ds-compact a:hover{color:var(--color-brand,#3456da)}.ds-compact a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}.ds-compact p{font-size:14px;margin:8px 0 0}"
-    },
-    {
-      "name": "Collection tile",
-      "kind": "custom",
-      "refersTo": "collection-tile",
-      "description": "Pastel introduction to a curated collection with a real catalogue image in production.",
-      "html": "<article class=\"ds-collection\"><h2>The skincare shelf</h2><p>Explore our current range.</p><a href=\"/collections/skin-essentials\">Shop collection</a></article>",
-      "css": ".ds-collection{font-family:Outfit,sans-serif;border-radius:16px;background:#eef0ff;padding:16px;color:var(--color-ink,#19213b)}.ds-collection h2{font-size:20px;font-weight:500;margin:0 0 8px}.ds-collection p{font-size:12px;line-height:20px;color:var(--color-muted,#61677a)}.ds-collection a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:500;color:var(--color-brand,#3456da);text-decoration:none}.ds-collection a:hover{color:var(--color-brand-hover,#2545bf)}.ds-collection a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}"
-    },
-    {
-      "name": "Routine wrapper",
-      "kind": "custom",
-      "refersTo": "routine",
-      "description": "Cool wrapper for real individually sold skincare matches.",
-      "html": "<section class=\"ds-routine\"><h2>Make space for daily skincare</h2><p>Explore individual products for your routine.</p><a href=\"/collections/skin-essentials\">Shop skincare</a><small>Sold individually. Check product details for suitability and directions.</small></section>",
-      "css": ".ds-routine{font-family:Outfit,sans-serif;background:#f0f2fc;color:var(--color-ink,#19213b);border-radius:16px;padding:16px}.ds-routine h2{font-size:24px;font-weight:600;margin:0 0 4px}.ds-routine p{font-size:14px;color:var(--color-muted,#61677a)}.ds-routine a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--color-brand,#3456da);text-decoration:none}.ds-routine a:hover{color:var(--color-brand-hover,#2545bf)}.ds-routine a:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}.ds-routine small{display:block;font-size:12px;color:var(--color-muted,#61677a)}"
-    },
-    {
-      "name": "Floating contact",
-      "kind": "custom",
-      "refersTo": "floating-contact",
-      "description": "Blue circular contact action; production positioning clears mobile bottom navigation.",
-      "html": "<a class=\"ds-contact\" href=\"/contact\" aria-label=\"Contact Al Mina Pharmacy\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.081.159 2.175.282 3.281.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.843-.498c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228a48.394 48.394 0 0 0-14.586 0C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z\"/></svg></a>",
-      "css": ".ds-contact{display:flex;width:48px;height:48px;align-items:center;justify-content:center;border-radius:9999px;background:var(--color-brand,#3456da);color:#fff;box-shadow:0 10px 28px rgb(32 62 70 / 10%);transition:transform 150ms}.ds-contact:hover{background:var(--color-brand-hover,#2545bf)}.ds-contact:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}@media(prefers-reduced-motion:no-preference){.ds-contact:hover{transform:translateY(-2px)}}"
-    },
-    {
-      "name": "Category tile",
-      "kind": "nav",
-      "refersTo": "category-tile",
-      "description": "Shared category index/home tile; production prefers uploaded category photo then generic decorative atlas.",
-      "html": "<a class=\"ds-category-tile\" href=\"/categories\"><h2>Explore categories</h2><span aria-hidden=\"true\">\u2192</span></a>",
-      "css": ".ds-category-tile{font-family:Outfit,sans-serif;display:flex;flex-direction:column;min-height:190px;max-width:220px;border-radius:16px;padding:12px;background:#f0f3fb;color:var(--color-ink,#19213b);text-decoration:none}.ds-category-tile h2{max-width:90%;font-size:16px;font-weight:600;line-height:1.2;margin:0 0 8px}.ds-category-tile span{display:flex;width:36px;height:36px;align-items:center;justify-content:center;border-radius:9999px;background:#fff}.ds-category-tile:hover{color:var(--color-brand,#3456da)}.ds-category-tile:focus-visible{outline:3px solid var(--color-focus,#176784);outline-offset:3px}@media(min-width:768px){.ds-category-tile{min-height:250px;padding:16px}.ds-category-tile h2{font-size:20px}}"
-    },
-    {
-      "name": "Storefront introduction",
-      "kind": "custom",
-      "refersTo": "storefront-intro",
-      "description": "Shared route intro; neutral specimen omits decorative artwork.",
-      "html": "<section class=\"ds-intro\"><h1>Care for every routine</h1><p>Explore products for your health, care and daily routine.</p></section>",
-      "css": ".ds-intro{font-family:Outfit,sans-serif;border-radius:16px;background:#f1f1fc;color:var(--color-ink,#19213b);padding:20px;overflow:hidden}.ds-intro h1{font-size:24px;line-height:1.2;font-weight:600;letter-spacing:-.025em;margin:0 0 8px}.ds-intro p{max-width:55ch;font-size:14px;line-height:24px;margin:0}@media(min-width:768px){.ds-intro{padding:28px}.ds-intro h1{font-size:36px}}"
+      "refersTo": "product-card",
+      "description": "Flat white catalogue card; specimen omits invented product data.",
+      "html": "<article class=\"ds-product\"><div class=\"ds-product-media\">Real catalogue photo</div><p>Brand or category</p><h3><a href=\"/products\">Explore current products</a></h3><p>Current price and availability</p></article>",
+      "css": ".ds-product{font-family:Geist,Arial,sans-serif;max-width:260px;padding:12px;border:1px solid var(--color-border,#dce3e0);border-radius:16px;background:#fff;color:var(--color-ink,#192321);box-shadow:none;transition:border-color 200ms}.ds-product:hover{border-color:var(--color-control-hover,#586d63)}.ds-product-media{display:grid;place-items:center;aspect-ratio:1;padding:16px;border-radius:12px;background:var(--color-subtle,#f3f6f5);font-size:12px;color:var(--color-muted,#56605d)}.ds-product p{font-size:12px;line-height:20px;color:var(--color-muted,#56605d)}.ds-product h3{font-size:16px;line-height:24px;font-weight:500;letter-spacing:-.015em}.ds-product a{color:inherit;text-decoration:none}.ds-product a:hover{color:var(--color-teal,#126157)}.ds-product a:focus-visible{outline:2px solid var(--color-ink,#192321);outline-offset:2px;}@media(prefers-reduced-motion:reduce){.ds-product{transition:none}}"
     }
   ],
   "narrative": {
-    "northStar": "A little care. A better day.",
-    "overview": "The approved blue Outfit/Heroicons system extends from V4 homepage merchandising through category, catalogue, PDP, cart, checkout and information routes. Shared CategoryTile, StorefrontIntro and product cards retain existing palette, real API content and commerce behavior.",
+    "northStar": "The modular care cabinet",
+    "overview": "Al Mina's customer storefront pairs the existing coral pharmacy identity with calm white surfaces, dark readable labels and pastel compartments. Generous product media, compact utility navigation and clear purchasing controls keep everyday shopping approachable. This record describes the implemented customer shell and shared shopping components; administration retains its separate system.\n\nThe approved composition aims for roughly 60% white, 30% pastel blue/mint/butter and 10% coral emphasis. This is a compositional intent, not a measured screen quota: uploaded artwork, real product imagery and route content naturally change the balance. Existing decorative artwork is reused; exact catalogue imagery and factual commerce content remain distinct.",
     "keyCharacteristics": [
-      "Confident blue actions and white product surfaces.",
-      "Real products, readable prices and honest availability.",
-      "Manual campaign navigation and restrained feedback.",
-      "Compact inline delivery, two-row photographic category atlas and floating contact above bottom navigation.",
-      "Uploaded campaigns first, complete artwork preserved; once-only editorial motion with visible default.",
-      "Shared page intros/category tiles and a separate real-product spotlight carousel."
+      "Logo-coral actions with dark ink labels.",
+      "White product surfaces within selective pastel bento groups.",
+      "Geist typography, 12\u201316px recurring corners and comfortable controls.",
+      "Real catalogue content and legible price, option and availability hierarchy.",
+      "Editorial motion with reduced-motion support and static commerce layout."
+    ],
+    "rules": [
+      {
+        "name": "The Coral With Ink Rule",
+        "body": "Use dark ink labels on coral shopping actions; preserve white text for the separate destructive sale variant and dark support/contact surfaces.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Product Rule",
+        "body": "Product card depth comes from media and borders; do not add a resting or hover shadow to override the scoped flat treatment.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do preserve existing commerce behavior and URLs.",
-      "Do distinguish generated editorial decoration from real product photos.",
-      "Do use Outfit and Heroicons."
+      "Do use logo coral with ink labels, Geist and existing Heroicons.",
+      "Do preserve real product photos, prices, availability, options and existing URLs.",
+      "Do retain Arabic direction and the actual Arabic font fallback.",
+      "Do preserve complete uploaded artwork and distinguish decorative scenes from catalogue products.",
+      "Do keep focus visible, small interactive targets at least 44px and default fields/actions 48px.",
+      "Do keep editorial motion optional and purchasing layout stable."
     ],
     "donts": [
-      "Do not restore superseded green or historical screenshot authority.",
-      "Do not invent products, prices, stock or service claims.",
-      "Do not fill conditional merchandising modules with fabricated products, prices, banners or brands."
+      "Don't reinstate the superseded blue/Outfit or legacy green palette as the customer storefront authority.",
+      "Don't use white labels on coral shopping actions.",
+      "Don't invent products, savings, ratings, stock, service guarantees or brand imagery.",
+      "Don't extend this storefront palette or type replacement into staff administration.",
+      "Don't add hard offset shadows or ornamental heading kickers to this minimal storefront."
     ]
   }
 }

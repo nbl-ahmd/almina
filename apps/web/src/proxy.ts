@@ -21,10 +21,10 @@ export function proxy(request: NextRequest) {
   const policy = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''}`,
-    stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV)+(request.nextUrl.pathname==='/account'?' https://accounts.google.com/gsi/style':''),
+    stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV)+(['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com/gsi/style':''),
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
     `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${mediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
-    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(request.nextUrl.pathname==='/account' ? ["frame-src https://accounts.google.com"] : []), `connect-src 'self'${request.nextUrl.pathname==='/account'?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
+    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(['/account','/wholesale'].includes(request.nextUrl.pathname) ? ["frame-src https://accounts.google.com"] : []), `connect-src 'self'${['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),
   ].join('; ');
@@ -34,10 +34,12 @@ export function proxy(request: NextRequest) {
   headers.set('Content-Security-Policy', policy);
   const response = NextResponse.next({ request: { headers } });
   response.headers.set('Content-Security-Policy', policy);
+  if(['/account','/wholesale'].includes(request.nextUrl.pathname))response.headers.set('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   response.headers.set('Cache-Control', 'private, no-store');
   const indexable = environment.APP_ENV === 'production' && isPublicPath(request.nextUrl.pathname)
     && !hasDuplicateQuery(indexingQuery(request.nextUrl.pathname,Object.fromEntries(request.nextUrl.searchParams)));
   if (!indexable) response.headers.set('X-Robots-Tag', environment.APP_ENV === 'production' && !request.nextUrl.pathname.startsWith('/admin') ? 'noindex, follow' : 'noindex, nofollow');
+  if(request.nextUrl.pathname.startsWith('/wholesale'))response.headers.set('X-Robots-Tag','noindex, nofollow');
   return response;
 }
 export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] };

@@ -16,8 +16,13 @@ for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigat
   await expect(input).toHaveAttribute('maxlength', '80'); await input.focus(); await input.fill('Daily'); await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/search\?q=Daily$/); await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
-  await navigation.getByRole('link', { name: width < 768 ? 'Categories' : 'Browse categories', exact: true }).focus(); await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/categories$/); await expect(navigation.getByRole('link', { name: width < 768 ? 'Categories' : 'Browse categories', exact: true })).toHaveAttribute('aria-current', 'page');
+  if(width<768)await page.getByRole('button',{name:'Open shopping menu',exact:true}).click();
+  else await navigation.getByRole('button',{name:'All categories',exact:true}).click();
+  const categoryMenu=width<768?page.getByRole('dialog',{name:'Explore Al Mina'}):navigation;
+  await categoryMenu.getByRole('link',{name:'Shop by category',exact:true}).focus();await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/categories$/);
+  if(width<768)await expect(navigation.getByRole('link',{name:'Shop',exact:true})).toHaveAttribute('aria-current','page');
+  else {await navigation.getByRole('button',{name:'All categories',exact:true}).click();await expect(navigation.getByRole('link',{name:'Shop by category',exact:true})).toHaveAttribute('aria-current','page');}
   const link = width < 768 ? navigation.getByRole('link', { name: 'Cart', exact: true }) : page.getByRole('banner').getByRole('link', { name: 'Your cart', exact: true });
   expect(await link.evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(width < 768 ? 48 : 44);
   await link.focus(); await page.keyboard.press('Enter'); await expect(page).toHaveURL(/\/cart$/);

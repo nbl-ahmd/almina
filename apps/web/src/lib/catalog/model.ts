@@ -41,7 +41,7 @@ export const productHref = (product: Product) => `/products/${productSlug(produc
 export const categoryHref = (category: Category) => `/categories/${categorySlug(category)}`;
 export const productPath = (name: string, id: string) => `/products/${nameSlug(name)}--${id}`;
 export const categoryPath = (name: string, id: string) => `/categories/${nameSlug(name)}--${id}`;
-export const money = (value: number) => `AED ${value.toFixed(2)}`;
+export const money = (value: number, locale: 'en' | 'ar' = 'en') => locale === 'en' ? `AED ${value.toFixed(2)}` : new Intl.NumberFormat('ar-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 // Match the server's active-sale rule, including a valid zero-price sale.
 // Presentation remains a catalog value, not an authoritative checkout quote.
 export const displayPrice = (product: Product) => product.sale === true && product.salePrice !== undefined ? product.salePrice : product.price;

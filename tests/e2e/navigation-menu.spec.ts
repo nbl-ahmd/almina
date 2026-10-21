@@ -1,0 +1,35 @@
+import { test, expect } from './fixtures';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const axe=readFileSync(createRequire(resolve('package.json')).resolve('axe-core/axe.min.js'),'utf8');
+for(const width of [360,390,768,1280])test(`shopping menu and search dropdown work at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
+ const mobile=width<768;
+ const trigger=page.getByRole('button',{name:mobile?'Open shopping menu':'All categories',exact:true});
+ await trigger.focus();await page.keyboard.press('Enter');
+ const content=mobile?page.getByRole('dialog',{name:'Explore Al Mina'}):page.getByRole('navigation',{name:'Shop navigation',exact:true});
+ await expect(content.getByRole('link',{name:'AED 50 & under',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:`outputs/navigation-2026-10-21/menu-${width}.png`});
+ await page.evaluate(axe);
+ const violations=await page.evaluate(async()=>{const audit=(window as unknown as {axe:{run:(node:Element)=>Promise<{violations:{id:string;nodes:{target:string[];failureSummary:string}[]}[]}>}}).axe;return(await audit.run(document.body)).violations.map(item=>({id:item.id,nodes:item.nodes}));});
+ expect(violations).toEqual([]);
+ await page.keyboard.press('Escape');await expect(trigger).toBeFocused();
+ await page.route('**/api/search/suggest?*',route=>route.fulfill({json:{categories:[{name:'Personal Care',href:'/categories/supplements--aaaaaaaaaaaaaaaaaaaaaaaa'}],products:[{name:'Daily Care',href:'/products/daily-care--PD0001'}]}}));
+ const input=page.getByRole('combobox',{name:'Search products',exact:true});
+ await input.focus();await expect(page.getByRole('listbox')).toBeVisible();
+ await expect(page.getByRole('option',{name:'AED 50 & under'})).toBeVisible();
+ await input.fill('Daily');await expect(page.getByRole('option',{name:'Daily Care Products',exact:true})).toBeVisible();
+ await page.screenshot({path:`outputs/navigation-2026-10-21/search-${width}.png`});
+ await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await expect(page).toHaveURL(/daily-care--PD0001$/);
+ await input.focus();await input.fill('Missing');
+ await page.route('**/api/search/suggest?*',route=>route.fulfill({json:{categories:[],products:[]}}));
+ await input.fill('No match');await expect(page.getByRole('status').filter({hasText:'No suggestions found'})).toBeVisible();
+ await page.keyboard.press('Escape');await expect(page.getByRole('listbox')).not.toBeVisible();
+});
+test('Arabic mobile shopping menu keeps RTL and closes after navigation',async({page,context})=>{
+ await context.addCookies([{name:'almina_lang',value:'ar',url:'http://127.0.0.1:4710'}]);await page.setViewportSize({width:390,height:900});await page.goto('/');
+ await page.getByRole('button',{name:'افتح قائمة التسوق'}).click();const dialog=page.getByRole('dialog');await expect(dialog).toHaveAttribute('dir','rtl');
+ await dialog.getByRole('link',{name:'٥٠ درهماً وأقل',exact:true}).click();await expect(page).toHaveURL(/\/collections\/under-50$/);await expect(dialog).not.toBeVisible();
+});

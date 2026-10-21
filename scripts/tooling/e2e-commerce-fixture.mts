@@ -8,12 +8,14 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { hash } from 'bcryptjs';
 import type { Express } from 'express';
 import { migrateCommerce } from '../migrations/commerce.js';
+import { requestEmailCode } from '../../apps/api/src/modules/growth/customers.js';
 import { cloudinarySignature } from '../../apps/api/src/modules/media/cloudinary.js';
 
 const require = createRequire(import.meta.url);
 const express = require('../../backend/node_modules/express');
 const { createLegacyApp } = require('../../backend/app.js');
 const origin = 'http://127.0.0.1:4730';
+process.env.CUSTOMER_AUTH_SECRET='synthetic-loopback-customer-test-secret-32-characters';
 const replica = await MongoMemoryReplSet.create({
   binary: { version: '8.0.17', ...(process.env.TEST_MONGOD_PATH ? { systemBinary: process.env.TEST_MONGOD_PATH } : {}) },
   replSet: { count: 1, name: 'almina_test', ip: '127.0.0.1', storageEngine: 'wiredTiger' },
@@ -53,6 +55,7 @@ const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
+app.post('/__fixture/customer-challenge', async (_req,res,next)=>{try{let code='';const challenge=await requestEmailCode(db,{email:'shopper@example.invalid'},async(_email,value)=>{code=value;});res.json({...challenge,code});}catch(error){next(error);}});
 app.post('/__fixture/families', async (_req, res, next) => {
   try {
     const category = new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');

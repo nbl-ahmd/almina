@@ -6,6 +6,8 @@ import { pathToFileURL } from 'node:url';
 export const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care', disabled: false };
 export const product = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', product_id: 'PD0001', name: 'Daily Care',
   category, price: 25, salePrice: 20, stock: 4, disabled: false, featured: true, sale: true,
+  // Explicitly reviewed synthetic general-sale item exercises reminder consent UI.
+  productType: 'general', contentReviewed: true,
   images: ['fixture.svg'], description: 'Daily care product description.' };
 export const recoveredProducts = [
   { ...product, _id: 'cccccccccccccccccccccccc', product_id: 'RECOVERY--0001', name: 'Recovery Example', price: 12.50, salePrice: 0, stock: 0,
@@ -42,7 +44,10 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
           : [{ id: category._id, name: category.name }], nextCursor: null,
       } })); return;
     }
-    if (url.pathname === '/api/category') { res.end(JSON.stringify([category])); return; }
+    if (url.pathname === '/api/category') {
+      const visualCategories = includePagination ? ['Baby Care','Oral Care','Hair Care','First Aid'].map((name,index)=>({_id:(200+index).toString(16).padStart(24,'0'),name,disabled:false})) : [];
+      res.end(JSON.stringify([category,...visualCategories])); return;
+    }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }
     if (url.pathname === '/api/store/status') { res.end(JSON.stringify({ status: closed ? 'closed' : 'open' })); return; }
     const byMongoId = products.find(value => url.pathname === `/api/products/${value._id}`);

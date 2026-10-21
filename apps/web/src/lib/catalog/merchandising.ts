@@ -44,6 +44,11 @@ export function uniqueProducts(products: Product[]) {
     ...new Map(products.map((product) => [product._id, product])).values(),
   ];
 }
+/** New discoveries first; overlap must not erase a useful shopping collection. */
+export function prioritizeShelf(products: Product[], earlier: Product[]) {
+  const shown = new Set(earlier.map(product => product._id));
+  return uniqueProducts([...products.filter(product => !shown.has(product._id)), ...products]);
+}
 export function collectionProducts(
   collection: HomeCollection,
   products: Product[],

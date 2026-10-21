@@ -79,6 +79,26 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
     await db.collection('categories').insertOne({ _id: category, name: 'Fixture' });
     await migrateCommerce(db);
 
+    await t.test('both retained and versioned quote/checkout paths enforce the shared serviceability rule',async()=>{
+      const id=await product(3),input=intent(id),beforeOrders=await db.collection('orders').countDocuments();
+      await db.collection('growth_settings').insertOne({_id:'serviceability' as never,active:true,emirates:['Ras al-Khaimah'],blockedCities:['City A'],notes:'Synthetic area temporarily excluded.'});
+      const {createLegacyApp}=require('../backend/app.js');
+      const legacy=createLegacyApp({getCommerceDb:()=>db,origins:[browserHeaders.Origin],development:true,auth:{authenticate:async()=>admin}});
+      try{
+        await serve(legacy,async origin=>{
+          for(const path of ['/api/orders/quote','/api/orders','/api/v1/checkout/quote','/api/v1/checkout']){
+            const response=await fetch(origin+path,{method:'POST',headers:browserHeaders,body:JSON.stringify(path.endsWith('/quote')?{customer:input.customer,items:input.items}:input)});
+            assert.equal(response.status,422,path);
+            assert.ok(JSON.stringify(await response.json()).includes('ADDRESS_NOT_SERVICEABLE'),path);
+          }
+          await db.collection('growth_settings').updateOne({_id:'serviceability' as never},{$set:{active:false}});
+          assert.equal((await fetch(origin+'/api/orders/quote',{method:'POST',headers:browserHeaders,body:JSON.stringify({customer:input.customer,items:input.items})})).status,200);
+        });
+        assert.equal((await db.collection('products').findOne({_id:new ObjectId(id)}))!.stock,3);
+        assert.equal(await db.collection('orders').countDocuments(),beforeOrders);
+      }finally{await db.collection('growth_settings').deleteOne({_id:'serviceability' as never});}
+    });
+
     await t.test('closed store, missing policy and unseeded counter fail closed without partial writes', async () => {
       const productId = await product(2);
       const input = intent(productId);

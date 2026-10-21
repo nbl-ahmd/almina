@@ -1,0 +1,137 @@
+import assert from 'node:assert/strict';
+import { randomBytes,randomUUID,createHash } from 'node:crypto';
+import { createServer } from 'node:http';
+import test from 'node:test';
+import { MongoClient,ObjectId } from 'mongodb';
+import { hash as hashPassword } from 'bcryptjs';
+import { createSessionService } from '../apps/api/src/modules/auth/sessions';
+import { createApp } from '../apps/api/src/app';
+import { createLogger } from '@almina/config/logger';
+import { migrateCommerce } from '../scripts/migrations/commerce';
+import { createCommerceService,quoteHash } from '../apps/api/src/modules/orders/commerce';
+import { orderDetailDto } from '../apps/api/src/modules/orders/dto';
+import { confirmRewardDelivery } from '../apps/api/src/modules/growth/rewards';
+import * as wholesale from '../apps/api/src/modules/wholesale/repository';
+const uri=process.env.COMMERCE_TEST_URI;
+assert.ok(uri||process.env.REQUIRE_DATABASE_TESTS!=='1','Disposable database required');
+const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
+test('private wholesale invitations, pricing and shared inventory',{skip:!uri},async t=>{
+ assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+ const client=await new MongoClient(uri!).connect(),db=client.db('wholesale_'+randomUUID().replaceAll('-',''));
+ const admin={id:String(new ObjectId()),username:'fixture',name:'Fixture',role:'admin' as const,cities:[]};
+ const category=new ObjectId(),productId=String(new ObjectId());
+ const customer={name:'Fixture Salon',email:'salon@example.invalid',mobile:'0501234567',emirate:'Ras al-Khaimah',city:'Fixture area',address:'Fixture address',payment:'cash'};
+ const principal={id:String(new ObjectId()),email:customer.email};
+ const commerce=createCommerceService(async()=>db);
+ let revision=0,token='';
+ const accountInput=()=>({email:customer.email,businessName:'Fixture Salon',typeId:'salon',approval:'approved',verificationReference:'Manual business check fixture',scope:'assigned',productIds:[productId],categoryIds:[],revision});
+ const tier={typeId:'salon',unitPriceMinor:700,minimumQuantity:2,quantityMultiple:2,maximumQuantity:20};
+ const quote=(raw:ReturnType<typeof intent>&{voucherCode?:string},customerId?:string,identity?:typeof principal)=>{const {idempotencyKey,...input}=raw;void idempotencyKey;return commerce.quote(input,customerId,identity);};
+ const intent=(quantity=2)=>({customer,items:[{productId,quantity}],idempotencyKey:randomUUID()});
+ try{
+  await db.collection('stores').insertOne({status:'open'});
+  await db.collection('categories').insertOne({_id:category,name:'Personal care'});
+  await db.collection('products').insertOne({_id:new ObjectId(productId),product_id:'PD_TRADE',name:'Fixture hand wash',category,stock:20,price:15,vat:true,published:true,contentReviewed:true,productType:'general'});
+  await db.collection('customers').insertOne({_id:new ObjectId(principal.id),email:customer.email,emailHash:hash(customer.email)});
+  await migrateCommerce(db);
+  await wholesale.saveWholesaleType(db,{id:'salon',name:'Salon',active:true,allowMedicines:false,revision:0},admin.id);
+  const account=await wholesale.saveWholesaleAccount(db,accountInput(),admin.id);revision=account.revision;
+  await wholesale.saveWholesaleTerms(db,{productId,enabled:true,prices:[tier],revision:0},admin.id);
+  await t.test('unaccepted business has no catalogue; invitations are email-bound, rotated and single-use',async()=>{
+   await assert.rejects(wholesale.wholesaleCatalog(db,principal,{}),{status:403});
+   const first=await wholesale.issueWholesaleInvite(db,{email:customer.email,revision},admin.id);revision=first.account.revision;
+   const second=await wholesale.issueWholesaleInvite(db,{email:customer.email,revision},admin.id);revision=second.account.revision;token=second.token;
+   await assert.rejects(wholesale.acceptWholesaleInvite(db,'other@example.invalid',{token}),{status:403});
+   await assert.rejects(wholesale.acceptWholesaleInvite(db,customer.email,{token:first.token}),{status:403});
+   const row=await db.collection('wholesale_accounts').findOne();assert.notEqual(row!.inviteHash,token);
+   await db.collection('wholesale_accounts').updateOne({},{$set:{inviteExpiresAt:new Date(0)}});
+   await assert.rejects(wholesale.acceptWholesaleInvite(db,customer.email,{token}),{status:403});
+   await db.collection('wholesale_accounts').updateOne({},{$set:{inviteExpiresAt:new Date(Date.now()+60000)}});
+   await wholesale.acceptWholesaleInvite(db,customer.email,{token});revision++;
+   await assert.rejects(wholesale.acceptWholesaleInvite(db,customer.email,{token}),{status:403});
+   assert.equal((await wholesale.wholesaleCatalog(db,principal,{})).products[0]!.price.unitPriceMinor,700);
+   await assert.rejects(wholesale.saveWholesaleAccount(db,{...accountInput(),revision:1},admin.id),{status:409});
+  });
+  await t.test('assignment, review, profile medicine permissions and explicit prices are enforced',async()=>{
+   for(const patch of [{productType:'otc'},{contentReviewed:false},{published:false}]){
+    await db.collection('products').updateOne({_id:new ObjectId(productId)},{$set:patch});
+    assert.equal((await wholesale.wholesaleCatalog(db,principal,{})).products.length,0);
+    await assert.rejects(quote(intent(),principal.id,principal),{code:'PRODUCT_UNAVAILABLE'});
+    await db.collection('products').updateOne({_id:new ObjectId(productId)},{$set:{productType:'general',contentReviewed:true,published:true}});
+   }
+   await db.collection('wholesale_accounts').updateOne({},{$set:{productIds:[]}});
+   assert.equal((await wholesale.wholesaleCatalog(db,principal,{})).products.length,0);
+   await db.collection('wholesale_accounts').updateOne({},{$set:{productIds:[productId]}});
+   await db.collection('wholesale_terms').updateOne({},{$set:{enabled:false}});
+   await assert.rejects(quote(intent(),principal.id,principal),{code:'PRODUCT_UNAVAILABLE'});
+   await db.collection('wholesale_terms').updateOne({},{$set:{enabled:true}});
+   for(const quantity of [1,3,22])await assert.rejects(quote(intent(quantity),principal.id,principal),{code:'INVALID_REQUEST'});
+   await assert.rejects(quote({...intent(),customer:{...customer,email:'other@example.invalid'}},principal.id,principal),{status:403});
+   await assert.rejects(quote({...intent(),voucherCode:'AM-'+'A'.repeat(24)},principal.id,principal));
+   const reviewed=await quote(intent(),principal.id,principal);assert.equal(reviewed.lines[0]!.unitPriceMinor,700);assert.equal(reviewed.totalMinor,1400);
+   assert.equal((await quote(intent())).lines[0]!.unitPriceMinor,1500);
+  });
+  await t.test('API requires verified customer and accepted quote, denies retail accounts, protects mutations',async()=>{
+   const sessionToken=randomBytes(32).toString('base64url');
+   await db.collection('customer_sessions').insertOne({_id:hash(sessionToken) as never,customerId:new ObjectId(principal.id),expiresAt:new Date(Date.now()+60000)});
+   const app=createApp({database:{mode:'enabled',checkReadiness:async()=>true},getDb:async()=>db,logger:createLogger({service:'api',environment:'development',level:'error',write:()=>{}}),development:true,webOrigin:'http://localhost:3000',rateLimit:1000});
+   const server=createServer(app);await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
+   const address=server.address();assert.ok(address&&typeof address!=='string');const origin='http://127.0.0.1:'+address.port;
+   const headers={Cookie:'almina_customer='+sessionToken,Origin:'http://localhost:3000','X-CSRF-Protection':'1','Content-Type':'application/json'};
+   try{
+    assert.equal((await fetch(origin+'/api/v1/wholesale/catalog')).status,401);
+    const retailId=new ObjectId(),retailToken=randomBytes(32).toString('base64url');
+    await db.collection('customers').insertOne({_id:retailId,email:'retail@example.invalid',emailHash:hash('retail@example.invalid')});
+    await db.collection('customer_sessions').insertOne({_id:hash(retailToken) as never,customerId:retailId,expiresAt:new Date(Date.now()+60000)});
+    assert.equal((await fetch(origin+'/api/v1/wholesale/catalog',{headers:{...headers,Cookie:'almina_customer='+retailToken}})).status,403);
+    const publicProduct=await fetch(origin+'/api/v1/catalog/products/'+productId);assert.equal(publicProduct.status,200);assert.equal(JSON.stringify(await publicProduct.json()).includes('unitPriceMinor'),false);
+    const catalog=await fetch(origin+'/api/v1/wholesale/catalog',{headers});assert.equal(catalog.status,200);assert.match(catalog.headers.get('cache-control')! ,/private/);
+    assert.equal((await fetch(origin+'/api/v1/admin/wholesale/types',{headers})).status,401);
+    await db.collection('users').insertOne({username:'fixture-staff',name:'Fixture',role:'user',cities:[],password:await hashPassword('synthetic-test-password',4)});
+    const staff=await createSessionService(async()=>db).login({username:'fixture-staff',password:'synthetic-test-password'});
+    assert.equal((await fetch(origin+'/api/v1/admin/wholesale/types',{headers:{...headers,Cookie:'almina_session='+staff.token}})).status,403);
+    await db.collection('users').updateOne({username:'fixture-staff'},{$set:{role:'admin'}});
+    assert.equal((await fetch(origin+'/api/v1/admin/wholesale/types',{headers:{...headers,Cookie:'almina_session='+staff.token}})).status,200);
+    assert.equal((await fetch(origin+'/api/v1/wholesale/checkout',{method:'POST',headers,body:JSON.stringify(intent())})).status,400);
+    assert.equal((await fetch(origin+'/api/v1/wholesale/quote',{method:'POST',headers:{...headers,Origin:'https://hostile.invalid'},body:JSON.stringify(intent())})).status,403);
+    await db.collection('wholesale_accounts').updateOne({},{$set:{approval:'suspended'}});
+    assert.equal((await fetch(origin+'/api/v1/wholesale/catalog',{headers})).status,403);
+    await db.collection('wholesale_accounts').updateOne({},{$set:{approval:'approved'}});
+   }finally{await new Promise<void>(resolve=>server.close(()=>resolve()));}
+  });
+  await t.test('repricing and suspension invalidate reviewed orders without stock writes',async()=>{
+   const input=intent(),acceptedQuoteHash=quoteHash(await quote(input,principal.id,principal));
+   await db.collection('wholesale_terms').updateOne({},{$set:{'prices.0.unitPriceMinor':800}});
+   await assert.rejects(commerce.checkout({...input,acceptedQuoteHash},principal.id,principal),{code:'PRICE_CHANGED'});
+   await db.collection('wholesale_terms').updateOne({},{$set:{'prices.0.unitPriceMinor':700}});
+   await db.collection('wholesale_accounts').updateOne({},{$set:{approval:'suspended'}});
+   await assert.rejects(commerce.checkout({...input,acceptedQuoteHash},principal.id,principal),{status:403});
+   await db.collection('wholesale_accounts').updateOne({},{$set:{approval:'approved'}});
+   assert.equal(await db.collection('orders').countDocuments(),0);
+  });
+  await t.test('atomic order snapshots, retries, retail/wholesale key separation and cancellation',async()=>{
+   const base=intent(),input={...base,acceptedQuoteHash:quoteHash(await quote(base,principal.id,principal))};
+   const results=await Promise.all(Array.from({length:5},()=>commerce.checkout(input,principal.id,principal)));
+   assert.equal(new Set(results.map(result=>result.id)).size,1);
+   assert.equal((await db.collection('products').findOne())!.stock,18);
+   const row=(await db.collection('orders').findOne())!;assert.equal(row.channel,'wholesale');assert.equal(row.wholesale.businessName,'Fixture Salon');
+   assert.equal(orderDetailDto(row).wholesale!.typeId,'salon');
+   await assert.rejects(commerce.checkout(input,principal.id),{code:'IDEMPOTENCY_CONFLICT'});
+   await db.collection('orders').updateOne({_id:row._id},{$set:{status:'dispatched'}});
+   await assert.rejects(confirmRewardDelivery(db,{orderId:row.orderId},admin.id),{code:'INVALID_TRANSITION'});
+   await db.collection('orders').updateOne({_id:row._id},{$set:{status:'pending'}});
+   await commerce.transition(String(row._id),{status:'cancelled'},admin);
+   assert.equal((await db.collection('products').findOne())!.stock,20);
+   await commerce.transition(String(row._id),{status:'cancelled'},admin);
+   assert.equal((await db.collection('products').findOne())!.stock,20);
+  });
+  await t.test('retail and wholesale compete for one stock pool without overselling',async()=>{
+   await db.collection('products').updateOne({},{$set:{stock:5}});
+   const outcomes=await Promise.allSettled(Array.from({length:10},(_,index)=>index%2?commerce.checkout(intent(2),principal.id,principal):commerce.checkout(intent(1))));
+   const orders=await db.collection('orders').find({status:'pending'}).toArray();
+   const sold=orders.reduce((sum,row)=>sum+row.lines[0].quantity,0);
+   assert.equal(sold,5);assert.equal((await db.collection('products').findOne())!.stock,0);
+   for(const outcome of outcomes)if(outcome.status==='rejected')assert.equal(outcome.reason.code,'INSUFFICIENT_STOCK');
+  });
+ }finally{await db.dropDatabase();await client.close();}
+});

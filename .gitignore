@@ -27,3 +27,6 @@ test-results/
 
 # Local ERP exports and prepared pharmacy import files.
 outputs/
+
+# Named verification builds must not collide with active local previews.
+.next-verification-*/

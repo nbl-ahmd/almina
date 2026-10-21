@@ -58,6 +58,7 @@ export const staffDtoSchema = z.object({
 export const loginDtoSchema = z.object({ expiresAt: z.iso.datetime(), user: staffDtoSchema }).strict();
 export const orderSummaryDtoSchema = z.object({
   id, orderId: z.string(), createdAt: z.iso.datetime().nullable(),
+  channel:z.literal('wholesale').optional(),wholesale:z.object({businessName:z.string(),typeId:z.string()}).optional(),
   status: z.union([orderStatusSchema, z.literal('legacy_conflict')]),
   dispatched: z.boolean(), canceled: z.boolean(), city: z.string().nullable(),
   // Historical values are reported as stored; never recalculate them from live products.

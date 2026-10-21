@@ -1,5 +1,5 @@
 import { ObjectId, type Db, type Document } from 'mongodb';
-import { growthPageSchema, pharmacyProfileSchema, cloudinaryImage, type GrowthPage } from '@almina/contracts';
+import { growthPageSchema, pharmacyProfileSchema, campaignImageUrl, type GrowthPage } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 const key=(page:Pick<GrowthPage,'kind'|'locale'|'slug'>)=>`${page.locale}:${page.kind}:${page.slug}`;
 export async function saveGrowthPage(db:Db,raw:unknown,actor:string) {
@@ -7,7 +7,7 @@ export async function saveGrowthPage(db:Db,raw:unknown,actor:string) {
   const parsed=growthPageSchema.safeParse(raw);
   if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
   const page=parsed.data;
-  if(page.image&&!cloudinaryImage(page.image,process.env.CLOUDINARY_CLOUD_NAME)&&!/^https:\/\/cdn\.alminapharmacy\.com\/cdn\/[a-zA-Z0-9/_-]+\.(?:png|jpe?g|webp|avif)$/.test(page.image))throw new HttpError(400,'INVALID_REQUEST');
+  for(const image of [page.image,page.mobileImage])if(image&&!campaignImageUrl(image,process.env.CLOUDINARY_CLOUD_NAME))throw new HttpError(400,'INVALID_REQUEST');
   // A curated bundle must reference a real, visible set of products across at least two categories.
   if(page.bundle){
     const ids=[...new Set(page.productIds)];
@@ -47,4 +47,14 @@ export async function savePharmacyProfile(db:Db,raw:unknown,actor:string) {
     if(!result.matchedCount&&!result.upsertedCount)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');
   }catch(error){if(error instanceof Error&&'code' in error&&error.code===11000)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');throw error;}
   return {...value,revision:value.revision+1};
+}
+
+/** Old admin tabs edit existing content without silently clearing new merchandising fields. */
+export async function saveLegacyGrowthPage(db:Db,raw:unknown,actor:string){
+ const parsed=growthPageSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
+ const fields=['mobileImage','homepagePlacement','priority','ctaLabel'] as const;
+ if(fields.some(field=>raw&&typeof raw==='object'&&field in raw))throw new HttpError(400,'INVALID_REQUEST');
+ const row=await db.collection<Document&{_id:string}>('growth_pages').findOne({_id:key(parsed.data)},{maxTimeMS:3000,projection:Object.fromEntries(fields.map(field=>[field,1]))});
+ const kept=Object.fromEntries(fields.flatMap(field=>row?.[field]===undefined?[]:[[field,row[field]]]));
+ return saveGrowthPage(db,{...parsed.data,...kept},actor);
 }

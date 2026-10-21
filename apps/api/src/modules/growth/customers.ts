@@ -6,13 +6,13 @@ import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
-const emailSchema=z.email().max(254).transform(value=>value.trim().toLowerCase());
+const emailSchema=z.string().trim().pipe(z.email().max(254)).transform(value=>value.toLowerCase());
 const tokenSchema=z.string().regex(/^[A-Za-z0-9_-]{43}$/);
 const jwks=createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'),{timeoutDuration:5000});
 const sessionMs=30*86400000;
 export const customerCookie=(development=false)=>development?'almina_customer':'__Host-almina_customer';
 export function customerToken(cookie:string|undefined,development=false){const prefix=customerCookie(development)+'=';const parts=String(cookie??'').split(';').map(part=>part.trim()).filter(part=>part.startsWith(prefix));return parts.length===1&&tokenSchema.safeParse(parts[0]!.slice(prefix.length)).success?parts[0]!.slice(prefix.length):undefined;}
-export function customerAuthOptions(){return {googleClientId:process.env.CUSTOMER_GOOGLE_CLIENT_ID?.endsWith('.apps.googleusercontent.com')?process.env.CUSTOMER_GOOGLE_CLIENT_ID:null,emailEnabled:Boolean(process.env.CUSTOMER_AUTH_SECRET&&process.env.CUSTOMER_AUTH_SECRET.length>=32&&process.env.CUSTOMER_EMAIL_USER&&process.env.CUSTOMER_EMAIL_PASSWORD)};}
+export function customerAuthOptions(){return {googleClientId:/^[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/.test(process.env.CUSTOMER_GOOGLE_CLIENT_ID??'')?process.env.CUSTOMER_GOOGLE_CLIENT_ID:null,emailEnabled:Boolean(process.env.CUSTOMER_AUTH_SECRET&&process.env.CUSTOMER_AUTH_SECRET.length>=32&&process.env.CUSTOMER_EMAIL_USER&&process.env.CUSTOMER_EMAIL_PASSWORD)};}
 function codeHash(id:string,code:string){const secret=process.env.CUSTOMER_AUTH_SECRET;if(!secret||secret.length<32)throw new HttpError(503,'SERVICE_UNAVAILABLE');return createHmac('sha256',secret).update(id+':'+code).digest('hex');}
 export async function requestEmailCode(db:Db,raw:unknown,deliver?:(email:string,code:string)=>Promise<void>){
  const parsed=z.object({email:emailSchema}).strict().safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
@@ -29,15 +29,22 @@ async function startSession(db:Db,email:string,provider:'email'|'google',googleS
  // A deployed schema must enforce ownership uniqueness before any customer session exists.
  const indexes=await db.collection('customers').listIndexes().toArray();
  if(!indexes.some(index=>index.unique===true&&index.key.emailHash===1&&Object.keys(index.key).length===1))throw new HttpError(503,'SERVICE_UNAVAILABLE');
+ if(googleSub){
+  if(!indexes.some(index=>index.unique===true&&index.key.googleSub===1&&Object.keys(index.key).length===1&&index.partialFilterExpression?.googleSub?.$type==='string'))throw new HttpError(503,'SERVICE_UNAVAILABLE');
+  // Never move purchases or overwrite a provider binding when a Google email changes.
+  const linked=await db.collection('customers').findOne({googleSub},{projection:{emailHash:1},maxTimeMS:3000});
+  if(linked&&linked.emailHash!==hash(email))throw new HttpError(403,'FORBIDDEN');
+ }
  const key=hash(email),now=new Date();
- const customer=await db.collection('customers').findOneAndUpdate({emailHash:key},{$set:{email,verifiedAt:now,lastLoginAt:now,...(googleSub?{googleSub}:{})},$setOnInsert:{createdAt:now,marketingEmail:false,marketingWhatsapp:false,provider}},{upsert:true,returnDocument:'after'});
+ let customer;
+ try{customer=await db.collection('customers').findOneAndUpdate({emailHash:key,disabled:{$ne:true},...(googleSub?{$or:[{googleSub:{$exists:false}},{googleSub}]}:{})},{$set:{email,verifiedAt:now,lastLoginAt:now,...(googleSub?{googleSub}:{})},$setOnInsert:{createdAt:now,marketingEmail:false,marketingWhatsapp:false,provider}},{upsert:true,returnDocument:'after'});}catch(error){if(error&&typeof error==='object'&&'code' in error&&error.code===11000)throw new HttpError(401,'UNAUTHORIZED');throw error;}
  if(!customer)throw new HttpError(503,'SERVICE_UNAVAILABLE');
  const token=randomBytes(32).toString('base64url');
  await db.collection<Document&{_id:string}>('customer_sessions').insertOne({_id:hash(token),customerId:customer._id,createdAt:now,expiresAt:new Date(Date.now()+sessionMs)});
  return {token,customer:{id:String(customer._id),email:customer.email}};
 }
 export async function verifyEmailCode(db:Db,raw:unknown){const parsed=z.object({challenge:tokenSchema,code:z.string().regex(/^\d{6}$/)}).strict().safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');const value=parsed.data,id=hash(value.challenge);const record=await db.collection<Document&{_id:string}>('customer_auth_codes').findOneAndUpdate({_id:id,expiresAt:{$gt:new Date()},attempts:{$lt:5}},{$inc:{attempts:1}},{returnDocument:'after'});if(!record||!timingSafeEqual(Buffer.from(record.codeHash,'hex'),Buffer.from(codeHash(value.challenge,value.code),'hex')))throw new HttpError(401,'UNAUTHORIZED');const consumed=await db.collection<Document&{_id:string}>('customer_auth_codes').deleteOne({_id:id,codeHash:record.codeHash});if(consumed.deletedCount!==1)throw new HttpError(401,'UNAUTHORIZED');return startSession(db,record.email,'email');}
-export async function googleSignIn(db:Db,raw:unknown){const parsed=z.object({idToken:z.string().min(100).max(10000)}).strict().safeParse(raw);const clientId=customerAuthOptions().googleClientId;if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');if(!clientId)throw new HttpError(503,'SERVICE_UNAVAILABLE');const payload=await verifyGoogleCredential(parsed.data.idToken,clientId);return startSession(db,emailSchema.parse(payload.email),'google',payload.sub);}
+export async function googleSignIn(db:Db,raw:unknown,keySet:JWTVerifyGetKey=jwks){const parsed=z.object({idToken:z.string().min(100).max(10000)}).strict().safeParse(raw);const clientId=customerAuthOptions().googleClientId;if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');if(!clientId)throw new HttpError(503,'SERVICE_UNAVAILABLE');const payload=await verifyGoogleCredential(parsed.data.idToken,clientId,keySet);if(!googleEmailIsAuthoritative(payload))throw new HttpError(403,'FORBIDDEN');return startSession(db,emailSchema.parse(payload.email),'google',payload.sub);}
 export async function customerIdentity(db:Db,token:string|undefined){if(!token)throw new HttpError(401,'UNAUTHORIZED');const session=await db.collection<Document&{_id:string}>('customer_sessions').findOne({_id:hash(token),expiresAt:{$gt:new Date()}},{maxTimeMS:3000});if(!session)throw new HttpError(401,'UNAUTHORIZED');const user=await db.collection('customers').findOne({_id:session.customerId,disabled:{$ne:true}},{maxTimeMS:3000});if(!user)throw new HttpError(401,'UNAUTHORIZED');return {id:String(user._id),email:String(user.email),marketingEmail:user.marketingEmail===true,marketingWhatsapp:user.marketingWhatsapp===true};}
 export async function customerLogout(db:Db,token:string|undefined){if(token)await db.collection<Document&{_id:string}>('customer_sessions').deleteOne({_id:hash(token)});}
 export async function customerOrders(db:Db,customer:{email:string}){return db.collection('orders').find({...customerOrderFilter(customer.email),schemaVersion:2},{maxTimeMS:3000,projection:{orderId:1,status:1,createdAt:1,'totals.totalMinor':1,'totals.lines.productId':1,'totals.lines.name':1,'totals.lines.quantity':1}}).sort({_id:-1}).limit(30).toArray();}
@@ -63,5 +70,8 @@ export async function updateCustomerAddresses(db:Db,id:string,raw:unknown){
 
 export async function verifyGoogleCredential(token:string,clientId:string,keySet:JWTVerifyGetKey=jwks){
  let payload;try{payload=(await jwtVerify(token,keySet,{issuer:['https://accounts.google.com','accounts.google.com'],audience:clientId,algorithms:['RS256'],maxTokenAge:'10m'})).payload;}catch{throw new HttpError(401,'UNAUTHORIZED');}
- if(payload.email_verified!==true||typeof payload.sub!=='string'||!emailSchema.safeParse(payload.email).success)throw new HttpError(401,'UNAUTHORIZED');return {...payload,sub:payload.sub,email:emailSchema.parse(payload.email)};
+ if(payload.email_verified!==true||typeof payload.exp!=='number'||typeof payload.sub!=='string'||!payload.sub.trim()||payload.sub.length>255||!emailSchema.safeParse(payload.email).success)throw new HttpError(401,'UNAUTHORIZED');return {...payload,sub:payload.sub,email:emailSchema.parse(payload.email)};
 }
+
+/** Google does not guarantee current ownership of a non-Gmail, non-Workspace mailbox. */
+export function googleEmailIsAuthoritative(payload:{email:string;hd?:unknown}){return payload.email.toLowerCase().endsWith('@gmail.com')||(typeof payload.hd==='string'&&payload.hd.length>0);}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { campaignState,growthPageSchema,growthPagePath,pharmacyProfileSchema,branchDirectorySchema,serviceabilityPolicySchema,isServiceable } from '@almina/contracts';
+import { campaignImageUrl,campaignState,growthPageSchema,growthPagePath,pharmacyProfileSchema,branchDirectorySchema,serviceabilityPolicySchema,isServiceable } from '@almina/contracts';
 import { searchScore,editDistance } from '../apps/api/src/modules/growth/search';
 import { readSaved } from '../apps/web/src/lib/catalog/saved';
 test('editorial publication requires original content and named review for health guidance',()=>{const draft={kind:'guide',slug:'skin-care',title:'Skin care',description:''};assert.equal(growthPageSchema.safeParse(draft).success,true);assert.equal(growthPageSchema.safeParse({...draft,published:true}).success,false);assert.equal(growthPageSchema.safeParse({...draft,description:'Useful guide',body:'Original text',published:true,healthContent:true}).success,false);assert.equal(growthPageSchema.safeParse({...draft,description:'Useful guide',body:'Original text',published:true,healthContent:true,reviewer:'Pharmacy reviewer'}).success,true);assert.equal(growthPageSchema.safeParse({...draft,categories:[{label:'Unsafe',href:'//evil.invalid'}]}).success,false);});
@@ -10,3 +10,20 @@ test('saved device products reject corrupted data and bound stored identifiers',
 test('unconfirmed pharmacy details contain no invented licence or hours',()=>{const p=pharmacyProfileSchema.parse({});assert.equal(p.verified,false);assert.equal(p.licence,'');assert.equal(p.openingHours,'');});
 test('curated complementary bundles need a rationale and at least two chosen products',()=>{const base={kind:'collection',slug:'morning-routine',title:'Morning routine',description:'A short description'},ids=['0123456789abcdef01234567','0123456789abcdef01234568'];assert.equal(growthPageSchema.safeParse({...base,bundle:true,bundleReason:'These products cover cleansing and daily protection.'}).success,false);assert.equal(growthPageSchema.safeParse({...base,bundle:true,bundleReason:'too short',productIds:ids}).success,false);assert.equal(growthPageSchema.safeParse({...base,kind:'guide',bundle:true,bundleReason:'These products cover cleansing and daily protection.',productIds:ids}).success,false);assert.equal(growthPageSchema.safeParse({...base,bundle:true,bundleReason:'These products cover cleansing and daily protection.',productIds:ids}).success,true);});
 test('serviceability and branch data stay off until staff publish and verify them',()=>{const inactive=serviceabilityPolicySchema.parse({});assert.equal(inactive.active,false);assert.equal(isServiceable({emirate:'Dubai',city:'Deira'},inactive),true);const policy=serviceabilityPolicySchema.parse({active:true,emirates:['Ras al-Khaimah'],blockedCities:['Al Nakheel']});assert.equal(isServiceable({emirate:'ras al-khaimah',city:'Al Hamra'},policy),true);assert.equal(isServiceable({emirate:'Dubai',city:'Al Hamra'},policy),false);assert.equal(isServiceable({emirate:'Ras al-Khaimah',city:'al nakheel'},policy),false);const directory=branchDirectorySchema.parse({});assert.equal(directory.verified,false);assert.equal(directory.items.length,0);assert.equal(branchDirectorySchema.safeParse({items:[{name:'Branch',phone:'+971500000000',verified:true}],verified:true}).success,true);});
+
+test('homepage campaign placement is additive and publication needs artwork, CTA and terms',()=>{
+ const base={kind:'campaign',slug:'new-care',title:'New care',description:'Useful care',body:'Useful product selection'};
+ const old=growthPageSchema.parse(base);assert.equal(old.homepagePlacement,'none');assert.equal(old.mobileImage,'');assert.equal(old.priority,0);
+ assert.equal(growthPageSchema.safeParse({...base,published:true,homepagePlacement:'hero'}).success,false);
+ assert.equal(growthPageSchema.safeParse({...base,kind:'guide',homepagePlacement:'hero'}).success,false);
+ assert.equal(growthPageSchema.safeParse({...base,priority:101}).success,false);
+ assert.equal(growthPageSchema.safeParse({...base,priority:1.5}).success,false);
+ assert.equal(growthPageSchema.safeParse({...base,homepagePlacement:'hero',productIds:['0123456789abcdef01234567','0123456789abcdef01234567']}).success,false);
+ assert.equal(growthPageSchema.safeParse({...base,published:true,homepagePlacement:'hero',image:'https://res.cloudinary.com/synthetic/image/upload/hero.webp',imageAlt:'Care',ctaLabel:'Explore',terms:'While stocks last.'}).success,true);
+});
+
+test('campaign preview and saves share the exact artwork allowlist',()=>{
+ const cloud='https://res.cloudinary.com/synthetic/image/upload/banner.webp';assert.equal(campaignImageUrl(cloud,'synthetic'),cloud);assert.equal(campaignImageUrl(cloud,'other'),null);assert.equal(campaignImageUrl(cloud),null);
+ const cdn='https://cdn.alminapharmacy.com/cdn/campaign/banner.webp';assert.equal(campaignImageUrl(cdn),cdn);
+ for(const value of ['https://evil.invalid/banner.webp',cdn+'?token=private','https://cdn.alminapharmacy.com.evil.invalid/cdn/banner.webp','https://user:pass@cdn.alminapharmacy.com/cdn/banner.webp','javascript:alert(1)','https://cdn.alminapharmacy.com/cdn/../../image.svg'])assert.equal(campaignImageUrl(value),null);
+});

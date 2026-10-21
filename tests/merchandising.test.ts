@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bannerDestination, catalogueBrands, collectionProducts, findCollection, uniqueProducts } from '../apps/web/src/lib/catalog/merchandising';
+import { bannerDestination, catalogueBrands, collectionProducts, findCollection, uniqueProducts, prioritizeShelf } from '../apps/web/src/lib/catalog/merchandising';
 import type { Product } from '../apps/web/src/lib/catalog/model';
 const base:Product={_id:'aaaaaaaaaaaaaaaaaaaaaaaa',product_id:'PD1',name:'Sebamed Body Wash',category:{_id:'bbbbbbbbbbbbbbbbbbbbbbbb',name:'Personal Care'},price:60,stock:3};
 test('price-point collection uses active sale price and excludes unavailable or hidden products',()=>{
@@ -26,4 +26,10 @@ test('brand navigation uses explicit brand or recognizable pack name, not invent
   assert.deepEqual(catalogueBrands([base,base]),['Sebamed']);
   assert.deepEqual(catalogueBrands([{...base,name:'Unknown care'}]),[]);
   assert.deepEqual(catalogueBrands([{...base,stock:0}]),[]);
+});
+
+test('small shopping collections survive overlap while fresh products lead',()=>{
+  const other={...base,_id:'cccccccccccccccccccccccc',name:'Another product'};
+  assert.deepEqual(prioritizeShelf([base], [base]), [base]);
+  assert.deepEqual(prioritizeShelf([base,other,base], [base]), [other,base]);
 });
