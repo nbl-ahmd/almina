@@ -4,7 +4,7 @@ import { getWebEnvironment } from './env';
 import { readCategory, readProduct, objectId, publicId, slugIdentity, type Product } from '../catalog/model';
 import { catalogReadPolicy } from '../catalog/cache-policy';
 import { bannerDestination } from '../catalog/merchandising';
-import { cloudinaryImage } from '../catalog/media';
+import { publicImage } from '../catalog/image-delivery';
 import { CatalogUnavailable, catalogArray, readCatalogResponse } from './catalog-response';
 
 export async function legacyRead(path: string, content = false, allowMissing = false): Promise<unknown> {
@@ -83,7 +83,7 @@ function fileName(value: string | undefined) {
   return value && /^[a-zA-Z0-9_.-]+$/.test(value) ? value : null;
 }
 export function productImage(product: Product) {
-  const cloudinary = cloudinaryImage(product.cloudinaryImages?.[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME);
+  const cloudinary = publicImage(product.cloudinaryImages?.[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME, getWebEnvironment().APP_ENV === 'production');
   if (cloudinary) return cloudinary;
   const image = fileName(product.image);
   if (image) return `https://cdn.alminapharmacy.com/cdn/products/${image}`;
@@ -105,7 +105,7 @@ export async function getBanners() {
 
 export function productImages(product: Product) {
   const cloudinary = product.cloudinaryImages?.flatMap(value => {
-    const image = cloudinaryImage(value, getWebEnvironment().CLOUDINARY_CLOUD_NAME);
+    const image = publicImage(value, getWebEnvironment().CLOUDINARY_CLOUD_NAME, getWebEnvironment().APP_ENV === 'production');
     return image ? [image] : [];
   }) ?? [];
   const images = product.images?.flatMap(value => {
