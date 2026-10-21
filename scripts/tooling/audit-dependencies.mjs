@@ -21,6 +21,13 @@ for (const name of ['root', 'backend']) {
     if (!counts || report.error) { failed = true; console.error(`${name}: audit service failed`); }
     else {
       console.log(`${name}: ${counts.high} high, ${counts.critical} critical advisories`);
+      for (const [dependency, vulnerability] of Object.entries(report.vulnerabilities ?? {})) {
+        if (!['high', 'critical'].includes(vulnerability.severity)) continue;
+        console.error(`${name}: ${dependency} (${vulnerability.severity}), affected range: ${vulnerability.range}`);
+        for (const advisory of vulnerability.via ?? []) {
+          if (typeof advisory === 'object') console.error(`  ${advisory.title}: ${advisory.url}`);
+        }
+      }
       if (counts.high > 0 || counts.critical > 0) failed = true;
     }
   } catch { failed = true; console.error(`${name}: invalid audit response`); }

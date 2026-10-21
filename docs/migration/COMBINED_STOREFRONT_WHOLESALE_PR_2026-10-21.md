@@ -31,3 +31,9 @@ See `CORAL_STOREFRONT_REDESIGN_2026-10-21.md`, `ARABIC_PHASE_FOUR_2026-10-20.md`
 - Staged diff whitespace checks and a credential-pattern scan passed. The local third-party skill update, generated build references and scratch captures are excluded.
 
 These results supersede the earlier global-lint/build-collision limitations recorded in the wholesale handoff. No production deployment or database migration was performed. Google-owned authentication and real email delivery still require the pharmacy's configured providers; synthetic tests do not establish provider-account readiness.
+
+## Dependency gate follow-up
+
+GitHub run 39585965663 passed API and browser verification but failed quality on two high advisories reached through the development-only MCP SDK. The scoped SDK override is now 1.32.1; root and backend audits report zero advisories locally. The audit prints affected packages and advisory links directly, and the required `verify` summary names failed, skipped or cancelled jobs instead of emitting an unexplained shell exit code.
+
+Keep the three parallel jobs and the lightweight `verify` aggregation: branch protection requires `verify`, and the production deployment workflow requires a successful verification run on the exact master commit. Removing post-merge verification would require redesigning that deployment evidence chain. These are separate code-quality, server regression and browser/production-build checks; the summary does not rerun tests. The gate was checked against success, failure, cancellation and skipped outcomes. No security check was disabled.
