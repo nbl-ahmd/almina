@@ -4,7 +4,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { legacyAdminDestination } from './lib/admin/redirects';
 import { hasDuplicateQuery, indexingQuery, isPublicPath } from './lib/seo';
 import { stylesheetPolicy } from './lib/security/stylesheet-policy';
+import { legacyMediaTarget } from './lib/catalog/legacy-media';
 export function proxy(request: NextRequest) {
+  // The bounded raster-only handler owns public image cache/indexing headers.
+  if (legacyMediaTarget(request.nextUrl.pathname)) return NextResponse.next();
   const destination = legacyAdminDestination(request.nextUrl.pathname);
   if (destination) {
     const target = new URL(destination, request.url);
