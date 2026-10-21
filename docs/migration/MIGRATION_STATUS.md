@@ -383,3 +383,7 @@ post-merge suite. The deployment gate reuses successful PR checks only for ident
 merged file trees and adds read-only public-host checks after deployment. Strict
 branch protection and the existing `verify` check remain. See [CI and deployment
 checks](CI_2026-10-23.md).
+
+## Branded product media — recovered PR #57
+
+Reintroduced the branded responsive image handler and product metadata/feed URLs on the current release base. See `BRANDED_MEDIA_2026-10-21.md`; deployment cache-hit verification is still required.

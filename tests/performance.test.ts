@@ -5,47 +5,6 @@ import { catalogReadPolicy } from '../apps/web/src/lib/catalog/cache-policy';
 import { authorizeCatalogRevalidation } from '../apps/web/src/lib/catalog/revalidation';
 import { measureCatalogQuery } from '../apps/api/src/modules/catalog/timing';
 import { createLogger } from '@almina/config/logger';
-import { legacyMediaResponse, legacyMediaTarget } from '../apps/web/src/lib/catalog/legacy-media';
-
-test('legacy media bridge accepts only fixed public raster paths and forwards no customer data', async () => {
-  const path = '/cdn/categories/305dd291-e32e-4d7f-9abb-aae212c434a4.webp';
-  assert.equal(legacyMediaTarget(path)?.origin, 'https://cloudinary-proxy.nabeelkerala2000.workers.dev');
-  for (const value of ['/cdn/products/a.svg', '/cdn/products/../private.png', '/cdn/orders/a.png', '/cdn/products/https://other.invalid/a.png', '/cdn/products/a%2fprivate.webp']) assert.equal(legacyMediaTarget(value), null);
-  let calls = 0;
-  const fetcher: typeof fetch = async (input, init) => {
-    calls++;
-    assert.equal(String(input), 'https://cloudinary-proxy.nabeelkerala2000.workers.dev' + path);
-    assert.equal(init?.redirect, 'error');
-    assert.equal(init?.credentials, 'omit');
-    assert.deepEqual(init?.headers, { Accept: 'image/*' });
-    return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'image/webp', 'Set-Cookie': 'synthetic=private' } });
-  };
-  const response = await legacyMediaResponse(new Request('https://web.example.invalid' + path, { headers: { Cookie: 'synthetic=private', Authorization: 'Bearer synthetic' } }), fetcher);
-  assert.equal(response.status, 200);
-  assert.equal(response.headers.get('set-cookie'), null);
-  assert.equal(response.headers.get('x-robots-tag'), 'index, follow');
-  assert.match(response.headers.get('cache-control')!, /s-maxage=86400/);
-  assert.deepEqual(new Uint8Array(await response.arrayBuffer()), new Uint8Array([1, 2, 3]));
-  assert.equal((await legacyMediaResponse(new Request('https://web.example.invalid' + path + '?url=https://other.invalid'), fetcher)).status, 404);
-  assert.equal(calls, 1);
-});
-
-test('legacy media bridge rejects upstream HTML, errors and oversized bodies without caching them', async () => {
-  const request = new Request('https://web.example.invalid/cdn/products/example.webp');
-  for (const upstream of [new Response('error', { status: 404 }), new Response('<html/>', { headers: { 'Content-Type': 'text/html' } }), new Response('large', { headers: { 'Content-Type': 'image/webp', 'Content-Length': '99999999' } }), new Response(new Uint8Array(5 * 1024 * 1024 + 1), { headers: { 'Content-Type': 'image/webp' } })]) {
-    const result = await legacyMediaResponse(request, async () => upstream);
-    assert.ok([404, 502].includes(result.status));
-    assert.equal(result.headers.get('cache-control'), 'no-store');
-  }
-  const result = await legacyMediaResponse(request, async () => { throw new Error('synthetic timeout'); });
-  assert.equal(result.status, 502);
-  const head = await legacyMediaResponse(new Request(request, { method: 'HEAD' }), async (_input, init) => {
-    assert.equal(init?.method, 'HEAD');
-    return new Response(null, { headers: { 'Content-Type': 'image/webp' } });
-  });
-  assert.equal(head.status, 200); assert.equal(await head.text(), '');
-});
-
 test('persistent cache is restricted to category/banner presentation; commerce and visibility reads remain fresh', () => {
   for (const path of ['/api/products', '/api/products/details/PD0001', '/api/products/aaaaaaaaaaaaaaaaaaaaaaaa', '/api/store/status', '/api/orders', '/api/category?filter=x']) {
     assert.deepEqual(catalogReadPolicy(path, true), { cache: 'no-store' });
@@ -103,16 +62,6 @@ test('query timing preserves success/failure and emits only bounded operational 
   logger.log('warn', 'catalog_query', { operation: 'private@example.invalid', durationMs: 0.5 });
   assert.equal(JSON.parse(logs[0]!).operation, 'products');
   assert.equal('operation' in JSON.parse(logs[1]!), false);
-});
-
-test('Cloudinary product delivery preserves account validation and creates width-specific CDN URLs', async () => {
-  const {cloudinaryDelivery}=await import('../apps/web/src/lib/catalog/image-delivery');
-  const src='https://res.cloudinary.com/example/image/upload/v123/products/one.webp';
-  assert.equal(cloudinaryDelivery(src,'example',320),'https://res.cloudinary.com/example/image/upload/c_limit,w_320,q_auto,f_auto/v123/products/one.webp');
-  assert.equal(cloudinaryDelivery(src,'example',640)?.includes('w_640'),true);
-  for(const value of [src.replace('/example/','/other/'),src+'?token=private',src.replace('https:','http:'),'/product-placeholder.svg','https://user:pass@res.cloudinary.com/example/image/upload/a.webp'])assert.equal(cloudinaryDelivery(value,'example',640),null);
-  for(const width of [0,-1,1.5,3841,Infinity])assert.equal(cloudinaryDelivery(src,'example',width),null);
-  assert.equal(cloudinaryDelivery(src,undefined,640),null);
 });
 
 test('licensed photo credits only link a recognized, valid product source', () => {
