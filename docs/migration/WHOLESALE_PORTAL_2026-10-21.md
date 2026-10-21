@@ -59,3 +59,7 @@ No production account, database, inventory, credential, email or deployment was 
 - The requested broader browser command was attempted against the complete working tree. Early failures included navigation/search expectations and Arabic placeholder text that differ from the current storefront. During the run, `.next-verification` was replaced (its manifest/chunk timestamps advanced after server startup and `BUILD_ID` disappeared). Later checkout pages lost their hydration/build assets. The run was stopped: 45 passed, 21 failed, one interrupted and 58 unrun. These are not a clean release result. Keep verification output immutable and resolve/rerun the navigation checks before merge/deployment. No assertion or production guard was weakened to make that run green.
 
 The branch contains substantial pre-existing storefront/auth/localization work from before this wholesale task. This task did not discard, commit or publish that work. Review/stage the intended changes deliberately when preparing a PR.
+
+### Combined PR follow-up
+
+The combined release pass resolved the verification blockers above: repository lint now passes, tagged verification output prevents shared-build collisions, and updated navigation tests follow the current controls. The completed full browser run and focused fixes/reruns are recorded precisely in `COMBINED_STOREFRONT_WHOLESALE_PR_2026-10-21.md`; the combined work is now committed for one PR. Earlier run results remain historical evidence rather than the current release status.
