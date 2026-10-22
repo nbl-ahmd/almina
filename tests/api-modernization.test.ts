@@ -121,7 +121,7 @@ test('cursor validates format, version and filter/identity scope; pagination nev
 
 test('public catalog enforces visibility and uses indexed text predicates; no request-derived Mongo filters', () => {
   assert.deepEqual(productFilter(catalogQuerySchema.parse({ q: 'vitamin c', sale: 'true', categoryId: categoryId.toHexString() }), false),
-    { archivedAt: { $exists: false }, disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false }, category: categoryId, sale: true, $text: { $search: 'vitamin c', $language: 'none' } });
+    { archivedAt: { $exists: false }, $and: [{ $or: [{ audience: { $exists: false } }, { $expr: { $in: ['$audience', ['all', 'retail']] } }] }], disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false }, category: categoryId, sale: true, $text: { $search: 'vitamin c', $language: 'none' } });
   assert.deepEqual(productFilter(adminProductQuerySchema.parse({ disabled: 'true' }), true), { archivedAt: { $exists: false }, disabled: true });
 });
 
