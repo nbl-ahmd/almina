@@ -374,4 +374,3 @@ sign-in flow delivered to the provider's controlled test recipient. Vercel block
 the merge author's deployment on its current plan; the documented actual-owner
 merge route is being used without changing contributor identity or permissions.
 See [activation evidence and remaining launch acceptance](EMAIL_ACTIVATION_2026-10-23.md).
-
