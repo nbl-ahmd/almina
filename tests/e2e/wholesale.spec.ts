@@ -3,8 +3,15 @@ const productId='bbbbbbbbbbbbbbbbbbbbbbbb';
 const user={id:'aaaaaaaaaaaaaaaaaaaaaaaa',email:'salon@example.invalid'};
 const product={productId,sku:'PD_TRADE',name:'Everyday hand wash',categoryName:'Personal care',stock:24,images:[],price:{typeId:'salon',unitPriceMinor:700,minimumQuantity:2,quantityMultiple:2,maximumQuantity:20}};
 for(const width of [360,768,1280])test(`private business ordering is responsive and preserves uncertain submissions at ${width}px`,async({page})=>{
- await page.setViewportSize({width,height:900});let accepted=false,attempt=0;const keys:string[]=[];
- await page.route('**/api/customer/**',route=>route.fulfill({json:{data:user}}));
+ await page.setViewportSize({width,height:900});let accepted=false,attempt=0,signedIn=true;const keys:string[]=[];
+ await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'text/javascript',body:`window.google={accounts:{id:{initialize:function(options){this.options=options;},renderButton:function(node){var button=document.createElement('div');button.setAttribute('role','button');button.tabIndex=0;button.textContent='Continue with Google';button.onclick=()=>this.options.callback({credential:'synthetic-provider-token'});node.appendChild(button);}}}};`}));
+ await page.route('**/api/customer/**',route=>{
+  const action=new URL(route.request().url()).pathname.split('/').at(-1);
+  if(action==='options')return route.fulfill({json:{data:{googleClientId:'synthetic.apps.googleusercontent.com',emailEnabled:false}}});
+  if(action==='logout'){signedIn=false;return route.fulfill({status:204});}
+  if(action==='google')signedIn=true;
+  return route.fulfill(signedIn?{json:{data:user}}:{status:401,json:{}});
+ });
  await page.route('**/api/wholesale/**',async route=>{
   const path=new URL(route.request().url()).pathname;
   if(path.endsWith('/catalog'))return route.fulfill(accepted?{json:{data:{businessName:'Fixture Salon',typeName:'Salon',products:[product],nextCursor:null}}}:{status:403,json:{code:'FORBIDDEN'}});
@@ -34,6 +41,11 @@ for(const width of [360,768,1280])test(`private business ordering is responsive 
  await page.getByRole('button',{name:'Retry saved submission'}).click();
  await expect(page.getByRole('heading',{name:'Order received · OD9001'})).toBeVisible();
  expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await page.getByRole('button',{name:'Continue with Google',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Fixture Salon',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Order received · OD9001',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('spinbutton',{name:'Quantity for Everyday hand wash',exact:true})).toHaveValue('0');
 });
 test('corrupt saved wholesale submission blocks another checkout',async({page})=>{
  await page.addInitScript(({user})=>sessionStorage.setItem('almina.wholesale.pending.v1:'+user.id,'invalid'),{user});

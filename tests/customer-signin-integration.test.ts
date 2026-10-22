@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID, createHash } from 'node:crypto';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
+import { saveWholesaleType, saveWholesaleAccount, issueWholesaleInvite, acceptWholesaleInvite, wholesaleAccess } from '../apps/api/src/modules/wholesale/repository';
 import { generateKeyPair, exportJWK, createLocalJWKSet, SignJWT } from 'jose';
 import { googleSignIn, requestEmailCode, verifyEmailCode, customerIdentity } from '../apps/api/src/modules/growth/customers';
 const uri=process.env.COMMERCE_TEST_URI;
@@ -28,6 +29,22 @@ test('customer Google and email identity safeguards',{skip:!uri},async t=>{
    const email=await verifyEmailCode(db,{...challenge,code});assert.equal(email.customer.id,first.customer.id);
    const account=await db.collection('customers').findOne({email:'shopper@gmail.com'});assert.equal(account!.marketingEmail,false);assert.equal(account!.marketingWhatsapp,false);
    assert.notEqual(first.token,again.token);assert.equal(await db.collection('customer_sessions').countDocuments({_id:first.token as never}),0);
+  });
+  await t.test('Google sign-in grants business access only after the matching approved invitation is accepted', async()=>{
+   const adminId=String(new ObjectId());
+   await saveWholesaleType(db,{id:'salon',name:'Salon',active:true,allowMedicines:false,revision:0},adminId);
+   const approved=await saveWholesaleAccount(db,{email:'shopper@gmail.com',businessName:'Synthetic Salon',typeId:'salon',approval:'approved',verificationReference:'Synthetic verified business',scope:'assigned',productIds:[],categoryIds:[],revision:0},adminId);
+   const login=await googleSignIn(db,{idToken:await sign()},keySet);
+   await assert.rejects(wholesaleAccess(db,login.customer),{status:403});
+   const invite=await issueWholesaleInvite(db,{email:login.customer.email,revision:approved.revision},adminId);
+   const other=await googleSignIn(db,{idToken:await sign('other@gmail.com','google-other')},keySet);
+   await assert.rejects(acceptWholesaleInvite(db,other.customer.email,{token:invite.token}),{status:403});
+   await acceptWholesaleInvite(db,login.customer.email,{token:invite.token});
+   const returning=await googleSignIn(db,{idToken:await sign()},keySet);
+   assert.equal(returning.customer.id,login.customer.id);
+   assert.equal((await wholesaleAccess(db,returning.customer)).businessName,'Synthetic Salon');
+   await db.collection('wholesale_accounts').updateOne({email:login.customer.email},{$set:{approval:'suspended'}});
+   await assert.rejects(wholesaleAccess(db,returning.customer),{status:403});
   });
   await t.test('Google binding cannot be overwritten or moved to a different mailbox',async()=>{
    const count=await db.collection('customer_sessions').countDocuments();
