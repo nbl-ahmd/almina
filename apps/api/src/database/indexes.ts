@@ -15,6 +15,7 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
     { name: 'v1_product_search', key: { name: 'text', description: 'text' }, default_language: 'none', weights: { name: 5, description: 1 } },
   ],
   orders: [
+    { name: 'wholesale_customer_history', key: { channel: 1, customerId: 1, 'wholesale.accountId': 1, _id: -1 } },
     { name: 'commerce_order_number_lookup', key: { orderId: 1 } },
     { name: 'commerce_v2_number_unique', key: { orderId: 1 }, unique: true, partialFilterExpression: { schemaVersion: 2 } },
     { name: 'commerce_order_status', key: { status: 1, _id: -1 } },
@@ -38,6 +39,8 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
   staff_push_deliveries: [{ name: 'staff_push_review', key: { state: 1, createdAt: 1 } }],
   catalog_search_terms:[{name:'search_token_prefix',key:{terms:1}}],
   product_reviews:[{name:'product_approved_reviews',key:{productId:1,moderation:1,createdAt:-1}},{name:'review_moderation_queue',key:{moderation:1,createdAt:1}}],
+  email_events: [{ name: 'email_event_expiry', key: { receivedAt: 1 }, expireAfterSeconds: 30 * 86400 }],
+  email_delivery: [{ name: 'email_delivery_expiry', key: { createdAt: 1 }, expireAfterSeconds: 30 * 86400 }],
   customer_reminders: [{name:'reminder_owner',key:{customerId:1,updatedAt:-1}},{name:'reminder_worker',key:{state:1,nextCheckAt:1,leaseUntil:1}},{name:'reminder_expiry',key:{expiresAt:1},expireAfterSeconds:0},{name:'reminder_unsubscribe',key:{unsubscribeHash:1}}],
   wholesale_terms:[{name:'wholesale_type_catalogue',key:{enabled:1,'prices.typeId':1,_id:1}}],
   customers: [{name:'customer_email_identity',key:{emailHash:1},unique:true},{name:'customer_google_identity',key:{googleSub:1},unique:true,partialFilterExpression:{googleSub:{$type:'string'}}}],

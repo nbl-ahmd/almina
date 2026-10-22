@@ -1,3 +1,4 @@
+import { installEmailRoutes } from './modules/notifications/email-routes.js';
 import { randomUUID } from 'node:crypto';
 import express from 'express';
 import helmet from 'helmet';
@@ -97,7 +98,8 @@ export function createApp(options: {
     if (req.headers['content-encoding'] && req.headers['content-encoding'] !== 'identity') {
       next(new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE')); return;
     }
-    if ((Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding']) && !req.is('application/json')) {
+    if ((Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding']) && !req.is('application/json')
+      && !(req.method === 'POST' && /^\/email\/unsubscribe\/[A-Za-z0-9_-]{43}$/.test(req.path) && req.is('application/x-www-form-urlencoded'))) {
       next(new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE')); return;
     }
     next();
@@ -113,6 +115,7 @@ export function createApp(options: {
     if (!metrics.recordCommerceEvent(value.event)) throw new HttpError(429, 'RATE_LIMITED');
     res.status(204).end();
   });
+  installEmailRoutes(app, options.getDb ?? (() => Promise.reject(new HttpError(503, 'SERVICE_UNAVAILABLE'))));
   app.use('/api/v1/admin/growth/page',express.json({limit:'64kb',strict:true,inflate:false}));
   app.use(express.json({ limit: '16kb', strict: true, inflate: false }));
   app.all(routes, (_req, res, next) => {

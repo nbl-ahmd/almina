@@ -1,3 +1,4 @@
+import { wholesaleBusinessFields } from './wholesale';
 import { productContentFields } from './product-content';
 import { productFamilyFields } from './product-family';
 import { z } from 'zod';
@@ -65,6 +66,7 @@ export const orderSummaryDtoSchema = z.object({
   totalAmount: z.number().finite().nullable(), billno: z.string().nullable(), billamount: z.number().finite().nullable(),
 }).strict();
 export const orderDetailDtoSchema = orderSummaryDtoSchema.extend({
+  wholesale: z.object({ ...wholesaleBusinessFields, businessName:z.string(), typeId:z.string() }).optional(),
   customer: z.object({
     name: z.string().nullable(), mobile: z.string().nullable(), email: z.string().nullable(),
     emirate: z.string().nullable(), city: z.string().nullable(), buildingname: z.string().nullable(),

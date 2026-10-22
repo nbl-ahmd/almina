@@ -1,3 +1,4 @@
+import { visibleToRetail, wholesaleBusinessFields } from '@almina/contracts';
 import { prepareWholesaleProducts, wholesaleIdentity } from '../wholesale/repository.js';
 type WholesaleCustomer={id:string;email:string};
 import { voucherAllocation,consumeVoucher,reverseOrderRewards } from '../growth/rewards.js';
@@ -107,11 +108,12 @@ async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, cus
   await assertServiceable(db, input.customer);
   let products:Document[] = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
     { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
-      stock: 1, disabled: 1, active: 1, published: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
+      stock: 1, disabled: 1, active: 1, published: 1, audience: 1, wholesaleAudience: 1, wholesaleTypeIds: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
   const categories = await db.collection('categories').find({ _id: { $in: products.map(product => product.category) }, disabled: { $ne: true } }, queryOptions).toArray();
   const visible = new Set(categories.map(category => String(category._id)));
   if (products.some(product => !visible.has(String(product.category)))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
   if(wholesale){if(input.voucherCode||input.customer.email.trim().toLowerCase()!==wholesale.email.toLowerCase())throw new HttpError(403,'FORBIDDEN');products=(await prepareWholesaleProducts(db,wholesale,products,normalizeItems(input.items),session)).products;}
+  if (!wholesale && products.some(product => !visibleToRetail(product))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
   const policy=await policyFrom(db,session),base=calculateQuote(input,products,policy);
   if(!input.voucherCode)return base;
   const {allocation}=await voucherAllocation(db,input.voucherCode,customerId,products,base.lines,session);
@@ -178,7 +180,7 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           if (await db.collection('orders').findOne({ orderId }, { ...options, session, projection: { _id: 1 } })) {
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
-          const order = { _id, ...(wholesaleAccess?{channel:'wholesale',wholesale:{accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
+          const order = { _id, ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
             createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.

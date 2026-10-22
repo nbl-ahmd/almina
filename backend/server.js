@@ -23,6 +23,7 @@ database.connect().then(async () => {
   if (app.locals.draining) return database.close();
   pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb());
   if (app.locals.draining) { await pushWorker?.stop(); return database.close(); }
+  if (process.env.EMAIL_PROVIDER === 'resend') await domain.prepareEmailStorage(database.getDb());
   worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb());
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || origins[0];
   if (process.env.GROWTH_EMAIL_ENABLED === 'true' && origins.includes(reminderOrigin)) reminderWorker = domain.retentionWorker(async () => database.getDb(), {origin: reminderOrigin, onFailure: () => console.error('Requested reminder processing failed')});

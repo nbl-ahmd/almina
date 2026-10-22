@@ -72,19 +72,23 @@ test('admin can configure a profile, verified business and invitation',async({pa
  await page.route('**/api/wholesale/admin/**',async route=>{
   const path=new URL(route.request().url()).pathname;
   if(path.endsWith('/types'))return route.fulfill({json:{data:[{id:'salon',name:'Salon',active:true,allowMedicines:false,revision:1}]}});
-  if(path.endsWith('/accounts')){if(route.request().method()==='POST'){const input=route.request().postDataJSON();expect(input.approval).toBe('approved');expect(input.scope).toBe('assigned');accounts=[{...input,revision:1,accepted:false}];return route.fulfill({json:{data:accounts[0]}});}return route.fulfill({json:{data:{items:accounts,nextCursor:null}}});}
+  if(path.endsWith('/accounts')){if(route.request().method()==='POST'){const input=route.request().postDataJSON();expect(input.approval).toBe('approved');expect(input.scope).toBe('assigned');expect(input.tradeLicense).toBe('SALON-001');expect(input.taxRegistrationNumber).toBe('100000000000003');accounts=[{...input,revision:1,accepted:false}];return route.fulfill({json:{data:accounts[0]}});}return route.fulfill({json:{data:{items:accounts,nextCursor:null}}});}
   if(path.endsWith('/invite'))return route.fulfill({json:{data:{token:'a'.repeat(43),account:{...(accounts[0] as object),revision:2}}}});
   return route.fulfill({status:404,json:{}});
  });
  await page.goto(adminOrigin+'/admin/wholesale');
  await page.getByLabel('Business name',{exact:true}).fill('Fixture Salon');
+ await page.getByLabel('Business contact name',{exact:true}).fill('Fixture Buyer');
+ await page.getByLabel('Business phone',{exact:true}).fill('+971501234567');
+ await page.getByLabel('Trade licence number',{exact:true}).fill('SALON-001');
+ await page.getByLabel('Tax registration number (15 digits, optional)',{exact:true}).fill('100000000000003');
  await page.getByLabel('Approved sign-in email',{exact:true}).fill('salon@example.invalid');
  await page.getByLabel('Business profile',{exact:true}).selectOption('salon');
  await page.getByLabel('Access status',{exact:true}).selectOption('approved');
  await page.getByLabel('Verification reference / check completed',{exact:true}).fill('Licence checked by pharmacy');
  await page.getByRole('button',{name:'Save business',exact:true}).click();
  await expect(page.getByRole('status').filter({hasText:'Business saved'})).toBeVisible();
- await page.getByRole('button',{name:'Create / replace invitation link'}).click();
+ await page.getByRole('button',{name:'Create and email invitation'}).click();
  await expect(page.getByLabel('Private invitation link',{exact:true})).toHaveValue(adminOrigin+'/wholesale?invite='+'a'.repeat(43));
  await page.evaluate(()=>window.scrollTo(0,0));
  await page.screenshot({path:'.verification-results/wholesale-admin.png',fullPage:true});
@@ -115,4 +119,59 @@ test('real gateway binds the admin invitation to the verified customer session',
  const catalog=await page.request.get(adminOrigin+'/api/wholesale/catalog');expect(catalog.status()).toBe(200);expect((await catalog.json()).data.products).toEqual([]);
  const customerCookie=(await page.context().cookies()).find(cookie=>cookie.name==='almina_customer');expect(customerCookie!.httpOnly).toBe(true);
  await page.reload();await expect(page.getByRole('heading',{name:'Gateway Salon',exact:true})).toBeVisible();
+});
+
+test('business account shows verified details, trade history and prefills delivery at 390px',async({page})=>{
+ await page.setViewportSize({width:390,height:900});
+ const profile={businessName:'Fixture Salon',typeName:'Salon',contactName:'Fixture Buyer',phone:'0501234567',tradeLicense:'SALON-001',taxRegistrationNumber:'100000000000003',deliveryAddress:'Trade fixture street',city:'Jazeera',emirate:'Ras al-Khaimah'};
+ const totals={currency:'AED',policyVersion:'fixture',vatMode:'inclusive',lines:[{productId,sku:'PD_TRADE',barcode:null,name:product.name,quantity:2,unitPriceMinor:700,salePriceMinor:null,taxRateBps:500,taxMinor:67,discountMinor:0,lineTotalMinor:1400}],subtotalMinor:1400,discountMinor:0,taxMinor:67,deliveryFeeMinor:0,minimumOrderMinor:1000,totalMinor:1400};
+ await page.route('**/api/customer/**',route=>route.fulfill({json:{data:user}}));
+ await page.route('**/api/wholesale/**',route=>{
+  const url=new URL(route.request().url()),path=url.pathname;
+  if(path.endsWith('/catalog'))return route.fulfill({json:{data:{businessName:profile.businessName,typeName:'Salon',products:[product],nextCursor:null}}});
+  if(path.endsWith('/account'))return route.fulfill({json:{data:profile}});
+  if(path.endsWith('/orders'))return route.fulfill({json:{data:{items:[{orderId:url.search?'OD-OLD':'OD-TRADE',status:'confirmed',createdAt:'2026-10-22T05:00:00Z',totals}],nextCursor:url.search?null:'aaaaaaaaaaaaaaaaaaaaaaaa'}}});
+  return route.fulfill({status:404,json:{}});
+ });
+ await page.goto('/wholesale');
+ await page.getByRole('button',{name:'Business account & orders',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Your business details'})).toBeVisible();
+ await expect(page.getByText('SALON-001',{exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'OD-TRADE',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Load older orders'}).click();
+ await expect(page.getByRole('heading',{name:'OD-OLD',exact:true})).toBeVisible();
+ await page.screenshot({path:'.verification-results/wholesale-account-390.png',fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.getByRole('button',{name:'Use business delivery details'}).click();
+ await expect(page.getByLabel('Contact name',{exact:true})).toHaveValue('Fixture Buyer');
+ await expect(page.getByLabel('Street address',{exact:true})).toHaveValue(profile.deliveryAddress);
+ await page.reload();
+ await page.getByRole('button',{name:'Business account & orders',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'OD-TRADE',exact:true})).toBeVisible();
+});
+
+test('product visibility controls submit selected business types and preserve them on reload',async({page})=>{
+ const {login,adminOrigin,reset}=await import('./fixtures');await reset(page.request);await login(page);
+ for(const id of ['salon','pharmacy'])expect((await page.request.post(adminOrigin+'/api/wholesale/admin/types',{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{id,name:id==='salon'?'Salon':'Pharmacy',active:true,allowMedicines:false,revision:0}})).ok()).toBe(true);
+ await page.goto(adminOrigin+'/admin/products/'+productId);
+ await page.getByRole('combobox',{name:'Show this product to',exact:true}).selectOption('wholesale');
+ await page.getByRole('combobox',{name:'Wholesale business types',exact:true}).selectOption('selected');
+ await page.getByLabel('Salon',{exact:true}).check();
+ await page.getByRole('textbox',{name:/^Stock adjustment reason/}).fill('Visibility reviewed; stock unchanged');
+ for(const width of [360,390,768,1280]){
+  await page.setViewportSize({width,height:900});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+ const saved=page.waitForResponse(response=>response.url().includes('/api/admin/products/'+productId)&&response.request().method()==='PUT');
+ await page.getByRole('button',{name:'Save product',exact:true}).click();
+ expect((await saved).ok()).toBe(true);
+ await expect(page.getByRole('status').filter({hasText:'Saved successfully.'})).toBeVisible();
+ await page.reload();
+ await expect(page.getByRole('combobox',{name:'Show this product to',exact:true})).toHaveValue('wholesale');
+ await expect(page.getByRole('combobox',{name:'Wholesale business types',exact:true})).toHaveValue('selected');
+ await expect(page.getByLabel('Salon',{exact:true})).toBeChecked();
+ await expect(page.getByLabel('Pharmacy',{exact:true})).not.toBeChecked();
+ await page.screenshot({path:'.verification-results/admin-product-audience-1280.png',fullPage:true});
+ await page.goto(adminOrigin+'/admin/products/new');
+ await expect(page.getByRole('combobox',{name:'Show this product to',exact:true})).toHaveValue('all');
 });

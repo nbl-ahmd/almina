@@ -1,9 +1,10 @@
-import { publicationIssues } from '@almina/contracts';
+import { publicationIssues, visibleToRetail } from '@almina/contracts';
 import { type Product, displayPrice, productHref, productOptionLabel } from './model';
 export type FeedChannel='google'|'meta';
 export const feedColumns=['id','title','description','availability','condition','price','link','image_link','brand','gtin','mpn','identifier_exists','item_group_id','size','product_type','google_product_category','additional_image_link'];
 export function feedIssues(product:Product,channel:FeedChannel,images:string[]) {
   const missing=publicationIssues(product);
+  if(!visibleToRetail(product))missing.push('Retail visibility');
   if(product.product_id.length>(channel==='google'?50:100))missing.push('Channel identifier length');
   if(!product.condition)missing.push('Condition review');
   if(product.name.length>150)missing.push('Product title exceeds 150 characters');

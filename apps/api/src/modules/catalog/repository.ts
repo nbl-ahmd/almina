@@ -1,3 +1,4 @@
+import { retailAudienceFilter } from './audience.js';
 import { ObjectId, type Document, type Filter } from 'mongodb';
 import type { AdminProductQuery } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
@@ -8,7 +9,7 @@ import { queryOptions, type GetDb } from '../../database.js';
 import { measureCatalogQuery, type CatalogQueryObserver } from './timing.js';
 export function productFilter(query: AdminProductQuery, admin: boolean): Filter<Document> {
   const filter: Filter<Document> = { archivedAt: { $exists: false } };
-  if (!admin) { filter.disabled = { $ne: true }; filter.published = { $ne: false }; filter.active = { $ne: false }; } // Missing legacy flags remain visible.
+  if (!admin) { filter.$and = [retailAudienceFilter]; filter.disabled = { $ne: true }; filter.published = { $ne: false }; filter.active = { $ne: false }; } // Missing legacy flags remain visible.
   else if (query.disabled !== undefined) filter.disabled = query.disabled;
   if (query.categoryId) filter.category = new ObjectId(query.categoryId);
   if (query.featured !== undefined) filter.featured = query.featured;
@@ -29,7 +30,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
       const after = decodeCursor(query.cursor, scope);
       const db = await getDb();
       const product = query.kind === 'products';
-      const filter: Filter<Document> = { archivedAt: { $exists: false }, disabled: { $ne: true }, ...(product ? { published: { $ne: false }, active: { $ne: false } } : {}), name: { $type: 'string', $ne: '' },
+      const filter: Filter<Document> = { archivedAt: { $exists: false }, disabled: { $ne: true }, ...(product ? { ...retailAudienceFilter, published: { $ne: false }, active: { $ne: false } } : {}), name: { $type: 'string', $ne: '' },
         _id: { $type: 'objectId', ...(after ? { $lt: after } : {}) },
         $expr: { $and: [{ $eq: [{ $type: '$name' }, 'string'] },
           ...(product ? [
@@ -75,7 +76,7 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
       const db = await getDb();
       const filter: Filter<Document> = 'id' in identifier ? { _id: new ObjectId(identifier.id) } : { product_id: identifier.productId };
       filter.archivedAt = { $exists: false };
-      if (!admin) { filter.disabled = { $ne: true }; filter.published = { $ne: false }; filter.active = { $ne: false }; }
+      if (!admin) { filter.$and = [retailAudienceFilter]; filter.disabled = { $ne: true }; filter.published = { $ne: false }; filter.active = { $ne: false }; }
       const docs = await measureCatalogQuery('product', () => db.collection('products').aggregate([
         { $match: filter }, ...(admin ? [] : publicCategoryJoin), { $limit: 1 }, { $project: productProjection },
       ], queryOptions).toArray(), observe);

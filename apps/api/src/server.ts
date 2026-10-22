@@ -1,3 +1,6 @@
+import { prepareEmailStorage } from './modules/notifications/storage.js';
+import { orderOutbox } from './modules/notifications/outbox.js';
+import { sendOrderEmail } from './modules/notifications/email.js';
 import { createServer } from 'node:http';
 import { readApiEnvironment } from '@almina/config/env';
 import { createLogger } from '@almina/config/logger';
@@ -10,6 +13,11 @@ async function main() {
   const env = readApiEnvironment(process.env);
   const logger = createLogger({ service: 'api', environment: env.APP_ENV, level: env.LOG_LEVEL });
   const database = createDatabase(env.database);
+  if (process.env.EMAIL_PROVIDER === 'resend') await prepareEmailStorage(await database.getDb());
+  const orderEmails = process.env.EMAIL_PROVIDER === 'resend' ? orderOutbox(() => database.getDb(), {
+    send: async (order, signal) => sendOrderEmail(await database.getDb(), order, signal),
+    onFailure: () => logger.log('error', 'request_failed'),
+  }) : undefined;
   let stopping = false;
   const allowedOrigins = typeof env.WEB_ORIGIN === 'string' ? [env.WEB_ORIGIN] : env.WEB_ORIGIN;
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || allowedOrigins[0];
@@ -39,7 +47,7 @@ async function main() {
     const deadline = setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000);
     deadline.unref();
     server.close(() => {
-      void (async () => { await reminders?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
+      void (async () => { await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
         .catch(() => { logger.log('error', 'shutdown_failed'); process.exitCode = 1; })
         .finally(() => clearTimeout(deadline));
     });

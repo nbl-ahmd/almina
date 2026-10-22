@@ -1,3 +1,5 @@
+import type { Db } from 'mongodb';
+import { usesResend, sendApplicationEmail } from './provider.js';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
 
@@ -60,4 +62,14 @@ export async function deliverEmail(message: MailMessage, credentials: SmtpCreden
     if (cancel) signal?.removeEventListener('abort', cancel);
     try { transport.close(); } catch { /* Cleanup never exposes provider diagnostics. */ }
   }
+}
+
+/** Both retained and modular adapters use the persisted order, never a caller-supplied recipient. */
+export async function sendOrderEmail(db: Db, order: unknown, signal?: AbortSignal) {
+  if (!usesResend()) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
+  const message = confirmationMessage(order);
+  const persisted = z.object({ orderId: z.string().regex(/^OD[0-9]+$/), totals: z.object({ totalMinor: z.number().int().nonnegative().safe() }).passthrough().optional() }).passthrough().parse(order);
+  const orderId = persisted.orderId;
+  const total = persisted.totals ? `AED ${(persisted.totals.totalMinor / 100).toFixed(2)}` : 'See your order details';
+  await sendApplicationEmail(db, { kind: 'order', to: message.to, eventId: orderId, variables: { ORDER_ID: orderId, TOTAL: total } }, signal);
 }

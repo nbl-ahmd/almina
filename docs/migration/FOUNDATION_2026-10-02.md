@@ -125,3 +125,25 @@ Not verified: real Atlas access/indexes, production/staging deployment, existing
 ## Subsequent storefront preview work
 
 The isolated preview now has server-rendered storefront catalog routes and browser cart islands. Read [the storefront route migration](STOREFRONT_ROUTES_2026-10-02.md) for legacy API origin configuration, identity slugs, redirect gating, checkout restrictions and verification. This does not change the original foundation deployment isolation or authorize production route cutover. Next.js remains 16.3.8; registry stable 16.x versions were rechecked on 2026-10-02 without a framework upgrade.
+
+
+## Security release update — 22 October 2026
+
+The initial 16.3.8 selection above is historical. During email/wholesale release
+verification, GitHub's audit feed flagged GHSA-2464-fhr4-w9xw (image optimization)
+and GHSA-p3m5-59mp-jv5r (Server Actions). Both affect 16.x through 16.4.0; patched
+16.4.1 is the minimum. The npm registry's current stable 16.x/latest is **16.4.2**,
+so web Next and matching ESLint packages are pinned to 16.4.2 with the lockfile.
+Node 24.21.0 meets its >=20.9 engine; existing React/React DOM 19.3.0 satisfy the
+published React ^19 peer range. No unrelated runtime dependency upgrade is intended.
+
+Reviewed upstream 16.4.0, 16.4.1 and 16.4.2 release notes and the bundled Next 16
+upgrade guidance. Existing App Router, async request APIs, proxy, Turbopack and
+server/client boundaries remain. Resolve/read the newly installed version-matched
+bundled docs using `npm run docs:next`. SVG image optimization remains disabled.
+Release verification must include the full security gate, API tests, production
+build/browser journeys and live Turbopack diagnostics before merge/deployment.
+
+References: [16.4.2 release](https://github.com/vercel/next.js/releases/tag/v16.4.2),
+[image optimization advisory](https://github.com/advisories/GHSA-2464-fhr4-w9xw),
+[Server Actions advisory](https://github.com/advisories/GHSA-p3m5-59mp-jv5r).

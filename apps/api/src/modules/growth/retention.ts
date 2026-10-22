@@ -1,6 +1,8 @@
+import { retailAudienceFilter } from '../catalog/audience.js';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import nodemailer from 'nodemailer';
+import { usesResend, resendReady, sendApplicationEmail, EmailBudgetExceeded, type EmailKind } from '../notifications/provider.js';
 import { reminderInputSchema, retentionPolicySchema, type RetentionPolicy } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 import { customerOrderFilter } from './ownership.js';
@@ -10,7 +12,7 @@ type RecordWithKey = Document & { _id: string };
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 const query = { maxTimeMS: 3000 };
 export const retentionProviderReady = () => process.env.GROWTH_EMAIL_ENABLED === 'true'
-  && Boolean(process.env.CUSTOMER_EMAIL_USER && process.env.CUSTOMER_EMAIL_PASSWORD);
+  && (usesResend() ? resendReady(true) : Boolean(process.env.CUSTOMER_EMAIL_USER && process.env.CUSTOMER_EMAIL_PASSWORD));
 export async function retentionPolicy(db: Db) {
   const row = await db.collection<RecordWithKey>('growth_settings').findOne({ _id: 'retention' }, query);
   return retentionPolicySchema.parse(Object.fromEntries(Object.keys(retentionPolicySchema.shape).flatMap(key => row?.[key] === undefined ? [] : [[key, row[key]]])));
@@ -33,7 +35,7 @@ export function reminderEnabled(policy: RetentionPolicy, kind: string) {
 export async function generalProducts(db: Db, ids: string[]) {
   return db.collection('products').aggregate<Document>([
     { $match: { _id: { $in: ids.map(id => new ObjectId(id)) }, productType: 'general', contentReviewed: true,
-      disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false }, archivedAt: { $exists: false },
+      disabled: { $ne: true }, ...retailAudienceFilter, published: { $ne: false }, active: { $ne: false }, archivedAt: { $exists: false },
       price: { $type: 'number', $gte: 0 }, stock: { $type: 'number', $gte: 0 } } },
     { $lookup: { from: 'categories', localField: 'category', foreignField: '_id', pipeline: [{ $match: { archivedAt: { $exists: false }, disabled: { $ne: true } } }], as: '_category' } },
     { $match: { '_category.0': { $exists: true } } }, { $project: { _id: 1, product_id: 1, name: 1, stock: 1, price: 1, sale: 1, salePrice: 1 } },
@@ -95,7 +97,9 @@ export async function unsubscribeReminder(db: Db, token: string) {
 }
 
 type Delivery = { to: string; kind: string; accountUrl: string; unsubscribeUrl: string; messageId: string };
-async function sendReminder(message: Delivery) {
+async function sendReminder(message: Delivery, db: Db) {
+  if (usesResend()) { await sendApplicationEmail(db, { kind: message.kind as EmailKind, to: message.to, eventId: message.messageId,
+    variables: { ACCOUNT_URL: message.accountUrl, CANCEL_URL: message.unsubscribeUrl } }); return; }
   const transport = nodemailer.createTransport({ host: 'smtp.office365.com', port: 587, secure: false, requireTLS: true,
     auth: { user: process.env.CUSTOMER_EMAIL_USER, pass: process.env.CUSTOMER_EMAIL_PASSWORD }, tls: { rejectUnauthorized: true, minVersion: 'TLSv1.2' },
     connectionTimeout: 4000, greetingTimeout: 4000, socketTimeout: 8000, disableFileAccess: true, disableUrlAccess: true, logger: false, debug: false });
@@ -136,10 +140,12 @@ export function retentionWorker(getDb: () => Promise<Db>, options: { origin: str
       const claimed = await reminders.updateOne(predicate, { $set: { state: 'sending', unsubscribeHash: hash(token), updatedAt: now } }, query);
       if (!claimed.modifiedCount) return; // Consent was cancelled or replaced while evaluating.
       try {
-        await (options.send ?? sendReminder)({ to: String(customer.email), kind: row.kind, accountUrl: new URL('/account#reminders', origin).href,
+        await (options.send ?? (message => sendReminder(message, db)))({ to: String(customer.email), kind: row.kind, accountUrl: new URL('/account#reminders', origin).href,
           unsubscribeUrl: new URL('/unsubscribe?token=' + token, origin).href, messageId: `<${hash(row._id + ':' + row.revision)}@alminapharmacy.com>` });
         await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'sent', sentAt: now }, $unset: { leaseToken: '', leaseUntil: '' } }, query);
-      } catch { await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'uncertain' } }, query); options.onFailure?.(); }
+      } catch (error) {
+        if (error instanceof EmailBudgetExceeded) { await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'waiting' }, $unset: { leaseToken: '', leaseUntil: '' } }, query); return; }
+        await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'uncertain' } }, query); options.onFailure?.(); }
     } catch { await wait().catch(() => undefined); options.onFailure?.(); }
   }
   const tick = () => { if (stopped) return Promise.resolve(); if (!running) running = run().catch(() => { options.onFailure?.(); }).finally(() => { running = undefined; }); return running; };

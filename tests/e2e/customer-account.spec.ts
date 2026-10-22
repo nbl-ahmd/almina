@@ -160,3 +160,13 @@ test('Google origin errors do not misdirect a Google-only customer to unavailabl
  await expect(error).toContainText('securely');
  await expect(error).not.toContainText('email code');
 });
+
+test('retail purchase history labels wholesale orders and does not send them to retail buy again',async({page})=>{
+ await accountFixture(page);
+ await page.route('**/api/customer/orders',route=>route.fulfill({json:{data:[{orderId:'OD-TRADE',channel:'wholesale',status:'confirmed',createdAt:'2026-10-22',totals:{totalMinor:1400,lines:[{productId:'bbbbbbbbbbbbbbbbbbbbbbbb',name:'Trade hand wash',quantity:2}]}},{orderId:'OD-RETAIL',status:'confirmed',createdAt:'2026-10-22',totals:{totalMinor:2500,lines:[{productId:'bbbbbbbbbbbbbbbbbbbbbbbb',name:'Retail hand wash',quantity:1}]}}]}}));
+ await page.goto(adminOrigin+'/account');await page.getByRole('button',{name:'Continue with Google',exact:true}).click();
+ const trade=page.getByRole('article').filter({hasText:'OD-TRADE'}),retail=page.getByRole('article').filter({hasText:'OD-RETAIL'});
+ await expect(trade).toContainText('Wholesale · confirmed');
+ await expect(trade.getByRole('button',{name:'Buy available items again'})).toHaveCount(0);
+ await expect(retail.getByRole('button',{name:'Buy available items again'})).toBeVisible();
+});
