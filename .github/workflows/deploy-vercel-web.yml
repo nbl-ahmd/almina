@@ -1,20 +1,19 @@
 name: Deploy verified storefront to Vercel
 
 on:
-  workflow_run:
-    workflows: [Modernization foundation]
-    types: [completed]
+  push:
     branches: [master]
   workflow_dispatch:
     inputs:
       commit:
-        description: Full master commit SHA with successful foundation verification
+        description: Full master commit SHA with successful CI verification
         required: true
         type: string
 
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 concurrency:
   group: vercel-storefront-production
@@ -22,7 +21,6 @@ concurrency:
 
 jobs:
   verify:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     outputs:
       commit: ${{ steps.candidate.outputs.commit }}
@@ -40,7 +38,7 @@ jobs:
         id: candidate
         env:
           GH_TOKEN: ${{ github.token }}
-          CANDIDATE: ${{ inputs.commit || github.event.workflow_run.head_sha }}
+          CANDIDATE: ${{ inputs.commit || github.sha }}
         run: node scripts/tooling/verify-vercel-candidate.mts
 
   web:
@@ -95,3 +93,5 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+      - name: Check the live website and API (read-only)
+        run: node scripts/tooling/smoke-production.mjs

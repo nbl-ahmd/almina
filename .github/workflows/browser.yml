@@ -1,0 +1,49 @@
+name: Browser regression (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_ENV: development
+  DATABASE_MODE: disabled
+  WEB_ORIGIN: http://127.0.0.1:3000
+  NEXT_TELEMETRY_DISABLED: '1'
+  AL_MINA_ISOLATED_BUILD: '1'
+
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix backend
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm run build:commerce
+      - run: npm run build:foundation
+      - run: npm run smoke:foundation
+      - run: npm run smoke:storefront
+      - run: npm run smoke:seo
+      - run: npm run test:e2e:smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-verification
+          include-hidden-files: true
+          path: .verification-results/
+          retention-days: 7
+          if-no-files-found: ignore

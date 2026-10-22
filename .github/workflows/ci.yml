@@ -1,8 +1,6 @@
-name: Modernization foundation
+name: CI
 
 on:
-  push:
-    branches: [master]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -14,19 +12,34 @@ concurrency:
   group: verification-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  APP_ENV: development
-  DATABASE_MODE: disabled
-  WEB_ORIGIN: http://127.0.0.1:3000
-  NEXT_TELEMETRY_DISABLED: '1'
-  AL_MINA_ISOLATED_BUILD: '1'
-
 jobs:
+  changes:
+    timeout-minutes: 2
+    runs-on: ubuntu-24.04
+    outputs:
+      runtime: ${{ steps.scope.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/tooling/ci-changes.mts
+
   quality:
+    needs: changes
+    if: needs.changes.outputs.runtime == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -48,10 +61,14 @@ jobs:
           if-no-files-found: ignore
 
   api:
+    needs: changes
+    if: needs.changes.outputs.runtime == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -72,43 +89,35 @@ jobs:
           path: .verification-results/performance-api.json
           if-no-files-found: ignore
 
-  browser:
+  build:
+    env:
+      APP_ENV: development
+      DATABASE_MODE: disabled
+      WEB_ORIGIN: http://127.0.0.1:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+      AL_MINA_ISOLATED_BUILD: '1'
+    needs: changes
+    if: needs.changes.outputs.runtime == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            backend/package-lock.json
       - run: npm ci
-      - run: npm ci --prefix backend
-      - run: npx --no-install playwright install --with-deps chromium
-      - run: npm run build:commerce
-      - name: Production foundation build
+      - name: Build production API and storefront
         run: npm run build:foundation
-      - run: npm run smoke:foundation
-      - run: npm run smoke:storefront
-      - name: Raw crawler HTML and recovered product URL/price compatibility
+      - name: Check production HTML, indexing and URL compatibility
         run: npm run smoke:seo
-      - name: Chromium customer and admin workflows
-        run: npm run test:e2e:smoke
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: browser-verification
-          include-hidden-files: true
-          path: .verification-results/
-          retention-days: 7
-          if-no-files-found: ignore
 
   verify:
-    # Preserve the existing required check name. Skipped/cancelled jobs fail this gate.
+    # Keep the protected branch check name. Only reviewed docs-only skips are allowed.
     if: always()
-    needs: [quality, api, browser]
+    needs: [changes, quality, api, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -116,14 +125,19 @@ jobs:
         env:
           QUALITY_RESULT: ${{ needs.quality.result }}
           API_RESULT: ${{ needs.api.result }}
-          BROWSER_RESULT: ${{ needs.browser.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          RUNTIME: ${{ needs.changes.outputs.runtime }}
         run: |
+          test "$CHANGES_RESULT" = success
+          expected=success
+          if [ "$RUNTIME" = false ]; then expected=skipped; fi
           failed=0
-          for result in "quality:$QUALITY_RESULT" "api:$API_RESULT" "browser:$BROWSER_RESULT"; do
+          for result in "quality:$QUALITY_RESULT" "api:$API_RESULT" "build:$BUILD_RESULT"; do
             job=${result%%:*}
             status=${result#*:}
             echo "$job: $status" >> "$GITHUB_STEP_SUMMARY"
-            if [ "$status" != success ]; then
+            if [ "$status" != "$expected" ]; then
               echo "::error::$job finished with $status. Open the $job job for the underlying failure."
               failed=1
             fi
