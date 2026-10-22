@@ -17,3 +17,14 @@ test('Google email ownership and provider configuration fail safely',()=>{
  assert.equal(googleEmailIsAuthoritative({email:'user@example.invalid',hd:'example.invalid'}),true);
  const previous=process.env.CUSTOMER_GOOGLE_CLIENT_ID;try{process.env.CUSTOMER_GOOGLE_CLIENT_ID='https://bad.invalid/.apps.googleusercontent.com';assert.equal(customerAuthOptions().googleClientId,null);}finally{if(previous===undefined)delete process.env.CUSTOMER_GOOGLE_CLIENT_ID;else process.env.CUSTOMER_GOOGLE_CLIENT_ID=previous;}
 });
+
+
+test('account errors distinguish Google credential, mailbox and origin failures', async () => {
+ const {accountErrorMessage}=await import('../apps/web/src/lib/account/errors');
+ assert.match(accountErrorMessage(403,'google'),/securely/);
+ assert.doesNotMatch(accountErrorMessage(403,'google'),/email code/);
+ assert.match(accountErrorMessage(403,'google','FORBIDDEN'),/email verification/);
+ assert.match(accountErrorMessage(401,'google','UNAUTHORIZED'),/Google sign-in/);
+ assert.match(accountErrorMessage(401,'verify'),/code.*expired/);
+ assert.match(accountErrorMessage(429,'google'),/Too many/);
+});

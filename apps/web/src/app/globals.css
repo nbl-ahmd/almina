@@ -165,3 +165,38 @@ label input:not([data-slot]),label select:not([data-slot]) { font-weight: 400; f
 @media (min-width: 1440px) {
 }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* Google Identity Services renders its own markup and injects unlayered styles
+   at runtime. These rules stay unlayered as well so they outrank that injection
+   and keep the control identical whether Google's stylesheet arrives, is slow
+   or is rejected by CSP. Structure-based selectors are used where possible so a
+   markup revision degrades cosmetically instead of breaking the sign-in flow. */
+.google-signin { display: flex; width: 100%; min-height: 3rem; }
+.google-signin > div { width: 100%; }
+.google-signin div[role="button"] {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 3rem; padding: 0 var(--space-4); overflow: hidden;
+  gap: var(--space-2); border: 1px solid var(--color-border); border-radius: 12px;
+  background: var(--color-surface); color: var(--color-ink); cursor: pointer;
+  transition: background-color var(--motion-feedback), border-color var(--motion-feedback);
+}
+.google-signin div[role="button"]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .google-signin div[role="button"]:hover { background: var(--color-subtle); border-color: var(--color-control-hover); }
+}
+.google-signin div[role="button"]:active { background: var(--color-accent); }
+/* Content row: Google's own layout rule is replaced by ours. */
+.google-signin div[role="button"] > div:not(.nsm7Bb-HzV7m-LgbsSe-MJoBVe) {
+  display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+  width: 100%; height: 100%; min-height: 0;
+}
+/* The logo must never scale with the container, even before Google's styles arrive. */
+.google-signin svg { width: 18px; height: 18px; flex: none; }
+/* Google's own hover/active tint is replaced by the frame states above. */
+.google-signin .nsm7Bb-HzV7m-LgbsSe-MJoBVe { display: none; }
+.google-signin div[role="button"] span {
+  font-size: .875rem; font-weight: 500; line-height: 1.25; letter-spacing: .1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit;
+}
+/* Google hides this duplicate accessible label; keep it out of sight if its CSS is blocked. */
+.google-signin .L6cTce { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }

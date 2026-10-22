@@ -7,7 +7,7 @@ async function accountFixture(page: Page, mode: 'ready' | 'unconfigured' | 'goog
     if (mode === 'google-failure') { await route.abort(); return; }
     // Synthetic GIS adapter tests our callback integration; Google-owned authentication
     // and the actual provider popup require a configured OAuth client and human account.
-    await route.fulfill({ contentType: 'text/javascript', body: `window.google={accounts:{id:{initialize:function(options){this.options=options;},renderButton:function(node,options){var button=document.createElement('button');button.textContent='Continue with Google';button.style.cssText='width:'+options.width+'px;min-height:44px;border:1px solid #dadce0;border-radius:24px;background:#fff;color:#1f1f1f;font-size:14px;font-weight:500;';button.onclick=()=>this.options.callback({credential:'synthetic-provider-token'});node.appendChild(button);}}}};` });
+    await route.fulfill({ contentType: 'text/javascript', body: `window.google={accounts:{id:{initialize:function(options){this.options=options;},renderButton:function(node,options){var button=document.createElement('div');button.setAttribute('role','button');button.tabIndex=0;button.textContent='Continue with Google';button.style.cssText='width:'+options.width+'px;min-height:44px;border:1px solid #dadce0;border-radius:24px;background:#fff;color:#1f1f1f;font-size:14px;font-weight:500;';button.onclick=()=>this.options.callback({credential:'synthetic-provider-token'});node.appendChild(button);}}}};` });
   });
   await page.route('**/api/customer/**', async route => {
     const action = new URL(route.request().url()).pathname.split('/').at(-1);
@@ -126,4 +126,37 @@ test('shared controls keep keyboard focus, required fields and checkbox labels u
   await page.setViewportSize({width:390,height:900});
   await page.screenshot({path:'outputs/storefront-controls-2026-10-20/account-mobile.png',fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+
+test('Google-only wholesale sign-in keeps the invitation and never offers retail enrollment',async({page})=>{
+ await accountFixture(page);
+ await page.route('**/api/customer/options',route=>route.fulfill({json:{data:{googleClientId:'synthetic.apps.googleusercontent.com',emailEnabled:false}}}));
+ let accepted=false;
+ await page.route('**/api/wholesale/**',async route=>{
+  if(new URL(route.request().url()).pathname.endsWith('/accept')){expect(route.request().postDataJSON()).toEqual({token:'a'.repeat(43)});accepted=true;return route.fulfill({json:{data:{accepted:true}}});}
+  return route.fulfill(accepted?{json:{data:{businessName:'Google Salon',typeName:'Salon',products:[],nextCursor:null}}}:{status:403,json:{code:'FORBIDDEN'}});
+ });
+ await page.goto(adminOrigin+'/wholesale?invite='+'a'.repeat(43));
+ await expect(page.getByRole('heading',{name:'Business sign-in',exact:true})).toBeVisible();
+ await expect(page.getByText('or continue with email',{exact:true})).toHaveCount(0);
+ await expect(page.getByText('Business sign-in is not available.',{exact:false})).toHaveCount(0);
+ await expect(page.getByRole('link',{name:'Continue as a guest',exact:false})).toHaveCount(0);
+ await page.getByRole('button',{name:'Continue with Google',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Pharmacy approval required',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Accept business invitation',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Google Salon',exact:true})).toBeVisible();
+ await expect(page.getByText('Wholesale access is not active for this account. Contact the pharmacy.',{exact:true})).toHaveCount(0);
+ await expect(page).toHaveURL(/\/wholesale$/);
+ await page.reload();await expect(page.getByRole('heading',{name:'Google Salon',exact:true})).toBeVisible();
+});
+
+test('Google origin errors do not misdirect a Google-only customer to unavailable email codes',async({page})=>{
+ await accountFixture(page);
+ await page.route('**/api/customer/options',route=>route.fulfill({json:{data:{googleClientId:'synthetic.apps.googleusercontent.com',emailEnabled:false}}}));
+ await page.route('**/api/customer/google',route=>route.fulfill({status:403,json:{error:'Access denied'}}));
+ await page.goto(adminOrigin+'/account');await page.getByRole('button',{name:'Continue with Google',exact:true}).click();
+ const error=page.getByRole('region',{name:'Welcome to Al Mina',exact:true}).getByRole('alert');
+ await expect(error).toContainText('securely');
+ await expect(error).not.toContainText('email code');
 });
