@@ -2,50 +2,95 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { deploymentCandidate, requireSuccessfulFoundation } from '../scripts/tooling/verify-vercel-candidate.mjs';
+import { readFileSync } from 'node:fs';
+import { deploymentCandidate, requireSuccessfulCi, verifiedPullHead, requireMatchingTrees } from '../scripts/tooling/verify-vercel-candidate.mjs';
+import { needsRuntimeChecks } from '../scripts/tooling/ci-changes.mjs';
 
-test('automatic Vercel deploy accepts only successful same-repository master pushes and skips stale commits', () => {
-  const sha = 'a'.repeat(40), repository = 'pharmacy/store';
-  const run = { name: 'Modernization foundation', event: 'push', conclusion: 'success', head_branch: 'master', head_repository: { full_name: repository }, head_sha: sha };
-  assert.equal(deploymentCandidate('workflow_run', { workflow_run: run }, repository, sha, sha), sha);
-  assert.equal(deploymentCandidate('workflow_run', { workflow_run: run }, repository, sha, 'b'.repeat(40)), undefined);
-  for (const patch of [{ event: 'pull_request' }, { conclusion: 'failure' }, { head_branch: 'feature' }, { head_repository: { full_name: 'someone/fork' } }, { head_sha: 'b'.repeat(40) }, { name: 'Unrelated checks' }]) {
-    assert.throws(() => deploymentCandidate('workflow_run', { workflow_run: { ...run, ...patch } }, repository, sha, sha));
-  }
-  assert.throws(() => deploymentCandidate('push', {}, repository, sha, sha));
-  assert.throws(() => deploymentCandidate('workflow_dispatch', {}, repository, 'master', sha));
-  assert.equal(deploymentCandidate('workflow_dispatch', {}, repository, sha, 'b'.repeat(40)), sha);
-});
-
-test('Vercel deployment refuses missing, mismatched, pending or superseded foundation results', () => {
-  const sha = 'a'.repeat(40), passed = { run_number: 1, head_sha: sha, event: 'push', status: 'completed', conclusion: 'success' };
-  assert.doesNotThrow(() => requireSuccessfulFoundation({ workflow_runs: [passed] }, sha));
-  assert.throws(() => requireSuccessfulFoundation({ workflow_runs: [] }, sha));
-  for (const patch of [{ head_sha: 'b'.repeat(40) }, { event: 'pull_request' }, { status: 'in_progress' }, { conclusion: 'failure' }]) {
-    assert.throws(() => requireSuccessfulFoundation({ workflow_runs: [{ ...passed, ...patch }] }, sha));
-  }
-  assert.throws(() => requireSuccessfulFoundation({ workflow_runs: [{ ...passed, run_number: 2, conclusion: 'failure' }, passed] }, sha));
-});
-
+const commit = 'a'.repeat(40), head = 'b'.repeat(40), tree = 'c'.repeat(40), repository = 'pharmacy/store';
 const run = promisify(execFile);
-const commit = 'a'.repeat(40);
-test('native Node deployment gate emits the verified SHA, skips stale automation and rejects non-ancestor candidates', async () => {
+const passed = { name: 'CI', run_number: 1, head_sha: head, event: 'pull_request', status: 'completed', conclusion: 'success' };
+const pull = { merged_at: '2026-10-23', merge_commit_sha: commit, base: { ref: 'master', repo: { full_name: repository } }, head: { sha: head } };
+
+test('deployment accepts same-repository master pushes, skips stale commits and validates manual SHAs', () => {
+  const push = { ref: 'refs/heads/master', repository: { full_name: repository }, after: commit };
+  assert.equal(deploymentCandidate('push', push, repository, commit, commit), commit);
+  assert.equal(deploymentCandidate('push', push, repository, commit, head), undefined);
+  for (const patch of [{ ref: 'refs/heads/feature' }, { repository: { full_name: 'someone/fork' } }, { after: head }, { deleted: true }]) {
+    assert.throws(() => deploymentCandidate('push', { ...push, ...patch }, repository, commit, commit));
+  }
+  assert.throws(() => deploymentCandidate('workflow_run', {}, repository, commit, commit));
+  assert.throws(() => deploymentCandidate('workflow_dispatch', {}, repository, 'master', commit));
+  assert.equal(deploymentCandidate('workflow_dispatch', {}, repository, commit, head), commit);
+});
+
+test('deployment requires latest successful CI for the exact tested head and expected event', () => {
+  assert.doesNotThrow(() => requireSuccessfulCi({ workflow_runs: [passed] }, head, 'pull_request'));
+  assert.throws(() => requireSuccessfulCi({ workflow_runs: [] }, head, 'pull_request'));
+  for (const patch of [{ head_sha: commit }, { event: 'push' }, { name: 'Other workflow' }, { status: 'in_progress' }, { conclusion: 'failure' }, { conclusion: 'cancelled' }, { conclusion: 'skipped' }]) {
+    assert.throws(() => requireSuccessfulCi({ workflow_runs: [{ ...passed, ...patch }] }, head, 'pull_request'));
+  }
+  assert.throws(() => requireSuccessfulCi({ workflow_runs: [{ ...passed, run_number: 2, conclusion: 'failure' }, passed] }, head, 'pull_request'));
+  const manual = { ...passed, head_sha: commit, event: 'workflow_dispatch', head_branch: 'master' };
+  assert.doesNotThrow(() => requireSuccessfulCi({ workflow_runs: [manual] }, commit, 'workflow_dispatch'));
+  assert.throws(() => requireSuccessfulCi({ workflow_runs: [{ ...manual, head_branch: 'feature' }] }, commit, 'workflow_dispatch'));
+});
+
+test('release requires the actual merged PR and identical file trees', () => {
+  assert.equal(verifiedPullHead([pull], commit, repository), head);
+  for (const patch of [{ merged_at: null }, { merge_commit_sha: head }, { base: { ref: 'feature' } }, { base: { ref: 'master', repo: { full_name: 'other/repo' } } }]) {
+    assert.equal(verifiedPullHead([{ ...pull, ...patch }], commit, repository), undefined);
+  }
+  assert.throws(() => verifiedPullHead({}, commit, repository));
+  assert.throws(() => verifiedPullHead([{ ...pull, head: { sha: 'master' } }], commit, repository));
+  assert.doesNotThrow(() => requireMatchingTrees(tree, tree));
+  assert.throws(() => requireMatchingTrees(tree, head));
+  assert.throws(() => requireMatchingTrees(undefined, undefined));
+});
+
+test('only documentation changes skip runtime CI; unknown paths and manual runs remain covered', () => {
+  assert.equal(needsRuntimeChecks(['README.md', 'docs/migration/status.json']), false);
+  for (const files of [[], ['README.md', 'apps/api/src/app.ts'], ['package-lock.json'], ['.github/workflows/ci.yml'], ['tests/example.test.ts'], ['scripts/tooling/ci-changes.mts']]) assert.equal(needsRuntimeChecks(files), true);
+});
+
+test('CI runs once per PR head; the protected gate and deployment use the same identity', () => {
+  const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+  assert.match(ci, /^name: CI/m);
+  assert.doesNotMatch(ci, /^ {2}push:/m);
+  assert.match(ci, /ref: \$\{\{ github.event.pull_request.head.sha \|\| github.sha \}\}/);
+  assert.doesNotMatch(ci, /playwright install|test:e2e:smoke|smoke:foundation|smoke:storefront/);
+  assert.match(ci, /needs: \[changes, quality, api, build\]/);
+  assert.match(ci, /test "\$CHANGES_RESULT" = success/);
+  assert.match(ci, /if \[ "\$RUNTIME" = false \]; then expected=skipped; fi/);
+  const browser = readFileSync('.github/workflows/browser.yml', 'utf8');
+  assert.match(browser, /workflow_dispatch:/);
+  assert.doesNotMatch(browser, /pull_request:|push:/);
+  assert.match(readFileSync('.github/workflows/deploy-vercel-web.yml', 'utf8'), / {2}push:\n {4}branches: \[master\]/);
+});
+
+test('native deployment gate reuses verified code and rejects mismatched merge trees or ancestry', async () => {
   async function gate(mode: string) {
     const mock = `import fs from 'node:fs';import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';
-      const read=fs.readFileSync;fs.readFileSync=(path,...args)=>path==='/synthetic-event.json'?JSON.stringify({workflow_run:{name:'Modernization foundation',event:'push',conclusion:'success',head_branch:'master',head_repository:{full_name:'pharmacy/store'},head_sha:'${commit}'}}):read(path,...args);
+      const read=fs.readFileSync;fs.readFileSync=(path,...args)=>path==='/synthetic-event.json'?JSON.stringify({ref:'refs/heads/master',repository:{full_name:'${repository}'},after:'${commit}'}):read(path,...args);
       fs.appendFileSync=(path,value)=>{if(path!=='/synthetic-output')throw Error('Unexpected output');console.log(value);};
-      cp.execFileSync=(command,args)=>{if(command==='git'&&args[0]==='rev-parse')return '${mode === 'stale' ? 'b'.repeat(40) : commit}';
+      cp.execFileSync=(command,args)=>{
+        if(command==='git'&&args[0]==='rev-parse')return args[1].includes('tree')?'${mode === 'changed-tree' ? head : tree}':'${mode === 'stale' ? head : commit}';
         if(command==='git'&&args[0]==='merge-base'){if('${mode}'==='not-ancestor')throw Error('Not an ancestor');return '';}
-        if(command==='gh'&&args[0]==='api'){if('${mode}'==='stale')throw Error('Stale candidate must not query verification');return JSON.stringify({workflow_runs:[{run_number:1,head_sha:'${commit}',event:'push',status:'completed',conclusion:'success'}]});}
-        throw Error('Unexpected command');};syncBuiltinESMExports();`;
+        if(command==='gh'&&args[0]==='api'){
+          if('${mode}'==='stale')throw Error('Stale candidate must not query verification');
+          if(args[1].endsWith('/pulls'))return JSON.stringify([${JSON.stringify(pull)}]);
+          if(args[1].includes('/git/commits/'))return JSON.stringify({tree:{sha:'${tree}'}});
+          if(args[1].includes('/ci.yml/runs?head_sha=${head}&event=pull_request'))return JSON.stringify({workflow_runs:[${JSON.stringify(passed)}]});
+        }throw Error('Unexpected command');};syncBuiltinESMExports();`;
     return run(process.execPath, ['--import', 'data:text/javascript,' + encodeURIComponent(mock), 'scripts/tooling/verify-vercel-candidate.mts'], {
-      env: { PATH: process.env.PATH, NODE_ENV: 'test', GITHUB_EVENT_NAME: 'workflow_run', GITHUB_EVENT_PATH: '/synthetic-event.json', GITHUB_REPOSITORY: 'pharmacy/store', CANDIDATE: commit, GITHUB_OUTPUT: '/synthetic-output' },
+      env: { PATH: process.env.PATH, NODE_ENV: 'test', GITHUB_EVENT_NAME: 'push', GITHUB_EVENT_PATH: '/synthetic-event.json', GITHUB_REPOSITORY: repository, CANDIDATE: commit, GITHUB_OUTPUT: '/synthetic-output' },
     });
   }
   assert.match((await gate('ready')).stdout, new RegExp(`commit=${commit}\\ndeploy=true`));
   assert.match((await gate('stale')).stdout, /deploy=false/);
   await assert.rejects(gate('not-ancestor'));
+  await assert.rejects(gate('changed-tree'));
 });
+
 function simulate(patch: Record<string, string> = {}, wrongCommit = false, args = ['--apply']) {
   // No real network, tokens, service or database is used by this subprocess.
   const mock = `let calls=0;globalThis.fetch=async(url,options)=>{calls++;

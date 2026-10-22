@@ -42,6 +42,8 @@ try {
     try { if ((await fetch(`${origin}/cart`)).ok) break; } catch { /* starting */ }
     await delay(100);
   }
+  assert.equal((await fetch(`${origin}/_next/mcp`)).status, 404);
+  assert.equal((await fetch(`${origin}/favicon.ico`)).status, 200);
   const recoveredPaths = ['/products/recovery-example--RECOVERY--0001', `/products/numeric-identity-example--${recoveredProducts[1].product_id}`];
   for (const [index, path] of recoveredPaths.entries()) {
     const recovered = recoveredProducts[index];

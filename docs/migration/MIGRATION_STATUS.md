@@ -374,3 +374,12 @@ sign-in flow delivered to the provider's controlled test recipient. Vercel block
 the merge author's deployment on its current plan; the documented actual-owner
 merge route is being used without changing contributor identity or permissions.
 See [activation evidence and remaining launch acceptance](EMAIL_ACTIVATION_2026-10-23.md).
+
+## CI optimization — 23 October 2026
+
+Replaced the migration-named workflow with `CI`: fast required quality/API/build
+checks on PRs, docs-only skips, manual full browser regression and no duplicate
+post-merge suite. The deployment gate reuses successful PR checks only for identical
+merged file trees and adds read-only public-host checks after deployment. Strict
+branch protection and the existing `verify` check remain. See [CI and deployment
+checks](CI_2026-10-23.md).
