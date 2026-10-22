@@ -225,6 +225,7 @@ export function ProductForm({
       path={edit ? `products/${display(product._id)}` : "products"}
       method={edit ? "PUT" : "POST"}
       multipart
+      productAudience={{ audience: typeof product?.audience === 'string' ? product.audience : undefined, wholesaleAudience: typeof product?.wholesaleAudience === 'string' ? product.wholesaleAudience : undefined, wholesaleTypeIds: Array.isArray(product?.wholesaleTypeIds) ? product.wholesaleTypeIds.filter((id): id is string => typeof id === 'string') : [] }}
       fields={fields}
       label={edit ? "Save product" : "Create product"}
     />
@@ -258,6 +259,7 @@ export function OrderDetail({
           </>
         }
       />
+      {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
       <div className="admin-grid admin-grid--2">
         <Card
           title="Customer and delivery"

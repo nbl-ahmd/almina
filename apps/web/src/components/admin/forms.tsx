@@ -1,4 +1,5 @@
 "use client";
+import { ProductAudienceFields, type ProductAudience } from "./product-audience";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { adminRequest } from "./controls";
@@ -23,6 +24,7 @@ export function AdminForm({
   label = "Save",
   multipart = false,
   confirm,
+  productAudience,
 }: {
   path: string;
   method?: string;
@@ -30,6 +32,7 @@ export function AdminForm({
   label?: string;
   multipart?: boolean;
   confirm?: string;
+  productAudience?: ProductAudience;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -73,6 +76,7 @@ export function AdminForm({
   }
   return (
     <form className={adminFormClass} onSubmit={submit} aria-busy={pending}>
+      {productAudience ? <ProductAudienceFields initial={productAudience} /> : null}
       {fields.map((field) => {
         const id = `${path.replace(/[^a-z0-9]/gi, "-")}-${field.name}`;
         const props = {

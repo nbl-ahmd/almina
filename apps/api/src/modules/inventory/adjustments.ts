@@ -1,3 +1,4 @@
+import { validateAudience } from '../catalog/validate-audience.js';
 import { productContentFields, productContentNames, storePublicationIssues } from '@almina/contracts';
 import { createHash } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
@@ -64,6 +65,7 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       if (input.stockVerified === true || input.stock !== undefined) { fields.stockReviewedAt = new Date(); fields.stockReviewedBy = actor; next.stockReviewedAt = fields.stockReviewedAt; }
       if (product.catalogManaged === true && product.published !== false && !product.disabled && storePublicationIssues(next).length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
       await validateFamilyMembership(db, next, session);
+      await validateAudience(db, next, session);
       const price = moneyMinor(next.price);
       if (next.salePrice !== undefined && next.salePrice !== null) {
         if (moneyMinor(next.salePrice) > price) throw new HttpError(400, 'INVALID_REQUEST');

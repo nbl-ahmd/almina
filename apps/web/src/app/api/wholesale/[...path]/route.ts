@@ -6,7 +6,7 @@ import { boundedBody } from '../../../../lib/server/bounded-body';
 const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow'};
 async function handle(request:NextRequest,{params}:{params:Promise<{path:string[]}>}){
  const path=(await params).path.join('/'),env=getWebEnvironment(),admin=path.startsWith('admin/');
- const read=admin?['admin/types','admin/accounts','admin/terms']:['access','catalog'];
+ const read=admin?['admin/types','admin/accounts','admin/terms','admin/products']:['access','catalog','account','orders'];
  const write=admin?['admin/types','admin/accounts','admin/terms','admin/invite']:['accept','quote','checkout'];
  if(!(request.method==='GET'?read:write).includes(path))return NextResponse.json({error:'Not found'},{status:404,headers});
  if(request.method==='POST'&&(request.nextUrl.search||request.headers.get('origin')!==env.WEB_ORIGIN||request.headers.get('x-csrf-protection')!=='1'||request.headers.get('sec-fetch-site')==='cross-site'))return NextResponse.json({error:'Access denied'},{status:403,headers});

@@ -40,3 +40,5 @@ export * from './modules/catalog/import.js';
 
 export * from './modules/catalog/export.js';
 export { retentionWorker } from './modules/growth/retention.js';
+
+export { prepareEmailStorage } from './modules/notifications/storage.js';

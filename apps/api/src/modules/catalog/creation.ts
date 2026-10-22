@@ -1,3 +1,4 @@
+import { validateAudience } from '../catalog/validate-audience.js';
 import { productContentFields } from '@almina/contracts';
 import { randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
@@ -54,6 +55,7 @@ export async function insertCatalogProduct(db: Db, value: ProductInput, id: stri
   if (!category) throw new HttpError(400, 'INVALID_REQUEST');
   const product = catalogProductDocument(value, id, category._id, assets);
   await validateFamilyMembership(db, product, session);
+      await validateAudience(db, product, session);
   await db.collection('products').insertOne(product, { session });
   await db.collection<Document & { _id: string }>('inventory_adjustments').insertOne({ _id: randomUUID(), productId: product._id, product_id: id,
     actor, reason: 'Initial catalog stock', delta: value.stock, before: 0, after: value.stock, createdAt: new Date() }, { session });

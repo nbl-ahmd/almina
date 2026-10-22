@@ -1,3 +1,4 @@
+import { visibleToRetail } from '@almina/contracts';
 import { ObjectId,type Db,type Document } from 'mongodb';
 import { commercePolicySchema,quoteInputSchema,type CommercePolicy } from '@almina/contracts';
 import { randomUUID } from 'node:crypto';
@@ -17,7 +18,7 @@ export async function previewDelivery(db:Db,raw:unknown){
   const products=await db.collection('products').find({_id:{$in:items.map(item=>new ObjectId(item.productId))}},{maxTimeMS:3000}).toArray();
   const categories=await db.collection('categories').find({_id:{$in:products.map(product=>product.category)},disabled:{$ne:true},archivedAt:{$exists:false}},{maxTimeMS:3000}).toArray();
   const visible=new Set(categories.map(category=>String(category._id)));
-  if(products.some(product=>!visible.has(String(product.category))))throw new HttpError(409,'PRODUCT_UNAVAILABLE');
+  if(products.some(product=>!visibleToRetail(product)||!visible.has(String(product.category))))throw new HttpError(409,'PRODUCT_UNAVAILABLE');
   const quote=calculateQuote({items,customer:{emirate,name:'',mobile:'',email:'',city,address:'',payment:'cash',buildingname:'',flatno:'',note:'',maplink:''}},products,{...policy,minimumOrderMinor:0});
   return {emirate,subtotalMinor:quote.subtotalMinor,deliveryFeeMinor:quote.deliveryFeeMinor,freeAboveMinor:rule.freeAboveMinor??null,remainingMinor:rule.freeAboveMinor===undefined?null:Math.max(0,rule.freeAboveMinor-quote.subtotalMinor),policyVersion:policy.version};
 }

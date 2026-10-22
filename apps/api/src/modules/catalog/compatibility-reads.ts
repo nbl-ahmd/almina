@@ -1,3 +1,4 @@
+import { retailAudienceFilter } from './audience.js';
 import { productContentNames } from '@almina/contracts';
 import { z } from 'zod';
 import { ObjectId, type Db, type Document } from 'mongodb';
@@ -41,7 +42,7 @@ export function retainedCatalogQuery(raw: unknown, kind: 'products' | 'search' |
     sort: value.sort ?? 'relevance' };
 }
 type Query = Omit<ReturnType<typeof retainedCatalogQuery>,'groupFamilies'> & {groupFamilies?:boolean};
-const published = { disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false } };
+const published = { ...retailAudienceFilter, disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false } };
 function match(query: Query, staff: boolean): Document {
   const { category, ...filters } = query.filter;
   const priceBounds = query.minPrice !== undefined || query.maxPrice !== undefined

@@ -1,7 +1,10 @@
+import { wholesaleBusinessFields, wholesaleBusinessSchema, wholesaleOrdersSchema } from '@almina/contracts';
+import { retainedProductList, retainedCatalogQuery } from '../catalog/compatibility-reads.js';
+import { wholesaleAudienceFilter } from '../catalog/audience.js';
 import { createHash, randomBytes } from 'node:crypto';
 import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
 import { wholesaleAccountInputSchema, wholesaleAccountSchema, wholesaleTypeSchema, wholesaleTermsSchema, wholesaleInviteInputSchema, wholesaleAcceptSchema, wholesaleQuerySchema, wholesaleCatalogSchema } from '@almina/contracts';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { HttpError } from '../../errors.js';
 import { permittedWholesaleProduct, wholesalePrice, decimalMinor } from './policy.js';
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -72,7 +75,7 @@ export async function wholesaleCatalog(db: Db, customer: {
     const rows = await db.collection<RecordRow>('wholesale_terms').aggregate([
         { $match: { enabled: true, prices: { $elemMatch: { typeId: account.typeId } }, ...(input.cursor ? { _id: { $gt: input.cursor } } : {}) } }, { $sort: { _id: 1 } },
         { $lookup: { from: 'products', let: { id: { $convert: { input: '$_id', to: 'objectId', onError: null, onNull: null } } }, pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$id'] } } }], as: 'product' } }, { $unwind: '$product' },
-        { $match: { 'product.disabled': { $ne: true }, 'product.active': { $ne: false }, 'product.published': { $ne: false }, 'product.archivedAt': { $exists: false }, 'product.contentReviewed': true, 'product.productType': { $in: ['general', 'otc', 'prescription'] }, ...(!type.allowMedicines ? { 'product.productType': 'general' } : {}), ...(escaped ? { 'product.name': { $regex: escaped, $options: 'i' } } : {}), ...(account.scope === 'type' ? {} : { $or: [{ _id: { $in: account.productIds ?? [] } }, { 'product.category': { $in: (account.categoryIds ?? []).map((id: string) => new ObjectId(id)) } }] }) } },
+        { $match: { ...wholesaleAudienceFilter(account.typeId, 'product.'), 'product.disabled': { $ne: true }, 'product.active': { $ne: false }, 'product.published': { $ne: false }, 'product.archivedAt': { $exists: false }, 'product.contentReviewed': true, 'product.productType': { $in: ['general', 'otc', 'prescription'] }, ...(!type.allowMedicines ? { 'product.productType': 'general' } : {}), ...(escaped ? { 'product.name': { $regex: escaped, $options: 'i' } } : {}), ...(account.scope === 'type' ? {} : { $or: [{ _id: { $in: account.productIds ?? [] } }, { 'product.category': { $in: (account.categoryIds ?? []).map((id: string) => new ObjectId(id)) } }] }) } },
         { $lookup: { from: 'categories', localField: 'product.category', foreignField: '_id', as: 'category' } }, { $unwind: '$category' }, { $match: { 'category.disabled': { $ne: true }, 'category.archivedAt': { $exists: false } } }, { $limit: 25 },
         { $project: { _id: 1, prices: 1, 'product._id': 1, 'product.name': 1, 'product.product_id': 1, 'product.stock': 1, 'product.images': 1, 'product.cloudinaryImages': 1, 'category.name': 1 } },
     ], { maxTimeMS: 5000 }).toArray();
@@ -86,3 +89,29 @@ function wholesalePriceSchemaResult(prices: Document[], typeId: string) { try {
 catch {
     return null;
 } }
+
+export async function wholesaleBusiness(db: Db, customer: {id:string;email:string}) {
+ const {account,type} = await wholesaleIdentity(db,customer.id,customer.email);
+ return wholesaleBusinessSchema.parse({ businessName: account.businessName, typeName: type.name,
+   ...Object.fromEntries(Object.keys(wholesaleBusinessFields).map(key=>[key,account[key]])) });
+}
+export async function wholesaleOrders(db: Db, customer: {id:string;email:string}, raw: unknown) {
+ const input = parse(wholesaleQuerySchema.pick({cursor:true}),raw);
+ const {account} = await wholesaleIdentity(db,customer.id,customer.email);
+ const rows = await db.collection('orders').find({ schemaVersion:2, channel:'wholesale', customerId:customer.id,
+   'wholesale.accountId':account._id, ...(input.cursor ? {_id:{$lt:new ObjectId(input.cursor)}} : {}) },
+   {...opts,projection:{orderId:1,status:1,createdAt:1,totals:1}}).sort({_id:-1}).limit(21).toArray();
+ return wholesaleOrdersSchema.parse({items:rows.slice(0,20),nextCursor:rows.length>20?String(rows[19]!._id):null});
+}
+export async function wholesaleProductOptions(db: Db, raw: unknown) {
+ const input = parse(z.object({q:z.string().trim().min(2).max(80).optional(),ids:z.string().max(499).optional()}).strict().refine(value=>Boolean(value.q)!==Boolean(value.ids)),raw);
+ if (input.ids && !/^[a-f0-9]{24}(,[a-f0-9]{24}){0,19}$/i.test(input.ids)) throw new HttpError(400,'INVALID_REQUEST');
+ const rows = input.q
+   ? await retainedProductList(db,retainedCatalogQuery({q:input.q,limit:'20'},'search'),true)
+   : await db.collection('products').aggregate([
+     {$match:{_id:{$in:input.ids!.split(',').map(id=>new ObjectId(id))},archivedAt:{$exists:false}}},
+     {$lookup:{from:'categories',localField:'category',foreignField:'_id',as:'category'}},{$limit:20},
+     {$project:{name:1,product_id:1,'category.name':1}},
+   ],opts).toArray();
+ return rows.map(row=>({id:String(row._id),name:String(row.name),productId:String(row.product_id),category:String(Array.isArray(row.category)?row.category[0]?.name??'':row.category?.name??'')}));
+}

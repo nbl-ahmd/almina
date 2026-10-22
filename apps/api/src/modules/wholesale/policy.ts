@@ -1,9 +1,11 @@
+import { visibleToWholesale } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 import { wholesalePriceSchema, type WholesalePrice } from '@almina/contracts';
 import type { Document } from 'mongodb';
 export function permittedWholesaleProduct(account: Document, type: Document, product: Document, category?: Document) {
     if (account.approval !== 'approved' || !(account.acceptedAt instanceof Date) || type.active !== true || account.typeId !== type._id)
         return false;
+    if (!visibleToWholesale(product, type._id)) return false;
     if (product.disabled === true || product.active === false || product.published === false || product.archivedAt !== undefined || category?.disabled === true || category?.archivedAt !== undefined)
         return false;
     if (['disabled', 'active', 'published'].some(key => product[key] !== undefined && typeof product[key] !== 'boolean'))

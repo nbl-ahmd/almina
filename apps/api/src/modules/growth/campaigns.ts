@@ -1,3 +1,4 @@
+import { visibleToRetail } from '@almina/contracts';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { campaignState, growthPageSchema, hasProductPhoto, campaignImageUrl, type GrowthPage, type CampaignReview } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
@@ -8,11 +9,11 @@ async function snapshots(db: Db, ids: string[]): Promise<ProductSnapshot[]> {
   return db.collection('products').aggregate<ProductSnapshot>([
     { $match: { _id: { $in: [...new Set(ids)].map(id => new ObjectId(id)) } } },
     { $lookup: { from: 'categories', localField: 'category', foreignField: '_id', as: 'categories', pipeline: [{ $project: { disabled: 1, archivedAt: 1 } }] } },
-    { $project: { name: 1, published: 1, disabled: 1, active: 1, archivedAt: 1, stock: 1, image: 1, images: 1, cloudinaryImages: 1, gdriveFileIds: 1, categories: 1 } },
+    { $project: { audience: 1, name: 1, published: 1, disabled: 1, active: 1, archivedAt: 1, stock: 1, image: 1, images: 1, cloudinaryImages: 1, gdriveFileIds: 1, categories: 1 } },
   ], { maxTimeMS: 3000 }).toArray();
 }
 function available(row: ProductSnapshot | undefined): row is ProductSnapshot {
-  return !!row && row.published !== false && row.disabled !== true && row.active !== false && !row.archivedAt &&
+  return !!row && visibleToRetail(row) && row.published !== false && row.disabled !== true && row.active !== false && !row.archivedAt &&
     row.categories.length > 0 && row.categories.every(category => category.disabled !== true && !category.archivedAt);
 }
 /** Advisory, read-only checks. No link crawler, outbound fetch, publication or price mutation. */

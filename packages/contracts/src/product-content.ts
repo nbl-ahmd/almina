@@ -7,7 +7,24 @@ export function validGtin(value:string) {
   const digits=[...value].map(Number),check=digits.pop()!;
   return (10-digits.reverse().reduce((sum,digit,index)=>sum+digit*(index%2===0?3:1),0)%10)%10===check;
 }
+export const productAudienceFields = {
+  audience: z.enum(['all', 'retail', 'wholesale']).optional(),
+  wholesaleAudience: z.enum(['all', 'selected']).optional(),
+  wholesaleTypeIds: z.preprocess(value => {
+    if (typeof value !== 'string') return value;
+    try { return JSON.parse(value); } catch { return value; }
+  }, z.array(z.string().regex(/^[a-z][a-z0-9-]{1,39}$/)).max(50).refine(ids => new Set(ids).size === ids.length).optional()),
+};
+export function visibleToRetail(product: Record<string, unknown>): boolean {
+  return product.audience === undefined || product.audience === 'all' || product.audience === 'retail';
+}
+export function visibleToWholesale(product: Record<string, unknown>, typeId: string): boolean {
+  if (product.audience !== undefined && product.audience !== 'all' && product.audience !== 'wholesale') return false;
+  if (product.wholesaleAudience === undefined || product.wholesaleAudience === 'all') return true;
+  return product.wholesaleAudience === 'selected' && Array.isArray(product.wholesaleTypeIds) && product.wholesaleTypeIds.includes(typeId);
+}
 export const productContentFields = {
+  ...productAudienceFields,
   brand:text(100), manufacturer:text(150), gtin:z.string().trim().refine(value=>!value||validGtin(value),'Use a valid GTIN check digit; leave unknown identifiers blank.').optional(),mpn:text(70),
   identifierStatus:choice(['unknown','assigned','not-assigned'] as const), saleUnit:text(100),packLabel:text(150),productForm:text(120),strength:text(120),
   summary:text(300), ingredients:text(3000),usage:text(3000),warnings:text(3000),storage:text(1000),

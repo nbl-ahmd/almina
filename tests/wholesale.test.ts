@@ -33,3 +33,26 @@ test('wholesale configuration validates exact minor amounts, case minimums and d
  assert.equal(wholesaleAccountInputSchema.safeParse({...account,email:'buyer@example.invalid',businessName:'Salon',verificationReference:'Checked',revision:0,role:'admin'}).success,false);
  assert.equal('wholesalePrice' in productDtoSchema.shape,false);
 });
+
+test('product audiences preserve legacy access and restrict each business type',async()=>{
+ const {visibleToRetail,visibleToWholesale,productContentSchema}=await import('@almina/contracts');
+ for(const audience of [undefined,'all']){assert.equal(visibleToRetail({audience}),true);assert.equal(visibleToWholesale({audience},'salon'),true);}
+ assert.equal(visibleToRetail({audience:'wholesale'}),false);
+ assert.equal(visibleToWholesale({audience:'retail'},'salon'),false);
+ for(const audience of [null,'invalid',['all']]){assert.equal(visibleToRetail({audience}),false);assert.equal(visibleToWholesale({audience},'salon'),false);}
+ const selected={...product,audience:'wholesale',wholesaleAudience:'selected',wholesaleTypeIds:['salon']};
+ assert.equal(permittedWholesaleProduct(account,type,selected),true);
+ assert.equal(permittedWholesaleProduct(account,type,{...selected,wholesaleTypeIds:['pharmacy']}),false);
+ assert.equal(permittedWholesaleProduct(account,type,{...selected,wholesaleTypeIds:[]}),false);
+ assert.equal(permittedWholesaleProduct(account,type,{...selected,audience:'retail'}),false);
+ assert.equal(productContentSchema.parse({wholesaleTypeIds:'["salon"]'}).wholesaleTypeIds?.[0],'salon');
+ for(const ids of ['salon','["salon","salon"]','["$ne"]'])assert.equal(productContentSchema.safeParse({wholesaleTypeIds:ids}).success,false);
+});
+test('business registration fields remain optional and reject malformed details',async()=>{
+ const {wholesaleAccountInputSchema}=await import('@almina/contracts');
+ const base={email:'salon@example.invalid',businessName:'Salon',typeId:'salon',approval:'approved',verificationReference:'Checked',scope:'type',productIds:[],categoryIds:[],revision:0};
+ assert.equal(wholesaleAccountInputSchema.safeParse(base).success,true);
+ assert.equal(wholesaleAccountInputSchema.safeParse({...base,taxRegistrationNumber:'100000000000003',phone:'+971 50 123 4567'}).success,true);
+ assert.equal(wholesaleAccountInputSchema.safeParse({...base,taxRegistrationNumber:'123'}).success,false);
+ assert.equal(wholesaleAccountInputSchema.safeParse({...base,phone:'unknown'}).success,false);
+});

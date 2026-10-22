@@ -202,6 +202,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
 const fields = new Set([
   "items", "reasons", "missingPhoto",
   ...productContentNames,
+  "contactName", "phone", "tradeLicense", "taxRegistrationNumber", "deliveryAddress",
   "published","active","catalogManaged","websiteStockProposed","stockReviewedAt","previewId","errors","warnings","rows","row","field","message","sourceKey","action","productId","total","processed","complete","report","namespace","offset","nextOffset","previousPrice","previousStock","changedFields","unmappedCategories",
   "variantLabel", "familyKey", "familyName", "familyBrand", "familyForm", "familyStrength", "variantSize", "variantFlavour", "variantPackSize",
   "_id",
