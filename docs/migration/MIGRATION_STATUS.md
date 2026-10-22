@@ -366,3 +366,12 @@ Consolidated the two same-base local branch workstreams into `codex/wholesale-po
 ## Wholesale store/account and product audiences — 2026-10-22 (local)
 
 Added product create/edit audience controls (all, retail, wholesale), optional wholesale business-type selection, and server enforcement across catalogue/discovery/feeds and both checkout channels. Completed business account details/history, delivery prefill, catalogue pagination and case/cart controls; added admin contact, licence, TRN and delivery fields plus immutable order snapshots. Retail history identifies trade purchases and avoids retail reordering of them. Existing records remain compatible without backfill; production data and deployment are unchanged. Rollout, index plan, rollback implications and verification: [WHOLESALE_COMPLETION_2026-10-22.md](WHOLESALE_COMPLETION_2026-10-22.md).
+# Production email activation — 23 October 2026
+
+PR #59 is merged; Render serves its verified commit. Email sign-in is enabled on
+both public API gateways, a signed delivery webhook returned 204 and the public
+sign-in flow delivered to the provider's controlled test recipient. Vercel blocked
+the merge author's deployment on its current plan; the documented actual-owner
+merge route is being used without changing contributor identity or permissions.
+See [activation evidence and remaining launch acceptance](EMAIL_ACTIVATION_2026-10-23.md).
+
