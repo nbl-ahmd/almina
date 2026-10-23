@@ -5,8 +5,22 @@ import { legacyAdminDestination } from './lib/admin/redirects';
 import { hasDuplicateQuery, indexingQuery, isPublicPath } from './lib/seo';
 import { stylesheetPolicy } from './lib/security/stylesheet-policy';
 import { legacyMediaTarget } from './lib/catalog/legacy-media';
+import { mediaOrigin, mediaTarget } from './lib/catalog/image-delivery';
 export function proxy(request: NextRequest) {
-  // The bounded raster-only handler owns public image cache/indexing headers.
+  const isMediaHost = request.nextUrl.hostname === new URL(mediaOrigin).hostname;
+  if (request.nextUrl.pathname.startsWith('/media/') || isMediaHost) {
+    const reject = (status: number) => new NextResponse(null, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
+    if (!['GET', 'HEAD'].includes(request.method)) return reject(405);
+    if (isMediaHost && request.nextUrl.pathname === '/robots.txt') {
+      return new NextResponse('User-agent: *\nAllow: /media/\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=3600' } });
+    }
+    if (legacyMediaTarget(request.nextUrl.pathname)) return NextResponse.next();
+    if (request.nextUrl.search) return reject(404);
+    const target = mediaTarget(request.nextUrl.pathname, readWebEnvironment(process.env).CLOUDINARY_CLOUD_NAME);
+    if (!target) return reject(404);
+    // The raster handler sets cache headers only after validating a successful response.
+    return NextResponse.next();
+  }
   if (legacyMediaTarget(request.nextUrl.pathname)) return NextResponse.next();
   const destination = legacyAdminDestination(request.nextUrl.pathname);
   if (destination) {
@@ -18,7 +32,7 @@ export function proxy(request: NextRequest) {
     return response;
   }
   const environment = readWebEnvironment(process.env);
-  const mediaOrigin = new URL(environment.LEGACY_API_ORIGIN).origin;
+  const apiMediaOrigin = new URL(environment.LEGACY_API_ORIGIN).origin;
   const nonce = randomBytes(16).toString('base64');
   const development = process.env.NODE_ENV === 'development';
   const policy = [
@@ -26,7 +40,7 @@ export function proxy(request: NextRequest) {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''}`,
     stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV)+(['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com/gsi/style':''),
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
-    `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${mediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
+    `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
     "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(['/account','/wholesale'].includes(request.nextUrl.pathname) ? ["frame-src https://accounts.google.com"] : []), `connect-src 'self'${['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),

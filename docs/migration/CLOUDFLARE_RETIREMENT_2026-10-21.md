@@ -1,3 +1,5 @@
+> Media follow-up: the owner subsequently confirmed there are no legacy images to migrate. The unreleased compatibility bridge described below is superseded and removed by [branded media delivery](BRANDED_MEDIA_2026-10-21.md). DNS/email repair observations remain valid; no old Cloudflare assets were deleted.
+
 # Cloudflare retirement and image delivery
 
 ## Decision

@@ -22,8 +22,11 @@ const config: NextConfig = {
   // Resolve metadata/404/redirect decisions before committing HTTP headers for every UA.
   htmlLimitedBots: /.*/,
   images: {
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [96, 160, 256, 320, 384],
     remotePatterns: [
       ...(environment.CLOUDINARY_CLOUD_NAME ? [{ protocol: 'https' as const, hostname: 'res.cloudinary.com', pathname: `/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/**`, search: '' }] : []),
+      { protocol: 'https', hostname: 'cdn.alminapharmacy.com', pathname: '/media/**', search: '' },
       { protocol: 'https', hostname: 'cdn.alminapharmacy.com', pathname: '/cdn/**' },
       // Transitional read-only fallback for existing Drive-backed image routes.
       {
