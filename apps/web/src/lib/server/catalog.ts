@@ -53,13 +53,14 @@ export async function getProducts(options: { page?: number; category?: string; o
   return { products: raw.map(readProduct).filter(product => product !== null), hasNext: raw.length === 30, page };
 }
 const getProductDetail = cache(async (id: string) => {
-  if (!publicId.test(id)) return {product:null,variants:[] as Product[]};
+  if (!publicId.test(id)) return {product:null,variants:[] as Product[],related:[] as Product[]};
   const data = await legacyRead(`/api/products/details/${encodeURIComponent(id)}`, false, true);
-  if (!data || typeof data !== 'object' || !('product' in data)) return {product:null,variants:[] as Product[]};
-  const raw = data as {product:unknown;variants?:unknown};
-  return {product:readProduct(raw.product),variants:Array.isArray(raw.variants)?raw.variants.map(readProduct).filter((item):item is Product=>item!==null):[]};
+  if (!data || typeof data !== 'object' || !('product' in data)) return {product:null,variants:[] as Product[],related:[] as Product[]};
+  const raw = data as {product:unknown;variants?:unknown;relatedProducts?:unknown};
+  return {product:readProduct(raw.product),related:Array.isArray(raw.relatedProducts)?raw.relatedProducts.map(readProduct).filter((item):item is Product=>item!==null):[],variants:Array.isArray(raw.variants)?raw.variants.map(readProduct).filter((item):item is Product=>item!==null):[]};
 });
 export const getProductByPublicId = cache(async (id:string)=>(await getProductDetail(id)).product);
+export async function getProductRecommendations(product:Product){return (await getProductDetail(product.product_id)).related;}
 export async function getProductVariants(product:Product) {
   return product.familyKey ? (await getProductDetail(product.product_id)).variants : [];
 }

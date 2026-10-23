@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { randomUUID } = require('node:crypto');
-const sharp = require('sharp');
+const { prepareProductImage } = require('../security/product-image.cjs');
 const productRouter = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer(require('../security/uploads.cjs').imageUploadOptions(storage));
@@ -24,10 +24,7 @@ productRouter.post('/', upload.array('images', 5), require('../security/uploads.
           try {
 
               // Resize and convert the image
-              const croppedImage = await sharp(file.buffer, { limitInputPixels: 20000000 })
-                  .resize({ width: 500, height: 500, fit: 'cover' })
-                  .webp()
-                  .toBuffer();
+              const croppedImage = await prepareProductImage(file.buffer);
 
               // Generate a filename
               const filename = randomUUID() + '.webp';
@@ -115,10 +112,7 @@ productRouter.put('/:id', upload.array('images', 5), require('../security/upload
           gdriveFileIds = [];
           for (const file of files) {
               try {
-                  const croppedImage = await sharp(file.buffer, { limitInputPixels: 20000000 })
-                      .resize({ width: 500, height: 500, fit: 'cover' })
-                      .webp()
-                      .toBuffer();
+                  const croppedImage = await prepareProductImage(file.buffer);
 
                   const filename = randomUUID() + '.webp';
 

@@ -266,6 +266,7 @@ const fields = new Set([
   "cancelled",
   "billno",
   "billamount",
+  "schemaVersion",
   "lineSnapshots",
   "totalsSnapshot",
   "productId",

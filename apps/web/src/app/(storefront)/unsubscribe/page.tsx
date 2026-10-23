@@ -1,6 +1,9 @@
+import { AccountLanguage } from '../../../components/account-locale';
+import { getLocale } from '../../../lib/server/i18n';
 import { UnsubscribeReminder } from '../../../components/customer-reminders';
 export const metadata = { title: 'Cancel reminder', robots: { index: false, follow: false }, referrer: 'no-referrer' as const };
 export default async function Page({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
+  const locale=await getLocale();
   const { token } = await searchParams;
-  return token && /^[A-Za-z0-9_-]{43}$/.test(token) ? <UnsubscribeReminder token={token} /> : <section><h1 className="text-2xl">Reminder link unavailable</h1><p>Use the link in your reminder email, or manage reminders in your account.</p></section>;
+  return token && /^[A-Za-z0-9_-]{43}$/.test(token) ? <AccountLanguage locale={locale}><UnsubscribeReminder token={token} /></AccountLanguage> : <section><h1 className="text-2xl">{locale==='ar'?'رابط التذكير غير متاح':'Reminder link unavailable'}</h1><p>{locale==='ar'?'استخدم الرابط في رسالة التذكير، أو أدر التذكيرات من حسابك.':'Use the link in your reminder email, or manage reminders in your account.'}</p></section>;
 }

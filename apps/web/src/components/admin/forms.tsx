@@ -66,6 +66,12 @@ export function AdminForm({
           ? `Saved ${String(result.count)} products.`
           : isWhatsapp ? 'Accepted by provider. Delivery requires a delivery report.' : "Saved successfully.",
       );
+      if (method === "POST" && path === "products" && result && typeof result === 'object' && 'product' in result) {
+        const created = result.product as { _id?: unknown };
+        if (typeof created?._id === 'string' && /^[a-f0-9]{24}$/i.test(created._id)) {
+          router.push(`/admin/products/${created._id}`); router.refresh(); return;
+        }
+      }
       if (method === "POST") form.reset();
       router.refresh();
     } catch (error) {

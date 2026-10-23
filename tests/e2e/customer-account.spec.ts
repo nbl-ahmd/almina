@@ -170,3 +170,16 @@ test('retail purchase history labels wholesale orders and does not send them to 
  await expect(trade.getByRole('button',{name:'Buy available items again'})).toHaveCount(0);
  await expect(retail.getByRole('button',{name:'Buy available items again'})).toBeVisible();
 });
+
+for(const width of [360,390,768,1280])test(`Arabic account sign-in and reload at ${width}px`,async({page,context})=>{
+ await context.addCookies([{name:'almina_lang',value:'ar',url:adminOrigin}]);await page.setViewportSize({width,height:900});await accountFixture(page);
+ const failures:string[]=[];page.on('pageerror',error=>failures.push(error.message));
+ await page.goto(adminOrigin+'/account');await expect(page.locator('.storefront-shell')).toHaveAttribute('dir','rtl');
+ await expect(page.getByRole('heading',{name:'مرحباً بك في الميناء'})).toBeVisible();
+ await page.getByLabel('البريد الإلكتروني',{exact:true}).fill('shopper@example.invalid');
+ await page.getByRole('button',{name:'المتابعة بالبريد الإلكتروني',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'تحقّق من بريدك الإلكتروني',exact:true})).toBeVisible();
+ await expect(page.getByLabel('رمز مكوّن من ستة أرقام',{exact:true})).toBeFocused();
+ await page.reload();await expect(page.getByRole('heading',{name:'مرحباً بك في الميناء'})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(failures).toEqual([]);
+});

@@ -1,0 +1,116 @@
+import { shopText } from '../i18n-storefront';
+import type { Locale } from '../i18n';
+
+// Interface copy only: never translate product, business, address or policy data.
+export const arabicAccountCopy: Record<string, string> = {
+  'Checking stock…':'جارٍ التحقق من المخزون…', 'Buy available items again':'شراء المنتجات المتوفرة مجدداً',
+  'Unable to add these items. Please try again.':'تعذّر إضافة هذه المنتجات. حاول مرة أخرى.',
+  'Your account is signed in, but orders could not load. Please refresh to try again.':'تم تسجيل دخولك، لكن تعذّر تحميل الطلبات. حدّث الصفحة للمحاولة مجدداً.',
+  'Orders could not load. Please refresh to try again.':'تعذّر تحميل الطلبات. حدّث الصفحة للمحاولة مجدداً.',
+  'Loading your account…':'جارٍ تحميل حسابك…', 'We could not load your account':'تعذّر تحميل حسابك',
+  'Your connection may have been interrupted. Please try again.':'ربما انقطع اتصالك. حاول مرة أخرى.',
+  'Try again':'حاول مجدداً','Guest checkout':'إتمام الشراء كزائر','Your Al Mina account':'حسابك في الميناء',
+  'Your purchases, preferences and everyday essentials.':'مشترياتك وتفضيلاتك واحتياجاتك اليومية.',
+  'Sign in to find previous purchases and manage your preferences. Guest checkout is always available.':'سجّل الدخول للاطلاع على مشترياتك السابقة وإدارة تفضيلاتك. يمكنك دائماً إتمام الشراء كزائر.',
+  'Signed in as':'تم تسجيل الدخول باسم','Sign out':'تسجيل الخروج','Saved products':'المنتجات المحفوظة','Keep shopping':'متابعة التسوق','Buy again':'الشراء مجدداً',
+  'Your purchase history is temporarily unavailable. Your account is still signed in.':'سجل مشترياتك غير متاح مؤقتاً. لا يزال حسابك مسجلاً للدخول.',
+  'Wholesale · ':'الجملة · ','AED':'د.إ','· AED':'· د.إ','· Original order total':'· إجمالي الطلب الأصلي',
+  'No matching online orders yet. Purchases made using your verified email will appear here.':'لا توجد طلبات إلكترونية مطابقة بعد. ستظهر هنا المشتريات المرتبطة ببريدك الإلكتروني الموثّق.',
+  'Your communication preferences':'تفضيلات التواصل معك',
+  'Optional email offers are separate from essential order updates. You can change your choice at any time.':'عروض البريد الإلكتروني اختيارية ومنفصلة عن تحديثات الطلب الأساسية. يمكنك تغيير اختيارك في أي وقت.',
+  'Email me eligible Al Mina offers and product updates':'أرسلوا لي عروض الميناء المؤهلة ومستجدات المنتجات عبر البريد الإلكتروني',
+  'Your session expired. Sign in again to manage saved addresses.':'انتهت جلستك. سجّل الدخول مجدداً لإدارة العناوين المحفوظة.',
+  'You can save up to 10 delivery addresses.':'يمكنك حفظ ما يصل إلى 10 عناوين للتوصيل.',
+  'Unable to update saved addresses. Please try again.':'تعذّر تحديث العناوين المحفوظة. حاول مرة أخرى.',
+  'Delivery address saved to your account.':'تم حفظ عنوان التوصيل في حسابك.','Address removed.':'تم حذف العنوان.',
+  'Delivery addresses':'عناوين التوصيل','Saved securely to your account for faster checkout. Up to 10 addresses.':'تُحفظ بأمان في حسابك لتسريع إتمام الطلب. حتى 10 عناوين.',
+  'Cancel edit':'إلغاء التعديل','Add address':'إضافة عنوان','Loading addresses…':'جارٍ تحميل العناوين…','Default':'الافتراضي','Edit':'تعديل','Remove':'إزالة','Make default':'تعيين كافتراضي',
+  'No saved addresses yet. Add one to make your next checkout quicker.':'لا توجد عناوين محفوظة بعد. أضف عنواناً لتسريع طلبك القادم.',
+  'Edit address':'تعديل العنوان','New delivery address':'عنوان توصيل جديد','Label':'اسم العنوان','Home, Work…':'المنزل، العمل…','Recipient name':'اسم المستلم','Mobile number':'رقم الهاتف المتحرك','Emirate':'الإمارة','City / area':'المدينة / المنطقة','Street address':'عنوان الشارع','Building (optional)':'المبنى (اختياري)','Flat / unit (optional)':'الشقة / الوحدة (اختياري)','Delivery note (optional)':'ملاحظة للتوصيل (اختياري)','Set as my default delivery address':'تعيين هذا العنوان كعنوان التوصيل الافتراضي','Save address':'حفظ العنوان','Cancel':'إلغاء',
+  'This reward is not available. Check your points and eligibility.':'هذه المكافأة غير متاحة. تحقّق من نقاطك وأهليتك.',
+  'Unable to update rewards. Please try again.':'تعذّر تحديث المكافآت. حاول مرة أخرى.','Your care rewards':'مكافآت العناية الخاصة بك',
+  'Rewards are being prepared. Your account and guest checkout are ready to use.':'يجري إعداد المكافآت. يمكنك استخدام حسابك أو إتمام الشراء كزائر.',
+  'off your next eligible shop':'خصم على مشترياتك المؤهلة القادمة','points · Valid':'نقطة · صالحة لمدة','days · Eligible spend from AED':'يوماً · الحد الأدنى للمشتريات المؤهلة بالدرهم',
+  'Voucher ready. Copy its code and apply it at checkout while signed in.':'القسيمة جاهزة. انسخ رمزها واستخدمه عند إتمام الطلب أثناء تسجيل الدخول.',
+  'Exchange points':'استبدال النقاط','Your available vouchers':'قسائمك المتاحة','off':'خصم','Expires':'تنتهي في','· Eligible spend AED':'· المشتريات المؤهلة بالدرهم',
+  'Voucher code copied.':'تم نسخ رمز القسيمة.','Copy the displayed code manually.':'انسخ الرمز الظاهر يدوياً.','Copy code':'نسخ الرمز','Use a voucher at checkout':'استخدام قسيمة عند إتمام الطلب',
+  'Invite someone to Al Mina':'دعوة شخص إلى الميناء','Your invite code:':'رمز دعوتك:','Create my invite code':'إنشاء رمز دعوتي',
+  'Invite code attached. Rewards follow your first eligible completed delivery.':'تم ربط رمز الدعوة. تُحتسب المكافآت بعد إتمام أول توصيل مؤهل.',
+  'Invited by a friend?':'هل دعاك صديق؟','Enter their invite code':'أدخل رمز دعوتهم','Apply invite':'تطبيق الدعوة',
+  'Apply before your first order. Self-referrals do not qualify.':'طبّق الرمز قبل طلبك الأول. الإحالات الذاتية غير مؤهلة.','Programme terms':'شروط البرنامج',
+  'Only reviewed general-sale products in approved categories qualify. Medicines are excluded. Refunds reverse points. Vouchers cannot be exchanged for cash.':'تتأهل فقط منتجات البيع العام التي تمت مراجعتها ضمن الفئات المعتمدة. تُستثنى الأدوية. تُخصم النقاط عند الاسترداد، ولا يمكن استبدال القسائم نقداً.',
+  'Loading your reminders…':'جارٍ تحميل تذكيراتك…','Reminder cancelled.':'تم إلغاء التذكير.','Your basket changed. Please try again.':'تغيّرت سلتك. حاول مرة أخرى.','Your reminders':'تذكيراتك',
+  'Reminders you requested. Each sends once; your marketing preferences are separate.':'تذكيرات طلبتها أنت، ويُرسل كل منها مرة واحدة. تفضيلاتك التسويقية منفصلة.',
+  'Choose a reminder from an eligible product page or save a basket for later.':'اختر تذكيراً من صفحة منتج مؤهل أو احفظ سلة لوقت لاحق.',
+  'Delivery unconfirmed; request again if needed':'لم يتأكد الإرسال؛ اطلب التذكير مجدداً عند الحاجة','Restore available items':'استعادة المنتجات المتوفرة','Cancel reminder':'إلغاء التذكير','Cancel this reminder':'إلغاء هذا التذكير',
+  'This cancels only the requested reminder. It does not affect your orders or other account preferences.':'يُلغي هذا التذكير المطلوب فقط، ولا يؤثر في طلباتك أو تفضيلات حسابك الأخرى.',
+  'Google sign-in':'تسجيل الدخول باستخدام Google','Loading Google sign-in…':'جارٍ تحميل تسجيل الدخول باستخدام Google…',
+  'Connection interrupted. Please try again.':'انقطع الاتصال. حاول مرة أخرى.','Code sent. Check your inbox or spam folder.':'تم إرسال الرمز. تحقّق من البريد الوارد أو البريد غير المرغوب فيه.',
+  'Back to shopping':'العودة للتسوق','Check your email':'تحقّق من بريدك الإلكتروني','Business sign-in':'تسجيل دخول الأعمال','Welcome to Al Mina':'مرحباً بك في الميناء',
+  'Enter your six-digit sign-in code.':'أدخل رمز تسجيل الدخول المكوّن من ستة أرقام.','Use the email address on your pharmacy invitation.':'استخدم البريد الإلكتروني الوارد في دعوة الصيدلية.',
+  'Sign in or create your account.':'سجّل الدخول أو أنشئ حسابك.','Change email':'تغيير البريد الإلكتروني','Loading sign-in options…':'جارٍ تحميل خيارات تسجيل الدخول…',
+  'Sign-in is temporarily unavailable.':'تسجيل الدخول غير متاح مؤقتاً.','Google sign-in could not load.':'تعذّر تحميل تسجيل الدخول باستخدام Google.',
+  'Continue with an email code below.':'تابع باستخدام رمز البريد الإلكتروني أدناه.','Refresh this page to try again, or contact the pharmacy for help.':'حدّث الصفحة للمحاولة مجدداً، أو تواصل مع الصيدلية للمساعدة.',
+  'or continue with email':'أو تابع بالبريد الإلكتروني','Email sign-in':'تسجيل الدخول بالبريد الإلكتروني','Six-digit code':'رمز مكوّن من ستة أرقام','Your code expires in 10 minutes.':'تنتهي صلاحية الرمز بعد 10 دقائق.','Email address':'البريد الإلكتروني','Please wait…':'يرجى الانتظار…','Verify & sign in':'التحقّق وتسجيل الدخول','Continue with email':'المتابعة بالبريد الإلكتروني','Didn’t receive it?':'لم يصلك الرمز؟','Resend code':'إعادة إرسال الرمز',
+  'New here? We’ll create your account when you verify.':'هل أنت جديد؟ سننشئ حسابك عند إتمام التحقق.',
+  'Continue with Google using your invited email. Business access requires pharmacy approval.':'تابع باستخدام Google وبريدك المدعو. يتطلب الوصول للأعمال موافقة الصيدلية.',
+  'Email sign-in is temporarily unavailable. Use Google, or continue as a guest.':'تسجيل الدخول بالبريد غير متاح مؤقتاً. استخدم Google أو تابع كزائر.',
+  'Business sign-in is not available. Please contact the pharmacy; wholesale access requires verified sign-in.':'تسجيل دخول الأعمال غير متاح. تواصل مع الصيدلية؛ يتطلب الوصول للجملة تسجيل دخول موثّقاً.',
+  'Account sign-in is not connected yet. You can still browse, save products on this device and check out as a guest.':'تسجيل الدخول للحساب غير متصل بعد. يمكنك التصفح وحفظ المنتجات على هذا الجهاز وإتمام الشراء كزائر.',
+  'Your email connects your account and purchases.':'يربط بريدك الإلكتروني حسابك بمشترياتك.','Marketing is always optional.':'الرسائل التسويقية اختيارية دائماً.','Read our privacy notice':'اقرأ إشعار الخصوصية','account privacy notice':'إشعار خصوصية الحساب','Continue as a guest':'المتابعة كزائر',
+  'Saved order recovery could not load. Contact the pharmacy before placing another order.':'تعذّر استعادة الطلب المحفوظ. تواصل مع الصيدلية قبل تقديم طلب آخر.',
+  'Sign-in is temporarily unavailable. Please try again.':'تسجيل الدخول غير متاح مؤقتاً. حاول مرة أخرى.','Unable to review the order.':'تعذّرت مراجعة الطلب.',
+  'Complete the delivery details and choose valid case quantities.':'أكمل بيانات التوصيل واختر كميات عبوات صحيحة.',
+  'The order result is uncertain. Retry the saved submission before placing another order.':'لم تتأكد نتيجة الطلب. أعد إرسال الطلب المحفوظ قبل تقديم طلب آخر.',
+  'Checking business access…':'جارٍ التحقق من صلاحية الأعمال…','Wholesale, by invitation.':'الجملة، بالدعوة فقط.',
+  'Sign in with the email address approved by Al Mina Pharmacy. Business access is separate from retail shopping.':'سجّل الدخول بالبريد المعتمد لدى صيدلية الميناء. وصول الأعمال منفصل عن التسوق بالتجزئة.',
+  'Business access':'وصول الأعمال','Sign out failed. Please try again.':'تعذّر تسجيل الخروج. حاول مرة أخرى.','Pharmacy approval required':'موافقة الصيدلية مطلوبة',
+  'Only verified, invited businesses can access trade products and prices. An ordinary customer account does not grant access.':'تتاح منتجات وأسعار الجملة للأعمال الموثّقة والمدعوة فقط. حساب العميل العادي لا يمنح هذا الوصول.',
+  'Accept business invitation':'قبول دعوة الأعمال','Check access again':'التحقق من الوصول مجدداً','Business navigation':'تنقّل الأعمال','Wholesale store':'متجر الجملة','Business account & orders':'حساب الأعمال والطلبات','Retail store':'متجر التجزئة',
+  'Business delivery details applied. Check the address and contact before reviewing your order.':'تم تطبيق بيانات توصيل الأعمال. تحقّق من العنوان وبيانات التواصل قبل مراجعة الطلب.',
+  'Finish your saved order submission':'أكمل إرسال طلبك المحفوظ',
+  'The previous result may be uncertain. Retrying uses the same order key and cannot create a duplicate order.':'قد تكون نتيجة المحاولة السابقة غير مؤكدة. تستخدم إعادة المحاولة مفتاح الطلب نفسه لتجنب إنشاء طلب مكرر.',
+  'Retry saved submission':'إعادة إرسال الطلب المحفوظ','Order received ·':'تم استلام الطلب ·','· Payment on delivery. The pharmacy will confirm fulfilment.':'· الدفع عند التوصيل. ستؤكد الصيدلية تنفيذ الطلب.',
+  'Search your catalogue':'ابحث في كتالوجك','Search your assigned products':'ابحث في المنتجات المخصصة لك','Search':'بحث','Wholesale catalogue':'كتالوج الجملة','Product':'المنتج','Unit price':'سعر الوحدة','Order unit':'وحدة الطلب','Quantity':'الكمية','available':'متوفر','Min':'الحد الأدنى','· multiples of':'· بمضاعفات','· max':'· الحد الأقصى','Quantity for':'الكمية لـ','Quantity for ':'الكمية لـ ','Add minimum quantity for':'إضافة الحد الأدنى للكمية لـ',
+  'No matching trade products. Contact the pharmacy to review your catalogue assignment.':'لا توجد منتجات جملة مطابقة. تواصل مع الصيدلية لمراجعة المنتجات المخصصة لك.','Load more products':'تحميل المزيد من المنتجات','Delivery details':'بيانات التوصيل','Ordering for':'الطلب لصالح',
+  '. Prices follow the pharmacy’s configured VAT policy; review confirms delivery and the final total.':'. تتبع الأسعار سياسة الضريبة المحددة لدى الصيدلية؛ تؤكد المراجعة التوصيل والإجمالي النهائي.',
+  'Contact name':'اسم جهة الاتصال','Delivery note':'ملاحظة التوصيل','Your trade order':'طلب الجملة الخاص بك','Remove ':'إزالة ','Delivery:':'التوصيل:','VAT':'ضريبة القيمة المضافة','Total':'الإجمالي','Place wholesale order':'تأكيد طلب الجملة','Review wholesale order':'مراجعة طلب الجملة',
+  'Payment on delivery. Retail offers and reward vouchers do not apply to trade orders.':'الدفع عند التوصيل. عروض التجزئة وقسائم المكافآت لا تنطبق على طلبات الجملة.',
+  'Business details or orders could not load. Try again.':'تعذّر تحميل بيانات الأعمال أو الطلبات. حاول مجدداً.','More orders could not load. Try again.':'تعذّر تحميل المزيد من الطلبات. حاول مجدداً.','Business account':'حساب الأعمال','Loading business account…':'جارٍ تحميل حساب الأعمال…','Your business details':'بيانات أعمالك','Business type':'نوع النشاط','Trade licence':'الرخصة التجارية','Tax registration number':'رقم التسجيل الضريبي','Delivery address':'عنوان التوصيل','Not recorded':'غير مسجّل',
+  'Contact the pharmacy to update verified business details or catalogue access.':'تواصل مع الصيدلية لتحديث بيانات الأعمال الموثّقة أو الوصول إلى الكتالوج.','Use business delivery details':'استخدام بيانات توصيل الأعمال','Wholesale order history':'سجل طلبات الجملة',
+  'Recorded prices and totals from your business orders. Contact the pharmacy with the order number for fulfilment updates.':'الأسعار والإجماليات المسجّلة لطلبات أعمالك. تواصل مع الصيدلية برقم الطلب لمتابعة التنفيذ.','Delivery AED':'التوصيل بالدرهم','· VAT':'· ضريبة القيمة المضافة','Total AED':'الإجمالي بالدرهم',
+  'No wholesale orders yet. Your business purchases will appear here.':'لا توجد طلبات جملة بعد. ستظهر هنا مشتريات أعمالك.','Load older orders':'تحميل الطلبات الأقدم',
+  "Too many attempts. Please wait before trying again.":"محاولات كثيرة. انتظر قليلاً قبل المحاولة مجدداً.",
+  "This Google account needs an email verification step. Use an email code if available, or contact the pharmacy for help.":"يتطلب حساب Google هذا التحقق بالبريد الإلكتروني. استخدم رمز البريد إن كان متاحاً أو تواصل مع الصيدلية.",
+  "Sign-in could not be completed securely. Refresh this page and try again. If it continues, contact the pharmacy.":"تعذّر إتمام تسجيل الدخول بأمان. حدّث الصفحة وحاول مجدداً. إذا استمرت المشكلة، تواصل مع الصيدلية.",
+  "Google sign-in could not be verified. Please choose your Google account and try again.":"تعذّر التحقق من تسجيل دخول Google. اختر حسابك وحاول مجدداً.",
+  "Your code or session has expired, or the code is incorrect. Please try again.":"انتهت صلاحية الرمز أو الجلسة، أو أن الرمز غير صحيح. حاول مجدداً.",
+  "We could not connect to your account. Please try again.":"تعذّر الاتصال بحسابك. حاول مجدداً.",
+  "expired":"منتهي الصلاحية",
+  "scheduled":"مجدول",
+  "Processing…":"جارٍ المعالجة…",
+  "Work":"العمل",
+  'Business':'النشاط التجاري','Phone':'الهاتف','Contact':'جهة الاتصال','Note':'ملاحظة','Home':'المنزل','Address label':'اسم العنوان',
+  'pending':'قيد الانتظار','confirmed':'مؤكد','dispatched':'تم الإرسال','delivered':'تم التوصيل','cancelled':'ملغى','refunded':'مسترد','sent':'تم الإرسال','active':'نشط','restock':'عودة المخزون','price-drop':'انخفاض السعر','replenishment':'إعادة الشراء','cart':'السلة',
+  'Please sign in with your invited email.':'يرجى تسجيل الدخول ببريدك المدعو.',
+  'Wholesale access is not active for this account. Contact the pharmacy.':'الوصول للجملة غير مفعل لهذا الحساب. تواصل مع الصيدلية.',
+  'Availability, pricing or account details changed. Review again.':'تغيّرت الكميات أو الأسعار أو بيانات الحساب. راجع الطلب مجدداً.',
+  'Check the quantities, case multiples and delivery details.':'تحقّق من الكميات ومضاعفات العبوات وبيانات التوصيل.',
+  'The service is unavailable. Please try again.':'الخدمة غير متاحة. حاول مرة أخرى.',
+};
+
+export function accountText(locale: Locale, text: string): string {
+  if (locale === 'en') return text;
+  const direct = arabicAccountCopy[text] ?? arabicAccountCopy[text.trim()];
+  if (direct) return text.replace(text.trim(), direct.trim());
+  const resend = /^Resend code in (\d+)s$/.exec(text);
+  if (resend) return `إعادة إرسال الرمز بعد ${resend[1]} ثانية`;
+  const added = /^(\d+) available items added\. Unavailable products were skipped\. Current prices apply at checkout\.$/.exec(text);
+  if (added) return `تمت إضافة ${added[1]} من المنتجات المتوفرة. تم تجاوز المنتجات غير المتاحة. تُطبّق الأسعار الحالية عند إتمام الطلب.`;
+  const reward = /^(.+) points · Earn (.+) per AED on eligible delivered purchases\.$/.exec(text);
+  if (reward) return `${reward[1]} نقطة · اكسب ${reward[2]} لكل درهم في المشتريات المؤهلة التي تم توصيلها.`;
+  for (const [prefix, translated] of [['Quantity for ', 'الكمية لـ '], ['Add minimum quantity for ', 'إضافة الحد الأدنى للكمية لـ '], ['Remove ', 'إزالة ']] as const) {
+    if (text.startsWith(prefix)) return translated + text.slice(prefix.length);
+  }
+  return shopText(locale, text);
+}

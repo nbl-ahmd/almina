@@ -28,6 +28,10 @@ test('growth content, authentication and search on disposable replica set',{skip
  const browser={Origin:'http://localhost:3000','Content-Type':'application/json','X-CSRF-Protection':'1'};
  await db.collection('users').insertOne({username:'synthetic-admin',name:'Admin',role:'admin',cities:[],password:await hash('synthetic-password',4)});
  const login=await fetch(origin+'/api/v1/auth/login',{method:'POST',headers:browser,body:JSON.stringify({username:'synthetic-admin',password:'synthetic-password'})});assert.equal(login.status,200);const cookie=login.headers.getSetCookie()[0]!.split(';')[0]!;
+ assert.equal((await fetch(origin+'/api/v1/admin/growth/order-costs',{method:'POST',headers:browser,body:'{}'})).status,401);
+ assert.equal((await fetch(origin+'/api/v1/admin/growth/order-costs',{method:'POST',headers:{...browser,Cookie:cookie,Origin:'https://evil.invalid'},body:'{}'})).status,403);
+ assert.equal((await fetch(origin+'/api/v1/admin/growth/order-costs',{method:'POST',headers:{...browser,Cookie:cookie},body:'{}'})).status,400);
+
  const guestLogout=await fetch(origin+'/api/v1/customers/logout',{method:'POST',headers:browser,body:'{}'});assert.equal(guestLogout.status,204);assert.ok(guestLogout.headers.getSetCookie().some(value=>value.startsWith('almina_customer=')&&value.includes('Expires=')));
  const hostileLogout=await fetch(origin+'/api/v1/customers/logout',{method:'POST',headers:{...browser,Origin:'https://evil.invalid'},body:'{}'});assert.equal(hostileLogout.status,403);
  // GET registration must not shadow these POST routes with a premature 405.

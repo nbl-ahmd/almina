@@ -57,3 +57,4 @@ export * from './serviceability';
 export * from './retention';
 
 export * from "./wholesale";
+export * from './reporting';

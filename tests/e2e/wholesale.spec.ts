@@ -175,3 +175,15 @@ test('product visibility controls submit selected business types and preserve th
  await page.goto(adminOrigin+'/admin/products/new');
  await expect(page.getByRole('combobox',{name:'Show this product to',exact:true})).toHaveValue('all');
 });
+
+for(const width of [360,390,768,1280])test(`Arabic wholesale catalogue preserves names and quantities at ${width}px`,async({page,context})=>{
+ await context.addCookies([{name:'almina_lang',value:'ar',url:'http://127.0.0.1:4710'}]);await page.setViewportSize({width,height:900});
+ await page.route('**/api/customer/me',route=>route.fulfill({json:{data:user}}));
+ await page.route('**/api/wholesale/catalog',route=>route.fulfill({json:{data:{businessName:'Fixture Salon',typeName:'Salon',products:[product],nextCursor:null}}}));
+ const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('/wholesale');
+ await expect(page.locator('.storefront-shell')).toHaveAttribute('dir','rtl');await expect(page.getByRole('heading',{name:'Fixture Salon',exact:true})).toBeVisible();
+ await expect(page.getByRole('link',{name:'تواصل مع الصيدلية',exact:true})).toBeVisible();
+ await page.getByRole('spinbutton',{name:'الكمية لـ Everyday hand wash'}).fill('2');
+ await expect(page.getByRole('spinbutton',{name:'الكمية لـ Everyday hand wash'})).toHaveValue('2');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);
+});

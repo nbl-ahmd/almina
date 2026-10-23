@@ -1,3 +1,4 @@
+import { OrderCosts } from './order-costs';
 import { feedIssues } from '../../lib/catalog/feed';
 import { readProduct } from '../../lib/catalog/model';
 import { productImages } from '../../lib/server/catalog';
@@ -158,13 +159,6 @@ export function ProductForm({
       type: "textarea",
       value: display(product?.description ?? ""),
     },
-    {
-      name: "images",
-      label: edit ? "Replace images (optional)" : "Product images",
-      type: "file",
-      multiple: true,
-      hint: "Up to five images, 5 MB each.",
-    },
   ];
   fields.push(
     {name:'familyKey',label:'Product family key (optional)',value:display(product?.familyKey??''),hint:'Same key for verified size/flavour/pack variants. Clear all family fields to keep this product standalone.'},
@@ -221,6 +215,7 @@ export function ProductForm({
     <>
     {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h2>{channel==='google'?'Google':'Meta'}</h2>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
     {edit && product.catalogManaged===true ? <section className="admin-panel"><h2>Catalog review</h2><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{storePublicationIssues(product).length?<ul>{storePublicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Store publication checks complete. Publishing is a separate action.</p>}{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).length ? <><h3>Photo and catalogue improvements</h3><p>A missing photo uses a labelled placeholder in the store. Advertising feeds still need an actual authorized photo and verified brand.</p><ul>{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).map(issue=><li key={issue}>{issue}</li>)}</ul></> : null}</section>:null}
+    {!edit ? <p className="admin-panel">Save product details first. You will then add photos using the same photo editor used for existing products. Photo retries do not resubmit product details or stock.</p> : null}
     <AdminForm
       path={edit ? `products/${display(product._id)}` : "products"}
       method={edit ? "PUT" : "POST"}
@@ -259,6 +254,8 @@ export function OrderDetail({
           </>
         }
       />
+      {admin && order.schemaVersion===2?<OrderCosts key={id} orderId={id}/>:null}
+
       {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
       <div className="admin-grid admin-grid--2">
         <Card

@@ -16,7 +16,7 @@ export async function commerceEventRequest(request: Request, options: {
     const input = (async () => {
       const chunks: Uint8Array[] = []; let bytes = 0;
       while (true) { const part = await reader.read(); if (part.done) break; bytes += part.value.length;
-        if (bytes > 128) { await reader.cancel(); return undefined; } chunks.push(part.value); }
+        if (bytes > 192) { await reader.cancel(); return undefined; } chunks.push(part.value); }
       try { return commerceEventSchema.safeParse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)))); }
       catch { return undefined; }
     })();

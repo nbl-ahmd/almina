@@ -1,3 +1,4 @@
+import { resolveLegacyMapping,legacyPath } from '../modules/media/legacy-migration.js';
 import { installWholesaleRoutes } from '../modules/wholesale/routes.js';
 import { homepageCampaigns, reviewCampaign } from '../modules/growth/campaigns.js';
 import { campaignReviewSchema, legacyGrowthPageSchema } from '@almina/contracts';
@@ -18,6 +19,8 @@ import { customerAuthOptions,customerCookie,customerToken,requestEmailCode,verif
 import { growthPageSchema, pharmacyProfileSchema, growthKinds, growthSlug } from '@almina/contracts';
 import { growthPages, growthPage, saveGrowthPage, saveLegacyGrowthPage, pharmacyProfile, savePharmacyProfile } from '../modules/growth/repository.js';
 import { z as growthZ } from 'zod';
+import { orderCostInputSchema,orderCostViewSchema,growthMetricsResponseSchema } from '@almina/contracts';
+import { orderCosts,recordOrderCosts } from '../modules/growth/economics.js';
 import { growthMetrics } from '../modules/growth/metrics.js';
 import { growthProductOptions,growthCategoryOptions } from '../modules/growth/selectors.js';
 import { Router, type Request, type RequestHandler } from 'express';
@@ -81,6 +84,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     if (!metrics) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
     send(res, operationsSnapshotSchema, await operationsSnapshot(await getDb(), metrics));
   });
+  read('/catalog/legacy-media',async(req,res)=>{const query=validate(growthZ.object({path:growthZ.string().max(240).regex(legacyPath)}).strict(),req.query);send(res,growthZ.object({target:growthZ.string().nullable()}),{target:await resolveLegacyMapping(await getDb(),query.path,process.env.CLOUDINARY_CLOUD_NAME)});});
   read('/catalog/products', async (req, res) => {
     send(res, pageSchema(productDtoSchema), await catalog.products(validate(catalogQuerySchema, req.query)));
   });
@@ -243,7 +247,10 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   read('/admin/growth/reviews',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);const rows=await(await getDb()).collection('product_reviews').find({moderation:'pending'},{maxTimeMS:3000,projection:{customerId:0,orderId:0}}).sort({createdAt:1}).limit(50).toArray();send(res,growthZ.array(growthZ.object({_id:growthZ.string(),productId:growthZ.string(),rating:growthZ.number(),displayName:growthZ.string(),title:growthZ.string(),body:growthZ.string(),verifiedPurchase:growthZ.literal(true),moderation:growthZ.literal('pending'),createdAt:growthZ.coerce.date()})),rows);});
   router.post('/admin/growth/review',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,growthZ.object({status:growthZ.enum(['approved','rejected'])}),await moderateReview(await getDb(),req.body,user.id));});
   router.all('/admin/growth/review',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
-  read('/admin/growth/metrics',async(req,res)=>{await identity(req,true);const input=validate(growthZ.object({days:growthZ.coerce.number().int().refine(value=>[7,30,90].includes(value))}).strict(),req.query);const result=await growthMetrics(await getDb(),input);send(res,growthZ.object({days:growthZ.number(),from:growthZ.string(),to:growthZ.string(),current:growthZ.object({orders:growthZ.number(),revenueMinor:growthZ.number(),averageOrderMinor:growthZ.number(),completed:growthZ.number(),cancelled:growthZ.number()}),previous:growthZ.object({orders:growthZ.number(),revenueMinor:growthZ.number(),averageOrderMinor:growthZ.number(),completed:growthZ.number(),cancelled:growthZ.number()}),daily:growthZ.array(growthZ.object({date:growthZ.string(),orders:growthZ.number(),revenueMinor:growthZ.number()})),topProducts:growthZ.array(growthZ.object({productId:growthZ.string(),name:growthZ.string(),quantity:growthZ.number(),revenueMinor:growthZ.number()}))}),result);});
+  router.get('/admin/growth/order-costs',async(req,res)=>{noBody(req);await identity(req,true);const input=validate(growthZ.object({orderId:growthZ.string().regex(/^[a-f0-9]{24}$/i)}).strict(),req.query);send(res,orderCostViewSchema,await orderCosts(await getDb(),input.orderId));});
+  router.post('/admin/growth/order-costs',async(req,res)=>{verifyBrowserMutation(req,origins);const actor=await identity(req,true);validate(emptyQuerySchema,req.query);send(res,orderCostViewSchema,await recordOrderCosts(await getDb(),validate(orderCostInputSchema,req.body),actor.id));});
+  router.all('/admin/growth/order-costs',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  read('/admin/growth/metrics',async(req,res)=>{await identity(req,true);const input=validate(growthZ.object({days:growthZ.coerce.number().int().refine(value=>[7,30,90].includes(value))}).strict(),req.query);const result=await growthMetrics(await getDb(),input);send(res,growthMetricsResponseSchema,result);});
   router.get('/admin/growth/rewards',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,rewardsPolicySchema,await rewardsPolicy(await getDb()));});
   router.post('/admin/growth/rewards',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,rewardsPolicySchema,await saveRewardsPolicy(await getDb(),req.body,user.id));});
   router.all('/admin/growth/rewards',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});

@@ -2,7 +2,7 @@ import { commerceEvents, type CommerceEvent } from '@almina/contracts/commerce-e
 export type Choice = 'allowed' | 'declined' | 'unset';
 export const consentKey = 'almina.optional-usage.v1';
 export function createCommerceReporter(options: {
-  allowed: () => boolean; send: (body: { event: CommerceEvent; consent: true }, signal: AbortSignal) => Promise<unknown>; now?: () => number;
+  allowed: () => boolean; send: (body: { event: CommerceEvent; consent: true; campaign?: string }, signal: AbortSignal) => Promise<unknown>; now?: () => number;
 }) {
   let enabled = false, minute = -1, sent = 0;
   const active = new Set<AbortController>();
@@ -11,7 +11,7 @@ export function createCommerceReporter(options: {
       enabled = value;
       if (!value) { for (const request of active) request.abort(); active.clear(); }
     },
-    record(event: CommerceEvent) {
+    record(event: CommerceEvent, campaign?: string) {
       try {
         if (!enabled || !commerceEvents.includes(event) || !options.allowed() || active.size >= 2) return;
         const current = Math.floor((options.now ?? Date.now)() / 60000);
@@ -22,7 +22,7 @@ export function createCommerceReporter(options: {
         // Reporting never blocks a cart/order action, retries, or retains a payload queue.
         void Promise.resolve().then(() => {
           if (controller.signal.aborted || !enabled || !options.allowed()) return;
-          return options.send({ event, consent: true }, controller.signal);
+          return options.send({ event, consent: true, ...(campaign ? { campaign } : {}) }, controller.signal);
         })
           .catch(() => undefined).finally(() => { clearTimeout(timer); active.delete(controller); });
       } catch { /* Privacy/storage/transport failures cannot affect commerce. */ }

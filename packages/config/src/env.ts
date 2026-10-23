@@ -59,6 +59,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
     CATALOG_FEEDS_ENABLED: z.enum(['true','false']).default('false').transform(value=>value==='true'),
     CHECKOUT_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     COMMERCE_TELEMETRY_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+    LEGACY_MEDIA_FALLBACK_ENABLED: z.enum(['true','false']).default('true').transform(value=>value==='true'),
     LEGACY_API_ORIGIN: originSchema,
     STOREFRONT_REDIRECTS_VERIFIED: z.enum(['true', 'false']).default('true').transform(value => value === 'true'),
     STOREFRONT_PRODUCT_REPLACEMENTS: z.string().default('{}').transform((value, ctx) => {
@@ -77,6 +78,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
     CHECKOUT_ENABLED: source.CHECKOUT_ENABLED,
     COMMERCE_TELEMETRY_ENABLED: source.COMMERCE_TELEMETRY_ENABLED,
     CLOUDINARY_CLOUD_NAME: source.CLOUDINARY_CLOUD_NAME,
+    LEGACY_MEDIA_FALLBACK_ENABLED: source.LEGACY_MEDIA_FALLBACK_ENABLED,
     STOREFRONT_REDIRECTS_VERIFIED: source.STOREFRONT_REDIRECTS_VERIFIED,
     STOREFRONT_PRODUCT_REPLACEMENTS: source.STOREFRONT_PRODUCT_REPLACEMENTS,
     LEGACY_API_ORIGIN: source.LEGACY_API_ORIGIN ?? source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
