@@ -13,3 +13,8 @@ test('only an explicitly local development runtime permits Next injected style e
     }
   }
 });
+
+test('email designer alone can load GrapesJS runtime styles in a compiled build', () => {
+  assert.equal(stylesheetPolicy('request-nonce', 'production', 'production', true), "style-src 'self' 'unsafe-inline'");
+  assert.equal(stylesheetPolicy('request-nonce', 'production', 'production'), "style-src 'self' 'nonce-request-nonce'");
+});

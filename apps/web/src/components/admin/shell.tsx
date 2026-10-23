@@ -55,6 +55,7 @@ const groups: NavGroup[] = [
   {
     label: 'Engagement',
     items: [
+      { id: 'marketing', label: 'Email marketing', href: '/admin/marketing', icon: ChatBubbleLeftRightIcon },
       { id: 'growth', label: 'Website & growth', href: '/admin/growth', icon: ChartBarSquareIcon },
       { id: 'whatsapp', label: 'WhatsApp', href: '/admin/whatsapp', icon: ChatBubbleLeftRightIcon },
       { id: 'notifications', label: 'Notifications', href: '/admin/notifications', icon: BellIcon },

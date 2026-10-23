@@ -119,6 +119,7 @@ export function createApp(options: {
   });
   installEmailRoutes(app, options.getDb ?? (() => Promise.reject(new HttpError(503, 'SERVICE_UNAVAILABLE'))));
   app.use('/api/v1/admin/growth/page',express.json({limit:'64kb',strict:true,inflate:false}));
+  app.use('/api/v1/admin/marketing',express.json({limit:'500kb',strict:true,inflate:false}));
   app.use(express.json({ limit: '16kb', strict: true, inflate: false }));
   app.all(routes, (_req, res, next) => {
     res.set('Allow', 'GET, HEAD'); next(new HttpError(405, 'METHOD_NOT_ALLOWED'));

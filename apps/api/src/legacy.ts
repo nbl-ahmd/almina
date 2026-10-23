@@ -42,3 +42,5 @@ export * from './modules/catalog/export.js';
 export { retentionWorker } from './modules/growth/retention.js';
 
 export { prepareEmailStorage } from './modules/notifications/storage.js';
+
+export {marketingWorker} from './modules/marketing/worker.js';

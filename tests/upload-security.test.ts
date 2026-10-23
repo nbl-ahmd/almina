@@ -51,7 +51,7 @@ test('all real legacy image mutation routes reject forged content before databas
   const app = createLegacyApp({ origins: [origin], development: true,
     auth: { authenticate: async () => ({ id: 'a'.repeat(24), role: 'admin', cities: [] }) } }) as Express;
   await serve(app, async url => {
-    for (const [path, field, method] of [['/api/media/products/' + 'b'.repeat(24), 'images', 'POST'], ['/api/products', 'images', 'POST'], ['/api/products/' + 'b'.repeat(24), 'images', 'PUT'],
+    for (const [path, field, method] of [['/api/media/products/' + 'b'.repeat(24), 'images', 'POST'], ['/api/media/marketing', 'image', 'POST'], ['/api/products', 'images', 'POST'], ['/api/products/' + 'b'.repeat(24), 'images', 'PUT'],
       ['/api/category', 'image', 'POST'], ['/api/category/' + 'a'.repeat(24), 'image', 'PUT'],
       ['/api/category/disable/' + 'a'.repeat(24), 'image', 'PUT'],
       ['/api/banners', 'image', 'POST'], ['/api/whatsapp/image', 'image', 'POST']] as const) {

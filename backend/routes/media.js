@@ -12,4 +12,13 @@ router.post('/products/:id', upload.array('images', 5), validateImageUploads, as
   res.json(await require('../commerce/dist/service.cjs').replaceCloudinaryImages(db, req.params.id, req.identity.id, req.body, files,
     req.app.locals.cloudinaryUploads, req.app.locals.mediaTransport));
 });
+router.post('/marketing', upload.single('image'), validateImageUploads, async (req,res)=>{
+  if(!req.file||Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');
+  if(!req.app.locals.cloudinaryUploads)throw fail(503,'SERVICE_UNAVAILABLE');
+  const domain=require('../commerce/dist/service.cjs'),db=await req.app.locals.getCommerceDb();
+  const id=require('node:crypto').randomUUID(),bytes=await prepareProductImage(req.file.buffer);
+  const image=await domain.signedRasterUpload(req.app.locals.cloudinaryUploads,bytes,`almina/products/${id}-0`,AbortSignal.timeout(15000),req.app.locals.mediaTransport);
+  await db.collection('marketing_assets').insertOne({_id:id,image,actor:req.identity.id,createdAt:new Date()});
+  res.json({image});
+});
 module.exports = router;

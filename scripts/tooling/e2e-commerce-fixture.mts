@@ -55,6 +55,7 @@ const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
+app.post('/__fixture/marketing-product', async (_req,res,next)=>{try{await db.collection('products').updateOne({_id:new ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb')},{$set:{contentReviewed:true,productType:'general'}});res.json({ready:true});}catch(error){next(error);}});
 app.post('/__fixture/customer-challenge', async (_req,res,next)=>{try{let code='';const challenge=await requestEmailCode(db,{email:'shopper@example.invalid'},async(_email,value)=>{code=value;});res.json({...challenge,code});}catch(error){next(error);}});
 app.post('/__fixture/families', async (_req, res, next) => {
   try {
