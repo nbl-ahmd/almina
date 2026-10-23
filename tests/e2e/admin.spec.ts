@@ -124,6 +124,13 @@ test('admin order update reaches the real writer and prevents cancellation after
   await page.getByRole('button', { name: 'Cancel order', exact: true }).click();
   await expect(page.locator('main')).toContainText('This record has changed or the action is unavailable.');
   const result = await state(request); expect(result.orders[0]!.status).toBe('dispatched'); expect(result.stock).toBe(2);
+  await page.goto(adminOrigin+'/admin/growth');
+  await page.getByRole('button',{name:'Order report',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Recorded contribution',exact:true})).toBeVisible();
+  await expect(page.getByText('1 of 1 dispatched orders have complete cost and tax records.',{exact:false})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Repeat purchase cohorts',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Consented activity',exact:true})).toBeVisible();
+
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page).toHaveURL(adminOrigin + '/admin/login');
   await expect(page.getByLabel('Username', { exact: true })).toBeVisible();
