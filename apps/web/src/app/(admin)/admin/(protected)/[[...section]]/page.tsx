@@ -20,7 +20,6 @@ import {
   type Section,
 } from "../../../../../lib/admin/policy";
 import { getWebEnvironment } from "../../../../../lib/server/env";
-import { adminFormClass } from '../../../../../lib/admin/styles';
 import {
   Badge,
   Card,
@@ -43,7 +42,7 @@ import {
 } from "../../../../../components/admin/forms";
 import { Command } from "../../../../../components/admin/controls";
 type Query = Record<string, string | string[] | undefined>;
-const formPanel = `${adminFormClass} admin-form-panel`;
+const formPanel = 'admin-form-panel';
 function pagination(section: string, query: Query, length: number) {
   const offset = Number(query.offset ?? 0);
   const link = (value: number) =>
@@ -223,12 +222,13 @@ export default async function AdminPage({
             </Link>
           </p>
         ) : null}
-        <form className={formPanel}>
+        <form className={formPanel} role="search">
           <label htmlFor="q">
             Search products
             <input
               id="q"
               name="q"
+              type="search"
               defaultValue={display(query.q ?? "")}
               maxLength={80}
               placeholder="Product name or PD number"
@@ -247,7 +247,12 @@ export default async function AdminPage({
               <option value="disabled">Disabled</option>
             </select>
           </label>
-          <button>Apply filters</button>
+          <div className="admin-actions">
+            <button>Apply filters</button>
+            <Link className="admin-btn--secondary" href="/admin/products">
+              Reset
+            </Link>
+          </div>
         </form>
         <Table
           caption="Product inventory"
@@ -334,16 +339,23 @@ export default async function AdminPage({
                   label: "Category name",
                   required: true,
                   value: display(item.name),
+                  section: "Category",
+                  sectionDescription: "How this category is labelled in navigation and product filters.",
                 },
                 {
                   name: "color",
                   label: "Color (R, G, B)",
                   value: display(item.color),
+                  section: "Category",
+                  placeholder: "13, 107, 87",
+                  hint: "Three numbers from 0 to 255, separated by commas.",
                 },
                 {
                   name: "image",
                   label: "Replace image (optional)",
                   type: "file",
+                  section: "Media",
+                  hint: "Square artwork works best. Leave empty to keep the current image.",
                 },
               ]}
             />
@@ -364,11 +376,19 @@ export default async function AdminPage({
             path="category"
             multipart
             fields={[
-              { name: "name", label: "Category name", required: true },
+              {
+                name: "name",
+                label: "Category name",
+                required: true,
+                section: "Category",
+                sectionDescription: "Create the label first; products can be assigned immediately.",
+              },
               {
                 name: "image",
                 label: "Category image (optional)",
                 type: "file",
+                section: "Media",
+                hint: "Square artwork works best. The image is shown in category navigation.",
               },
             ]}
           />
@@ -431,13 +451,20 @@ export default async function AdminPage({
             path="banners"
             multipart
             fields={[
-              { name: "name", label: "Banner name", required: true },
+              {
+                name: "name",
+                label: "Banner name",
+                required: true,
+                section: "Banner",
+                sectionDescription: "Internal name used to find this artwork later.",
+              },
               {
                 name: "link",
                 label: "Destination URL or storefront path",
                 type: "text",
                 hint: "Use a storefront path such as /collections/skin-essentials or a full HTTPS URL.",
                 required: true,
+                section: "Banner",
               },
               {
                 name: "image",
@@ -445,6 +472,7 @@ export default async function AdminPage({
                 type: "file",
                 hint: "Use wide artwork, for example 1600 × 600 pixels. Keep text readable on mobile. The full image is shown without cropping; the newest eight banners appear in the homepage carousel.",
                 required: true,
+                section: "Artwork",
               },
             ]}
           />
@@ -569,13 +597,25 @@ export default async function AdminPage({
             path="auth/signup"
             label="Create staff account"
             fields={[
-              { name: "name", label: "Full name", required: true },
-              { name: "username", label: "Username", required: true },
+              {
+                name: "name",
+                label: "Full name",
+                required: true,
+                section: "Account",
+                sectionDescription: "The person who will sign in to administration.",
+              },
+              {
+                name: "username",
+                label: "Username",
+                required: true,
+                section: "Account",
+              },
               {
                 name: "password",
                 label: "Password (at least 12 characters)",
                 type: "password",
                 required: true,
+                section: "Account",
               },
               {
                 name: "role",
@@ -584,11 +624,16 @@ export default async function AdminPage({
                   { value: "user", label: "Staff" },
                   { value: "admin", label: "Administrator" },
                 ],
+                section: "Access",
+                sectionDescription: "Staff see orders for their cities only. Administrators manage the full store.",
               },
               {
                 name: "cities",
                 label: "Assigned cities",
-                hint: "Comma-separated exact city names. Unassigned staff cannot access orders.",
+                kind: "tags",
+                placeholder: "City A, City B",
+                hint: "Separate exact city names with commas. Unassigned staff cannot access orders.",
+                section: "Access",
               },
             ]}
           />

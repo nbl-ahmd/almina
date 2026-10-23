@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { display, record, rows } from './views';
-import { adminFormClass } from '../../lib/admin/styles';
 import { Badge, Card, Note, PageHeader } from './ui';
 
 export function NeedsAction({ data, q, reason, status }: { data: unknown; q?: string; reason?: string; status?: string }) {
@@ -23,7 +22,7 @@ export function NeedsAction({ data, q, reason, status }: { data: unknown; q?: st
         <p><strong>Medicine classification needs pharmacy review.</strong> Confirm the exact product, strength and pack from its label. Choose an OTC classification only after verification. Prescription products stay unpublished until a suitable dispensing workflow is available.</p>
       </Note>
     </div>
-    <form className={`${adminFormClass} admin-form-panel`}>
+    <form className="admin-form-panel">
       <label>Search name or product ID<input name="q" defaultValue={q} maxLength={80} placeholder="e.g. product name or PD number" /></label>
       <label>Listing status<select name="status" defaultValue={status ?? 'drafts'}><option value="drafts">Unpublished / drafts</option><option value="published">Published</option><option value="all">All products</option></select></label>
       <label>Action needed<select name="reason" defaultValue={reason ?? 'all'}>

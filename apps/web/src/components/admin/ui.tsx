@@ -38,34 +38,48 @@ export function Card({
   title,
   description,
   aside,
+  icon,
   flush = false,
+  className,
   children,
 }: {
   title?: ReactNode;
   description?: ReactNode;
   aside?: ReactNode;
+  icon?: ReactNode;
   flush?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   const head = title || aside ? (
     <div className="admin-card__head">
       <div>
-        {title ? <h2>{title}</h2> : null}
+        {title ? (
+          <h2>
+            {icon ? (
+              <span className="admin-card__title-icon" aria-hidden="true">
+                {icon}
+              </span>
+            ) : null}
+            {title}
+          </h2>
+        ) : null}
         {description ? <p className="admin-card__hint">{description}</p> : null}
       </div>
       {aside ? <div className="admin-actions">{aside}</div> : null}
     </div>
   ) : null;
+  const classes = `admin-card${flush ? ' admin-card--flush' : ''}${className ? ` ${className}` : ''}`;
   if (flush) {
     return (
-      <section className="admin-card admin-card--flush" data-motion="rise">
+      <section className={classes} data-motion="rise">
         {head}
         {children}
       </section>
     );
   }
   return (
-    <section className="admin-card" data-motion="rise">
+    <section className={classes} data-motion="rise">
       {head}
       {description && !title ? (
         <p className="admin-card__hint">{description}</p>

@@ -177,7 +177,18 @@ export async function AdminDashboard({ user }: { user: Identity }) {
             ? 'Recent orders within your current permissions. Figures reflect the single most recent order you can access unless stated otherwise.'
             : `Recent orders within your current permissions. Figures are based on the ${recent.length} most recent orders you can access unless stated otherwise.`
         }
-        actions={<Link href="/admin/orders">Open orders</Link>}
+        actions={
+          <>
+            <Link className="admin-btn--secondary" href="/admin/orders">
+              Open orders
+            </Link>
+            {admin ? (
+              <Link className="admin-btn--primary" href="/admin/products/new">
+                Create product
+              </Link>
+            ) : null}
+          </>
+        }
       />
 
       <StatGrid>
@@ -281,36 +292,36 @@ function RecentOrders({ orders }: { orders: Record<string, unknown>[] }) {
     );
   return (
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recent orders">
-      <table>
+      <table role="table">
         <caption>Recent orders</caption>
-        <thead>
-          <tr>
-            <th scope="col">Order</th>
-            <th scope="col">Customer</th>
-            <th scope="col">City</th>
-            <th scope="col" className="admin-num">Total (AED)</th>
-            <th scope="col">Status</th>
-            <th scope="col">Received</th>
-            <th scope="col">Actions</th>
+        <thead role="rowgroup">
+          <tr role="row">
+            <th scope="col" role="columnheader">Order</th>
+            <th scope="col" role="columnheader">Customer</th>
+            <th scope="col" role="columnheader">City</th>
+            <th scope="col" role="columnheader" className="admin-num">Total (AED)</th>
+            <th scope="col" role="columnheader">Status</th>
+            <th scope="col" role="columnheader">Received</th>
+            <th scope="col" role="columnheader">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {orders.map((order, index) => {
             const customer = record(order.customer);
             const status = display(order.status);
             return (
-              <tr key={display(order._id ?? index)}>
-                <td>{display(order.orderId)}{order.channel==='wholesale'?<span className="mt-1 block text-xs font-semibold">Wholesale</span>:null}</td>
-                <td>{display(customer.name)}</td>
-                <td>{display(customer.city)}</td>
-                <td className="admin-num">{display(customer.totalAmount)}</td>
-                <td>
+              <tr key={display(order._id ?? index)} role="row">
+                <td role="cell">{display(order.orderId)}{order.channel==='wholesale'?<span className="mt-1 block text-xs font-semibold">Wholesale</span>:null}</td>
+                <td role="cell" data-label="Customer">{display(customer.name)}</td>
+                <td role="cell" data-label="City">{display(customer.city)}</td>
+                <td role="cell" data-label="Total (AED)" className="admin-num">{display(customer.totalAmount)}</td>
+                <td role="cell" data-label="Status">
                   <Badge tone={orderStatusTone(status)} dot>
                     {status}
                   </Badge>
                 </td>
-                <td>{display(order.createdAt)}</td>
-                <td>
+                <td role="cell" data-label="Received">{display(order.createdAt)}</td>
+                <td role="cell" data-label="Actions">
                   <div className="admin-row-actions">
                     <Link href={`/admin/orders/${display(order._id)}`}>
                       Open order {display(order.orderId)}

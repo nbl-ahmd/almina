@@ -58,28 +58,35 @@ export function Table({
       role="region"
       aria-label={caption}
     >
-      <table>
+      <table role="table">
         <caption>{caption}</caption>
-        <thead>
-          <tr>
+        <thead role="rowgroup">
+          <tr role="row">
             {columns.map((column) => (
               <th
                 scope="col"
+                role="columnheader"
                 key={column.key}
                 className={column.align === "end" ? "admin-num" : undefined}
               >
                 {column.label}
               </th>
             ))}
-            {actions ? <th scope="col">Actions</th> : null}
+            {actions ? (
+              <th scope="col" role="columnheader">
+                Actions
+              </th>
+            ) : null}
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {data.map((row, index) => (
-            <tr key={display(row._id ?? index)}>
+            <tr key={display(row._id ?? index)} role="row">
               {columns.map((column) => (
                 <td
                   key={column.key}
+                  role="cell"
+                  data-label={column.label}
                   className={column.align === "end" ? "admin-num" : undefined}
                 >
                   {column.render
@@ -95,15 +102,18 @@ export function Table({
                 </td>
               ))}
               {actions ? (
-                <td>
+                <td role="cell" data-label="Actions">
                   <div className="admin-row-actions">{actions(row)}</div>
                 </td>
               ) : null}
             </tr>
           ))}
           {!data.length ? (
-            <tr>
-              <td colSpan={columns.length + (actions ? 1 : 0)}>
+            <tr role="row">
+              <td
+                role="cell"
+                colSpan={columns.length + (actions ? 1 : 0)}
+              >
                 <div className="admin-empty">
                   <p className="admin-empty__title">
                     {empty?.title ?? "No records found."}
@@ -128,88 +138,336 @@ export function ProductForm({
   selectedCategory?: string | undefined;
 }) {
   const edit = !!product;
+  const section = (
+    title: string,
+    description: string,
+    list: Field[],
+    advanced = false,
+  ): Field[] =>
+    list.map((field) => ({
+      ...field,
+      section: title,
+      sectionDescription: description,
+      ...(advanced ? { advanced: true } : {}),
+    }));
   const fields: Field[] = [
-    {
-      name: "name",
-      label: "Product name",
-      required: true,
-      value: display(product?.name ?? ""),
-    },
-    {
-      name: "price",
-      label: "Price (AED)",
-      type: "number",
-      min: 0,
-      step: "0.01",
-      required: true,
-      value: display(product?.price ?? ""),
-    },
-    {
-      name: "stock",
-      label: "Stock quantity",
-      type: "number",
-      min: 0,
-      step: "1",
-      required: true,
-      value: display(product?.stock ?? ""),
-    },
-    {
-      name: "description",
-      label: "Description",
-      type: "textarea",
-      value: display(product?.description ?? ""),
-    },
+    ...section(
+      "Product details",
+      "The name, brand and copy customers see on the product page.",
+      [
+        {
+          name: "name",
+          label: "Product name",
+          required: true,
+          value: display(product?.name ?? ""),
+          span: "full",
+        },
+        { name: "brand", label: "Brand", value: display(product?.brand ?? "") },
+        {
+          name: "manufacturer",
+          label: "Manufacturer",
+          value: display(product?.manufacturer ?? ""),
+        },
+        {
+          name: "summary",
+          label: "Short summary",
+          value: display(product?.summary ?? ""),
+          span: "full",
+          hint: "One line used in listings. Keep claims factual and specific to the pack.",
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          value: display(product?.description ?? ""),
+          rows: 5,
+        },
+        {
+          name: "ingredients",
+          label: "Ingredients / materials",
+          type: "textarea",
+          value: display(product?.ingredients ?? ""),
+        },
+        {
+          name: "usage",
+          label: "Usage information",
+          type: "textarea",
+          value: display(product?.usage ?? ""),
+        },
+        {
+          name: "warnings",
+          label: "Warnings",
+          type: "textarea",
+          value: display(product?.warnings ?? ""),
+        },
+        {
+          name: "storage",
+          label: "Storage",
+          type: "textarea",
+          value: display(product?.storage ?? ""),
+        },
+      ],
+    ),
+    ...section(
+      "Pricing & stock",
+      "Prices are VAT-inclusive AED amounts. The server recalculates order totals.",
+      [
+        {
+          name: "price",
+          label: "Price (AED)",
+          type: "number",
+          min: 0,
+          step: "0.01",
+          required: true,
+          value: display(product?.price ?? ""),
+          prefix: "AED",
+        },
+        {
+          name: "stock",
+          label: "Stock quantity",
+          type: "number",
+          min: 0,
+          step: "1",
+          required: true,
+          value: display(product?.stock ?? ""),
+          suffix: "units",
+        },
+        {
+          name: "salePrice",
+          label: "Sale price (AED, optional)",
+          type: "number",
+          min: 0,
+          step: "0.01",
+          value: product?.salePrice == null ? "" : display(product.salePrice),
+          hint: "Required when sale is enabled; cannot exceed the regular price.",
+          prefix: "AED",
+        },
+        ...(edit ? [{
+          name: "sale",
+          label: "On sale",
+          value: product?.sale === true ? "true" : "false",
+          options: [
+            { value: "false", label: "No" },
+            { value: "true", label: "Yes" },
+          ],
+        }] as Field[] : []),
+      ],
+    ),
+    ...section(
+      "Catalogue",
+      "Classification, identifiers and the storefront category.",
+      [
+        ...(edit
+          ? []
+          : ([
+              {
+                name: "category",
+                label: "Category",
+                required: true,
+                value: selectedCategory,
+                options: categories.map((category) => ({
+                  value: display(category._id),
+                  label: display(category.name),
+                })),
+                hint: "Products stay in this category until moved.",
+              },
+            ] as Field[])),
+        ...(!edit ? [{
+          name: "barcode",
+          label: "Barcode (optional)",
+          hint: "An ERP barcode is not automatically a verified GTIN.",
+        }] : []),
+        {
+          name: "gtin",
+          label: "Verified GTIN (optional)",
+          value: display(product?.gtin ?? ""),
+        },
+        {
+          name: "mpn",
+          label: "Manufacturer part number (optional)",
+          value: display(product?.mpn ?? ""),
+        },
+        { name: "saleUnit", label: "Saleable unit", value: display(product?.saleUnit ?? "") },
+        { name: "packLabel", label: "Pack / specification", value: display(product?.packLabel ?? "") },
+        { name: "productForm", label: "Product form", value: display(product?.productForm ?? "") },
+        {
+          name: "strength",
+          label: "Strength (display only)",
+          value: display(product?.strength ?? ""),
+        },
+        {
+          name: "productType",
+          label: "Product classification",
+          value: display(product?.productType ?? ""),
+          options: [
+            { value: "", label: "Not reviewed" },
+            { value: "unreviewed", label: "Unreviewed" },
+            { value: "general", label: "General sale" },
+            { value: "otc", label: "OTC medicine" },
+            { value: "prescription", label: "Prescription" },
+          ],
+          kind: "segmented",
+          span: "full",
+        },
+        {
+          name: "condition",
+          label: "Item condition",
+          value: display(product?.condition ?? ""),
+          options: [
+            { value: "", label: "Not set" },
+            { value: "new", label: "New" },
+            { value: "used", label: "Used" },
+            { value: "refurbished", label: "Refurbished" },
+          ],
+          kind: "segmented",
+        },
+        {
+          name: "identifierStatus",
+          label: "Manufacturer identifier status",
+          value: display(product?.identifierStatus ?? ""),
+          options: [
+            { value: "", label: "Not reviewed" },
+            { value: "unknown", label: "Unknown" },
+            { value: "assigned", label: "Assigned" },
+            { value: "not-assigned", label: "Not assigned" },
+          ],
+        },
+        {
+          name: "imageRights",
+          label: "Image usage permission",
+          value: display(product?.imageRights ?? ""),
+          options: [
+            { value: "", label: "Not reviewed" },
+            { value: "unreviewed", label: "Unreviewed" },
+            { value: "authorized", label: "Authorised" },
+          ],
+          kind: "segmented",
+        },
+        {
+          name: "googleProductCategory",
+          label: "Google product category",
+          value: display(product?.googleProductCategory ?? ""),
+        },
+      ],
+    ),
+    ...section(
+      "Review & publishing",
+      "Each confirmation is an explicit editorial decision. Nothing publishes automatically.",
+      [
+        {
+          name: "contentReviewed",
+          label: "Content and exact image match reviewed",
+          value: product?.contentReviewed === true ? "true" : "false",
+          options: [
+            { value: "false", label: "No — pending review" },
+            { value: "true", label: "Yes — reviewed" },
+          ],
+        },
+        {
+          name: "stockVerified",
+          label: "Physical stock verified",
+          value: product?.stockVerified === true ? "true" : "false",
+          options: [
+            { value: "false", label: "No — pending review" },
+            { value: "true", label: "Yes — reviewed" },
+          ],
+        },
+        {
+          name: "googleApproved",
+          label: "Approved for Google catalog export",
+          value: product?.googleApproved === true ? "true" : "false",
+          options: [
+            { value: "false", label: "No — pending review" },
+            { value: "true", label: "Yes — reviewed" },
+          ],
+        },
+        {
+          name: "metaApproved",
+          label: "Approved for Meta catalog export",
+          value: product?.metaApproved === true ? "true" : "false",
+          options: [
+            { value: "false", label: "No — pending review" },
+            { value: "true", label: "Yes — reviewed" },
+          ],
+        },
+        {
+          name: "imageSource",
+          label: "Image source URL",
+          value: display(product?.imageSource ?? ""),
+          span: "full",
+          hint: "Record where the approved image came from. Upload the actual file below.",
+        },
+        {
+          name: "seoTitle",
+          label: "SEO title override",
+          value: display(product?.seoTitle ?? ""),
+        },
+        {
+          name: "seoDescription",
+          label: "SEO description override",
+          type: "textarea",
+          value: display(product?.seoDescription ?? ""),
+        },
+      ],
+    ),
+    ...(edit
+      ? section(
+          "Inventory adjustment",
+          "Every stock edit needs a reason so the change can be reconciled later.",
+          [
+            {
+              name: "stockReason",
+              label: "Stock adjustment reason",
+              required: true,
+              span: "full",
+              hint: "Record the physical count or correction. A stale stock value requires reloading.",
+            },
+          ],
+        )
+      : []),
+    ...section(
+      "Family & variants",
+      "Only products that are genuinely the same item in another size, flavour or pack.",
+      [
+        {
+          name: "familyKey",
+          label: "Product family key (optional)",
+          value: display(product?.familyKey ?? ""),
+          span: "full",
+          hint: "Same key for verified size/flavour/pack variants. Clear all family fields to keep this product standalone.",
+        },
+        { name: "familyName", label: "Family display name", value: display(product?.familyName ?? "") },
+        { name: "familyBrand", label: "Family brand", value: display(product?.familyBrand ?? "") },
+        {
+          name: "familyForm",
+          label: "Family form / model",
+          value: display(product?.familyForm ?? ""),
+          hint: "Must match across all family members.",
+        },
+        {
+          name: "familyStrength",
+          label: "Family strength identity",
+          value: display(product?.familyStrength ?? ""),
+          hint: "Use the verified strength, or not-applicable for non-medicines. Different strengths stay separate.",
+        },
+        { name: "variantSize", label: "Variant size", value: display(product?.variantSize ?? "") },
+        { name: "variantFlavour", label: "Variant flavour", value: display(product?.variantFlavour ?? "") },
+        {
+          name: "variantPackSize",
+          label: "Variant pack size",
+          value: display(product?.variantPackSize ?? ""),
+          hint: "Each combination needs its own SKU and stock. Shared barcodes do not establish family membership.",
+        },
+      ],
+      true,
+    ),
+    ...(edit
+      ? ([
+          { name: "expectedStock", label: "Stock at load", type: "hidden", value: display(product?.stock ?? "") },
+          { name: "inventoryKey", label: "Adjustment receipt", type: "hidden", value: randomUUID() },
+        ] as Field[])
+      : []),
   ];
-  fields.push(
-    {name:'familyKey',label:'Product family key (optional)',value:display(product?.familyKey??''),hint:'Same key for verified size/flavour/pack variants. Clear all family fields to keep this product standalone.'},
-    {name:'familyName',label:'Family display name',value:display(product?.familyName??'')},
-    {name:'familyBrand',label:'Family brand',value:display(product?.familyBrand??'')},
-    {name:'familyForm',label:'Family form / model',value:display(product?.familyForm??''),hint:'Must match across all family members.'},
-    {name:'familyStrength',label:'Family strength identity',value:display(product?.familyStrength??''),hint:'Use the verified strength, or not-applicable for non-medicines. Different strengths stay separate.'},
-    {name:'variantSize',label:'Variant size',value:display(product?.variantSize??'')},
-    {name:'variantFlavour',label:'Variant flavour',value:display(product?.variantFlavour??'')},
-    {name:'variantPackSize',label:'Variant pack size',value:display(product?.variantPackSize??''),hint:'Each combination needs its own SKU and stock. Shared barcodes do not establish family membership.'},
-  );
-  for (const [name,label] of [['brand','Brand'],['manufacturer','Manufacturer'],['gtin','Verified GTIN (optional)'],['mpn','Manufacturer part number (optional)'],['saleUnit','Saleable unit'],['packLabel','Pack / specification'],['productForm','Product form'],['strength','Strength (display only)'],['summary','Short product summary'],['ingredients','Ingredients / materials'],['usage','Usage information'],['warnings','Warnings'],['storage','Storage'],['seoTitle','SEO title override'],['seoDescription','SEO description override'],['imageSource','Image source URL'],['googleProductCategory','Google product category']] as const) fields.push({name,label,value:display(product?.[name]??''),...(['ingredients','usage','warnings','storage'].includes(name)?{type:'textarea'}:{})});
-  for (const [name,label,options] of [
-    ['productType','Product classification',['unreviewed','general','otc','prescription']],
-    ['condition','Item condition',['new','used','refurbished']],
-    ['identifierStatus','Manufacturer identifier status',['unknown','assigned','not-assigned']],
-    ['imageRights','Image usage permission',['unreviewed','authorized']],
-  ] as const) fields.push({name,label,value:display(product?.[name]??''),options:[{value:'',label:'Not reviewed'},...options.map(value=>({value,label:value}))]});
-  for (const [name,label] of [['contentReviewed','Content and exact image match reviewed'],['stockVerified','Physical stock verified'],['googleApproved','Approved for Google catalog export'],['metaApproved','Approved for Meta catalog export']] as const) fields.push({name,label,value:product?.[name]===true?'true':'false',options:[{value:'false',label:'No — pending review'},{value:'true',label:'Yes — reviewed'}]});
-  fields.push({ name: "salePrice", label: "Sale price (AED, optional)", type: "number", min: 0, step: "0.01", value: product?.salePrice == null ? "" : display(product.salePrice), hint: "Required when sale is enabled; cannot exceed the regular price." });
-  if (edit) fields.push({ name: "sale", label: "Sale", value: product?.sale === true ? "true" : "false", options: [{ value: "false", label: "No" }, { value: "true", label: "Yes" }] });
-  if (edit) fields.push(
-    { name: "expectedStock", label: "Stock at load", type: "hidden", value: display(product?.stock ?? "") },
-    { name: "inventoryKey", label: "Adjustment receipt", type: "hidden", value: randomUUID() },
-    { name: "stockReason", label: "Stock adjustment reason", required: true, hint: "Record the physical count or correction. A stale stock value requires reloading." },
-  );
-  if (!edit)
-    fields.push(
-      { name: "barcode", label: "Barcode (optional)", hint: "An ERP barcode is not automatically a verified GTIN." },
-      {
-        name: "category",
-        label: "Category",
-        required: true,
-        value: selectedCategory,
-        options: categories.map((category) => ({
-          value: display(category._id),
-          label: display(category.name),
-        })),
-      },
-      ...["vat", "sale", "featured"].map((name) => ({
-        name,
-        label:
-          name === "vat"
-            ? "VAT applicable"
-            : name.charAt(0).toUpperCase() + name.slice(1),
-        options: [
-          { value: "false", label: "No" },
-          { value: "true", label: "Yes" },
-        ],
-      })),
-    );
   const readinessProduct = edit ? readProduct({...product,disabled:false,category:typeof product.category==='object'?product.category:categories.find(category=>String(category._id)===String(product.category))}) : null;
   return (
     <>
@@ -354,6 +612,7 @@ export function OrderDetail({
               min: 0,
               step: "0.01",
               required: true,
+              prefix: "AED",
             },
           ]}
           label="Dispatch order"

@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-location-assign-relative-destination -- Session changes need a full reload to discard privileged router state. */
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { adminFormClass } from '../../lib/admin/styles';
+import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { adminFileLimit } from '../../lib/admin/upload-limits';
 export async function adminRequest(
   path: string,
@@ -69,6 +69,7 @@ export async function adminRequest(
 export function LoginForm() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [reveal, setReveal] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -86,29 +87,63 @@ export function LoginForm() {
     }
   }
   return (
-    <form className={adminFormClass} onSubmit={submit} aria-busy={pending}>
-      <label htmlFor="username">
-        Username
-        <input
-          id="username"
-          name="username"
-          autoComplete="username"
-          required
-          maxLength={100}
-        />
-      </label>
-      <label htmlFor="password">
-        Password
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-        />
-      </label>
-      {error ? <p role="alert" className="admin-alert admin-alert--danger">{error}</p> : null}
-      <button disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
+    <form className="admin-form" onSubmit={submit} aria-busy={pending}>
+      <div className="admin-form__section">
+        <div className="admin-form__grid">
+          <div className="admin-field admin-field--wide">
+            <label htmlFor="username" className="admin-field__label">
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              autoComplete="username"
+              placeholder="Your staff username"
+              required
+              maxLength={100}
+            />
+          </div>
+          <div className="admin-field admin-field--wide">
+            <div className="admin-login__label-row">
+              <label htmlFor="password" className="admin-field__label">
+                Password
+              </label>
+              <button
+                type="button"
+                className="admin-login__reveal"
+                aria-pressed={reveal}
+                onClick={() => setReveal((value) => !value)}
+              >
+                {reveal ? "Hide" : "Show"}
+              </button>
+            </div>
+            <input
+              id="password"
+              name="password"
+              type={reveal ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="Your account password"
+              required
+            />
+          </div>
+        </div>
+      </div>
+      <div className="admin-form__footer">
+        <div className="admin-form__status">
+          {error ? (
+            <p role="alert" className="admin-alert admin-alert--danger">
+              {error}
+            </p>
+          ) : (
+            <p className="admin-card__hint admin-hint--tight">
+              Sessions are protected by a server-side cookie.
+            </p>
+          )}
+        </div>
+        <button disabled={pending}>
+          {pending ? "Signing in…" : "Sign in"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -118,7 +153,8 @@ export function SessionControls() {
   return (
     <div className="admin-actions">
       <button
-        className="admin-btn--ghost"
+        className="admin-btn--ghost admin-signout"
+        aria-label="Sign out"
         disabled={pending}
         onClick={async () => {
           setPending(true);
@@ -131,7 +167,8 @@ export function SessionControls() {
           }
         }}
       >
-        Sign out
+        <ArrowRightOnRectangleIcon width={17} height={17} aria-hidden="true" />
+        <span className="admin-signout-label">Sign out</span>
       </button>
       {error ? (
         <span className="admin-alert admin-alert--danger" role="alert">
@@ -277,16 +314,25 @@ export function OrderMonitor() {
       window.removeEventListener("pageshow", resume);
     };
   }, [router]);
+  const online = status.startsWith("Order updates connected");
+  const short = online
+    ? "Live"
+    : status.startsWith("Order updates disconnected")
+      ? "Reconnecting"
+      : "Connecting";
   return (
-    <div
-      className="admin-status"
-      data-state={status.startsWith("Order updates connected") ? "online" : "offline"}
-    >
-      <p role="status">{status}</p>
+    <div className="admin-status" data-state={online ? "online" : "offline"}>
+      <p role="status" aria-label={status} title={status}>
+        {short}
+      </p>
       {updates ? (
-        <p role="status" aria-atomic="true">
-          Order information changed. {updates} updates received during this
-          visit. Open Orders to review the latest records.
+        <p
+          role="status"
+          aria-atomic="true"
+          aria-label={`Order information changed. ${updates} updates received during this visit. Open Orders to review the latest records.`}
+          title={`${updates} order update${updates === 1 ? "" : "s"} received`}
+        >
+          +{updates}
         </p>
       ) : null}
     </div>
