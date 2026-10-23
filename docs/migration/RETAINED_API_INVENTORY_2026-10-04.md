@@ -119,3 +119,9 @@ The retained default-deny route map and exact-origin/current-administrator Socke
 Unreferenced admin-input/admin-pagination/catalog-query source validators and database/db.js configuration stub are retired; administrator tests now check maintained production validation owners. No active API/data/media contract changes. See UNUSED_VALIDATOR_RETIREMENT_2026-10-04.md.
 
 Retained CSV decoding now uses maintained imports/csv.ts and catalog/csv.ts with bounded memory multipart storage; csvtojson is removed. Recovery block runs before parsing and the maintained transactional creation owner still supplies commercial/identity/ledger behavior. No existing files/media are deleted. See BOUNDED_CATALOG_CSV_2026-10-04.md.
+
+Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster through the existing signed media transport. The asset is retained separately from product records; it does not change catalogue images or stock.
+
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| POST | /api/media/marketing | staff | Upload reviewed campaign artwork; server validation, signed storage and retained asset record |

@@ -1,3 +1,5 @@
+import {MarketingManager} from '../../../../../components/admin/marketing-manager';
+import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
 import { NeedsAction } from '../../../../../components/admin/needs-action';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
@@ -98,6 +100,7 @@ export default async function AdminPage({
     !["products", "categories", "orders", "whatsapp"].includes(section)
   )
     notFound();
+  if(section==='marketing')return <MarketingManager admin={user.role==='admin'} nonce={(await headers()).get('x-nonce')??''}/>;
   if (section === 'operations') {
     const snapshot = operationsSnapshotSchema.parse(await adminRead('operations'));
     return (

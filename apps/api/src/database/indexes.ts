@@ -4,6 +4,10 @@ import type { Db, IndexDescription } from 'mongodb';
 export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = {
   growth_activity: [{name:'growth_activity_expiry',key:{expiresAt:1},expireAfterSeconds:0},{name:'growth_activity_period',key:{day:1,event:1}}],
   order_cost_history: [{name:'order_cost_audit',key:{orderId:1,revision:1}}],
+  marketing_templates:[{name:'marketing_template_recent',key:{updatedAt:-1}}],
+  marketing_contacts:[{name:'marketing_contacts_lists',key:{active:1,list:1,updatedAt:-1}}],
+  marketing_campaigns:[{name:'marketing_campaign_recent',key:{createdAt:-1}}],
+  marketing_jobs:[{name:'marketing_job_claim',key:{state:1,nextAttemptAt:1,createdAt:1}},{name:'marketing_campaign_progress',key:{campaignId:1,state:1}}],
   products: [
     {name:'catalog_google_export',key:{googleApproved:1,_id:1}},
     {name:'catalog_meta_export',key:{metaApproved:1,_id:1}},

@@ -26,18 +26,20 @@ export const sections = [
   "catalog-import",
   "growth",
   "wholesale",
+  "marketing",
 ] as const;
 export type Section = (typeof sections)[number];
 export function canVisit(role: Identity["role"], section: string) {
   return (
     role === "admin" ||
-    ["dashboard", "products", "orders", "notifications"].includes(section)
+    ["dashboard", "products", "orders", "notifications", "marketing"].includes(section)
   );
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['GET', 'products/needs-action', 'admin'],
   ['GET', 'operations', 'admin'],
+  ['POST','media/marketing','staff'],
   ['GET','catalog-import/template','admin'],
   ...['preview','commit','report','rollback'].map(action=>['POST',`catalog-import/${action}`,'admin'] as [string,string,'admin']),
   ["POST", "auth/login", "login"],

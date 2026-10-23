@@ -58,3 +58,5 @@ export * from './retention';
 
 export * from "./wholesale";
 export * from './reporting';
+
+export * from "./marketing";

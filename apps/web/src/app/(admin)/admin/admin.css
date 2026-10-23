@@ -1582,3 +1582,24 @@
     }
   }
 }
+
+@media (max-width: 767px) {
+  .marketing-designer .gjs-editor {
+    min-width: 0;
+  }
+  .marketing-designer[data-mobile-panel="canvas"] .gjs-editor {
+    height: 420px !important;
+  }
+  .marketing-designer[data-mobile-panel="canvas"] .gjs-pn-views,
+  .marketing-designer[data-mobile-panel="canvas"] .gjs-pn-views-container,
+  .marketing-designer[data-mobile-panel="controls"] .gjs-cv-canvas {
+    display: none;
+  }
+  .marketing-designer[data-mobile-panel="canvas"] .gjs-cv-canvas {
+    width: 100%;
+  }
+  .marketing-designer[data-mobile-panel="controls"] .gjs-pn-views,
+  .marketing-designer[data-mobile-panel="controls"] .gjs-pn-views-container {
+    width: 100%;
+  }
+}

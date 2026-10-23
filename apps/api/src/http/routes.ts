@@ -1,3 +1,4 @@
+import {installMarketingRoutes} from '../modules/marketing/routes.js';
 import { resolveLegacyMapping,legacyPath } from '../modules/media/legacy-migration.js';
 import { installWholesaleRoutes } from '../modules/wholesale/routes.js';
 import { homepageCampaigns, reviewCampaign } from '../modules/growth/campaigns.js';
@@ -275,6 +276,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     router.post(`/admin/growth/${part}`,async(req,res)=>{const user=await identity(req,true);const query=validate(part==='page'?growthZ.object({merchandising:growthZ.literal('1').optional()}).strict():emptyQuerySchema,req.query);verifyBrowserMutation(req,origins);if(part==='page'){const modern='merchandising' in query&&query.merchandising==='1';send(res,modern?growthPageSchema:legacyGrowthPageSchema,await (modern?saveGrowthPage:saveLegacyGrowthPage)(await getDb(),req.body,user.id));}else send(res,pharmacyProfileSchema,await savePharmacyProfile(await getDb(),req.body,user.id));});
     router.all(`/admin/growth/${part}`,(_req,res,next)=>{res.set('Allow',part==='profile'?'GET, HEAD, POST':'POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   }
+  installMarketingRoutes(router,getDb,origins,identity);
   installWholesaleRoutes(router,getDb,origins,req=>identity(req,true),req=>limitedCustomer(req),onOrderCreated);
   return router;
 }
