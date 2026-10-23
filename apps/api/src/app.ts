@@ -1,3 +1,4 @@
+import { recordGrowthActivity } from './modules/growth/activity.js';
 import { installEmailRoutes } from './modules/notifications/email-routes.js';
 import { randomUUID } from 'node:crypto';
 import express from 'express';
@@ -106,13 +107,14 @@ export function createApp(options: {
   });
   app.use('/api/v1/commerce-events', (_req, _res, next) => {
     next(options.commerceTelemetryEnabled === true ? undefined : new HttpError(404, 'NOT_FOUND'));
-  }, express.json({ limit: '128b', strict: true, inflate: false }));
-  app.post('/api/v1/commerce-events', (req, res) => {
+  }, express.json({ limit: '192b', strict: true, inflate: false }));
+  app.post('/api/v1/commerce-events', async (req, res) => {
     verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));
     if (req.headers['sec-gpc'] === '1' || req.headers.dnt === '1') throw new HttpError(403, 'FORBIDDEN');
     validate(emptyQuerySchema, req.query);
     const value = validate(commerceEventSchema, req.body);
     if (!metrics.recordCommerceEvent(value.event)) throw new HttpError(429, 'RATE_LIMITED');
+    if (options.getDb && options.database.mode !== 'disabled') await recordGrowthActivity(await options.getDb(),value.event,value.campaign);
     res.status(204).end();
   });
   installEmailRoutes(app, options.getDb ?? (() => Promise.reject(new HttpError(503, 'SERVICE_UNAVAILABLE'))));

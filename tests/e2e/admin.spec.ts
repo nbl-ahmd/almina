@@ -99,6 +99,13 @@ test('admin order update reaches the real writer and prevents cancellation after
   const order = await created.json() as { id: string };
   await login(page);
   await page.goto(adminOrigin + '/admin/orders/' + order.id);
+  await expect(page.getByText('No costs recorded.',{exact:false})).toBeVisible();
+  await page.getByRole('textbox',{name:'Product cost (AED)',exact:true}).fill('12.30');
+  await page.getByRole('textbox',{name:'Fulfilment cost (AED)',exact:true}).fill('2');
+  await page.getByRole('textbox',{name:'Payment and other fees (AED)',exact:true}).fill('0');
+  await page.getByRole('button',{name:'Save actual costs',exact:true}).click();
+  await expect(page.getByText('Costs saved. Order prices and stock are unchanged.',{exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByRole('textbox',{name:'Product cost (AED)',exact:true})).toHaveValue('12.30');
   const lines = page.getByRole('table', { name: 'Recorded order lines' });
   await expect(lines.getByRole('columnheader', { name: 'Charged unit price (AED)' })).toBeVisible();
   await expect(lines.getByRole('cell', { name: '20.00', exact: true })).toBeVisible();
@@ -149,15 +156,15 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   await page.route('**/*.js', async route => { await scriptsReady; await route.continue(); });
   await page.goto(adminOrigin + '/admin/products/' + productId, { waitUntil: 'commit' });
   try {
-    await expect(page.getByRole('button', { name: 'Save Cloudinary images', exact: true })).toBeDisabled();
-    await expect(page.getByLabel('Replacement raster images')).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toBeDisabled();
+    await expect(page.getByLabel('Choose product photos')).toBeDisabled();
   } finally { releaseScripts(); }
-  await expect(page.getByLabel('Replacement raster images')).toBeEnabled();
+  await expect(page.getByLabel('Choose product photos')).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(page.getByRole('button', { name: 'Save Cloudinary images', exact: true })).toHaveCSS('padding-left', '20px');
-  await page.getByLabel('Replacement raster images').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
-  await page.getByRole('button', { name: 'Save Cloudinary images', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Cloudinary images saved' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toHaveCSS('padding-left', '20px');
+  await page.getByLabel('Choose product photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
+  await page.getByRole('button', { name: 'Save product photos', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Product photos saved' })).toBeVisible();
   const product = await (await page.request.get(adminOrigin + '/api/admin/products/' + productId)).json();
   expect(product.cloudinaryImages[0]).toMatch(/^https:\/\/res.cloudinary.com\/synthetic\/image\/upload\/v1\/almina\/products\//);
   expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);

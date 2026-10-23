@@ -1,4 +1,5 @@
 'use client';
+import { useAccountCopy } from "./account-locale";
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
@@ -31,7 +32,7 @@ export async function accountRequest(action: string, body?: unknown) {
 type Options = { googleClientId: string | null; emailEnabled: boolean };
 type GoogleApi = { accounts: { id: {
   initialize(options: { client_id: string; callback: (value: { credential: string }) => void; auto_select: boolean }): void;
-  renderButton(element: HTMLElement, options: { theme: string; size: string; type: string; text: string; width: number; shape: string }): void;
+  renderButton(element: HTMLElement, options: { theme: string; size: string; type: string; text: string; width: number; shape: string; locale: string }): void;
 } } };
 
 function syncGoogleButton(host: HTMLDivElement | null) {
@@ -44,6 +45,8 @@ function syncGoogleButton(host: HTMLDivElement | null) {
 }
 
 function GoogleSignIn({ clientId, nonce, onCredential, onUnavailable, busy }: { clientId: string; nonce?: string | undefined; onCredential: (credential: string) => void; onUnavailable: () => void; busy: boolean }) {
+ const {a,locale}=useAccountCopy();
+
   const element = useRef<HTMLDivElement>(null), callback = useRef(onCredential), unavailable = useRef(onUnavailable);
   const [ready, setReady] = useState(false), [failed, setFailed] = useState(false);
   useEffect(() => { callback.current = onCredential; unavailable.current = onUnavailable; }, [onCredential, onUnavailable]);
@@ -55,7 +58,7 @@ function GoogleSignIn({ clientId, nonce, onCredential, onUnavailable, busy }: { 
     try {
       api.accounts.id.initialize({ client_id: clientId, auto_select: false, callback: value => callback.current(value.credential) });
       element.current.replaceChildren();
-      api.accounts.id.renderButton(element.current, { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'rectangular', width: Math.min(400, Math.round(element.current.clientWidth || 280)) });
+      api.accounts.id.renderButton(element.current, { locale, theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'rectangular', width: Math.min(400, Math.round(element.current.clientWidth || 280)) });
       setFailed(false);
       if (syncGoogleButton(element.current)) setReady(true);
     } catch { setFailed(true); }
@@ -70,13 +73,15 @@ function GoogleSignIn({ clientId, nonce, onCredential, onUnavailable, busy }: { 
   return <div>
     <Script src="https://accounts.google.com/gsi/client" nonce={nonce} strategy="afterInteractive" onReady={initialize} onError={() => setFailed(true)} />
     {failed ? null : <div className="relative">
-      <div ref={element} aria-label="Google sign-in" aria-busy={busy || !ready} inert={busy} className={busy ? 'google-signin pointer-events-none opacity-60' : 'google-signin'} />
-      {ready ? null : <div role="status" className="pointer-events-none absolute inset-0 grid place-items-center rounded-xl border border-border bg-subtle text-sm text-muted">Loading Google sign-in…</div>}
+      <div ref={element} aria-label={a("Google sign-in")} aria-busy={busy || !ready} inert={busy} className={busy ? 'google-signin pointer-events-none opacity-60' : 'google-signin'} />
+      {ready ? null : <div role="status" className="pointer-events-none absolute inset-0 grid place-items-center rounded-xl border border-border bg-subtle text-sm text-muted">{a("Loading Google sign-in…")}</div>}
     </div>}
   </div>;
 }
 
 export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?: string | undefined; onSignedIn: () => Promise<void>; purpose?:'retail'|'wholesale' }) {
+ const {a}=useAccountCopy();
+
   const [options, setOptions] = useState<Options | null>(null), [optionsFailed, setOptionsFailed] = useState(false);
   const [email, setEmail] = useState(''), [code, setCode] = useState(''), [challenge, setChallenge] = useState('');
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [cooldown, setCooldown] = useState(0);
@@ -108,33 +113,33 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
     });
   }
   return <div className="mx-auto w-full max-w-[440px] pb-3 sm:pt-2">
-    <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-teal"><ArrowLeftIcon className="size-4" />Back to shopping</Link>
+    <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-teal"><ArrowLeftIcon className="size-4" />{a("Back to shopping")}</Link>
     <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl border border-border bg-white shadow-[0_12px_36px_-20px_rgba(25,33,59,0.2)]">
       <div className="px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
         <div className="mb-6 text-center">
-          <h1 id="sign-in-heading" className="mb-2 text-[28px] font-semibold leading-tight tracking-[-0.025em]">{challenge ? 'Check your email' : purpose === 'wholesale' ? 'Business sign-in' : 'Welcome to Al Mina'}</h1>
-          <p className="m-0 text-sm leading-6 text-muted">{challenge ? 'Enter your six-digit sign-in code.' : purpose === 'wholesale' ? 'Use the email address on your pharmacy invitation.' : 'Sign in or create your account.'}</p>
+          <h1 id="sign-in-heading" className="mb-2 text-[28px] font-semibold leading-tight tracking-[-0.025em]">{challenge ? a("Check your email") : purpose === 'wholesale' ? a("Business sign-in") : a("Welcome to Al Mina")}</h1>
+          <p className="m-0 text-sm leading-6 text-muted">{challenge ? a("Enter your six-digit sign-in code.") : purpose === 'wholesale' ? a("Use the email address on your pharmacy invitation.") : a("Sign in or create your account.")}</p>
         </div>
-        {challenge ? <div className="mb-6 flex min-w-0 items-center gap-2 rounded-xl bg-subtle py-2 pl-3 pr-1"><span className="min-w-0 flex-1 break-all text-sm font-medium text-ink">{email.trim()}</span><Button variant="ghost" size="icon" type="button" className="shrink-0" disabled={busy} onClick={changeEmail} aria-label="Change email"><PencilSquareIcon className="size-4" /></Button></div> : null}
-        {!options && !optionsFailed ? <div role="status" className="grid min-h-40 content-center gap-3 text-sm text-muted"><div className="h-12 rounded-full bg-subtle motion-safe:animate-pulse" /><span className="text-center">Loading sign-in options…</span></div> : null}
-        {optionsFailed ? <div role="alert" className="mb-4 rounded-xl bg-subtle p-4 text-sm"><p>Sign-in is temporarily unavailable.</p><Button variant="outline" type="button" onClick={() => { setOptionsFailed(false); void loadOptions(); }}>Try again</Button></div> : null}
+        {challenge ? <div className="mb-6 flex min-w-0 items-center gap-2 rounded-xl bg-subtle py-2 pl-3 pr-1"><span className="min-w-0 flex-1 break-all text-sm font-medium text-ink">{email.trim()}</span><Button variant="ghost" size="icon" type="button" className="shrink-0" disabled={busy} onClick={changeEmail} aria-label={a("Change email")}><PencilSquareIcon className="size-4" /></Button></div> : null}
+        {!options && !optionsFailed ? <div role="status" className="grid min-h-40 content-center gap-3 text-sm text-muted"><div className="h-12 rounded-full bg-subtle motion-safe:animate-pulse" /><span className="text-center">{a("Loading sign-in options…")}</span></div> : null}
+        {optionsFailed ? <div role="alert" className="mb-4 rounded-xl bg-subtle p-4 text-sm"><p>{a("Sign-in is temporarily unavailable.")}</p><Button variant="outline" type="button" onClick={() => { setOptionsFailed(false); void loadOptions(); }}>{a("Try again")}</Button></div> : null}
         {!challenge && options?.googleClientId ? <>
           <GoogleSignIn clientId={options.googleClientId} nonce={nonce} busy={busy} onUnavailable={() => setGoogleFailed(true)} onCredential={credential => { void perform(async () => { await accountRequest('google', { idToken: credential }); await onSignedIn(); }); }} />
           {googleFailed
-            ? <p role="status" className="mt-4 rounded-xl border border-border bg-subtle p-4 text-sm leading-6 text-muted">Google sign-in could not load. {options.emailEnabled ? 'Continue with an email code below.' : 'Refresh this page to try again, or contact the pharmacy for help.'}</p>
-            : options.emailEnabled ? <div className="my-5 flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-border" />or continue with email<span className="h-px flex-1 bg-border" /></div> : null}
+            ? <p role="status" className="mt-4 rounded-xl border border-border bg-subtle p-4 text-sm leading-6 text-muted">{a("Google sign-in could not load. ")}{options.emailEnabled ? a("Continue with an email code below.") : a("Refresh this page to try again, or contact the pharmacy for help.")}</p>
+            : options.emailEnabled ? <div className="my-5 flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-border" />{a("or continue with email")}<span className="h-px flex-1 bg-border" /></div> : null}
         </> : null}
-        {options?.emailEnabled ? <form onSubmit={submit} aria-label="Email sign-in" aria-busy={busy}><FieldGroup className="grid gap-4">
-          {challenge ? <Field data-invalid={!!error}><FieldLabel htmlFor="account-sign-in-code">Six-digit code</FieldLabel><Input variant="code" id="account-sign-in-code" ref={codeInput} type="text" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} disabled={busy} aria-invalid={!!error} aria-describedby={error?'sign-in-error':'code-help'} onChange={event => { setCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }} placeholder="000000" /><FieldDescription id="code-help" className="text-center">Your code expires in 10 minutes.</FieldDescription></Field> : <Field><FieldLabel htmlFor="customer-sign-in-field-1">Email address</FieldLabel><Input id="customer-sign-in-field-1" ref={emailInput} type="email" autoComplete="email" placeholder="you@example.com" maxLength={254} required value={email} disabled={busy} onChange={event => { setEmail(event.target.value); setError(''); }} /></Field>}
-          {error ? <p id="sign-in-error" role="alert" className="m-0 rounded-xl bg-sale-surface p-3 text-sm leading-6 text-sale">{error}</p> : null}
-          <Button type="submit" disabled={busy || (!!challenge && code.length !== 6)}><span>{busy ? 'Please wait…' : challenge ? 'Verify & sign in' : 'Continue with email'}</span>{busy ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" /> : <ArrowRightIcon className="size-4" />}</Button>
-          {challenge ? <div className="flex flex-wrap items-center justify-center gap-x-1 text-xs"><span className="text-muted">Didn’t receive it?</span><Button variant="outline" size="sm" type="button" disabled={busy || cooldown > 0} onClick={() => void perform(sendCode)}>{cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}</Button></div> : <p className="m-0 text-center text-xs leading-5 text-muted">New here? We’ll create your account when you verify.</p>}
-        </FieldGroup></form> : options && !(options.googleClientId && googleFailed) ? <p className="mt-4 rounded-xl border border-border bg-subtle p-4 text-sm leading-6 text-muted">{options.googleClientId ? purpose === 'wholesale' ? 'Continue with Google using your invited email. Business access requires pharmacy approval.' : 'Email sign-in is temporarily unavailable. Use Google, or continue as a guest.' : purpose === 'wholesale' ? 'Business sign-in is not available. Please contact the pharmacy; wholesale access requires verified sign-in.' : 'Account sign-in is not connected yet. You can still browse, save products on this device and check out as a guest.'}</p> : null}
-        {!options?.emailEnabled && error ? <p role="alert" className="mb-0 mt-4 rounded-xl bg-sale-surface p-3 text-sm leading-6 text-sale">{error}</p> : null}
-        {notice ? <p role="status" className="mb-0 mt-3 flex items-start justify-center gap-1.5 text-xs leading-5 text-muted"><CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-teal" />{notice}</p> : null}
-        {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">Your email connects your account and purchases.<br />Marketing is always optional. <Link href="/privacy" aria-label="account privacy notice" className="text-teal hover:text-teal">Read our privacy notice</Link>.</p> : null}
+        {options?.emailEnabled ? <form onSubmit={submit} aria-label={a("Email sign-in")} aria-busy={busy}><FieldGroup className="grid gap-4">
+          {challenge ? <Field data-invalid={!!error}><FieldLabel htmlFor="account-sign-in-code">{a("Six-digit code")}</FieldLabel><Input variant="code" id="account-sign-in-code" ref={codeInput} type="text" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} disabled={busy} aria-invalid={!!error} aria-describedby={error?'sign-in-error':'code-help'} onChange={event => { setCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }} placeholder="000000" /><FieldDescription id="code-help" className="text-center">{a("Your code expires in 10 minutes.")}</FieldDescription></Field> : <Field><FieldLabel htmlFor="customer-sign-in-field-1">{a("Email address")}</FieldLabel><Input id="customer-sign-in-field-1" ref={emailInput} type="email" autoComplete="email" placeholder={a("you@example.com")} maxLength={254} required value={email} disabled={busy} onChange={event => { setEmail(event.target.value); setError(''); }} /></Field>}
+          {error ? <p id="sign-in-error" role="alert" className="m-0 rounded-xl bg-sale-surface p-3 text-sm leading-6 text-sale">{a(error)}</p> : null}
+          <Button type="submit" disabled={busy || (!!challenge && code.length !== 6)}><span>{busy ? a("Please wait…") : challenge ? a("Verify & sign in") : a("Continue with email")}</span>{busy ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" /> : <ArrowRightIcon className="size-4" />}</Button>
+          {challenge ? <div className="flex flex-wrap items-center justify-center gap-x-1 text-xs"><span className="text-muted">{a("Didn’t receive it?")}</span><Button variant="outline" size="sm" type="button" disabled={busy || cooldown > 0} onClick={() => void perform(sendCode)}>{cooldown > 0 ? a(`Resend code in ${cooldown}s`) : a("Resend code")}</Button></div> : <p className="m-0 text-center text-xs leading-5 text-muted">{a("New here? We’ll create your account when you verify.")}</p>}
+        </FieldGroup></form> : options && !(options.googleClientId && googleFailed) ? <p className="mt-4 rounded-xl border border-border bg-subtle p-4 text-sm leading-6 text-muted">{options.googleClientId ? purpose === 'wholesale' ? a("Continue with Google using your invited email. Business access requires pharmacy approval.") : a("Email sign-in is temporarily unavailable. Use Google, or continue as a guest.") : purpose === 'wholesale' ? a("Business sign-in is not available. Please contact the pharmacy; wholesale access requires verified sign-in.") : a("Account sign-in is not connected yet. You can still browse, save products on this device and check out as a guest.")}</p> : null}
+        {!options?.emailEnabled && error ? <p role="alert" className="mb-0 mt-4 rounded-xl bg-sale-surface p-3 text-sm leading-6 text-sale">{a(error)}</p> : null}
+        {notice ? <p role="status" className="mb-0 mt-3 flex items-start justify-center gap-1.5 text-xs leading-5 text-muted"><CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-teal" />{a(notice)}</p> : null}
+        {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">{a("Your email connects your account and purchases.")}<br />{a("Marketing is always optional. ")}<Link href="/privacy" aria-label={a("account privacy notice")} className="text-teal hover:text-teal">{a("Read our privacy notice")}</Link>.</p> : null}
       </div>
-      {purpose==='retail'?<div className="border-t border-border bg-page px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted transition-colors hover:bg-white hover:text-teal">Continue as a guest<ArrowRightIcon className="size-4" /></Link></div>:null}
+      {purpose==='retail'?<div className="border-t border-border bg-page px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted transition-colors hover:bg-white hover:text-teal">{a("Continue as a guest")}<ArrowRightIcon className="size-4" /></Link></div>:null}
     </section>
   </div>;
 }

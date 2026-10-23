@@ -35,7 +35,7 @@ test('HTTP telemetry enforces origin, CSRF, privacy, bounded strict input and no
       const result = await post({ event, consent: true }); assert.equal(result.status, 204); assert.equal(result.headers.get('set-cookie'), null);
     }
     assert.equal(metrics.snapshot().clientJavaScriptErrors, 1);
-    assert.deepEqual(Object.values(metrics.snapshot().commerceEvents!), [1, 1, 1, 1, 1]);
+    assert.deepEqual(Object.values(metrics.snapshot().commerceEvents!), [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]);
     assert.ok(!logs.join('').includes('synthetic-sensitive-marker'));
     assert.equal((await fetch(origin + '/api/v1/admin/operations')).status, 401);
   });

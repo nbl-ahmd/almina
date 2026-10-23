@@ -8,11 +8,12 @@ export function legacyMediaTarget(pathname: string): URL | null {
   return new URL(pathname, origin);
 }
 
-export async function legacyMediaResponse(request: Request, fetcher: typeof fetch = fetch): Promise<Response> {
+export async function legacyMediaResponse(request: Request, fetcher: typeof fetch = fetch, mapped?: string): Promise<Response> {
   const url = new URL(request.url);
-  const target = legacyMediaTarget(url.pathname);
+  const legacy = legacyMediaTarget(url.pathname);
+  const target = mapped ? new URL(mapped) : legacy;
   const error = (status: number) => new Response(null, { status, headers: { 'Cache-Control': 'no-store' } });
-  if (!target || url.search) return error(404);
+  if (!legacy || !target || url.search) return error(404);
   if (!['GET', 'HEAD'].includes(request.method)) return error(405);
   try {
     // Forward no caller headers, credentials, query strings or redirect targets.

@@ -1,3 +1,4 @@
+import { GrowthActivity } from '../../../../components/growth-activity';
 import { getLocale } from '../../../../lib/server/i18n';
 import { shopText as u } from '../../../../lib/i18n-storefront';
 import { RecordProductView } from '../../../../components/recently-viewed';
@@ -11,7 +12,7 @@ import { ProductGallery } from '../../../../components/product-gallery';
 import { PhotoCredit } from '../../../../components/photo-credit';
 import Link from 'next/link';
 import { permanentRedirect } from 'next/navigation';
-import { catalogAvailabilityConfirmed, getProductVariants, getProducts, productImages } from '../../../../lib/server/catalog';
+import { catalogAvailabilityConfirmed, getProductVariants, getProductRecommendations, productImages } from '../../../../lib/server/catalog';
 import { resolveProductRoute } from '../../../../lib/server/product-route';
 import { metadataFor } from '../../../../lib/server/seo';
 import { getWebEnvironment } from '../../../../lib/server/env';
@@ -41,7 +42,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
     }
     permanentRedirect(`${productHref(product)}${query.size ? `?${query}` : ''}`);
   }
-  const [related,variants,availabilityConfirmed,reviews] = await Promise.all([getProducts({ category: product.category._id }),getProductVariants(product),catalogAvailabilityConfirmed(),getProductReviews(product._id)]);
+  const [related,variants,availabilityConfirmed,reviews] = await Promise.all([getProductRecommendations(product),getProductVariants(product),catalogAvailabilityConfirmed(),getProductReviews(product._id)]);
   const origin = getWebEnvironment().WEB_ORIGIN;
   const currentPrice = displayPrice(product);
   const saving = product.price > currentPrice && product.price > 0 ? Math.round((product.price - currentPrice) / product.price * 100) : 0;
@@ -67,5 +68,5 @@ export default async function ProductPage({ params, searchParams }: Props) {
       </div>
     </div>
     <ProductInformation product={product} /><ProductReviews locale={locale} productId={product._id} reviews={reviews} />
-    <section><div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="mb-1 text-xl font-semibold tracking-[-0.02em]">{u(locale,"Similar products")}</h2><p className="mb-0 text-xs text-ocean">{locale === "en" ? `Explore more in ${product.category.name}.` : `استكشف المزيد في ${product.category.name}.`}</p></div><Link className="inline-flex min-h-11 items-center gap-1 text-xs text-ocean" href={categoryHref(product.category)}>{u(locale,"View category")} <Icon name="arrow" /></Link></div><ProductGrid headingLevel={3} products={related.products.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4)} /></section></div></>;
+    {related.length?<section><div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="mb-1 text-xl font-semibold tracking-[-0.02em]">{u(locale,"Similar products")}</h2><p className="mb-0 text-xs text-ocean">{locale === "en" ? `Explore more in ${product.category.name}.` : `استكشف المزيد في ${product.category.name}.`}</p></div><Link className="inline-flex min-h-11 items-center gap-1 text-xs text-ocean" href={categoryHref(product.category)}>{u(locale,"View category")} <Icon name="arrow" /></Link></div><ProductGrid headingLevel={3} products={related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4)} /></section>:null}</div><GrowthActivity kind="product"/></>;
 }

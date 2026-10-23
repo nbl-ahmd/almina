@@ -1,7 +1,7 @@
 import { readApiEnvironment } from '@almina/config/env';
 import { createDatabase } from '../../apps/api/src/database.js';
 import { indexPlan } from '../../apps/api/src/database/indexes.js';
-const names=['customers','customer_sessions','customer_auth_codes','customer_auth_limits','customer_reminders','catalog_search_terms','growth_pages','product_reviews','reward_vouchers','reward_ledger'] as const;
+const names=['growth_activity','order_cost_history','customers','customer_sessions','customer_auth_codes','customer_auth_limits','customer_reminders','catalog_search_terms','growth_pages','product_reviews','reward_vouchers','reward_ledger'] as const;
 async function main(){
  const args=process.argv.slice(2);
  if(!args.length){process.stdout.write(JSON.stringify(Object.fromEntries(names.map(name=>[name,indexPlan[name]])),null,2)+'\n');return;}

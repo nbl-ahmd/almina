@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HomeIcon, BuildingStorefrontIcon, TagIcon, ShoppingCartIcon, UserCircleIcon } from '@heroicons/react/24/outline';
-import { t, tf, type Locale, type MessageKey } from '../lib/i18n';
+import { cartCountText, t, type Locale, type MessageKey } from '../lib/i18n';
 import { useCartCount } from '../lib/catalog/use-cart-count';
 
 const mobile: { href: string; key: MessageKey; icon: typeof HomeIcon }[] = [
@@ -26,7 +26,7 @@ export function NavigationLinks({ locale = 'en' }: { locale?: Locale }) {
     const active = current(link.href);
     const Glyph = link.icon;
     const cart = link.href === '/cart';
-    return <Link key={link.href} aria-current={active ? 'page' : undefined} aria-label={cart && count ? tf(locale, 'headerCartCount', { count, unit: t(locale, count === 1 ? 'headerItem' : 'headerItems') }) : undefined} className={`flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-xs leading-none font-medium transition-colors ${active ? 'bg-care-mint text-ink' : 'text-muted hover:bg-subtle hover:text-ink'}`} href={link.href}>
+    return <Link key={link.href} aria-current={active ? 'page' : undefined} aria-label={cart && count ? cartCountText(locale,count) : undefined} className={`flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-xs leading-none font-medium transition-colors ${active ? 'bg-care-mint text-ink' : 'text-muted hover:bg-subtle hover:text-ink'}`} href={link.href}>
       <span className="relative flex shrink-0">
         <Glyph className="size-[22px]" strokeWidth={active ? 1.9 : 1.5} aria-hidden="true" />
         {cart && count ? <span className={`absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] leading-none font-semibold text-ink ring-2 ${active ? 'ring-care-mint' : 'ring-surface'}`} aria-hidden="true">{count > 99 ? '99+' : count}</span> : null}

@@ -36,7 +36,7 @@ test('Google sign-in frame survives an unstyled or blocked Google stylesheet', (
 test('the sign-in surface offers one honest message per unavailable provider', () => {
   const signIn = readFileSync(new URL('../apps/web/src/components/customer-sign-in.tsx', import.meta.url), 'utf8');
   assert.match(signIn, /Google sign-in could not load\./);
-  assert.match(signIn, /options\.emailEnabled \? 'Continue with an email code below\.'/);
+  assert.match(signIn, /options\.emailEnabled \? a\("Continue with an email code below\."\)/);
   // A Google failure replaces the "email is unavailable" note instead of stacking
   // two notes that both send the customer back to the provider that just failed.
   assert.match(signIn, /options && !\(options\.googleClientId && googleFailed\)/);

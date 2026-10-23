@@ -91,8 +91,14 @@ export async function retainedProductDetail(db: Db, identifier: { id: string } |
     ...categoryJoin(staff), { $limit: 1 }, { $project: compatibilityProductProjection }], options).toArray();
   const product = products[0]; if (!product) throw new HttpError(404, 'NOT_FOUND');
   if ('id' in identifier) return { ...product, category: product.category?._id ?? null };
-  const relatedProducts = product.category?._id ? (await retainedProductList(db, { filter: { category: String(product.category._id) }, limit: 31, offset: 0, q: undefined, disabledCategory: undefined, inStock: undefined, minPrice: undefined, maxPrice: undefined, sort: 'relevance' }, staff))
-    .filter(value => String(value._id) !== String(product._id)).slice(0, 30) : [];
+  // Recommendations are merchandising only: reviewed general-sale products in the same category.
+  // Never infer a treatment, clinical substitute or a customer's health needs.
+  const relatedProducts = product.productType==='general' && product.contentReviewed===true && product.category?._id ? await db.collection('products').aggregate([
+    {$match:{category:product.category._id,_id:{$ne:product._id},...published,archivedAt:{$exists:false},productType:'general',contentReviewed:true,stock:{$gt:0},...(product.familyKey?{familyKey:{$ne:product.familyKey}}:{})}},
+    ...categoryJoin(false),
+    {$set:{_recommendationRank:{$add:[{$cond:[{$and:[{$ne:[{$ifNull:['$brand','']},'']},{$eq:['$brand',product.brand??'']}]},2,0]},{$cond:[{$and:[{$ne:[{$ifNull:['$productForm','']},'']},{$eq:['$productForm',product.productForm??'']}]},1,0]}]}}},
+    {$sort:{_recommendationRank:-1,_id:1}},{$limit:8},{$project:compatibilityProductProjection},
+  ],options).toArray():[];
   const profile = familyProfile(product);
   const variants = profile ? (await db.collection('products').aggregate([
     { $match: {familyKey:profile.familyKey,category:product.category._id,archivedAt:{$exists:false},...(staff?{}:published)} },

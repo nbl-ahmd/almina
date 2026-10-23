@@ -2,6 +2,8 @@ import type { Db, IndexDescription } from 'mongodb';
 
 // Additive only. No uniqueness changes without a production duplicate inventory.
 export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = {
+  growth_activity: [{name:'growth_activity_expiry',key:{expiresAt:1},expireAfterSeconds:0},{name:'growth_activity_period',key:{day:1,event:1}}],
+  order_cost_history: [{name:'order_cost_audit',key:{orderId:1,revision:1}}],
   products: [
     {name:'catalog_google_export',key:{googleApproved:1,_id:1}},
     {name:'catalog_meta_export',key:{metaApproved:1,_id:1}},

@@ -578,3 +578,17 @@ export const arabicEmirates: Record<string,string> = {
 export function emirateLabel(locale: Locale, value: string): string {
   return locale === 'ar' ? arabicEmirates[value] ?? value : value;
 }
+
+/** Full Arabic plural categories; keep English text byte-compatible. */
+export function itemCountText(locale: Locale, count: number, noun: 'item' | 'product' = 'item'): string {
+  if (locale === 'en') return `${count} ${noun}${count===1?'':'s'}`;
+  const category = new Intl.PluralRules('ar-AE').select(count);
+  const names = noun === 'product'
+    ? { zero:'منتجات',one:'منتج',two:'منتجان',few:'منتجات',many:'منتجاً',other:'منتج' }
+    : { zero:'عناصر',one:'عنصر',two:'عنصران',few:'عناصر',many:'عنصراً',other:'عنصر' };
+  if (category==='one'||category==='two') return names[category];
+  return `${count.toLocaleString('ar-AE')} ${names[category]}`;
+}
+export function cartCountText(locale: Locale,count: number): string {
+  return locale==='en'?tf(locale,'headerCartCount',{count,unit:t(locale,count===1?'headerItem':'headerItems')}):`سلتك، ${itemCountText(locale,count)}`;
+}
