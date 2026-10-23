@@ -4,7 +4,7 @@
 
 Use `https://cdn.alminapharmacy.com/media/w{width}/v{version}/{publicId}.webp`, backed by the pharmacy's existing Cloudinary account and Vercel CDN. Authoritative DNS stays on Vercel. No Cloudflare Worker, DNS migration, new image provider, credential, database rewrite or media deletion is needed.
 
-The owner clarified that only new uploads need this system. The unreleased personal-account Worker compatibility bridge from `5ff00f4` is removed. Historical schema/read compatibility remains; this work does not attempt to restore or migrate old media.
+The owner clarified that only new uploads need this system. The existing legacy `/cdn/` compatibility bridge is retained because it is now deployed and referenced. This work neither migrates nor deletes old media; its separate upstream retirement remains pending.
 
 The hostname was attached to the existing pharmacy-owned Vercel storefront project, production environment, and shows **Valid Configuration**. This prepares DNS/TLS; the new `/media/` implementation must be released before the storefront uses those URLs. Before release, the hostname still serves the previous deployment. Proof: `outputs/branded-media-2026-10-21/vercel-cdn-domain.png`.
 
@@ -39,3 +39,12 @@ After deployment, request a known image twice on `cdn.alminapharmacy.com` and co
 Rollback: redeploy the previous frontend; provider URLs and uploads are unchanged in the database. Keep the domain and stored assets until references have been checked. To urgently revoke a mistakenly published public photo, remove its product reference and purge its Vercel/Cloudinary cached variants; immutable URLs cannot be recalled from browser caches.
 
 Official references: [Vercel CDN cache](https://vercel.com/docs/caching/cdn-cache), [Cloudinary image optimization](https://cloudinary.com/documentation/image_optimization).
+
+## Recovered release — 23 October 2026
+
+PR #57 was closed after the SEO smoke assertion still expected a Cloudinary URL.
+The replacement updates the expectation to the branded production metadata URL,
+retains the now-deployed legacy `/cdn/` handler and its tests, and incorporates
+the latest wholesale/email/security/CI changes. No legacy asset is deleted.
+The earlier removal description is superseded: both old and new image paths
+remain available until a separately verified migration permits retirement.

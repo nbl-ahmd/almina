@@ -53,6 +53,7 @@ test('public media routes avoid HTML private caching and confine the CDN hostnam
       const rejected = proxy(new NextRequest(mediaOrigin + suffix));
       assert.equal(rejected.status, 404); assert.equal(rejected.headers.get('cache-control'), 'no-store');
     }
+    assert.equal(proxy(new NextRequest(mediaOrigin + '/cdn/categories/legacy.webp')).headers.get('x-middleware-next'), '1');
     assert.equal(proxy(new NextRequest(mediaOrigin + '/robots.txt')).headers.get('content-type'), 'text/plain');
   } finally { process.env = previous; }
 });

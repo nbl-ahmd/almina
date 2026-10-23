@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { legacyAdminDestination } from './lib/admin/redirects';
 import { hasDuplicateQuery, indexingQuery, isPublicPath } from './lib/seo';
 import { stylesheetPolicy } from './lib/security/stylesheet-policy';
+import { legacyMediaTarget } from './lib/catalog/legacy-media';
 import { mediaOrigin, mediaTarget } from './lib/catalog/image-delivery';
 export function proxy(request: NextRequest) {
   const isMediaHost = request.nextUrl.hostname === new URL(mediaOrigin).hostname;
@@ -13,12 +14,14 @@ export function proxy(request: NextRequest) {
     if (isMediaHost && request.nextUrl.pathname === '/robots.txt') {
       return new NextResponse('User-agent: *\nAllow: /media/\nDisallow: /\n', { headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=3600' } });
     }
+    if (legacyMediaTarget(request.nextUrl.pathname)) return NextResponse.next();
     if (request.nextUrl.search) return reject(404);
     const target = mediaTarget(request.nextUrl.pathname, readWebEnvironment(process.env).CLOUDINARY_CLOUD_NAME);
     if (!target) return reject(404);
     // The raster handler sets cache headers only after validating a successful response.
     return NextResponse.next();
   }
+  if (legacyMediaTarget(request.nextUrl.pathname)) return NextResponse.next();
   const destination = legacyAdminDestination(request.nextUrl.pathname);
   if (destination) {
     const target = new URL(destination, request.url);
