@@ -62,8 +62,8 @@ try {
       assert.equal(schema.offers.price, index === 0 ? '0.00' : '9.99');
       assert.ok(!schema.aggregateRating && !schema.offers.availability);
       if (index === 0) {
-        assert.deepEqual(schema.image, recovered.cloudinaryImages);
-        assert.ok(head.includes('res.cloudinary.com/synthetic/image/upload/v1/recovery-example.webp'));
+        assert.deepEqual(schema.image, ['https://cdn.alminapharmacy.com/media/w1200/v1/recovery-example.webp']);
+        assert.ok(head.includes('https://cdn.alminapharmacy.com/media/w1200/v1/recovery-example.webp'));
       }
     }
     for (const source of [`/productdetails/${recovered.product_id}?utm_source=recovery`, `/products/old-name--${recovered.product_id}?utm_source=recovery`]) {

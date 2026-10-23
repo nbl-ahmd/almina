@@ -11,7 +11,7 @@ export function ProductImage({ cloudName, alt, ...props }: Props) {
   const useCdn = cloudinaryDelivery(source, cloudName, 640) !== null;
   const loader = ({ src, width }: ImageLoaderProps) =>
     cloudinaryDelivery(src, cloudName, width) ?? src;
-  // Non-Cloudinary/local/legacy media retains Next's existing optimizer and host policy.
+  // Local artwork/placeholders retain Next's optimizer; product photos avoid double encoding.
   return (
     <Image
       {...props}
