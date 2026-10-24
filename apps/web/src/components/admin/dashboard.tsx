@@ -16,6 +16,7 @@ import { display, record, rows } from './views';
 import {
   Badge,
   BarList,
+  Button,
   Card,
   EmptyState,
   Note,
@@ -170,7 +171,6 @@ export async function AdminDashboard({ user }: { user: Identity }) {
   return (
     <>
       <PageHeader
-        eyebrow="Overview"
         title="Dashboard"
         description={
           recent.length === 1
@@ -179,13 +179,13 @@ export async function AdminDashboard({ user }: { user: Identity }) {
         }
         actions={
           <>
-            <Link className="admin-btn--secondary" href="/admin/orders">
-              Open orders
-            </Link>
+            <Button asChild variant="outline">
+              <Link href="/admin/orders">Open orders</Link>
+            </Button>
             {admin ? (
-              <Link className="admin-btn--primary" href="/admin/products/new">
-                Create product
-              </Link>
+              <Button asChild variant="primary">
+                <Link href="/admin/products/new">Create product</Link>
+              </Button>
             ) : null}
           </>
         }

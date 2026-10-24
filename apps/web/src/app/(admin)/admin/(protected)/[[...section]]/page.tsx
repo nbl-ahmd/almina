@@ -73,7 +73,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Restricted"
           title="Access denied"
           description="You do not have permission to use this area. Ask an administrator if you need access."
           actions={<Link href="/admin/orders">View assigned orders</Link>}
@@ -105,7 +104,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Overview"
           title="Operations"
           description="Bounded, per-process measurements. Collect every deployed API instance before making a release decision."
         />
@@ -129,7 +127,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Catalogue"
             title="Read-only inventory"
             description="Product changes require an administrator."
             actions={<Link href="/admin/products">Back to products</Link>}
@@ -159,7 +156,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Catalogue"
             title={product ? "Edit product" : "Create product"}
             description={
               product
@@ -190,7 +186,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Products"
           description="Search inventory, review stock and publish changes. Staff accounts have read-only access."
           actions={
@@ -323,7 +318,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Catalogue"
             title="Edit category"
             description={`Update the label, colour and image for ${display(item.name)}.`}
             actions={<Link href="/admin/categories">Back to categories</Link>}
@@ -367,7 +361,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Categories"
           description="Organise the storefront into browsable groups."
         />
@@ -442,7 +435,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Banners"
           description="Upload event, offer and campaign artwork for the homepage carousel. Newest banners appear first."
         />
@@ -520,7 +512,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Commerce"
           title="Orders"
           description="Only orders permitted by your current role and city assignments are shown."
         />
@@ -588,7 +579,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Administration"
           title="User management"
           description="Provision staff accounts and assign the cities they may serve."
         />
@@ -686,7 +676,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Administration"
           title="Store settings"
           description="Control storefront availability. Closing the store stops new checkout activity."
         />
@@ -715,7 +704,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Catalog import"
           description="Review prepared ERP files and import them as unpublished drafts."
           actions={<Link href="/admin/products">Review imported products</Link>}
@@ -728,7 +716,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Administration"
           title="Product recovery"
           description="Restore reviewed product drafts without overwriting existing records."
         />
@@ -739,7 +726,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Engagement"
           title="Notification management"
           description="Order updates stream from the server, with a recovery check every 10 seconds after missed events or a connection loss."
         />
@@ -771,7 +757,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Engagement"
             title={`Conversation with ${display(conversation.name)}`}
             description={
               conversation.messageCount !== undefined
@@ -830,7 +815,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Engagement"
           title="WhatsApp tools"
           description="Recipients, approved templates, posters and delivery reports."
         />

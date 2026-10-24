@@ -9,12 +9,11 @@ export function NeedsAction({ data, q, reason, status }: { data: unknown; q?: st
   const page = (value: number) => `/admin/needs-action?${new URLSearchParams({ offset: String(value), ...(q ? { q } : {}), ...(reason ? { reason } : {}), ...(status ? {status} : {}) })}`;
   return <>
     <PageHeader
-      eyebrow="Catalogue"
       title="Needs action"
       description="Review draft readiness and finish photos or details for published products."
       actions={<Link href="/admin/products">All products</Link>}
     />
-    <div data-motion="rise">
+    <div>
       <Note
         tone="warning"
         icon={<ClipboardDocumentCheckIcon />}

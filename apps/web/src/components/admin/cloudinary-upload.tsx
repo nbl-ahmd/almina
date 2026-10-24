@@ -30,7 +30,7 @@ export function CloudinaryUpload({ productId, revision }: { productId: string; r
     } catch (error) { setFailure(`${error instanceof Error ? error.message : 'Upload failed.'} Retry with the same files after an uncertain response. If this continues, contact the administrator.`); }
     finally { setPending(false); }
   }
-  return <form onSubmit={event => { void submit(event); }} className="admin-card admin-stack" aria-busy={pending} data-motion="rise">
+  return <form onSubmit={event => { void submit(event); }} className="admin-card admin-stack" aria-busy={pending}>
     <div>
       <h2>Product photos</h2>
       <p className="admin-card__hint">Choose up to five reviewed photos, up to 20 MB and 20 megapixels each. Photos are oriented, resized without cropping and converted to WebP before upload. The processed gallery stays below 3 MB; the server validates it again. Previous photos remain retained.</p>

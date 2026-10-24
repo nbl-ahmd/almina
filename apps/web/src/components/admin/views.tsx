@@ -53,7 +53,6 @@ export function Table({
   return (
     <div
       className="admin-table-wrap"
-      data-motion="rise"
       tabIndex={0}
       role="region"
       aria-label={caption}
@@ -500,7 +499,6 @@ export function OrderDetail({
   return (
     <>
       <PageHeader
-        eyebrow="Orders"
         title={`Order ${display(order.orderId)}`}
         description={order.channel==='wholesale'?`Wholesale · ${display(record(order.wholesale).businessName)} · ${display(record(order.wholesale).typeId)}`:"Customer, delivery and recorded line details for this order."}
         actions={

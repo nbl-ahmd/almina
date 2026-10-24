@@ -4,7 +4,7 @@ import { EmptyState } from '../../../../../components/admin/ui';
 
 export default function AdminNotFound() {
   return (
-    <section className="admin-card" data-motion="rise">
+    <section className="admin-card">
       <EmptyState icon={<MagnifyingGlassIcon />} title="Admin page not found">
         This page or record is unavailable. It may have been archived, or the
         address may be incomplete.

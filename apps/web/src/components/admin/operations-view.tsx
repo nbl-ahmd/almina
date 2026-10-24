@@ -12,7 +12,7 @@ export function OperationsView({ snapshot }: { snapshot: z.infer<typeof operatio
   const queue = database.outbox.reduce((total, value) => total + value.count, 0);
   return (
     <>
-      <p className="admin-hint admin-hint--tight" data-motion="rise">
+      <p className="admin-hint admin-hint--tight">
         Measured at {snapshot.http.measuredAt}. This view covers one {snapshot.http.source} process. Refresh to read current signals; collect every deployed API instance before making a release decision.
       </p>
       <StatGrid>
@@ -61,7 +61,7 @@ export function OperationsView({ snapshot }: { snapshot: z.infer<typeof operatio
           : <p>Client JavaScript errors and optional usage reports are not configured.</p>}
         <p className="admin-hint admin-hint--tight">Retained-process counters reset on restart and use minute buckets. An empty sample is unknown. The modular API exposes its independently authenticated operations snapshot; the hosting monitor must collect it and retain evidence for the observation window.</p>
       </Card>
-      <p className="admin-hint" data-motion="rise">
+      <p className="admin-hint">
         <Badge tone="info">One process</Badge> Measurements are bounded per-process samples, not hosting-wide totals.
       </p>
     </>

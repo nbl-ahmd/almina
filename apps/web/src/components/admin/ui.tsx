@@ -1,29 +1,27 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { CountUp, DrawLine } from './motion';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { Slot } from 'radix-ui';
 
-/* Presentational admin primitives. Layout is server-safe: entrance motion is
-   opt-in via `data-motion` attributes that CSS animates (see admin.css). The two
-   effects CSS cannot express — the numeric count-up and the sparkline stroke
-   draw — are small client leaf components in components/admin/motion.tsx. */
+/* Presentational admin primitives, adapted from the shadcn pattern (cva
+   variants + Radix Slot for asChild) and tuned to the Dub-inspired console.
+   The authoritative visual specification is ../app/(admin)/admin/DESIGN.md.
+   Everything here is server-safe: no hooks, no browser APIs. */
 
 export type Tone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info';
 
 export function PageHeader({
-  eyebrow,
   title,
   description,
   actions,
 }: {
-  eyebrow?: string | undefined;
   title: string;
   description?: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <div className="admin-page-head" data-motion="rise">
+    <div className="admin-page-head">
       <div className="admin-page-head__text">
-        {eyebrow ? <p className="admin-page-head__eyebrow">{eyebrow}</p> : null}
         <h1>{title}</h1>
         {description ? (
           <p className="admin-page-head__desc">{description}</p>
@@ -31,6 +29,48 @@ export function PageHeader({
       </div>
       {actions ? <div className="admin-page-head__actions">{actions}</div> : null}
     </div>
+  );
+}
+
+const buttonVariants = cva(
+  'admin-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-100',
+  {
+    variants: {
+      variant: {
+        primary: 'admin-btn--primary',
+        outline: 'admin-btn--outline',
+        secondary: 'admin-btn--secondary',
+        ghost: 'admin-btn--ghost',
+        danger: 'admin-btn--danger',
+      },
+      size: {
+        sm: 'admin-btn--sm',
+        md: '',
+        lg: 'admin-btn--lg',
+        icon: 'admin-btn--sm w-8 px-0',
+      },
+    },
+    defaultVariants: { variant: 'outline', size: 'md' },
+  },
+);
+
+export function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: React.ComponentProps<'button'> &
+  VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : 'button';
+  return (
+    <Comp
+      data-slot="button"
+      className={[buttonVariants({ variant, size }), className]
+        .filter(Boolean)
+        .join(' ')}
+      {...props}
+    />
   );
 }
 
@@ -70,16 +110,8 @@ export function Card({
     </div>
   ) : null;
   const classes = `admin-card${flush ? ' admin-card--flush' : ''}${className ? ` ${className}` : ''}`;
-  if (flush) {
-    return (
-      <section className={classes} data-motion="rise">
-        {head}
-        {children}
-      </section>
-    );
-  }
   return (
-    <section className={classes} data-motion="rise">
+    <section className={classes}>
       {head}
       {description && !title ? (
         <p className="admin-card__hint">{description}</p>
@@ -111,17 +143,35 @@ export function EmptyState({
   );
 }
 
+const badgeVariants = cva('admin-badge', {
+  variants: {
+    tone: {
+      neutral: '',
+      brand: 'admin-badge--brand',
+      success: 'admin-badge--success',
+      warning: 'admin-badge--warning',
+      danger: 'admin-badge--danger',
+      info: 'admin-badge--info',
+    },
+  },
+  defaultVariants: { tone: 'neutral' },
+});
+
 export function Badge({
   tone = 'neutral',
   dot = false,
+  className,
   children,
 }: {
   tone?: Tone;
   dot?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <span className={`admin-badge admin-badge--${tone}`}>
+    <span
+      className={[badgeVariants({ tone }), className].filter(Boolean).join(' ')}
+    >
       {dot ? <span className="admin-dot" aria-hidden="true" /> : null}
       {children}
     </span>
@@ -148,7 +198,9 @@ export function StatTile({
   active?: boolean;
 }) {
   const accent =
-    tone === 'warning' || tone === 'danger' ? ` admin-stat--${tone}` : '';
+    tone === 'warning' || tone === 'danger' || tone === 'success'
+      ? ` admin-stat--${tone}`
+      : '';
   const body = (
     <>
       <div className="admin-stat__top">
@@ -160,19 +212,13 @@ export function StatTile({
         ) : null}
       </div>
       <span className="admin-stat__value">
-        {typeof countTo === 'number' ? (
-          // CountUp animates this text after its own node hydrates, so the
-          // server-rendered number is never rewritten out from under React.
-          <CountUp to={countTo} />
-        ) : (
-          value
-        )}
+        {typeof countTo === 'number' ? countTo.toLocaleString() : value}
       </span>
       {meta ? <span className="admin-stat__meta">{meta}</span> : null}
     </>
   );
   return href ? (
-    <li data-motion="rise">
+    <li>
       <Link
         className={`admin-stat${accent}`}
         href={href}
@@ -182,7 +228,7 @@ export function StatTile({
       </Link>
     </li>
   ) : (
-    <li className={`admin-stat${accent}`} data-motion="rise">
+    <li className={`admin-stat${accent}`} data-active={active ? 'true' : undefined}>
       {body}
     </li>
   );
@@ -206,7 +252,9 @@ export function BarList({
         const width = Math.round((item.value / max) * 100);
         const itemTone = item.tone ?? tone;
         const variant =
-          itemTone === 'warning' || itemTone === 'danger'
+          itemTone === 'warning' ||
+          itemTone === 'danger' ||
+          itemTone === 'success'
             ? ` admin-bar__fill--${itemTone}`
             : '';
         return (
@@ -217,7 +265,6 @@ export function BarList({
             <span className="admin-bar__track">
               <span
                 className={`admin-bar__fill${variant}`}
-                data-motion="bar"
                 style={{ width: `${width}%` }}
               />
             </span>
@@ -276,18 +323,30 @@ export function TrendChart({
             y2={height * ratio}
           />
         ))}
-        {single ? null : <path className="admin-spark__area" d={area} />}
-        <DrawLine points={line} />
-        {coords.map((point, index) => (
+        {single ? (
           <circle
-            key={index}
             className="admin-spark__dot"
-            cx={point.x}
-            cy={point.y}
-            r={1.4}
+            cx={width / 2}
+            cy={height / 2}
+            r={2.4}
             vectorEffect="non-scaling-stroke"
           />
-        ))}
+        ) : (
+          <>
+            <path className="admin-spark__area" d={area} />
+            <polyline className="admin-spark__line" points={line} />
+            {coords.map((point, index) => (
+              <circle
+                key={index}
+                className="admin-spark__dot"
+                cx={point.x}
+                cy={point.y}
+                r={1.4}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </>
+        )}
       </svg>
       <figcaption className="admin-axis">
         {points.length > 1 ? (

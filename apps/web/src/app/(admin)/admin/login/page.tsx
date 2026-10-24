@@ -39,7 +39,6 @@ export default async function LoginPage() {
         </div>
 
         <div className="admin-login-aside__body">
-          <p className="admin-login-aside__eyebrow">Operations console</p>
           <p className="admin-login-aside__title">
             The pharmacy, run with clarity.
           </p>
