@@ -147,3 +147,8 @@ build/browser journeys and live Turbopack diagnostics before merge/deployment.
 References: [16.4.2 release](https://github.com/vercel/next.js/releases/tag/v16.4.2),
 [image optimization advisory](https://github.com/advisories/GHSA-2464-fhr4-w9xw),
 [Server Actions advisory](https://github.com/advisories/GHSA-p3m5-59mp-jv5r).
+
+
+### 2026-10-25 — Patched DevTools schema dependency
+
+Next.js stays at 16.4.2 and Next DevTools at 0.4.0. The latter's Zod dependency is scoped to 4.6.7. `scripts/tooling/patch-next-devtools.mjs` runs on installation to replace its incompatible Zod-3-internals converter with the public Zod 4 input-mode JSON Schema converter. Original/patched source hashes pin the reviewed bridge; unknown upstream source fails installation. A stdio/SSE protocol regression and real Next runtime route/compilation checks verify compatibility. The root/backend security audits pass without gate suppression. See `RELEASE_REVIEW_2026-10-25.md`.

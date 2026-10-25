@@ -533,3 +533,8 @@ Implemented compact delivery selection, phone delivery bottom sheet, persistent 
 ## 2026-10-25 — Category-first discovery and deterministic listing ranking (local)
 
 Promoted categories/collections rather than the undifferentiated catalogue, retained /products as a secondary route, exposed sorting and removable filters, and replaced public stock-quantity sorting with intent/availability/merchandising ordering. No commerce calculations or production data changed. Isolated web build, API TypeScript, seven catalogue integration tests and ten browser tests passed. See [CATALOG_DISCOVERY_2026-10-25.md](CATALOG_DISCOVERY_2026-10-25.md) for audit, sources, ranking order and limitations. Not deployed.
+
+
+## 2026-10-25 — PR65 security gate and CDN ancestry
+
+Patched the Next DevTools Zod chain through a scoped 4.6.7 override and hash-guarded, idempotent install-time JSON-schema compatibility bridge. Fresh installation, 202 unit tests, full lint/typecheck, stdio argument/schema regression and real Next route/compilation probes pass. Root/backend audits report zero high/critical findings; the audit gate is unchanged. The superseded branded-CDN branch is recorded as merged while retaining the already-integrated implementation and subsequent fixes. See [RELEASE_REVIEW_2026-10-25.md](RELEASE_REVIEW_2026-10-25.md).
