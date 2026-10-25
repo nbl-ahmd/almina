@@ -80,3 +80,10 @@ test('proxy trust is disabled by default and accepts only explicit bounded IP li
     assert.throws(() => readApiEnvironment({ API_TRUST_PROXY }), ConfigurationError);
   }
 });
+
+test('maintained API uses the same Render-only proxy defaults as the retained runtime', () => {
+  const base={APP_ENV:'production',NODE_ENV:'production',WEB_ORIGIN:'https://shop.example.invalid',RENDER:'true'};
+  assert.ok(readApiEnvironment(base).API_TRUST_PROXY.includes('172.64.0.0/13'));
+  assert.deepEqual(readApiEnvironment({...base,RENDER:'false'}).API_TRUST_PROXY,[]);
+  assert.deepEqual(readApiEnvironment({...base,API_TRUST_PROXY:'127.0.0.1'}).API_TRUST_PROXY,['127.0.0.1']);
+});

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isIP } from 'node:net';
+import { resolveProxyTrust } from '@almina/config/proxy';
 
 export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 export type AppEnvironment = 'development' | 'staging' | 'production';
@@ -100,7 +101,8 @@ export function readApiEnvironment(source: EnvironmentSource) {
     DATABASE_MODE: z.enum(['disabled', 'enabled']).default('disabled'),
     COMMERCE_TELEMETRY_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
     API_TRUST_PROXY: z.string().default('').transform(value => value ? value.split(',').map(item => item.trim()) : [])
-      .refine(values => values.length <= 10 && values.every(value => isIP(value) !== 0)),
+      .refine(values => values.length <= 10 && values.every(value => isIP(value) !== 0))
+      .transform(values => resolveProxyTrust(values, source.RENDER === 'true', shared.APP_ENV === 'development')),
   }), source);
   if (value.DATABASE_MODE === 'disabled') {
     // Fail closed if a secret was supplied but the connection mode was forgotten.

@@ -1,3 +1,4 @@
+import { resolveProxyTrust } from '@almina/config/proxy';
 import { isIP } from 'node:net';
 import { z } from 'zod';
 const source = z.object({
@@ -26,7 +27,7 @@ export function retainedRuntimeConfiguration(raw: Readonly<Record<string, string
     } catch { return true; }
   })) return invalid();
   if (trustProxy.length > 10 || new Set(trustProxy).size !== trustProxy.length || trustProxy.some(ip => !isIP(ip))) return invalid();
-  return { development, origins, trustProxy, port: value.PORT, mongoUri: value.MONGODB_URI, commerceTelemetryEnabled: value.COMMERCE_TELEMETRY_ENABLED,
+  return { development, origins, trustProxy: resolveProxyTrust(trustProxy, raw.RENDER === 'true', development), port: value.PORT, mongoUri: value.MONGODB_URI, commerceTelemetryEnabled: value.COMMERCE_TELEMETRY_ENABLED,
     mongoOptions: { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000, maxPoolSize: 20, minPoolSize: 0, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 3000, socketTimeoutMS: 15000 } };
 }
 export function loadRetainedEnvironment(path: string, load: (path: string) => void = process.loadEnvFile): boolean {
