@@ -4,6 +4,7 @@ import { homeCollections, collectionHref } from '../../../../lib/catalog/merchan
 import { getCollectionProducts } from '../../../../lib/server/collections';
 import { getWebEnvironment } from '../../../../lib/server/env';
 import { sitemapPage, xmlResponse, unavailableSitemap } from '../../../../lib/server/sitemap';
+import { policyPaths } from '../../../../lib/policies';
 export const dynamic = 'force-dynamic';
 export async function GET(_request: Request, { params }: { params: Promise<{ kind: string; page: string }> }) {
   const { kind, page } = await params;
@@ -12,10 +13,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ kin
   try {
     const env = getWebEnvironment();
     if (env.APP_ENV !== 'production') return xmlResponse('urlset', []);
-    const eligibleCollections = kind === 'static' ? (await Promise.all(homeCollections.map(async collection => (await getCollectionProducts(collection)).length ? collectionHref(collection) : null))).filter((path): path is string => path !== null) : [];
-    const editorial:string[]=[];
-    if(kind==='static')for(const locale of ['en','ar'])for(let offset=0;offset<=10000;offset+=50){const page=await getGrowthPages(undefined,locale,offset);editorial.push(...page.items.map(growthPagePath));if(!page.hasNext)break;}
-    const paths = kind === 'static' ? ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', ...editorial, ...eligibleCollections]
+    const staticKind = kind === 'static';
+    const eligibleCollections = staticKind ? (await Promise.all(homeCollections.map(async collection => (await getCollectionProducts(collection)).length ? collectionHref(collection) : null))).filter((path): path is string => path !== null) : [];
+    const editorial: string[] = [];
+    if (staticKind) for (const locale of ['en', 'ar']) for (let offset = 0; offset <= 10000; offset += 50) {
+      const growth = await getGrowthPages(undefined, locale, offset);
+      editorial.push(...growth.items.map(growthPagePath));
+      if (!growth.hasNext) break;
+    }
+    const hasGuides = editorial.some(path => path.includes('/health-guides/'));
+    const staticPaths = ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands',
+      ...(hasGuides ? ['/health-guides'] : []), policyPaths.returns, policyPaths.shipping, policyPaths.terms, policyPaths.privacy];
+    const paths = staticKind ? [...new Set([...staticPaths, ...editorial, ...eligibleCollections])]
       : (await sitemapPage(kind as 'products' | 'categories', page === 'first.xml' ? undefined : page.slice(0, -4))).paths;
     return xmlResponse('urlset', paths.map(path => new URL(path, env.WEB_ORIGIN).href));
   } catch { return unavailableSitemap(); }

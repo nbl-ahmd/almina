@@ -39,6 +39,10 @@ test('channel feeds use SKU IDs, exact images, gross prices and platform-specifi
   assert.equal(google.id,'PD1');assert.equal(google.price,'10.50 AED');assert.equal(google.availability,'in_stock');assert.equal(google.identifier_exists,'no');
   assert.equal(meta.availability,'out of stock');assert.equal(google.gtin,'');assert.equal(google.image_link,item.cloudinaryImages[0]);
   assert.ok(feedXml('https://shop.example.invalid',[{...google,title:'A & B <test>'}]).includes('A &amp; B &lt;test&gt;'));
+  const shippingXml=feedXml('https://shop.example.invalid',[google],{feeMinor:1000,currency:'AED'});
+  assert.ok(shippingXml.includes('<g:price>10.00 AED</g:price>'));
+  assert.ok(shippingXml.includes('<g:max_transit_time>5</g:max_transit_time>'));
+  assert.ok(!feedXml('https://shop.example.invalid',[google]).includes('<g:shipping>'));
   assert.ok(feedCsv([{...meta,description:'=HYPERLINK("bad")'}]).includes("'=HYPERLINK"));
   assert.equal(feedProduct('https://shop.example.invalid',{...item,googleApproved:false},item.cloudinaryImages,'google'),null);
   assert.equal(feedProduct('https://shop.example.invalid',{...item,productType:'otc'},item.cloudinaryImages,'meta'),null);
@@ -46,12 +50,13 @@ test('channel feeds use SKU IDs, exact images, gross prices and platform-specifi
   assert.ok(feedIssues(item,'google',[]).includes('Public HTTPS product image'));
 });
 test('pagination is self-canonical while search/filter and invalid pagination remain excluded',()=>{
+  const googleBot={index:true,follow:true,'max-image-preview':'large','max-snippet':-1,'max-video-preview':-1};
   const meta=pageMetadata('https://shop.example.invalid',true,'Hair care','Description','/categories/hair',{page:'2'});
-  assert.deepEqual(meta.alternates,{canonical:'https://shop.example.invalid/categories/hair?page=2'});assert.deepEqual(meta.robots,{index:true,follow:true});
-  assert.deepEqual(pageMetadata('https://shop.example.invalid',true,'Hair','D','/products',{page:'bad'}).robots,{index:false,follow:true});
-  assert.deepEqual(pageMetadata('https://shop.example.invalid',true,'Hair','D','/products',{page:'2',q:'cream'}).robots,{index:false,follow:true});
-  assert.deepEqual(pageMetadata('https://shop.example.invalid',true,'Item','D','/products/item--PD1',{page:'2'}).robots,{index:false,follow:true});
-  const data=productData('https://shop.example.invalid',item,item.cloudinaryImages,[],{},true);
+  assert.deepEqual(meta.alternates,{canonical:'https://shop.example.invalid/categories/hair?page=2'});assert.deepEqual(meta.robots,{index:true,follow:true,googleBot});
+  assert.deepEqual(pageMetadata('https://shop.example.invalid',true,'Hair','D','/products',{page:'bad'}).robots,{index:false,follow:true,googleBot:{...googleBot,index:false}});
+  assert.deepEqual(pageMetadata('https://shop.example.invalid',true,'Hair','D','/products',{page:'2',q:'cream'}).robots,{index:false,follow:true,googleBot:{...googleBot,index:false}});
+  assert.deepEqual(pageMetadata('https://shop.example.invalid',true,'Item','D','/products/item--PD1',{page:'2'}).robots,{index:false,follow:true,googleBot:{...googleBot,index:false}});
+  const data=productData('https://shop.example.invalid',item,item.cloudinaryImages,[],{},null);
   assert.equal(data.offers.availability,'https://schema.org/InStock');assert.equal(data.brand!.name,'Example');
 });
 

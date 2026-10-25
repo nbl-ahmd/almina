@@ -60,7 +60,11 @@ try {
       const schema = data.find(value => value['@type'] === 'Product');
       assert.equal(schema.sku, recovered.product_id); assert.equal(schema.url, canonical + path);
       assert.equal(schema.offers.price, index === 0 ? '0.00' : '9.99');
-      assert.ok(!schema.aggregateRating && !schema.offers.availability);
+      assert.ok(!schema.aggregateRating);
+      assert.equal(schema.offers.availability, 'https://schema.org/OutOfStock');
+      assert.equal(schema.offers.hasMerchantReturnPolicy.merchantReturnDays, 7);
+      assert.equal(schema.offers.shippingDetails.shippingRate.value, '10.00');
+      if (index === 1) assert.equal(schema.image[0], `${canonical}/product-placeholder.svg`);
       if (index === 0) {
         assert.deepEqual(schema.image, ['https://cdn.alminapharmacy.com/media/w1200/v1/recovery-example.webp']);
         assert.ok(head.includes('https://cdn.alminapharmacy.com/media/w1200/v1/recovery-example.webp'));
@@ -74,7 +78,7 @@ try {
       if (source.startsWith('/productdetails/')) assert.equal(location.origin, canonical);
     }
   }
-  for (const path of ['/', '/products', '/categories', '/offers', '/about', '/contact', '/brands', '/ras-al-khaimah', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa']) {
+  for (const path of ['/', '/products', '/categories', '/offers', '/about', '/contact', '/brands', '/ras-al-khaimah', '/privacy', '/returns', '/shipping', '/terms', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa']) {
     for (const userAgent of ['Mozilla/5.0', 'Googlebot', 'facebookexternalhit', 'Twitterbot']) {
       const response = await fetch(`${origin}${path}`, { headers: { 'User-Agent': userAgent } });
       assert.equal(response.status, 200, path);
@@ -100,7 +104,11 @@ try {
         assert.equal(product.name, 'Daily Care'); assert.equal(product.sku, 'PD0001');
         assert.equal(product.offers.price, '20.00');
         assert.equal(product.offers.priceCurrency, 'AED');
-        assert.ok(!product.aggregateRating && !product.offers.availability);
+        assert.ok(!product.aggregateRating);
+        assert.equal(product.offers.availability, 'https://schema.org/InStock');
+        assert.deepEqual(product.offers.hasMerchantReturnPolicy.returnPolicyCategory, 'https://schema.org/MerchantReturnFiniteReturnWindow');
+        assert.equal(product.offers.shippingDetails.shippingRate.value, '10.00');
+        assert.ok(product.image.length && product.image.every(image => image.startsWith('https://')));
         const nonce = response.headers.get('content-security-policy').match(/'nonce-([^']+)'/)[1];
         for (const match of html.matchAll(/<script\b([^>]*)>/g)) assert.ok(match[1].includes(`nonce="${nonce}"`));
       }
@@ -145,7 +153,9 @@ try {
     assert.match(response.headers.get('content-type'), /application\/xml/);
     const xml = await response.text(); allUrls.push(...[...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1]));
   }
-  assert.deepEqual(allUrls.sort(), ['/', '/products', '/categories', '/offers', '/about', '/contact', '/brands', '/ras-al-khaimah', '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', ...recoveredPaths].map(path => `${canonical}${path}`).sort());
+  assert.deepEqual(allUrls.sort(), ['/', '/products', '/categories', '/offers', '/about', '/contact', '/brands', '/ras-al-khaimah',
+    '/returns', '/shipping', '/terms', '/privacy',
+    '/products/daily-care--PD0001', '/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', ...recoveredPaths].map(path => `${canonical}${path}`).sort());
   assert.equal((await fetch(`${origin}/sitemaps/orders/first.xml`)).status, 404);
   const measurements = [];
   for (const path of ['/products', '/search?q=Recovery', ...recoveredPaths]) {
