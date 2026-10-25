@@ -219,3 +219,19 @@ body:has(.storefront-shell) { padding-bottom: 0; }
   .storefront-menu-sheet[data-state='open'] { animation: care-navigation-enter 160ms cubic-bezier(0.16,1,0.3,1); }
   .storefront-search-panel { animation: care-navigation-enter 160ms cubic-bezier(0.16,1,0.3,1); }
 }
+
+/* Mobile app shell: compact persistent navigation, with space for purchase docks. */
+@media (max-width: 767px) {
+  .storefront-header {
+    padding-top: env(safe-area-inset-top);
+  }
+  .storefront-shell #main-content {
+    scroll-margin-top: 132px;
+  }
+  .storefront-shell :is(input, select, textarea) {
+    scroll-margin-block: 152px 120px;
+  }
+  .storefront-shell .storefront-footer {
+    margin-top: 2rem;
+  }
+}

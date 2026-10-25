@@ -30,7 +30,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
       >
         {t(locale, 'skipToContent')}
       </a>
-      <header className="storefront-header bg-surface">
+      <header className="storefront-header sticky top-0 z-40 bg-surface md:static md:z-auto">
         <div className="hidden bg-care-mint text-ink md:block">
           <div className="mx-auto flex min-h-11 max-w-[1344px] items-center justify-between gap-4 px-6 text-[13px] leading-5 text-ocean lg:px-8">
             <span className="truncate">{t(locale, 'announcement')}</span>
@@ -49,8 +49,8 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
           </div>
         </div>
         <div className="border-b border-border bg-surface">
-          <div className="header-content mx-auto grid max-w-[1344px] grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-4 py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-x-3 md:px-6 md:py-3 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] lg:gap-x-4 lg:px-8">
-            <StorefrontMenu categories={categories} locale={locale} mobile />
+          <div className="header-content mx-auto grid max-w-[1344px] grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-2 px-4 py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-x-3 md:px-6 md:py-3 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] lg:gap-x-4 lg:px-8">
+            {/* Mobile uses the persistent tab bar; the drawer remains available for future use. */}
             <Link
               href="/"
               aria-label={t(locale, 'homeAria')}
@@ -77,7 +77,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
               <UserCircleIcon className="size-[23px]" aria-hidden="true" />
               <span className="hidden text-sm font-medium xl:inline">{t(locale, 'linkAccount')}</span>
             </Link>
-            <CartLink locale={locale} />
+            <div className="hidden md:block"><CartLink locale={locale} /></div>
           </div>
         </div>
         <div className="hidden border-b border-border md:block">
@@ -107,8 +107,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
   );
 }
 const shopLinks: [MessageKey, string][] = [
-  ["linkAllProducts", "/products"],
-  ["linkCategories", "/categories"],
+    ["linkCategories", "/categories"],
   ["linkOffers", "/offers"],
   ["linkShopBrands", "/brands"],
 ];

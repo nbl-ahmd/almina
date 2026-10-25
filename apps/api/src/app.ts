@@ -58,6 +58,8 @@ export function createApp(options: {
   app.use((_req, res, next) => {
     res.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()'); next();
   });
+  // External uptime ping: no authentication, database or provider work.
+  app.get('/api/ping', (_req, res) => res.set('Cache-Control', 'no-store').type('text/plain').send('pong'));
   // Health routes do not depend on browser CORS or public-API quota.
   const routes = ['/health/live', '/health/ready', '/api/v1/status'];
   for (const route of routes) app.get(route, async (req, res) => {

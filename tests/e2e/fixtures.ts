@@ -53,6 +53,7 @@ export async function login(page: Page, username = 'synthetic-admin') {
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(adminOrigin + '/admin');
   await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
+  await streamSettled(page);
 }
 export async function openAdminSection(page: Page, name: string) {
   // Below 768px the administration navigation is a drawer. Open it first so the
@@ -61,4 +62,27 @@ export async function openAdminSection(page: Page, name: string) {
   const toggle = page.getByRole('button', { name: 'Menu', exact: true });
   if (await toggle.isVisible()) await toggle.click();
   await page.getByRole('link', { name, exact: true }).click();
+}
+// The admin pages stream: Next writes the finished page into a hidden container
+// and swaps it in while the page hydrates. Until that swap lands the document
+// briefly holds two copies of every control, and label queries can match the
+// hidden one. Wait for load, then for a quiet DOM window so hydration and the
+// streamed swap have both finished before the test starts querying.
+export async function streamSettled(page: Page) {
+  await page.waitForLoadState('load');
+  await page.evaluate(() => new Promise<void>((settle) => {
+    let quiet = window.setTimeout(finish, 300);
+    const stop = window.setTimeout(finish, 10000);
+    const observer = new MutationObserver(() => {
+      clearTimeout(quiet);
+      quiet = window.setTimeout(finish, 300);
+    });
+    function finish() {
+      observer.disconnect();
+      clearTimeout(quiet);
+      clearTimeout(stop);
+      settle();
+    }
+    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+  }));
 }

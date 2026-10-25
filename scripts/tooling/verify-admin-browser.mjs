@@ -65,6 +65,25 @@ function open(path) {
     "--fn",
     'document.querySelector("h1")?.getBoundingClientRect().width > 0 && !document.querySelector(\'[aria-busy="true"]\')',
   );
+  // Next streams the finished route into a hidden container and swaps it in
+  // while the page hydrates. Until that swap lands the document can briefly
+  // hold two copies of a control, and a click can land on the inert one.
+  // Wait for a quiet DOM window (hard-capped) before the caller interacts.
+  evaluate(`new Promise((resolve) => {
+    let quiet = setTimeout(finish, 250);
+    const stop = setTimeout(finish, 4000);
+    const observer = new MutationObserver(() => {
+      clearTimeout(quiet);
+      quiet = setTimeout(finish, 250);
+    });
+    function finish() {
+      observer.disconnect();
+      clearTimeout(quiet);
+      clearTimeout(stop);
+      resolve(true);
+    }
+    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+  })`);
 }
 browser("cookies", "clear");
 // Sessions are reused across runs; drop any errors buffered by earlier runs so
@@ -89,10 +108,10 @@ assert.equal(
 );
 browser("fill", "#username", "synthetic-admin");
 browser("fill", "#password", "incorrect-fixture-password");
-browser("find", "role", "button", "click", "--name", "Sign in");
+browser("find", "role", "button", "click", "--name", "Sign in", "--exact");
 browser("wait", "--text", "Invalid username or password.");
 browser("fill", "#password", "synthetic-test-password");
-browser("find", "role", "button", "click", "--name", "Sign in");
+browser("find", "role", "button", "click", "--name", "Sign in", "--exact");
 await waitPath("/admin");
 browser("wait", "--text", "Dashboard");
 const screens = [
@@ -172,7 +191,7 @@ open("/admin/orders/" + "c".repeat(24));
 browser("fill", "input[name=billno]", "12345");
 browser("fill", "input[name=billamount]", "40");
 evaluate("window.confirm = () => true");
-browser("find", "role", "button", "click", "--name", "Dispatch order");
+browser("find", "role", "button", "click", "--name", "Dispatch order", "--exact");
 browser("wait", "--text", "Saved successfully.");
 let commands = await (
   await fixtureFetch(fixture + "/__fixture/commands")
@@ -190,7 +209,7 @@ browser(
   "input[name=stockReason]",
   "Synthetic fixture physical recount",
 );
-browser("find", "role", "button", "click", "--name", "Save product");
+browser("find", "role", "button", "click", "--name", "Save product", "--exact");
 browser("wait", "--text", "Saved successfully.");
 commands = await (await fixtureFetch(fixture + "/__fixture/commands")).json();
 assert.ok(
@@ -208,7 +227,7 @@ open("/admin/orders");
 browser(
   "wait",
   "--fn",
-  'document.querySelector(".admin-status p")?.textContent === "Order updates connected"',
+  'document.querySelector(".admin-status")?.dataset.state === "online"',
 );
 await fixtureFetch(fixture + "/__fixture/new-order", {
   method: "POST",
@@ -223,12 +242,16 @@ await fixtureFetch(fixture + "/__fixture/failure", {
   method: "POST",
   headers: { connection: "close" },
 });
-browser("wait", "--text", "Order updates disconnected");
+browser("wait", "--text", "Reconnecting");
 await fixtureFetch(fixture + "/__fixture/failure", {
   method: "POST",
   headers: { connection: "close" },
 });
-browser("wait", "--text", "Order updates connected");
+browser(
+  "wait",
+  "--fn",
+  'document.querySelector(".admin-status")?.dataset.state === "online"',
+);
 browser("reload");
 browser(
   "wait",
@@ -237,13 +260,13 @@ browser(
 );
 assert.ok(evaluate("document.body.innerText").includes("Orders"));
 open("/admin");
-browser("find", "role", "button", "click", "--name", "Sign out");
+browser("find", "role", "button", "click", "--name", "Sign out", "--exact");
 await waitPath("/admin/login");
 browser("wait", "--load", "domcontentloaded");
 browser("wait", "--text", "Staff sign in");
 browser("fill", "#username", "synthetic-staff");
 browser("fill", "#password", "synthetic-test-password");
-browser("find", "role", "button", "click", "--name", "Sign in");
+browser("find", "role", "button", "click", "--name", "Sign in", "--exact");
 await waitPath("/admin");
 browser("wait", "--text", "Dashboard");
 open("/admin/users");

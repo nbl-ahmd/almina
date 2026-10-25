@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { adminRequest } from './controls';
 import { prepareProductImages } from '../../lib/admin/product-images';
 const subscribe = () => () => {};
@@ -29,13 +30,24 @@ export function CloudinaryUpload({ productId, revision }: { productId: string; r
     } catch (error) { setFailure(`${error instanceof Error ? error.message : 'Upload failed.'} Retry with the same files after an uncertain response. If this continues, contact the administrator.`); }
     finally { setPending(false); }
   }
-  return <form onSubmit={event => { void submit(event); }} className="admin-card admin-stack" aria-busy={pending} data-motion="rise">
-    <h2>Product photos</h2>
-    <p>Choose up to five reviewed photos, up to 20 MB and 20 megapixels each. Photos are oriented, resized without cropping and converted to WebP before upload. The processed gallery stays below 3 MB; the server validates it again. Previous photos remain retained.</p>
-    <label>Choose product photos<input ref={input} type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" disabled={!ready || pending} required /></label>
+  return <form onSubmit={event => { void submit(event); }} className="admin-card admin-stack" aria-busy={pending}>
+    <div>
+      <h2>Product photos</h2>
+      <p className="admin-card__hint">Add up to five clear photos. Keep packaging and labels fully visible. Up to 20 MB and 20 megapixels per image.</p>
+    </div>
+    <label className="admin-dropzone admin-field--wide" htmlFor="product-photos">
+      <span className="admin-dropzone__icon" aria-hidden="true">
+        <CloudArrowUpIcon width={17} height={17} />
+      </span>
+      <span className="admin-dropzone__text">
+        <strong>Choose product photos</strong>
+        <span>JPG, PNG, WebP, GIF or AVIF · up to 5 images</span>
+      </span>
+      <input ref={input} id="product-photos" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif" disabled={!ready || pending} required />
+    </label>
     <div className="admin-actions">
-      <button disabled={!ready || pending}>{pending ? 'Preparing and uploading…' : 'Save product photos'}</button>
-      <button type="button" className="admin-btn--secondary" disabled={!ready || pending} onClick={() => { sessionStorage.removeItem(receiptKey); setFailure(''); setMessage('Local retry review cleared. Check the gallery before replacing it. All uploaded assets remain retained.'); }}>Clear local upload review</button>
+      <button className="admin-photo-save" disabled={!ready || pending}>{pending ? 'Preparing and uploading…' : 'Save product photos'}</button>
+      <details className="admin-upload-recovery"><summary>Upload recovery</summary><p className="admin-card__hint">Use this only after checking the gallery following an interrupted upload.</p><button type="button" className="admin-btn--secondary" disabled={!ready || pending} onClick={() => { sessionStorage.removeItem(receiptKey); setFailure(''); setMessage('Local retry review cleared. Check the gallery before replacing it. All uploaded assets remain retained.'); }}>Clear local upload review</button></details>
     </div>
     {failure ? <p role="alert" className="admin-alert admin-alert--danger">{failure}</p> : null}{message ? <p role="status" className="admin-alert admin-alert--success">{message}</p> : null}
   </form>;

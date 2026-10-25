@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import { test, expect, reset, state, login, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
+import { test, expect, reset, state, login, streamSettled, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
 const localRequire = createRequire(process.cwd() + '/package.json');
 const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
 
@@ -30,6 +30,22 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
   const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
   const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
   await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
+  await streamSettled(page);
+  if (width < 768) {
+    const more = page.getByRole('button', { name: 'More', exact: true });
+    await more.click();
+    const menu = page.getByRole('dialog', { name: 'All sections', exact: true });
+    await expect(menu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(more).toBeFocused();
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    await menu.getByRole('link', { name: 'Products', exact: true }).click();
+    await expect(page).toHaveURL(adminOrigin + '/admin/products');
+    await expect(menu).toBeHidden();
+    await page.goto(adminOrigin + '/admin/users');
+    await streamSettled(page);
+  }
   await page.getByRole('link', { name: 'Skip to content', exact: true }).focus(); await page.keyboard.press('Enter');
   await expect(page.locator('#admin-main')).toBeFocused();
   await page.evaluate(axe);
@@ -38,6 +54,7 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
     return (await audit.run(document.body)).violations.map(violation => violation.id);
   });
   expect(violations).toEqual([]);
+  await page.locator('summary').filter({hasText:'Create staff account'}).click();
   await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
@@ -53,13 +70,14 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
   expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
   expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.reload(); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
+  await page.reload(); await streamSettled(page); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
 });
 test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
   await login(page);
   for (const width of [360, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(adminOrigin + '/admin/operations');
+    await streamSettled(page);
     await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible();
     await expect(page.getByRole('table', { name: 'Database integrity candidates' })).toBeVisible();
     await expect(page.locator('main')).toContainText('Stock/order reconciliation requires');
@@ -67,6 +85,7 @@ test('operations shows scoped measurements and unknown acceptance at all require
     await page.getByRole('region', { name: 'API requests — five-minute buckets' }).focus();
     await page.keyboard.press('ArrowRight');
     await page.reload();
+    await streamSettled(page);
     await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible();
   }
   const response = await page.request.get(adminOrigin + '/api/admin/operations'); expect(response.status()).toBe(200);
@@ -85,6 +104,7 @@ test('admin login persists through reload and staff access remains scoped', asyn
   await expect(page.locator('main')).toContainText('Invalid username or password.');
   await login(page);
   await page.reload();
+  await streamSettled(page);
   await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
@@ -99,33 +119,38 @@ test('admin order update reaches the real writer and prevents cancellation after
   const order = await created.json() as { id: string };
   await login(page);
   await page.goto(adminOrigin + '/admin/orders/' + order.id);
+  await streamSettled(page);
+  await page.locator('summary').filter({hasText:'Contribution reporting'}).click();
   await expect(page.getByText('No costs recorded.',{exact:false})).toBeVisible();
   await page.getByRole('textbox',{name:'Product cost (AED)',exact:true}).fill('12.30');
   await page.getByRole('textbox',{name:'Fulfilment cost (AED)',exact:true}).fill('2');
   await page.getByRole('textbox',{name:'Payment and other fees (AED)',exact:true}).fill('0');
   await page.getByRole('button',{name:'Save actual costs',exact:true}).click();
   await expect(page.getByText('Costs saved. Order prices and stock are unchanged.',{exact:true})).toBeVisible();
-  await page.reload();await expect(page.getByRole('textbox',{name:'Product cost (AED)',exact:true})).toHaveValue('12.30');
+  await page.reload(); await streamSettled(page);
+  await page.locator('summary').filter({hasText:'Contribution reporting'}).click();
+  await expect(page.getByRole('textbox',{name:'Product cost (AED)',exact:true})).toHaveValue('12.30');
   const lines = page.getByRole('table', { name: 'Recorded order lines' });
   await expect(lines.getByRole('columnheader', { name: 'Charged unit price (AED)' })).toBeVisible();
   await expect(lines.getByRole('cell', { name: '20.00', exact: true })).toBeVisible();
   await expect(lines.getByRole('cell', { name: '40.00', exact: true })).toBeVisible();
   await page.screenshot({ path: '.verification-results/admin-order-price.jpg', type: 'jpeg', fullPage: true });
-  await page.getByLabel('Bill number', { exact: true }).fill('12345');
-  await page.getByLabel('Bill amount (AED)', { exact: true }).fill('40');
+  await page.getByRole('textbox', { name: 'Bill number', exact: true }).fill('12345');
+  await page.getByRole('spinbutton', { name: 'Bill amount (AED)', exact: true }).fill('40');
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Dispatch order', exact: true }).click();
   await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
   expect((await state(request)).orders[0]!.status).toBe('dispatched');
   await expect(page.getByRole('combobox', { name: 'Order status', exact: true })).toHaveValue('dispatched');
   await page.reload();
+  await streamSettled(page);
   await expect(page.getByRole('combobox', { name: 'Order status', exact: true })).toHaveValue('dispatched');
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Cancel order', exact: true }).click();
   await expect(page.locator('main')).toContainText('This record has changed or the action is unavailable.');
   const result = await state(request); expect(result.orders[0]!.status).toBe('dispatched'); expect(result.stock).toBe(2);
   await page.goto(adminOrigin+'/admin/growth');
-  await page.getByRole('button',{name:'Order report',exact:true}).click();
+  await page.getByRole('tab',{name:'Reports',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Recorded contribution',exact:true})).toBeVisible();
   await expect(page.getByText('1 of 1 dispatched orders have complete cost and tax records.',{exact:false})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Repeat purchase cohorts',exact:true})).toBeVisible();
@@ -141,9 +166,13 @@ test('admin order update reaches the real writer and prevents cancellation after
 test('admin stock adjustment requires a reason, preserves the retry receipt and rejects stale stock', async ({ page, request }) => {
   await login(page);
   await page.goto(adminOrigin + '/admin/products/' + productId);
+  await streamSettled(page);
   await page.getByLabel('Stock quantity', { exact: true }).fill('7');
   await page.getByLabel(/^Stock adjustment reason/).fill('Physical count verified');
+  const saving = page.waitForRequest(request => request.method() === 'PUT' && request.url() === adminOrigin + '/api/admin/products/' + productId);
   await page.getByRole('button', { name: 'Save product', exact: true }).click();
+  const payload = (await saving).postData() ?? '';
+  expect(payload).not.toMatch(/name="(?:vat|featured|barcode)"/);
   await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
   expect((await state(request)).stock).toBe(7);
   const response = await page.request.put(adminOrigin + '/api/admin/products/' + productId, {
@@ -163,10 +192,12 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   await page.route('**/*.js', async route => { await scriptsReady; await route.continue(); });
   await page.goto(adminOrigin + '/admin/products/' + productId, { waitUntil: 'commit' });
   try {
-    await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toBeDisabled();
+    await expect(page.locator('button').filter({hasText:'Save product photos'})).toBeDisabled();
     await expect(page.getByLabel('Choose product photos')).toBeDisabled();
   } finally { releaseScripts(); }
+  await page.getByRole('tab', {name:'Photos',exact:true}).click();
   await expect(page.getByLabel('Choose product photos')).toBeEnabled();
+  await page.getByText('Upload recovery', { exact: true }).click();
   await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toHaveCSS('padding-left', '20px');
   await page.getByLabel('Choose product photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
@@ -176,6 +207,8 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   expect(product.cloudinaryImages[0]).toMatch(/^https:\/\/res.cloudinary.com\/synthetic\/image\/upload\/v1\/almina\/products\//);
   expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);
   await page.goto(adminOrigin + '/admin/products');
+  await streamSettled(page);
+  await page.getByRole('button', { name: /^More actions for/ }).click();
   page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Archive product', exact: true }).click();
   await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('No records found.');
   expect((await state(request)).stock).toBe(4);

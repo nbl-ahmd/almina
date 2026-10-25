@@ -18,6 +18,18 @@ async function fixture(probe: DatabaseProbe, run: (origin: string, logs: string[
   finally { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); }
 }
 
+test('external uptime ping supports GET/HEAD without database access', async () => {
+  await fixture({ mode: 'enabled', checkReadiness: async () => { throw new Error('Database must not be called'); } }, async (origin) => {
+    for (const method of ['GET', 'HEAD']) {
+      const response = await fetch(`${origin}/api/ping`, { method });
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.match(response.headers.get('content-type') ?? '', /^text\/plain/);
+      assert.equal(await response.text(), method === 'GET' ? 'pong' : '');
+    }
+  });
+});
+
 test('live API and shared client agree on envelopes, health and correlation', async () => {
   await fixture({ mode: 'disabled', checkReadiness: async () => true }, async (origin) => {
     for (const route of ['/health/live', '/health/ready', '/api/v1/status']) {

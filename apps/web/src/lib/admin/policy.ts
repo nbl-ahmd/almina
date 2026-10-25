@@ -272,6 +272,7 @@ const fields = new Set([
   "lineSnapshots",
   "totalsSnapshot",
   "productId",
+  "product",
   "unitPriceMinor",
   "lineTotalMinor",
   "subtotalMinor",

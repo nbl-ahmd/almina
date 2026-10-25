@@ -1,7 +1,8 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import { useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
+import { Dialog } from 'radix-ui';
 import {
   ArrowTopRightOnSquareIcon,
   Bars3Icon,
@@ -13,7 +14,9 @@ import {
   Cog6ToothIcon,
   CubeIcon,
   DocumentArrowUpIcon,
+  EllipsisHorizontalIcon,
   PhotoIcon,
+  MagnifyingGlassIcon,
   RectangleGroupIcon,
   ShoppingBagIcon,
   Squares2X2Icon,
@@ -29,27 +32,27 @@ type NavGroup = { label: string; items: NavItem[] };
 
 const groups: NavGroup[] = [
   {
-    label: 'Overview',
+    label: 'Workspace',
     items: [
       { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
-      { id: 'operations', label: 'Operations', href: '/admin/operations', icon: ChartBarSquareIcon },
-      { id: 'needs-action', label: 'Needs action', href: '/admin/needs-action', icon: ClipboardDocumentCheckIcon },
+      { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
+      { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
     ],
   },
   {
     label: 'Catalogue',
     items: [
-      { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
+      { id: 'needs-action', label: 'Needs action', href: '/admin/needs-action', icon: ClipboardDocumentCheckIcon },
       { id: 'categories', label: 'Categories', href: '/admin/categories', icon: RectangleGroupIcon },
       { id: 'banners', label: 'Banners', href: '/admin/banners', icon: PhotoIcon },
       { id: 'catalog-import', label: 'Catalog import', href: '/admin/catalog-import', icon: TableCellsIcon },
     ],
   },
   {
-    label: 'Commerce',
+    label: 'Business',
     items: [
       { id: 'wholesale', label: 'Wholesale', href: '/admin/wholesale', icon: UsersIcon },
-      { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
+      { id: 'operations', label: 'Operations', href: '/admin/operations', icon: ChartBarSquareIcon },
     ],
   },
   {
@@ -70,6 +73,10 @@ const groups: NavGroup[] = [
     ],
   },
 ];
+
+/* The phone tab bar keeps the four most-used destinations, then opens the full
+   sheet. It is a different navigation model, not a squeezed sidebar. */
+const mobilePrimary = ['dashboard', 'orders', 'products'] as const;
 
 function initials(name: string) {
   return (
@@ -92,25 +99,15 @@ export function AdminShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  // The sheet is scoped to the route it was opened on, so a navigation closes it
+  // without an effect that mirrors pathname into state.
+  const [openFor, setOpenFor] = useState<string | null>(null);
+  const open = openFor === pathname;
   const toggle = useRef<HTMLButtonElement>(null);
+  const opener = useRef<HTMLButtonElement | null>(null);
+  const [portal, setPortal] = useState<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        toggle.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    const previous = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.documentElement.style.overflow = previous;
-    };
-  }, [open]);
+  const closeSheet = () => setOpenFor(null);
 
   const permitted = new Set(allowed);
   const navGroups = groups
@@ -127,6 +124,13 @@ export function AdminShell({
         pathname === item.href || pathname.startsWith(`${item.href}/`),
     )
     .sort((a, b) => b.href.length - a.href.length)[0];
+  const primary = mobilePrimary
+    .map((id) => navGroups.flatMap((group) => group.items).find((item) => item.id === id))
+    .filter((item): item is NavItem => Boolean(item));
+
+  // Radix restores focus to a Dialog.Trigger, but the sheet is opened from two
+  // different controls, so return focus to whichever one the user pressed.
+  const restoreFocus = () => (opener.current ?? toggle.current)?.focus();
 
   return (
     <>
@@ -134,12 +138,7 @@ export function AdminShell({
         Skip to content
       </a>
       <div className="admin-shell">
-        <aside
-          className="admin-sidebar"
-          id="admin-nav"
-          data-open={open}
-          aria-label="Administration navigation"
-        >
+        <aside className="admin-sidebar" id="admin-nav" aria-label="Administration navigation">
           <div className="admin-brand">
             <Link className="admin-brand__mark" href="/admin" prefetch={false}>
               <span className="admin-brand__logo" aria-hidden="true">
@@ -165,7 +164,6 @@ export function AdminShell({
                       href={item.href}
                       prefetch={false}
                       aria-current={active ? 'page' : undefined}
-                      onClick={() => setOpen(false)}
                     >
                       <Icon className="admin-nav__icon" aria-hidden="true" />
                       {item.label}
@@ -176,39 +174,40 @@ export function AdminShell({
             ))}
           </nav>
           <div className="admin-sidebar__foot">
-            <Link className="admin-store-link" href="/" prefetch={false} onClick={() => setOpen(false)}>
-              <ArrowTopRightOnSquareIcon
-                className="admin-nav__icon"
-                aria-hidden="true"
-              />
+            <Link className="admin-store-link" href="/" prefetch={false}>
+              <ArrowTopRightOnSquareIcon className="admin-nav__icon" aria-hidden="true" />
               View storefront
             </Link>
+            <div className="admin-sidebar__user">
+              <span className="admin-user__avatar" aria-hidden="true">
+                {initials(user.name)}
+              </span>
+              <span className="admin-user__meta">
+                <span className="admin-user__name">{user.name}</span>
+                <span className="admin-user__role">
+                  {user.role === 'admin' ? 'Administrator' : 'Staff'}
+                </span>
+              </span>
+            </div>
           </div>
         </aside>
-        <button
-          type="button"
-          className="admin-scrim"
-          data-open={open}
-          tabIndex={-1}
-          aria-hidden="true"
-          onClick={() => setOpen(false)}
-        />
+
         <div className="admin-main">
           <header className="admin-topbar">
             <button
               ref={toggle}
               type="button"
               className="admin-menu admin-btn--secondary"
+              aria-label="Menu"
               aria-expanded={open}
-              aria-controls="admin-nav"
-              onClick={() => setOpen((value) => !value)}
+              aria-controls="admin-mobile-nav"
+              onClick={(event) => {
+                opener.current = event.currentTarget;
+                setOpenFor(pathname);
+              }}
             >
-              {open ? (
-                <XMarkIcon className="admin-nav__icon" aria-hidden="true" />
-              ) : (
-                <Bars3Icon className="admin-nav__icon" aria-hidden="true" />
-              )}
-              Menu
+              <Bars3Icon className="admin-nav__icon" aria-hidden="true" />
+              <span className="admin-menu__label" aria-hidden="true">Menu</span>
             </button>
             <span className="admin-crumbs">
               <span className="admin-crumbs__root">Administration</span>
@@ -218,6 +217,14 @@ export function AdminShell({
               </span>
             </span>
             <span className="admin-topbar__spacer" />
+            {permitted.has('products') ? (
+              <form action="/admin/products" className="admin-global-search" role="search" aria-label="Inventory search">
+                <MagnifyingGlassIcon width={16} height={16} aria-hidden="true" />
+                <input type="search" name="q" aria-label="Search inventory" placeholder="Search products…" maxLength={80} />
+                <button type="submit" aria-label="Search inventory"><ChevronRightIcon width={14} height={14} aria-hidden="true" /></button>
+              </form>
+            ) : null}
+            <OrderMonitor />
             <span className="admin-user">
               <span className="admin-user__avatar" aria-hidden="true">
                 {initials(user.name)}
@@ -231,14 +238,118 @@ export function AdminShell({
             </span>
             <SessionControls />
           </header>
-          <div className="admin-livestatus">
-            <OrderMonitor />
-          </div>
           <main id="admin-main" tabIndex={-1} className="admin-content">
             {children}
           </main>
+          <nav
+            className="admin-bottomnav"
+            aria-label="Primary"
+            aria-hidden={open || undefined}
+            inert={open || undefined}
+          >
+            {primary.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.id}
+                  className="admin-bottomnav__link"
+                  href={item.href}
+                  prefetch={false}
+                  aria-current={current?.id === item.id ? 'page' : undefined}
+                >
+                  <Icon aria-hidden="true" />
+                  {item.label === 'Needs action' ? 'Review' : item.label}
+                </Link>
+              );
+            })}
+            <button
+              type="button"
+              className="admin-bottomnav__link"
+              data-more="true"
+              data-active={open ? 'true' : undefined}
+              aria-expanded={open}
+              aria-controls="admin-mobile-nav"
+              onClick={(event) => {
+                opener.current = event.currentTarget;
+                setOpenFor(pathname);
+              }}
+            >
+              <EllipsisHorizontalIcon aria-hidden="true" />
+              More
+            </button>
+          </nav>
         </div>
       </div>
+
+      <Dialog.Root open={open} onOpenChange={(value) => (value ? setOpenFor(pathname) : closeSheet())}>
+        {/* Mount inside .admin-app: the sheet's colours, radii and easing are
+            custom properties declared there, and a body portal would lose them. */}
+        <Dialog.Portal container={portal ?? undefined}>
+          <Dialog.Overlay className="admin-sheet-overlay" />
+          <Dialog.Content
+            className="admin-sheet"
+            id="admin-mobile-nav"
+            aria-describedby={undefined}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              restoreFocus();
+            }}
+          >
+            <span className="admin-sheet__grip" aria-hidden="true" />
+            <div className="admin-sheet__head">
+              <Dialog.Title className="admin-sheet__title">All sections</Dialog.Title>
+              <Dialog.Close asChild>
+                <button type="button" className="admin-sheet__close" aria-label="Close menu">
+                  <XMarkIcon width={18} height={18} aria-hidden="true" />
+                </button>
+              </Dialog.Close>
+            </div>
+            <div className="admin-sheet__body">
+              {navGroups.map((group) => (
+                <div className="admin-sheet__group" key={group.label}>
+                  <p className="admin-sheet__group-title">{group.label}</p>
+                  <div className="admin-sheet__grid">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.id}
+                          className="admin-sheet__link"
+                          href={item.href}
+                          prefetch={false}
+                          aria-current={item.id === current?.id ? 'page' : undefined}
+                          onClick={closeSheet}
+                        >
+                          <Icon width={18} height={18} aria-hidden="true" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="admin-sheet__foot">
+              <span className="admin-user">
+                <span className="admin-user__avatar" aria-hidden="true">
+                  {initials(user.name)}
+                </span>
+                <span className="admin-user__meta">
+                  <span className="admin-user__name">{user.name}</span>
+                  <span className="admin-user__role">
+                    {user.role === 'admin' ? 'Administrator' : 'Staff'}
+                  </span>
+                </span>
+              </span>
+              <Link className="admin-store-link" href="/" prefetch={false} onClick={closeSheet}>
+                <ArrowTopRightOnSquareIcon width={16} height={16} aria-hidden="true" />
+                Storefront
+              </Link>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+      <div ref={setPortal} />
     </>
   );
 }

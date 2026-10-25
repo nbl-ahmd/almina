@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 const axe=readFileSync(createRequire(resolve('package.json')).resolve('axe-core/axe.min.js'),'utf8');
-for(const width of [360,390,768,1280])test(`shopping menu and search dropdown work at ${width}px`,async({page})=>{
+for(const width of [768,1280])test(`shopping menu and search dropdown work at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
  const mobile=width<768;
  const trigger=page.getByRole('button',{name:mobile?'Open shopping menu':'All categories',exact:true});
@@ -28,8 +28,24 @@ for(const width of [360,390,768,1280])test(`shopping menu and search dropdown wo
  await input.fill('No match');await expect(page.getByRole('status').filter({hasText:'No suggestions found'})).toBeVisible();
  await page.keyboard.press('Escape');await expect(page.getByRole('listbox')).not.toBeVisible();
 });
-test('Arabic mobile shopping menu keeps RTL and closes after navigation',async({page,context})=>{
- await context.addCookies([{name:'almina_lang',value:'ar',url:'http://127.0.0.1:4710'}]);await page.setViewportSize({width:390,height:900});await page.goto('/');
- await page.getByRole('button',{name:'افتح قائمة التسوق'}).click();const dialog=page.getByRole('dialog');await expect(dialog).toHaveAttribute('dir','rtl');
- await dialog.getByRole('link',{name:'٥٠ درهماً وأقل',exact:true}).click();await expect(page).toHaveURL(/\/collections\/under-50$/);await expect(dialog).not.toBeVisible();
+test('Arabic mobile tabs retain RTL and the compact delivery picker',async({page,context})=>{
+ await context.addCookies([{name:'almina_lang',value:'ar',url:'http://127.0.0.1:4710'}]);
+ await page.setViewportSize({width:390,height:900});await page.goto('/');
+ await expect(page.getByRole('button',{name:'افتح قائمة التسوق'})).toHaveCount(0);
+ await page.locator('[data-slot="delivery-selector"]').click();
+ const dialog=page.locator('.delivery-area-sheet');await expect(dialog).toBeVisible();
+ expect(await dialog.evaluate(el=>getComputedStyle(el).direction)).toBe('rtl');
+ await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
+ await page.locator('.mobile-nav a[href="/categories"]').click();await expect(page).toHaveURL(/\/categories$/);
+ await expect(page.locator('.mobile-nav a[href="/categories"]')).toHaveAttribute('aria-current','page');
+});
+test('mobile delivery sheet saves an area and retains it after reload',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/');
+ const selector=page.locator('[data-slot="delivery-selector"]');await selector.click();
+ const dialog=page.locator('.delivery-area-sheet');await expect(dialog).toBeVisible();
+ const box=await dialog.boundingBox();expect(box).not.toBeNull();expect(Math.round(box!.y+box!.height)).toBe(844);
+ await dialog.locator('input[autocomplete="address-level2"]').fill('Al Nakheel');
+ await dialog.locator('button[type="submit"]').click();await expect(dialog).not.toBeVisible();
+ await expect(selector).toContainText('Al Nakheel');await page.reload();await expect(selector).toContainText('Al Nakheel');
+ await expect(page.locator('.mobile-nav')).toBeVisible();
 });

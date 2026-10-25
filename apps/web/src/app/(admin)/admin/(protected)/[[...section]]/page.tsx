@@ -1,3 +1,5 @@
+import { reportDays } from '../../../../../lib/admin/dashboard';
+import { RowActions } from '../../../../../components/admin/row-actions';
 import {MarketingManager} from '../../../../../components/admin/marketing-manager';
 import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
@@ -20,7 +22,6 @@ import {
   type Section,
 } from "../../../../../lib/admin/policy";
 import { getWebEnvironment } from "../../../../../lib/server/env";
-import { adminFormClass } from '../../../../../lib/admin/styles';
 import {
   Badge,
   Card,
@@ -43,7 +44,7 @@ import {
 } from "../../../../../components/admin/forms";
 import { Command } from "../../../../../components/admin/controls";
 type Query = Record<string, string | string[] | undefined>;
-const formPanel = `${adminFormClass} admin-form-panel`;
+const formPanel = 'admin-form-panel';
 function pagination(section: string, query: Query, length: number) {
   const offset = Number(query.offset ?? 0);
   const link = (value: number) =>
@@ -74,7 +75,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Restricted"
           title="Access denied"
           description="You do not have permission to use this area. Ask an administrator if you need access."
           actions={<Link href="/admin/orders">View assigned orders</Link>}
@@ -106,7 +106,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Overview"
           title="Operations"
           description="Bounded, per-process measurements. Collect every deployed API instance before making a release decision."
         />
@@ -123,14 +122,13 @@ export default async function AdminPage({
       {...(typeof query.status === 'string' ? { status: query.status } : {})} />;
   }
   if (section === "dashboard") {
-    return <AdminDashboard user={user} />;
+    return <AdminDashboard user={user} days={reportDays(query.days)} />;
   }
   if (section === "products") {
     if (detail && user.role !== "admin")
       return (
         <>
           <PageHeader
-            eyebrow="Catalogue"
             title="Read-only inventory"
             description="Product changes require an administrator."
             actions={<Link href="/admin/products">Back to products</Link>}
@@ -160,7 +158,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Catalogue"
             title={product ? "Edit product" : "Create product"}
             description={
               product
@@ -191,7 +188,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Products"
           description="Search inventory, review stock and publish changes. Staff accounts have read-only access."
           actions={
@@ -223,31 +219,37 @@ export default async function AdminPage({
             </Link>
           </p>
         ) : null}
-        <form className={formPanel}>
+        <nav className="admin-inventory-tabs" aria-label="Inventory views">
+          {[
+            ['all', 'All products'], ['sale', 'On sale'],
+            ['outofstock', 'Out of stock'], ['disabled', 'Disabled'],
+          ].map(([value, label]) => {
+            const params = new URLSearchParams();
+            if (typeof query.q === 'string' && query.q) params.set('q', query.q);
+            if (value !== 'all') params.set('view', value!);
+            return <Link key={value} href={`/admin/products${params.size ? `?${params}` : ''}`}
+              aria-current={view === value ? 'page' : undefined}>{label}</Link>;
+          })}
+        </nav>
+        <form className={`${formPanel} admin-inventory-filters`} role="search">
           <label htmlFor="q">
             Search products
             <input
               id="q"
               name="q"
+              type="search"
               defaultValue={display(query.q ?? "")}
               maxLength={80}
               placeholder="Product name or PD number"
             />
           </label>
-          <label htmlFor="view">
-            Inventory view
-            <select
-              id="view"
-              name="view"
-              defaultValue={display(view)}
-            >
-              <option value="all">All products</option>
-              <option value="sale">On sale</option>
-              <option value="outofstock">Out of stock</option>
-              <option value="disabled">Disabled</option>
-            </select>
-          </label>
-          <button>Apply filters</button>
+          <input type="hidden" name="view" value={view} />
+          <div className="admin-actions">
+            <button>Apply filters</button>
+            <Link className="admin-btn--secondary" href="/admin/products">
+              Reset
+            </Link>
+          </div>
         </form>
         <Table
           caption="Product inventory"
@@ -287,9 +289,10 @@ export default async function AdminPage({
               "Read-only"
             ) : (
               <>
-                <Link href={`/admin/products/${display(item._id)}`}>
-                  Edit {display(item.name)}
+                <Link href={`/admin/products/${display(item._id)}`} aria-label={`Edit ${display(item.name)}`}>
+                  Edit
                 </Link>
+                <RowActions label={display(item.name)}>
                 <Command
                   path={`products/publish/${display(item._id)}`}
                   confirm="Change this product's published status?"
@@ -304,6 +307,7 @@ export default async function AdminPage({
                 >
                   Archive product
                 </Command>
+                </RowActions>
               </>
             )
           }
@@ -318,7 +322,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Catalogue"
             title="Edit category"
             description={`Update the label, colour and image for ${display(item.name)}.`}
             actions={<Link href="/admin/categories">Back to categories</Link>}
@@ -334,16 +337,23 @@ export default async function AdminPage({
                   label: "Category name",
                   required: true,
                   value: display(item.name),
+                  section: "Category",
+                  sectionDescription: "How this category is labelled in navigation and product filters.",
                 },
                 {
                   name: "color",
                   label: "Color (R, G, B)",
                   value: display(item.color),
+                  section: "Category",
+                  placeholder: "13, 107, 87",
+                  hint: "Three numbers from 0 to 255, separated by commas.",
                 },
                 {
                   name: "image",
                   label: "Replace image (optional)",
                   type: "file",
+                  section: "Media",
+                  hint: "Square artwork works best. Leave empty to keep the current image.",
                 },
               ]}
             />
@@ -355,24 +365,33 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Categories"
           description="Organise the storefront into browsable groups."
         />
+        <details className="admin-create-panel" open={detail === "new"}><summary>Create category</summary>
         <Card title="Create category">
           <AdminForm
             path="category"
             multipart
             fields={[
-              { name: "name", label: "Category name", required: true },
+              {
+                name: "name",
+                label: "Category name",
+                required: true,
+                section: "Category",
+                sectionDescription: "Create the label first; products can be assigned immediately.",
+              },
               {
                 name: "image",
                 label: "Category image (optional)",
                 type: "file",
+                section: "Media",
+                hint: "Square artwork works best. The image is shown in category navigation.",
               },
             ]}
           />
         </Card>
+        </details>
         <Table
           caption="Categories"
           data={categories}
@@ -392,7 +411,7 @@ export default async function AdminPage({
             },
           ]}
           actions={(item) => (
-            <>
+            <RowActions label={`Actions for ${display(item.name)}`}>
               <Link href={`/admin/products/new?category=${display(item._id)}`}>
                 Create product in {display(item.name)}
               </Link>
@@ -406,11 +425,11 @@ export default async function AdminPage({
                 path={`category/${display(item._id)}`}
                 method="DELETE"
                 variant="danger"
-                confirm="Permanently delete this category and its media?"
+                confirm="Archive this category? Its products, history and media will be retained."
               >
                 Archive category
               </Command>
-            </>
+            </RowActions>
           )}
         />
         {pagination(section, query, categories.length)}
@@ -422,22 +441,29 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Banners"
           description="Upload event, offer and campaign artwork for the homepage carousel. Newest banners appear first."
         />
+        <details className="admin-create-panel"><summary>Add banner</summary>
         <Card title="Add banner">
           <AdminForm
             path="banners"
             multipart
             fields={[
-              { name: "name", label: "Banner name", required: true },
+              {
+                name: "name",
+                label: "Banner name",
+                required: true,
+                section: "Banner",
+                sectionDescription: "Internal name used to find this artwork later.",
+              },
               {
                 name: "link",
                 label: "Destination URL or storefront path",
                 type: "text",
                 hint: "Use a storefront path such as /collections/skin-essentials or a full HTTPS URL.",
                 required: true,
+                section: "Banner",
               },
               {
                 name: "image",
@@ -445,10 +471,12 @@ export default async function AdminPage({
                 type: "file",
                 hint: "Use wide artwork, for example 1600 × 600 pixels. Keep text readable on mobile. The full image is shown without cropping; the newest eight banners appear in the homepage carousel.",
                 required: true,
+                section: "Artwork",
               },
             ]}
           />
         </Card>
+        </details>
         <Table
           caption="Published banners"
           data={banners}
@@ -492,7 +520,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Commerce"
           title="Orders"
           description="Only orders permitted by your current role and city assignments are shown."
         />
@@ -560,22 +587,34 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Administration"
           title="User management"
           description="Provision staff accounts and assign the cities they may serve."
         />
+        <details className="admin-create-panel"><summary>Create staff account</summary>
         <Card title="Create staff account">
           <AdminForm
             path="auth/signup"
             label="Create staff account"
             fields={[
-              { name: "name", label: "Full name", required: true },
-              { name: "username", label: "Username", required: true },
+              {
+                name: "name",
+                label: "Full name",
+                required: true,
+                section: "Account",
+                sectionDescription: "The person who will sign in to administration.",
+              },
+              {
+                name: "username",
+                label: "Username",
+                required: true,
+                section: "Account",
+              },
               {
                 name: "password",
                 label: "Password (at least 12 characters)",
                 type: "password",
                 required: true,
+                section: "Account",
               },
               {
                 name: "role",
@@ -584,15 +623,21 @@ export default async function AdminPage({
                   { value: "user", label: "Staff" },
                   { value: "admin", label: "Administrator" },
                 ],
+                section: "Access",
+                sectionDescription: "Staff see orders for their cities only. Administrators manage the full store.",
               },
               {
                 name: "cities",
                 label: "Assigned cities",
-                hint: "Comma-separated exact city names. Unassigned staff cannot access orders.",
+                kind: "tags",
+                placeholder: "City A, City B",
+                hint: "Separate exact city names with commas. Unassigned staff cannot access orders.",
+                section: "Access",
               },
             ]}
           />
         </Card>
+        </details>
         <Table
           caption="Staff accounts"
           data={users}
@@ -641,7 +686,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Administration"
           title="Store settings"
           description="Control storefront availability. Closing the store stops new checkout activity."
         />
@@ -670,7 +714,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Catalogue"
           title="Catalog import"
           description="Review prepared ERP files and import them as unpublished drafts."
           actions={<Link href="/admin/products">Review imported products</Link>}
@@ -683,7 +726,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Administration"
           title="Product recovery"
           description="Restore reviewed product drafts without overwriting existing records."
         />
@@ -694,7 +736,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Engagement"
           title="Notification management"
           description="Order updates stream from the server, with a recovery check every 10 seconds after missed events or a connection loss."
         />
@@ -726,7 +767,6 @@ export default async function AdminPage({
       return (
         <>
           <PageHeader
-            eyebrow="Engagement"
             title={`Conversation with ${display(conversation.name)}`}
             description={
               conversation.messageCount !== undefined
@@ -785,7 +825,6 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          eyebrow="Engagement"
           title="WhatsApp tools"
           description="Recipients, approved templates, posters and delivery reports."
         />

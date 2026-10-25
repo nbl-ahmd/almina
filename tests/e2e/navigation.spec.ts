@@ -15,11 +15,14 @@ for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigat
   const search = page.getByRole('search', { name: 'Product search' }); const input = search.getByRole('combobox', { name: 'Search products' });
   await expect(input).toHaveAttribute('maxlength', '80'); await input.focus(); await input.fill('Daily'); await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/search\?q=Daily$/); await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
-  await page.reload(); await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
-  if(width<768)await page.getByRole('button',{name:'Open shopping menu',exact:true}).click();
-  else await navigation.getByRole('button',{name:'All categories',exact:true}).click();
-  const categoryMenu=width<768?page.getByRole('dialog',{name:'Explore Al Mina'}):navigation;
-  await categoryMenu.getByRole('link',{name:'Shop by category',exact:true}).focus();await page.keyboard.press('Enter');
+  await page.reload(); if(width<1024)await page.locator('#catalog-filters > summary').click(); await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
+  if(width<768){
+    await expect(page.getByRole('button',{name:'Open shopping menu',exact:true})).toHaveCount(0);
+    await navigation.getByRole('link',{name:'Shop',exact:true}).click();
+  } else {
+    await navigation.getByRole('button',{name:'All categories',exact:true}).click();
+    await navigation.getByRole('link',{name:'Shop by category',exact:true}).focus();await page.keyboard.press('Enter');
+  }
   await expect(page).toHaveURL(/\/categories$/);
   if(width<768)await expect(navigation.getByRole('link',{name:'Shop',exact:true})).toHaveAttribute('aria-current','page');
   else {await navigation.getByRole('button',{name:'All categories',exact:true}).click();await expect(navigation.getByRole('link',{name:'Shop by category',exact:true})).toHaveAttribute('aria-current','page');}

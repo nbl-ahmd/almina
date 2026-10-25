@@ -1,275 +1,105 @@
 import Link from 'next/link';
-import type { ComponentProps } from 'react';
-import type { z } from 'zod';
-import {
-  BellAlertIcon,
-  ClipboardDocumentCheckIcon,
-  CubeIcon,
-  InboxIcon,
-  ShoppingBagIcon,
-  SignalIcon,
-} from '@heroicons/react/24/outline';
-import { operationsSnapshotSchema } from '@almina/contracts';
+import { ArrowRightIcon, ArrowUpRightIcon, ArrowTrendingUpIcon, CubeIcon, InboxIcon, ShoppingBagIcon, TruckIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { adminRead } from '../../lib/server/admin/gateway';
+import { readDashboardReport } from '../../lib/server/admin/reporting';
 import type { Identity } from '../../lib/admin/policy';
+import { changePercent, minorMoney, reportDate, type DashboardReport } from '../../lib/admin/dashboard';
 import { display, record, rows } from './views';
-import {
-  Badge,
-  BarList,
-  Card,
-  EmptyState,
-  Note,
-  PageHeader,
-  StatGrid,
-  StatTile,
-  TrendChart,
-  orderStatusTone,
-} from './ui';
+import { Badge, Button, Card, EmptyState, PageHeader, orderStatusTone } from './ui';
+import { DailySalesChart, DashboardControls, ReloadReport } from './dashboard-charts';
 
-const statuses = [
-  'pending',
-  'confirmed',
-  'packed',
-  'dispatched',
-  'cancelled',
-  'refunded',
-] as const;
-
-function shortDay(iso: string) {
-  const date = new Date(iso);
-  return Number.isNaN(date.getTime())
-    ? iso.slice(0, 10)
-    : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+function stamp(value: unknown) {
+  const raw = display(value), date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? raw : date.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Dubai' });
 }
 
-function money(value: number) {
-  return `AED ${value.toLocaleString('en-AE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function Metric({ label, value, previous, current, currency = false, icon, inverse = false }: {
+  label: string; value: string; previous?: number | undefined; current?: number | undefined; currency?: boolean;
+  icon: React.ReactNode; inverse?: boolean;
+}) {
+  const delta = previous === undefined || current === undefined ? null : changePercent(current, previous);
+  return <article className="commerce-metric">
+    <div className="commerce-metric__head"><h2>{label}</h2>{icon}</div>
+    <p className="commerce-metric__value">{currency ? <span>AED</span> : null}{value}</p>
+    <div className="commerce-metric__foot">
+      {delta === null ? <span>{current === undefined ? 'Report unavailable' : 'No previous-period baseline'}</span> : <><Badge tone={delta === 0 ? 'neutral' : (delta > 0) !== inverse ? 'success' : 'danger'}>{delta > 0 ? '+' : ''}{delta}%</Badge><span>vs previous period</span></>}
+    </div>
+  </article>;
 }
 
-export async function AdminDashboard({ user }: { user: Identity }) {
-  const recent = rows(
-    await adminRead('orders', new URLSearchParams({ limit: '25' })),
-  );
-  const admin = user.role === 'admin';
-
-  const counts = new Map<string, number>();
-  let sampleValue = 0;
-  const days = new Map<string, number>();
-  for (const order of recent) {
-    const status = display(order.status);
-    counts.set(status, (counts.get(status) ?? 0) + 1);
-    const total = Number(record(order.customer).totalAmount);
-    if (Number.isFinite(total)) sampleValue += total;
-    const createdAt = display(order.createdAt);
-    if (/^\d{4}-\d{2}-\d{2}/.test(createdAt)) {
-      const key = createdAt.slice(0, 10);
-      days.set(key, (days.get(key) ?? 0) + 1);
-    }
-  }
-  const awaiting = counts.get('pending') ?? 0;
-  const inProgress = (counts.get('confirmed') ?? 0) + (counts.get('packed') ?? 0);
-
-  let needsAction: number | null = null;
-  let storeStatus: string | null = null;
-  let snapshot: z.infer<typeof operationsSnapshotSchema> | null = null;
-  if (admin) {
-    try {
-      const data = record(
-        await adminRead(
-          'products/needs-action',
-          new URLSearchParams({ limit: '1', offset: '0' }),
-        ),
-      );
-      const total = Number(data.total);
-      needsAction = Number.isFinite(total) ? total : null;
-    } catch {
-      needsAction = null;
-    }
-    try {
-      const status = record(await adminRead('store/status')).status;
-      storeStatus = typeof status === 'string' ? status : null;
-    } catch {
-      storeStatus = null;
-    }
-    try {
-      snapshot = operationsSnapshotSchema.parse(await adminRead('operations'));
-    } catch {
-      snapshot = null;
-    }
-  }
-
-  const trend = [...days.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-7)
-    .map(([key, value]) => ({ label: shortDay(key), value }));
-  const statusBars = statuses
-    .map((status) => ({ label: status, value: counts.get(status) ?? 0 }))
-    .filter((item) => item.value > 0)
-    .map((item) => ({ ...item, tone: orderStatusTone(item.label) }));
-
-  const tiles: ComponentProps<typeof StatTile>[] = [
-    {
-      href: '/admin/orders',
-      label: 'Orders in view',
-      countTo: recent.length,
-      meta:
-        recent.length === 0
-          ? 'No orders within your permissions'
-          : `Awaiting ${awaiting} · in progress ${inProgress}`,
-      icon: <ShoppingBagIcon />,
-    },
-    {
-      href: '/admin/orders?status=pending',
-      label: 'Awaiting confirmation',
-      countTo: awaiting,
-      meta: 'Pending orders in this view',
-      icon: <SignalIcon />,
-      tone: awaiting > 0 ? 'warning' : 'brand',
-      active: awaiting > 0,
-    },
-    admin
-      ? {
-          href: '/admin/needs-action',
-          label: 'Needs action',
-          ...(needsAction === null
-            ? { value: '—' }
-            : { countTo: needsAction }),
-          meta: 'Products waiting for review',
-          icon: <ClipboardDocumentCheckIcon />,
-          tone: needsAction ? 'warning' : 'brand',
-        }
-      : {
-          href: '/admin/orders',
-          label: 'In progress',
-          countTo: inProgress,
-          meta: 'Confirmed or packed orders',
-          icon: <CubeIcon />,
-        },
-    admin
-      ? {
-          href: '/admin/settings',
-          label: 'Store',
-          value: (
-            <Badge tone={storeStatus === 'open' ? 'success' : 'danger'} dot>
-              {storeStatus ?? 'Unknown'}
-            </Badge>
-          ),
-          meta: 'Current storefront availability',
-          icon: <CubeIcon />,
-          tone: storeStatus === 'open' ? 'success' : 'danger',
-        }
-      : {
-          href: '/admin/notifications',
-          label: 'Order value',
-          value: money(sampleValue),
-          meta: 'Within this recent-order view',
-          icon: <SignalIcon />,
-        },
+function Fulfilment({ report }: { report: DashboardReport | null }) {
+  const total = report?.current.orders ?? 0;
+  const completed = report?.current.completed ?? 0;
+  const cancelled = report?.current.cancelled ?? 0;
+  const other = Math.max(0, total - completed - cancelled);
+  const percentage = total ? Math.round(completed / total * 100) : 0;
+  const stages = [
+    { label: 'Dispatched', count: completed, color: 'var(--admin-chart)', href: '/admin/orders?status=dispatched' },
+    { label: 'Cancelled', count: cancelled, color: 'var(--admin-danger)', href: '/admin/orders?status=cancelled' },
+    { label: 'Other stages', count: other, color: 'var(--admin-border-strong)', href: '/admin/orders' },
   ];
+  let offset = 0;
+  return <Card title="Fulfilment" className="commerce-fulfilment" aside={<TruckIcon width={18} height={18} aria-hidden="true" />}>
+    <figure className="commerce-ring" aria-label={report ? `${completed} of ${total} orders dispatched in this period` : 'Fulfilment report unavailable'}>
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="46" className="commerce-ring__track" />
+        {stages.map(stage => { const length = total ? stage.count / total * 289.027 : 0, start = offset; offset += length; return <circle key={stage.label} cx="60" cy="60" r="46" fill="none" stroke={stage.color} strokeWidth="9" strokeDasharray={`${Math.max(0, length - (length > 4 ? 3 : 0))} 289.027`} strokeDashoffset={-start} transform="rotate(-90 60 60)" />; })}
+      </svg>
+      <figcaption><strong>{report ? `${percentage}%` : '—'}</strong><span>dispatched</span></figcaption>
+    </figure>
+    <ul className="commerce-status-list">{stages.map(stage => <li key={stage.label}><Link href={stage.href}><span className="commerce-legend-dot" style={{ background: stage.color }} /><span>{stage.label}</span><strong>{report ? stage.count : '—'}</strong><ArrowUpRightIcon width={13} height={13} aria-hidden="true" /></Link></li>)}</ul>
+    <p className="commerce-panel-foot">{report ? `${total} online orders in the selected period` : 'Try reloading the order report.'}</p>
+  </Card>;
+}
 
-  return (
-    <>
-      <PageHeader
-        eyebrow="Overview"
-        title="Dashboard"
-        description={
-          recent.length === 1
-            ? 'Recent orders within your current permissions. Figures reflect the single most recent order you can access unless stated otherwise.'
-            : `Recent orders within your current permissions. Figures are based on the ${recent.length} most recent orders you can access unless stated otherwise.`
-        }
-        actions={<Link href="/admin/orders">Open orders</Link>}
-      />
+function TopProducts({ report }: { report: DashboardReport | null }) {
+  return <Card title="Most ordered products" description="Ranked by units placed in this period" className="commerce-products" aside={<Link href="/admin/products" className="commerce-icon-link" aria-label="View all products"><ArrowUpRightIcon width={16} height={16} /></Link>}>
+    {report?.topProducts.length ? <ol className="commerce-top-products">{report.topProducts.slice(0, 5).map((product, index) => <li key={`${product.productId}-${index}`}>
+      <span className="commerce-product-rank">{index + 1}</span><span className="commerce-product-icon"><CubeIcon width={19} height={19} aria-hidden="true" /></span>
+      <div>{/^[a-f0-9]{24}$/i.test(product.productId) ? <Link href={`/admin/products/${product.productId}`}>{product.name}</Link> : <strong>{product.name}</strong>}<span>{product.quantity.toLocaleString()} units ordered</span></div>
+      <span className="commerce-product-amount"><small>AED</small>{minorMoney(product.revenueMinor)}</span>
+    </li>)}</ol> : <EmptyState icon={<CubeIcon />} title={report ? 'No products ordered yet' : 'Product report unavailable'}>{report ? 'Products will appear as orders arrive in this period.' : 'Reload to try again.'}</EmptyState>}
+    <p className="commerce-panel-foot">Order snapshots; cancellations and refunds are included.</p>
+  </Card>;
+}
 
-      <StatGrid>
-        {tiles.map((tile) => (
-          <StatTile key={tile.label} {...tile} />
-        ))}
-      </StatGrid>
-
-      <div className="admin-grid admin-grid--2">
-        <Card
-          title="Order status"
-          description="Distribution across the recent-order view."
-        >
-          {statusBars.length ? (
-            <BarList items={statusBars} />
-          ) : (
-            <p className="admin-card__hint admin-hint--tight">
-              No orders are visible to this account yet.
-            </p>
-          )}
-        </Card>
-        <Card
-          title="Order volume"
-          description="Orders received per day in the recent-order view."
-        >
-          <TrendChart points={trend} label="Orders received per day" />
-        </Card>
+export async function AdminDashboard({ user, days = 30 }: { user: Identity; days?: 7 | 30 | 90 }) {
+  const admin = user.role === 'admin';
+  const [orderData, report] = await Promise.all([
+    adminRead('orders', new URLSearchParams({ limit: '25' })),
+    admin ? readDashboardReport(days).catch(() => null) : Promise.resolve(null),
+  ]);
+  const recent = rows(orderData);
+  if (!admin) return <>
+    <PageHeader title="Dashboard" description="Your recent orders and fulfilment queue." actions={<Button asChild variant="primary"><Link href="/admin/orders">Open orders</Link></Button>} />
+    <div className="commerce-staff-metrics">{['pending', 'confirmed', 'packed', 'dispatched'].map(status => <article className="commerce-metric" key={status}><Link href={`/admin/orders?status=${status}`}><h2>{status}</h2><p className="commerce-metric__value">{recent.filter(order => order.status === status).length}</p></Link></article>)}</div>
+    <p className="commerce-scope">Counts cover the latest {recent.length} orders permitted by your role and city assignments.</p>
+    <Card title="Recent orders" flush><RecentOrders orders={recent.slice(0, 8)} /></Card>
+  </>;
+  const current = report?.current, previous = report?.previous;
+  return <div className="commerce-overview">
+    <PageHeader title="Dashboard" description="Your store performance, at a glance." actions={<DashboardControls report={report ? { days: report.days, daily: report.daily } : null} days={days} />} />
+    <div className="commerce-overview__intro"><span>{report ? `${reportDate(report.from)} – ${reportDate(report.to)}` : `Last ${days} days`}</span><span className="commerce-live-dot" />Online order performance<Link href="/admin/operations">View operations <ArrowUpRightIcon width={13} height={13} aria-hidden="true" /></Link></div>
+    {!report ? <div className="admin-note admin-note--warning" role="status">Order reporting is unavailable. Recent orders remain below. <ReloadReport /></div> : null}
+    <div className="commerce-bento">
+      <div className="commerce-kpis">
+        <Metric label="Gross order value" currency value={current ? minorMoney(current.revenueMinor) : '—'} current={current?.revenueMinor} previous={previous?.revenueMinor} icon={<BanknotesIcon />} />
+        <Metric label="Orders placed" value={current?.orders.toLocaleString() ?? '—'} current={current?.orders} previous={previous?.orders} icon={<ShoppingBagIcon />} />
+        <Metric label="Average order" currency value={current ? minorMoney(current.averageOrderMinor) : '—'} current={current?.averageOrderMinor} previous={previous?.averageOrderMinor} icon={<ArrowTrendingUpIcon />} />
+        <Metric label="Dispatched" value={current?.completed.toLocaleString() ?? '—'} current={current?.completed} previous={previous?.completed} icon={<TruckIcon />} />
       </div>
-
-      {admin ? (
-        <Card
-          title="System health"
-          description="Measured on one API process. Collect every deployed instance before making a release decision."
-          aside={<Link href="/admin/operations">Open operations</Link>}
-        >
-          {snapshot ? (
-            <>
-              {snapshot.alerts.length ? (
-                <Note tone="warning" icon={<BellAlertIcon />}>
-                  <p>
-                    <strong>
-                      {snapshot.alerts.length} signal
-                      {snapshot.alerts.length === 1 ? '' : 's'} to investigate:
-                    </strong>{' '}
-                    {snapshot.alerts.map((alert) => alert.replaceAll('_', ' ')).join(', ')}.
-                  </p>
-                </Note>
-              ) : (
-                <Note tone="brand">
-                  <p>No thresholds triggered in this sample.</p>
-                </Note>
-              )}
-              <div className="admin-mt">
-                <BarList
-                  items={(['catalog', 'checkout', 'other'] as const).map(
-                    (group) => ({
-                      label: group,
-                      value: snapshot.http.groups[group].count,
-                      hint: snapshot.http.groups[group].failureRate
-                        ? `${snapshot.http.groups[group].count} · ${(snapshot.http.groups[group].failureRate! * 100).toFixed(2)}% 5xx`
-                        : String(snapshot.http.groups[group].count),
-                      tone:
-                        snapshot.http.groups[group].failureRate &&
-                        snapshot.http.groups[group].failureRate! > 0
-                          ? ('warning' as const)
-                          : ('brand' as const),
-                    }),
-                  )}
-                />
-              </div>
-              <p className="admin-hint admin-hint--tight">
-                Measured {snapshot.http.measuredAt} · source {snapshot.http.source}
-              </p>
-            </>
-          ) : (
-            <p className="admin-card__hint admin-hint--tight">
-              Operations measurements are unavailable from this process right
-              now.
-            </p>
-          )}
-        </Card>
-      ) : null}
-
-      <Card
-        title="Recent orders"
-        description="Open an order to review its details and recorded lines."
-        flush
-      >
-        <RecentOrders orders={recent} />
+      <Card title="Sales overview" className="commerce-sales" aside={<Badge tone="neutral">{days} days</Badge>}>
+        <p className="commerce-sales__reading"><span>AED</span>{current ? minorMoney(current.revenueMinor) : '—'}</p>
+        <p className="commerce-sales__hint">Gross value of online orders placed</p>
+        {report ? <DailySalesChart daily={report.daily} /> : <EmptyState icon={<ArrowTrendingUpIcon />} title="Chart unavailable">Reload the report to try again.</EmptyState>}
       </Card>
-    </>
-  );
+      <Fulfilment report={report} />
+    </div>
+    <div className="commerce-detail-grid">
+      <Card title="Recent orders" description="The latest orders across all dates" className="commerce-recent" aside={<Link href="/admin/orders" className="commerce-view-all">View all <ArrowRightIcon width={14} height={14} aria-hidden="true" /></Link>} flush><RecentOrders orders={recent.slice(0, 6)} /></Card>
+      <TopProducts report={report} />
+    </div>
+    <p className="commerce-scope">Period reporting includes online orders recorded with the current order system. Legacy orders remain in Recent orders. Values are before cancellation or refund adjustments; dates use UTC.</p>
+  </div>;
 }
 
 function RecentOrders({ orders }: { orders: Record<string, unknown>[] }) {
@@ -281,39 +111,42 @@ function RecentOrders({ orders }: { orders: Record<string, unknown>[] }) {
     );
   return (
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recent orders">
-      <table>
+      <table role="table">
         <caption>Recent orders</caption>
-        <thead>
-          <tr>
-            <th scope="col">Order</th>
-            <th scope="col">Customer</th>
-            <th scope="col">City</th>
-            <th scope="col" className="admin-num">Total (AED)</th>
-            <th scope="col">Status</th>
-            <th scope="col">Received</th>
-            <th scope="col">Actions</th>
+        <thead role="rowgroup">
+          <tr role="row">
+            <th scope="col" role="columnheader">Order</th>
+            <th scope="col" role="columnheader">Customer</th>
+            <th scope="col" role="columnheader" className="admin-num">Total (AED)</th>
+            <th scope="col" role="columnheader">Status</th>
+            <th scope="col" role="columnheader">Received</th>
+            <th scope="col" role="columnheader">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {orders.map((order, index) => {
             const customer = record(order.customer);
             const status = display(order.status);
             return (
-              <tr key={display(order._id ?? index)}>
-                <td>{display(order.orderId)}{order.channel==='wholesale'?<span className="mt-1 block text-xs font-semibold">Wholesale</span>:null}</td>
-                <td>{display(customer.name)}</td>
-                <td>{display(customer.city)}</td>
-                <td className="admin-num">{display(customer.totalAmount)}</td>
-                <td>
+              <tr key={display(order._id ?? index)} role="row">
+                <td role="cell">
+                  {display(order.orderId)}
+                  {order.channel === 'wholesale' ? (
+                    <span className="admin-inline-flag">Wholesale</span>
+                  ) : null}
+                </td>
+                <td role="cell" data-label="Customer">{display(customer.name)}</td>
+                <td role="cell" data-label="Total (AED)" className="admin-num">{display(customer.totalAmount)}</td>
+                <td role="cell" data-label="Status">
                   <Badge tone={orderStatusTone(status)} dot>
                     {status}
                   </Badge>
                 </td>
-                <td>{display(order.createdAt)}</td>
-                <td>
+                <td role="cell" data-label="Received" className="admin-nowrap">{stamp(order.createdAt)}</td>
+                <td role="cell" data-label="Actions">
                   <div className="admin-row-actions">
-                    <Link href={`/admin/orders/${display(order._id)}`}>
-                      Open order {display(order.orderId)}
+                    <Link href={`/admin/orders/${display(order._id)}`} aria-label={`Open order ${display(order.orderId)}`}>
+                      View
                     </Link>
                   </div>
                 </td>
