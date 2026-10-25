@@ -13,6 +13,7 @@
     "./env": "./src/env.ts",
     "./logger": "./src/logger.ts",
     "./eslint": "./eslint.mjs",
-    "./tsconfig.json": "./tsconfig.json"
+    "./tsconfig.json": "./tsconfig.json",
+    "./proxy": "./src/proxy.ts"
   }
 }

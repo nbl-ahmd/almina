@@ -33,3 +33,12 @@ test('native optional environment loading preserves injected values and never re
     assert.deepEqual(JSON.parse(output), ['injected-value', 'two words', 'first\nsecond']);
   } finally { await rm(directory, { recursive: true }); }
 });
+
+test('Render ingress trusts only known edge/internal ranges and preserves explicit overrides', () => {
+  const rendered=retainedRuntimeConfiguration({...valid,RENDER:'true'});
+  assert.ok(rendered.trustProxy.includes('uniquelocal'));
+  assert.ok(rendered.trustProxy.includes('172.64.0.0/13'));
+  assert.deepEqual(retainedRuntimeConfiguration({...valid,RENDER:'false'}).trustProxy,[]);
+  assert.deepEqual(retainedRuntimeConfiguration({...valid,RENDER:'true',AUTH_TRUST_PROXY:'127.0.0.1'}).trustProxy,['127.0.0.1']);
+  assert.deepEqual(retainedRuntimeConfiguration({...valid,APP_ENV:'development',NODE_ENV:'development',RENDER:'true'}).trustProxy,[]);
+});

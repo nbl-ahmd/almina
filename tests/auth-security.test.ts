@@ -409,3 +409,34 @@ test('published poster media remains public for Meta while poster listings stay 
     assert.equal((await fetch(`${origin}/api/whatsapp/image`)).status, 401);
   });
 });
+
+test('Render proxy chains resolve the nearest untrusted client and ignore forged prefixes', async () => {
+  const {resolveProxyTrust}=await import('../packages/config/src/proxy');
+  const app=express();app.set('trust proxy',resolveProxyTrust([],true,false));
+  app.get('/',(req,res)=>res.json({ip:req.ip}));
+  await serve(app,async origin=>{
+    for(const headers of [
+      {'X-Forwarded-For':'198.51.100.10, 172.64.0.1, 10.1.2.3'},
+      {'X-Forwarded-For':'203.0.113.99, 198.51.100.10, 172.64.0.1, 10.1.2.3'},
+      {'X-Forwarded-For':'203.0.113.88, 198.51.100.10, 2606:4700::1, fd00::1'},
+    ])assert.equal((await(await fetch(origin,{headers})).json()).ip,'198.51.100.10');
+    assert.equal((await(await fetch(origin,{headers:{'X-Forwarded-For':'203.0.113.99, 198.51.100.20'}})).json()).ip,'198.51.100.20');
+  });
+  const direct=express();direct.set('trust proxy',false);direct.get('/',(req,res)=>res.json({ip:req.ip}));
+  await serve(direct,async origin=>assert.equal((await(await fetch(origin,{headers:{'X-Forwarded-For':'203.0.113.99'}})).json()).ip,'127.0.0.1'));
+});
+
+for(const route of ['/api/unknown-route','/api/v1/unknown-route'])test(`Render rate limits remain per resolved client and forged prefixes cannot reset ${route}`,async t=>{
+  const {retainedRuntimeConfiguration}=await import('../apps/api/src/modules/operations/runtime');
+  const config=retainedRuntimeConfiguration({APP_ENV:'production',NODE_ENV:'production',AUTH_ALLOWED_ORIGINS:'https://shop.example.invalid',MONGODB_URI:'mongodb://127.0.0.1:27017/synthetic',RENDER:'true'});
+  const errors:unknown[][]=[];t.mock.method(console,'error',(...args:unknown[])=>errors.push(args));
+  const app=createLegacyApp({origins:config.origins,development:false,trustProxy:config.trustProxy,routers:{},logger:createLogger({service:'api',environment:'production',write:()=>undefined}),getCommerceDb:async()=>assert.fail('unknown routes must not access DB')});
+  await serve(app,async origin=>{
+    for(let index=0;index<=120;index++){
+      const response=await fetch(origin+route,{headers:{'X-Forwarded-For':`203.0.113.${index+1}, 198.51.100.10, 172.64.0.1, 10.1.2.3`}});
+      assert.equal(response.status,index<120?404:429);
+    }
+    const other=await fetch(origin+route,{headers:{'X-Forwarded-For':'198.51.100.11, 172.64.0.1, 10.1.2.3'}});assert.equal(other.status,404);
+  });
+  assert.deepEqual(errors,[],'no rate-limit proxy validation error may be suppressed');
+});
