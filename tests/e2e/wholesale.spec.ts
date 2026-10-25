@@ -154,10 +154,12 @@ test('product visibility controls submit selected business types and preserve th
  const {login,adminOrigin,reset}=await import('./fixtures');await reset(page.request);await login(page);
  for(const id of ['salon','pharmacy'])expect((await page.request.post(adminOrigin+'/api/wholesale/admin/types',{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{id,name:id==='salon'?'Salon':'Pharmacy',active:true,allowMedicines:false,revision:0}})).ok()).toBe(true);
  await page.goto(adminOrigin+'/admin/products/'+productId);
- await page.getByRole('combobox',{name:'Show this product to',exact:true}).selectOption('wholesale');
+ await page.getByRole('switch',{name:'Wholesale',exact:true}).click();
+ await page.getByRole('switch',{name:'Retail',exact:true}).click();
+ await page.locator('.product-trade-row').filter({hasText:'Salon'}).getByRole('checkbox').check();
+ await page.getByLabel('Wholesale price — Salon (AED)',{exact:true}).fill('12.50');
  await page.getByRole('combobox',{name:'Wholesale business types',exact:true}).selectOption('selected');
  await page.getByLabel('Salon',{exact:true}).check();
- await page.getByRole('textbox',{name:/^Stock adjustment reason/}).fill('Visibility reviewed; stock unchanged');
  for(const width of [360,390,768,1280]){
   await page.setViewportSize({width,height:900});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -167,13 +169,16 @@ test('product visibility controls submit selected business types and preserve th
  expect((await saved).ok()).toBe(true);
  await expect(page.getByRole('status').filter({hasText:'Saved successfully.'})).toBeVisible();
  await page.reload();
- await expect(page.getByRole('combobox',{name:'Show this product to',exact:true})).toHaveValue('wholesale');
+ await expect(page.getByRole('switch',{name:'Wholesale',exact:true})).toHaveAttribute('aria-checked','true');
+ await expect(page.getByRole('switch',{name:'Retail',exact:true})).toHaveAttribute('aria-checked','false');
+ await expect(page.getByLabel('Wholesale price — Salon (AED)',{exact:true})).toHaveValue('12.50');
  await expect(page.getByRole('combobox',{name:'Wholesale business types',exact:true})).toHaveValue('selected');
  await expect(page.getByLabel('Salon',{exact:true})).toBeChecked();
  await expect(page.getByLabel('Pharmacy',{exact:true})).not.toBeChecked();
  await page.screenshot({path:'.verification-results/admin-product-audience-1280.png',fullPage:true});
  await page.goto(adminOrigin+'/admin/products/new');
- await expect(page.getByRole('combobox',{name:'Show this product to',exact:true})).toHaveValue('all');
+ await expect(page.getByRole('switch',{name:'Retail',exact:true})).toHaveAttribute('aria-checked','true');
+ await expect(page.getByRole('switch',{name:'Wholesale',exact:true})).toHaveAttribute('aria-checked','false');
 });
 
 for(const width of [360,390,768,1280])test(`Arabic wholesale catalogue preserves names and quantities at ${width}px`,async({page,context})=>{

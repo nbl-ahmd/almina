@@ -16,6 +16,7 @@ import {
   DocumentArrowUpIcon,
   EllipsisHorizontalIcon,
   PhotoIcon,
+  MagnifyingGlassIcon,
   RectangleGroupIcon,
   ShoppingBagIcon,
   Squares2X2Icon,
@@ -31,27 +32,27 @@ type NavGroup = { label: string; items: NavItem[] };
 
 const groups: NavGroup[] = [
   {
-    label: 'Overview',
+    label: 'Workspace',
     items: [
       { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
-      { id: 'operations', label: 'Operations', href: '/admin/operations', icon: ChartBarSquareIcon },
-      { id: 'needs-action', label: 'Needs action', href: '/admin/needs-action', icon: ClipboardDocumentCheckIcon },
+      { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
+      { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
     ],
   },
   {
     label: 'Catalogue',
     items: [
-      { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
+      { id: 'needs-action', label: 'Needs action', href: '/admin/needs-action', icon: ClipboardDocumentCheckIcon },
       { id: 'categories', label: 'Categories', href: '/admin/categories', icon: RectangleGroupIcon },
       { id: 'banners', label: 'Banners', href: '/admin/banners', icon: PhotoIcon },
       { id: 'catalog-import', label: 'Catalog import', href: '/admin/catalog-import', icon: TableCellsIcon },
     ],
   },
   {
-    label: 'Commerce',
+    label: 'Business',
     items: [
       { id: 'wholesale', label: 'Wholesale', href: '/admin/wholesale', icon: UsersIcon },
-      { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
+      { id: 'operations', label: 'Operations', href: '/admin/operations', icon: ChartBarSquareIcon },
     ],
   },
   {
@@ -216,6 +217,13 @@ export function AdminShell({
               </span>
             </span>
             <span className="admin-topbar__spacer" />
+            {permitted.has('products') ? (
+              <form action="/admin/products" className="admin-global-search" role="search" aria-label="Inventory search">
+                <MagnifyingGlassIcon width={16} height={16} aria-hidden="true" />
+                <input type="search" name="q" aria-label="Search inventory" placeholder="Search products…" maxLength={80} />
+                <button type="submit" aria-label="Search inventory"><ChevronRightIcon width={14} height={14} aria-hidden="true" /></button>
+              </form>
+            ) : null}
             <OrderMonitor />
             <span className="admin-user">
               <span className="admin-user__avatar" aria-hidden="true">

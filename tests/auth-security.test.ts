@@ -33,6 +33,22 @@ function versionedApp(authDb: ReturnType<typeof securityDb>) {
     logger: createLogger({ service: 'api', environment: 'development', write: () => undefined }) });
 }
 
+test('retained uptime ping bypasses authentication and database work', async () => {
+  const app = createLegacyApp({ origins: [], development: true, routers: {},
+    getCommerceDb: async () => assert.fail('ping must not access DB'),
+    auth: { authenticate: async () => assert.fail('ping must not authenticate') } });
+  app.locals.draining = true;
+  await serve(app, async origin => {
+    for (const method of ['GET', 'HEAD']) {
+      const response = await fetch(origin + '/api/ping', { method });
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.match(response.headers.get('content-type') ?? '', /^text\/plain/);
+      assert.equal(await response.text(), method === 'GET' ? 'pong' : '');
+    }
+  });
+});
+
 test('every legacy privileged route rejects anonymous HTTP requests, including multipart, before any database/provider work', async t => {
   let reached = 0;
   const auth = createAuthService(async () => { reached++; assert.fail('anonymous auth must not access DB'); });

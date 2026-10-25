@@ -1,352 +1,306 @@
 ---
 name: Al Mina administration console
-description: Dub-inspired frosted operations console — rice-paper canvas, hairline borders, one electric blue accent.
-scope: Admin only (`apps/web/src/app/(admin)` and `apps/web/src/components/admin`). The customer storefront has its own design system in `apps/web/DESIGN.md` and is never affected by this file.
-theme: light
-status: implemented
-updated: 2026-10-24
+description: Working paper — a neutral staff workbench with ink actions, white panels and truthful operational readings.
 colors:
-  canvas: "#ffffff"
+  canvas: "#fafafa"
   paper: "#f5f5f5"
-  ash: "#e5e5e5"
-  smoke: "#d4d4d4"
-  pebble: "#c8c8c8"
-  midnight: "#0a0a0a"
+  paper-strong: "#ebebeb"
+  surface: "#ffffff"
+  border: "#e5e5e5"
+  border-strong: "#d4d4d4"
+  control-border: "#d4d4d4"
+  control-hover: "#a3a3a3"
+  hairline: "#f0f0f0"
   ink: "#171717"
-  graphite: "#262626"
-  slate: "#404040"
+  ink-soft: "#404040"
   steel: "#525252"
-  muted: "#6b6b6b"
+  muted: "#666666"
   fog: "#737373"
-  silver: "#a3a3a3"
-  accent: "#2563eb"
-  accent-hover: "#1e40af"
-  accent-soft: "#dbeaff"
-  accent-wash: "#eff6ff"
-  mint: "#dcfce7"
-  green: "#16a34a"
-  green-ink: "#166534"
-  tangerine: "#ea580c"
-  orange-ink: "#9a3412"
-  orange-soft: "#ffedd5"
-  lavender: "#7c3aed"
-  violet-ink: "#6d28d9"
-  violet-soft: "#ede9fe"
-  danger: "#b91c1c"
-  danger-soft: "#fee2e2"
-  info: "#075985"
-  info-soft: "#e0f2fe"
-  action: "#0a0a0a"
+  faint: "#a3a3a3"
   action-hover: "#000000"
+  success: "#166f30"
+  success-soft: "#e4f3e8"
+  warning: "#96540c"
+  warning-soft: "#fdefdd"
+  danger: "#b3261e"
+  danger-soft: "#fbe9e7"
+  info: "#0f6b6b"
+  info-soft: "#e2f2f1"
+  violet: "#6b4ea8"
+  violet-soft: "#efe9f8"
+  chart: "#2563eb"
+  chart-soft: "#eff6ff"
+  chart-active: "#173e8c"
 typography:
-  family: "Geist, Arial, sans-serif"
-  display:
-    fontSize: "30px"
+  headline:
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "1.875rem"
     fontWeight: 500
     lineHeight: 1.15
     letterSpacing: "-0.02em"
-  login-display:
-    fontSize: "36px"
-    fontWeight: 500
-    lineHeight: 1.08
-    letterSpacing: "-0.03em"
-  heading:
-    fontSize: "16px"
+  title:
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "0.9375rem"
     fontWeight: 600
     lineHeight: 1.35
+    letterSpacing: "-0.01em"
   body:
-    fontSize: "14px"
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "0.875rem"
     lineHeight: 1.5
-  body-lg:
-    fontSize: "16px"
+  table-cell:
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "0.8125rem"
     lineHeight: 1.5
   label:
-    fontSize: "12px"
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "0.75rem"
     fontWeight: 500
   caption:
-    fontSize: "11px"
-    fontWeight: 500
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 400
+    lineHeight: 1.5
   metric:
-    fontSize: "30px"
+    fontFamily: "Geist, Arial, sans-serif"
+    fontSize: "clamp(22px, 2vw, 29px)"
     fontWeight: 500
-    lineHeight: 1
+    lineHeight: 1.15
     letterSpacing: "-0.03em"
 rounded:
-  input: "6px"
-  button: "8px"
-  nav: "8px"
-  card: "12px"
-  large-card: "16px"
+  xs: "6px"
+  sm: "8px"
+  base: "12px"
+  lg: "16px"
   pill: "9999px"
 spacing:
-  base: "4px"
-  scale: "4 / 8 / 12 / 16 / 20 / 24 / 28 / 32 / 40 / 48 / 64"
-  page-max: "1200px"
-  card-padding: "16px"
-  element-gap: "8px"
-  section-gap: "24px"
+  compact: "6px"
+  action-gap: "8px"
+  field-gap: "12px"
+  mobile-panel: "14px"
+  grid: "16px"
+  panel: "18px"
+  section: "20px"
+  tablet-gutter: "24px"
+  desktop-gutter: "32px"
+components:
+  button-primary:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.surface}"
+    rounded: "{rounded.sm}"
+    padding: "7px 12px"
+    height: "34px"
+  button-primary-hover:
+    backgroundColor: "{colors.action-hover}"
+    textColor: "{colors.surface}"
+  button-outline:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.sm}"
+    padding: "7px 12px"
+    height: "34px"
+  button-ghost:
+    backgroundColor: "transparent"
+    textColor: "{colors.muted}"
+    rounded: "{rounded.sm}"
+    padding: "7px 9px"
+    height: "34px"
+  button-danger:
+    backgroundColor: "{colors.danger-soft}"
+    textColor: "{colors.danger}"
+    rounded: "{rounded.sm}"
+    padding: "7px 12px"
+    height: "34px"
+  input:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xs}"
+    padding: "7px 10px"
+    height: "36px"
+  card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.base}"
+    padding: "18px"
+  navigation-active:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.sm}"
+    padding: "7px 9px"
+    height: "36px"
+  commerce-metric:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    typography: "{typography.metric}"
+    rounded: "{rounded.base}"
+    padding: "18px 14px"
+  chart-toggle:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.muted}"
+    rounded: "{rounded.xs}"
+    padding: "2px"
+  badge-success:
+    backgroundColor: "{colors.success-soft}"
+    textColor: "{colors.success}"
+    rounded: "{rounded.pill}"
+    padding: "3px 9px"
 ---
+# Design System: Al Mina Administration
 
-# Design System: Al Mina administration console
+## Overview
 
-## Direction
+**Creative North Star: "Working paper"**
 
-**"Frosted link dashboard on rice paper."**
+Nexadash supplies the legible workbench structure; Dub supplies the neutral, minimal, utilitarian language. White working panels sit on a pale neutral canvas, with a quiet sidebar and precise ink typography. Density supports staff scanning catalogue, orders and reports throughout a shift.
 
-The console borrows Dub's accounting of attention: a white canvas, paper-grey
-chrome, 1px ash borders instead of drop shadows, dense monochrome type, and a
-single electric blue that is allowed to speak only when something is active,
-linked, or measured. Colour beyond blue is reserved for semantics — a status,
-a warning, a destructive action — and never used as decoration on a large
-surface.
+This system applies only to the administration route and admin components. The storefront retains its own design system. It records the implemented interface, including the final CSS overrides, rather than the superseded warm-paper direction. The dashboard now composes a compact 2×2 metric block, dominant daily chart and fulfilment panel, followed by two working lists. Product editing starts with sales-channel switches and the corresponding prices; sections use persistent tabs. Product identity, permissions and server-authoritative commerce remain application constraints; this document records the built interface, not a deployment.
 
-This is an **Operate** surface. Familiarity beats expression: the staff member
-is dispatching an order, correcting stock, or clearing a review queue. Brand
-lives in the details — the conic-spectrum logo ring, the pill vocabulary, the
-exact quietness of the chrome — not in the middle of a table.
+**Key Characteristics:**
 
-**Scope guardrail.** Every rule in `admin.css` is scoped to `.admin-app`.
-Nothing here may reach `.storefront-shell`, the wholesale surface, checkout,
-or customer-facing routes. The two systems share the Geist family and the same
-`cva`-variant approach to controls; they do not share a palette.
+- Neutral chrome and white, border-defined working surfaces.
+- One optimized Geist family; compact labels and aligned numbers.
+- Ink actions, blue data marks and semantic status color.
+- Channel-first product pricing and persistent task tabs.
 
-## Colour
+## Colors
 
-### Surfaces
+The palette is achromatic for the workspace, with restrained color carrying data and operational meaning. Frontmatter is the normative value list; aliases in the stylesheet may resolve to the same primitive.
 
-| Level | Token | Value | Use |
-| --- | --- | --- | --- |
-| 0 | `canvas` | `#ffffff` | Main content background |
-| 1 | `paper` | `#f5f5f5` | Sidebar, table headers, nested wells, hover fills |
-| 2 | `card` | `#ffffff` | Cards, popovers, top bar — separated from the canvas by a 1px ash border |
-| 3 | `accent-wash` | `#eff6ff` | Selected rows, active navigation made stronger |
-| 4 | `accent-soft` | `#dbeaff` | Sidebar active item, mobile active tab |
+### Primary
 
-The sidebar is Paper Mist; the content canvas is Canvas White. Panels are
-white-on-white and identified by their border, never by a shadow. Shadows are
-permitted in exactly three places: a 1px lift under filled buttons
-(`0 1px 2px rgb(0 0 0 / 5%)`), the focus ring (`0 0 0 3px rgb(0 0 0 / 8%)`),
-and overlays/bottom sheets that must physically float over content.
+- **Ink:** titles, primary actions, selected navigation and focus boundaries. The logo's final override is ink on its white context, with a white symbol in the dark mark.
+- **Action hover:** the deepest ink for pointer and press feedback.
 
-### Text
+### Secondary
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `ink` | `#171717` | Headings, primary labels, table cells |
-| `slate` | `#404040` | Body copy and descriptions in dense regions |
-| `muted` | `#6b6b6b` | Secondary text, card descriptions, metadata |
-| `fog` | `#737373` | Supporting prose where the surface is white |
-| `silver` | `#a3a3a3` | Disabled text, hover borders, decorative strokes — never text on an active surface |
+- **Chart blue / chart soft / chart active:** resting bars and line strokes, pale line-area fill and the table's focus-within wash, with a deeper blue for the inspected bar. Resting bars use chart blue rather than a translucent pale fill.
+- **Success / success soft:** completed or live state.
+- **Warning / warning soft:** waiting, attention or unresolved review.
+- **Danger / danger soft:** failed, unavailable or destructive state where named by the component.
+- **Info / info soft:** confirmed or informational state; teal is distinct from data blue.
+- **Violet / violet soft:** secondary operational accents already present in specialist surfaces.
 
-Pure black is never used for body text. `#0a0a0a` is reserved for the filled
-action and for focus rings where maximum contrast is the point.
+### Neutral
 
-`muted` is `#6b6b6b` rather than the reference's `#737373` so secondary text
-still clears 4.5:1 on Paper Mist as well as Canvas White. Fog remains the
-placeholder and supporting-copy token on white.
+- **Canvas:** the page ground and final table-header fill.
+- **Paper / paper strong:** sidebar, quiet utility fills and stronger neutral grouping.
+- **Surface:** white panels, controls, topbar and active desktop navigation.
+- **Border / border strong / hairline:** panel boundaries, stronger separators and inner rules.
+- **Control border / control hover:** controls remain distinguishable from quiet panel boundaries.
+- **Ink soft / steel / muted / fog / faint:** body copy, table headings, support copy, placeholders and disabled content respectively. Faint is not a general body-text color.
 
-### Accent and semantics
-
-- **Electric Blue** `#2563eb` — links, active navigation, the `+` in a metric,
-  focus of a selected tab, the one highlighted number on a screen.
-- **Deep Sapphire** `#1e40af` — active navigation text on `#dbeaff`, and the
-  only other blue in the system.
-- **Soft Mint / Vivid Green** — completed or live states. Text uses `#166534`
-  on `#dcfce7` for contrast.
-- **Tangerine** — pending, reconnecting, needs review. Text uses `#9a3412` on
-  `#ffedd5`.
-- **Danger red** `#b91c1c` on `#fee2e2` — destructive confirms and failures.
-- **Lavender** — one feature-pill accent on the sign-in surface; not a status.
-- **Conic spectrum** — the logo ring only. It never appears on a button, card,
-  chart, or table row.
-
-Rules:
-
-1. One primary action per surface. It is the only `#0a0a0a` fill on the screen.
-2. Blue is a highlight, never a large fill. If a block of blue is larger than
-   a badge, it is wrong.
-3. A pill gets exactly one accent. Two chromatic colours on the same component
-   is a bug.
-4. Semantic colour is paired with a word or an icon. Colour alone never carries
-   meaning.
+**The State and Data Rule.** Use chromatic color for data and named status. Primary actions and active navigation remain ink-led.
 
 ## Typography
 
-**One family: Geist** (variable, 400–700, self-hosted at
-`apps/web/src/app/fonts/Geist-Variable.ttf`, shared with the storefront but
-loaded separately and not preloaded). It stands in for Dub's Inter body and
-Satoshi display voice: neo-grotesque, geometric enough for a 30px heading,
-neutral enough for 11px table headers.
+**Display and body font:** locally optimized variable Geist (weights 400–700), loaded by the admin layout with swap and without preload. The font is independent of the storefront instance.
 
-- **Display / page title** — 30px, weight 500, line-height 1.15, tracking
-  −0.02em. Fixed rem scale, not fluid: staff view at consistent DPI and a
-  fluid heading that shrinks inside a narrow main column looks worse.
-- **Login display** — 36px, weight 500, line-height 1.08, tracking −0.03em.
-  The one place the console is allowed a display moment.
-- **Card title / section heading** — 16px, weight 600.
-- **Body and controls** — 14px / 1.5. Dense table text is 13px.
-- **Labels** — 12px, weight 500, sentence case.
-- **Caption / table header / sidebar group** — 11px, weight 500–600. Uppercase
-  is reserved for table headers and sidebar group labels, with 0.04–0.08em
-  tracking; never used as an eyebrow above a page title.
-- **Metrics** — 30px, weight 500, `tabular-nums`, tracking −0.03em.
-- **Monospace** — not used. Where the reference reaches for Geist Mono we use
-  Geist with tabular numerals; the console has no code surface.
+### Hierarchy
 
-Copy rules: controls name their action ("Create product", "Dispatch order",
-"Archive banner"). No generic "Submit". No decorative eyebrow above an `h1`.
+- **Headline:** compact medium-weight page titles, reduced to (24px) on phones.
+- **Title:** semibold card titles; generic section headings also use (16px).
+- **Body:** regular working copy with a comfortable (1.5) line height; paragraphs cap at (78ch), page descriptions at (68ch).
+- **Table cell:** compact body for dense lists and actions.
+- **Label:** medium sentence-case labels, metric headers and table headings. Sidebar group labels use (11px), regular tracking and sentence case.
+- **Caption:** supporting notes and timestamps. Numeric readings and right-aligned numeric columns use tabular figures.
+- **Metric:** responsive medium-weight bento readings, with the phone override at (26px). Currency prefixes use (10px), and metric explanations/delta badges use (10px). The sales-summary reading is (30px) at (1.2) line height with a (12px) currency prefix. Dashboard recent-order rows use (11px) desktop and (12px) phone text; ranked product names use (12px).
 
-## Spacing, radius, density
+**The Reading Rule.** A figure names its scope beside the value. Missing data remains unavailable; it does not become a healthy zero or a fabricated comparison.
 
-- 4px base unit. Recurring steps: 8 / 12 / 16 / 24 / 32 / 48.
-- Sidebar 240px. Content max 1200px, padding 24px desktop / 14px mobile.
-- Card padding 16px. Card internal gap 12px. Page header to content 20px.
-- Tight internal groups (8px), generous separation between sections (24px),
-  more space above a heading than below it.
-- Radii: **tags and badges 9999px**; **buttons and nav items 8px**;
-  **inputs 6px**; **cards 12px**; **large feature surfaces 16px**. No ad-hoc
-  rounding. Pills are only for small controls.
-- Rows are compact: 36px controls, 40–44px table rows, 30px inline action
-  buttons. Touch targets grow to 44px below 768px.
+## Layout
+
+Desktop uses a sticky full-height sidebar (232px) and a flexible main column. At widths up to (1180px), the sidebar becomes (224px) and content gutters shrink to (24px). Main content caps at (1600px), with desktop padding (28px 32px 72px). The sticky white topbar is (60px) tall. Its inventory search is hidden at widths up to (1100px); user detail reduces at (900px).
+
+The dashboard bento uses three tracks: a two-by-two KPI block, a dominant daily chart and a fulfilment panel. Track proportions are (.95fr / 1.75fr / .8fr), with minimum widths of (230px) for the metrics block and (200px) for fulfilment, and (16px) gaps. KPI cards use (12px) internal grid gaps and (18px 14px) padding. Recent orders and most ordered products follow in a (1.65fr / 1fr) pair, with the product panel at least (280px) wide. At widths up to (1180px), the chart and KPI block occupy two tracks, fulfilment spans the next row, and the lower lists stack. At widths up to (1000px), the bento becomes one column. Phone KPI cards retain two columns, use (14px) padding, (10px) gaps and a (140px) minimum height. The chart plot is (180px) tall, reduced to (175px) on phones.
+
+At widths up to (959px), data rows become stacked definition-style cards with visible field labels, while semantic column headers remain available to assistive technology. At widths up to (767px), the sidebar disappears, the app bar becomes (52px), and content uses (16px 14px) top/side padding. A fixed bottom navigation and an all-sections sheet replace desktop navigation. Safe-area-aware bottom clearance protects the last content. At widths up to (380px), generic metric grids and sheet entries become a single column; the new bento KPI block keeps its two-column rule.
+
+Reusable grids use (16px) gaps, reduced to (10px) on phones. Panels use (18px) padding and (14px) on phones. The product editor caps its width at (1160px) and uses one active tab panel. Sales channels and corresponding price inputs lead Overview. Care & usage, Organisation, Variants, Photos and Publishing have their own tabs; switching does not unmount field controls. Photos have their own independent save. Product Save stays in normal flow below the active form section.
+
+## Elevation & Depth
+
+Panels use hairline borders and no resting shadow. Controls retain a tight contact shadow; older generic stat tiles can gain a small shadow on fine-pointer hover; the new bento metric cards remain flat. The desktop active navigation has no shadow after the final override. Mobile bottom navigation uses translucency, blur and a soft shadow; the topbar's final override is opaque white without blur.
+
+### Shadow Vocabulary
+
+- **Contact:** `0 1px 2px rgb(26 24 21 / 6%)` for small controls.
+- **Hover:** `0 1px 3px rgb(26 24 21 / 7%), 0 1px 1px rgb(26 24 21 / 4%)` for metric hover.
+- **Overlay:** `0 24px 48px -24px rgb(26 24 21 / 30%)` for sheets and row popovers.
+- **Focus:** `0 0 0 3px rgb(26 24 21 / 10%)` around focused fields.
+- **Bottom navigation:** `0 12px 32px -16px rgb(0 0 0 / 28%)` for the floating mobile navigation.
+
+**The Working Surface Rule.** Working panels are flat at rest. Reserve stronger elevation for transient sheets and popovers.
+
+State transitions generally use (150ms) with the implemented ease-out curves. Press feedback scales controls to (0.97) over (120ms). The secondary action popover opens from its trigger origin with opacity and scale over (160ms); visible keyboard focus disables that transition. Sheet entry uses (280ms), sheet exit (180ms); overlay fade uses (180ms) in and (120ms) out. Task tabs switch instantly, including keyboard activation. Chart bar inspection changes fill over (120ms) with CSS ease. Reduced motion removes movement and pulsing skeleton animation. There is no page-entry choreography.
+
+## Shapes
+
+The implemented radius hierarchy is compact: extra-small for inputs and utility rows, small for buttons/navigation/popovers, base for panels, large for sheets and mobile navigation, pill for badges and generic segmented controls. Chart toolbar containers use the extra-small radius, with compact (4px) button corners. Although the direction shorthand says “8px controls,” actual text fields use the extra-small (6px) radius. Keep that distinction. Borders are generally (1px); inventory selection uses a (2px) underline. Heroicons provide outline pictograms; use SVG rather than text glyph substitutes.
 
 ## Components
 
-### Sidebar
-240px, Paper Mist, 1px ash right border, sticky full height. Brand mark: 28px
-rounded square with a 2px conic-spectrum ring (`background: linear-gradient(#fff,#fff)
-padding-box, conic-gradient(...) border-box`) and the "A" in ink. Group labels
-are 11px uppercase muted. Items: 13px/500 slate, 32px, 8px radius, 16px icon.
-Hover is `#ebebeb`. Active is `#dbeaff` fill with Deep Sapphire text and icon —
-a soft chromatic fill, not a left border.
-
-### Top bar
-56px, sticky, `rgb(255 255 255 / 88%)` with `backdrop-filter: blur(14px)`, 1px
-ash bottom border. Breadcrumb 12px (root muted, current ink). Right cluster:
-live-order status pill, user chip (pill with 24px avatar), ghost sign-out
-button. The status pill is a live region; its short text is never hidden on
-mobile.
-
-### Page header
-Title, one-sentence description (max 68ch), optional action cluster right.
-No eyebrow. Actions use the outlined and filled button pair.
-
-### Card
-White, 1px ash, 12px radius, 16px padding, no shadow. Title 16px/600 with an
-optional 24px neutral icon tile. Description 12px muted. `flush` removes
-padding so tables sit edge-to-edge with a bordered head strip.
-
-### Stat tile
-White card, 12px radius, 16px padding. Label 12px muted, optional 26px neutral
-icon tile. Value 30px/500 tabular. Meta 12px muted. Hover raises the border to
-Smoke only — no lift, no shadow. Tone tints the icon tile, not the card.
-
-### Table
-Wrapper: 1px ash, 12px radius, white. Header: Paper Mist, 11px uppercase
-steel, 8px/16px padding, 1px ash bottom border. Rows: 13px, 10px/16px padding,
-1px `#efefef` dividers, hover `#fafafa`. Captions are screen-reader-only; the
-card title or page title carries the visible label. Inline row actions are
-small outlined buttons (28px, 6px radius).
-
-### Badge / pill
-11px/500, 2px 8px, pill radius, tinted background, no shadow, optional 5px dot.
-Neutral `#f5f5f5`/`#525252`; success mint/green-ink; warning orange-soft/
-orange-ink; danger red-soft/danger; brand accent-soft/sapphire.
-
 ### Buttons
-- **Primary** — `#0a0a0a` fill, white text, 8px radius, 34px, 13px/500, 1px
-  lift shadow. One per surface.
-- **Outline** — white, 1px ash, ink text, 8px radius, 34px. The workhorse.
-- **Ghost** — transparent, muted text, 8px radius. Chrome and row utilities.
-- **Danger** — red-soft fill with danger text; fills solid red only on hover or
-  in a confirm dialog.
-All states ship: hover, focus-visible (2px `#0a0a0a` ring, 2px offset),
-active, disabled (Paper Mist, Silver text), pending copy ("Saving…").
 
-### Inputs
-White, 1px Smoke, 6px radius, 36px, 13px text. Hover Smoke→Silver. Focus
-Midnight Ink border plus a 3px `rgb(0 0 0 / 8%)` ring and no outline — the
-reference's "inputs feel important" moment. Placeholder Fog. Labels 12px/500.
-Errors pair the message with `aria-invalid` and a red border.
+Primary actions use ink fill, white text and small corners, with (7px 12px) padding and (34px) desktop minimum height. Outline/secondary actions use white with a neutral border; ghost actions use transparent fill and muted ink; destructive actions use danger-soft fill and danger text. Hover darkens or introduces paper fill, focus remains visible, and disabled controls use paper fill, faint text and no shadow. Standard phone actions reach (44px); compact table utilities and ellipsis triggers retain smaller implemented targets.
 
-### Notes, empty states, loading
-Notes are a full 1px border + tinted background + icon — never a thick left
-rule. Empty states use a neutral 40px icon well, a 14px/600 title, and one line
-that teaches the next action. Loading uses skeleton bars on Paper Mist, not a
-centred spinner.
+### Chips
 
-### Sign-in
-Split layout: Paper Mist aside with a low-opacity dot grid (Dub's blueprint
-surface) and a 36px display statement; white form column on the right, max
-400px. Assurances render as three bordered pills, each with one accent —
-tangerine, green, lavender — in the reference's feature-pill spirit. Labels and
-controls follow the form spec; the submit is the single black fill.
+Status chips pair readable text with their semantic foreground and pale background, optionally adding a dot. Neutral chips remain gray; a legacy brand badge still carries a warm fill and is excluded from the normative palette. Capsule shapes belong to statuses and segmented filters. Final metric headers and ordinary navigation labels use sentence case.
 
-### Mobile
-Below 768px the shell becomes an app bar plus a fixed bottom tab bar
-(16px radius, white/blur, 1px ash, soft overlay shadow). The four primary
-destinations stay visible; "More" opens a Radix Dialog bottom sheet with all
-sections in a two-column grid. Tables become stacked definition cards with
-`data-label` prefixes. Forms go single column with 44px controls and a sticky
-action bar above the tab bar.
+### Cards / Containers
 
-## Motion
+White, base-radius panels use one neutral boundary and flat resting elevation. Flush table cards remove inner padding and clip the table; their heading owns its padding and separator. Bento metric cards have a plain white face: label and outline icon above the value, comparison or unavailable-baseline explanation below. They use (20px) vertical gaps rather than a separate tinted header strip. Fulfilment pairs a ring reading with divider-separated status links. Ranked products use compact rows with neutral product pictograms and right-aligned amounts.
 
-150–200ms, `cubic-bezier(0.16, 1, 0.3, 1)`. Motion communicates state only:
-hover, focus, active nav, sheet open and skeleton pulse. There is no page-load
-choreography; cards do not rise in sequence, and metrics and sparklines render
-at their final value — no count-up, no stroke draw. Everything collapses under
-`prefers-reduced-motion: reduce` and keeps its fully visible resting state.
+### Inputs / Fields
 
-## Implementation map
+Fields use a white background, extra-small corners, control-border stroke, (7px 10px) padding and (36px) minimum height. Hover strengthens the boundary; keyboard focus uses ink stroke plus the focus ring. Invalid fields use danger borders. Textareas resize vertically. Phone inputs use (16px) type and (44px) minimum height to support touch and avoid viewport zoom; generic textareas reach (112px), while the compact product workspace overrides description textareas to (88px) desktop and (96px) phone. Native selects remain native for classification, condition and rights. Boolean choices, tags and checklists preserve their existing field semantics.
 
-| Concern | Source of truth |
-| --- | --- |
-| Tokens and all component styling | `apps/web/src/app/(admin)/admin/admin.css` (scoped to `.admin-app`, inside `@layer components`) |
-| Font | `apps/web/src/app/(admin)/admin/layout.tsx` → `Geist-Variable.ttf`, `preload: false` |
-| Shell, nav, mobile sheet | `apps/web/src/components/admin/shell.tsx` (Radix `Dialog`) |
-| Primitives (`Button`, `Badge`, `Card`, `PageHeader`, `StatTile`, `Note`, `Table`) | `apps/web/src/components/admin/ui.tsx`, `views.tsx` — `cva` variants, Radix `Slot` for `asChild` |
-| Inputs, selects and textareas | `admin.css` element rules scoped under `.admin-app` — the storefront's `components/ui/*` controls are not imported by the console |
+### Navigation
 
-Tailwind utilities inside `.admin-app` read the admin semantic variables
-because they are declared on the same element, so a shadcn control dropped into
-an admin screen inherits this palette without a wrapper.
+Desktop groups use compact sentence-case labels. Navigation links are (36px) high, with white fill, a neutral border and medium ink when current. The black brand mark follows the final override; the earlier coral token/comment is not the shipped logo treatment. Mobile navigation uses icon-plus-text destinations and opens remaining sections in a focus-managed sheet.
 
-## Do
+Inventory tabs use a dark underline for the current view and keep the current search query. Filtering preserves the active inventory view; Reset clears to the base product list.
 
-- Use 1px `#e5e5e5` for every container border. Borders define structure.
-- Keep one filled black action per screen; everything else is outlined or ghost.
-- Use pills for badges, tags, status, segmented controls, avatars — not cards.
-- Use 14px body, 13px tables, 12px labels, 11px captions. Fixed rem scale.
-- Pair every semantic colour with text or an icon.
-- Let the product data be the visual. No photography, illustration, or 3D.
-- Verify at 360, 390, 768 and 1280 before considering a screen complete.
+### Product channels and tabs
 
-## Don't
+Sales-channel switches lead Overview. Retail shows the retail price and sale fields. Wholesale shows explicit AED unit prices per selected business type and case/minimum/maximum quantities. Both enabled shows both sets. An inactive channel preserves its previously saved prices; it never copies a retail rate into wholesale. Existing products load revisioned wholesale terms before Save becomes available. One configured active business type gets a price field immediately when wholesale is enabled.
 
-- Don't add a shadow to a card. Don't combine a border and a wide soft shadow.
-- Don't use pure black for body text; use `#171717`.
-- Don't fill large areas with Electric Blue or the conic gradient.
-- Don't use two chromatic accents on one component.
-- Don't set Satoshi-style display sizes below 24px or use display weights in
-  table cells, labels, or buttons.
-- Don't add an eyebrow/kicker above a page title.
-- Don't use a thick coloured left border on notes or cards.
-- Don't animate page load, stagger cards, or count up a metric that did not
-  change.
-- Don't reach outside `.admin-app`; the storefront has its own system.
+Overview, Care & usage, Organisation, Variants, Photos and Publishing use accessible tabs with an overflow rail on narrow screens. Arrow keys, Home and End move between tabs instantly. Field panels stay mounted; invalid fields reveal their tab before focus. Stock reason appears only when the stock quantity changes. Expected-stock and receipt controls remain submitted. Photos use their existing independent upload save in the Photos tab. Readiness checks sit with Publishing.
 
-## Verification contract
+Save validates both channel configurations first, then uses the existing product and wholesale APIs. A partial wholesale failure explicitly identifies the product as saved, locks the completed form and offers pricing-only recovery. Recovery reads current terms before replay and refuses a revision conflict. It does not repeat stock adjustments or create another product.
 
-Any visual change must pass, in this order:
+Website management uses task tabs for content, profile, delivery, branches, rewards, retention, reviews and reports; maintenance is secondary. Categories, banners and staff lists lead their pages; creation forms open on request. Contribution costs follow order fulfillment work. Wholesale pricing links to the unified product editor instead of maintaining a second price form.
 
-1. `npm run typecheck` and `npm run lint` from the repository root.
-2. `npm test` (at minimum `tests/admin-migration.test.ts`,
-   `tests/stylesheet-policy.test.ts`, `tests/operations.test.ts`).
-3. Run the synthetic admin fixture plus an isolated dev server and execute
-   `scripts/tooling/verify-admin-browser.mjs` — 15 routes, 360/390/768/1280
-   responsive checks, accessibility audit, login/logout, dispatch, multipart
-   product update, redirects, order-arrival recovery, staff denial.
-4. Review rendered screenshots at desktop/tablet/mobile before claiming done.
+### Tables and secondary row actions
 
-Behaviour, API contracts, RBAC, pricing, inventory and order state are out of
-scope for this design system and must not change when it is restyled.
+Desktop tables use pale sentence-case headings, compact body text, tabular right-aligned numbers, subtle fine-pointer hover and a blue focus-within wash. Mobile rows show labels beside values and keep primary actions reachable. Edit remains visible. Publishing and archival actions sit in an explicitly labeled ellipsis popover, portaled inside the admin theme using Radix. The overlay aligns to the end of its trigger, has a (6px) offset, (12px) collision padding, (180px) minimum width and viewport-constrained maximum width. Existing confirmations and command semantics remain intact.
+
+### Dashboard reporting and chart inspection
+
+Administrators receive real authenticated aggregate reporting for (7), (30) or (90) days through the existing growth-metrics contract. The default period is (30) days. The native period select changes the route, announces updating state and disables controls during the transition. Export report downloads the loaded daily rows as CSV, with UTC date, orders and gross order value in AED; it is disabled when the report is unavailable.
+
+The four readings are gross order value, orders placed, average order and dispatched count. Comparison badges derive from the previous period; a missing or zero baseline displays “No previous-period baseline” instead of inventing growth. Period reporting covers online orders in the current order system, before cancellation/refund adjustments, with UTC dates. Recent orders are a separate latest-order list across all dates (read limit 25; six rows displayed for administrators). Legacy orders remain there. Staff see role/city-scoped queue counts over their latest accessible orders and eight recent rows, without the administrator aggregate report.
+
+The daily chart switches between Order value and Orders and between Bar and Line. Toggle buttons expose their state with aria-pressed. Bars use full chart blue at rest and deeper blue when inspected; line mode uses a blue stroke and pale area. Axis labels are ordinary text in the chart component. Order-count ticks avoid fractional midpoints. Pointer inspection reveals an ink tooltip and cursor; keyboard focus supports Left/Right, Home and End, with the selected date/value announced in a status region. Blur or pointer leave clears inspection. The tooltip stays within the central (22%–78%) plot range. Empty periods display a clear no-orders message.
+
+Fulfilment shows dispatched, cancelled and other stages, with text counts and destination links alongside the ring. Most ordered products ranks up to five products by units placed and names order-snapshot scope; cancellations/refunds remain included. Unavailable reporting displays dashes, an explicit warning and Reload report, while recent orders stay visible. Empty product rankings distinguish no orders from an unavailable report. No prior 25-order sample is reused as period analytics.
+
+## Do's and Don'ts
+
+### Do:
+
+- **Do** scope admin styling and portals inside the admin theme.
+- **Do** keep numeric columns aligned and status meaning in readable text.
+- **Do** preserve unsaved inputs when switching task tabs.
+- **Do** retain search terms when changing inventory views.
+- **Do** respect reduced motion and keep keyboard focus visible.
+
+### Don't:
+
+- **Don't** import the storefront palette or restore the superseded warm admin palette.
+- **Don't** add decorative brand color to neutral navigation or primary actions.
+- **Don't** confuse the all-date recent-order list with period reporting, or invent a comparison without a baseline.
+- **Don't** hide primary Edit behind the secondary actions popover.
+- **Don't** promote legacy kickers, tiny tracked uppercase labels or stale comments into reusable system rules.
+
+Not canonized or repaired: the legacy warm brand-badge fill, remaining tracked uppercase micro-labels/kickers and stale warm/coral CSS comments are inherited implementation drift, not guidance. The actual ink logo and neutral overrides win. Small table utilities remain an observed touch-target limitation, not a recommendation for new mobile controls. This documentation pass does not modify source behavior, backend data or deployment state.

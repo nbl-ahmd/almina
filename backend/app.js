@@ -17,6 +17,8 @@ function createLegacyApp(options) {
   app.locals.driveMedia = options.driveMedia;
   app.locals.whatsappSender = options.whatsappSender;
   const healthHeaders = require('./security/boundary.cjs').securityHeaders(options.development);
+  // External uptime ping: no authentication, database or provider work.
+  app.get('/api/ping', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').type('text/plain').send('pong'));
   app.get('/health/live', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').json({ status: 'live' }));
   app.get('/health/ready', healthHeaders, wrap(async (_req, res) => {
     const ready = await require('./commerce/dist/service.cjs').retainedReadiness(

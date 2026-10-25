@@ -1,3 +1,4 @@
+import { listingRankStages, listingRankSort } from './listing-rank.js';
 import { retailAudienceFilter } from './audience.js';
 import { productContentNames } from '@almina/contracts';
 import { z } from 'zod';
@@ -56,7 +57,7 @@ function match(query: Query, staff: boolean): Document {
     ...(query.inStock === true ? [{ stock: { $gt: 0 } }] : []),
     ...(query.inStock === false ? [{ stock: { $lte: 0 } }] : []),
     { archivedAt: { $exists: false }, ...(staff ? {} : published) },
-    ...(query.q ? [{ $or: ['name', 'description'].map(field => ({ [field]: { $regex: query.q!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } })) }] : []),
+    ...(query.q ? [{ $or: ['name', 'brand', 'barcode', 'gtin', 'product_id', 'description'].map(field => ({ [field]: { $regex: query.q!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } })) }] : []),
   ] };
 }
 function categoryJoin(staff: boolean, disabledCategory?: 'true' | 'false'): Document[] {
@@ -78,10 +79,11 @@ export async function retainedProductList(db: Db, query: Query, staff = false) {
   return db.collection('products').aggregate([{ $match: match(query, staff) }, ...categoryJoin(staff, query.disabledCategory),
     ...(!query.groupFamilies && (query.sort === 'price-asc' || query.sort === 'price-desc') ? [{$set:{_familySortPrice:{$cond:[{$and:[{$eq:['$sale',true]},{$isNumber:'$salePrice'},{$gte:['$salePrice',0]},{$lte:['$salePrice','$price']}]},'$salePrice','$price']}}}] : []),
     ...(query.groupFamilies&&!staff?familyListingStages():[]),
+    ...(!staff && query.sort === 'relevance' ? listingRankStages(query.q) : []),
     { $sort: query.sort === 'price-asc' ? { _familySortPrice: 1, price: 1, _id: 1 }
       : query.sort === 'price-desc' ? { _familySortPrice: -1, price: -1, _id: 1 }
       : query.sort === 'name' ? { name: 1, _id: 1 }
-      : query.filter.sale ? { createdAt: -1, _id: 1 } : { stock: -1, _id: 1 } },
+      : !staff ? listingRankSort : query.filter.sale ? { createdAt: -1, _id: 1 } : { stock: -1, _id: 1 } },
     { $skip: query.offset }, { $limit: query.limit }, { $project: compatibilityProductProjection }], options).toArray();
 }
 export async function retainedProductDetail(db: Db, identifier: { id: string } | { productId: string }, staff = false) {

@@ -25,6 +25,7 @@ for (const width of [390, 1280]) test(`staff can preview, review and place a cam
   await expect(preview.getByRole('img', { name: 'Synthetic care selection' })).toHaveAttribute('src', /mobile/);
   await page.getByRole('button', { name: 'Check campaign readiness', exact: true }).click();
   await expect(page.getByText('No products are pinned.', { exact: false })).toBeVisible();
+  await page.locator('summary').filter({hasText:'Maintenance tools'}).click();
   await page.getByRole('button', { name: 'Refresh search suggestions', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: /Search index:/ })).toBeVisible();
   await page.getByRole('searchbox', { name: 'Related products', exact: false }).fill('Synthetic care');

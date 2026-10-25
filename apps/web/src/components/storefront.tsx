@@ -14,11 +14,11 @@ export async function ProductGrid({ products, headingLevel = 2, variant: _varian
   const locale = await getLocale();
   void _variant;
   const Heading = headingLevel === 3 ? 'h3' : 'h2';
-  return products.length ? <div className="product-grid grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">{products.map(product=><ProductCard key={product._id} product={product} headingLevel={headingLevel} />)}</div> : <div className="empty-state rounded-2xl"><Icon name="search" /><Heading>{u(locale,"No products found.")}</Heading><p>{u(locale,"Try a different search or explore another category.")}</p><Link className="button button-secondary" href="/products">{u(locale,"Browse all products")}</Link></div>;
+  return products.length ? <div className="product-grid grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">{products.map(product=><ProductCard key={product._id} product={product} headingLevel={headingLevel} />)}</div> : <div className="empty-state rounded-2xl"><Icon name="search" /><Heading>{u(locale,"No products found.")}</Heading><p>{u(locale,"Try a different search or explore another category.")}</p><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
 }
 export async function CategoryGrid({ categories, rail = false }: { categories: Category[]; rail?: boolean }) {
   const locale = await getLocale();
-  return categories.length ? <div className={rail ? 'scrollbar-none grid auto-cols-[160px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto pb-2 md:auto-cols-[220px]' : 'grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4'}>{categories.map(category => <CategoryTile key={category._id} category={category} headingLevel={2} />)}</div> : <div className="empty-state rounded-2xl"><h2>{u(locale,"Categories are not available yet")}</h2><Link className="button button-secondary" href="/products">{u(locale,"Browse all products")}</Link></div>;
+  return categories.length ? <div className={rail ? 'scrollbar-none grid auto-cols-[160px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto pb-2 md:auto-cols-[220px]' : 'grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4'}>{categories.map(category => <CategoryTile key={category._id} category={category} headingLevel={2} />)}</div> : <div className="empty-state rounded-2xl"><h2>{u(locale,"Categories are not available yet")}</h2><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
 }
 export async function Breadcrumb({ title, parents = [] }: { title: string; parents?: { name: string; path: string }[] }) {
   const locale = await getLocale();

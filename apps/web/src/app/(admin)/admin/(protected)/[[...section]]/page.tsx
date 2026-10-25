@@ -1,3 +1,5 @@
+import { reportDays } from '../../../../../lib/admin/dashboard';
+import { RowActions } from '../../../../../components/admin/row-actions';
 import {MarketingManager} from '../../../../../components/admin/marketing-manager';
 import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
@@ -120,7 +122,7 @@ export default async function AdminPage({
       {...(typeof query.status === 'string' ? { status: query.status } : {})} />;
   }
   if (section === "dashboard") {
-    return <AdminDashboard user={user} />;
+    return <AdminDashboard user={user} days={reportDays(query.days)} />;
   }
   if (section === "products") {
     if (detail && user.role !== "admin")
@@ -217,7 +219,19 @@ export default async function AdminPage({
             </Link>
           </p>
         ) : null}
-        <form className={formPanel} role="search">
+        <nav className="admin-inventory-tabs" aria-label="Inventory views">
+          {[
+            ['all', 'All products'], ['sale', 'On sale'],
+            ['outofstock', 'Out of stock'], ['disabled', 'Disabled'],
+          ].map(([value, label]) => {
+            const params = new URLSearchParams();
+            if (typeof query.q === 'string' && query.q) params.set('q', query.q);
+            if (value !== 'all') params.set('view', value!);
+            return <Link key={value} href={`/admin/products${params.size ? `?${params}` : ''}`}
+              aria-current={view === value ? 'page' : undefined}>{label}</Link>;
+          })}
+        </nav>
+        <form className={`${formPanel} admin-inventory-filters`} role="search">
           <label htmlFor="q">
             Search products
             <input
@@ -229,19 +243,7 @@ export default async function AdminPage({
               placeholder="Product name or PD number"
             />
           </label>
-          <label htmlFor="view">
-            Inventory view
-            <select
-              id="view"
-              name="view"
-              defaultValue={display(view)}
-            >
-              <option value="all">All products</option>
-              <option value="sale">On sale</option>
-              <option value="outofstock">Out of stock</option>
-              <option value="disabled">Disabled</option>
-            </select>
-          </label>
+          <input type="hidden" name="view" value={view} />
           <div className="admin-actions">
             <button>Apply filters</button>
             <Link className="admin-btn--secondary" href="/admin/products">
@@ -287,9 +289,10 @@ export default async function AdminPage({
               "Read-only"
             ) : (
               <>
-                <Link href={`/admin/products/${display(item._id)}`}>
-                  Edit {display(item.name)}
+                <Link href={`/admin/products/${display(item._id)}`} aria-label={`Edit ${display(item.name)}`}>
+                  Edit
                 </Link>
+                <RowActions label={display(item.name)}>
                 <Command
                   path={`products/publish/${display(item._id)}`}
                   confirm="Change this product's published status?"
@@ -304,6 +307,7 @@ export default async function AdminPage({
                 >
                   Archive product
                 </Command>
+                </RowActions>
               </>
             )
           }
@@ -364,6 +368,7 @@ export default async function AdminPage({
           title="Categories"
           description="Organise the storefront into browsable groups."
         />
+        <details className="admin-create-panel" open={detail === "new"}><summary>Create category</summary>
         <Card title="Create category">
           <AdminForm
             path="category"
@@ -386,6 +391,7 @@ export default async function AdminPage({
             ]}
           />
         </Card>
+        </details>
         <Table
           caption="Categories"
           data={categories}
@@ -405,7 +411,7 @@ export default async function AdminPage({
             },
           ]}
           actions={(item) => (
-            <>
+            <RowActions label={`Actions for ${display(item.name)}`}>
               <Link href={`/admin/products/new?category=${display(item._id)}`}>
                 Create product in {display(item.name)}
               </Link>
@@ -419,11 +425,11 @@ export default async function AdminPage({
                 path={`category/${display(item._id)}`}
                 method="DELETE"
                 variant="danger"
-                confirm="Permanently delete this category and its media?"
+                confirm="Archive this category? Its products, history and media will be retained."
               >
                 Archive category
               </Command>
-            </>
+            </RowActions>
           )}
         />
         {pagination(section, query, categories.length)}
@@ -438,6 +444,7 @@ export default async function AdminPage({
           title="Banners"
           description="Upload event, offer and campaign artwork for the homepage carousel. Newest banners appear first."
         />
+        <details className="admin-create-panel"><summary>Add banner</summary>
         <Card title="Add banner">
           <AdminForm
             path="banners"
@@ -469,6 +476,7 @@ export default async function AdminPage({
             ]}
           />
         </Card>
+        </details>
         <Table
           caption="Published banners"
           data={banners}
@@ -582,6 +590,7 @@ export default async function AdminPage({
           title="User management"
           description="Provision staff accounts and assign the cities they may serve."
         />
+        <details className="admin-create-panel"><summary>Create staff account</summary>
         <Card title="Create staff account">
           <AdminForm
             path="auth/signup"
@@ -628,6 +637,7 @@ export default async function AdminPage({
             ]}
           />
         </Card>
+        </details>
         <Table
           caption="Staff accounts"
           data={users}

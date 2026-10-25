@@ -1,5 +1,7 @@
 # Migration status
 
+2026-10-24 external uptime ping: added public `GET /api/ping` (also supports HEAD) to the retained Render backend and standalone API. Returns HTTP 200 with plain-text `pong` and `Cache-Control: no-store`, without authentication, database checks or provider calls. Existing Render health checks are unchanged. After deployment, configure UptimeRobot HTTP(s) monitoring for `https://almina-of4b.onrender.com/api/ping` every five minutes. This is process reachability only, not commerce/database readiness. No deployment or production data changes.
+
 2026-10-24 admin design-system pass on `opencode/admin-redesign` (follow-up to the 23 October redesign): replaced the previous admin visual direction with the frosted operations console documented in [`apps/web/src/app/(admin)/admin/DESIGN.md`](../../apps/web/src/app/%28admin%29/admin/DESIGN.md) — rice-paper canvas, hairline borders, one electric-blue accent, Geist display/body scale, `cva`-variant primitives with Radix `Slot`, and pure-CSS state motion (the numeric count-up and sparkline draw were removed; GSAP remains storefront-only). Corrected muted/silver token use after axe found 2.52:1 caption contrast, tightened sidebar density to stop the last nav item clipping at 1280×900, and corrected `verify-admin-browser.mjs` to settle the streamed DOM swap, use exact accessible names, and assert the live-status `data-state` rather than the old label text. Frontend/verification only: no API, contract, RBAC, pricing, inventory, order or route change. Verified with typecheck, lint, 16 focused unit tests, isolated production build (`build:foundation`), the full fixture harness (15 routes, 60 responsive/a11y checks, login/logout, dispatch, multipart product update, redirects, order arrival/outage recovery, staff denial) and 10 Playwright admin cases, plus screenshot review at 360/390/768/1280. Not merged or deployed.
 
 2026-10-23 admin redesign on `opencode/admin-redesign`: refreshed the staff shell, sign-in, dashboard, grouped forms, upload controls and responsive record tables; added a mobile navigation sheet with focus restoration and bottom navigation. Retained the email-marketing route and its scoped editor styles. Removed unsupported VAT/featured fields and kept barcode entry limited to product creation, preserving the existing product mutation contract. Typecheck, lint, production build and 26 focused admin/marketing/wholesale browser cases passed, with additional mobile-menu navigation/focus checks at 360/390 px. No production data or deployment changes.
@@ -397,3 +399,137 @@ Implemented unified product photo preparation/editing, Arabic account and wholes
 ## Branded product media — recovered PR #57
 
 Reintroduced the branded responsive image handler and product metadata/feed URLs on the current release base. See `BRANDED_MEDIA_2026-10-21.md`; deployment cache-hit verification is still required.
+
+## Administration console redesign — 24 October 2026 (local)
+
+Replaced the admin visual direction with **"Counter daylight"** after the owner
+supplied three reference screens (Wiik overview, Nexadash dashboard, Dub
+payouts) and chose a whole-console restyle with the dashboard recomposed. The
+previous Dub-inspired frosted rice-paper system (commit `314124b`) is now the
+explicit anti-reference. The shared token layer, shell, sidebar, top bar, cards,
+stat tiles, tables, badges, buttons, inputs, notes, sign-in surface and mobile
+tab bar were restyled; every other admin screen inherits through the same class
+vocabulary without markup changes.
+
+Dashboard composition: four KPI sheets with state chips instead of invented
+trends, a new **dispatch rail** (four order stages, each a link with its count
+and its share of the sample), a two-thirds chart and one-third attention rail,
+a full-width system-health signal strip, and recent orders. Order timestamps now
+render store-local (`Asia/Dubai`, e.g. `3 Oct, 04:00`) instead of raw ISO. The
+queue's in-progress row counts confirmed + packed, so its label, count and
+destination were aligned to that meaning.
+
+No route, RBAC decision, price, stock value, order state, integration or
+production data changed. Routes, tests and the browser verifier still pin
+`h1` "Dashboard", `.admin-status[data-state]`, the `1002` fixture order and the
+`Delete product` control; all remain.
+
+Verification: web typecheck and focused lint clean; `tests/admin-migration.test.ts`
+and `tests/operations.test.ts` pass (14 tests); `verify-admin-browser.mjs` passes
+all 15 routes, 60 responsive checks, accessibility audits, auth/CSRF checks,
+order arrival and outage recovery; rendered screenshots reviewed at 1440×1000,
+768×1024 and 390×844 for the dashboard, orders and products, plus the sign-in
+surface.
+
+Operational note for future verification runs: the synthetic fixture deletes
+its session token on logout and does not re-add it on login, so after the
+verifier finishes, `POST http://127.0.0.1:4600/__fixture/reset` is required
+before a manual sign-in in a browser session. The design record is
+`apps/web/src/app/(admin)/admin/DESIGN.md`; source material is
+`apps/web/src/app/(admin)/admin/DESIGN.reference.md`.
+
+### 24 October 2026 — Nexadash / Dub admin redesign
+
+Replaced the admin's warm-paper presentation with a scoped neutral system:
+white panels, fine gray borders, compact grouped navigation, dark actions and
+blue chart ink. Added header inventory search, search-preserving inventory view
+tabs, compact product row actions, and product-section shortcuts that reveal
+secondary content without discarding mounted inputs. Basic details and pricing
+share a desktop row; classification, review and visibility remain explicit.
+The dashboard now puts its chart beside the attention queue; confirmed and
+packed queue links have separate exact counts, review totals make no draft-only
+claim, and an unavailable store-status read displays Unknown.
+
+Existing routes, permissions, mutation contracts, stock receipts and customer
+storefront styling remain intact. No production data change or deployment.
+Verification: isolated production foundation build, web typecheck, targeted ESLint,
+Next.js compilation diagnostics, desktop/phone captures of dashboard, products,
+editor, orders and operations, and a tablet editor capture. Focused browser
+regressions pass for inventory search/filter persistence, row-menu Escape/focus,
+unsaved product-section navigation at 390/768/1440px, session/RBAC behavior,
+stock conflict/receipt handling, and photo replacement/archive stock preservation.
+Design detector reports zero primary findings; its documentation advisories are
+addressed by the scoped admin design record. Screenshots use local synthetic data.
+
+### 24 October 2026 — Admin composition and editor hierarchy follow-up
+
+Rebuilt the overview around the owner's new bento layout references: compact
+2×2 KPI group, dominant interactive daily chart, fulfilment breakdown, then
+recent orders and ranked products. The overview now reads the existing
+admin-only growth metrics API on the server, with no-store, timeout and schema
+validation; seven/thirty/ninety-day periods and comparisons use that aggregate
+contract. Daily charts include zero days and support pointer/keyboard inspection,
+value/order metrics, bar/line views and a daily CSV export. Gross placed-order
+semantics, cancellation/refund inclusion, current-system coverage and UTC dates
+remain explicit. Recent orders remain independent of the selected period.
+System diagnostics remain on Operations rather than displacing commerce data.
+
+The owner selected essentials on one screen with advanced details collapsed.
+Product basics, creation category, price, stock and adjustment reason now form
+one open section, with Save immediately after it and photos alongside on desktop.
+Classification, care, channel publishing, variants and wholesale visibility are
+collapsed native disclosures; all inputs and stock receipt fields remain mounted
+and submitted. Invalid controls open their enclosing disclosure for recovery.
+Removed hover underlines and prioritized Orders/Products in navigation. Existing
+photo and product saves remain independent; new products must still be created
+before photos can be attached.
+
+Verification: isolated foundation production build, web typecheck and targeted
+ESLint; fourteen focused source/presentation tests and nine browser regressions
+pass. Browser checks cover actual reporting/top products, date selection, chart
+keyboard inspection, export, filters, disclosure edit preservation at
+360/390/768/1440px, auth, stock conflicts, photo replacement and archive retention.
+No backend, production data or deployment changes were made by this follow-up.
+
+Final rendered checks: zero horizontal overflow at 360/390/768/1440px, no browser
+page errors, and zero axe WCAG 2 A/AA and 2.1 AA violations on the dashboard and
+product editor. Count axes omit fractional/duplicate one-order midpoint labels;
+primary bars meet graphical contrast. A local read-only reporting fault verified
+that Reload requests a fresh report while retaining recent orders. Empty reporting
+was inspected without inserting illustrative sales or changing stored data.
+
+### 24 October 2026 — Channel-first product editing and admin task hierarchy
+
+Latest owner feedback replaces collapsed product sections with persistent task
+tabs. Retail/Wholesale switches now lead the editor and determine visible price
+inputs. Explicit per-business-type wholesale rates and case quantities save from
+the product screen; disabled channels retain persisted rates. Product and trade
+APIs remain separate, with explicit pricing-only recovery after a partial save.
+Stock reason is required only for stock changes, and hidden expected-stock and
+receipt controls remain intact. The product-create response envelope now survives
+recursive gateway projection so creation can open the saved product and attach
+its wholesale terms.
+
+Growth settings are split into task tabs; list creation, maintenance tools and
+order contribution costs no longer displace primary work. Wholesale pricing
+links to the unified editor. See `ADMIN_HIERARCHY_2026-10-24.md` for the audit,
+compatibility details and recovery limitations. Build, targeted lint, 26 focused
+tests and 19 unique browser scenarios pass across the verification runs. Axe
+checks pass in 24 page/tab states, with no observed browser page errors or tested
+viewport overflow. No production data migration or deployment was performed.
+
+
+### 2026-10-25 — Reviewed product images applied
+Applied 318 image links to 315 products with before-state, revision checks and transactional media history/receipts.22 affected public products verified;293 draft/disabled statuses retained. Temporary Atlas access removed. See `REVIEWED_IMAGE_ASSOCIATIONS_2026-10-25.md`.
+
+
+### 2026-10-25 — Image-linked draft publication reviewed
+Reviewed293 records; published75 retail products with descriptions, categories, pack details and SEO.218 held with per-SKU reasons. All75 public API checks passed,293 DB records verified, price/stock/VAT unchanged. Withdrew two image links for pack/style uncertainty; temporary Atlas access removed. See `REVIEWED_RETAIL_PUBLICATION_2026-10-25.md`.
+
+## 2026-10-25 — Compact mobile storefront shell (local)
+
+Implemented compact delivery selection, phone delivery bottom sheet, persistent mobile search/header and safe-area bottom tabs; hid the mobile hamburger entry and duplicate top cart. Desktop navigation is preserved. See [MOBILE_APP_SHELL_2026-10-25.md](MOBILE_APP_SHELL_2026-10-25.md) for scope and verification. Not deployed by this task.
+
+## 2026-10-25 — Category-first discovery and deterministic listing ranking (local)
+
+Promoted categories/collections rather than the undifferentiated catalogue, retained /products as a secondary route, exposed sorting and removable filters, and replaced public stock-quantity sorting with intent/availability/merchandising ordering. No commerce calculations or production data changed. Isolated web build, API TypeScript, seven catalogue integration tests and ten browser tests passed. See [CATALOG_DISCOVERY_2026-10-25.md](CATALOG_DISCOVERY_2026-10-25.md) for audit, sources, ranking order and limitations. Not deployed.

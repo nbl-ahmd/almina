@@ -290,3 +290,7 @@ test("stream lifetime interrupts a stalled upstream without retaining a browser 
   assert.equal((await stream.getReader().read()).done, true);
   assert.equal(aborted, true);
 });
+
+test('created product envelope retains the product identity while recursively removing private fields', () => {
+  assert.deepEqual(project({ message: 'Created', product: { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Fixture', password: 'private', customerToken: 'private', category: { name: 'Category', password: 'private' } } }), { message: 'Created', product: { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Fixture', category: { name: 'Category' } } });
+});

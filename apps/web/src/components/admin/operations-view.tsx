@@ -16,10 +16,10 @@ export function OperationsView({ snapshot }: { snapshot: z.infer<typeof operatio
         Measured at {snapshot.http.measuredAt}. This view covers one {snapshot.http.source} process. Refresh to read current signals; collect every deployed API instance before making a release decision.
       </p>
       <StatGrid>
-        <StatTile label="Requests sampled" countTo={requests} meta={`${snapshot.http.windowMinutes}-minute window`} />
-        <StatTile label="Server failures" countTo={failures} meta="5xx within the window" tone={failures > 0 ? 'warning' : 'brand'} />
-        <StatTile label="Alerts" countTo={snapshot.alerts.length} meta="Thresholds to investigate" tone={snapshot.alerts.length ? 'warning' : 'brand'} />
-        <StatTile label="Notification queue" countTo={queue} meta="Pending, processing and failed jobs" />
+        <StatTile label="Requests sampled" count={requests} meta={`${snapshot.http.windowMinutes}-minute window`} />
+        <StatTile label="Server failures" count={failures} meta="5xx within the window" tone={failures > 0 ? 'warning' : 'brand'} />
+        <StatTile label="Alerts" count={snapshot.alerts.length} meta="Thresholds to investigate" tone={snapshot.alerts.length ? 'warning' : 'brand'} />
+        <StatTile label="Notification queue" count={queue} meta="Pending, processing and failed jobs" />
       </StatGrid>
       <Card title="Alerts to investigate">
         {snapshot.alerts.length ? (

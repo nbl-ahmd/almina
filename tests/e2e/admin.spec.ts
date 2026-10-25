@@ -54,6 +54,7 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
     return (await audit.run(document.body)).violations.map(violation => violation.id);
   });
   expect(violations).toEqual([]);
+  await page.locator('summary').filter({hasText:'Create staff account'}).click();
   await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
@@ -119,6 +120,7 @@ test('admin order update reaches the real writer and prevents cancellation after
   await login(page);
   await page.goto(adminOrigin + '/admin/orders/' + order.id);
   await streamSettled(page);
+  await page.locator('summary').filter({hasText:'Contribution reporting'}).click();
   await expect(page.getByText('No costs recorded.',{exact:false})).toBeVisible();
   await page.getByRole('textbox',{name:'Product cost (AED)',exact:true}).fill('12.30');
   await page.getByRole('textbox',{name:'Fulfilment cost (AED)',exact:true}).fill('2');
@@ -126,6 +128,7 @@ test('admin order update reaches the real writer and prevents cancellation after
   await page.getByRole('button',{name:'Save actual costs',exact:true}).click();
   await expect(page.getByText('Costs saved. Order prices and stock are unchanged.',{exact:true})).toBeVisible();
   await page.reload(); await streamSettled(page);
+  await page.locator('summary').filter({hasText:'Contribution reporting'}).click();
   await expect(page.getByRole('textbox',{name:'Product cost (AED)',exact:true})).toHaveValue('12.30');
   const lines = page.getByRole('table', { name: 'Recorded order lines' });
   await expect(lines.getByRole('columnheader', { name: 'Charged unit price (AED)' })).toBeVisible();
@@ -147,7 +150,7 @@ test('admin order update reaches the real writer and prevents cancellation after
   await expect(page.locator('main')).toContainText('This record has changed or the action is unavailable.');
   const result = await state(request); expect(result.orders[0]!.status).toBe('dispatched'); expect(result.stock).toBe(2);
   await page.goto(adminOrigin+'/admin/growth');
-  await page.getByRole('button',{name:'Order report',exact:true}).click();
+  await page.getByRole('tab',{name:'Reports',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Recorded contribution',exact:true})).toBeVisible();
   await expect(page.getByText('1 of 1 dispatched orders have complete cost and tax records.',{exact:false})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Repeat purchase cohorts',exact:true})).toBeVisible();
@@ -189,10 +192,12 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   await page.route('**/*.js', async route => { await scriptsReady; await route.continue(); });
   await page.goto(adminOrigin + '/admin/products/' + productId, { waitUntil: 'commit' });
   try {
-    await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toBeDisabled();
+    await expect(page.locator('button').filter({hasText:'Save product photos'})).toBeDisabled();
     await expect(page.getByLabel('Choose product photos')).toBeDisabled();
   } finally { releaseScripts(); }
+  await page.getByRole('tab', {name:'Photos',exact:true}).click();
   await expect(page.getByLabel('Choose product photos')).toBeEnabled();
+  await page.getByText('Upload recovery', { exact: true }).click();
   await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toHaveCSS('padding-left', '20px');
   await page.getByLabel('Choose product photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
@@ -203,6 +208,7 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);
   await page.goto(adminOrigin + '/admin/products');
   await streamSettled(page);
+  await page.getByRole('button', { name: /^More actions for/ }).click();
   page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Archive product', exact: true }).click();
   await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('No records found.');
   expect((await state(request)).stock).toBe(4);

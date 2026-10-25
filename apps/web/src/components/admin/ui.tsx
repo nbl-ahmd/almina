@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from 'radix-ui';
-
 /* Presentational admin primitives, adapted from the shadcn pattern (cva
    variants + Radix Slot for asChild) and tuned to the Dub-inspired console.
    The authoritative visual specification is ../app/(admin)/admin/DESIGN.md.
@@ -33,7 +32,10 @@ export function PageHeader({
 }
 
 const buttonVariants = cva(
-  'admin-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-100',
+  // Colour transitions and the press transform are owned by admin.css so the
+  // timing matches every other control; a Tailwind `transition-colors` here
+  // would silently replace that shorthand inside the utilities layer.
+  'admin-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium disabled:cursor-not-allowed disabled:opacity-100',
   {
     variants: {
       variant: {
@@ -182,20 +184,24 @@ export function StatTile({
   href,
   label,
   value,
-  countTo,
+  count,
   meta,
   icon,
   tone = 'brand',
   active = false,
+  chip,
 }: {
   href?: string;
   label: string;
   value?: ReactNode;
-  countTo?: number;
+  /** A plain sample count. Rendered with locale separators and no count-up. */
+  count?: number;
   meta?: ReactNode;
   icon?: ReactNode;
   tone?: Tone;
   active?: boolean;
+  /** State that belongs to the reading, never a fabricated trend. */
+  chip?: { label: string; tone?: Tone | undefined } | undefined;
 }) {
   const accent =
     tone === 'warning' || tone === 'danger' || tone === 'success'
@@ -204,15 +210,20 @@ export function StatTile({
   const body = (
     <>
       <div className="admin-stat__top">
-        <span className="admin-stat__label">{label}</span>
         {icon ? (
           <span className="admin-stat__icon" aria-hidden="true">
             {icon}
           </span>
         ) : null}
+        <span className="admin-stat__label">{label}</span>
       </div>
       <span className="admin-stat__value">
-        {typeof countTo === 'number' ? countTo.toLocaleString() : value}
+        {typeof count === 'number' ? count.toLocaleString() : value}
+        {chip ? (
+          <span className="admin-stat__chip" data-tone={chip.tone ?? 'neutral'}>
+            {chip.label}
+          </span>
+        ) : null}
       </span>
       {meta ? <span className="admin-stat__meta">{meta}</span> : null}
     </>
@@ -236,6 +247,60 @@ export function StatTile({
 
 export function StatGrid({ children }: { children: ReactNode }) {
   return <ul className="admin-stats">{children}</ul>;
+}
+
+export type Stage = {
+  label: string;
+  count: number;
+  href: string;
+  tone?: Tone | undefined;
+};
+
+/* The dispatch rail. Four equal stages rather than proportional slices: a
+   three-percent slice cannot carry a number, and the count is the point. The
+   meter underneath carries the share of the sample. */
+export function StageRail({
+  stages,
+  total,
+  footer,
+}: {
+  stages: Stage[];
+  /** Size of the sample the counts were drawn from, so the meter reads share. */
+  total: number;
+  footer?: ReactNode;
+}) {
+  return (
+    <>
+      <ol className="admin-pipeline">
+        {stages.map((stage) => {
+          const empty = stage.count === 0;
+          return (
+            <li key={stage.label}>
+              <Link
+                className="admin-pipeline__link"
+                href={stage.href}
+                data-tone={empty ? undefined : (stage.tone ?? 'neutral')}
+                data-empty={empty ? 'true' : undefined}
+              >
+                <span className="admin-pipeline__head">
+                  <span className="admin-pipeline__stage">{stage.label}</span>
+                  <span className="admin-pipeline__count">{stage.count}</span>
+                </span>
+                <span className="admin-pipeline__meter" aria-hidden="true">
+                  <span
+                    style={{
+                      width: `${total > 0 ? Math.min(100, Math.round((stage.count / total) * 100)) : 0}%`,
+                    }}
+                  />
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+      {footer ? <p className="admin-pipeline__foot">{footer}</p> : null}
+    </>
+  );
 }
 
 export function BarList({
@@ -288,78 +353,94 @@ export function TrendChart({
   format?: (value: number) => string;
 }) {
   if (!points.length)
-    return <p className="admin-card__hint">No sample to chart yet.</p>;
+    return (
+      <p className="admin-card__hint admin-hint--tight">
+        No dated orders in this view yet.
+      </p>
+    );
+  // A single sample is a fact, not a trend. Stretching one point across the
+  // full width draws a line that implies movement that never happened, so the
+  // chart becomes a plain reading of that day instead.
+  if (points.length === 1) {
+    const only = points[0]!;
+    return (
+      <figure className="admin-figure">
+        <p className="admin-single">
+          <span className="admin-single__value">{format(only.value)}</span>
+          <span className="admin-single__meta">
+            {only.value === 1 ? 'order' : 'orders'} on {only.label}
+          </span>
+        </p>
+        <p className="admin-card__hint admin-hint--tight">
+          One day of activity is in this view. The trend line appears when a
+          second day has orders.
+        </p>
+      </figure>
+    );
+  }
   const width = 100;
-  const height = 32;
+  const height = 40;
   const max = Math.max(1, ...points.map((point) => point.value));
-  // A single sample renders as one flat centred run instead of a fake area,
-  // so the chart never looks like a broken block.
-  const single = points.length === 1;
-  const series = single ? [points[0]!, points[0]!] : points;
-  const step = width / (series.length - 1);
-  const coords = series.map((point, index) => ({
+  const step = width / (points.length - 1);
+  const coords = points.map((point, index) => ({
     x: index * step,
-    y: single ? height / 2 : height - (point.value / max) * (height - 4) - 2,
+    y: height - (point.value / max) * (height - 5) - 2.5,
   }));
   const line = coords.map((point) => `${point.x},${point.y}`).join(' ');
   const area = `M ${coords[0]!.x},${height} L ${line.replaceAll(' ', ' L ')} L ${coords.at(-1)!.x},${height} Z`;
   const summary = `${label}: ${points.map((point) => `${point.label} ${format(point.value)}`).join(', ')}`;
+  // The peak is the only marker: seven dots along four pixels of travel read as
+  // noise, and the one point anyone asks about is the high-water mark.
+  const peakIndex = points.reduce(
+    (best, point, index) => (point.value > points[best]!.value ? index : best),
+    0,
+  );
+  const peak = coords[peakIndex]!;
+  const middle = points.length > 2 ? points[Math.floor(points.length / 2)]! : null;
+  const midValue = Math.ceil(max / 2);
   return (
-    <figure className="admin-figure">
-      <svg
-        className="admin-spark"
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label={summary}
-      >
-        {[0.25, 0.5, 0.75].map((ratio) => (
-          <line
-            key={ratio}
-            className="admin-spark__grid"
-            x1="0"
-            x2={width}
-            y1={height * ratio}
-            y2={height * ratio}
-          />
-        ))}
-        {single ? (
-          <circle
-            className="admin-spark__dot"
-            cx={width / 2}
-            cy={height / 2}
-            r={2.4}
-            vectorEffect="non-scaling-stroke"
-          />
-        ) : (
-          <>
-            <path className="admin-spark__area" d={area} />
-            <polyline className="admin-spark__line" points={line} />
-            {coords.map((point, index) => (
-              <circle
-                key={index}
-                className="admin-spark__dot"
-                cx={point.x}
-                cy={point.y}
-                r={1.4}
-                vectorEffect="non-scaling-stroke"
+    <figure className="admin-chart">
+      <div className="admin-chart__body">
+        <div className="admin-chart__y" aria-hidden="true">
+          <span>{format(max)}</span>
+          {midValue < max ? <span>{format(midValue)}</span> : <span />}
+          <span>0</span>
+        </div>
+        <div className="admin-chart__plot">
+          <svg
+            className="admin-chart__svg"
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+            role="img"
+            aria-label={summary}
+          >
+            {[0, 0.5, 1].map((ratio) => (
+              <line
+                key={ratio}
+                className={`admin-chart__grid${ratio === 1 ? ' admin-chart__grid--base' : ''}`}
+                x1="0"
+                x2={width}
+                y1={height * ratio}
+                y2={height * ratio}
               />
             ))}
-          </>
-        )}
-      </svg>
+            <path className="admin-chart__area" d={area} />
+            <polyline className="admin-chart__line" points={line} />
+          </svg>
+          <span
+            className="admin-chart__peak"
+            style={{
+              left: `${(peak.x / width) * 100}%`,
+              top: `${(peak.y / height) * 100}%`,
+            }}
+            aria-hidden="true"
+          />
+        </div>
+      </div>
       <figcaption className="admin-axis">
-        {points.length > 1 ? (
-          <>
-            <span>{points[0]!.label}</span>
-            <span>peak {format(max)}</span>
-            <span>{points.at(-1)!.label}</span>
-          </>
-        ) : (
-          <span>
-            {points[0]!.label} · {format(points[0]!.value)}
-          </span>
-        )}
+        <span>{points[0]!.label}</span>
+        {middle ? <span>{middle.label}</span> : null}
+        <span>{points.at(-1)!.label}</span>
       </figcaption>
     </figure>
   );

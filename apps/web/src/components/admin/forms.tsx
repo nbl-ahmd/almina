@@ -1,7 +1,12 @@
 "use client";
 import { ProductAudienceFields, type ProductAudience } from "./product-audience";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { flushSync } from 'react-dom';
+import { SectionTabs, SectionPanel } from './section-tabs';
+import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
+import { wholesaleRequest } from '../wholesale/request';
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { adminRequest } from "./controls";
 import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';
@@ -418,6 +423,8 @@ export function AdminForm({
   confirm,
   productAudience,
   footerNote,
+  productMedia,
+  productChecks,
 }: {
   path: string;
   method?: string;
@@ -427,18 +434,35 @@ export function AdminForm({
   confirm?: string;
   productAudience?: ProductAudience;
   footerNote?: ReactNode;
+  productMedia?: ReactNode;
+  productChecks?: ReactNode;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [version, setVersion] = useState(0);
+  const sectionId = useId();
+  const productEditor = path === 'products' || path.startsWith('products/');
+  const productId = productEditor && path !== 'products' ? path.split('/')[1] : undefined;
+  const pricing = useProductTrade(productId, productAudience);
+  const [activeTab, setActiveTab] = useState('Overview');
+  const [stockChanged, setStockChanged] = useState(false);
+  const [partialSave, setPartialSave] = useState<{ terms: TradeTerms; created: boolean } | null>(null);
+  const tabs = ['Overview', 'Care & usage', 'Organisation', 'Variants', 'Photos', 'Publishing'].map(id => ({ id, label: id }));
   const sections = groups(fields);
+  if (productEditor) sections.sort((a, b) => Number(a.advanced) - Number(b.advanced));
   const singleOpenSection = sections.length === 1 && !sections[0]!.title;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (confirm && !window.confirm(confirm)) return;
+    if (partialSave) return;
     const form = event.currentTarget;
+    let terms: TradeTerms | undefined;
+    if (productAudience) {
+      try { terms = productTradeTerms(pricing.trade, productId ?? '000000000000000000000000'); }
+      catch (failure) { setActiveTab('Overview'); setError(failure instanceof Error ? failure.message : 'Check channel prices.'); return; }
+    }
     const data = new FormData(form);
     setPending(true);
     setError("");
@@ -447,6 +471,14 @@ export function AdminForm({
     for (const [name, value] of data)
       if (value instanceof File && !value.size) data.delete(name);
     if (data.get("salePrice") === "") data.delete("salePrice");
+    if (productEditor && !pricing.trade.retail) {
+      for (const name of ['price', 'salePrice', 'sale']) {
+        const saved = fields.find(field => field.name === name)?.value;
+        if (saved) data.set(name, saved);
+        else if (name === 'price') data.set(name, '0');
+      }
+    }
+    if (productEditor && data.get('stockReason') === '') data.delete('stockReason');
     const json: Record<string, unknown> = Object.fromEntries(data);
     if ("billamount" in json) json.billamount = Number(json.billamount);
     if ("cities" in json)
@@ -458,6 +490,21 @@ export function AdminForm({
       const isWhatsapp = ['whatsapp/text', 'whatsapp/s'].includes(path);
       const key = isWhatsapp ? await whatsappRetryKey(path, json) : undefined;
       const result = await adminRequest(path, method, multipart ? data : json, key);
+      let savedProductId = productId;
+      if (path === 'products' && result && typeof result === 'object' && 'product' in result) {
+        const created = result.product as { _id?: unknown };
+        if (typeof created._id === 'string') savedProductId = created._id;
+      }
+      if (terms && savedProductId && pricing.trade.dirty) {
+        const requested = { ...terms, productId: savedProductId };
+        try { pricing.saved((await wholesaleRequest<TradeTerms>('admin/terms', requested)).data); }
+        catch {
+          setPartialSave({ terms: requested, created: path === 'products' });
+          setError('Product details saved. Wholesale pricing was not confirmed. Retry only wholesale pricing below; product and stock changes will not be repeated.');
+          return;
+        }
+      }
+      setStockChanged(false);
       setMessage(
         result && typeof result === "object" && "count" in result
           ? `Saved ${String(result.count)} products.`
@@ -480,54 +527,69 @@ export function AdminForm({
       setPending(false);
     }
   }
-  return (
-    <form className="admin-form" onSubmit={submit} aria-busy={pending}>
-      {/* Hidden fields carry the inventory receipt and expected stock, so they must
-          stay submitted even though they are not rendered inside a section. */}
-      {fields.map((field) => (resolveKind(field) === "hidden" ? renderField(field) : null))}
-      {productAudience ? (
-        <div className="admin-form__section" key={`audience-${version}`}>
-          <ProductAudienceFields initial={productAudience} />
-        </div>
-      ) : null}
-      <div key={version} className="admin-form__sections">
-        {sections.map((section, index) => {
-          const content = <div className="admin-form__grid">{section.fields.map(renderField)}</div>;
-          if (section.advanced) {
-            return (
-              <details className="admin-form__section" key={`${section.title}-${index}`}>
-                <summary>{section.title || "More options"}</summary>
-                {section.description ? <p className="admin-card__hint">{section.description}</p> : null}
-                {content}
-              </details>
-            );
-          }
-          if (singleOpenSection) {
-            return <div className="admin-form__section" key={`${section.title}-${index}`}>{content}</div>;
-          }
-          return (
-            <section className="admin-form__section" key={`${section.title}-${index}`}>
-              <div className="admin-form__heading">
-                <div>
-                  <h2>{section.title || "Details"}</h2>
-                  {section.description ? <p>{section.description}</p> : null}
-                </div>
-              </div>
-              {content}
-            </section>
-          );
-        })}
-      </div>
+  const saveControls = (
       <div className="admin-form__footer">
         <div className="admin-form__status">
           {error ? <p role="alert" className="admin-alert admin-alert--danger">{error}</p> : null}
           {message ? <p role="status" className="admin-alert admin-alert--success">{message}</p> : null}
           {!error && !message && footerNote ? <p className="admin-card__hint admin-hint--tight">{footerNote}</p> : null}
         </div>
-        <button disabled={pending}>{pending ? "Saving…" : label}</button>
+        {partialSave ? <button type="button" disabled={pending} onClick={async () => {
+          setPending(true);
+          try {
+            // A lost response may have committed. Read back before replaying a revision-sensitive write.
+            const current = (await wholesaleRequest<TradeTerms>('admin/terms?' + new URLSearchParams({ productId: partialSave.terms.productId }))).data;
+            const same = current.enabled === partialSave.terms.enabled && JSON.stringify(current.prices) === JSON.stringify(partialSave.terms.prices);
+            if (!same && current.revision !== partialSave.terms.revision) throw Error('Wholesale pricing changed elsewhere. Open the product again to review the current rates.');
+            pricing.saved(same ? current : (await wholesaleRequest<TradeTerms>('admin/terms', partialSave.terms)).data);
+            setPartialSave(null); setError(''); setMessage('Product and channel prices saved.');
+            if (partialSave.created) router.push(`/admin/products/${partialSave.terms.productId}`);
+            router.refresh();
+          } catch (failure) { setError(failure instanceof Error ? failure.message : 'Wholesale pricing could not be saved.'); }
+          finally { setPending(false); }
+        }}>{pending ? 'Retrying…' : 'Retry wholesale pricing'}</button> : <button disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : label}</button>}
+        {partialSave ? <Link href={`/admin/products/${partialSave.terms.productId}`}>Open saved product</Link> : null}
       </div>
-    </form>
   );
+  const ordinarySections = sections.map((section, index) => <section className="admin-form__section" key={`${section.title}-${index}`}>
+    {!singleOpenSection ? <div className="admin-form__heading"><div><h2>{section.title || 'Details'}</h2>{section.description ? <p>{section.description}</p> : null}</div></div> : null}
+    <div className="admin-form__grid">{section.fields.map(renderField)}</div>
+  </section>);
+  const pricingNames = ['price', 'salePrice', 'sale'];
+  return <div className={productEditor ? 'admin-product-editor' : undefined}>
+    {productEditor ? <SectionTabs id={sectionId} label="Product sections" tabs={tabs} value={activeTab} onChange={setActiveTab} /> : null}
+    <form className={`admin-form${productEditor ? ' admin-form--product' : ''}`} onSubmit={submit} aria-busy={pending} hidden={productEditor && activeTab === 'Photos'} onChange={event => {
+      if (productEditor && event.target instanceof HTMLInputElement && event.target.name === 'stock') setStockChanged(event.target.value !== fields.find(field => field.name === 'expectedStock')?.value);
+    }} onInvalidCapture={event => {
+      if (!productEditor || !(event.target instanceof HTMLElement)) return;
+      const panel = event.target.closest<HTMLElement>('[data-product-panel]');
+      if (panel?.dataset.productPanel) flushSync(() => setActiveTab(panel.dataset.productPanel!));
+    }}>
+      {fields.map(field => resolveKind(field) === 'hidden' ? renderField(field) : null)}
+      <fieldset className="admin-form-lock" disabled={pending || Boolean(partialSave)}>
+      <div key={version} className="admin-form__sections">
+      {productEditor && productAudience ? <>
+        <SectionPanel id={sectionId} name="Overview" active={activeTab === 'Overview'}><div data-product-panel="Overview" className="product-overview">
+          <ProductChannels trade={pricing.trade} onChange={pricing.setTrade} reload={pricing.reload} />
+          <section className="admin-form__section product-pricing"><div className="admin-form__heading"><h2>Channel prices</h2></div>
+            <fieldset disabled={!pricing.trade.retail} hidden={!pricing.trade.retail} className="admin-form__grid admin-form-lock">{fields.filter(field => pricingNames.includes(field.name)).map(field => renderField({ ...field, required: pricing.trade.retail && field.required === true }))}</fieldset>
+            <WholesalePrices trade={pricing.trade} onChange={pricing.setTrade} />
+          </section>
+          <section className="admin-form__section product-basics"><div className="admin-form__heading"><h2>Product details & stock</h2></div><div className="admin-form__grid">{fields.filter(field => field.section === 'Overview' && !pricingNames.includes(field.name)).map(field => field.name === 'stockReason' ? <div key={field.name} hidden={!stockChanged} className="admin-field--wide">{renderField({ ...field, required: stockChanged })}</div> : renderField(field))}</div></section>
+          <div hidden={!pricing.trade.wholesale} className="admin-form__section product-access"><ProductAudienceFields initial={productAudience} types={pricing.trade.types} /></div>
+        </div></SectionPanel>
+        {sections.filter(section => section.title !== 'Overview').map(section => <SectionPanel key={section.title} id={sectionId} name={section.title} active={activeTab === section.title}><section className="admin-form__section" data-product-panel={section.title}><div className="admin-form__heading"><h2>{section.title}</h2></div><div className="admin-form__grid">{section.fields.map(renderField)}</div></section></SectionPanel>)}
+      </> : ordinarySections}
+      </div>
+      </fieldset>
+      {saveControls}
+    </form>
+    {productEditor ? <>
+      <SectionPanel id={sectionId} name="Photos" active={activeTab === 'Photos'}>{productMedia}</SectionPanel>
+      <div hidden={activeTab !== 'Publishing'}>{productChecks}</div>
+    </> : null}
+  </div>;
+
 }
 
 export function NotificationSettings({

@@ -1,3 +1,4 @@
+import { PhotoIcon } from '@heroicons/react/24/outline';
 import { OrderCosts } from './order-costs';
 import { feedIssues } from '../../lib/catalog/feed';
 import { readProduct } from '../../lib/catalog/model';
@@ -467,23 +468,44 @@ export function ProductForm({
         ] as Field[])
       : []),
   ];
+  const compactFields = fields.map((field): Field => {
+    const section = ['price', 'salePrice', 'sale', 'stock', 'stockReason'].includes(field.name) ? 'Overview'
+      : ['name', 'brand', 'category', 'summary', 'description'].includes(field.name) ? 'Overview'
+      : ['ingredients', 'usage', 'warnings', 'storage'].includes(field.name) ? 'Care & usage'
+      : field.section === 'Catalogue' || field.name === 'manufacturer' ? 'Organisation'
+      : field.section === 'Review & publishing' ? 'Publishing' : 'Variants';
+    return { ...field, section, advanced: false, sectionDescription: '',
+      ...(field.name === 'price' ? { label: 'Retail price (AED)' } : {}),
+      ...(field.name === 'description' ? { rows: 3 } : {}),
+      ...(['productType', 'condition', 'imageRights'].includes(field.name) ? { kind: 'select' as const } : {}) };
+  });
+  const categoryIndex = compactFields.findIndex(field => field.name === 'category');
+  if (categoryIndex >= 0) {
+    const categoryField = compactFields.splice(categoryIndex, 1)[0]!;
+    compactFields.splice(compactFields.findIndex(field => field.name === 'brand') + 1, 0, categoryField);
+  }
   const readinessProduct = edit ? readProduct({...product,disabled:false,category:typeof product.category==='object'?product.category:categories.find(category=>String(category._id)===String(product.category))}) : null;
   return (
-    <>
-    {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h2>{channel==='google'?'Google':'Meta'}</h2>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
-    {edit && product.catalogManaged===true ? <section className="admin-panel"><h2>Catalog review</h2><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{storePublicationIssues(product).length?<ul>{storePublicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Store publication checks complete. Publishing is a separate action.</p>}{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).length ? <><h3>Photo and catalogue improvements</h3><p>A missing photo uses a labelled placeholder in the store. Advertising feeds still need an actual authorized photo and verified brand.</p><ul>{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).map(issue=><li key={issue}>{issue}</li>)}</ul></> : null}</section>:null}
-    {!edit ? <p className="admin-panel">Save product details first. You will then add photos using the same photo editor used for existing products. Photo retries do not resubmit product details or stock.</p> : null}
-    <AdminForm
+    <div className="admin-product-page">
+      <AdminForm
       path={edit ? `products/${display(product._id)}` : "products"}
       method={edit ? "PUT" : "POST"}
       multipart
       productAudience={{ audience: typeof product?.audience === 'string' ? product.audience : undefined, wholesaleAudience: typeof product?.wholesaleAudience === 'string' ? product.wholesaleAudience : undefined, wholesaleTypeIds: Array.isArray(product?.wholesaleTypeIds) ? product.wholesaleTypeIds.filter((id): id is string => typeof id === 'string') : [] }}
-      fields={fields}
+      fields={compactFields}
       label={edit ? "Save product" : "Create product"}
+      productMedia={<aside className="admin-product-media" aria-label="Product media">
+          {edit ? <><div className="admin-product-gallery"><MediaPreview item={product} kind="products" origin={getWebEnvironment().LEGACY_API_ORIGIN} /></div><CloudinaryUpload productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} /></> :
+            <Card title="Product photos"><div className="admin-product-photo-empty"><PhotoIcon width={32} height={32} aria-hidden="true" /><p>Create this product to add photos.</p><span>You can then upload up to five product images.</span></div></Card>}
+          <div className="admin-product-helper"><strong>{edit ? 'Editing an existing product' : 'Start with the essentials'}</strong><p>{edit ? 'Changes are saved together. Stock adjustments require a reason.' : 'Add a name, category, price and opening stock. Additional details can be completed later.'}</p></div>
+        </aside>}
+      productChecks={<div className="admin-product-checks">
+    {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h2>{channel==='google'?'Google':'Meta'}</h2>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
+    {edit && product.catalogManaged===true ? <details className="admin-panel"><summary>Catalogue review</summary><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{storePublicationIssues(product).length?<ul>{storePublicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Store publication checks complete. Publishing is a separate action.</p>}{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).length ? <><h3>Photo and catalogue improvements</h3><p>A missing photo uses a labelled placeholder in the store. Advertising feeds still need an actual authorized photo and verified brand.</p><ul>{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).map(issue=><li key={issue}>{issue}</li>)}</ul></> : null}</details>:null}
+
+      </div>}
     />
-    {edit ? <MediaPreview item={product} kind="products" origin={getWebEnvironment().LEGACY_API_ORIGIN} /> : null}
-    {edit ? <CloudinaryUpload productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} /> : null}
-    </>
+    </div>
   );
 }
 export function OrderDetail({
@@ -510,7 +532,6 @@ export function OrderDetail({
           </>
         }
       />
-      {admin && order.schemaVersion===2?<OrderCosts key={id} orderId={id}/>:null}
 
       {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
       <div className="admin-grid admin-grid--2">
@@ -655,6 +676,7 @@ export function OrderDetail({
           </>
         ) : null}
       </Card>
+      {admin && order.schemaVersion===2?<details className="admin-panel"><summary>Contribution reporting · actual costs</summary><OrderCosts key={id} orderId={id}/></details>:null}
     </>
   );
 }

@@ -166,7 +166,7 @@ async function HomeContent() {
           title={u(locale,"Your everyday essentials")}
           description={u(locale,"Small essentials. A little more care, every day.")}
           products={shelf}
-          href="/products"
+          href="/collections/daily-care"
         />
         {!all.length ? (
           <section className="rounded-2xl border border-border p-6">
