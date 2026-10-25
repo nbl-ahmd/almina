@@ -4,7 +4,6 @@ import { shopText as u } from '../../../../lib/i18n-storefront';
 import { RecordProductView } from '../../../../components/recently-viewed';
 import { ReminderSignup } from '../../../../components/customer-reminders';
 import { ProductReviews } from '../../../../components/product-reviews';
-import { getProductReviews } from '../../../../lib/server/growth';
 import { SaveProduct } from '../../../../components/save-product';
 import { ProductInformation } from '../../../../components/product-information';
 import { ProductOptions } from '../../../../components/product-options';
@@ -12,11 +11,12 @@ import { ProductGallery } from '../../../../components/product-gallery';
 import { PhotoCredit } from '../../../../components/photo-credit';
 import Link from 'next/link';
 import { permanentRedirect } from 'next/navigation';
-import { catalogAvailabilityConfirmed, getProductVariants, getProductRecommendations, productImages } from '../../../../lib/server/catalog';
+import { getProductVariants, getProductRecommendations, productImages } from '../../../../lib/server/catalog';
 import { resolveProductRoute } from '../../../../lib/server/product-route';
+import { getProductReviews, getShippingPolicy } from '../../../../lib/server/growth';
 import { metadataFor } from '../../../../lib/server/seo';
 import { getWebEnvironment } from '../../../../lib/server/env';
-import { breadcrumbData, productData, type Query } from '../../../../lib/seo';
+import { aggregateRatingData, breadcrumbData, productData, reviewListData, type Query } from '../../../../lib/seo';
 import { StructuredData } from '../../../../components/structured-data';
 import { categoryHref, productOptionLabel, productHref, money, displayPrice } from '../../../../lib/catalog/model';
 import { ProductGrid, Breadcrumb, StockState } from '../../../../components/storefront';
@@ -42,12 +42,14 @@ export default async function ProductPage({ params, searchParams }: Props) {
     }
     permanentRedirect(`${productHref(product)}${query.size ? `?${query}` : ''}`);
   }
-  const [related,variants,availabilityConfirmed,reviews] = await Promise.all([getProductRecommendations(product),getProductVariants(product),catalogAvailabilityConfirmed(),getProductReviews(product._id)]);
+  const [related,variants,reviews,shippingPolicy] = await Promise.all([getProductRecommendations(product),getProductVariants(product),getProductReviews(product._id),getShippingPolicy()]);
   const origin = getWebEnvironment().WEB_ORIGIN;
   const currentPrice = displayPrice(product);
   const saving = product.price > currentPrice && product.price > 0 ? Math.round((product.price - currentPrice) / product.price * 100) : 0;
-  const structured=productData(origin, product, productImages(product).filter(image => !image.startsWith('/')),variants, Object.fromEntries(variants.map(member=>[member._id,productImages(member).filter(image=>!image.startsWith('/'))])),availabilityConfirmed && getWebEnvironment().CHECKOUT_ENABLED);
-  return <><RecordProductView id={product._id} /><StructuredData data={{...structured,...(reviews?.ratingCount?{aggregateRating:{'@type':'AggregateRating',ratingValue:reviews.average,reviewCount:reviews.ratingCount,bestRating:5,worstRating:1}}:{})}} />
+  const structured=productData(origin, product, productImages(product),variants, Object.fromEntries(variants.map(member=>[member._id,productImages(member)])),shippingPolicy);
+  const reviews_ = reviewListData(reviews);
+  const productSchema={...structured,...(aggregateRatingData(reviews)??{}),...(reviews_.length?{review:reviews_}:{})};
+  return <><RecordProductView id={product._id} /><StructuredData data={productSchema} />
     <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }, { name: product.name, path: productHref(product) }])} />
     <div className="pdp-page pb-24 md:pb-0"><Breadcrumb title={product.name} parents={[{ name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} />
     <div className="product-detail mb-8 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
@@ -59,7 +61,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-3 [&_.stock-state]:mb-0"><StockState stock={product.stock} /><span className="text-xs text-muted">{locale === "en" ? "SKU: " : "رمز المنتج: "}{product.product_id}</span></div>
         <ProductOptions product={product} variants={variants} />
         <div className="product-price-panel mb-5 flex flex-wrap items-baseline gap-3 rounded-2xl bg-[#f1f4ef] p-4 md:p-5"><div className="w-full text-xs font-semibold text-ocean md:w-auto">{u(locale,"Price")}</div><p className="price m-0 text-3xl font-semibold text-ink tabular-nums md:text-3xl">{money(currentPrice,locale)}</p>{saving ? <><del className="text-sm text-muted">{money(product.price,locale)}</del><span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-ink">{locale === "en" ? `Save ${saving}%` : `وفّر ${saving}%`}</span></> : null}</div>
-        <div className="mb-5 flex items-start gap-3 border-y border-border py-4"><span className="rounded-lg bg-accent p-2 text-teal"><Icon name="pin" /></span><div><h2 className="mb-1 text-base font-bold">{u(locale,"Delivery in Ras Al Khaimah")}</h2><p className="m-0 text-sm leading-relaxed text-ocean">{u(locale,"Checkout confirms the delivery charge and final total before you place an order.")}</p><Link className="inline-flex min-h-9 items-center text-xs text-teal" href="/contact#delivery">{u(locale,"Delivery enquiries")} <Icon name="arrow" /></Link></div></div>
+        <div className="mb-5 flex items-start gap-3 border-y border-border py-4"><span className="rounded-lg bg-accent p-2 text-teal"><Icon name="pin" /></span><div><h2 className="mb-1 text-base font-bold">{u(locale,"Delivery in Ras Al Khaimah")}</h2><p className="m-0 text-sm leading-relaxed text-ocean">{u(locale,"Checkout confirms the delivery charge and final total before you place an order.")}</p><div className="flex flex-wrap gap-x-4"><Link className="inline-flex min-h-9 items-center text-xs text-teal" href="/shipping">{u(locale,"Delivery & shipping")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs text-teal" href="/returns">{u(locale,"Returns & refunds")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs text-teal" href="/contact#delivery">{u(locale,"Delivery enquiries")} <Icon name="arrow" /></Link></div></div></div>
         <div className="pdp-purchase mobile-action-bar md:mb-4"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice,locale)} /></div>
         <div className="mb-4"><SaveProduct locale={locale} id={product._id} name={product.name} /></div>
         {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}

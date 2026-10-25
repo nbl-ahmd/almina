@@ -1,6 +1,8 @@
 import { publicationIssues, visibleToRetail } from '@almina/contracts';
+import { deliveryEstimate } from '../policies';
 import { type Product, displayPrice, productHref, productOptionLabel } from './model';
 export type FeedChannel='google'|'meta';
+export type FeedShipping={feeMinor:number;currency:string};
 export const feedColumns=['id','title','description','availability','condition','price','link','image_link','brand','gtin','mpn','identifier_exists','item_group_id','size','product_type','google_product_category','additional_image_link'];
 export function feedIssues(product:Product,channel:FeedChannel,images:string[]) {
   const missing=publicationIssues(product);
@@ -23,8 +25,9 @@ export function feedProduct(origin:string,product:Product,images:string[],channe
   return {id:product.product_id,title,description:product.description!,availability:product.stock>0?(channel==='google'?'in_stock':'in stock'):(channel==='google'?'out_of_stock':'out of stock'),condition:product.condition!,price:`${displayPrice(product).toFixed(2)} AED`,link:new URL(productHref(product),origin).href,image_link:images[0]!,brand:product.brand||product.familyBrand||'',gtin:product.gtin||'',mpn:product.mpn||'',identifier_exists:channel==='google'&&product.identifierStatus==='not-assigned'&&!product.gtin&&!product.mpn?'no':'',item_group_id:product.familyKey||'',size:[product.variantSize,product.variantPackSize].filter(Boolean).join(' / '),product_type:product.category.name,google_product_category:product.googleProductCategory||'',additional_image_link:images.slice(1).join(',')};
 }
 export function escapeFeedXml(value:string){return value.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[char]!));}
-export function feedXml(origin:string,rows:Record<string,string>[]) {
-  return `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel><title>Al Mina Pharmacy</title><link>${escapeFeedXml(origin)}</link><description>Reviewed product catalog</description>${rows.map(row=>`<item>${feedColumns.filter(key=>row[key]).flatMap(key=>key==='additional_image_link'?row[key]!.split(',').map(image=>`<g:additional_image_link>${escapeFeedXml(image)}</g:additional_image_link>`):[`<g:${key}>${escapeFeedXml(row[key]!)}</g:${key}>`]).join('')}</item>`).join('')}</channel></rss>`;
+export function feedXml(origin:string,rows:Record<string,string>[],shipping?:FeedShipping) {
+  const shippingXml=shipping?`<g:shipping><g:country>AE</g:country><g:service>Standard delivery</g:service><g:price>${(shipping.feeMinor/100).toFixed(2)} ${escapeFeedXml(shipping.currency)}</g:price><g:min_handling_time>${deliveryEstimate.handlingDays.min}</g:min_handling_time><g:max_handling_time>${deliveryEstimate.handlingDays.max}</g:max_handling_time><g:min_transit_time>${deliveryEstimate.transitDays.min}</g:min_transit_time><g:max_transit_time>${deliveryEstimate.transitDays.max}</g:max_transit_time></g:shipping>`:'';
+  return `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel><title>Al Mina Pharmacy</title><link>${escapeFeedXml(origin)}</link><description>Reviewed product catalog</description>${rows.map(row=>`<item>${feedColumns.filter(key=>row[key]).flatMap(key=>key==='additional_image_link'?row[key]!.split(',').map(image=>`<g:additional_image_link>${escapeFeedXml(image)}</g:additional_image_link>`):[`<g:${key}>${escapeFeedXml(row[key]!)}</g:${key}>`]).join('')}${shippingXml}</item>`).join('')}</channel></rss>`;
 }
 function csvCell(value:string){const safe=/^[=+@\-\t\r]/.test(value)?`'${value}`:value;return `"${safe.replace(/"/g,'""')}"`;}
 export function feedCsv(rows:Record<string,string>[]){return [feedColumns.join(','),...rows.map(row=>feedColumns.map(key=>csvCell(row[key]||'')).join(','))].join('\r\n')+'\r\n';}

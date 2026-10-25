@@ -25,7 +25,8 @@ export async function growthMetadata(kind:GrowthPage['kind'],slug:string,locale=
   const page=await resolve(kind,slug,locale);if(!page)notFound();
   const metadata=metadataFor(page.title,page.description,growthPagePath(page),{});
   const other=await getGrowthPage(kind,slug,locale==='en'?'ar':'en');
-  return {...metadata,...(other?{alternates:{...metadata.alternates,languages:{'en-AE':growthPagePath(locale==='en'?page:other),'ar-AE':growthPagePath(locale==='ar'?page:other)}}}:{})};
+  const english=locale==='en'?page:other;
+  return {...metadata,...(other?{alternates:{...metadata.alternates,languages:{'en-AE':growthPagePath(locale==='en'?page:other),'ar-AE':growthPagePath(locale==='ar'?page:other),...(english?{'x-default':growthPagePath(english)}:{})}}}:{})};
 }
 export async function GrowthLanding({kind,slug,locale='en'}:{kind:GrowthPage['kind'];slug:string;locale?:string}) {
   const page=await resolve(kind,slug,locale);if(!page)notFound();

@@ -234,6 +234,9 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   router.all('/admin/growth/delivery',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   router.post('/growth/delivery',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,growthZ.object({emirate:growthZ.string(),subtotalMinor:growthZ.number(),deliveryFeeMinor:growthZ.number(),freeAboveMinor:growthZ.number().nullable(),remainingMinor:growthZ.number().nullable(),policyVersion:growthZ.string()}),await previewDelivery(await getDb(),req.body));});
   router.all('/growth/delivery',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
+  // Public, read-only delivery terms for the shipping policy page and Product JSON-LD.
+  // No customer, order or credential data is stored in or returned from this collection.
+  read('/growth/shipping',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,commercePolicySchema,await readDeliveryPolicy(await getDb()));});
   read('/growth/branches',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,branchDirectorySchema,await branchDirectory(await getDb()));});
   router.get('/admin/growth/branches',async(req,res)=>{noBody(req);await identity(req,true);validate(emptyQuerySchema,req.query);send(res,branchDirectorySchema,await branchDirectory(await getDb(),true));});
   router.post('/admin/growth/branches',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,branchDirectorySchema,await saveBranchDirectory(await getDb(),req.body,user.id));});

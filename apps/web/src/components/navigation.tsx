@@ -19,6 +19,7 @@ import { DeliveryLocation } from "./delivery-location";
 import { UsagePreferences } from "./usage-preferences";
 import { LanguageSwitcher } from "./language-switcher";
 import { t, type Locale, type MessageKey } from "../lib/i18n";
+import { policyLinks } from "../lib/policies";
 
 export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
   const categories = (await getCategories().catch(()=>[])).filter(category=>!category.disabled).map(category=>({name:category.name,href:categoryHref(category)}));
@@ -249,6 +250,13 @@ export function Footer({
               </Link>
             </div>
           </div>
+          <nav aria-label={t(locale, 'footerPoliciesAria')} className="flex flex-wrap gap-x-5 gap-y-1 border-t border-border px-5 py-4 text-xs md:px-10">
+            {policyLinks.map(item => (
+              <Link key={item.path} className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-ink hover:underline hover:underline-offset-4" href={item.path}>
+                {t(locale, item.key)}
+              </Link>
+            ))}
+          </nav>
           {telemetryEnabled ? (
             <div className="px-5 md:px-10">
               <UsagePreferences />

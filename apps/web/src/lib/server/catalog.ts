@@ -115,7 +115,3 @@ export function productImages(product: Product) {
   }) ?? [];
   return [...new Set([productImage(product), ...cloudinary, ...images])];
 }
-
-export const catalogAvailabilityConfirmed=cache(async()=>{
-  try{const value=await legacyRead('/api/catalog-export/state');return !!value&&typeof value==='object'&&'storeOpen' in value&&value.storeOpen===true&&'policyReady'in value&&value.policyReady===true;}catch{return false;}
-});

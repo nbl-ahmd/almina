@@ -2,6 +2,13 @@ import { familyProfile, sameFamilyIdentity, optionFields, optionLabels } from '@
 import type { Metadata } from 'next';
 import type { Product } from './catalog/model';
 import { productHref, displayPrice } from './catalog/model';
+import {
+  businessContact,
+  merchantReturnPolicyData,
+  policyPaths,
+  shippingDetailsData,
+  type ShippingPolicy,
+} from './policies';
 
 export const siteName = 'Al Mina Pharmacy';
 export const siteDescription = 'Shop healthcare, skincare and pharmacy essentials from Al Mina Pharmacy in Ras Al Khaimah.';
@@ -10,7 +17,8 @@ export function hasDuplicateQuery(query: Query) {
   return Object.keys(query).some(key => !/^(utm_[a-z_]+|gclid|fbclid)$/i.test(key) && query[key] !== undefined);
 }
 export function isPublicPath(path: string) {
-  return ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', '/health-guides'].includes(path)
+  return ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', '/health-guides',
+    ...Object.values(policyPaths)].includes(path)
     || /^\/(products|categories|brands|shop|health-guides|offers|routines|collections)\/[^/]+$/.test(path) || /^\/ar\/(brands|shop|health-guides|offers|routines)\/[^/]+$/.test(path);
 }
 export function catalogPageNumber(path:string,query:Query):number|null {
@@ -29,7 +37,15 @@ export function pageMetadata(origin: string, production: boolean, title: string,
   const socialTitle = `${pageTitle} | ${siteName}`;
   return {
     title: page ? `${pageTitle} — Page ${page}` : pageTitle, description, alternates: { canonical: url },
-    robots: { index: production && !hasDuplicateQuery(indexingQuery(path,query)), follow: true },
+    // Google needs an explicit large-image preview policy to show product photos
+    // in Search. NOARCHIVE-style limits are omitted; snippets remain unbounded.
+    robots: {
+      index: production && !hasDuplicateQuery(indexingQuery(path, query)), follow: true,
+      googleBot: {
+        index: production && !hasDuplicateQuery(indexingQuery(path, query)), follow: true,
+        'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1,
+      },
+    },
     openGraph: { type: 'website', title: socialTitle, description, url, siteName, locale: 'en_AE', images: [{ url: new URL(image, origin).href, alt: title }] },
     twitter: { card: 'summary_large_image', title: socialTitle, description, images: [new URL(image, origin).href] },
   };
@@ -37,33 +53,57 @@ export function pageMetadata(origin: string, production: boolean, title: string,
 export function serializeJsonLd(value: unknown) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
-export function websiteData(origin:string){return {'@context':'https://schema.org','@type':'WebSite','@id':origin+'/#website',name:siteName,url:origin,potentialAction:{'@type':'SearchAction',target:{'@type':'EntryPoint',urlTemplate:origin+'/search?q={search_term_string}'},'query-input':'required name=search_term_string'}};}
+export function websiteData(origin:string){return {'@context':'https://schema.org','@type':'WebSite','@id':origin+'/#website',name:siteName,url:origin,inLanguage:'en-AE',publisher:{'@id':`${origin}/#organization`},potentialAction:{'@type':'SearchAction',target:{'@type':'EntryPoint',urlTemplate:origin+'/search?q={search_term_string}'},'query-input':'required name=search_term_string'}};}
 export function organizationData(origin: string) {
-  return { '@context': 'https://schema.org', '@type': ['Organization','Pharmacy'], telephone:'+971504825007', address:{'@type':'PostalAddress',addressLocality:'Ras Al Khaimah',addressCountry:'AE'}, logo:new URL('/logo.png',origin).href, '@id': `${origin}/#organization`, name: siteName, url: origin };
+  return { '@context': 'https://schema.org', '@type': ['Organization','Pharmacy'], '@id': `${origin}/#organization`, name: siteName, url: origin,
+    description: siteDescription,
+    telephone: businessContact.telephone,
+    email: businessContact.email,
+    address: { '@type': 'PostalAddress', addressLocality: businessContact.addressLocality, addressRegion: businessContact.addressLocality, addressCountry: businessContact.addressCountry },
+    areaServed: { '@type': 'Country', name: 'United Arab Emirates' },
+    contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', telephone: businessContact.telephone, email: businessContact.email, availableLanguage: ['English', 'Arabic'] },
+    currenciesAccepted: 'AED', paymentAccepted: 'Cash, Credit Card',
+    logo: new URL('/logo.png', origin).href, image: new URL('/logo.png', origin).href };
 }
 export function breadcrumbData(origin: string, items: { name: string; path: string }[]) {
   return { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map((item, i) => ({
     '@type': 'ListItem', position: i + 1, name: item.name, item: new URL(item.path, origin).href,
   })) };
 }
-function baseProductData(origin: string, product: Product, images: string[]) {
-  return { '@context': 'https://schema.org', '@type': 'Product', '@id': `${new URL(productHref(product), origin).href}#product`,
-    name: product.name, sku: product.product_id, url: new URL(productHref(product), origin).href,
+function absoluteImages(origin: string, images: string[]) {
+  const unique = [...new Set(images.filter(Boolean).map(image => new URL(image, origin).href))];
+  // Google requires an image URL. The storefront visibly renders this same
+  // placeholder when a product has no photo yet, so the markup never invents
+  // product media; it simply mirrors the page instead of omitting the field.
+  return unique.length ? unique : [new URL('/product-placeholder.svg', origin).href];
+}
+function baseProductData(origin: string, product: Product, images: string[], shipping: ReturnType<typeof shippingDetailsData>) {
+  const productUrl = new URL(productHref(product), origin).href;
+  return { '@context': 'https://schema.org', '@type': 'Product', '@id': `${productUrl}#product`,
+    name: product.name, sku: product.product_id, url: productUrl,
     category: product.category.name,
     ...(product.brand||product.familyBrand?{brand:{'@type':'Brand',name:product.brand||product.familyBrand}}:{}),
     ...(product.gtin?{gtin:product.gtin}:{}),...(product.mpn?{mpn:product.mpn}:{}),
     ...(product.condition?{itemCondition:`https://schema.org/${{new:'NewCondition',used:'UsedCondition',refurbished:'RefurbishedCondition'}[product.condition]}`}:{}) ,
     ...(product.description ? { description: product.description } : {}),
-    ...(images.length ? { image: images.map(image => new URL(image, origin).href) } : {}),
-    offers: { '@type': 'Offer', url: new URL(productHref(product), origin).href,
-      ...(product.condition?{itemCondition:`https://schema.org/${{new:'NewCondition',used:'UsedCondition',refurbished:'RefurbishedCondition'}[product.condition]}`}:{}) , priceCurrency: 'AED', price: displayPrice(product).toFixed(2), seller: { '@id': `${origin}/#organization` } },
+    image: absoluteImages(origin, images),
+    offers: { '@type': 'Offer', url: productUrl,
+      ...(product.condition?{itemCondition:`https://schema.org/${{new:'NewCondition',used:'UsedCondition',refurbished:'RefurbishedCondition'}[product.condition]}`}:{}) ,
+      priceCurrency: 'AED', price: displayPrice(product).toFixed(2),
+      // The catalog stock value is the same state rendered beside the price; it
+      // is not a checkout reservation or a promise that the basket will pass.
+      availability: `https://schema.org/${product.stock>0?'InStock':'OutOfStock'}`,
+      seller: { '@type': 'Organization', '@id': `${origin}/#organization`, name: siteName, url: origin },
+      hasMerchantReturnPolicy: merchantReturnPolicyData(origin, product.productType === 'general'),
+      ...(shipping ? { shippingDetails: shipping } : {}) },
     // This is the advertised catalog price, identical to the visible page, not a
-    // checkout quote. The wrapper adds availability only after live policy confirmation.
+    // checkout quote. Server checkout remains authoritative for totals and stock.
   };
 }
 
-export function productData(origin:string, product:Product, images:string[], variants:Product[]=[], variantImages:Record<string,string[]>={}, availabilityConfirmed=false) {
-  const priced=(member:Product,media:string[])=>{const data=baseProductData(origin,member,media);return {...data,offers:{...data.offers,...(availabilityConfirmed?{availability:`https://schema.org/${member.stock>0?'InStock':'OutOfStock'}`}:{})}};};
+export function productData(origin:string, product:Product, images:string[], variants:Product[]=[], variantImages:Record<string,string[]>={}, shippingPolicy?: ShippingPolicy|null) {
+  const shipping=shippingDetailsData(shippingPolicy);
+  const priced=(member:Product,media:string[])=>baseProductData(origin,member,media,shipping);
   const base=priced(product,images);
   const profile=familyProfile(product);
   if(!profile) return base;
@@ -80,4 +120,23 @@ export function productData(origin:string, product:Product, images:string[], var
       hasVariant:members.map(member=>({...priced(member,member._id===product._id?images:variantImages[member._id]??[]),...properties(member),isVariantOf:{'@id':groupId}})),
     },
   };
+}
+
+type PublicReviews = {
+  items: { rating: number; displayName: string; title: string; body: string; createdAt: string; verifiedPurchase: true }[];
+  ratingCount: number; average: number | null;
+};
+export function aggregateRatingData(reviews: PublicReviews | null | undefined) {
+  if (!reviews?.ratingCount || reviews.average === null || reviews.average === undefined) return null;
+  return { aggregateRating: { '@type': 'AggregateRating', ratingValue: reviews.average, reviewCount: reviews.ratingCount, bestRating: 5, worstRating: 1 } };
+}
+export function reviewListData(reviews: PublicReviews | null | undefined) {
+  return (reviews?.items ?? []).slice(0, 10).map(review => ({
+    '@type': 'Review',
+    reviewRating: { '@type': 'Rating', ratingValue: review.rating, bestRating: 5, worstRating: 1 },
+    author: { '@type': 'Person', name: review.displayName },
+    ...(review.title ? { name: review.title } : {}),
+    reviewBody: review.body,
+    datePublished: review.createdAt,
+  }));
 }

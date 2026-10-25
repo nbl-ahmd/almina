@@ -108,6 +108,8 @@ export const arabicShopCopy: Record<string, string> = {
   "Delivery in Ras Al Khaimah": "التوصيل في رأس الخيمة",
   "Checkout confirms the delivery charge and final total before you place an order.": "يتم تأكيد رسوم التوصيل والإجمالي النهائي عند الدفع قبل تقديم الطلب.",
   "Delivery enquiries": "استفسارات التوصيل",
+  "Delivery & shipping": "التوصيل والشحن",
+  "Returns & refunds": "الإرجاع والاسترداد",
   "View your cart": "عرض سلتك",
   "Similar products": "منتجات مشابهة",
   "View category": "عرض الفئة",

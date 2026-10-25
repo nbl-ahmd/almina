@@ -44,6 +44,13 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
           : [{ id: category._id, name: category.name }], nextCursor: null,
       } })); return;
     }
+    if (url.pathname === '/api/v1/growth/shipping') {
+      res.end(JSON.stringify({ requestId: '00000000-0000-4000-8000-000000000000', data: {
+        active: true, version: 'synthetic-shipping-v1', currency: 'AED', vatMode: 'inclusive', vatRateBps: 500,
+        minimumOrderMinor: 0, cancellationRestocks: true,
+        delivery: [{ emirate: 'Ras Al Khaimah', feeMinor: 1000, freeAboveMinor: 10000 }],
+      } })); return;
+    }
     if (url.pathname === '/api/category') {
       const visualCategories = includePagination ? ['Baby Care','Oral Care','Hair Care','First Aid'].map((name,index)=>({_id:(200+index).toString(16).padStart(24,'0'),name,disabled:false})) : [];
       res.end(JSON.stringify([category,...visualCategories])); return;

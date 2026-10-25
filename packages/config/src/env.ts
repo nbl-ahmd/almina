@@ -55,6 +55,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
   const shared = common(source);
   const value = parse(z.object({
     API_ORIGIN: originSchema,
+    GOOGLE_SITE_VERIFICATION: z.string().regex(/^[A-Za-z0-9_-]{8,200}$/).optional(),
     CLOUDINARY_CLOUD_NAME: z.string().regex(/^[A-Za-z0-9_-]{1,100}$/).optional(),
     CATALOG_FEEDS_ENABLED: z.enum(['true','false']).default('false').transform(value=>value==='true'),
     CHECKOUT_ENABLED: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
@@ -74,6 +75,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
     }),
   }), {
     API_ORIGIN: source.API_ORIGIN ?? (shared.APP_ENV === 'development' ? 'http://127.0.0.1:4000' : undefined),
+    GOOGLE_SITE_VERIFICATION: source.GOOGLE_SITE_VERIFICATION,
     CATALOG_FEEDS_ENABLED: source.CATALOG_FEEDS_ENABLED,
     CHECKOUT_ENABLED: source.CHECKOUT_ENABLED,
     COMMERCE_TELEMETRY_ENABLED: source.COMMERCE_TELEMETRY_ENABLED,
