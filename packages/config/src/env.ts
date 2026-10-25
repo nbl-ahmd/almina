@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isIP } from 'node:net';
-import { resolveProxyTrust } from './proxy.js';
+import { resolveProxyTrust } from '@almina/config/proxy';
 
 export type EnvironmentSource = Readonly<Record<string, string | undefined>>;
 export type AppEnvironment = 'development' | 'staging' | 'production';

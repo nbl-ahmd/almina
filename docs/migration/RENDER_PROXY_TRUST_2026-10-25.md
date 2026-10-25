@@ -19,7 +19,7 @@ There is no runtime network dependency or Cloudflare-account/DNS requirement. Re
 - Unit configuration checks cover default direct-server mode, Render host detection, explicit override precedence and development isolation for both loaders.
 - Real loopback HTTP checks cover multi-hop IPv4/IPv6 infrastructure, forged left prefixes, unknown public intermediaries and direct-server rejection of forwarded identities.
 - Legacy and mounted versioned API rate-limit regressions make 121 same-client requests with different forged prefixes: request 121 is limited, while a different resolved client is not. No express-rate-limit validation errors are suppressed.
-- Commerce adapter build, full lint/typecheck, focused security tests and normal unit tests pass. No database or provider is contacted by these tests.
+- Commerce adapter and full isolated foundation production builds, full lint/typecheck, focused security tests and normal unit tests pass. Shared loaders use the package export so Next configuration loading resolves the TypeScript helper correctly. No database or provider is contacted by these tests.
 
 ## Operational boundaries
 
