@@ -82,7 +82,8 @@ test('all admin legacy endpoints reject authenticated staff even with forged rol
 test('route authorization allowlist covers every real legacy handler and denies unlisted methods/path encodings', () => {
   const app = createLegacyApp({ origins: [browserHeaders.Origin], development: true });
   const mounts = app.router.stack.filter((layer: { name: string }) => layer.name === 'router');
-  const names = ['catalog-import', 'operations', 'media', 'recovery', 'category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
+  const names = ['image-review', 'catalog-import', 'operations', 'media', 'recovery', 'category', 'banners', 'products', 'orders', 'batch', 'store', 'whatsapp', 'auth'];
+  assert.equal(mounts.length, names.length, 'Every mounted router must be checked against the authorization allowlist');
   let count = 0;
   mounts.forEach((mount: { handle: { stack: { route?: { path: string; methods: Record<string, boolean> } }[] } }, index: number) => {
     for (const layer of mount.handle.stack) if (layer.route) {

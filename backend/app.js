@@ -54,6 +54,7 @@ function createLegacyApp(options) {
     next();
   }));
   const routers = options.routers ?? {
+    'image-review': require('./routes/imageReview'),
     'catalog-import': require('./routes/catalogImport'),
     operations: require('./routes/operations'),
     media: require('./routes/media'), recovery: require('./routes/recovery'), category: require('./routes/categories'), banners: require('./routes/banners'), products: require('./routes/products'),
@@ -85,6 +86,7 @@ function createLegacyApp(options) {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME, apiKey: process.env.CLOUDINARY_API_KEY, apiSecret: process.env.CLOUDINARY_API_SECRET,
   } : undefined);
   app.locals.mediaTransport = options.mediaTransport;
+  app.locals.imageReviewEnabled = options.imageReviewEnabled ?? process.env.IMAGE_REVIEW_ENABLED === 'true';
   app.locals.recoveryAllowed = options.recoveryAllowed ?? process.env.RECOVERY_CATALOG_ALLOWED === 'true';
   app.locals.recoveryCloudName = options.recoveryCloudName ?? process.env.CLOUDINARY_CLOUD_NAME;
   app.locals.getCommerceDb = getDb;

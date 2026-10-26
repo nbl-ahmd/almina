@@ -46,6 +46,7 @@ const groups: NavGroup[] = [
       { id: 'categories', label: 'Categories', href: '/admin/categories', icon: RectangleGroupIcon },
       { id: 'banners', label: 'Banners', href: '/admin/banners', icon: PhotoIcon },
       { id: 'catalog-import', label: 'Catalog import', href: '/admin/catalog-import', icon: TableCellsIcon },
+      { id: 'image-review', label: 'Image review', href: '/admin/image-review', icon: PhotoIcon },
     ],
   },
   {

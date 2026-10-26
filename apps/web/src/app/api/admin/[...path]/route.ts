@@ -64,10 +64,16 @@ async function handle(
       ...(body?.length ? { body } : {}),
       headers: { ...(type ? { "content-type": type } : {}), ...(retryKey ? { 'idempotency-key': retryKey } : {}) },
     });
+    if (result.status === 429) {
+      const proposed = result.headers.get('retry-after') ?? '60';
+      const delay = /^\d{1,3}$/.test(proposed) && Number(proposed) >= 1 && Number(proposed) <= 300 ? proposed : '60';
+      return NextResponse.json({ error: 'Too many requests. Please wait.' }, { status: 429, headers: { ...headers, 'Retry-After': delay } });
+    }
     // Legacy WhatsApp text sends a same-origin redirect after provider acceptance. Never follow it.
     const acceptedRedirect = path === "whatsapp/text" && result.status === 302;
     if (!result.ok && !acceptedRedirect) {
       const failure: unknown = result.status === 409 ? await result.json().catch(() => null) : null;
+      if (result.status === 409 && failure && typeof failure === 'object' && 'code' in failure && failure.code === 'CATALOG_REVIEW_REQUIRED' && /^image-review\/(?:decide|preview|import|publish)$/.test(path)) return NextResponse.json({ error: 'IMAGE_REVIEW_REQUIRED' }, { status: 409, headers });
       if (result.status === 409 && failure && typeof failure === 'object' && 'code' in failure && failure.code === 'CATALOG_REVIEW_REQUIRED' && /^products(?:\/(?:publish\/)?[a-f0-9]{24})?$/i.test(path)) return NextResponse.json({error:'CATALOG_REVIEW_REQUIRED'},{status:409,headers});
       if (result.status === 409 && isProductFamilyConflict(path, request.method, result.status, failure)) {
         return NextResponse.json({ error: 'PRODUCT_FAMILY_CONFLICT' }, { status: 409, headers });
@@ -114,7 +120,7 @@ async function handle(
     const failure = error instanceof GatewayBodyTooLarge ? new AdminError(413) : error instanceof AdminError ? error : new AdminError(503);
     return NextResponse.json(
       { error: failure.message },
-      { status: failure.status, headers },
+      { status: failure.status, headers: { ...headers, ...(failure.status === 429 ? { 'Retry-After': '60' } : {}) } },
     );
   }
 }

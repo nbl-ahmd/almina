@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { adminFileLimit } from '../../lib/admin/upload-limits';
+export class AdminRateLimitError extends Error {
+  constructor(readonly retryAfterSeconds: number) { super('Too many requests. Please wait.'); }
+}
 export async function adminRequest(
   path: string,
   method = "GET",
@@ -41,8 +44,13 @@ export async function adminRequest(
     window.location.assign("/admin/login");
     throw new Error("Please sign in again.");
   }
+  if (result.status === 429) {
+    const seconds = Number(result.headers.get('retry-after') ?? '60');
+    throw new AdminRateLimitError(Number.isInteger(seconds) && seconds >= 1 && seconds <= 300 ? seconds : 60);
+  }
   if (result.status === 409) {
     const failure: unknown = await result.json().catch(() => null);
+    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'IMAGE_REVIEW_REQUIRED' && path.startsWith('image-review/')) throw new Error('This association needs another review. Confirm all required identity values and supporting evidence. Reload if the product or image has changed.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'CATALOG_REVIEW_REQUIRED') throw new Error('Complete the product content, classification, image rights and physical stock review before publishing.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'PRODUCT_FAMILY_CONFLICT') {
       throw new Error('Check the family name, brand, form, strength, category and option combinations. Each combination must be unique.');

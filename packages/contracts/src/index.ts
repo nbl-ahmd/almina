@@ -60,3 +60,4 @@ export * from "./wholesale";
 export * from './reporting';
 
 export * from "./marketing";
+export * from './image-review';
