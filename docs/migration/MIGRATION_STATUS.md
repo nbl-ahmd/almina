@@ -1,3 +1,7 @@
+## 2026-10-26 — Image review CI route inventory correction
+
+The API security regression maintained a positional list of retained router mounts. Adding Image review shifted that list, causing the allowlist coverage assertion to compare the first router against the wrong prefix. Updated the inventory and added an explicit router-count assertion; authorization requirements remain intact. The default disposable integration runner now includes image-review regressions. Full local verification: 137 API tests and 143 integration tests passed; focused lint and diff checks passed. No production mutation or deployment performed.
+
 ## 2026-10-26 — Durable background image publication
 
 Bulk publication now runs on the persistent API and resumes after browser closure or API restart. Administrator progress, pause/resume and per-product issues are shared across browsers. Leased, bounded worker steps reuse immutable manifests/import receipts. Invalid captured approvals return to Held with appended history while valid products continue; service failures and revoked administrator privileges pause the run. The previous browser-only progress queue is superseded. Verification: 212 unit and 16 disposable integration tests passed, with typechecks, lint, commerce integrity and isolated production build. Browser closure/reopen confirmed background completion; no runtime/accessibility errors or overflow at checked mobile/tablet/desktop sizes. No production/provider changes or deployment performed. See [image review guide](IMAGE_REVIEW_2026-10-26.md).
