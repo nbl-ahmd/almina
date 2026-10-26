@@ -1,5 +1,5 @@
 {
   "extends": "./packages/config/tsconfig.json",
   "compilerOptions": { "types": ["node"] },
-  "include": ["tests/**/*.ts", "scripts/migrations/**/*.ts", "scripts/tooling/e2e-commerce-fixture.mts", "scripts/tooling/dev-demo.mts", "playwright.config.ts"]
+  "include": ["tests/**/*.ts", "scripts/migrations/**/*.ts", "scripts/tooling/e2e-commerce-fixture.mts", "scripts/tooling/dev-demo.mts", "scripts/tooling/image-review-demo.mts", "scripts/tooling/prepare-image-review.mts", "playwright.config.ts"]
 }

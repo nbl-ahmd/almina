@@ -5,7 +5,7 @@ import { retainedRoutePolicies as routePolicies } from '../apps/api/src/modules/
 test('retained route inventory covers every independently authorized contract', () => {
   const inventory = readFileSync('docs/migration/RETAINED_API_INVENTORY_2026-10-04.md', 'utf8');
   for (const route of routePolicies) assert.ok(inventory.includes(`| ${route.method} | ${route.path} |`), route.path);
-  const files = { 'catalog-import': 'catalogImport.js', operations: 'operations.js', media: 'media.js', recovery: 'recovery.js', auth: 'Login.js', products: 'products.js', category: 'categories.js', banners: 'banners.js',
+  const files = { 'image-review': 'imageReview.js', 'catalog-import': 'catalogImport.js', operations: 'operations.js', media: 'media.js', recovery: 'recovery.js', auth: 'Login.js', products: 'products.js', category: 'categories.js', banners: 'banners.js',
     orders: 'Orderrouter.js', batch: 'batchProductRouter.js', store: 'storeRouter.js', whatsapp: 'whatsapp.js' };
   for (const [mount, file] of Object.entries(files)) {
     const source = readFileSync(`backend/routes/${file}`, 'utf8').split('\n').filter(line => !line.trim().startsWith('//')).join('\n');

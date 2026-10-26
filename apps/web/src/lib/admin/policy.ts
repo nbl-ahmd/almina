@@ -1,4 +1,4 @@
-import { productContentNames } from '@almina/contracts';
+import { productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
 import { z } from "zod";
 import { operationsSnapshotSchema } from '@almina/contracts';
 export const identitySchema = z.object({
@@ -24,6 +24,7 @@ export const sections = [
   "settings",
   "batch",
   "catalog-import",
+  "image-review",
   "growth",
   "wholesale",
   "marketing",
@@ -32,11 +33,15 @@ export type Section = (typeof sections)[number];
 export function canVisit(role: Identity["role"], section: string) {
   return (
     role === "admin" ||
-    ["dashboard", "products", "orders", "notifications", "marketing"].includes(section)
+    ["dashboard", "products", "orders", "notifications", "marketing", "image-review"].includes(section)
   );
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET', 'image-review/uploads/[a-f0-9]{64}', 'admin'],
+  ['GET', 'image-review', 'staff'], ['GET', 'image-review/export', 'staff'], ['GET', 'image-review/[a-f0-9]{64}', 'staff'],
+  ['POST', 'image-review/select', 'staff'], ['POST', 'image-review/decide', 'staff'],
+  ...['stage', 'preview', 'import', 'publish'].map(action => ['POST', `image-review/${action}`, 'admin'] as [string, string, 'admin']),
   ['GET', 'products/needs-action', 'admin'],
   ['GET', 'operations', 'admin'],
   ['POST','media/marketing','staff'],
@@ -106,6 +111,10 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
   if (new Set(input.keys()).size !== [...input.keys()].length)
     throw new Error("Invalid query");
   const values = Object.fromEntries(input);
+  if (path === 'image-review' || path === 'image-review/export') {
+    const parsed = (path.endsWith('/export') ? imageReviewExportQuerySchema : imageReviewListQuerySchema).parse(values);
+    return new URLSearchParams(Object.entries(parsed).map(([key, value]) => [key, String(value)])).toString();
+  }
   if (path === 'products/needs-action') {
     const query = listQuery.extend({ q: z.string().trim().min(1).max(80).optional(),
       reason: z.enum(['all', 'identity', 'classification', 'prescription', 'content', 'images', 'missing-photo']).default('all'),
@@ -305,5 +314,6 @@ export function project(value: unknown): unknown {
   return value;
 }
 export function projectAdminResponse(path: string, value: unknown): unknown {
+  if (path === 'image-review' || path.startsWith('image-review/')) return projectImageReviewResponse(path, value);
   return path === 'operations' ? operationsSnapshotSchema.parse(value) : project(value);
 }

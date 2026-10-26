@@ -1,5 +1,7 @@
 import { reportDays } from '../../../../../lib/admin/dashboard';
 import { RowActions } from '../../../../../components/admin/row-actions';
+import { ImageReviewManager } from '../../../../../components/admin/image-review-manager';
+import { imageReviewListResponseSchema } from '@almina/contracts';
 import {MarketingManager} from '../../../../../components/admin/marketing-manager';
 import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
@@ -101,6 +103,7 @@ export default async function AdminPage({
   )
     notFound();
   if(section==='marketing')return <MarketingManager admin={user.role==='admin'} nonce={(await headers()).get('x-nonce')??''}/>;
+  if (section === 'image-review') return <ImageReviewManager initial={imageReviewListResponseSchema.parse(await adminRead('image-review', qs))} admin={user.role === 'admin'} />;
   if (section === 'operations') {
     const snapshot = operationsSnapshotSchema.parse(await adminRead('operations'));
     return (
