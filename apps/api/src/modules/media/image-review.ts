@@ -31,11 +31,12 @@ export async function imageReviewUploadProgress(db: Db, uploadId: string, actor:
   const row = await db.collection<Document & { _id: string }>('image_review_uploads').findOne({ _id: uploadId }, queryOptions);
   return { processed: row ? Number(row.processed) : 0, total: row ? Number(row.total) : null };
 }
-async function authorize(db: Db, actor: string, admin = false, session?: ClientSession) {
+export async function authorizeImageReview(db: Db, actor: string, admin = false, session?: ClientSession) {
   if (!/^[a-f0-9]{24}$/i.test(actor)) throw new HttpError(403, 'FORBIDDEN');
   const user = await db.collection('users').findOne({ _id: new ObjectId(actor), disabled: { $ne: true }, role: { $in: admin ? ['admin'] : ['admin', 'user'] } }, { ...sessionOptions(session), projection: { _id: 1 } });
   if (!user) throw new HttpError(403, 'FORBIDDEN');
 }
+const authorize = authorizeImageReview;
 function sourceUrl(source: ImageReviewSource, cloudName?: string) {
   const value = cloudinaryImage(source.imageUrl, cloudName);
   if (!value || !cloudName) throw new HttpError(400, 'INVALID_REQUEST');

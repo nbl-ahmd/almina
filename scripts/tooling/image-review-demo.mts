@@ -8,6 +8,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { hash } from 'bcryptjs';
 import { imageIdentitySchema } from '@almina/contracts';
 import { stageImageReview } from '../../apps/api/src/modules/media/image-review.js';
+import { imagePublicationWorker } from '../../apps/api/src/modules/media/image-review-publication.js';
 import { indexPlan } from '../../apps/api/src/database/indexes.js';
 import { assertExclusiveLoopbackPorts } from './e2e-ownership.mjs';
 
@@ -24,7 +25,7 @@ await db.collection('products').insertMany([
   { _id: new ObjectId(), product_id: 'PD0081', name: 'ACM Novophane Energizing Shampoo 200 ml', brand: 'ACM', productForm: 'Shampoo', packLabel: '200 ml', price: 0, stock: 0, published: false, disabled: true, cloudinaryImages: [] },
   { _id: new ObjectId(), product_id: 'PD1198', name: 'CeraVe Moisturising Cream 454 g', brand: 'CeraVe', productForm: 'Cream', packLabel: '454 g', price: 0, stock: 0, published: false, disabled: true, cloudinaryImages: [] },
 ]);
-for (const name of ['image_review_items', 'image_review_events']) await db.collection(name).createIndexes([...indexPlan[name]!]);
+for (const name of ['image_review_items', 'image_review_events', 'image_review_publications', 'image_review_publication_groups', 'image_review_publication_entries']) await db.collection(name).createIndexes([...indexPlan[name]!]);
 const image = 'https://res.cloudinary.com/drvxmb0vq/image/upload/v1747762321/products/71022b55-ab03-49a7-a482-39441d05e910.webp';
 await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun: 'disposable-demo', catalogueChecksum: 'a'.repeat(64), withdrawals: [], items: [{
   assetId: '1b896070e3e04f5ca38fd68c461efb84', sourceSha256: '0bf427ff7dc8c9854a936ec8997d665fb0cd0a31065adeea4c8546ab577563e5', publicId: 'products/71022b55-ab03-49a7-a482-39441d05e910', imageUrl: image,
@@ -36,8 +37,10 @@ const { createLegacyApp } = require('../../backend/app.js');
 const api = createLegacyApp({ development: true, origins: [origin], imageReviewEnabled: true, recoveryCloudName: 'drvxmb0vq', getCommerceDb: async () => db });
 const server = createServer(api) as Server; server.listen(4791, '127.0.0.1');
 let stopping = false;
+const publicationWorker = imagePublicationWorker(() => db, { cloudName: 'drvxmb0vq', enabled: () => !stopping });
 async function stop() {
   if (stopping) return; stopping = true;
+  await publicationWorker.stop();
   if (web && web.exitCode === null) { const done = new Promise<void>(resolve => web!.once('exit', () => resolve())); web.kill('SIGTERM'); await done; }
   server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
   await db.dropDatabase(); await client.close(); await replica.stop();

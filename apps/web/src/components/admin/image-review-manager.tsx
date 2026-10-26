@@ -4,10 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDownTrayIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon, CheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { imageReviewPackageSchema, type ImageIdentityField, type ImageReviewList, type ImageReviewDetail, type ImageReviewDecisionInput, type ImageReviewApprovedMapping, type ImageReviewManifest } from '@almina/contracts';
+import { imageReviewPackageSchema, type ImageIdentityField, type ImageReviewList, type ImageReviewDetail, type ImageReviewDecisionInput, type ImageReviewApprovedMapping, type ImageReviewManifest, type ImagePublication } from '@almina/contracts';
 import { adminRequest, AdminRateLimitError } from './controls';
 import { Button, PageHeader } from './ui';
-import { imagePublicationStorageKey, planImagePublication, readImagePublication, runImagePublication } from '../../lib/admin/image-review-publication';
 
 const labels: Record<ImageIdentityField, string> = { name: 'Product name', brand: 'Brand', line: 'Product line', strength: 'Strength / concentration', form: 'Form', size: 'Net content', quantity: 'Count', multipack: 'Multipack', flavour: 'Flavour / fragrance', shadeModel: 'Shade / model', variantSize: 'Size', ageStage: 'Age / stage', barcode: 'Barcode', gtin: 'GTIN' };
 const emptyCounts = { pending: 0, held: 0, approved: 0, rejected: 0, imported: 0 };
@@ -31,6 +30,31 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
   const file = useRef<HTMLInputElement>(null), title = useRef<HTMLHeadingElement>(null);
   const retry = useRef<{ fingerprint: string; requestId: string } | null>(null);
   const publishRetry = useRef<{ fingerprint: string; requestId: string } | null>(null);
+  const [publication, setPublication] = useState<ImagePublication | null>(null), [publicationError, setPublicationError] = useState('');
+  const publicationRequest = useRef<string | null>(null), completedPublication = useRef<string | null>(null);
+  const publishing = publication?.phase === 'preparing' || publication?.phase === 'publishing';
+  useEffect(() => {
+    if (!admin || !initial.enabled) return;
+    let cancelled = false, timer: ReturnType<typeof setTimeout> | undefined;
+    async function poll() {
+      let delay = 4000;
+      try {
+        const result = await adminRequest('image-review/publication') as { publication: ImagePublication | null };
+        if (cancelled) return;
+        setPublication(result.publication); setPublicationError('');
+        if (result.publication?.phase === 'complete' && completedPublication.current !== result.publication.jobId) {
+          const page = await adminRequest('image-review?' + new URLSearchParams({ status: filter })) as ImageReviewList;
+          if (!cancelled) { completedPublication.current = result.publication.jobId; setList(page); setSelected([]); setPreview(null); }
+        }
+      } catch (failure) {
+        if (failure instanceof AdminRateLimitError) delay = failure.retryAfterSeconds * 1000;
+        if (!cancelled) setPublicationError('Saved progress could not be refreshed. This page will retry.');
+      }
+      if (!cancelled) timer = setTimeout(() => { void poll(); }, delay);
+    }
+    void poll();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [admin, initial.enabled, filter]);
   const activeItem = detail?.item.itemId;
   useEffect(() => { if (activeItem) title.current?.focus(); }, [activeItem, viewKey]);
   function populate(value: ImageReviewDetail) {
@@ -146,34 +170,18 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
   async function publishAll() {
     if (!admin || busy) return;
     await task(async () => {
-      const saved = localStorage.getItem(imagePublicationStorageKey);
-      let plan;
-      if (saved) plan = readImagePublication(saved);
-      else {
-        const rows: ImageReviewList['items'] = []; let after: string | null = null;
-        setMessage('Collecting all approved images…');
-        do {
-          const page = await adminRequest('image-review?' + new URLSearchParams({ status: 'approved', limit: '25', ...(after ? { after } : {}) })) as ImageReviewList;
-          rows.push(...page.items); after = page.nextAfter;
-        } while (after);
-        plan = planImagePublication(rows, () => crypto.randomUUID());
-      }
-      const count = await runImagePublication(plan,
-        value => localStorage.setItem(imagePublicationStorageKey, JSON.stringify(value)),
-        async request => {
-          for (let attempt = 0; ; attempt++) {
-            try { return await adminRequest('image-review/publish', 'POST', request); }
-            catch (failure) {
-              if (!(failure instanceof AdminRateLimitError) || attempt >= 2) throw failure;
-              setMessage(`Waiting ${failure.retryAfterSeconds} seconds before continuing. Progress is saved.`);
-              await new Promise(resolve => setTimeout(resolve, failure.retryAfterSeconds * 1000));
-            }
-          }
-        },
-        (done, total, id) => setMessage(`Publishing product ${done + 1} of ${total} · ${id}. Keep this page open. Progress is saved for resuming.`));
-      localStorage.removeItem(imagePublicationStorageKey);
-      await refresh(); setDetail(null);
-      setMessage(`${count} approved image associations published. Images approved after this run began can be published with another click.`);
+      publicationRequest.current ??= crypto.randomUUID();
+      const value = await adminRequest('image-review/publication/start', 'POST', { requestId: publicationRequest.current }) as { publication: ImagePublication };
+      setPublication(value.publication); publicationRequest.current = null;
+      setMessage('Publication is saved on the server. You can close this page and return to check progress.');
+    });
+  }
+  async function publicationAction(action: 'resume' | 'pause') {
+    if (!publication) return;
+    await task(async () => {
+      const value = await adminRequest(`image-review/publication/${action}`, 'POST', { jobId: publication.jobId }) as { publication: ImagePublication };
+      setPublication(value.publication);
+      setMessage(action === 'pause' ? 'Publication paused. An image import already in progress may finish.' : 'Publication resumed on the server.');
     });
   }
   async function apply() {
@@ -199,10 +207,20 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
       {admin ? <details className="admin-card"><summary className="cursor-pointer font-medium">Load saved pipeline maps</summary><div className="admin-stack pt-4"><p>The pipeline prepares images, label text and product candidates. Loading maps creates a persistent review queue; pharmacist approval is required.</p><label>Pipeline review package<input ref={file} type="file" accept=".json,application/json" disabled={busy} /></label><div><Button disabled={busy} onClick={upload}>Load image maps</Button></div></div></details> : null}
       {error ? <p role="alert" className="admin-note admin-note--danger">{error}</p> : null}
       <p role="status" aria-live="polite" className="text-sm text-[var(--admin-muted)]">{busy ? message || 'Saving or loading review data…' : message || 'Reviews are saved on the server and remain available when you return.'}</p>
-      {preview ? <section className="admin-card admin-stack" aria-labelledby="image-import-title"><h2 id="image-import-title">Import preview · {preview.mappings.length} approved {preview.mappings.length === 1 ? 'image' : 'images'}</h2><p>These existing image links will be added to the listed products. Existing galleries, publication status, prices and stock are preserved.</p><ul className="space-y-2">{preview.mappings.map(mapping => <li key={mapping.approvalId}>{mapping.productId} · {mapping.name}</li>)}</ul><div className="admin-actions"><Button variant="primary" disabled={busy} onClick={apply}>Import {preview.mappings.length} approved {preview.mappings.length === 1 ? 'image' : 'images'}</Button><Button disabled={busy} onClick={() => setPreview(null)}>Cancel preview</Button><Button disabled={busy} onClick={() => download('image-import-manifest.json', preview)}>Download this list</Button></div></section> : null}
+      {admin && publication ? <section className="admin-card admin-stack" aria-labelledby="publication-title">
+        <h2 id="publication-title">Image publication · {publication.phase === 'preparing' ? 'Preparing' : publication.phase === 'publishing' ? 'In progress' : publication.phase === 'paused' ? 'Paused' : 'Complete'}</h2>
+        <p role="status" aria-live="polite">{publication.publishedImages} published · {publication.skippedImages} returned for review · {publication.preparedImages} included. Products processed: {publication.processedProducts} of {publication.totalProducts}.</p>
+        <p className="text-sm text-[var(--admin-muted)]">Progress is saved on the server. You can close this page and return from another browser.</p>
+        {publication.error ? <p role="alert">{publication.error === 'access' ? 'The administrator who started this run no longer has access. An active administrator can resume it.' : 'Publication paused after a service or image-provider failure. Retry when the service is available.'}</p> : null}
+        {publication.phase === 'paused' && !publication.canResume ? <p>The current worker is finishing or recovering. Resume will become available when it releases this run.</p> : null}
+        <div className="admin-actions">{publishing ? <Button disabled={busy} onClick={() => publicationAction('pause')}>Pause publication</Button> : publication.phase === 'paused' ? <Button variant="primary" disabled={busy || !publication.canResume} onClick={() => publicationAction('resume')}>Resume publication</Button> : null}<Button disabled={busy} onClick={() => task(async () => { await refresh(); })}>Refresh image queue</Button></div>
+        {publication.issues.length ? <details><summary>Products needing another review</summary><ul>{publication.issues.map(issue => <li key={issue.productId}>{issue.productId} · {issue.images} {issue.images === 1 ? 'image' : 'images'} · {issue.reason}</li>)}</ul><p>Open the Held queue to check these associations. Newer pharmacist decisions are preserved.</p>{publication.moreIssues ? <p>More products require review. The Held queue contains the remaining associations.</p> : null}</details> : null}
+      </section> : null}
+      {admin && publicationError ? <p role="alert" className="admin-note admin-note--danger">{publicationError}</p> : null}
+      {preview ? <section className="admin-card admin-stack" aria-labelledby="image-import-title"><h2 id="image-import-title">Import preview · {preview.mappings.length} approved {preview.mappings.length === 1 ? 'image' : 'images'}</h2><p>These existing image links will be added to the listed products. Existing galleries, publication status, prices and stock are preserved.</p><ul className="space-y-2">{preview.mappings.map(mapping => <li key={mapping.approvalId}>{mapping.productId} · {mapping.name}</li>)}</ul><div className="admin-actions"><Button variant="primary" disabled={busy || publishing} onClick={apply}>Import {preview.mappings.length} approved {preview.mappings.length === 1 ? 'image' : 'images'}</Button><Button disabled={busy} onClick={() => setPreview(null)}>Cancel preview</Button><Button disabled={busy} onClick={() => download('image-import-manifest.json', preview)}>Download this list</Button></div></section> : null}
       <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(260px,0.8fr)_minmax(0,1.8fr)]">
         <section className="min-w-0" aria-label="Images to review">
-          {filter === 'approved' && admin ? <div className="mb-4 flex flex-wrap items-center gap-3"><Button variant="primary" disabled={busy} onClick={publishAll}>Publish all approved images</Button><Button disabled={busy || !selected.length} onClick={publish}>Publish selected ({selected.length})</Button><Button disabled={busy || !selected.length} onClick={previewImport}>Preview selected</Button><Button disabled={busy} onClick={() => { localStorage.removeItem(imagePublicationStorageKey); setMessage('Saved run cleared. Publish all will collect the remaining approvals; completed imports are retained.'); }}>Reset saved run</Button><span className="text-xs text-[var(--admin-muted)]">Publish all includes every page and resumes interrupted runs in this browser. Keep this page open while it runs. Selected publishing is optional (up to 8).</span></div> : null}
+          {filter === 'approved' && admin ? <div className="mb-4 flex flex-wrap items-center gap-3"><Button variant="primary" disabled={busy || publishing || publication?.phase === 'paused'} onClick={publishAll}>Publish all approved images</Button><Button disabled={busy || publishing || !selected.length} onClick={publish}>Publish selected ({selected.length})</Button><Button disabled={busy || !selected.length} onClick={previewImport}>Preview selected</Button><span className="text-xs text-[var(--admin-muted)]">Publish all includes every page and continues on the server after you close this page. Selected publishing is optional (up to 8).</span></div> : null}
           {!list.items.length ? <div className="admin-card"><h2>No {filter === 'all' ? '' : filter} images</h2><p>{filter === 'pending' ? 'Load a saved pipeline package, or choose another review status.' : 'Choose another status to continue reviewing.'}</p></div> : <ul className="!m-0 list-none divide-y divide-[var(--admin-border)] overflow-hidden !p-0 rounded-xl border border-[var(--admin-border)] bg-white">{list.items.map(item => <li key={item.itemId} className={detail?.item.itemId === item.itemId ? 'bg-[var(--admin-paper)]' : ''}><div className="flex items-center gap-3 p-3">
             {filter === 'approved' && admin && item.approvalId ? <input type="checkbox" aria-label={`Select ${item.selectedProductId} for import`} checked={selected.includes(item.approvalId)} disabled={busy || (!selected.includes(item.approvalId) && selected.length >= 8)} onChange={event => { setPreview(null); setSelected(values => event.target.checked ? [...values, item.approvalId!] : values.filter(id => id !== item.approvalId)); }} /> : null}
             <button type="button" className="!flex !min-w-0 !flex-1 !items-center !gap-3 !border-0 !bg-transparent !p-0 !text-left !text-[var(--admin-ink)]" disabled={busy} onClick={() => open(item.itemId)}>

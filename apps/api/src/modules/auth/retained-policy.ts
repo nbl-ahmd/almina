@@ -1,6 +1,8 @@
 // Complete legacy HTTP allowlist. Unlisted paths/methods never reach a handler.
 export type RetainedAccess = 'admin' | 'staff' | 'public' | 'orders' | 'login' | 'webhook' | 'verification';
 export const routePolicies = [
+  ['GET', '/api/image-review/publication', 'admin'],
+  ['POST', '/api/image-review/publication/start', 'admin'], ['POST', '/api/image-review/publication/resume', 'admin'], ['POST', '/api/image-review/publication/pause', 'admin'],
   ['GET', '/api/image-review/uploads/:uploadId', 'admin'],
   ['GET', '/api/image-review', 'staff'], ['GET', '/api/image-review/export', 'staff'], ['GET', '/api/image-review/:reviewId', 'staff'],
   ['POST', '/api/image-review/select', 'staff'], ['POST', '/api/image-review/decide', 'staff'],

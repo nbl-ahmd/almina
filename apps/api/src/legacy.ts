@@ -9,6 +9,7 @@ export * from './modules/notifications/outbox.js';
 export * from './modules/media/retention.js';
 export * from './modules/media/cloudinary.js';
 export * from './modules/media/image-review.js';
+export * from './modules/media/image-review-publication.js';
 export * from './modules/catalog/creation.js';
 export * from './modules/media/metadata.js';
 export * from './modules/notifications/whatsapp-inbox.js';

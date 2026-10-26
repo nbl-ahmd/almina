@@ -135,3 +135,10 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
 | POST | /api/media/marketing | staff | Upload reviewed campaign artwork; server validation, signed storage and retained asset record |
+
+| Method | Route | Access |
+| --- | --- | --- |
+| GET | /api/image-review/publication | admin |
+| POST | /api/image-review/publication/start | admin |
+| POST | /api/image-review/publication/resume | admin |
+| POST | /api/image-review/publication/pause | admin |

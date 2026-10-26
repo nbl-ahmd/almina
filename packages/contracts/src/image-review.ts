@@ -56,6 +56,17 @@ export const imageReviewImportSchema = z.object({
   manifestId: hash, approvalIds: z.array(hash).min(1).max(8),
 }).strict();
 export const imageReviewPublishSchema = imageReviewImportSchema.omit({ manifestId: true }).extend({ requestId: z.uuid() });
+export const imagePublicationStartSchema = z.object({ requestId: z.uuid() }).strict();
+export const imagePublicationActionSchema = z.object({ jobId: z.uuid() }).strict();
+export const imagePublicationSchema = z.object({
+  jobId: z.uuid(), phase: z.enum(['preparing', 'publishing', 'paused', 'complete']),
+  preparedImages: z.number().int().nonnegative(), publishedImages: z.number().int().nonnegative(),
+  skippedImages: z.number().int().nonnegative(), totalProducts: z.number().int().nonnegative(), processedProducts: z.number().int().nonnegative(),
+  error: z.enum(['access', 'provider', 'service']).nullable(), updatedAt: z.string(), canResume: z.boolean(),
+  issues: z.array(z.object({ productId: businessId, images: z.number().int().nonnegative(), reason: z.string().max(200) })).max(20), moreIssues: z.boolean(),
+});
+export const imagePublicationResponseSchema = z.object({ publication: imagePublicationSchema.nullable() });
+export type ImagePublication = z.infer<typeof imagePublicationSchema>;
 
 export type ImageReviewComparison = {
   field: ImageIdentityField; imageValue: string; catalogueValue: string;
@@ -87,6 +98,7 @@ export const imageReviewDetailResponseSchema = z.object({ item: itemSchema, prod
 const mappingSchema = z.object({ approvalId: hash, itemId: hash, productId: businessId, id: z.string(), name: text, imageUrl: z.string().max(1000), publicId: z.string(), sourceSha256: hash, productRevision: hash, mediaRevision: z.number(), reviewer: z.string(), reviewedAt: z.string(), note: z.string() });
 export const imageReviewManifestSchema = z.object({ schemaVersion: z.literal('image-review-approved-v1'), manifestId: hash, mappings: z.array(mappingSchema).min(1).max(8) });
 export function projectImageReviewResponse(path: string, value: unknown): unknown {
+  if (/^image-review\/publication(?:\/(?:start|resume|pause))?$/.test(path)) return imagePublicationResponseSchema.parse(value);
   if (path === 'image-review') return imageReviewListResponseSchema.parse(value);
   if (path === 'image-review/select' || /^image-review\/[a-f0-9]{64}$/.test(path)) return imageReviewDetailResponseSchema.parse(value);
   if (path === 'image-review/decide') return itemSchema.parse(value);

@@ -11,6 +11,10 @@ router.use((req, res, next) => {
 });
 router.get('/', async (req, res) => res.json(await domain().listImageReviews(await req.app.locals.getCommerceDb(), req.query, req.identity.id)));
 router.get('/export', async (req, res) => res.json(await domain().exportImageReviewApprovals(await req.app.locals.getCommerceDb(), req.query, req.identity.id)));
+router.get('/publication', async (req, res) => { emptyQuery(req); res.json(await domain().getImagePublication(await req.app.locals.getCommerceDb(), req.identity.id)); });
+router.post('/publication/start', async (req, res) => { emptyQuery(req); res.json(await domain().startImagePublication(await req.app.locals.getCommerceDb(), req.body, req.identity.id)); });
+router.post('/publication/resume', async (req, res) => { emptyQuery(req); res.json(await domain().changeImagePublication(await req.app.locals.getCommerceDb(), req.body, req.identity.id, 'resume')); });
+router.post('/publication/pause', async (req, res) => { emptyQuery(req); res.json(await domain().changeImagePublication(await req.app.locals.getCommerceDb(), req.body, req.identity.id, 'pause')); });
 router.get('/uploads/:uploadId', async (req, res) => { emptyQuery(req); res.json(await domain().imageReviewUploadProgress(await req.app.locals.getCommerceDb(), req.params.uploadId, req.identity.id)); });
 router.get('/:reviewId', async (req, res) => { emptyQuery(req); res.json(await domain().getImageReview(await req.app.locals.getCommerceDb(), req.params.reviewId, req.identity.id)); });
 router.post('/select', async (req, res) => {

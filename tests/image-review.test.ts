@@ -4,7 +4,7 @@ import { imageIdentitySchema, imageReviewStageSchema, projectImageReviewResponse
 import { compareImageIdentity, imageReviewProductIdentity, imageReviewProductRevision, reviewGtin, reviewStrength } from '../apps/api/src/modules/media/image-review-identity';
 import { accessPolicy, canVisit, upstreamQuery } from '../apps/web/src/lib/admin/policy';
 import { lookupPolicy } from '../apps/api/src/modules/auth/retained-policy';
-import { planImagePublication, readImagePublication, runImagePublication } from '../apps/web/src/lib/admin/image-review-publication';
+import { imagePublicationStartSchema, imagePublicationActionSchema } from '@almina/contracts';
 const identity = (patch: object = {}) => imageIdentitySchema.parse({ name: 'Acme Skin Cream', brand: 'Acme', form: 'Cream', size: '50 g', ...patch });
 test('image review separates staff decisions from administrator staging and catalogue import', () => {
   assert.equal(canVisit('user', 'image-review'), true);
@@ -55,23 +55,13 @@ test('temporary review contract bounds staging and response projection rejects u
   assert.throws(() => projectImageReviewResponse('image-review', { enabled: true, items: [{ private: 'unexpected' }], counts: {}, nextAfter: null }));
 });
 
-test('bulk publication spans pages, groups all photos of a product, and resumes a lost response with the same request', async () => {
-  const { randomUUID } = await import('node:crypto');
-  const rows = Array.from({ length: 37 }, (_, index) => ({ status: 'approved', approvalId: index.toString(16).padStart(64, '0'), selectedProductId: index < 7 ? 'SEVEN_PHOTOS' : `PD${index}` }));
-  // Minimal list projections: the planner intentionally reads no names, media, prices or extraction.
-  const plan = planImagePublication(rows as Parameters<typeof planImagePublication>[0], randomUUID);
-  assert.equal(plan.groups.length, 31);
-  assert.equal(plan.groups[0]!.request.approvalIds.length, 7);
-  let saved = '', calls = 0;
-  await assert.rejects(runImagePublication(plan, value => { saved = JSON.stringify(value); }, async () => { if (++calls === 2) throw Error('Lost response'); }, () => {}), /Progress is saved/);
-  const resumed = readImagePublication(saved);
-  assert.equal(resumed.next, 1);
-  const pendingId = plan.groups[1]!.request.requestId;
-  const requests: string[] = [];
-  assert.equal(await runImagePublication(resumed, value => { saved = JSON.stringify(value); }, async request => { requests.push(request.requestId); }, () => {}), 37);
-  assert.equal(requests[0], pendingId);
-  assert.equal(requests.length, 30);
-  assert.equal(readImagePublication(saved).next, 31);
-  assert.throws(() => readImagePublication('{"version":1,"next":-1,"groups":[]}'));
-  assert.throws(() => planImagePublication(Array.from({ length: 9 }, (_, index) => ({ ...rows[index], selectedProductId: 'TOO_MANY' })) as Parameters<typeof planImagePublication>[0], randomUUID), /eight approved/);
+test('background publication endpoints require administrator privileges and strict job requests', () => {
+  for (const [method, path] of [['GET', '/publication'], ['POST', '/publication/start'], ['POST', '/publication/resume'], ['POST', '/publication/pause']]) {
+    assert.equal(accessPolicy(method!, 'image-review' + path), 'admin');
+    assert.equal(lookupPolicy(method!, '/api/image-review' + path)?.policy, 'admin');
+  }
+  assert.equal(imagePublicationStartSchema.safeParse({ requestId: 'abc' }).success, false);
+  assert.equal(imagePublicationActionSchema.safeParse({ jobId: 'abc', role: 'admin' }).success, false);
+  assert.throws(() => projectImageReviewResponse('image-review/publication', { publication: { phase: 'publishing', private: 'unexpected' } }));
+  assert.deepEqual(projectImageReviewResponse('image-review/publication', { publication: null, private: 'ignored' }), { publication: null });
 });

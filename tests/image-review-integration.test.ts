@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { MongoClient, ObjectId } from 'mongodb';
 import { imageIdentitySchema, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
 import { stageImageReview, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
+import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker } from '../apps/api/src/modules/media/image-review-publication';
 const require = createRequire(import.meta.url);
 const { createLegacyApp } = require('../backend/app.js');
 const uri = process.env.COMMERCE_TEST_URI;
@@ -235,6 +236,12 @@ test('retained HTTP boundary authenticates review routes, prevents staff imports
     assert.equal((await request('/stage', 'user', pack([source('http-source')]))).status, 403);
     assert.equal((await request('/import', 'user', {})).status, 403);
     assert.equal((await request('/publish', 'user', {})).status, 403);
+    assert.equal((await request('/publication', 'user')).status, 403);
+    assert.equal((await request('/publication/start', 'user', { requestId: randomUUID() })).status, 403);
+    assert.equal((await request('/publication/resume', 'user', { jobId: randomUUID() })).status, 403);
+    assert.equal((await request('/publication/pause', 'admin', { jobId: randomUUID() }, false)).status, 403);
+    assert.equal((await request('/publication?extra=1', 'admin')).status, 400);
+    assert.equal((await request('/publication', 'admin')).status, 200);
     assert.equal((await request('/stage', 'admin', pack([source('http-source')]), false)).status, 403);
     assert.equal((await request('/stage', 'admin', pack([source('http-source')]))).status, 200);
     assert.equal((await request('', 'user')).status, 200);
@@ -245,4 +252,143 @@ test('retained HTTP boundary authenticates review routes, prevents staff imports
     assert.equal((await request('', 'user')).status, 200);
     assert.equal((await request('/stage', 'admin', pack([source('disabled')]))).status, 503);
   } finally { await new Promise<void>(resolve => server.close(resolve)); await db.dropDatabase(); await client.close(); }
+});
+
+async function publicationFixture(db: ReturnType<MongoClient['db']>, products: { id: string; images: number }[]) {
+  const actor = new ObjectId(), other = new ObjectId(), staff = new ObjectId();
+  await db.collection('users').insertMany([{ _id: actor, role: 'admin' }, { _id: other, role: 'admin' }, { _id: staff, role: 'user' }]);
+  for (const product of products) {
+    await db.collection('products').insertOne({ product_id: product.id, name: 'Acme Skin Cream 50 g', brand: 'Acme', productForm: 'Cream', packLabel: '50 g', price: 12.5, stock: 7, published: false, disabled: true });
+    const rows = Array.from({ length: product.images }, (_, index) => source(`${product.id}-${index}`, product.id));
+    for (let index = 0; index < rows.length; index += 25) await stageImageReview(db, pack(rows.slice(index, index + 25)), String(actor), 'synthetic');
+  }
+  let after: string | null = null;
+  do {
+    const page = await listImageReviews(db, { status: 'pending', limit: 25, ...(after ? { after } : {}) }, String(actor));
+    for (const row of page.items) await decideImageReview(db, decision(await getImageReview(db, row.itemId, String(staff))), String(staff));
+    after = page.nextAfter;
+  } while (after);
+  return { actor: String(actor), other: String(other), staff: String(staff) };
+}
+async function finishPublication(db: ReturnType<MongoClient['db']>) {
+  for (let step = 0; step < 100; step++) if (!await processImagePublication(db, 'synthetic', async () => new Response(bytes))) return;
+  assert.fail('Publication did not finish within its bounded test steps');
+}
+test('durable publication serializes starts, snapshots more than a page, groups photos and holds invalid groups without blocking valid imports', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_jobs_' + randomUUID().replaceAll('-', ''));
+  try {
+    const users = await publicationFixture(db, [{ id: 'PD_SEVEN', images: 7 }, { id: 'PD_OVERFULL', images: 101 }, { id: 'PD_STALE', images: 1 }]);
+    await assert.rejects(startImagePublication(db, { requestId: randomUUID() }, users.staff), { status: 403 });
+    await assert.rejects(getImagePublication(db, users.staff), { status: 403 });
+    await assert.rejects(startImagePublication(db, { requestId: randomUUID(), approvalIds: [] }, users.actor), { status: 400 });
+    const request = { requestId: randomUUID() };
+    const starts = await Promise.all([startImagePublication(db, request, users.actor), startImagePublication(db, { requestId: randomUUID() }, users.other), startImagePublication(db, request, users.actor)]);
+    const jobId = starts[0].publication!.jobId;
+    assert.ok(starts.every(row => row.publication!.jobId === jobId));
+    assert.equal(await db.collection('image_review_publications').countDocuments(), 1);
+    await db.collection('products').updateOne({ product_id: 'PD_STALE' }, { $set: { packLabel: '500 g' } });
+    // New approvals after start do not enter this run, even if their hashed item ID sorts earlier.
+    await stageImageReview(db, pack([source('later', 'PD_SEVEN')]), users.actor, 'synthetic');
+    const later = (await listImageReviews(db, { status: 'pending' }, users.actor)).items[0]!;
+    await decideImageReview(db, decision(await getImageReview(db, later.itemId, users.actor)), users.actor);
+    await finishPublication(db);
+    const result = (await getImagePublication(db, users.actor)).publication!;
+    assert.equal(result.phase, 'complete'); assert.equal(result.preparedImages, 109);
+    assert.equal(result.publishedImages, 7); assert.equal(result.skippedImages, 102); assert.equal(result.processedProducts, 3);
+    assert.equal(result.issues.length, 2);
+    assert.equal(await db.collection('image_review_items').countDocuments({ status: 'held' }), 102);
+    assert.equal(await db.collection('image_review_items').countDocuments({ status: 'approved' }), 1);
+    assert.equal(await db.collection('image_review_events').countDocuments({ publicationId: jobId }), 102);
+    const product = (await db.collection('products').findOne({ product_id: 'PD_SEVEN' }))!;
+    assert.equal(product.cloudinaryImages.length, 7); assert.equal(product.mediaRevision, 1);
+    assert.equal(product.price, 12.5); assert.equal(product.stock, 7); assert.equal(product.published, false); assert.equal(product.disabled, true);
+    assert.equal((await startImagePublication(db, request, users.actor)).publication!.jobId, jobId);
+    assert.equal(await db.collection('image_review_publications').countDocuments(), 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+test('publication leases exclude parallel workers, survive a lost completion and reauthorize resume after an administrator is disabled', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_lease_' + randomUUID().replaceAll('-', ''));
+  try {
+    const { actor, other } = await publicationFixture(db, [{ id: 'PD_TEST', images: 2 }]);
+    const jobId = (await startImagePublication(db, { requestId: randomUUID() }, actor)).publication!.jobId;
+    await processImagePublication(db, 'synthetic'); await processImagePublication(db, 'synthetic');
+    const group = (await db.collection('image_review_publication_groups').findOne({ jobId }))!;
+    const manifest = await previewImageReviewImport(db, { approvalIds: group.approvalIds }, actor);
+    await db.collection('image_review_publication_groups').updateOne({ _id: group._id }, { $set: { manifestId: manifest.manifestId } });
+    await importImageReviewApprovals(db, { manifestId: manifest.manifestId, approvalIds: group.approvalIds }, actor, 'synthetic', async () => new Response(bytes));
+    // Simulate a terminated worker after successful import but before group/counter acknowledgement.
+    await db.collection<{ _id: string }>('image_review_publications').updateOne({ _id: jobId }, { $set: { leaseToken: 'dead-worker', leaseUntil: new Date(Date.now() + 60_000) } });
+    assert.equal(await processImagePublication(db, 'synthetic'), false);
+    await db.collection<{ _id: string }>('image_review_publications').updateOne({ _id: jobId }, { $set: { leaseUntil: new Date(0) } });
+    await db.collection('users').updateOne({ _id: new ObjectId(actor) }, { $set: { disabled: true } });
+    await processImagePublication(db, 'synthetic');
+    const paused = (await getImagePublication(db, other)).publication!;
+    assert.equal(paused.phase, 'paused'); assert.equal(paused.error, 'access'); assert.equal(paused.canResume, true);
+    await assert.rejects(changeImagePublication(db, { jobId }, actor, 'resume'), { status: 403 });
+    await changeImagePublication(db, { jobId }, other, 'resume');
+    const results = await Promise.all([processImagePublication(db, 'synthetic', async () => { throw Error('Receipt replay must not download'); }), processImagePublication(db, 'synthetic')]);
+    assert.equal(results.filter(Boolean).length, 1);
+    await finishPublication(db);
+    const done = (await getImagePublication(db, other)).publication!;
+    assert.equal(done.publishedImages, 2); assert.equal(done.processedProducts, 1);
+    assert.equal(await db.collection('media_history').countDocuments(), 1);
+    assert.equal(await db.collection('image_review_imports').countDocuments(), 1);
+    assert.equal(await db.collection('image_review_publication_actions').countDocuments({ action: 'resume', actor: other }), 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+test('provider failure pauses instead of discarding approvals and manual pause prevents new imports until resume', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_pause_' + randomUUID().replaceAll('-', ''));
+  try {
+    const { actor } = await publicationFixture(db, [{ id: 'PD_TEST', images: 1 }]);
+    const jobId = (await startImagePublication(db, { requestId: randomUUID() }, actor)).publication!.jobId;
+    await processImagePublication(db, 'synthetic'); await processImagePublication(db, 'synthetic');
+    await changeImagePublication(db, { jobId }, actor, 'pause');
+    assert.equal(await processImagePublication(db, 'synthetic'), false);
+    await changeImagePublication(db, { jobId }, actor, 'resume');
+    await processImagePublication(db, 'synthetic', async () => new Response('', { status: 503 }));
+    assert.equal((await getImagePublication(db, actor)).publication!.error, 'provider');
+    assert.equal(await db.collection('image_review_items').countDocuments({ status: 'approved' }), 1);
+    await changeImagePublication(db, { jobId }, actor, 'resume');
+    await finishPublication(db);
+    assert.equal((await getImagePublication(db, actor)).publication!.publishedImages, 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+test('background worker stops claiming work and waits for its active image read before shutdown', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_stop_' + randomUUID().replaceAll('-', ''));
+  try {
+    const { actor } = await publicationFixture(db, [{ id: 'PD_TEST', images: 1 }]);
+    await startImagePublication(db, { requestId: randomUUID() }, actor);
+    await processImagePublication(db, 'synthetic'); await processImagePublication(db, 'synthetic');
+    let release!: () => void, entered!: () => void;
+    const wait = new Promise<void>(resolve => { release = resolve; }), reading = new Promise<void>(resolve => { entered = resolve; });
+    let disabledReads = 0;
+    const disabled = imagePublicationWorker(() => { disabledReads++; return db; }, { enabled: () => false });
+    await disabled.stop(); assert.equal(disabledReads, 0);
+    const worker = imagePublicationWorker(() => db, { cloudName: 'synthetic', intervalMs: 10, transport: async () => { entered(); await wait; return new Response(bytes); } });
+    await Promise.race([reading, new Promise<never>((_, reject) => { const timer = setTimeout(() => reject(Error('Worker did not claim job')), 3000); timer.unref(); })]);
+    let stopped = false;
+    const stop = worker.stop().then(() => { stopped = true; });
+    await Promise.resolve(); assert.equal(stopped, false);
+    release(); await stop;
+    assert.equal(stopped, true);
+    assert.equal((await getImagePublication(db, actor)).publication!.publishedImages, 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+test('automatic holds preserve a newer pharmacist decision and original immutable evidence', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_recheck_' + randomUUID().replaceAll('-', ''));
+  try {
+    const { actor, staff } = await publicationFixture(db, [{ id: 'PD_TEST', images: 1 }]);
+    const original = (await listImageReviews(db, { status: 'approved' }, actor)).items[0]!;
+    await startImagePublication(db, { requestId: randomUUID() }, actor);
+    await processImagePublication(db, 'synthetic'); await processImagePublication(db, 'synthetic');
+    await processImagePublication(db, 'synthetic', async () => new Response('wrong image bytes'));
+    const fresh = await decideImageReview(db, decision(await getImageReview(db, original.itemId, staff)), staff);
+    assert.notEqual(fresh.approvalId, original.approvalId);
+    await finishPublication(db);
+    const current = await getImageReview(db, original.itemId, staff);
+    assert.equal(current.item.status, 'approved'); assert.equal(current.item.approvalId, fresh.approvalId);
+    assert.equal(await db.collection('image_review_events').countDocuments({ approvalId: original.approvalId }), 1);
+    assert.equal(current.history.length, 2);
+    assert.equal(await db.collection('media_history').countDocuments(), 0);
+  } finally { await db.dropDatabase(); await client.close(); }
 });

@@ -38,6 +38,8 @@ export function canVisit(role: Identity["role"], section: string) {
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET', 'image-review/publication', 'admin'],
+  ['POST', 'image-review/publication/start', 'admin'], ['POST', 'image-review/publication/resume', 'admin'], ['POST', 'image-review/publication/pause', 'admin'],
   ['GET', 'image-review/uploads/[a-f0-9]{64}', 'admin'],
   ['GET', 'image-review', 'staff'], ['GET', 'image-review/export', 'staff'], ['GET', 'image-review/[a-f0-9]{64}', 'staff'],
   ['POST', 'image-review/select', 'staff'], ['POST', 'image-review/decide', 'staff'],

@@ -1,3 +1,7 @@
+## 2026-10-26 — Durable background image publication
+
+Bulk publication now runs on the persistent API and resumes after browser closure or API restart. Administrator progress, pause/resume and per-product issues are shared across browsers. Leased, bounded worker steps reuse immutable manifests/import receipts. Invalid captured approvals return to Held with appended history while valid products continue; service failures and revoked administrator privileges pause the run. The previous browser-only progress queue is superseded. Verification: 212 unit and 16 disposable integration tests passed, with typechecks, lint, commerce integrity and isolated production build. Browser closure/reopen confirmed background completion; no runtime/accessibility errors or overflow at checked mobile/tablet/desktop sizes. No production/provider changes or deployment performed. See [image review guide](IMAGE_REVIEW_2026-10-26.md).
+
 ## 2026-10-26 — Bulk image publication
 
 Image review now offers **Publish all approved images** across every approved queue page, automatically grouped by product (up to eight gallery associations per request). Browser progress plus server receipts support safe resuming; keep the tab open. Failures stop without reversing completed products. No production data/provider changes or deployment performed. See [image review guide](IMAGE_REVIEW_2026-10-26.md) for enablement and recovery.
