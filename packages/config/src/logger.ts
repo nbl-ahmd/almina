@@ -2,7 +2,7 @@ import type { AppEnvironment } from './env.js';
 
 type Level = 'info' | 'warn' | 'error';
 type Event = 'http_request' | 'request_failed' | 'api_started' | 'api_stopped'
-  | 'configuration_invalid' | 'database_unavailable' | 'shutdown_failed' | 'web_error' | 'catalog_query' | 'reminder_failed';
+  | 'configuration_invalid' | 'database_unavailable' | 'shutdown_failed' | 'web_error' | 'catalog_query' | 'reminder_failed' | 'search_query';
 type Context = {
   requestId?: string;
   method?: string;
@@ -10,6 +10,7 @@ type Context = {
   status?: number;
   durationMs?: number;
   operation?: string;
+  searchId?:string;locale?:'en'|'ar';queryHash?:string;lexical?:number;semantic?:number;resultCount?:number;relaxed?:boolean;corrected?:boolean;unavailable?:boolean;parseMs?:number;lexicalMs?:number;vectorMs?:number;fusionMs?:number;
 };
 
 // Deliberately allow only operational fields; never serialize errors, bodies, env, URLs or headers.
@@ -31,6 +32,13 @@ export function createLogger(options: {
       if (typeof context.status === 'number' && Number.isInteger(context.status)) safe.status = context.status;
       if (typeof context.durationMs === 'number' && Number.isFinite(context.durationMs)) safe.durationMs = context.durationMs;
       if (context.operation && ['products', 'product', 'categories', 'category', 'banners', 'store', 'sitemap'].includes(context.operation)) safe.operation = context.operation;
+      if(event==='search_query'){
+        if(context.locale==='en'||context.locale==='ar')safe.locale=context.locale;
+        if(context.searchId&&/^[a-f0-9-]{36}$/.test(context.searchId))safe.searchId=context.searchId;
+        if(context.queryHash&&/^[a-f0-9]{64}$/.test(context.queryHash))safe.queryHash=context.queryHash;
+        for(const key of ['lexical','semantic','resultCount','parseMs','lexicalMs','vectorMs','fusionMs'] as const)if(typeof context[key]==='number'&&Number.isFinite(context[key]))safe[key]=context[key];
+        for(const key of ['relaxed','corrected','unavailable'] as const)if(typeof context[key]==='boolean')safe[key]=context[key];
+      }
       write(JSON.stringify({ time: new Date().toISOString(), level, service: options.service,
         environment: options.environment, event, ...safe }));
     },

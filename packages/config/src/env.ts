@@ -96,6 +96,7 @@ export function readWebEnvironment(source: EnvironmentSource) {
 export function readApiEnvironment(source: EnvironmentSource) {
   const shared = common(source);
   const value = parse(z.object({
+    SEARCH_PROVIDER:z.enum(['legacy','atlas']).default('legacy'),
     API_HOST: z.enum(['127.0.0.1', '0.0.0.0']).default(shared.APP_ENV === 'development' ? '127.0.0.1' : '0.0.0.0'),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     DATABASE_MODE: z.enum(['disabled', 'enabled']).default('disabled'),

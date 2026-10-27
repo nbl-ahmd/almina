@@ -4,7 +4,7 @@ import { StructuredData } from '../../../components/structured-data';
 import { metadataFor } from '../../../lib/server/seo';
 import { getWebEnvironment } from '../../../lib/server/env';
 import { breadcrumbData, type Query } from '../../../lib/seo';
-import { businessContact, policyLastUpdated, policyPaths } from '../../../lib/policies';
+import { businessContact, policyPaths } from '../../../lib/policies';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Query> }) {
   return metadataFor(
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
     <article className="policy-page mx-auto max-w-3xl rounded-2xl border border-border bg-white p-6 md:p-9">
       <p className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Store policy</p>
       <h1 className="mb-3 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">Privacy policy</h1>
-      <p className="text-sm leading-7 text-muted">Last updated {policyLastUpdated}. This policy explains what information Al Mina Pharmacy collects when you use this website, create an account or place an order, why we use it and the choices you have. You can shop and check out as a guest without creating an account.</p>
+      <p className="text-sm leading-7 text-muted">Last updated 2026-10-27. This policy explains what information Al Mina Pharmacy collects when you use this website, create an account or place an order, why we use it and the choices you have. You can shop and check out as a guest without creating an account.</p>
 
       <h2 className="mt-8 text-xl font-semibold">Information we collect</h2>
       <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-7 text-muted">
@@ -43,6 +43,9 @@ export default function PrivacyPage() {
       <h2 className="mt-8 text-xl font-semibold">When we share information</h2>
       <p className="mt-2 text-sm leading-7 text-muted">We share only what is needed with service providers who help us run the store, such as hosting, database, media delivery, email delivery, location lookup and pharmacy operations. These providers process information for the services they supply. We may also share information when required by law, a regulator, a court or a pharmacy authority, or to protect the safety and rights of customers and the pharmacy. We do not sell your personal information.</p>
 
+      <h2 className="mt-8 text-xl font-semibold">Optional search improvement reports</h2>
+      <p className="mt-2 text-sm leading-7 text-muted">Search improvement reports have a separate, optional control in Usage preferences. When enabled, they record search phrases, result positions, product clicks, cart activity and anonymous purchase attribution. Query text expires after seven days; anonymous event totals expire after thirty days. These reports do not include your name, contact details, account identifier or order number. Popular searches are shown only from approved vocabulary after at least ten searches. Search works when reporting is off. Your browser’s Do Not Track or Global Privacy Control preference disables optional reporting, and withdrawing consent stops future reports.</p>
+      <p className="mt-2 text-sm leading-7 text-muted">Reviewed catalogue content and staff-approved search phrases may be processed by an embedding provider to improve product discovery. Shopper phrases await staff review before external processing. Search does not provide a diagnosis, treatment recommendation or medicine-equivalence decision.</p>
       <h2 className="mt-8 text-xl font-semibold">How long we keep information</h2>
       <p className="mt-2 text-sm leading-7 text-muted">Order, prescription and financial records are kept for as long as required by applicable pharmacy, tax and consumer-protection rules. Account preferences and saved items are kept while your account is active. Marketing consent records and unsubscribes are kept so we can honour your choice. We delete or anonymise information when it is no longer needed, unless the law requires us to keep it.</p>
 

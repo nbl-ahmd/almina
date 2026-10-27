@@ -1,0 +1,203 @@
+{
+  "name": "products_search",
+  "type": "search",
+  "definition": {
+    "mappings": {
+      "dynamic": false,
+      "fields": {
+        "name": [
+          {
+            "type": "string",
+            "multi": {
+              "arabic": {
+                "type": "string",
+                "analyzer": "lucene.arabic"
+              }
+            }
+          },
+          {
+            "type": "autocomplete",
+            "tokenization": "edgeGram",
+            "minGrams": 2,
+            "maxGrams": 20,
+            "foldDiacritics": true
+          }
+        ],
+        "brand": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "autocomplete",
+            "tokenization": "edgeGram",
+            "minGrams": 2,
+            "maxGrams": 20,
+            "foldDiacritics": true
+          },
+          {
+            "type": "token",
+            "normalizer": "lowercase"
+          }
+        ],
+        "familyBrand": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "autocomplete",
+            "tokenization": "edgeGram",
+            "minGrams": 2,
+            "maxGrams": 20,
+            "foldDiacritics": true
+          }
+        ],
+        "barcode": {
+          "type": "token"
+        },
+        "gtin": {
+          "type": "token"
+        },
+        "product_id": {
+          "type": "token"
+        },
+        "description": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "productForm": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "token",
+            "normalizer": "lowercase"
+          }
+        ],
+        "packLabel": {
+          "type": "string"
+        },
+        "category": {
+          "type": "objectId"
+        },
+        "stock": {
+          "type": "number"
+        },
+        "price": {
+          "type": "number"
+        },
+        "salePrice": {
+          "type": "number"
+        },
+        "sale": {
+          "type": "boolean"
+        },
+        "featured": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "published": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "archivedAt": {
+          "type": "date"
+        },
+        "audience": {
+          "type": "token"
+        },
+        "productType": {
+          "type": "token"
+        },
+        "contentReviewed": {
+          "type": "boolean"
+        },
+        "searchDocument": {
+          "type": "document",
+          "dynamic": false,
+          "fields": {
+            "normalizedName": [
+              {
+                "type": "token"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "autocomplete",
+                "tokenization": "edgeGram",
+                "minGrams": 2,
+                "maxGrams": 20,
+                "foldDiacritics": true
+              }
+            ],
+            "normalizedBrand": [
+              {
+                "type": "token"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "packLabel": {
+              "type": "string"
+            },
+            "categoryName": {
+              "type": "string"
+            },
+            "aliases": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "autocomplete",
+                "tokenization": "edgeGram",
+                "minGrams": 2,
+                "maxGrams": 20,
+                "foldDiacritics": true
+              }
+            ],
+            "searchKeywords": {
+              "type": "string"
+            },
+            "concerns": {
+              "type": "string"
+            },
+            "useCases": {
+              "type": "string"
+            },
+            "features": {
+              "type": "string"
+            },
+            "productKind": {
+              "type": "string"
+            },
+            "audience": {
+              "type": "string"
+            },
+            "bodyArea": {
+              "type": "string"
+            },
+            "semanticSearchText": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "synonyms": [
+      {
+        "name": "almina",
+        "analyzer": "lucene.standard",
+        "source": {
+          "collection": "search_synonyms_atlas"
+        }
+      }
+    ]
+  }
+}

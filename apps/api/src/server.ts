@@ -1,3 +1,4 @@
+import {readSearchEnvironment} from './modules/search/config.js';
 import {marketingWorker} from './modules/marketing/worker.js';
 import { prepareEmailStorage } from './modules/notifications/storage.js';
 import { orderOutbox } from './modules/notifications/outbox.js';
@@ -12,6 +13,7 @@ import { retentionWorker } from './modules/growth/retention.js';
 
 async function main() {
   const env = readApiEnvironment(process.env);
+  readSearchEnvironment(process.env);
   const logger = createLogger({ service: 'api', environment: env.APP_ENV, level: env.LOG_LEVEL });
   const database = createDatabase(env.database);
   if (process.env.EMAIL_PROVIDER === 'resend') await prepareEmailStorage(await database.getDb());

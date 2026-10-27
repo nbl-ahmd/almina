@@ -31,6 +31,7 @@ export async function checkoutRequest(request: Request, quoteOnly: boolean | 'lo
     try { raw = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return failure(400, 'INVALID_REQUEST'); }
     const parsed = (locationOnly ? reverseLocationInputSchema : quoteOnly ? quoteInputSchema : checkout).safeParse(raw);
     if (!parsed.success) return failure(400, 'INVALID_REQUEST');
+    if(!quoteOnly&&'searchAttribution' in parsed.data&&(request.headers.get('x-search-consent')!=='1'||request.headers.get('sec-gpc')==='1'||request.headers.get('dnt')==='1'))delete parsed.data.searchAttribution;
     const customerName=env.APP_ENV==='development'?'almina_customer':'__Host-almina_customer';
     const customerCookies=(await cookies()).getAll(customerName);
     const customerToken=customerCookies.length===1&&/^[A-Za-z0-9_-]{43}$/.test(customerCookies[0]!.value)?customerCookies[0]!.value:null;

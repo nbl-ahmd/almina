@@ -1,5 +1,9 @@
-import { NextResponse } from 'next/server';
-import { getCategories,getProducts } from '../../../../lib/server/catalog';
-import { getWebEnvironment } from '../../../../lib/server/env';
-import { productHref,categoryHref,productPath } from '../../../../lib/catalog/model';
-export async function GET(request:Request){const q=new URL(request.url).searchParams.get('q')?.trim().slice(0,80)??'';const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex'};if(q.length<2)return NextResponse.json({products:[],categories:[]},{headers});try{const [categories,indexed]=await Promise.all([getCategories(),fetch(new URL('/api/v1/growth/suggest?'+new URLSearchParams({q}),getWebEnvironment().API_ORIGIN),{cache:'no-store',signal:AbortSignal.timeout(1500),redirect:'error'}).then(async response=>response.ok?(await response.json() as {data:{name:string;productId:string}[]}).data:[]).catch(()=>[])]);const words=q.toLowerCase().split(/\s+/);const products=indexed.length?indexed.map(item=>({name:item.name,href:productPath(item.name,item.productId)})):(await getProducts({q:words[0]!})).products.filter(product=>words.every(word=>product.name.toLowerCase().includes(word))).slice(0,6).map(product=>({name:product.name,href:productHref(product)}));return NextResponse.json({products,categories:categories.filter(category=>category.name.toLowerCase().includes(q.toLowerCase())).slice(0,3).map(category=>({name:category.name,href:categoryHref(category)}))},{headers});}catch{return NextResponse.json({products:[],categories:[]},{headers});}}
+import { searchSuggestions } from '../../../../lib/server/search';
+const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex'};
+export async function GET(request:Request){
+ const params=new URL(request.url).searchParams,q=params.get('q')?.trim()??'',locale=params.get('locale')??'en';
+ if(new Set(params.keys()).size!==[...params.keys()].length||q.length>80||!['en','ar'].includes(locale)||[...params.keys()].some(k=>!['q','locale'].includes(k)))return Response.json({error:'Invalid search'},{status:400,headers});
+ if(q.length<2)return Response.json({products:[],categories:[],brands:[],collections:[],popular:[],related:[],unavailable:false},{headers});
+ try{return Response.json(await searchSuggestions(q,locale),{headers});}
+ catch{return Response.json({products:[],categories:[],brands:[],collections:[],popular:[],related:[],unavailable:true},{headers});}
+}

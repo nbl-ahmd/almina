@@ -1,11 +1,12 @@
 'use client';
+import {SearchUsagePreferences} from './search-usage-preferences';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { chooseUsage, consentKey, enableUsageReports, privacyBlocked, recordCommerceEvent, usageChoice } from '../lib/telemetry/browser';
 import type { Choice } from '../lib/telemetry/reporter';
 
 /** Optional usage reporting controls, shown inside the storefront footer panel. */
-export function UsagePreferences() {
+export function UsagePreferences({locale='en'}:{locale?:'en'|'ar'}) {
   const pathname=usePathname();
   useEffect(()=>{const timer=setTimeout(()=>recordCommerceEvent('page_viewed'),0);return()=>clearTimeout(timer);},[pathname]);
   const [choice, setChoice] = useState<Choice>('unset');
@@ -41,6 +42,7 @@ export function UsagePreferences() {
       {blocked ? <p role="status" className="text-muted">Your browser’s privacy preference disables optional reports.</p> : null}
       <div className="flex flex-wrap gap-3"><button type="button" disabled={blocked} onClick={() => select('allowed')}>Allow optional reports</button><button type="button" className="button-secondary" onClick={() => select('declined')}>Decline optional reports</button></div>
     </> : <div className="flex flex-wrap items-center gap-3"><span>Optional usage reports: {blocked || choice !== 'allowed' ? 'off' : 'on'}.</span><button type="button" className="button-secondary" onClick={() => setEditing(true)}>Usage preferences</button></div>}
+    <SearchUsagePreferences locale={locale} enabled={ready&&!blocked&&choice==='allowed'}/>
     {error ? <p role="alert" className="mt-3 text-sale">{error}</p> : null}
   </section>;
 }

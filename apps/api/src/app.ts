@@ -91,10 +91,10 @@ export function createApp(options: {
       const method = req.headers['access-control-request-method'];
       const headers = String(req.headers['access-control-request-headers'] ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
       if (!req.headers.origin || !['GET', 'HEAD', 'POST'].includes(String(method))
-        || headers.some(value => !['content-type', 'x-csrf-protection'].includes(value))) {
+        || headers.some(value => !['content-type', 'x-csrf-protection','x-search-consent'].includes(value))) {
         next(new HttpError(403, 'FORBIDDEN')); return;
       }
-      res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST', 'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection',
+      res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST', 'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection, X-Search-Consent',
         'Access-Control-Max-Age': '600' }).status(204).end();
       return;
     }
@@ -135,7 +135,7 @@ export function createApp(options: {
   }, metrics, order => {
     try { options.onOrderCreated?.(order); }
     catch { options.logger.log('warn', 'request_failed'); } // Committed commerce never depends on realtime.
-  }, options.location));
+  }, options.location, measurement=>options.logger.log(measurement.unavailable?'warn':'info','search_query',measurement)));
   app.use((_req, _res, next) => next(new HttpError(404, 'NOT_FOUND')));
   app.use(errorHandler(options.logger, metrics));
   return app;

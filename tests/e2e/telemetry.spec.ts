@@ -65,6 +65,10 @@ test('consented cart, quote and checkout failure events never replace authoritat
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
   await expect(page.locator('p[role="alert"]')).toContainText('Prices or delivery have changed');
   expect((await failure).status()).toBe(204);
-  expect(reports).toEqual([{ event: 'cart_updated', consent: true }, { event: 'checkout_reviewed', consent: true }, { event: 'checkout_failed', consent: true }]);
+  // Consented navigation may also report page_viewed; retain strict commerce sequencing
+  // without depending on the hydration timer winning the reporter's consent setup.
+  const commerceReports=reports.filter(report=>report&&typeof report==='object'&&'event' in report&&['cart_updated','checkout_reviewed','checkout_failed'].includes(String(report.event)));
+  expect(commerceReports).toEqual([{ event: 'cart_updated', consent: true }, { event: 'checkout_reviewed', consent: true }, { event: 'checkout_failed', consent: true }]);
+  for(const report of reports){expect(report).toMatchObject({consent:true});expect(Object.keys(report as object).sort()).toEqual(['consent','event']);}
   expect((await state(request)).orders).toHaveLength(0); expect((await state(request)).stock).toBe(4);
 });

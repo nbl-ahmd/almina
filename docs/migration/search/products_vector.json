@@ -1,0 +1,42 @@
+{
+  "name": "products_vector",
+  "type": "vectorSearch",
+  "definition": {
+    "fields": [
+      {
+        "type": "vector",
+        "path": "searchEmbedding.vector",
+        "numDimensions": 768,
+        "similarity": "cosine"
+      },
+      {
+        "type": "filter",
+        "path": "productType"
+      },
+      {
+        "type": "filter",
+        "path": "contentReviewed"
+      },
+      {
+        "type": "filter",
+        "path": "audience"
+      },
+      {
+        "type": "filter",
+        "path": "category"
+      },
+      {
+        "type": "filter",
+        "path": "stock"
+      },
+      {
+        "type": "filter",
+        "path": "searchEmbedding.model"
+      },
+      {
+        "type": "filter",
+        "path": "searchEmbedding.version"
+      }
+    ]
+  }
+}

@@ -75,7 +75,17 @@ export function familyListingStages(): Document[] {
     {$replaceRoot:{newRoot:{$mergeObjects:['$product',{familyOptionCount:'$count',familyPriceVaries:{$ne:['$minPrice','$maxPrice']}}]}}},
   ];
 }
-export async function retainedProductList(db: Db, query: Query, staff = false) {
+export async function retainedProductList(db: Db, query: Query, staff = false):Promise<Document[]> {
+  if(!staff&&query.q&&process.env.SEARCH_PROVIDER==='atlas'){
+    if(query.offset>=300||query.filter.disabled===true||query.disabledCategory==='true')return [];
+    const {searchService}=await import('../search/runtime.js');
+    const {publicSearchProduct}=await import('../search/search-service.js');
+    const {searchQuerySchema}=await import('@almina/contracts/search');
+    const execution=await searchService(db).search(searchQuerySchema.parse({q:query.q,offset:query.offset,groupFamilies:String(query.groupFamilies??false),limit:Math.min(30,query.limit),sort:query.sort,
+      ...(query.filter.category?{category:query.filter.category}:{}),...(query.filter.featured===undefined?{}:{featured:String(query.filter.featured)}),...(query.filter.stock===undefined?{}:{stock:query.filter.stock}),...(query.inStock===undefined?{}:{inStock:String(query.inStock)}),
+      ...(query.minPrice===undefined?{}:{minPrice:query.minPrice}),...(query.maxPrice===undefined?{}:{maxPrice:query.maxPrice}),...(query.filter.sale?{offers:'true'}:{})}));
+    return execution.candidates.filter(candidate=>query.filter.disabled===undefined||candidate.product.disabled===query.filter.disabled).slice(query.offset,query.offset+query.limit).flatMap(candidate=>{const product=publicSearchProduct(candidate.product);return product?[product]:[];});
+  }
   return db.collection('products').aggregate([{ $match: match(query, staff) }, ...categoryJoin(staff, query.disabledCategory),
     ...(!query.groupFamilies && (query.sort === 'price-asc' || query.sort === 'price-desc') ? [{$set:{_familySortPrice:{$cond:[{$and:[{$eq:['$sale',true]},{$isNumber:'$salePrice'},{$gte:['$salePrice',0]},{$lte:['$salePrice','$price']}]},'$salePrice','$price']}}}] : []),
     ...(query.groupFamilies&&!staff?familyListingStages():[]),

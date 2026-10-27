@@ -1,4 +1,5 @@
 import 'server-only';
+import {searchProducts,type SearchMetadata} from './search';
 import { cache } from 'react';
 import { getWebEnvironment } from './env';
 import { readCategory, readProduct, objectId, publicId, slugIdentity, type Product } from '../catalog/model';
@@ -33,8 +34,16 @@ export async function getCategory(identity: string) {
   // Identity/visibility and cart checks bypass the presentation cache.
   return (await getFreshCategories()).find(category => category._id === identity) ?? null;
 }
-export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string; inStock?: boolean; minPrice?: number; maxPrice?: number; sort?: 'relevance'|'price-asc'|'price-desc'|'name' } = {}) {
-  const page = Math.max(1, Math.min(1000, options.page ?? 1));
+export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string; inStock?: boolean; minPrice?: number; maxPrice?: number; sort?: 'relevance'|'price-asc'|'price-desc'|'name'; brand?:string;locale?:'en'|'ar';literal?:boolean;form?:string;size?:string;audience?:string;bodyArea?:string;concern?:string;feature?:string } = {}) {
+  const page = Math.max(1, Math.min(options.q?10:1000, options.page ?? 1));
+  if(options.q){
+    try{return await searchProducts({q:options.q.slice(0,80),page,locale:options.locale??'en',sort:options.sort??'relevance',
+      ...(options.category&&objectId.test(options.category)?{category:options.category}:{}),...(options.brand?{brand:options.brand}:{}),
+      ...Object.fromEntries((['form','size','audience','bodyArea','concern','feature'] as const).flatMap(key=>options[key]?[[key,options[key]]]:[])),
+      ...(options.featured?{featured:'true'}:{}),...(options.offers?{offers:'true'}:{}),...(options.inStock===undefined?{}:{inStock:String(options.inStock)}),
+      ...(options.minPrice===undefined?{}:{minPrice:options.minPrice}),...(options.maxPrice===undefined?{}:{maxPrice:options.maxPrice}),...(options.literal?{literal:'true'}:{})});}
+    catch{return {products:[] as Product[],hasNext:false,page,search:undefined as SearchMetadata|undefined,searchUnavailable:true};}
+  }
   const filter: Record<string, boolean | string> = { disabled: false };
   if (options.category && objectId.test(options.category)) filter.category = options.category;
   if (options.offers) filter.sale = true;
@@ -44,13 +53,9 @@ export async function getProducts(options: { page?: number; category?: string; o
   if (options.minPrice !== undefined) params.set('minPrice', String(options.minPrice));
   if (options.maxPrice !== undefined) params.set('maxPrice', String(options.maxPrice));
   if (options.sort) params.set('sort', options.sort);
-  if (options.q) {
-    // The hardened legacy API treats q as literal text and escapes it on the server.
-    params.set('q', options.q.slice(0, 80));
-    params.set('filter', JSON.stringify([filter]));
-  } else params.set('filter', JSON.stringify(filter));
-  const raw = array(await legacyRead(`/api/products${options.q ? '/search' : ''}?${params}`));
-  return { products: raw.map(readProduct).filter(product => product !== null), hasNext: raw.length === 30, page };
+  params.set('filter', JSON.stringify(filter));
+  const raw = array(await legacyRead(`/api/products?${params}`));
+  return { products: raw.map(readProduct).filter(product => product !== null), hasNext: raw.length === 30, page,search:undefined as SearchMetadata|undefined,searchUnavailable:false };
 }
 const getProductDetail = cache(async (id: string) => {
   if (!publicId.test(id)) return {product:null,variants:[] as Product[],related:[] as Product[]};

@@ -1,3 +1,4 @@
+import {searchFixtureResponse} from './search-fixture.mjs';
 import { createServer } from 'node:http';
 import { fixtureHealth } from './e2e-ownership.mjs';
 import { createServer as createSecureServer } from 'node:https';
@@ -37,6 +38,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       res.end('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" fill="#e6f6f3"/><text x="30" y="120">Daily Care</text></svg>'); return;
     }
     res.setHeader('Content-Type', 'application/json');
+    if(url.pathname==='/api/v1/search'||url.pathname==='/api/v1/search/suggest'){res.end(JSON.stringify(searchFixtureResponse(url,products,category)));return;}
     if (url.pathname === '/api/v1/catalog/sitemap') {
       const kind = url.searchParams.get('kind');
       res.end(JSON.stringify({ requestId: '00000000-0000-4000-8000-000000000000', data: {
