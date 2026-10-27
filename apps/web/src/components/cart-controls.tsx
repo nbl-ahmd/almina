@@ -6,6 +6,7 @@ import { Icon } from './icon';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
+import { attributeCart } from '../lib/search/attribution';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
 export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel, locale = 'en' }: { id: string; stock: number; quantityPicker?: boolean; name?: string; priceLabel?: string; locale?: Locale }) {
   const [quantity, setQuantity] = useState(1);
@@ -24,6 +25,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
       if (JSON.stringify(lines) !== JSON.stringify(storedCart())) { setMessage(u(locale,"Your cart changed. Please try again.")); return; }
       saveCart([...lines.filter(line => line.id !== id), { id, quantity: previous + quantity }]);
       recordCommerceEvent('cart_updated');
+      attributeCart(id);
       setMessage(u(locale,"Added to cart."));
     } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
     finally { setPending(false); }

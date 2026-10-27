@@ -1,4 +1,5 @@
 'use client';
+import {searchAttributions,searchUsageAllowed,reportSearchEvent} from '../lib/search/attribution';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { NativeSelect } from './ui/native-select';
@@ -50,7 +51,7 @@ class InputError extends Error {
 }
 async function send(path: string, body: unknown) {
   let response: Response;
-  try { response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
+  try { response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1',...(searchUsageAllowed()?{'X-Search-Consent':'1'}:{}) },
     credentials: 'same-origin', cache: 'no-store', body: JSON.stringify(body), signal: AbortSignal.timeout(20000) }); }
   catch { throw new CheckoutFailure('SERVICE_UNAVAILABLE', false); }
   let data: unknown;
@@ -194,11 +195,13 @@ export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
         if (JSON.stringify(current) !== JSON.stringify({ customer: reviewed!.customer, items: reviewed!.items, ...(reviewed!.voucherCode?{voucherCode:reviewed!.voucherCode}:{} ) })) {
           setReviewed(null); throw new InputError('CART_CHANGED');
         }
-        input = { ...current, acceptedQuoteHash: reviewed!.quoteHash, idempotencyKey: crypto.randomUUID() };
+        const attribution=searchAttributions().filter(row=>current.items.some(item=>item.productId===row.productId));
+        input = { ...current,...(attribution.length?{searchAttribution:attribution}:{}), acceptedQuoteHash: reviewed!.quoteHash, idempotencyKey: crypto.randomUUID() };
         // Persist exact intent before any submission. Failed storage means no order request.
         sessionStorage.setItem(pendingKey, JSON.stringify(input));
         setAttempt(input);
       }
+      for(const row of input.searchAttribution??[])reportSearchEvent({searchId:row.searchId,event:'search_checkout',items:[{productId:row.productId,position:row.position}]});
       submitted = true;
       const committed = checkoutDtoSchema.parse(await send('/api/checkout', input));
       setResult(committed); setAttempt(null); setReviewed(null);

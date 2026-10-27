@@ -1,3 +1,5 @@
+import { installSearchRoutes } from '../modules/search/routes.js';
+import type { SearchDiagnostic } from '../modules/search/search-types.js';
 import {installMarketingRoutes} from '../modules/marketing/routes.js';
 import { resolveLegacyMapping,legacyPath } from '../modules/media/legacy-migration.js';
 import { installWholesaleRoutes } from '../modules/wholesale/routes.js';
@@ -50,7 +52,7 @@ import { reverseLocationDtoSchema, reverseLocationInputSchema } from '@almina/co
 import { createReverseLocationService, type LocationOptions } from '../modules/location/reverse.js';
 
 export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], development = false, observeCatalogQuery?: CatalogQueryObserver, metrics?: OperationalMetrics,
-  onOrderCreated?: (order: { id: string; orderId: string }) => void, locationOptions?: LocationOptions) {
+  onOrderCreated?: (order: { id: string; orderId: string }) => void, locationOptions?: LocationOptions, observeSearch?:(measurement:SearchDiagnostic)=>void) {
   const router = Router();
   const origins = typeof webOrigin === 'string' ? [webOrigin] : [...webOrigin];
   const catalog = createCatalogRepository(getDb, observeCatalogQuery);
@@ -76,6 +78,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     if (admin && user.role !== 'admin') throw new HttpError(403, 'FORBIDDEN');
     return user;
   }
+  installSearchRoutes(router,getDb,origins,identity,observeSearch);
   function read(route: string, handler: RequestHandler) {
     router.get(route, (req, _res, next) => { noBody(req); next(); }, handler);
     router.all(route, (_req, res, next) => { res.set('Allow', 'GET, HEAD'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });

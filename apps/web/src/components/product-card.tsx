@@ -78,7 +78,7 @@ export async function ProductCard({
     : 0;
   const brand = product.brand || product.familyBrand;
   return (
-    <article className="product-card group flex min-w-0 flex-col rounded-2xl border border-border bg-white p-3 transition-[border-color,box-shadow] duration-200 hover:border-ink/20 hover:shadow-[0_18px_40px_-32px_rgba(21,23,26,0.35)] md:p-3">
+    <article data-product-id={product._id} className="product-card group flex min-w-0 flex-col rounded-2xl border border-border bg-white p-3 transition-[border-color,box-shadow] duration-200 hover:border-ink/20 hover:shadow-[0_18px_40px_-32px_rgba(21,23,26,0.35)] md:p-3">
       <Link
         href={productHref(product)}
         aria-label={locale === "en" ? `View ${product.name}` : `عرض ${product.name}`}

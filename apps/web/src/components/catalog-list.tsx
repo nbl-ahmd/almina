@@ -1,3 +1,5 @@
+import {SearchSummary} from './search-summary';
+import {SearchJourney} from './search-journey';
 import { CatalogSort } from './catalog-sort';
 import { GrowthActivity } from './growth-activity';
 
@@ -20,33 +22,41 @@ export function scalar(value: string | string[] | undefined) { return typeof val
 export async function CatalogList({ title, params, offers = false, category, parents = [] }: { title: string; params: SearchParams; offers?: boolean; category?: string; parents?: { name: string; path: string }[] }) {
   const locale = await getLocale();
   const pageValue = Number(scalar(params.page));
-  const page = Number.isInteger(pageValue) && pageValue > 0 && pageValue <= 1000 ? pageValue : 1;
+  const page = Number.isInteger(pageValue) && pageValue > 0 && pageValue <= (scalar(params.q)?10:1000) ? pageValue : 1;
   const q = scalar(params.q).trim().slice(0, 80);
+  const brand=scalar(params.brand).trim().slice(0,100),literal=scalar(params.literal)==='true';
   const selected = category ?? scalar(params.category);
   const inStock = scalar(params.inStock) === 'true' ? true : undefined;
   const amount = (key: string) => { const raw=scalar(params[key]); return /^\d{1,6}(?:\.\d{1,2})?$/.test(raw) ? Number(raw) : undefined; };
   const minPrice=amount('minPrice'), maxPrice=amount('maxPrice');
   const sortValue=scalar(params.sort);
   const sort=['price-asc','price-desc','name'].includes(sortValue) ? sortValue as 'price-asc'|'price-desc'|'name' : 'relevance';
-  const activeFilters=Number(Boolean(q))+Number(Boolean(selected))+Number(Boolean(inStock))+Number(minPrice!==undefined)+Number(maxPrice!==undefined)+Number(sort!=='relevance');
+  const extraFilters=Object.fromEntries(['form','size','audience','bodyArea','concern','feature'].flatMap(key=>scalar(params[key])?[[key,scalar(params[key]).slice(0,100)]]:[]));
+  const activeFilters=Number(Boolean(brand))+Object.keys(extraFilters).length+Number(Boolean(q))+Number(Boolean(selected))+Number(Boolean(inStock))+Number(minPrice!==undefined)+Number(maxPrice!==undefined)+Number(sort!=='relevance');
   const sortQuery: Record<string,string> = {};
   if(q)sortQuery.q=q;
+  if(brand)sortQuery.brand=brand;
+  if(literal)sortQuery.literal='true';
+  Object.assign(sortQuery,extraFilters);
   if(selected)sortQuery.category=selected;
   if(inStock)sortQuery.inStock='true';
   if(minPrice!==undefined)sortQuery.minPrice=String(minPrice);
   if(maxPrice!==undefined)sortQuery.maxPrice=String(maxPrice);
   function removeFilter(key:string){const query=new URLSearchParams(sortQuery);query.delete(key);if(sort!=='relevance')query.set('sort',sort);return query.size?`?${query}`:'?';}
-  const chips=[...(q?[{key:'q',label:q}]:[]),...(!category&&selected?[{key:'category',label:''}]:[]),...(inStock?[{key:'inStock',label:u(locale,'In stock')}]:[]),...(minPrice!==undefined?[{key:'minPrice',label:`${locale==='ar'?'من':'From'} AED ${minPrice}`}]:[]),...(maxPrice!==undefined?[{key:'maxPrice',label:`${locale==='ar'?'إلى':'To'} AED ${maxPrice}`}]:[])];
+  const chips=[...(brand?[{key:'brand',label:brand}]:[]),...Object.entries(extraFilters).map(([key,label])=>({key,label})),...(q?[{key:'q',label:q}]:[]),...(!category&&selected?[{key:'category',label:''}]:[]),...(inStock?[{key:'inStock',label:u(locale,'In stock')}]:[]),...(minPrice!==undefined?[{key:'minPrice',label:`${locale==='ar'?'من':'From'} AED ${minPrice}`}]:[]),...(maxPrice!==undefined?[{key:'maxPrice',label:`${locale==='ar'?'إلى':'To'} AED ${maxPrice}`}]:[])];
   const editorial = category ? categoryContent(title) : null;
-  const [result, categories] = await Promise.all([getProducts({ page, q, offers, category: selected, ...(inStock!==undefined?{inStock}:{}), ...(minPrice!==undefined?{minPrice}:{}), ...(maxPrice!==undefined?{maxPrice}:{}), sort }), getCategories()]);
+  const [result, categories] = await Promise.all([getProducts({ page, q, offers,locale,brand,literal,...extraFilters, category: selected, ...(inStock!==undefined?{inStock}:{}), ...(minPrice!==undefined?{minPrice}:{}), ...(maxPrice!==undefined?{maxPrice}:{}), sort }), getCategories()]);
   function pageHref(next: number) {
     const query = new URLSearchParams();
     if (q) query.set('q', q);
+    if(brand)query.set('brand',brand);
+    if(literal)query.set('literal','true');
     if (selected && !category) query.set('category', selected);
     if (inStock) query.set('inStock','true');
     if (minPrice !== undefined) query.set('minPrice',String(minPrice));
     if (maxPrice !== undefined) query.set('maxPrice',String(maxPrice));
     if (sort !== 'relevance') query.set('sort',sort);
+    for(const [key,value] of Object.entries(extraFilters))query.set(key,value);
     query.set('page', String(next));
     return `?${query}`;
   }
@@ -60,10 +70,10 @@ export async function CatalogList({ title, params, offers = false, category, par
       {category ? <input type="hidden" name="category" value={category} />:null}
       <Field orientation="horizontal" className="min-h-11"><Checkbox id="catalog-list-field-3" name="inStock" value="true" defaultChecked={inStock} /><FieldLabel htmlFor="catalog-list-field-3" className="min-h-11 flex-1 cursor-pointer">{u(locale,"In stock")}</FieldLabel></Field>
       <fieldset className="grid grid-cols-2 gap-2"><legend className="mb-2 text-sm font-semibold text-ocean">{u(locale,"Price range (AED)")}</legend><Field><FieldLabel htmlFor="catalog-list-field-4">{u(locale,"From")}</FieldLabel><Input id="catalog-list-field-4" className="mt-1 w-full" type="number" inputMode="decimal" placeholder="Min" name="minPrice" min="0" max="999999" step="0.01" defaultValue={minPrice} /></Field><Field><FieldLabel htmlFor="catalog-list-field-5">{u(locale,"To")}</FieldLabel><Input id="catalog-list-field-5" className="mt-1 w-full" type="number" inputMode="decimal" placeholder="Max" name="maxPrice" min="0" max="999999" step="0.01" defaultValue={maxPrice} /></Field></fieldset>
-      <input type="hidden" name="sort" value={sort} />
+      <input type="hidden" name="sort" value={sort} />{Object.entries(extraFilters).map(([key,value])=><input key={key} type="hidden" name={key} value={value}/>)}{brand?<input type="hidden" name="brand" value={brand}/>:null}{literal?<input type="hidden" name="literal" value="true"/>:null}
       <Button type="submit">{u(locale,"Apply filters")}</Button>
       <div className="hidden flex-col gap-1 border-t border-border pt-4 lg:flex"><h3 className="mb-2 text-sm font-semibold text-ocean">{u(locale,"Explore categories")}</h3>{categories.map(cat=><Link className="flex min-h-9 items-center gap-2 text-xs text-ink/70" href={categoryHref(cat)} key={cat._id}><span className="size-1.5 shrink-0 rounded-full bg-border" />{cat.name}</Link>)}</div></FieldGroup></form></details>
-      <div className="catalog-results min-w-0"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-muted">{locale==='ar'?`عرض ${result.products.length} منتجات`:`${result.products.length} products on this page`}</span><CatalogSort key={`${q}:${selected}:${sort}`} sort={sort} query={sortQuery} locale={locale} /></div>{chips.length?<nav aria-label={locale==='ar'?'عوامل التصفية المطبقة':'Applied filters'} className="mb-4 flex flex-wrap gap-2">{chips.map(chip=><Link key={chip.key} href={removeFilter(chip.key)} aria-label={`${locale==='ar'?'إزالة':'Remove'} ${chip.label || categories.find(cat=>cat._id===selected)?.name || u(locale,'Category')}`} className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full bg-care-mint px-3 text-xs text-ink"><span className="truncate">{chip.label || categories.find(cat=>cat._id===selected)?.name || u(locale,'Category')}</span><Icon name="close" /></Link>)}</nav>:null}{q ? <p className="catalog-result-label mb-4 text-sm text-ocean">{locale === "en" ? `Results for “${q}”` : `نتائج البحث عن «${q}»`}</p>:null}{offers && !result.products.length && !q && !selected ? <div className="rounded-2xl border border-border bg-white p-6 text-center md:p-10"><h2 className="mb-3 text-2xl font-semibold">{u(locale,"No current offers")}</h2><p className="mb-5 text-sm text-muted">{u(locale,"There are no active product offers to show right now. Explore the full range for your everyday essentials.")}</p><Link className="button rounded-full text-sm" href="/categories">{u(locale,"Browse categories")}<Icon name="arrow" /></Link></div> : <ProductGrid products={result.products} />}
+      <div className="catalog-results min-w-0"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-muted">{locale==='ar'?`عرض ${result.products.length} منتجات`:`${result.products.length} products on this page`}</span><CatalogSort key={`${q}:${selected}:${sort}`} sort={sort} query={sortQuery} locale={locale} /></div>{chips.length?<nav aria-label={locale==='ar'?'عوامل التصفية المطبقة':'Applied filters'} className="mb-4 flex flex-wrap gap-2">{chips.map(chip=><Link key={chip.key} href={removeFilter(chip.key)} aria-label={`${locale==='ar'?'إزالة':'Remove'} ${chip.label || categories.find(cat=>cat._id===selected)?.name || u(locale,'Category')}`} className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full bg-care-mint px-3 text-xs text-ink"><span className="truncate">{chip.label || categories.find(cat=>cat._id===selected)?.name || u(locale,'Category')}</span><Icon name="close" /></Link>)}</nav>:null}{q ? <p className="catalog-result-label mb-4 text-sm text-ocean">{locale === "en" ? `Results for “${q}”` : `نتائج البحث عن «${q}»`}</p>:null}{q?<SearchSummary result={result.search} query={q} locale={locale} unavailable={result.searchUnavailable} filters={{...sortQuery,sort}}/>:null}{offers && !result.products.length && !q && !selected ? <div className="rounded-2xl border border-border bg-white p-6 text-center md:p-10"><h2 className="mb-3 text-2xl font-semibold">{u(locale,"No current offers")}</h2><p className="mb-5 text-sm text-muted">{u(locale,"There are no active product offers to show right now. Explore the full range for your everyday essentials.")}</p><Link className="button rounded-full text-sm" href="/categories">{u(locale,"Browse categories")}<Icon name="arrow" /></Link></div> : result.search?<SearchJourney key={result.search.searchId} searchId={result.search.searchId} query={q} locale={locale} page={page} products={result.products.map(p=>p._id)}><ProductGrid products={result.products}/></SearchJourney>:<ProductGrid products={result.products} />}
         <div className="mt-5 flex items-start gap-3 rounded-2xl border border-border bg-page p-4 text-xs leading-relaxed text-muted"><Icon name="phone" /><p className="m-0">{u(locale,"Need help finding a product? ")}<Link className="font-semibold text-teal hover:text-teal" href="/contact">{u(locale,"Contact Al Mina Pharmacy")}</Link>{u(locale," for product and delivery enquiries.")}</p></div>
         {editorial ? <section className="mt-6 rounded-2xl border border-border bg-white p-5 md:p-7"><h2 className="mb-3 text-xl">{locale === "en" ? `Choosing your ${title.toLowerCase()} essentials` : `اختيار احتياجاتك من ${title}`}</h2><p className="max-w-prose text-sm leading-7 text-muted">{editorial.body}</p><nav className="my-4 flex flex-wrap gap-2" aria-label={u(locale,"Explore related searches")}>{editorial.topics.map(topic=><Link className="inline-flex min-h-11 items-center rounded-full border border-border bg-white px-4 text-xs transition-colors hover:border-ink" href={'/search?'+new URLSearchParams({q:topic,category:category!})} key={topic}>{topic}</Link>)}</nav>{editorial.faqs.map(faq=><details key={faq.question} className="border-t border-border py-3"><summary className="cursor-pointer text-sm font-medium">{faq.question}</summary><p className="mt-3 mb-0 text-sm leading-7 text-muted">{faq.answer}</p></details>)}</section> : null}
         <nav className="catalog-pagination mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border py-5 text-xs text-ocean" aria-label={u(locale,"Product pages")}><span>{locale === "en" ? `Page ${page} · ${result.products.length} products shown` : `الصفحة ${page} · عرض ${result.products.length} منتجات`}</span><div className="flex items-center gap-2">{page>1 ? <Link className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface px-4" href={pageHref(page-1)}>{u(locale,"Previous page")}</Link>:null}<span className="rounded-full bg-ink px-4 py-2 font-semibold text-white">{page}</span>{result.hasNext ? <Link className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface px-4" href={pageHref(page+1)}>{u(locale,"Next page ")}<Icon name="arrow" /></Link>:null}</div></nav>

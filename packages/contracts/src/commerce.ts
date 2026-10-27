@@ -1,3 +1,4 @@
+import {searchAttributionSchema} from './search';
 import { z } from 'zod';
 
 const id = z.string().regex(/^[a-fA-F0-9]{24}$/).transform(value => value.toLowerCase());
@@ -13,7 +14,7 @@ export const customerInputSchema = z.object({
 const items = z.array(z.object({ productId: id, quantity: z.number().int().min(1).max(1000) }).strict()).min(1).max(100);
 export const quoteInputSchema = z.object({ customer: customerInputSchema, items, voucherCode:z.string().regex(/^AM-[A-F0-9]{24}$/).optional() }).strict();
 // Optional only for retained legacy clients; the Next gateway requires acknowledgment.
-export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid(), acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
+export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid(), searchAttribution:searchAttributionSchema.optional(), acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
 export const statusInputSchema = z.object({ status: orderStatusSchema,
   billno: z.string().regex(/^\d{5,30}$/).optional(), billamount: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER / 100).refine(value => /^\d+(\.\d{1,2})?$/.test(String(value))).optional(),
 }).strict();

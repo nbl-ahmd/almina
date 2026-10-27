@@ -1,3 +1,4 @@
+import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
 import { productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
 import { z } from "zod";
 import { operationsSnapshotSchema } from '@almina/contracts';
@@ -26,6 +27,7 @@ export const sections = [
   "catalog-import",
   "image-review",
   "growth",
+  "search",
   "wholesale",
   "marketing",
 ] as const;
@@ -38,6 +40,7 @@ export function canVisit(role: Identity["role"], section: string) {
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET','search','admin'],['GET','search/test','admin'],...['synonyms','rules','enrichment','query'].map(kind=>['POST','search/'+kind,'admin'] as [string,string,'admin']),
   ['GET', 'image-review/publication', 'admin'],
   ['POST', 'image-review/publication/start', 'admin'], ['POST', 'image-review/publication/resume', 'admin'], ['POST', 'image-review/publication/pause', 'admin'],
   ['GET', 'image-review/uploads/[a-f0-9]{64}', 'admin'],
@@ -113,6 +116,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
   if (new Set(input.keys()).size !== [...input.keys()].length)
     throw new Error("Invalid query");
   const values = Object.fromEntries(input);
+  if(path==='search/test'){const query=searchQuerySchema.parse(values);return new URLSearchParams(Object.entries(query).filter(([,value])=>value!==undefined).map(([key,value])=>[key,String(value)])).toString();}
   if (path === 'image-review' || path === 'image-review/export') {
     const parsed = (path.endsWith('/export') ? imageReviewExportQuerySchema : imageReviewListQuerySchema).parse(values);
     return new URLSearchParams(Object.entries(parsed).map(([key, value]) => [key, String(value)])).toString();
@@ -316,6 +320,8 @@ export function project(value: unknown): unknown {
   return value;
 }
 export function projectAdminResponse(path: string, value: unknown): unknown {
+  if(path==='search'||path==='search/test'){const body=z.object({data:path==='search'?searchAdminSchema:searchTestSchema,requestId:z.uuid()}).strict().parse(value);return body.data;}
+  if(/^search\/(synonyms|rules|enrichment|query)$/.test(path))return z.object({data:z.object({saved:z.literal(true)}).strict(),requestId:z.uuid()}).strict().parse(value).data;
   if (path === 'image-review' || path.startsWith('image-review/')) return projectImageReviewResponse(path, value);
   return path === 'operations' ? operationsSnapshotSchema.parse(value) : project(value);
 }

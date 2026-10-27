@@ -37,7 +37,7 @@ export async function sessionHeader() {
 export async function upstream(path: string, init: RequestInit = {}) {
   const env = getWebEnvironment();
   try {
-    return await fetch(`${env.LEGACY_API_ORIGIN}/api/${path}`, {
+    return await fetch(path==='search'||path.startsWith('search/')?`${env.API_ORIGIN}/api/v1/admin/${path}`:`${env.LEGACY_API_ORIGIN}/api/${path}`, {
       ...init,
       cache: "no-store",
       redirect: "manual",

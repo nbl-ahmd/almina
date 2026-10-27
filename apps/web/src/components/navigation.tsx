@@ -259,7 +259,7 @@ export function Footer({
           </nav>
           {telemetryEnabled ? (
             <div className="px-5 md:px-10">
-              <UsagePreferences />
+              <UsagePreferences locale={locale}/>
             </div>
           ) : null}
           <div className="flex flex-col gap-4 border-t border-border bg-page px-5 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between md:px-10">

@@ -1,3 +1,5 @@
+import {verifiedSearchAttribution} from '../search/analytics.js';
+import {readSearchEnvironment} from '../search/config.js';
 import { visibleToRetail, wholesaleBusinessFields } from '@almina/contracts';
 import { prepareWholesaleProducts, wholesaleIdentity } from '../wholesale/repository.js';
 type WholesaleCustomer={id:string;email:string};
@@ -190,6 +192,17 @@ export function createCommerceService(getDb: () => Promise<Db>) {
               deliveryFee: totals.deliveryFeeMinor / 100, totalAmount: totals.totalMinor / 100 },
             cartItems: input.items.map(item => ({ _id: new ObjectId(item.productId), quantity: item.quantity })) };
           await db.collection('orders').insertOne(order, { session });
+          // Anonymous attribution participates in the same commit; no query/customer/order identity is copied into analytics.
+          // It cannot alter the commerce fingerprint, price, stock, totals or replay behavior.
+          if(!wholesale&&input.searchAttribution?.length&&readSearchEnvironment(process.env).SEARCH_ANALYTICS_ENABLED){
+            const attribution=await verifiedSearchAttribution(db,input.searchAttribution,input.items.map(item=>item.productId),session);
+            for(const row of attribution){const line=totals.lines.find(item=>item.productId===row.productId)!;
+              const receipt=createHash('sha256').update(`${_id}:${row.searchId}:${row.productId}`).digest('hex');
+              await db.collection<Document&{_id:string}>('search_events').insertOne({_id:receipt,event:'search_purchase',searchId:row.searchId,productId:row.productId,position:row.position,revenueMinor:line.lineTotalMinor,createdAt:now,expiresAt:new Date(now.getTime()+30*86400000)}, {session});
+              await db.collection<Document&{_id:string}>('search_sessions').updateOne({_id:row.searchId},{$addToSet:{events:'search_purchase'},$inc:{revenueMinor:line.lineTotalMinor}},{session});
+            }
+          }
+
           await db.collection<Document & { _id: string }>('order_outbox').insertOne({ _id: `confirmation:${_id}`, orderId: _id, type: 'confirmation',
             state: 'pending', attempts: 0, createdAt: now }, { session });
           outcome = checkoutResult(order, false);
