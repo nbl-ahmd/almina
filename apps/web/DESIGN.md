@@ -265,3 +265,24 @@ Campaigns are manually navigated; uploaded artwork is contained rather than crop
 - **Don't** add hard offset shadows or ornamental heading kickers to this minimal storefront.
 
 Button hierarchy follow-up: defaults use ink/white, product-list add actions use white outlined buttons, and explicit coral emphasis is reserved for the campaign CTA and focused PDP purchase action. Budget/personal-care shelves prefer distinct items but retain overlap rather than disappearing; a single eligible product or brand can render its section.
+
+### Catalogue filters
+
+The catalogue refinement panel uses a 272px desktop rail, one visible heading,
+quiet mint count, 48px white controls, 12px corners and green-tinted control
+boundaries. Filter/sort controls reference the scoped control-border variables
+explicitly because inherited inline Tailwind aliases resolve the older slate
+values. This is a local compatibility override; administration is unchanged.
+
+Price bounds keep a semantic fieldset/legend with an explicit zero border,
+padding and margin: global Preflight remains intentionally off. Two equal-width
+columns hold labelled From/To numeric fields, localized placeholders and tabular
+numerals. A small client form validates reversed bounds through native browser
+validation; the catalogue and its data fetching stay server-rendered.
+
+Below 1024px, a 56px inline disclosure uses a filter icon, mint count and static
+state chevron. The open panel starts with fields, with Apply and Clear beside
+each other; GET navigation closes the panel to reveal results, and reopening
+retains applied values. Desktop has the heading/reset row and a collapsed
+secondary category list. Price bounds count as one refinement; ordering is not
+counted. No scroll animation or added motion dependency is used on this task UI.
