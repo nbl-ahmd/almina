@@ -7,7 +7,7 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server-core';
 import { MongoClient, ObjectId } from 'mongodb';
 import { hash } from 'bcryptjs';
 import { imageIdentitySchema } from '@almina/contracts';
-import { stageImageReview } from '../../apps/api/src/modules/media/image-review.js';
+import { stageImageReview, listImageReviews } from '../../apps/api/src/modules/media/image-review.js';
 import { imagePublicationWorker } from '../../apps/api/src/modules/media/image-review-publication.js';
 import { indexPlan } from '../../apps/api/src/database/indexes.js';
 import { assertExclusiveLoopbackPorts } from './e2e-ownership.mjs';
@@ -33,6 +33,12 @@ await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun
   labelText: ['ACM', 'NOVOPHANE', 'ENERGIZING SHAMPOO', '200mL'], flags: [], candidateProductIds: ['PD0081'], priorDecision: 'held',
   sourceNote: 'Demonstration of a saved extraction. Product records belong to this disposable database; imports affect only this demo.', extractionReference: 'demo-local-extraction',
 }] }, String(adminId), 'drvxmb0vq');
+// Optional queue for local UX checks; repeated reference photos are clearly demo-only.
+if (process.argv.includes('--review-speed')) {
+  await db.collection('products').insertOne({ product_id: 'PD_DEMO_400', name: 'ACM Novophane Energizing Shampoo 400 ml', brand: 'ACM', productForm: 'Shampoo', packLabel: '400 ml', price: 0, stock: 0, published: false, disabled: true });
+  const reference = (await listImageReviews(db, {}, String(adminId))).items[0]!.source;
+  await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun: 'disposable-speed-demo', catalogueChecksum: 'a'.repeat(64), withdrawals: [], items: Array.from({ length: 3 }, (_, index) => ({ ...reference, assetId: `speed-demo-${index}`, candidateProductIds: index === 2 ? ['PD_DEMO_400', 'PD0081'] : ['PD0081'], sourceNote: 'Disposable speed-review fixture. This queue entry reuses the sample original to test navigation; it is not a new recovered image.' })) }, String(adminId), 'drvxmb0vq');
+}
 const { createLegacyApp } = require('../../backend/app.js');
 const api = createLegacyApp({ development: true, origins: [origin], imageReviewEnabled: true, recoveryCloudName: 'drvxmb0vq', getCommerceDb: async () => db });
 const server = createServer(api) as Server; server.listen(4791, '127.0.0.1');
