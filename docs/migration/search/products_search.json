@@ -8,7 +8,6 @@
         "name": [
           {
             "type": "string",
-            "analyzer": "lucene.standard",
             "multi": {
               "arabic": {
                 "type": "string",
@@ -26,8 +25,7 @@
         ],
         "brand": [
           {
-            "type": "string",
-            "analyzer": "lucene.standard"
+            "type": "string"
           },
           {
             "type": "autocomplete",
@@ -43,8 +41,7 @@
         ],
         "familyBrand": [
           {
-            "type": "string",
-            "analyzer": "lucene.standard"
+            "type": "string"
           },
           {
             "type": "autocomplete",
@@ -64,17 +61,14 @@
           "type": "token"
         },
         "description": {
-          "type": "string",
-          "analyzer": "lucene.standard"
+          "type": "string"
         },
         "summary": {
-          "type": "string",
-          "analyzer": "lucene.standard"
+          "type": "string"
         },
         "productForm": [
           {
-            "type": "string",
-            "analyzer": "lucene.standard"
+            "type": "string"
           },
           {
             "type": "token",
@@ -82,8 +76,7 @@
           }
         ],
         "packLabel": {
-          "type": "string",
-          "analyzer": "lucene.standard"
+          "type": "string"
         },
         "category": {
           "type": "objectId"
@@ -133,8 +126,7 @@
                 "type": "token"
               },
               {
-                "type": "string",
-                "analyzer": "lucene.standard"
+                "type": "string"
               },
               {
                 "type": "autocomplete",
@@ -149,22 +141,18 @@
                 "type": "token"
               },
               {
-                "type": "string",
-                "analyzer": "lucene.standard"
+                "type": "string"
               }
             ],
             "packLabel": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "categoryName": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "aliases": [
               {
-                "type": "string",
-                "analyzer": "lucene.standard"
+                "type": "string"
               },
               {
                 "type": "autocomplete",
@@ -175,36 +163,28 @@
               }
             ],
             "searchKeywords": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "concerns": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "useCases": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "features": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "productKind": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "audience": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "bodyArea": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             },
             "semanticSearchText": {
-              "type": "string",
-              "analyzer": "lucene.standard"
+              "type": "string"
             }
           }
         }

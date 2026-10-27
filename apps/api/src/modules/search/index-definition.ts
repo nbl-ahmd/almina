@@ -1,5 +1,6 @@
 import type { SearchEnvironment } from './config.js';
-const text={type:'string',analyzer:'lucene.standard'};
+// Standard is Atlas's default; omit repeated defaults to fit the M0 definition budget.
+const text={type:'string'};
 const autocomplete={type:'autocomplete',tokenization:'edgeGram',minGrams:2,maxGrams:20,foldDiacritics:true};
 export function searchIndexDefinitions(env:SearchEnvironment){return [
  {name:env.ATLAS_SEARCH_PRODUCT_INDEX,type:'search' as const,definition:{
