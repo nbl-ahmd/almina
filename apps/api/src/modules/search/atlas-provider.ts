@@ -8,7 +8,7 @@ import { normalizeSearch,queryHashInput } from './query-normalizer.js';
 import {searchDocument} from './enrichment.js';
 import { semanticHash,semanticText } from './enrichment.js';
 import type { SearchProvider,RetrievalInput,Candidate } from './search-types.js';
-import type { SearchIntent } from './query-intent.js';
+import { canonicalProductKind,type SearchIntent } from './query-intent.js';
 const paths=['name','searchDocument.normalizedName','searchDocument.normalizedBrand','searchDocument.packLabel','brand','familyBrand','productForm','packLabel','summary','description','searchDocument.categoryName','searchDocument.aliases','searchDocument.searchKeywords','searchDocument.productKind','searchDocument.concerns','searchDocument.useCases','searchDocument.features','searchDocument.audience','searchDocument.bodyArea'];
 export const emptySuggestions=():SearchSuggestions=>({products:[],categories:[],brands:[],collections:[],popular:[],related:[],unavailable:false});
 export function atlasFilters(input:SearchInput,intent:SearchIntent):Document[]{return [
@@ -60,7 +60,7 @@ export class AtlasSearchProvider implements SearchProvider{
  lexicalRank:index+1,matchedFields:exact?['identifier']:Array.isArray(row.highlights)&&row.highlights.length?[...new Set(row.highlights.flatMap((h:Document)=>typeof h.path==='string'?[h.path]:[]))]:['atlas-text']}];});
  }
  async semanticSearch(request:RetrievalInput):Promise<Candidate[]>{
- if(!this.env.SEARCH_SEMANTIC_ENABLED||request.intent.identifier||request.input.literal||request.text.split(' ').length<tuning.semanticMinimumTerms)return [];
+ if(!this.env.SEARCH_SEMANTIC_ENABLED||request.intent.identifier||request.input.literal||request.intent.size||request.intent.quantity||/\d/.test(request.text)||request.text.split(' ').length<tuning.semanticMinimumTerms)return [];
  const cached=await this.db.collection('search_query_vectors').findOne({queryHash:semanticHash(queryHashInput(request.input.q,request.input.locale)),model:this.env.EMBEDDING_MODEL,version:1,expiresAt:{$gt:new Date()}},{maxTimeMS:500,projection:{vector:1}});
  if(!cached||!Array.isArray(cached.vector)||cached.vector.length!==this.env.SEARCH_EMBEDDING_DIMENSIONS||cached.vector.some(v=>typeof v!=='number'||!Number.isFinite(v)))return [];
  const rows=await this.db.collection('products').aggregate<Document>([{$vectorSearch:{index:this.env.ATLAS_VECTOR_PRODUCT_INDEX,path:'searchEmbedding.vector',queryVector:cached.vector,numCandidates:limits.vectorCandidates,limit:limits.vectorLimit,
@@ -68,6 +68,7 @@ export class AtlasSearchProvider implements SearchProvider{
  {$project:{_id:1,score:{$meta:'vectorSearchScore'}}},{$match:{score:{$gte:limits.semanticThreshold}}}],{maxTimeMS:this.time(request.deadline),allowDiskUse:false}).toArray();
  const hydrated=await this.hydrate(rows.map(row=>String(row._id)),request.input,request.intent),byId=new Map(hydrated.map(row=>[String(row._id),row]));
  return rows.flatMap((row,index)=>{const p=byId.get(String(row._id));if(!p||!semanticAllowed(p)||p.searchEmbedding?.model!==this.env.EMBEDDING_MODEL||p.searchEmbedding?.version!==1||p.searchEmbedding?.semanticTextHash!==semanticHash(semanticText(p,String(p.category.name))))return [];
+ if(request.intent.productKind&&canonicalProductKind(String(p.searchDocument?.productKind??''))!==request.intent.productKind)return [];
  if(request.intent.brand&&normalizeSearch(String(p.brand??p.familyBrand))!==normalizeSearch(request.intent.brand))return [];
  if(request.intent.audience&&![request.intent.audience,'all'].includes(String(p.searchDocument?.audience??'')))return [];
  if(request.intent.bodyArea&&p.searchDocument?.bodyArea!==request.intent.bodyArea)return [];

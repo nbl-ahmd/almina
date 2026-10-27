@@ -6,7 +6,7 @@ import { geminiEmbeddings, type EmbeddingProvider } from './embedding-provider.j
 import { semanticHash, semanticText } from './enrichment.js';
 import { queryHashInput } from './query-normalizer.js';
 
-export const semanticSeedQueries = ['cream for dry skin', 'sugar checking machine', 'something gentle for dry sensitive skin', 'baby sun protection', 'daily oral care', 'machine to check sugar at home', 'العناية بالبشرة الجافة'];
+export const semanticSeedQueries = ['cream for dry skin', 'sugar checking machine', 'something gentle for dry sensitive skin', 'baby sun protection', 'daily oral care', 'machine to check sugar at home', 'العناية بالبشرة الجافة', 'gentle daily cleansing', 'keep my skin moisturised', 'clean my teeth'];
 const day = 86400000;
 
 /** Offline, leased work. Shopper HTTP handlers never invoke the embedding provider. */

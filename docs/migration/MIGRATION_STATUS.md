@@ -1,6 +1,6 @@
 ## 2026-10-27 — Semantic embedding refresh prepared
 
-Owner supplied the offline Gemini key; the 768-dimension provider probe passed and initial reviewed-product embeddings are being generated. Added an opt-in leased persistent API worker for bounded product changes, approved query preparation and pre-expiry curated-seed refresh, with five-minute failure backoff and no shopper-request provider calls. Separate worker and semantic flags remain disabled until live vectors, configuration and relevance checks pass. See [semantic activation and verification](SEARCH_2026-10-27.md).
+Owner supplied the offline Gemini key; the 768-dimension provider probe passed and 753 reviewed-product and ten curated query embeddings are prepared. Added an opt-in leased persistent API worker for bounded product changes, approved query preparation and pre-expiry curated-seed refresh, with five-minute failure backoff and no shopper-request provider calls. Live source-service checks confirmed moisturizer/cleansing/dental semantic results and caught/fixed a glucose-vs-BP device substitution. Original-phrase synonym expansion and approved product-kind constraints now fail closed for unpublished/unreviewed glucose monitors. Separate worker and semantic flags remain disabled until the updated CI and deployment pass. See [semantic activation and verification](SEARCH_2026-10-27.md).
 
 ## 2026-10-27 — Atlas search production activation (lexical)
 

@@ -56,6 +56,15 @@ test('search current-document policy, attribution, commerce and RBAC on disposab
  for(const patch of [{searchEmbedding:{model:'different-model',version:1,semanticTextHash:semanticHash(semanticText(searchProducts[0]!,'Personal Care'))}},{productType:'otc'},{contentReviewed:false},{published:false},{audience:'wholesale'},{name:'Changed after embedding'}]){await db.collection('products').updateOne({_id:id},{$set:patch});assert.equal((await current()).length,0);await db.collection('products').replaceOne({_id:id},{...searchProducts[0]!,searchEmbedding:{model:env.EMBEDDING_MODEL,version:1,semanticTextHash:semanticHash(semanticText(searchProducts[0]!,'Personal Care'))}});}
  });
  let searchId='';
+ await t.test('semantic product kinds reject other devices and missing approved kind metadata',async()=>{
+ const q='sugar checking machine',queryHash=semanticHash(queryHashInput(q,'en'));
+ await db.collection('search_query_vectors').insertOne({queryHash,model:env.EMBEDDING_MODEL,version:1,vector:Array(128).fill(0.1),expiresAt:new Date(Date.now()+60000)});
+ const candidates=await provider().semanticSearch({input:searchQuerySchema.parse({q}),text:q,intent:{concerns:[],productKind:'glucose monitor'},expansions:[]});
+ assert.equal(candidates.length,1);assert.equal(candidates[0]!.product.product_id,'PD1950');
+ await db.collection('products').updateOne({_id:searchProducts[5]!._id},{$unset:{searchEnrichment:1}});
+ assert.equal((await provider().semanticSearch({input:searchQuerySchema.parse({q}),text:q,intent:{concerns:[],productKind:'glucose monitor'},expansions:[]})).length,0);
+ await db.collection('products').replaceOne({_id:searchProducts[5]!._id},searchProducts[5]!);
+ });
  await t.test('consented events validate membership and positions, deduplicate and reject query tampering',async()=>{
  const service=new SearchService(provider(),async()=>({synonyms:seedSynonyms,rules:[],brands:['CeraVe']}));const {response}=await service.search(input);searchId=response.searchId;
  await saveSearchContext(db,response);
@@ -140,7 +149,7 @@ test('offline embeddings are leased, bounded, retained safely and refreshed with
    await queue.insertOne({_id:'unapproved',query:'private phrase',state:'review',expiresAt:expiry});await unlock();const texts:string[]=[];
    await processSearchEmbeddings(db,env,{embed:async(text)=>{texts.push(text);return vector;}});
    assert.equal((await queue.findOne({_id:'unapproved'}))!.expiresAt.getTime(),expiry.getTime());assert.ok(!texts.includes('private phrase'));
-   assert.equal(await queue.countDocuments({query:{$in:semanticSeedQueries},expiresAt:{$gt:new Date(Date.now()+86400000)}}),7);
+   assert.equal(await queue.countDocuments({query:{$in:semanticSeedQueries},expiresAt:{$gt:new Date(Date.now()+86400000)}}),semanticSeedQueries.length);
    assert.ok(await db.collection('search_query_vectors').countDocuments({expiresAt:{$gt:new Date(Date.now()+86400000)}})>0);
   });
   await t.test('concurrent review revocation prevents stale vector writes',async()=>{

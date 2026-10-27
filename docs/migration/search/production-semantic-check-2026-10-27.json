@@ -1,0 +1,169 @@
+{
+  "at": "2026-10-27T10:53:33.354Z",
+  "mode": "production-read-only-source-service",
+  "embedded": 753,
+  "queryVectors": 10,
+  "results": [
+    {
+      "query": "sugar checking machine",
+      "unavailable": false,
+      "lexical": 0,
+      "semantic": 0,
+      "ms": 1920.185667,
+      "products": []
+    },
+    {
+      "query": "machine to check sugar at home",
+      "unavailable": false,
+      "lexical": 0,
+      "semantic": 0,
+      "ms": 1050.8635830000003,
+      "products": []
+    },
+    {
+      "query": "something gentle for dry sensitive skin",
+      "unavailable": false,
+      "lexical": 0,
+      "semantic": 0,
+      "ms": 607.43075,
+      "products": []
+    },
+    {
+      "query": "العناية بالبشرة الجافة",
+      "unavailable": false,
+      "lexical": 0,
+      "semantic": 0,
+      "ms": 706.2121670000006,
+      "products": []
+    },
+    {
+      "query": "gentle daily cleansing",
+      "unavailable": false,
+      "lexical": 4,
+      "semantic": 30,
+      "ms": 619.8780830000005,
+      "products": [
+        {
+          "id": "PD1231",
+          "name": "Cetaphil Gentle Cleansing Bar"
+        },
+        {
+          "id": "PD1233",
+          "name": "Cetaphil Gentle Skin Cleanser 473 ml"
+        },
+        {
+          "id": "PD4089",
+          "name": "Mustela Baby Gentle Cleansing Gel 500 ml Twinpack"
+        },
+        {
+          "id": "PD5661",
+          "name": "S M Baby Gentle Wash 200 ml"
+        },
+        {
+          "id": "PD5478",
+          "name": "QV Face Cleanser 250 ml"
+        }
+      ]
+    },
+    {
+      "query": "keep my skin moisturised",
+      "unavailable": false,
+      "lexical": 0,
+      "semantic": 30,
+      "ms": 572.8670000000002,
+      "products": [
+        {
+          "id": "PD1236",
+          "name": "Cetaphil Moisturising Cream 100 g"
+        },
+        {
+          "id": "PD1199",
+          "name": "CeraVe Moisturising Lotion 236 ml"
+        },
+        {
+          "id": "PD1237",
+          "name": "Cetaphil Moisturising Cream 250 g"
+        },
+        {
+          "id": "PD1240",
+          "name": "Cetaphil Moisturising Lotion Pump 236 ml"
+        },
+        {
+          "id": "PD5488",
+          "name": "QV Intens Moist 100 g"
+        }
+      ]
+    },
+    {
+      "query": "clean my teeth",
+      "unavailable": false,
+      "lexical": 0,
+      "semantic": 30,
+      "ms": 597.1792080000005,
+      "products": [
+        {
+          "id": "PD2815",
+          "name": "GUM T/B Sunsatr 583"
+        },
+        {
+          "id": "PD3223",
+          "name": "Jordan Clean Btwn Rubber Sticks Reg"
+        },
+        {
+          "id": "PD2818",
+          "name": "GUM T/B Tec SOFT491"
+        },
+        {
+          "id": "PD2816",
+          "name": "GUM T/B Tec Med C 493"
+        },
+        {
+          "id": "PD2813",
+          "name": "GUM T/B Sensivital 509"
+        }
+      ]
+    },
+    {
+      "query": "PD1197",
+      "unavailable": false,
+      "lexical": 1,
+      "semantic": 0,
+      "ms": 231.43349999999919,
+      "products": [
+        {
+          "id": "PD1197",
+          "name": "CeraVe Moisturising Cream 340 g"
+        }
+      ]
+    },
+    {
+      "query": "cerav",
+      "unavailable": false,
+      "lexical": 23,
+      "semantic": 0,
+      "ms": 420.74624999999924,
+      "products": [
+        {
+          "id": "PD1197",
+          "name": "CeraVe Moisturising Cream 340 g"
+        },
+        {
+          "id": "PD1193",
+          "name": "CeraVe Hydrating Cleanser 473 ml"
+        },
+        {
+          "id": "PD1199",
+          "name": "CeraVe Moisturising Lotion 236 ml"
+        },
+        {
+          "id": "PD1198",
+          "name": "CeraVe Moisturising Cream 454 g"
+        },
+        {
+          "id": "PD1203",
+          "name": "CeraVe Resurfacing Retinol Serum 30 ml"
+        }
+      ]
+    }
+  ]
+}

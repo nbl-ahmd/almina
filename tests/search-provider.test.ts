@@ -51,3 +51,9 @@ test('Atlas query separates fuzzy and synonym operators and keeps identifier mat
  assert.ok(!JSON.stringify(lexicalStage(env,request,'synonym')).includes('fuzzy'));
  const id=lexicalStage(env,{...request,intent:{concerns:[],identifier:'PD1945'}});assert.ok(!JSON.stringify(id).includes('fuzzy'));assert.ok(!JSON.stringify(id).includes('$regex'));
 });
+
+test('customer-language expansion uses the original phrase and carries an unambiguous product kind',async()=>{
+ let observed=false;
+ const p=provider({search:async request=>{if(!observed){observed=true;assert.ok(request.expansions.includes('glucose monitor'));assert.equal(request.intent.productKind,'glucose monitor');}return [];}});
+ await new SearchService(p,configuration).search(searchQuerySchema.parse({q:'machine to check sugar at home'}));assert.equal(observed,true);
+});

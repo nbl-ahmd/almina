@@ -22,7 +22,9 @@ export class SearchService{
  constructor(private provider:SearchProvider,private configuration:()=>Promise<SearchConfiguration>,private observe:(measurement:SearchDiagnostic)=>void=()=>{}){}
  async search(input:SearchInput):Promise<SearchExecution>{
  const started=performance.now(),deadline=Date.now()+4500,searchId=randomUUID(),normalizedQuery=normalizeSearch(input.q),config=await this.configuration();
- const {intent,text}=queryIntent(input,config.brands),expansions=input.literal?[]:expandSynonyms(text,config.synonyms,input.locale);
+ const {intent,text}=queryIntent(input,config.brands),expansions=input.literal?[]:expandSynonyms(input.q,config.synonyms,input.locale);
+ const expandedKinds=[...new Set(expansions.map(q=>queryIntent({q},config.brands).intent.productKind).filter((kind):kind is string=>Boolean(kind)))];
+ if(!intent.productKind&&expandedKinds.length===1)intent.productKind=expandedKinds[0];
  const rules=config.rules.filter(rule=>rule.enabled&&normalizeSearch(rule.query)===normalizedQuery&&(!rule.startsAt||rule.startsAt<=new Date().toISOString())&&(!rule.endsAt||rule.endsAt>new Date().toISOString()));
  const categoryIntent=(config.navigation??[]).find(n=>n.kind==='category'&&n.categoryId&&n.match===normalizedQuery);if(categoryIntent){intent.category=categoryIntent.categoryId;intent.categoryName=categoryIntent.name;}
  const parseMs=performance.now()-started,lexicalStarted=performance.now();
