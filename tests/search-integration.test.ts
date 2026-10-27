@@ -107,3 +107,53 @@ test('search current-document policy, attribution, commerce and RBAC on disposab
  });
  }finally{if(priorAnalytics===undefined)delete process.env.SEARCH_ANALYTICS_ENABLED;else process.env.SEARCH_ANALYTICS_ENABLED=priorAnalytics;await db.dropDatabase();await client.close();}
 });
+
+test('offline embeddings are leased, bounded, retained safely and refreshed without commerce writes', {skip:!uri}, async t => {
+ assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+ const {processSearchEmbeddings,semanticSeedQueries}=await import('../apps/api/src/modules/search/embedding-worker');
+ const client=await new MongoClient(uri!).connect(),db=client.db('search_worker_'+randomUUID().replaceAll('-',''));
+ const env=readSearchEnvironment({SEARCH_PROVIDER:'atlas',SEARCH_SEMANTIC_ENABLED:'true',SEARCH_EMBEDDING_DIMENSIONS:'128'});
+ const vector=Array.from({length:128},()=>1/Math.sqrt(128));
+ const jobs=db.collection<Document&{_id:string}>('search_jobs');
+ const unlock=()=>jobs.updateOne({_id:'embeddings-v1'},{$set:{leaseUntil:new Date(0)}});
+ try {
+  await t.test('one lease protects concurrent workers and each batch embeds at most three products',async()=>{
+   await db.collection('products').insertMany(Array.from({length:5},(_,i)=>({_id:new ObjectId(),name:'Reviewed cream '+i,productType:'general',contentReviewed:true,price:25,stock:8})).concat([{_id:new ObjectId(),name:'Unreviewed medicine',productType:'prescription',contentReviewed:false,price:25,stock:8}]));
+   let release!:()=>void,started!:()=>void;const gate=new Promise<void>(r=>{release=r}),entered=new Promise<void>(r=>{started=r});let calls=0;
+   const first=processSearchEmbeddings(db,env,{embed:async()=>{calls++;if(calls===1){started();await gate;}return vector;}});
+   await entered;assert.equal((await processSearchEmbeddings(db,env,{embed:async()=>{throw Error('Must not run');}})).leased,false);release();
+   const result=await first;assert.equal(result.products,3);assert.equal(result.queries,3);
+   assert.equal(await db.collection('products').countDocuments({'searchEmbedding.vector':{$exists:true}}),3);
+   assert.equal(await db.collection('products').countDocuments({price:25,stock:8}),6);
+   assert.equal(await db.collection('products').countDocuments({productType:'prescription',searchEmbedding:{$exists:true}}),0);
+  });
+  await t.test('subsequent batches resume and stock/price-only edits do not request new document embeddings',async()=>{
+   await unlock();await processSearchEmbeddings(db,env,{embed:async()=>vector});
+   await unlock();await processSearchEmbeddings(db,env,{embed:async()=>vector});
+   assert.equal(await db.collection('products').countDocuments({'searchEmbedding.vector':{$exists:true}}),5);
+   await db.collection('products').updateMany({},{$set:{price:30,stock:7}});await unlock();let documents=0;
+   await processSearchEmbeddings(db,env,{embed:async(_text,kind)=>{if(kind==='document')documents++;return vector;}});assert.equal(documents,0);
+  });
+  await t.test('curated seeds refresh before expiry but shopper review queues keep their retention',async()=>{
+   const queue=db.collection<Document&{_id:string}>('search_query_queue'),expiry=new Date(Date.now()+10000);
+   await queue.updateMany({},{$set:{state:'complete',expiresAt:expiry}});await db.collection('search_query_vectors').updateMany({},{$set:{expiresAt:expiry}});
+   await queue.insertOne({_id:'unapproved',query:'private phrase',state:'review',expiresAt:expiry});await unlock();const texts:string[]=[];
+   await processSearchEmbeddings(db,env,{embed:async(text)=>{texts.push(text);return vector;}});
+   assert.equal((await queue.findOne({_id:'unapproved'}))!.expiresAt.getTime(),expiry.getTime());assert.ok(!texts.includes('private phrase'));
+   assert.equal(await queue.countDocuments({query:{$in:semanticSeedQueries},expiresAt:{$gt:new Date(Date.now()+86400000)}}),7);
+   assert.ok(await db.collection('search_query_vectors').countDocuments({expiresAt:{$gt:new Date(Date.now()+86400000)}})>0);
+  });
+  await t.test('concurrent review revocation prevents stale vector writes',async()=>{
+   await db.collection('products').deleteMany({});await jobs.deleteMany({});
+   const id=new ObjectId();await db.collection('products').insertOne({_id:id,name:'Changing cream',productType:'general',contentReviewed:true,updatedAt:new Date(1)});
+   await processSearchEmbeddings(db,env,{embed:async(_text,kind)=>{if(kind==='document')await db.collection('products').updateOne({_id:id},{$set:{contentReviewed:false,updatedAt:new Date(2)}});return vector;}});
+   assert.equal((await db.collection('products').findOne({_id:id}))!.searchEmbedding,undefined);
+  });
+  await t.test('provider failure backs off durably and leaves approved work retryable',async()=>{
+   await jobs.deleteMany({});await db.collection('search_query_queue').updateMany({},{$set:{state:'pending'}});await db.collection('search_query_vectors').deleteMany({});
+   await assert.rejects(processSearchEmbeddings(db,env,{embed:async()=>{throw Error('sensitive provider failure');}}),/Background search embedding batch failed/);
+   const job=await jobs.findOne({_id:'embeddings-v1'});assert.equal(job!.state,'retry');assert.ok(job!.leaseUntil.getTime()>Date.now()+240000);assert.equal(job!.owner,undefined);
+   assert.equal((await processSearchEmbeddings(db,env,{embed:async()=>{throw Error('Must not run');}})).leased,false);
+  });
+ } finally {await db.dropDatabase();await client.close();}
+});

@@ -46,3 +46,5 @@ export { retentionWorker } from './modules/growth/retention.js';
 export { prepareEmailStorage } from './modules/notifications/storage.js';
 
 export {marketingWorker} from './modules/marketing/worker.js';
+
+export { searchEmbeddingWorker } from './modules/search/embedding-worker.js';

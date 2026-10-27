@@ -5,6 +5,7 @@ export function readSearchEnvironment(source:EnvironmentSource){
   const parsed=z.object({SEARCH_PROVIDER:z.enum(['legacy','atlas']).default('legacy'),
     ATLAS_SEARCH_PRODUCT_INDEX:z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/).default('products_search'),
     ATLAS_VECTOR_PRODUCT_INDEX:z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/).default('products_vector'),
+    SEARCH_EMBEDDING_WORKER_ENABLED:z.enum(['true','false']).default('false').transform(v=>v==='true'),
     SEARCH_SEMANTIC_ENABLED:z.enum(['true','false']).default('false').transform(v=>v==='true'),
     EMBEDDING_PROVIDER:z.enum(['gemini']).default('gemini'),EMBEDDING_MODEL:z.string().regex(/^[a-zA-Z0-9_.-]{1,100}$/).default('gemini-embedding-001'),
     SEARCH_EMBEDDING_DIMENSIONS:z.coerce.number().int().min(128).max(3072).default(768),

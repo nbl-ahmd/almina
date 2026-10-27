@@ -7,6 +7,7 @@ import { searchIndexDefinitions } from '../../apps/api/src/modules/search/index-
 import { seedSynonyms,atlasSynonym } from '../../apps/api/src/modules/search/synonyms.js';
 import { searchDocument,semanticText,semanticHash } from '../../apps/api/src/modules/search/enrichment.js';
 import { geminiEmbeddings } from '../../apps/api/src/modules/search/embedding-provider.js';
+import { semanticSeedQueries } from '../../apps/api/src/modules/search/embedding-worker.js';
 import { queryHashInput } from '../../apps/api/src/modules/search/query-normalizer.js';
 const [operation,...args]=process.argv.slice(2),apply=args.includes('--apply'),env=readSearchEnvironment(process.env);
 const value=(name:string)=>args.find(a=>a.startsWith(name+'='))?.slice(name.length+1);
@@ -38,7 +39,7 @@ async function main(){
  }else if(operation==='signals'){await signals(db);}
  else if(operation==='query-vectors'){
   const provider=geminiEmbeddings(env,process.env.SEARCH_EMBEDDING_API_KEY??'');
-  const seeds=['cream for dry skin','sugar checking machine','something gentle for dry sensitive skin','baby sun protection','daily oral care','machine to check sugar at home','العناية بالبشرة الجافة'];
+  const seeds=semanticSeedQueries;
   for(const query of seeds){const locale=/[\u0600-\u06ff]/.test(query)?'ar':'en',queryHash=semanticHash(queryHashInput(query,locale));await db.collection<Document&{_id:string}>('search_query_queue').updateOne({_id:queryHash},{$setOnInsert:{queryHash,query,locale,state:'pending',expiresAt:new Date(Date.now()+7*86400000)}},{upsert:true,maxTimeMS:1000});}
   const queries=await db.collection('search_query_queue').find({state:'pending',expiresAt:{$gt:new Date()}},{maxTimeMS:3000}).sort({_id:1}).limit(batch).toArray();let processed=0;
   for(const row of queries){const prior=await db.collection('search_query_vectors').findOne({queryHash:row.queryHash,model:env.EMBEDDING_MODEL,version:1,expiresAt:{$gt:new Date()}},{projection:{_id:1}});

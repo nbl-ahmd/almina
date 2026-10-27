@@ -1,3 +1,4 @@
+import { searchEmbeddingWorker } from './modules/search/embedding-worker.js';
 import {readSearchEnvironment} from './modules/search/config.js';
 import {marketingWorker} from './modules/marketing/worker.js';
 import { prepareEmailStorage } from './modules/notifications/storage.js';
@@ -22,6 +23,7 @@ async function main() {
     onFailure: () => logger.log('error', 'request_failed'),
   }) : undefined;
   const campaigns=process.env.MARKETING_EMAIL_ENABLED==='true'?marketingWorker(()=>database.getDb()):undefined;
+  const searchWorker = searchEmbeddingWorker(() => database.getDb());
   let stopping = false;
   const allowedOrigins = typeof env.WEB_ORIGIN === 'string' ? [env.WEB_ORIGIN] : env.WEB_ORIGIN;
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || allowedOrigins[0];
@@ -51,7 +53,7 @@ async function main() {
     const deadline = setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000);
     deadline.unref();
     server.close(() => {
-      void (async () => { await campaigns?.stop(); await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
+      void (async () => { await searchWorker?.stop(); await campaigns?.stop(); await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
         .catch(() => { logger.log('error', 'shutdown_failed'); process.exitCode = 1; })
         .finally(() => clearTimeout(deadline));
     });

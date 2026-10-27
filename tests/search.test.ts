@@ -73,3 +73,10 @@ test('offline embedding adapter bounds dimensions, selects retrieval task and no
  await provider.embed('Reviewed shopper vocabulary','query');assert.equal(body!.taskType,'RETRIEVAL_QUERY');
  await assert.rejects(geminiEmbeddings(env,'synthetic-test-key',async()=>Response.json({embedding:{values:[1]}})).embed('text','query'),/Invalid embedding response/);
 });
+
+test('embedding worker stays disabled by default and rejects incomplete activation',async()=>{
+ const {searchEmbeddingWorker}=await import('../apps/api/src/modules/search/embedding-worker');
+ const getDb=async()=>{throw Error('No database access expected');};
+ assert.equal(searchEmbeddingWorker(getDb,{}),undefined);
+ assert.throws(()=>searchEmbeddingWorker(getDb,{SEARCH_EMBEDDING_WORKER_ENABLED:'true',SEARCH_PROVIDER:'atlas',SEARCH_SEMANTIC_ENABLED:'true'}),/configuration incomplete/);
+});
