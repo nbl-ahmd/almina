@@ -1,3 +1,7 @@
+## 2026-10-27 — Catalogue filter UI refinement
+
+Matched filters to the existing storefront: removed native square price framing, applied theme-correct control boundaries, simplified headings/counts, widened the desktop rail, collapsed secondary category links and retained the owner-selected inline mobile panel. A small client form validates reversed bounds while preserving native GET navigation and server catalogue rendering. Eleven isolated production-build browser cases, typecheck/lint/build, Next runtime diagnostics and the Impeccable detector passed. No production deployment or data changes. See [filter refinement and verification](CATALOG_FILTERS_2026-10-27.md).
+
 ## 2026-10-27 — Retained embedding worker adapter correction
 
 The first semantic flag-on deployment failed before serving requests because the retained database getter returns a Db synchronously. The worker now accepts both synchronous and asynchronous getters through a contained promise boundary. Twenty focused search tests, typecheck/lint and maintained build checks pass; the rebuilt retained bundle also completed an actual Atlas worker batch with state ready. The previous live backend was retained during the failed deploy. See [activation record](SEARCH_2026-10-27.md) and the correction PR for the final deployment result.

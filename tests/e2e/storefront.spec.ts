@@ -27,13 +27,16 @@ test('mobile catalog exposes filters on demand and preserves applied search', as
   await page.goto('/products');
   const panel = page.locator('.catalog-filters');
   await expect(panel).not.toHaveAttribute('open');
-  await panel.locator('summary').click();
+  await panel.locator(':scope > summary').click();
   await panel.getByRole('searchbox', { name: 'Search products' }).fill('Daily');
   await panel.getByRole('button', { name: 'Apply filters', exact: true }).click();
   await expect(page).toHaveURL(/q=Daily/);
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
-  await expect(page.locator('.catalog-filters')).toHaveAttribute('open');
+  await expect(page.locator('.catalog-filters')).not.toHaveAttribute('open');
+  await panel.locator(':scope > summary').click();
+  await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
   await page.reload();
+  await panel.locator(':scope > summary').click();
   await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
 });
 
@@ -50,12 +53,14 @@ test('Next category preserves legacy IDs and provides keyboard pagination with r
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.goto('/search?q=No-synthetic-match'); await expect(page.getByRole('heading', { name: 'No products found.', exact: true })).toBeVisible();
   await page.goto('/search?q=' + 'A'.repeat(100));
+  await page.locator('#catalog-filters > summary').click();
   const filter = page.getByRole('search', { name: 'Filter products' });
   await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveAttribute('maxlength', '80');
   await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('A'.repeat(80));
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   await filter.getByRole('link', { name: 'Clear filters' }).focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  await page.locator('#catalog-filters > summary').click();
   await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

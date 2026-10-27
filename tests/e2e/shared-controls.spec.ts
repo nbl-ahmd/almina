@@ -2,7 +2,7 @@ import { test, expect } from './fixtures';
 
 test('filter checkbox serializes its value through the native GET form', async ({page}) => {
   await page.setViewportSize({width:390,height:900});await page.goto('/products');
-  const panel=page.locator('.catalog-filters');await panel.locator('summary').click();
+  const panel=page.locator('.catalog-filters');await panel.locator(':scope > summary').click();
   const stock=panel.getByRole('checkbox',{name:'In stock',exact:true});
   await stock.check();
   await expect.poll(()=>stock.evaluate(el=>{
@@ -13,6 +13,8 @@ test('filter checkbox serializes its value through the native GET form', async (
   await page.screenshot({path:'outputs/coral-redesign-2026-10-21/checked-filter-390.png'});
   await panel.getByRole('button',{name:'Apply filters',exact:true}).click();
   expect(new URL(page.url()).searchParams.get('inStock')).toBe('true');
+  await expect(panel).not.toHaveAttribute('open');
+  await panel.locator(':scope > summary').click();
   await expect(page.getByRole('checkbox',{name:'In stock',exact:true})).toBeChecked();
 });
 
