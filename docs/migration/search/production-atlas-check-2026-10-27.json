@@ -1,0 +1,208 @@
+{
+  "at": "2026-10-27T10:19:36.366Z",
+  "mode": "production-read-only-local-client",
+  "note": "Elapsed time includes search plus autocomplete over local-to-Singapore connection; not application endpoint latency or fixture relevance metrics.",
+  "backfilled": 7136,
+  "indexes": [
+    {
+      "name": "products_search",
+      "status": "READY",
+      "queryable": true
+    },
+    {
+      "name": "products_vector",
+      "status": "READY",
+      "queryable": true
+    }
+  ],
+  "results": [
+    {
+      "input": {
+        "q": "cerave"
+      },
+      "ms": 1046,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 23,
+      "ids": [
+        "PD1197",
+        "PD1193",
+        "PD1199",
+        "PD1198",
+        "PD1203"
+      ]
+    },
+    {
+      "input": {
+        "q": "cerav"
+      },
+      "ms": 621,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 23,
+      "ids": [
+        "PD1197",
+        "PD1193",
+        "PD1199",
+        "PD1198",
+        "PD1203"
+      ]
+    },
+    {
+      "input": {
+        "q": "PD1197"
+      },
+      "ms": 326,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 1,
+      "ids": [
+        "PD1197"
+      ]
+    },
+    {
+      "input": {
+        "q": "CeraVe Moisturising Cream 340 g"
+      },
+      "ms": 416,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 1,
+      "ids": [
+        "PD1197"
+      ]
+    },
+    {
+      "input": {
+        "q": "CeraVe Moisturising Cream 454 g"
+      },
+      "ms": 440,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 1,
+      "ids": [
+        "PD1198"
+      ]
+    },
+    {
+      "input": {
+        "q": "sunscreen"
+      },
+      "ms": 401,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 2,
+      "ids": [
+        "PD1195",
+        "PD0075"
+      ]
+    },
+    {
+      "input": {
+        "q": "sunblock"
+      },
+      "ms": 476,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 3,
+      "ids": [
+        "PD5695",
+        "PD1195",
+        "PD0075"
+      ]
+    },
+    {
+      "input": {
+        "q": "واقي الشمس",
+        "locale": "ar"
+      },
+      "ms": 423,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 3,
+      "ids": [
+        "PD1195",
+        "PD0075",
+        "PD5695"
+      ]
+    },
+    {
+      "input": {
+        "q": "dry skin"
+      },
+      "ms": 407,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 8,
+      "ids": [
+        "PD6557",
+        "PD1197",
+        "PD1198",
+        "PD1196",
+        "PD1193"
+      ]
+    },
+    {
+      "input": {
+        "q": "cerave",
+        "inStock": "true"
+      },
+      "ms": 441,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 23,
+      "ids": [
+        "PD1197",
+        "PD1193",
+        "PD1199",
+        "PD1198",
+        "PD1203"
+      ]
+    },
+    {
+      "input": {
+        "q": "cerave",
+        "brand": "CeraVe"
+      },
+      "ms": 454,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 23,
+      "ids": [
+        "PD1197",
+        "PD1193",
+        "PD1199",
+        "PD1198",
+        "PD1203"
+      ]
+    },
+    {
+      "input": {
+        "q": "cerave",
+        "minPrice": "10",
+        "maxPrice": "100"
+      },
+      "ms": 427,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 8,
+      "ids": [
+        "PD1193",
+        "PD1199",
+        "PD1190",
+        "PD1205",
+        "PD1202"
+      ]
+    },
+    {
+      "input": {
+        "q": "zzzzunknownproduct"
+      },
+      "ms": 1259,
+      "unavailable": false,
+      "suggestionsUnavailable": false,
+      "returned": 0,
+      "ids": []
+    }
+  ]
+}
