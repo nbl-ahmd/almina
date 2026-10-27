@@ -6,6 +6,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { imageIdentitySchema, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
 import { stageImageReview, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
 import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker } from '../apps/api/src/modules/media/image-review-publication';
+import { initialReviewChecks, imageReviewDecision, canApproveImage } from '../apps/web/src/lib/admin/image-review-workflow';
 const require = createRequire(import.meta.url);
 const { createLegacyApp } = require('../backend/app.js');
 const uri = process.env.COMMERCE_TEST_URI;
@@ -390,5 +391,30 @@ test('automatic holds preserve a newer pharmacist decision and original immutabl
     assert.equal(await db.collection('image_review_events').countDocuments({ approvalId: original.approvalId }), 1);
     assert.equal(current.history.length, 2);
     assert.equal(await db.collection('media_history').countDocuments(), 0);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('the one-action review payload preserves server field checks, human provenance and stale-product protection', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_fast_review_' + randomUUID().replaceAll('-', ''));
+  try {
+    const actor = new ObjectId(), staff = new ObjectId();
+    await db.collection('users').insertMany([{ _id: actor, role: 'admin' }, { _id: staff, role: 'user' }]);
+    await db.collection('products').insertOne({ product_id: 'PD_TEST', name: 'Acme Skin Cream 50 g', brand: 'Acme', productForm: 'Cream', packLabel: '50 g' });
+    await stageImageReview(db, pack([source('fast-review'), source('fast-stale')]), String(actor), 'synthetic');
+    const rows = (await listImageReviews(db, {}, String(staff))).items;
+    const detail = await getImageReview(db, rows[0]!.itemId, String(staff));
+    const checks = initialReviewChecks(detail);
+    assert.equal(canApproveImage(detail, checks, true, false), true);
+    const input = { ...imageReviewDecision(detail, checks, 'approved', true, false, ''), requestId: randomUUID() };
+    const approved = await decideImageReview(db, input, String(staff));
+    assert.equal(approved.status, 'approved'); assert.ok(approved.approvalId);
+    const event = (await db.collection('image_review_events').findOne({ itemId: detail.item.itemId }))!;
+    assert.equal(event.input.originalViewed, true); assert.ok(event.input.checks.every((check: { confirmed: boolean }) => check.confirmed));
+    assert.match(event.input.note, /I inspected this individual original/);
+    const next = await getImageReview(db, rows[1]!.itemId, String(staff));
+    const stale = { ...imageReviewDecision(next, initialReviewChecks(next), 'approved', true, false, ''), requestId: randomUUID() };
+    await db.collection('products').updateOne({ product_id: 'PD_TEST' }, { $set: { packLabel: '100 g' } });
+    await assert.rejects(decideImageReview(db, stale, String(staff)), { status: 409 });
+    assert.equal((await getImageReview(db, rows[1]!.itemId, String(staff))).item.status, 'pending');
   } finally { await db.dropDatabase(); await client.close(); }
 });

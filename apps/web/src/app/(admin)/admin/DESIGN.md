@@ -304,3 +304,9 @@ Fulfilment shows dispatched, cancelled and other stages, with text counts and de
 - **Don't** promote legacy kickers, tiny tracked uppercase labels or stale comments into reusable system rules.
 
 Not canonized or repaired: the legacy warm brand-badge fill, remaining tracked uppercase micro-labels/kickers and stale warm/coral CSS comments are inherited implementation drift, not guidance. The actual ink logo and neutral overrides win. Small table utilities remain an observed touch-target limitation, not a recommendation for new mobile controls. This documentation pass does not modify source behavior, backend data or deployment state.
+
+## Image review workbench
+
+Operate mode: inspect one original, compare exact identity attributes, then decide. The individual photo and a compact three-column comparison share the main width on desktop; phones stack them. Matching values are read-only text, and only exceptions expose evidence controls. The image scales to the laptop viewport, offers in-place zoom and links to the original. No contact-sheet approvals, inferred confidence scores or decorative motion.
+
+A persistent bottom action bar carries **Hold & next** and the sole primary **Approve & next** action, with an explicit inspection attestation. Disabled approvals use paper/gray controls rather than the active ink fill. On phones the bar clears the existing bottom-navigation height and safe area. Alt-modified shortcuts are scoped to the workspace and ignored in fields. The queue, correction/search tools and audit details use disclosure instead of competing with the image. **Last decision** provides a recoverable review path; source evidence and published media history remain immutable. Retain the existing working-paper palette, Geist, Heroicons and semantic warning/success tones.

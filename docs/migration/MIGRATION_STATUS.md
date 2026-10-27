@@ -1,3 +1,7 @@
+## 2026-10-27 — Pharmacist review speed
+
+Replaced the long confirmation form with an individual-image workbench: compact comparisons, one-action attested approvals for matching values, explicit evidence controls for exceptions, preset holds, non-saving skips, keyboard shortcuts, last-decision access and one-item prefetch. Phone actions clear fixed navigation. Data/roles and the server validation contract are unchanged. Verification: 215 unit, 137 API and 144 disposable integration tests passed; typechecks/lint/build and browser review checks passed. No production reviews, imports or deployment performed. See [image review workflow](IMAGE_REVIEW_2026-10-26.md).
+
 ## 2026-10-26 — Image review CI route inventory correction
 
 The API security regression maintained a positional list of retained router mounts. Adding Image review shifted that list, causing the allowlist coverage assertion to compare the first router against the wrong prefix. Updated the inventory and added an explicit router-count assertion; authorization requirements remain intact. The default disposable integration runner now includes image-review regressions. Full local verification: 137 API tests and 143 integration tests passed; focused lint and diff checks passed. No production mutation or deployment performed.
