@@ -41,8 +41,8 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
     const target = event.target as HTMLElement;
     if (target.closest('input, textarea, select, [contenteditable="true"]')) return;
     if (event.key === 'Enter' && ready && !imported) { event.preventDefault(); void decide('approved'); }
-    if (event.key.toLowerCase() === 'h' && !imported) { event.preventDefault(); void decide('held'); }
-    if (event.key.toLowerCase() === 'j' && hasNext) { event.preventDefault(); onSkip(); }
+    if ((event.code === 'KeyH' || event.key.toLowerCase() === 'h') && !imported) { event.preventDefault(); void decide('held'); }
+    if ((event.code === 'KeyJ' || event.key.toLowerCase() === 'j') && hasNext) { event.preventDefault(); onSkip(); }
   }
   async function search() {
     setSearching(true); setError('');
