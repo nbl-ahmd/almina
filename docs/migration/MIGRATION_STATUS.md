@@ -1,3 +1,7 @@
+## 2026-10-27 — Retained embedding worker adapter correction
+
+The first semantic flag-on deployment failed before serving requests because the retained database getter returns a Db synchronously. The worker now accepts both synchronous and asynchronous getters through a contained promise boundary. Twenty focused search tests, typecheck/lint and maintained build checks pass; the rebuilt retained bundle also completed an actual Atlas worker batch with state ready. The previous live backend was retained during the failed deploy. See [activation record](SEARCH_2026-10-27.md) and the correction PR for the final deployment result.
+
 ## 2026-10-27 — Semantic embedding refresh prepared
 
 Owner supplied the offline Gemini key; the 768-dimension provider probe passed and 753 reviewed-product and ten curated query embeddings are prepared. Added an opt-in leased persistent API worker for bounded product changes, approved query preparation and pre-expiry curated-seed refresh, with five-minute failure backoff and no shopper-request provider calls. Live source-service checks confirmed moisturizer/cleansing/dental semantic results and caught/fixed a glucose-vs-BP device substitution. Original-phrase synonym expansion and approved product-kind constraints now fail closed for unpublished/unreviewed glucose monitors. Separate worker and semantic flags remain disabled until the updated CI and deployment pass. See [semantic activation and verification](SEARCH_2026-10-27.md).

@@ -62,7 +62,7 @@ export async function processSearchEmbeddings(db: Db, env: SearchEnvironment, pr
   }
 }
 
-export function searchEmbeddingWorker(getDb: () => Promise<Db>, source: EnvironmentSource = process.env) {
+export function searchEmbeddingWorker(getDb: () => Db | Promise<Db>, source: EnvironmentSource = process.env) {
   const env = readSearchEnvironment(source);
   if (!env.SEARCH_EMBEDDING_WORKER_ENABLED) return undefined;
   if (env.SEARCH_PROVIDER !== 'atlas' || !env.SEARCH_SEMANTIC_ENABLED || !source.SEARCH_EMBEDDING_API_KEY) throw new Error('Background search embedding configuration incomplete');
@@ -70,7 +70,7 @@ export function searchEmbeddingWorker(getDb: () => Promise<Db>, source: Environm
   let active: Promise<void> | undefined, stopped = false;
   const tick = () => {
     if (stopped || active) return;
-    active = getDb().then(db => processSearchEmbeddings(db, env, provider)).then(() => undefined)
+    active = Promise.resolve().then(getDb).then(db => processSearchEmbeddings(db, env, provider)).then(() => undefined)
       .catch(() => { console.error('{"event":"search_embedding_batch_failed"}'); })
       .finally(() => { active = undefined; });
   };
