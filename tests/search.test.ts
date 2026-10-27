@@ -1,3 +1,4 @@
+import type {Db} from 'mongodb';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ObjectId } from 'mongodb';
@@ -79,4 +80,15 @@ test('embedding worker stays disabled by default and rejects incomplete activati
  const getDb=async()=>{throw Error('No database access expected');};
  assert.equal(searchEmbeddingWorker(getDb,{}),undefined);
  assert.throws(()=>searchEmbeddingWorker(getDb,{SEARCH_EMBEDDING_WORKER_ENABLED:'true',SEARCH_PROVIDER:'atlas',SEARCH_SEMANTIC_ENABLED:'true'}),/configuration incomplete/);
+});
+
+
+test('embedding worker supports the retained synchronous database getter and contains startup failures',async()=>{
+ const {searchEmbeddingWorker}=await import('../apps/api/src/modules/search/embedding-worker');
+ const previous=console.error,logs:string[]=[];let calls=0;console.error=(value:unknown)=>logs.push(String(value));
+ try {
+  const db={collection(){calls++;throw Error('private driver details');}} as unknown as Db;
+  const worker=searchEmbeddingWorker(()=>db,{SEARCH_PROVIDER:'atlas',SEARCH_SEMANTIC_ENABLED:'true',SEARCH_EMBEDDING_WORKER_ENABLED:'true',SEARCH_EMBEDDING_API_KEY:'unit-test-placeholder'});
+  await worker!.stop();assert.equal(calls,1);assert.deepEqual(logs,['{"event":"search_embedding_batch_failed"}']);
+ } finally {console.error=previous;}
 });
