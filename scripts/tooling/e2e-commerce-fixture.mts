@@ -1,3 +1,5 @@
+import {stripeFixture} from './stripe-fixture.js';
+import {createStripePayments,prepareStripeStorage} from '../../apps/api/src/modules/payments/stripe.js';
 // Real legacy HTTP/driver stack, restricted to a new disposable loopback replica set.
 import { createRequire } from 'node:module';
 import { fixtureHealth } from './e2e-ownership.mjs';
@@ -30,11 +32,13 @@ let delayNext = false;
 let fixtureCase = 0;
 let whatsappSends = 0, whatsappFailure = false;
 const mediaAssets = new Map<string, object>();
+const stripe=stripeFixture();
+const stripePayments=createStripePayments(async()=>db,{origin:'http://127.0.0.1:4740',transport:stripe.transport});
 const timers = new Set<ReturnType<typeof setTimeout>>();
 async function reset() {
   if (!/^almina_e2e_test_[a-f0-9]{32}$/.test(dbName)) throw new Error('Unsafe fixture database');
   await db.dropDatabase();
-  delayNext = false;
+  delayNext = false;stripe.reset();
   whatsappSends = 0; whatsappFailure = false;
   fixtureCase++; mediaAssets.clear();
   const category = new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');
@@ -48,12 +52,14 @@ async function reset() {
     { username: 'synthetic-admin', name: 'Synthetic Admin', role: 'admin', cities: ['City A'], password },
     { username: 'synthetic-staff', name: 'Synthetic Staff', role: 'user', cities: ['City B'], password },
   ]);
-  await migrateCommerce(db);
+  await migrateCommerce(db);await prepareStripeStorage(db,true);
 }
 await reset();
 const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
+app.post('/__fixture/stripe-paid',(_req,res)=>{stripe.paid();res.sendStatus(204);});
+app.post('/__fixture/stripe-refunded',(_req,res)=>{stripe.refunded();res.sendStatus(204);});
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });
 app.post('/__fixture/marketing-product', async (_req,res,next)=>{try{await db.collection('products').updateOne({_id:new ObjectId('bbbbbbbbbbbbbbbbbbbbbbbb')},{$set:{contentReviewed:true,productType:'general'}});res.json({ready:true});}catch(error){next(error);}});
 app.post('/__fixture/customer-challenge', async (_req,res,next)=>{try{let code='';const challenge=await requestEmailCode(db,{email:'shopper@example.invalid'},async(_email,value)=>{code=value;});res.json({...challenge,code});}catch(error){next(error);}});
@@ -131,7 +137,7 @@ const mediaTransport: typeof fetch = async (url, options) => {
   mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
 };
 const location = { enabled: true, endpoint: 'https://geocoder.example.invalid/reverse', userAgent: 'AlMinaSyntheticTest/1', dailyLimit: 100, fetch: async () => Response.json({ display_name: 'Synthetic street, Synthetic area, Ras Al Khaimah, United Arab Emirates', address: { country_code: 'ae', state: 'Ras Al Khaimah Emirate', suburb: 'Synthetic area', city: 'Ras Al Khaimah', road: 'Synthetic street' } }) };
-const legacy = createLegacyApp({ location, commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
+const legacy = createLegacyApp({ stripePayments, location, commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);

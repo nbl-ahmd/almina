@@ -1,3 +1,4 @@
+import {stripeReconciler,prepareStripeStorage} from './modules/payments/stripe.js';
 import { searchEmbeddingWorker } from './modules/search/embedding-worker.js';
 import {readSearchEnvironment} from './modules/search/config.js';
 import {marketingWorker} from './modules/marketing/worker.js';
@@ -29,13 +30,14 @@ async function main() {
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || allowedOrigins[0];
   const reminders = process.env.GROWTH_EMAIL_ENABLED === 'true' && reminderOrigin && allowedOrigins.includes(reminderOrigin)
     ? retentionWorker(async () => database.getDb(), { origin: reminderOrigin, onFailure: () => logger.log('error', 'reminder_failed') }) : undefined;
-  const server = createServer(createApp({ database, logger, webOrigin: env.WEB_ORIGIN, development: env.APP_ENV === 'development',
+  const app = createApp({ database, logger, webOrigin: env.WEB_ORIGIN, development: env.APP_ENV === 'development',
     trustProxy: env.API_TRUST_PROXY, draining: () => stopping, commerceTelemetryEnabled: env.COMMERCE_TELEMETRY_ENABLED,
     getDb: async () => {
       try { return await database.getDb(); }
       catch { throw new HttpError(503, 'SERVICE_UNAVAILABLE'); }
     },
-  }));
+  });
+  const server = createServer(app);
   server.requestTimeout = 15000;
   server.headersTimeout = 10000;
   server.keepAliveTimeout = 5000;
@@ -45,6 +47,8 @@ async function main() {
     logger.log('error', 'request_failed');
     void database.close().catch(() => logger.log('error', 'shutdown_failed')).finally(() => { process.exitCode = 1; });
   });
+  if(app.locals.stripePayments.enabled) await prepareStripeStorage(await database.getDb(), true);
+  const stripeWorker=stripeReconciler(app.locals.stripePayments,()=>logger.log('warn','request_failed'));
   server.listen(env.PORT, env.API_HOST, () => logger.log('info', 'api_started'));
 
   const stop = () => {
@@ -53,7 +57,7 @@ async function main() {
     const deadline = setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000);
     deadline.unref();
     server.close(() => {
-      void (async () => { await searchWorker?.stop(); await campaigns?.stop(); await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
+      void (async () => { await stripeWorker?.stop(); await searchWorker?.stop(); await campaigns?.stop(); await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
         .catch(() => { logger.log('error', 'shutdown_failed'); process.exitCode = 1; })
         .finally(() => clearTimeout(deadline));
     });

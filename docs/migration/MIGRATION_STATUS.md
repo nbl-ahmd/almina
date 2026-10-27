@@ -590,3 +590,7 @@ Added public `/returns`, `/shipping`, `/terms` and a full `/privacy` policy, lin
 ## 2026-10-25 — Render proxy-aware API rate limits
 
 Added one shared, Render-only address allowlist fallback to the retained and maintained runtime configuration loaders. Explicit operator IP lists retain precedence; direct/local defaults remain disabled. Multi-hop/spoof-prefix HTTP and both API limiter regressions pass without disabling validation. See [RENDER_PROXY_TRUST_2026-10-25.md](RENDER_PROXY_TRUST_2026-10-25.md) for trust boundaries and post-deployment verification. No production configuration or deployment was performed by this change.
+
+## 27 October 2026 — additive Stripe test payments
+
+Stripe-hosted Checkout is an extra, opt-in **test-only** retail payment path. Cash/card on delivery are preserved. Test orders reserve stock transactionally, verify signed webhooks and canonical provider state, reconcile expiry/full refunds once, and cannot send notifications or enter fulfilment. Production activation is blocked. Isolated local sandbox and private listener setup: [Stripe test payments](STRIPE_TEST_PAYMENTS_2026-10-27.md). Live payments need a separate reviewed rollout.
