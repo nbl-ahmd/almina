@@ -179,3 +179,62 @@ References: [Merchant API authentication](https://developers.google.com/merchant
 [image rules](https://support.google.com/merchants/answer/6324350),
 [conservative shipping rates](https://support.google.com/merchants/answer/15254380),
 [recrawl and indexing](https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl).
+
+## Production release evidence
+
+Runtime release `27aead53d2cfc90465207c5b24cccfe125bf1ba9` was merged through
+[PR #78](https://github.com/nbl-ahmd/almina/pull/78). All five checks passed in
+[CI run 40658740120](https://github.com/nbl-ahmd/almina/actions/runs/40658740120).
+The [Vercel production deployment](https://github.com/nbl-ahmd/almina/actions/runs/40659662674)
+succeeded, and Render `/health/ready` reported the same commit. The production
+worker logged a successful zero-eligible run, confirming live credential parsing,
+Standard-role API access, source verification and database/job initialization.
+
+The owner then explicitly confirmed new condition and Google approval for
+**Vichy Stress Resist Anti-Perspirant Roll-On 50 ml (`PD6615`)**. These two review
+fields were saved through the authenticated production admin editor. Public
+before/after reads confirmed price AED 75.60, stock 7, GTIN `3337871324001`, sale
+state, identifier status and Meta approval unchanged. The editor's existing
+expected-stock transaction guard protects against stale stock overwrites.
+
+At 14:37:56 Asia/Kolkata on 28 October, Render logged:
+
+```json
+{"event":"merchant_sync_completed","eligible":1,"uploaded":1,"withdrawn":0}
+```
+
+A subsequent Merchant API `products.get` returned
+`accounts/5884188879/products/en~AE~PD6615`, owned by source `10786798631`, with
+price `75600000` AED micros (AED 75.60) and `IN_STOCK`. The only reporting context
+is `FREE_LISTINGS`, pending for AE. Google reported `image_link_pending_crawl`
+and `pending_initial_policy_review_free_listings`. These are initial processing
+states; this evidence confirms submission, **not final listing approval**.
+No appeal or policy override was submitted.
+
+Search Console already showed this page indexed. Its live URL test after the
+release reported available to Google, indexable, one valid Merchant listing,
+one valid Product snippet (optional review/rating warnings), and valid
+Breadcrumbs. Production raw Googlebot HTML confirmed genuine image markup for
+the Vichy product, no placeholder photo for the Oral-B missing-photo product,
+and AED 21 country-level shipping for both pages.
+
+The Merchant customer-service fields now also match the published website:
+`https://alminapharmacy.com/contact`, `info@alminapharmacy.com`,
+`+971504825007`, preferred contact phone. The saved business-info screen confirmed
+these values; no live-chat availability promise was added.
+
+A read-only raster audit of all 90 initially close candidates found 88 passing
+the 500px check and two needing larger originals:
+
+| Product | Current image | Required action |
+| --- | --- | --- |
+| Bioderma Sebium Gel Mou 200 ml (`PD0826`) | 300 × 400 | Supply an authorized larger original |
+| Bioderma Sebium Gel Mou Actif 200 ml (`PD0828`) | 181 × 400 | Supply an authorized larger original |
+
+No image was upscaled. Ignored local review artifacts are under
+`outputs/merchant-preparation-2026-10-28/`: `review.csv`, `close-to-ready.csv`,
+`image-readiness.csv` and JSON equivalents. The Vichy pilot is the only product
+whose Google approval was changed. Remaining products still require their own
+condition, identifier and channel review; photo readiness does not imply approval.
+The redundant agent-created credential download was removed after the protected
+ignored local copy and Render configuration were verified.

@@ -615,3 +615,16 @@ created the dedicated service account, reduced it to Standard-only access and
 saved the protected credential/configuration in Render for release deployment.
 An API source read succeeded after the downgrade. No products were submitted
 or marked approved; the production worker must be verified after deployment. See [Google Merchant and Search Console](GOOGLE_MERCHANT_SEARCH_2026-10-28.md).
+
+Production acceptance completed for runtime release `27aead53d2cfc90465207c5b24cccfe125bf1ba9`
+([PR #78](https://github.com/nbl-ahmd/almina/pull/78)): all CI/deployment checks passed,
+Render readiness and the first successful Merchant job were verified. With explicit
+owner approval, set only Vichy `PD6615` to new/Google-approved through the production
+admin workflow; price, stock, GTIN, sale state and Meta approval were verified
+unchanged. The worker uploaded it successfully, and Merchant API confirmed the
+correct AED 75.60/in-stock record with AE free listings pending Google's initial
+review and image crawl. Search Console's live test finds the page indexable with
+valid Merchant/Product/Breadcrumb markup. Customer-service details now match the
+public website. Full photo audit: 88 of the 90 initial close candidates pass the
+500px check; the two Bioderma candidates need larger originals. Other products were
+not approved automatically. Final external Google approval remains pending.
