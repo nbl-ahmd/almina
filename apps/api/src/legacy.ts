@@ -50,3 +50,5 @@ export {marketingWorker} from './modules/marketing/worker.js';
 export { searchEmbeddingWorker } from './modules/search/embedding-worker.js';
 
 export * from './modules/payments/stripe.js';
+
+export { merchantSyncWorker } from './modules/catalog/merchant.js';

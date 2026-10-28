@@ -64,7 +64,7 @@ try {
       assert.equal(schema.offers.availability, 'https://schema.org/OutOfStock');
       assert.equal(schema.offers.hasMerchantReturnPolicy.merchantReturnDays, 7);
       assert.equal(schema.offers.shippingDetails.shippingRate.value, '10.00');
-      if (index === 1) assert.equal(schema.image[0], `${canonical}/product-placeholder.svg`);
+      if (index === 1) assert.equal(schema.image, undefined);
       if (index === 0) {
         assert.deepEqual(schema.image, ['https://cdn.alminapharmacy.com/media/w1200/v1/recovery-example.webp']);
         assert.ok(head.includes('https://cdn.alminapharmacy.com/media/w1200/v1/recovery-example.webp'));

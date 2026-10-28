@@ -71,14 +71,16 @@ export function breadcrumbData(origin: string, items: { name: string; path: stri
   })) };
 }
 function absoluteImages(origin: string, images: string[]) {
-  const unique = [...new Set(images.filter(Boolean).map(image => new URL(image, origin).href))];
-  // Google requires an image URL. The storefront visibly renders this same
-  // placeholder when a product has no photo yet, so the markup never invents
-  // product media; it simply mirrors the page instead of omitting the field.
-  return unique.length ? unique : [new URL('/product-placeholder.svg', origin).href];
+  return [...new Set(images.flatMap(image => {
+    try {
+      const url = new URL(image, origin);
+      return ['http:', 'https:'].includes(url.protocol) && !url.pathname.endsWith('/product-placeholder.svg') ? [url.href] : [];
+    } catch { return []; }
+  }))];
 }
 function baseProductData(origin: string, product: Product, images: string[], shipping: ReturnType<typeof shippingDetailsData>) {
   const productUrl = new URL(productHref(product), origin).href;
+  const photos = absoluteImages(origin, images);
   return { '@context': 'https://schema.org', '@type': 'Product', '@id': `${productUrl}#product`,
     name: product.name, sku: product.product_id, url: productUrl,
     category: product.category.name,
@@ -86,7 +88,9 @@ function baseProductData(origin: string, product: Product, images: string[], shi
     ...(product.gtin?{gtin:product.gtin}:{}),...(product.mpn?{mpn:product.mpn}:{}),
     ...(product.condition?{itemCondition:`https://schema.org/${{new:'NewCondition',used:'UsedCondition',refurbished:'RefurbishedCondition'}[product.condition]}`}:{}) ,
     ...(product.description ? { description: product.description } : {}),
-    image: absoluteImages(origin, images),
+    // Keep the visible missing-photo state, but never present a placeholder to
+    // Google as a product photograph merely to pass required-field checks.
+    ...(photos.length ? { image: photos } : {}),
     offers: { '@type': 'Offer', url: productUrl,
       ...(product.condition?{itemCondition:`https://schema.org/${{new:'NewCondition',used:'UsedCondition',refurbished:'RefurbishedCondition'}[product.condition]}`}:{}) ,
       priceCurrency: 'AED', price: displayPrice(product).toFixed(2),
