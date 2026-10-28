@@ -1,5 +1,7 @@
 # Additive Stripe test payments — 27 October 2026
 
+Live support was added separately on 28 October; see [the production rollout](STRIPE_LIVE_PAYMENTS_2026-10-28.md). The test-isolation requirements below still apply.
+
 ## Scope and activation boundary
 
 Cash and card on delivery retain their existing paths. A separately enabled

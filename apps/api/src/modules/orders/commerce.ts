@@ -128,13 +128,13 @@ function checkoutResult(doc: Document, replayed: boolean) {
 function requestHash(input: CheckoutInput,customerId?:string,wholesale?:WholesaleCustomer) {
   return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(wholesale?{channel:'wholesale',owner:wholesale.id}:{}), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ) })).digest('hex');
 }
-export function createCommerceService(getDb: () => Promise<Db>) {
+export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{beforeTransition:(id:string,input:{status:OrderStatus},staff:Staff)=>Promise<void>}) {
   return {
     async quote(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer) {
       const input = parse(quoteInputSchema, raw);
       return quoteFrom(await getDb(), input,undefined,customerId,wholesale);
     },
-    async checkout(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer, stripeReservation?: {sessionId:string; attemptId:string; expiresAt:Date}) {
+    async checkout(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer, stripeReservation?: {sessionId:string; attemptId:string; expiresAt:Date; testMode?:boolean}) {
       const input = parse(checkoutInputSchema, raw);
       if (input.customer.payment === 'stripe' && (!stripeReservation || wholesale || input.voucherCode)) throw new HttpError(400, 'INVALID_REQUEST');
       if (input.customer.payment !== 'stripe' && stripeReservation) throw new HttpError(400, 'INVALID_REQUEST');
@@ -185,7 +185,7 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           if (await db.collection('orders').findOne({ orderId }, { ...options, session, projection: { _id: 1 } })) {
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
-          const order = { _id, ...(stripeReservation ? {payment: {provider:'stripe', testMode:true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
+          const order = { _id, ...(stripeReservation ? {payment: {provider:'stripe', testMode:stripeReservation.testMode??true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
             createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
@@ -224,7 +224,9 @@ export function createCommerceService(getDb: () => Promise<Db>) {
     async transition(id: string, raw: unknown, staff: Staff, legacyDispatch = false) {
       if (!/^[a-f0-9]{24}$/i.test(id)) throw new HttpError(400, 'INVALID_REQUEST');
       const input = parse(statusInputSchema, raw);
+      if(input.status!=='dispatched'&&(input.billno!==undefined||input.billamount!==undefined))throw new HttpError(400,'INVALID_REQUEST');
       if (input.status === 'refunded' && staff.role !== 'admin') throw new HttpError(403, 'FORBIDDEN');
+      await paymentGuard?.beforeTransition(id,input,staff);
       const db = await getDb();
       const session = db.client.startSession();
       let outcome: { status: OrderStatus } | undefined;
@@ -234,9 +236,16 @@ export function createCommerceService(getDb: () => Promise<Db>) {
           outcome = undefined;
           const order = await db.collection('orders').findOne({ ...orderFilter({ limit: 1 }, staff), _id: new ObjectId(id) }, { ...options, session });
           if (!order) throw new HttpError(404, 'NOT_FOUND');
-          // Test payments must never enter real fulfilment or be marked refunded by an admin flag.
-          if (order.payment?.provider === 'stripe') throw new HttpError(409, 'INVALID_TRANSITION');
           const current = historicalStatus(order);
+          if(order.payment?.provider==='stripe'){
+            if(order.payment.testMode!==false||!paymentGuard)throw new HttpError(409,'INVALID_TRANSITION');
+            if(current===input.status){outcome={status:input.status};return;}
+            if(['cancelled','refunded'].includes(input.status)){
+              if(order.payment.refundRequested&&order.payment.state==='refund_pending'&&current!=='legacy_conflict'){outcome={status:current};return;}
+              throw new HttpError(409,'INVALID_TRANSITION');
+            }
+            if(order.payment.state!=='paid'||order.payment.refundRequested)throw new HttpError(409,'INVALID_TRANSITION');
+          }
           if (current === 'legacy_conflict') throw new HttpError(409, 'INVALID_TRANSITION');
           // Replay of a status is a no-op and cannot mutate commercial snapshots or billing.
           if (current === input.status) { outcome = { status: current }; return; }

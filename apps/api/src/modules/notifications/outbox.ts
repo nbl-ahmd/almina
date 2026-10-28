@@ -27,6 +27,9 @@ export function orderOutbox(getDb: () => Promise<Db> | Db, options: {
       if (result.modifiedCount !== 1) { leaseToken = undefined; return; }
       const order = await db.collection('orders').findOne({ _id: job.orderId }, { maxTimeMS: 3000 });
       if (!order) throw new Error('Missing committed order');
+      if(order.payment?.provider==='stripe'&&(order.payment.testMode!==false||order.payment.state!=='paid'||order.payment.refundRequested||['cancelled','refunded'].includes(order.status))){
+        await db.collection('order_outbox').updateOne({_id:job._id,leaseToken},{$set:{state:'cancelled',pushState:'done'},$unset:{leaseToken:'',leaseUntil:''}});return;
+      }
       await bounded(options.send(order, cancellation.signal), sendTimeoutMs);
       await db.collection('order_outbox').updateOne({ _id: job._id, leaseToken },
         { $set: { state: 'sent', sentAt: new Date() }, $unset: { leaseToken: '', leaseUntil: '' } });

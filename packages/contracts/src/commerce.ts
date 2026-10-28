@@ -44,10 +44,10 @@ export type CommercePolicy = z.infer<typeof commercePolicySchema>;
 export type Quote = z.infer<typeof quoteDtoSchema>;
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
 
-// This additive provider is intentionally test-only until a separate live-payment rollout.
+export const stripePaymentStateSchema=z.enum(['awaiting_payment','paid','expired','refunded','partially_refunded','refund_pending','disputed']);
 export const stripeCheckoutDtoSchema = z.object({
-  orderId: z.string(), state: z.enum(['awaiting_payment', 'paid', 'expired', 'refunded']),
+  orderId: z.string(), state: stripePaymentStateSchema,
   checkoutUrl: z.url().refine(value => { const url = new URL(value); return url.protocol === 'https:' && url.hostname === 'checkout.stripe.com' && !url.username && !url.password; }).nullable(),
-  testMode: z.literal(true),
+  testMode: z.boolean(), totals:quoteDtoSchema, paymentReceived:z.boolean(),
 }).strict();
 export const stripeStatusInputSchema = z.object({ idempotencyKey: z.uuid() }).strict();

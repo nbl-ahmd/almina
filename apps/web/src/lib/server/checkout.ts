@@ -14,7 +14,7 @@ export async function checkoutRequest(request: Request, quoteOnly: boolean | 'lo
   const quoteRequest = quoteOnly === true;
   const locationOnly = quoteOnly === 'location';
   const env = getWebEnvironment();
-  if (stripeAction && !env.STRIPE_TEST_ENABLED) return failure(404, 'NOT_FOUND');
+  if (stripeAction && !env.STRIPE_TEST_ENABLED && env.APP_ENV!=='production') return failure(404, 'NOT_FOUND');
   if (!env.CHECKOUT_ENABLED) return failure(503, 'COMMERCE_UNAVAILABLE');
   if (request.headers.get('origin') !== env.WEB_ORIGIN || request.headers.get('x-csrf-protection') !== '1'
     || request.headers.get('sec-fetch-site') === 'cross-site') return failure(403, 'FORBIDDEN');
@@ -54,4 +54,16 @@ export async function checkoutRequest(request: Request, quoteOnly: boolean | 'lo
     return Response.json(quoteRequest ? { quote: data, quoteHash: createHash('sha256').update(JSON.stringify(data)).digest('hex') } : data,
       { status: result.status, headers });
   } catch { return failure(502, 'SERVICE_UNAVAILABLE'); }
+}
+
+export async function stripeCheckoutMode():Promise<'off'|'test'|'live'>{
+  const env=getWebEnvironment();
+  if(!env.CHECKOUT_ENABLED)return 'off';
+  if(env.STRIPE_TEST_ENABLED)return 'test';
+  if(env.APP_ENV!=='production')return 'off';
+  try{
+    const response=await fetch(new URL('/api/v1/payments/stripe/availability',env.API_ORIGIN),{cache:'no-store',redirect:'error',credentials:'omit',signal:AbortSignal.timeout(3000)});
+    const parsed=z.object({data:z.object({available:z.boolean(),testMode:z.boolean()})}).safeParse(await response.json());
+    return response.ok&&parsed.success&&parsed.data.data.available&&!parsed.data.data.testMode?'live':'off';
+  }catch{return 'off';}
 }

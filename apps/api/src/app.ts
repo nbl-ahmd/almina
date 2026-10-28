@@ -1,4 +1,4 @@
-import {createStripePayments,stripeTestOptions,type StripePayments} from './modules/payments/stripe.js';
+import {createStripePayments,stripeOptions,type StripePayments} from './modules/payments/stripe.js';
 import { recordGrowthActivity } from './modules/growth/activity.js';
 import { installEmailRoutes } from './modules/notifications/email-routes.js';
 import { randomUUID } from 'node:crypto';
@@ -29,7 +29,11 @@ export function createApp(options: {
   const metrics = options.metrics ?? createOperationalMetrics('api', Date.now, options.commerceTelemetryEnabled === true);
   if (options.observeRequests !== false) installOperationalMetrics(app, metrics);
   const origins = options.webOrigins ?? (options.webOrigin ? [options.webOrigin] : []);
-  const payments=options.stripePayments??createStripePayments(options.getDb??(()=>Promise.reject(new HttpError(503,'SERVICE_UNAVAILABLE'))),stripeTestOptions(process.env));
+  const paymentDb=options.getDb??(()=>Promise.reject(new HttpError(503,'SERVICE_UNAVAILABLE')));
+  const payments=options.stripePayments??(()=>{
+    try{return createStripePayments(paymentDb,stripeOptions(process.env),options.onOrderCreated);}
+    catch{options.logger.log('error','configuration_invalid');return createStripePayments(paymentDb);}
+  })();
   app.locals.stripePayments=payments;
   app.disable('x-powered-by');
   app.set('query parser', 'simple');

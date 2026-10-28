@@ -61,3 +61,27 @@ test('Stripe retry after navigation reuses the reserved order and saved payment 
   await page.getByRole('button',{name:'Resume Stripe test checkout',exact:true}).click();await expect(page).toHaveURL(originalUrl);
   const result=await state(request);expect(result.orders).toHaveLength(1);expect(result.stock).toBe(2);expect(result.receipts).toBe(1);
 });
+test('verified live receipt clears purchased quantities once and preserves later basket additions',async({page,request})=>{
+  await nextCheckoutPage(page);await page.locator('[name="payment"]').selectOption('stripe');await page.getByRole('button',{name:'Review order',exact:true}).click();
+  await page.route('https://checkout.stripe.com/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Synthetic Stripe Checkout</h1>'}));
+  await page.getByRole('button',{name:'Continue to Stripe test checkout'}).click();await expect(page.getByRole('heading',{name:'Synthetic Stripe Checkout'})).toBeVisible();
+  await request.post(commerceOrigin+'/__fixture/stripe-paid');
+  // Exercise the live receipt branch with a synthetic, verified-server response. No live Stripe API calls.
+  await page.route('**/api/checkout/stripe/status',async route=>{const response=await route.fetch();const body=await response.json();await route.fulfill({response,json:{...body,testMode:false}});});
+  await page.goto(checkoutOrigin+'/checkout/stripe?result=returned');await expect(page.getByRole('heading',{name:'Payment received',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('almina.cart.v1')!))).toEqual([]);
+  await page.evaluate(()=>localStorage.setItem('almina.cart.v1',JSON.stringify([{id:'bbbbbbbbbbbbbbbbbbbbbbbb',quantity:1}])));
+  await page.reload();await expect(page.getByRole('heading',{name:'Payment received',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('almina.cart.v1')!))).toEqual([{id:'bbbbbbbbbbbbbbbbbbbbbbbb',quantity:1}]);
+  await request.post(commerceOrigin+'/__fixture/stripe-refunded');await page.reload();await expect(page.getByRole('heading',{name:'Payment refunded',exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('almina.cart.v1')!))).toEqual([{id:'bbbbbbbbbbbbbbbbbbbbbbbb',quantity:1}]);
+});
+test('Stripe authorization or rate-limit errors preserve the original payment key',async({page})=>{
+  await nextCheckoutPage(page);await page.locator('[name="payment"]').selectOption('stripe');await page.getByRole('button',{name:'Review order',exact:true}).click();
+  await page.route('**/api/checkout/stripe/start',route=>route.fulfill({status:403,json:{error:{code:'FORBIDDEN'}}}));
+  await page.getByRole('button',{name:'Continue to Stripe test checkout'}).click();
+  await expect(page.locator('p[role="alert"]')).toBeVisible();
+  const original=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('almina.checkout.pending.v1')!).idempotencyKey);
+  await page.reload();await expect(page.getByRole('button',{name:'Resume Stripe test checkout'})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('almina.checkout.pending.v1')!).idempotencyKey)).toBe(original);
+});
