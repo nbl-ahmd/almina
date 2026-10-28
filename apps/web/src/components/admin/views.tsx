@@ -672,7 +672,7 @@ export function OrderDetail({
                   ].map((value) => ({ value, label: value })),
                 },
               ]}
-              confirm="Apply this order status change?"
+              confirm={stripePayment?.provider==='stripe'?"Apply this Stripe order change? Selecting cancelled or refunded on a live order requests a real refund; completion waits for Stripe confirmation.":"Apply this order status change?"}
               label="Update status"
             />
           </>
