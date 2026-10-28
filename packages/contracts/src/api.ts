@@ -2,7 +2,7 @@ import { wholesaleBusinessFields } from './wholesale';
 import { productContentFields } from './product-content';
 import { productFamilyFields } from './product-family';
 import { z } from 'zod';
-import { orderStatusSchema, lineSnapshotSchema, quoteDtoSchema } from './commerce';
+import { orderStatusSchema, lineSnapshotSchema, quoteDtoSchema, stripePaymentStateSchema } from './commerce';
 import { productBusinessIdSchema } from './identifiers';
 
 const id = z.string().regex(/^[a-fA-F0-9]{24}$/);
@@ -57,7 +57,9 @@ export const staffDtoSchema = z.object({
   id, username: z.string(), name: z.string(), role: z.enum(['admin', 'user']), cities: z.array(z.string()),
 }).strict();
 export const loginDtoSchema = z.object({ expiresAt: z.iso.datetime(), user: staffDtoSchema }).strict();
+export const orderPaymentSchema=z.object({provider:z.literal('stripe'),testMode:z.boolean(),state:stripePaymentStateSchema,refundIssue:z.string().optional()}).strict();
 export const orderSummaryDtoSchema = z.object({
+  payment:orderPaymentSchema.optional(),
   id, orderId: z.string(), createdAt: z.iso.datetime().nullable(),
   channel:z.literal('wholesale').optional(),wholesale:z.object({businessName:z.string(),typeId:z.string()}).optional(),
   status: z.union([orderStatusSchema, z.literal('legacy_conflict')]),

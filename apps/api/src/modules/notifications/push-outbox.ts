@@ -36,9 +36,12 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
       { ...query, sort: { createdAt: 1, _id: 1 }, returnDocument: 'after' });
       if (!job) return;
       const release = { $unset: { pushLeaseToken: '', pushLeaseUntil: '', pushNextAttemptAt: '' } };
-      const order = await db.collection('orders').findOne({ _id: job.orderId }, { ...query, projection: { 'customer.city': 1 } });
+      const order = await db.collection('orders').findOne({ _id: job.orderId }, { ...query, projection: { 'customer.city': 1, payment:1, status:1 } });
       if (!order) {
         await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'failed' } }, query); options.onFailure(); return;
+      }
+      if(order.payment?.provider==='stripe'&&(order.payment.testMode!==false||order.payment.state!=='paid'||order.payment.refundRequested||['cancelled','refunded'].includes(order.status))){
+        await jobs.updateOne({_id:job._id,pushLeaseToken:token},{...release,$set:{pushState:'done'}},query);return;
       }
       const scope = { disabled: { $ne: true }, subscription: { $type: 'object' }, $or: [
         { role: 'admin' }, ...(typeof order.customer?.city === 'string' ? [{ role: 'user', cities: order.customer.city }] : []),

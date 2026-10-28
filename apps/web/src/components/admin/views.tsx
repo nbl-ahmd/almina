@@ -518,6 +518,7 @@ export function OrderDetail({
   const customer = record(order.customer);
   const id = display(order._id);
   const status = display(order.status);
+  const stripePayment=order.payment as {provider?:string;state?:string;testMode?:boolean;refundIssue?:string}|undefined;
   return (
     <>
       <PageHeader
@@ -534,6 +535,7 @@ export function OrderDetail({
       />
 
       {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
+      {stripePayment?.provider==='stripe'?<div className="admin-alert" role="status"><strong>{stripePayment.testMode?'Stripe test payment':'Stripe online payment'} · {display(stripePayment.state)}</strong><p>Only verified paid orders can be fulfilled. Paid-order cancellation requests a refund; cancellation finishes after Stripe confirms it. Dispatched goods are not automatically restocked.</p>{stripePayment.refundIssue?<p>{stripePayment.refundIssue}</p>:null}</div>:null}
       <div className="admin-grid admin-grid--2">
         <Card
           title="Customer and delivery"
@@ -643,7 +645,7 @@ export function OrderDetail({
             path={`orders/cancel/${id}`}
             body={{ cancelled: true }}
             variant="danger"
-            confirm="Cancel this order? The server will apply the existing cancellation and restocking policy."
+            confirm={stripePayment?.provider==='stripe'?"Cancel this Stripe order? A paid order requires a full refund; cancellation and any eligible restock complete only after Stripe confirms the refund.":"Cancel this order? The server will apply the existing cancellation and restocking policy."}
           >
             Cancel order
           </Command>

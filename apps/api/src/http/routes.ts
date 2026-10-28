@@ -60,7 +60,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   const catalog = createCatalogRepository(getDb, observeCatalogQuery);
   const auth = createAuthService(getDb);
   const orders = createOrderRepository(getDb);
-  const commerce = createCommerceService(getDb);
+  const commerce = createCommerceService(getDb,payments);
   const staff = createStaffRepository(getDb);
   const location = createReverseLocationService(getDb, locationOptions);
   router.post('/checkout/location', async (req, res) => {
@@ -85,6 +85,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     router.get(route, (req, _res, next) => { noBody(req); next(); }, handler);
     router.all(route, (_req, res, next) => { res.set('Allow', 'GET, HEAD'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
   }
+  read('/payments/stripe/availability',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,growthZ.object({available:growthZ.boolean(),ready:growthZ.boolean(),testMode:growthZ.boolean()}).strict(),payments?await payments.availability():{available:false,ready:false,testMode:true});});
   read('/admin/operations', async (req, res) => {
     await identity(req, true); validate(emptyQuerySchema, req.query);
     if (!metrics) throw new HttpError(503, 'SERVICE_UNAVAILABLE');

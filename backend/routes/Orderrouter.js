@@ -1,7 +1,7 @@
 const express = require('express');
 const Orderrouter = express.Router();
 const { createCommerceService } = require('../commerce/dist/service.cjs');
-const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb);
+const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb, req.app.locals.stripePayments);
 
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {

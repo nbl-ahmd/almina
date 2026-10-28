@@ -1,3 +1,4 @@
+import {paymentSummary} from './dto.js';
 import type { Document } from 'mongodb';
 import { historicalStatus } from './status.js';
 
@@ -15,5 +16,5 @@ export function legacyOrderDto(order: Document): Document {
     } }));
   const { statusHistory: _history, commerceMigration: _migration, ...view } = order;
   void _history; void _migration;
-  return { ...view, status: historicalStatus(order), snapshotAvailable, cartItems };
+  return { ...view, ...(order.payment?.provider==='stripe'?{payment:paymentSummary(order)}:{}), status: historicalStatus(order), snapshotAvailable, cartItems };
 }

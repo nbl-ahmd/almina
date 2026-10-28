@@ -594,3 +594,7 @@ Added one shared, Render-only address allowlist fallback to the retained and mai
 ## 27 October 2026 — additive Stripe test payments
 
 Stripe-hosted Checkout is an extra, opt-in **test-only** retail payment path. Cash/card on delivery are preserved. Test orders reserve stock transactionally, verify signed webhooks and canonical provider state, reconcile expiry/full refunds once, and cannot send notifications or enter fulfilment. Production activation is blocked. Isolated local sandbox and private listener setup: [Stripe test payments](STRIPE_TEST_PAYMENTS_2026-10-27.md). Live payments need a separate reviewed rollout.
+
+## 28 October 2026 — live Stripe rollout
+
+Added account-bound live-mode support alongside delivery payments. Production availability is controlled by Render, with new payments paused until live credentials/account readiness are verified. Fulfilment and notifications require canonical full capture; paid cancellations queue idempotent refunds and fence dispatch. Partial refunds, failed refunds and disputes stop fulfilment; post-dispatch/Dashboard refunds never invent returned stock. The owner approved creating the live webhook and will enter credentials directly in Render after deployment. [Production rollout and rollback](STRIPE_LIVE_PAYMENTS_2026-10-28.md).
