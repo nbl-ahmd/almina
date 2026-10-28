@@ -9,7 +9,7 @@ export const customerInputSchema = z.object({
   emirate: shortText.min(1), city: shortText.min(1), address: z.string().trim().min(1).max(1000),
   buildingname: shortText.default(''), flatno: shortText.default(''), note: z.string().max(1000).default(''),
   maplink: z.union([z.literal(''), z.url().max(2048).refine(value => value.startsWith('https://'))]).default(''),
-  payment: z.enum(['cash', 'card']),
+  payment: z.enum(['cash', 'card', 'stripe']),
 }).strict();
 const items = z.array(z.object({ productId: id, quantity: z.number().int().min(1).max(1000) }).strict()).min(1).max(100);
 export const quoteInputSchema = z.object({ customer: customerInputSchema, items, voucherCode:z.string().regex(/^AM-[A-F0-9]{24}$/).optional() }).strict();
@@ -43,3 +43,11 @@ export type QuoteInput = z.infer<typeof quoteInputSchema>;
 export type CommercePolicy = z.infer<typeof commercePolicySchema>;
 export type Quote = z.infer<typeof quoteDtoSchema>;
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
+
+// This additive provider is intentionally test-only until a separate live-payment rollout.
+export const stripeCheckoutDtoSchema = z.object({
+  orderId: z.string(), state: z.enum(['awaiting_payment', 'paid', 'expired', 'refunded']),
+  checkoutUrl: z.url().refine(value => { const url = new URL(value); return url.protocol === 'https:' && url.hostname === 'checkout.stripe.com' && !url.username && !url.password; }).nullable(),
+  testMode: z.literal(true),
+}).strict();
+export const stripeStatusInputSchema = z.object({ idempotencyKey: z.uuid() }).strict();

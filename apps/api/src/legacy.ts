@@ -48,3 +48,5 @@ export { prepareEmailStorage } from './modules/notifications/storage.js';
 export {marketingWorker} from './modules/marketing/worker.js';
 
 export { searchEmbeddingWorker } from './modules/search/embedding-worker.js';
+
+export * from './modules/payments/stripe.js';

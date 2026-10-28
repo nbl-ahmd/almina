@@ -8,7 +8,7 @@ import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 import { emirateLabel } from '../lib/i18n';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
+import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, stripeCheckoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
 import { Icon } from './icon';
 import { savedArea } from '../lib/location/browser';
 import { z } from 'zod';
@@ -30,6 +30,7 @@ function errorMessages(locale: Locale): Record<string, string> {
     MINIMUM_ORDER: t(locale, 'checkoutErrorMinimumOrder'),
     COMMERCE_UNAVAILABLE: t(locale, 'checkoutErrorCommerceUnavailable'),
     INVALID_REQUEST: t(locale, 'checkoutErrorInvalidRequest'),
+    INVALID_TRANSITION: locale==='ar'?'انتهى هذا الدفع التجريبي. راجع الطلب للبدء مجدداً.':'This test checkout has ended. Review your order to start again.',
     UNAUTHORIZED: t(locale, 'checkoutErrorUnauthorized'),
     RATE_LIMITED: t(locale, 'checkoutErrorRateLimited'),
   };
@@ -62,7 +63,7 @@ async function send(path: string, body: unknown) {
   }
   return data;
 }
-export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
+export function CheckoutForm({ locale = 'en', stripeTestEnabled = false }: { locale?: Locale; stripeTestEnabled?:boolean }) {
   const formatted = (minor: number) => currencyFormat(locale).format(minor / 100);
   const errors = errorMessages(locale);
   const inputs = inputMessages(locale);
@@ -75,6 +76,7 @@ export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
   const [maplink, setMaplink] = useState('');
   const [locationMessage, setLocationMessage] = useState('');
   const [delivery, setDelivery] = useState({ address: '', emirate: 'Ras al-Khaimah', city: '' });
+  const [paymentMethod,setPaymentMethod]=useState('cash');
   const [voucherCode,setVoucherCode]=useState('');
   const [savedAddresses,setSavedAddresses]=useState<SavedDeliveryAddress[]>([]);
   const [ready, setReady] = useState(false);
@@ -203,6 +205,11 @@ export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
       }
       for(const row of input.searchAttribution??[])reportSearchEvent({searchId:row.searchId,event:'search_checkout',items:[{productId:row.productId,position:row.position}]});
       submitted = true;
+      if(input.customer.payment==='stripe'){
+        const payment=stripeCheckoutDtoSchema.parse(await send('/api/checkout/stripe/start',input));
+        window.location.assign(payment.checkoutUrl??'/checkout/stripe');
+        return;
+      }
       const committed = checkoutDtoSchema.parse(await send('/api/checkout', input));
       setResult(committed); setAttempt(null); setReviewed(null);
       recordCommerceEvent('checkout_confirmed');
@@ -221,6 +228,7 @@ export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
         : failure instanceof InputError ? inputs[failure.code] : t(locale, 'checkoutErrorNotSaved'));
     } finally { busy.current = false; setWorking(false); }
   }
+  const stripeAttempt=(attempt??reviewed)?.customer.payment==='stripe';
   if (!ready) return <p role="status">{t(locale, 'checkoutLoading')}</p>;
   if (result) return <section className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="order-confirmation">
     <div className="border-b border-border bg-subtle px-6 py-8 text-center sm:px-10"><span className="mx-auto mb-4 flex size-16 shrink-0 items-center justify-center rounded-full bg-accent text-teal"><Icon name="check" /></span><h2 ref={confirmation} tabIndex={-1} className="mb-2 text-2xl outline-none sm:text-3xl" id="order-confirmation">{t(locale, 'checkoutOrderReceived')}</h2><p className="m-0 text-sm text-ocean">{t(locale, 'checkoutThankYou')}</p></div>
@@ -248,7 +256,7 @@ export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
           <Field><FieldLabel htmlFor="checkout-form-field-9">{t(locale, 'checkoutFlat')}</FieldLabel><Input id="checkout-form-field-9" name="flatno" maxLength={200} placeholder={t(locale, 'checkoutFlatPlaceholder')} /></Field>
           <Field className="sm:col-span-2"><FieldLabel htmlFor="checkout-form-field-10">{t(locale, 'checkoutNote')}</FieldLabel><Input id="checkout-form-field-10" name="note" maxLength={1000} placeholder={t(locale, 'checkoutNotePlaceholder')} /></Field>
         </div></section>
-        <section className="p-5 sm:p-7" aria-labelledby="payment-details-heading"><h3 id="payment-details-heading" className="mb-4 flex items-center gap-3 text-base"><span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">3</span>{t(locale, 'checkoutPayment')}</h3><Field><FieldLabel htmlFor="checkout-form-field-11">{t(locale, 'checkoutPaymentOnDelivery')}</FieldLabel><NativeSelect id="checkout-form-field-11" name="payment" defaultValue="cash"><option value="cash">{t(locale, 'checkoutCash')}</option><option value="card">{t(locale, 'checkoutCard')}</option></NativeSelect></Field><p className="mt-2 mb-0 text-xs text-muted">{t(locale, 'checkoutPayWhenArrives')}</p><Field className="mt-5"><FieldLabel htmlFor="checkout-form-field-12">{t(locale, 'checkoutVoucher')}</FieldLabel><Input id="checkout-form-field-12" value={voucherCode} maxLength={27} placeholder="AM-…" onChange={event=>setVoucherCode(event.target.value.toUpperCase())} autoComplete="off" /><FieldDescription><span className="text-xs font-normal text-muted">{t(locale, 'checkoutVoucherHint')}</span></FieldDescription></Field></section>
+        <section className="p-5 sm:p-7" aria-labelledby="payment-details-heading"><h3 id="payment-details-heading" className="mb-4 flex items-center gap-3 text-base"><span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">3</span>{t(locale, 'checkoutPayment')}</h3><Field><FieldLabel htmlFor="checkout-form-field-11">{stripeTestEnabled?t(locale, 'checkoutPayment'):t(locale, 'checkoutPaymentOnDelivery')}</FieldLabel><NativeSelect id="checkout-form-field-11" name="payment" value={attempt?.customer.payment??paymentMethod} onChange={event=>{setPaymentMethod(event.target.value);if(event.target.value==='stripe')setVoucherCode('');}}><option value="cash">{t(locale, 'checkoutCash')}</option><option value="card">{t(locale, 'checkoutCard')}</option>{stripeTestEnabled?<option value="stripe">{locale==='ar'?'بطاقة عبر Stripe — تجريبي':'Card via Stripe — test mode'}</option>:null}</NativeSelect></Field><p className="mt-2 mb-0 text-xs text-muted">{stripeTestEnabled?(locale==='ar'?'الدفع عند الاستلام متاح. Stripe تجريبي فقط؛ لا تستخدم بطاقة حقيقية. القسائم غير متاحة في الاختبار.':'Cash and card on delivery remain available. Stripe is for testing only; use test card details. Vouchers are not supported in this test.'):t(locale, 'checkoutPayWhenArrives')}</p><Field className="mt-5"><FieldLabel htmlFor="checkout-form-field-12">{t(locale, 'checkoutVoucher')}</FieldLabel><Input id="checkout-form-field-12" disabled={paymentMethod==='stripe'} value={voucherCode} maxLength={27} placeholder="AM-…" onChange={event=>setVoucherCode(event.target.value.toUpperCase())} autoComplete="off" /><FieldDescription><span className="text-xs font-normal text-muted">{t(locale, 'checkoutVoucherHint')}</span></FieldDescription></Field></section>
       </fieldset>
       <div className="border-t border-border bg-page px-5 py-5 sm:px-7">{!attempt ? <Button variant="default" size="default" type="submit" className="w-full" disabled={working || locating || !!error && error === t(locale, 'checkoutRecoverError')}>{working ? t(locale, 'checkoutChecking') : t(locale, 'checkoutReview')}<Icon name="arrow" /></Button> : <p className="m-0 text-sm" role="status">{t(locale, 'checkoutPendingNotice')}</p>}<p className="mt-3 mb-0 text-center text-xs text-muted">{t(locale, 'checkoutFinalTotalNote')}</p></div>
     </FieldGroup></form>
@@ -257,7 +265,7 @@ export function CheckoutForm({ locale = 'en' }: { locale?: Locale }) {
       {error ? <p className="rounded-[14px] border border-warning/40 bg-warning-surface p-3 text-sm text-warning" role="alert">{error}</p> : null}
       {total ? <><ul className="m-0 list-none p-0">{total.lines.map(line => <li className="flex items-start justify-between gap-3 border-b border-border py-3 text-sm first:pt-0 wrap-anywhere" key={line.productId}><span>{line.name}{line.variantLabel?<span className="mt-1 block text-xs text-ocean">{line.variantLabel}</span>:null}<span className="mt-1 block text-xs text-muted">{tf(locale, 'checkoutQty', { count: line.quantity })}</span></span><strong className="shrink-0 tabular-nums">{formatted(line.lineTotalMinor)}</strong></li>)}</ul>
         <dl className="mt-5 grid grid-cols-[minmax(0,1fr)_auto] gap-3 text-sm tabular-nums"><dt>{t(locale, 'checkoutItems')}</dt><dd className="m-0 text-right">{formatted(total.subtotalMinor)}</dd>{total.voucher?<><dt>{t(locale, 'checkoutRewardVoucher')}</dt><dd className="m-0 text-right text-teal">−{formatted(total.voucher.discountMinor)}</dd></>:null}<dt>{t(locale, 'checkoutDelivery')}</dt><dd className="m-0 text-right">{formatted(total.deliveryFeeMinor)}</dd><dt>{total.vatMode === 'inclusive' ? t(locale, 'checkoutVatIncluded') : t(locale, 'checkoutVat')}</dt><dd className="m-0 text-right">{formatted(total.taxMinor)}</dd><dt className="border-t border-border pt-4 text-lg font-bold">{t(locale, 'checkoutTotal')}</dt><dd className="m-0 border-t border-border pt-4 text-right text-lg font-bold">{formatted(total.totalMinor)}</dd></dl></> : <div className="rounded-[16px] bg-page p-4"><p className="mb-2 text-sm font-semibold">{t(locale, 'checkoutReadyTitle')}</p><p className="m-0 text-xs leading-relaxed text-ocean">{t(locale, 'checkoutReadyBody')}</p></div>}
-      {reviewed || attempt ? <Button variant="default" size="default" type="button" className="mt-5 w-full" disabled={working} onClick={() => { void place(); }}>{working ? t(locale, 'checkoutConfirming') : attempt ? t(locale, 'checkoutRetryPending') : tf(locale, 'checkoutPlaceOrder', { total: formatted(total!.totalMinor) })}</Button> : null}
+      {reviewed || attempt ? <Button variant="default" size="default" type="button" className="mt-5 w-full" disabled={working} onClick={() => { void place(); }}>{working ? t(locale, 'checkoutConfirming') : stripeAttempt?(locale==='ar'?(attempt?'متابعة الدفع التجريبي':'المتابعة إلى اختبار Stripe'):(attempt?'Resume Stripe test checkout':'Continue to Stripe test checkout')):attempt ? t(locale, 'checkoutRetryPending') : tf(locale, 'checkoutPlaceOrder', { total: formatted(total!.totalMinor) })}</Button> : null}
       <Link className="mt-3 flex min-h-11 items-center justify-center text-xs text-ocean hover:text-teal" href="/cart">{t(locale, 'checkoutReturnToCart')}</Link><div className="mt-3 flex items-start gap-2 border-t border-border pt-4 text-xs leading-relaxed text-ocean"><Icon name="phone" /><span>{t(locale, 'checkoutHelpPrefix')} <Link className="font-semibold text-teal" href="/contact">{t(locale, 'checkoutHelpLink')}</Link>.</span></div></div>
     </aside>
   </section>;

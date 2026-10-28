@@ -1,3 +1,4 @@
+import {createStripePayments,stripeTestOptions,type StripePayments} from './modules/payments/stripe.js';
 import { recordGrowthActivity } from './modules/growth/activity.js';
 import { installEmailRoutes } from './modules/notifications/email-routes.js';
 import { randomUUID } from 'node:crypto';
@@ -20,6 +21,7 @@ export function createApp(options: {
   development?: boolean; trustProxy?: string[]; rateLimit?: number; draining?: () => boolean; requestDeadlineMs?: number;
   webOrigins?: readonly string[]; metrics?: OperationalMetrics; observeRequests?: boolean;
   commerceTelemetryEnabled?: boolean;
+  stripePayments?: StripePayments;
   location?: LocationOptions;
   onOrderCreated?: (order: { id: string; orderId: string }) => void;
 }) {
@@ -27,6 +29,8 @@ export function createApp(options: {
   const metrics = options.metrics ?? createOperationalMetrics('api', Date.now, options.commerceTelemetryEnabled === true);
   if (options.observeRequests !== false) installOperationalMetrics(app, metrics);
   const origins = options.webOrigins ?? (options.webOrigin ? [options.webOrigin] : []);
+  const payments=options.stripePayments??createStripePayments(options.getDb??(()=>Promise.reject(new HttpError(503,'SERVICE_UNAVAILABLE'))),stripeTestOptions(process.env));
+  app.locals.stripePayments=payments;
   app.disable('x-powered-by');
   app.set('query parser', 'simple');
   app.set('trust proxy', options.trustProxy?.length ? options.trustProxy : false);
@@ -107,6 +111,11 @@ export function createApp(options: {
     }
     next();
   });
+  // Raw bytes must be verified before any JSON parser in either HTTP stack.
+  app.post('/api/v1/payments/stripe/webhook',express.raw({type:'application/json',limit:'128kb',inflate:false}),async(req,res)=>{
+    if(!Buffer.isBuffer(req.body)||req.url.includes('?')||typeof req.headers['stripe-signature']!=='string'||req.headers['stripe-signature'].length>2000)throw new HttpError(400,'INVALID_REQUEST');
+    await payments.webhook(req.body,req.headers['stripe-signature']);res.status(200).json({received:true});
+  });
   app.use('/api/v1/commerce-events', (_req, _res, next) => {
     next(options.commerceTelemetryEnabled === true ? undefined : new HttpError(404, 'NOT_FOUND'));
   }, express.json({ limit: '192b', strict: true, inflate: false }));
@@ -135,7 +144,7 @@ export function createApp(options: {
   }, metrics, order => {
     try { options.onOrderCreated?.(order); }
     catch { options.logger.log('warn', 'request_failed'); } // Committed commerce never depends on realtime.
-  }, options.location, measurement=>options.logger.log(measurement.unavailable?'warn':'info','search_query',measurement)));
+  }, options.location, measurement=>options.logger.log(measurement.unavailable?'warn':'info','search_query',measurement), payments));
   app.use((_req, _res, next) => next(new HttpError(404, 'NOT_FOUND')));
   app.use(errorHandler(options.logger, metrics));
   return app;

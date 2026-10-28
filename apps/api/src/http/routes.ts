@@ -1,3 +1,5 @@
+import {stripeCheckoutDtoSchema} from '@almina/contracts';
+import type {StripePayments} from '../modules/payments/stripe.js';
 import { installSearchRoutes } from '../modules/search/routes.js';
 import type { SearchDiagnostic } from '../modules/search/search-types.js';
 import {installMarketingRoutes} from '../modules/marketing/routes.js';
@@ -52,7 +54,7 @@ import { reverseLocationDtoSchema, reverseLocationInputSchema } from '@almina/co
 import { createReverseLocationService, type LocationOptions } from '../modules/location/reverse.js';
 
 export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], development = false, observeCatalogQuery?: CatalogQueryObserver, metrics?: OperationalMetrics,
-  onOrderCreated?: (order: { id: string; orderId: string }) => void, locationOptions?: LocationOptions, observeSearch?:(measurement:SearchDiagnostic)=>void) {
+  onOrderCreated?: (order: { id: string; orderId: string }) => void, locationOptions?: LocationOptions, observeSearch?:((measurement:SearchDiagnostic)=>void), payments?:StripePayments) {
   const router = Router();
   const origins = typeof webOrigin === 'string' ? [webOrigin] : [...webOrigin];
   const catalog = createCatalogRepository(getDb, observeCatalogQuery);
@@ -160,6 +162,12 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     validate(emptyQuerySchema, req.query);
     verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));
     send(res, quoteDtoSchema, await commerce.quote(req.body,req.body?.voucherCode?(await sessionCustomer(req)).id:undefined));
+  });
+  for(const action of ['start','status','cancel'] as const) router.post('/payments/stripe/'+action,async(req,res)=>{
+    validate(emptyQuerySchema,req.query);verifyBrowserMutation(req,origins,()=>new HttpError(403,'FORBIDDEN'));
+    if(!payments)throw new HttpError(404,'NOT_FOUND');
+    const result=action==='start'?await payments.start(req.body):await payments.status(req.body,action==='cancel');
+    send(res,stripeCheckoutDtoSchema,result);
   });
   router.post('/checkout', async (req, res) => {
     validate(emptyQuerySchema, req.query);

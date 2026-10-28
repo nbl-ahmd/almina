@@ -35,7 +35,9 @@ function createLegacyApp(options) {
     draining: () => app.locals.draining, metrics: app.locals.operationsMetrics, observeRequests: false, commerceTelemetryEnabled: options.commerceTelemetryEnabled === true,
     onOrderCreated: order => app.locals.io?.emit('newOrder', { _id: order.id, orderId: order.orderId }),
     location: options.location,
+    ...(options.stripePayments ? {stripePayments: options.stripePayments} : {}),
   });
+  app.locals.stripePayments = versioned.locals.stripePayments;
   app.use('/api/v1', (req, res, next) => { req.url = '/api/v1' + req.url; versioned(req, res, next); });
   app.use((_req, res, next) => app.locals.draining ? res.status(503).set('Retry-After', '30').json({ error: 'Service draining' }) : next());
   installBoundary(app, { ...options, auth });

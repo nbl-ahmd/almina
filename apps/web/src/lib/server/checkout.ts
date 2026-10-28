@@ -2,16 +2,19 @@ import { cookies } from 'next/headers';
 import 'server-only';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { checkoutInputSchema, quoteInputSchema, quoteDtoSchema, checkoutDtoSchema, apiErrorSchema } from '@almina/contracts';
+import { checkoutInputSchema, quoteInputSchema, quoteDtoSchema, checkoutDtoSchema, apiErrorSchema, stripeCheckoutDtoSchema, stripeStatusInputSchema } from '@almina/contracts';
 import { reverseLocationInputSchema, reverseLocationDtoSchema } from '@almina/contracts';
 import { getWebEnvironment } from './env';
 
 const headers = { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex, nofollow' };
 const checkout = checkoutInputSchema.extend({ acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/) });
 function failure(status: number, code: string) { return Response.json({ error: { code } }, { status, headers }); }
-export async function checkoutRequest(request: Request, quoteOnly: boolean | 'location' = false) {
+export async function checkoutRequest(request: Request, quoteOnly: boolean | 'location' | 'stripe-start' | 'stripe-status' | 'stripe-cancel' = false) {
+  const stripeAction = typeof quoteOnly === 'string' && quoteOnly.startsWith('stripe-') ? quoteOnly.slice(7) : null;
+  const quoteRequest = quoteOnly === true;
   const locationOnly = quoteOnly === 'location';
   const env = getWebEnvironment();
+  if (stripeAction && !env.STRIPE_TEST_ENABLED) return failure(404, 'NOT_FOUND');
   if (!env.CHECKOUT_ENABLED) return failure(503, 'COMMERCE_UNAVAILABLE');
   if (request.headers.get('origin') !== env.WEB_ORIGIN || request.headers.get('x-csrf-protection') !== '1'
     || request.headers.get('sec-fetch-site') === 'cross-site') return failure(403, 'FORBIDDEN');
@@ -29,13 +32,13 @@ export async function checkoutRequest(request: Request, quoteOnly: boolean | 'lo
     }
     let raw: unknown;
     try { raw = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return failure(400, 'INVALID_REQUEST'); }
-    const parsed = (locationOnly ? reverseLocationInputSchema : quoteOnly ? quoteInputSchema : checkout).safeParse(raw);
+    const parsed = (stripeAction && stripeAction !== 'start' ? stripeStatusInputSchema : locationOnly ? reverseLocationInputSchema : quoteRequest ? quoteInputSchema : checkout).safeParse(raw);
     if (!parsed.success) return failure(400, 'INVALID_REQUEST');
     if(!quoteOnly&&'searchAttribution' in parsed.data&&(request.headers.get('x-search-consent')!=='1'||request.headers.get('sec-gpc')==='1'||request.headers.get('dnt')==='1'))delete parsed.data.searchAttribution;
     const customerName=env.APP_ENV==='development'?'almina_customer':'__Host-almina_customer';
     const customerCookies=(await cookies()).getAll(customerName);
     const customerToken=customerCookies.length===1&&/^[A-Za-z0-9_-]{43}$/.test(customerCookies[0]!.value)?customerCookies[0]!.value:null;
-    const result = await fetch(new URL(locationOnly ? '/api/v1/checkout/location' : quoteOnly ? '/api/v1/checkout/quote' : '/api/v1/checkout', env.API_ORIGIN), {
+    const result = await fetch(new URL(stripeAction ? '/api/v1/payments/stripe/'+stripeAction : locationOnly ? '/api/v1/checkout/location' : quoteRequest ? '/api/v1/checkout/quote' : '/api/v1/checkout', env.API_ORIGIN), {
       method: 'POST', cache: 'no-store', redirect: 'error', credentials: 'omit',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: env.WEB_ORIGIN, 'X-CSRF-Protection': '1', ...(customerToken?{Cookie:customerName+'='+customerToken}:{}) },
       body: JSON.stringify(parsed.data), signal: AbortSignal.timeout(15000),
@@ -45,10 +48,10 @@ export async function checkoutRequest(request: Request, quoteOnly: boolean | 'lo
       const error = apiErrorSchema.safeParse(body);
       return failure(result.status, error.success ? error.data.error.code : 'SERVICE_UNAVAILABLE');
     }
-    const envelope = z.object({ data: locationOnly ? reverseLocationDtoSchema : quoteOnly ? quoteDtoSchema : checkoutDtoSchema, requestId: z.uuid() }).strict().safeParse(body);
+    const envelope = z.object({ data: stripeAction ? stripeCheckoutDtoSchema : locationOnly ? reverseLocationDtoSchema : quoteRequest ? quoteDtoSchema : checkoutDtoSchema, requestId: z.uuid() }).strict().safeParse(body);
     if (!envelope.success) return failure(502, 'SERVICE_UNAVAILABLE');
     const data = envelope.data.data;
-    return Response.json(!locationOnly && quoteOnly ? { quote: data, quoteHash: createHash('sha256').update(JSON.stringify(data)).digest('hex') } : data,
+    return Response.json(quoteRequest ? { quote: data, quoteHash: createHash('sha256').update(JSON.stringify(data)).digest('hex') } : data,
       { status: result.status, headers });
   } catch { return failure(502, 'SERVICE_UNAVAILABLE'); }
 }
