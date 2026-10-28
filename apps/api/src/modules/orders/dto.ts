@@ -2,9 +2,9 @@ import type { Document } from 'mongodb';
 import { orderPaymentSchema, wholesaleBusinessFields, orderSummaryDtoSchema, orderDetailDtoSchema } from '@almina/contracts';
 import { historicalStatus } from './status.js';
 import { id, text, number } from '../dto-values.js';
-export const orderSummaryProjection = { 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1, channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, 'totals.totalMinor': 1, createdAt: 1, dispatched: 1, canceled: 1,
+export const orderSummaryProjection = { 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1,'payment.paymentIntentId':1,'payment.sessionId':1, channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, 'totals.totalMinor': 1, createdAt: 1, dispatched: 1, canceled: 1,
   'customer.city': 1, 'customer.totalAmount': 1, billno: 1, billamount: 1 };
-export const orderDetailProjection = { 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1, ...Object.fromEntries(Object.keys(wholesaleBusinessFields).map(key=>['wholesale.'+key,1])), channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, totals: 1, createdAt: 1, dispatched: 1, canceled: 1,
+export const orderDetailProjection = { 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1,'payment.paymentIntentId':1,'payment.sessionId':1, ...Object.fromEntries(Object.keys(wholesaleBusinessFields).map(key=>['wholesale.'+key,1])), channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, totals: 1, createdAt: 1, dispatched: 1, canceled: 1,
   billno: 1, billamount: 1, cartItems: 1, lines: 1,
   ...Object.fromEntries(['name', 'mobile', 'email', 'emirate', 'city', 'buildingname', 'flatno', 'note', 'payment', 'address',
     'maplink', 'totalprice', 'totalSalePrice', 'totalVat', 'totalAmount', 'deliveryFee'].map(field => [`customer.${field}`, 1])) };
@@ -29,4 +29,4 @@ export function orderDetailDto(doc: Document) {
     lines: doc.schemaVersion === 2 ? doc.lines ?? null : null, totals: doc.schemaVersion === 2 ? doc.totals ?? null : null });
 }
 
-export function paymentSummary(doc:Document){return orderPaymentSchema.parse({provider:'stripe',testMode:doc.payment.testMode,state:doc.payment.state,...(doc.payment.refundIssue?{refundIssue:doc.payment.refundIssue}:{})});}
+export function paymentSummary(doc:Document){return orderPaymentSchema.parse({provider:'stripe',testMode:doc.payment.testMode,state:doc.payment.state,...(typeof(doc.payment.paymentIntentId??doc.payment.sessionId)==='string'?{reference:doc.payment.paymentIntentId??doc.payment.sessionId}:{}),...(doc.payment.refundIssue?{refundIssue:doc.payment.refundIssue}:{})});}

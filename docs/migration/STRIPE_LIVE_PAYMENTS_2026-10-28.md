@@ -114,6 +114,7 @@ than creating a second checkout attempt.
 - Only an administrator can request a refund for a paid order. Paid cancellation
   writes a durable refund request and fences dispatch before any provider call.
   The background reconciler submits the idempotent full remaining refund.
+  The staff view includes the provider reference for Stripe lookups.
   The HTTP/admin response can retain the current order status while the payment
   banner says `refund_pending`: this is a request, not a refund acknowledgement.
 - A full confirmed refund from an application cancellation can complete the

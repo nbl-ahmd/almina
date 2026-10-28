@@ -57,7 +57,7 @@ export const staffDtoSchema = z.object({
   id, username: z.string(), name: z.string(), role: z.enum(['admin', 'user']), cities: z.array(z.string()),
 }).strict();
 export const loginDtoSchema = z.object({ expiresAt: z.iso.datetime(), user: staffDtoSchema }).strict();
-export const orderPaymentSchema=z.object({provider:z.literal('stripe'),testMode:z.boolean(),state:stripePaymentStateSchema,refundIssue:z.string().optional()}).strict();
+export const orderPaymentSchema=z.object({provider:z.literal('stripe'),testMode:z.boolean(),state:stripePaymentStateSchema,reference:z.string().max(255).optional(),refundIssue:z.string().optional()}).strict();
 export const orderSummaryDtoSchema = z.object({
   payment:orderPaymentSchema.optional(),
   id, orderId: z.string(), createdAt: z.iso.datetime().nullable(),
