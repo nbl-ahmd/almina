@@ -57,6 +57,13 @@ export function lowestDeliveryFeeMinor(policy: ShippingPolicy | null | undefined
   return Math.min(...policy.delivery.map(rule => rule.feeMinor));
 }
 
+// A country-wide Google rate must cover every served emirate. Publishing the
+// local minimum would advertise free delivery where checkout charges AED 21.
+export function countryDeliveryFeeMinor(policy: ShippingPolicy | null | undefined) {
+  if (!policy?.delivery.length) return null;
+  return Math.max(...policy.delivery.map(rule => rule.feeMinor));
+}
+
 /**
  * schema.org MerchantReturnPolicy for Offer.hasMerchantReturnPolicy.
  * Only reviewed general-sale products are returnable; medicines, prescriptions
@@ -93,11 +100,11 @@ export function merchantReturnPolicyData(origin: string, returnable = true): Mer
 
 /**
  * schema.org OfferShippingDetails for Offer.shippingDetails.
- * The published rate is the lowest standard delivery fee in the live checkout
- * policy; per-emirate fees and free-delivery thresholds are shown on /shipping.
+ * Conservatively covers every emirate; exact regional fees and free-delivery
+ * thresholds remain visible on /shipping and authoritative at checkout.
  */
 export function shippingDetailsData(policy: ShippingPolicy | null | undefined) {
-  const feeMinor = lowestDeliveryFeeMinor(policy);
+  const feeMinor = countryDeliveryFeeMinor(policy);
   if (feeMinor === null) return null;
   return {
     '@type': 'OfferShippingDetails',

@@ -598,3 +598,20 @@ Stripe-hosted Checkout is an extra, opt-in **test-only** retail payment path. Ca
 ## 28 October 2026 — live Stripe rollout
 
 Added account-bound live-mode support alongside delivery payments. Production availability is controlled by Render, with new payments paused until live credentials/account readiness are verified. Fulfilment and notifications require canonical full capture; paid cancellations queue idempotent refunds and fence dispatch. Partial refunds, failed refunds and disputes stop fulfilment; post-dispatch/Dashboard refunds never invent returned stock. The owner approved creating the live webhook and will enter credentials directly in Render after deployment. [Production rollout and rollback](STRIPE_LIVE_PAYMENTS_2026-10-28.md).
+
+## 2026-10-28 — Google Merchant and Search Console activation
+
+Audited Merchant Center account 5884188879 and the production domain property in
+Search Console. Corrected Merchant shipping/return settings to the published site,
+selected and named one existing UAE API source for free listings, and started
+validation of resolved server-error and return/shipping markup reports. Healthy
+sitemaps, intentional search noindex and truthful review metadata were preserved.
+Added an opt-in, leased Merchant API worker with publication/photo/identifier
+review gates, owned-raster validation, stable-ID retries and source-scoped
+withdrawals; it cannot alter commerce data. Corrected placeholder Product images
+and national shipping-fee markup/feed output. Catalogue preparation reports zero
+ready products and 90 close candidates out of 753. With owner approval, enabled Merchant API, registered Cloud project 181730454094,
+created the dedicated service account, reduced it to Standard-only access and
+saved the protected credential/configuration in Render for release deployment.
+An API source read succeeded after the downgrade. No products were submitted
+or marked approved; the production worker must be verified after deployment. See [Google Merchant and Search Console](GOOGLE_MERCHANT_SEARCH_2026-10-28.md).

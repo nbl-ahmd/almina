@@ -12,9 +12,10 @@ export function feedIssues(product:Product,channel:FeedChannel,images:string[]) 
   if(product.name.length>150)missing.push('Product title exceeds 150 characters');
   if(!(channel==='google'?product.googleApproved:product.metaApproved))missing.push('Channel approval');
   if(channel==='google'&&(!product.identifierStatus||product.identifierStatus==='unknown'))missing.push('Manufacturer identifier review');
+  if(channel==='google'&&product.productType!=='general')missing.push('Google UAE healthcare eligibility review (medicines excluded)');
   if(product.identifierStatus==='assigned'&&!product.gtin&&!product.mpn)missing.push('Assigned manufacturer identifier is missing');
   if(channel==='meta'&&product.productType!=='general')missing.push('Meta healthcare eligibility review (medicines excluded)');
-  if(!images.length||images.some(url=>!url.startsWith('https://')))missing.push('Public HTTPS product image');
+  if(!images.length||images.some(url=>!url.startsWith('https://')||/\/product-placeholder\.svg(?:[?#]|$)/.test(url)))missing.push('Public HTTPS product image');
   return [...new Set(missing)];
 }
 export function feedProduct(origin:string,product:Product,images:string[],channel:FeedChannel):Record<string,string>|null {

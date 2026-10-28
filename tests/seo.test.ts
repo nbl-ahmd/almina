@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pageMetadata, hasDuplicateQuery, isPublicPath, productData, breadcrumbData, serializeJsonLd, aggregateRatingData, reviewListData } from '../apps/web/src/lib/seo';
-import { formatAedMinor, lowestDeliveryFeeMinor, merchantReturnPolicyData, shippingDetailsData, type ShippingPolicy } from '../apps/web/src/lib/policies';
+import { formatAedMinor, lowestDeliveryFeeMinor, countryDeliveryFeeMinor, merchantReturnPolicyData, shippingDetailsData, type ShippingPolicy } from '../apps/web/src/lib/policies';
 import { readWebEnvironment } from '@almina/config/env';
 import { sitemapQuerySchema } from '@almina/contracts';
 
@@ -42,7 +42,8 @@ test('JSON-LD cannot terminate its script; catalog prices, images, availability 
   assert.deepEqual(data.image, ['https://cdn.example.invalid/product.jpg']);
   assert.equal(productData('https://shop.example.invalid', { ...product, salePrice: 0 }, []).offers.price, '0.00');
   assert.equal(productData('https://shop.example.invalid', { ...product, sale: false }, []).offers.price, '25.00');
-  assert.deepEqual(productData('https://shop.example.invalid', product, []).image, ['https://shop.example.invalid/product-placeholder.svg']);
+  assert.equal(productData('https://shop.example.invalid', product, []).image, undefined);
+  assert.equal(productData('https://shop.example.invalid', product, ['/product-placeholder.svg']).image, undefined);
   assert.ok(!('aggregateRating' in data));
   assert.equal(breadcrumbData('https://shop.example.invalid', [{ name: 'Home', path: '/' }]).itemListElement[0]!.position, 1);
 });
@@ -52,6 +53,9 @@ test('merchant return and live shipping policy produce valid Offer fields', () =
     delivery: [{ emirate: 'Ras Al Khaimah', feeMinor: 1000, freeAboveMinor: 10000 }] } satisfies ShippingPolicy;
   assert.equal(formatAedMinor(1000), 'AED 10.00');
   assert.equal(lowestDeliveryFeeMinor(policy), 1000);
+  const regional = { ...policy, delivery: [{ emirate: 'Ras al-Khaimah', feeMinor: 0 }, { emirate: 'Dubai', feeMinor: 2100 }] };
+  assert.equal(countryDeliveryFeeMinor(regional), 2100);
+  assert.equal(shippingDetailsData(regional)!.shippingRate.value, '21.00');
   assert.equal(lowestDeliveryFeeMinor(null), null);
   assert.equal(merchantReturnPolicyData('https://shop.example.invalid').merchantReturnLink, 'https://shop.example.invalid/returns');
   const shipping = shippingDetailsData(policy)!;

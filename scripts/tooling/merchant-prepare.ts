@@ -11,6 +11,7 @@ import { merchantProductInput } from '../../apps/web/src/lib/catalog/merchant-ap
 // review package that can be completed by pharmacy staff before a live sync.
 
 const sourceOrigin = process.env.MERCHANT_PREP_API_ORIGIN ?? 'https://almina-of4b.onrender.com';
+const storefrontOrigin = checkedOrigin(process.env.MERCHANT_WEB_ORIGIN ?? 'https://alminapharmacy.com');
 const outputDir = process.env.MERCHANT_PREP_OUTPUT ?? join('outputs', `merchant-preparation-${new Date().toISOString().slice(0, 10)}`);
 const feedLabel = process.env.MERCHANT_PREP_FEED_LABEL ?? 'AE';
 const pageSize = 100;
@@ -28,7 +29,7 @@ const origin = checkedOrigin(sourceOrigin);
 
 async function readPage(offset: number): Promise<unknown[]> {
   const url = new URL('/api/products', origin);
-  url.search = new URLSearchParams({ disabledCat: 'false', groupFamilies: 'true', limit: String(pageSize), offset: String(offset) }).toString();
+  url.search = new URLSearchParams({ disabledCat: 'false', limit: String(pageSize), offset: String(offset) }).toString();
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },
     redirect: 'error',
@@ -92,9 +93,11 @@ async function main() {
 
   const rows = products.map(product => {
     const images = productImages(product, cloudName);
-    const feedImages = images.filter(image => !image.startsWith('/'));
+    // API launch only accepts the reviewed, owned Cloudinary publication path.
+    // Network/raster dimensions are verified again by the worker before upload.
+    const feedImages = images.filter(image => cloudinaryImage(image, cloudName) !== null);
     const blockers = feedIssues(product, 'google', feedImages);
-    const feedRow = feedProduct(product, feedImages, 'google');
+    const feedRow = feedProduct(storefrontOrigin, product, feedImages, 'google');
     return {
       product,
       images: feedImages,

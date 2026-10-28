@@ -15,7 +15,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
-let stripeWorker, worker, pushWorker, reminderWorker, campaignWorker, imageReviewWorker, searchWorker;
+let stripeWorker, worker, pushWorker, reminderWorker, campaignWorker, imageReviewWorker, searchWorker, merchantWorker;
 let shutdown;
 database.connect().then(async () => {
   if (app.locals.draining) return database.close();
@@ -32,10 +32,11 @@ database.connect().then(async () => {
   await domain.prepareStripeStorage(database.getDb(), app.locals.stripePayments.enabled);
   stripeWorker = domain.stripeReconciler(app.locals.stripePayments, () => console.error('Stripe test reconciliation failed'));
   searchWorker = domain.searchEmbeddingWorker(() => database.getDb());
+  merchantWorker = domain.merchantSyncWorker(() => database.getDb());
   server.listen(runtime.port, development ? '127.0.0.1' : undefined, () => console.log('Express API listening'));
 }).catch(async () => {
   if (!app.locals.draining) { console.error('API initialization failed'); process.exitCode = 1; }
-  await stripeWorker?.stop(); await searchWorker?.stop(); await imageReviewWorker?.stop(); await pushWorker?.stop(); await database.close();
+  await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await imageReviewWorker?.stop(); await pushWorker?.stop(); await database.close();
 });
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
@@ -52,7 +53,7 @@ function stop() {
       io.close(() => resolve());
       server.closeIdleConnections();
     }),
-    stopWorkers: async () => { await Promise.all([stripeWorker?.stop(), worker?.stop(), pushWorker?.stop(), reminderWorker?.stop(), campaignWorker?.stop(), imageReviewWorker?.stop(), searchWorker?.stop()]); },
+    stopWorkers: async () => { await Promise.all([merchantWorker?.stop(), stripeWorker?.stop(), worker?.stop(), pushWorker?.stop(), reminderWorker?.stop(), campaignWorker?.stop(), imageReviewWorker?.stop(), searchWorker?.stop()]); },
     closeDatabase: async () => { await database.close(); },
     forceConnections: () => { io.disconnectSockets(true); server.closeAllConnections(); },
   }).catch(() => { console.error('Retained shutdown deadline failed'); process.exit(1); });
