@@ -123,7 +123,7 @@ async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, cus
 }
 function checkoutResult(doc: Document, replayed: boolean) {
   // Public response has no PII or idempotency secret, even on a retry.
-  return { id: String(doc._id), orderId: doc.orderId as string, status: doc.status as OrderStatus, totals: doc.totals as Quote, replayed };
+  return { id: String(doc._id), orderId: doc.orderId as string, status: doc.status as OrderStatus, ...(doc.createdAt instanceof Date ? { createdAt: doc.createdAt.toISOString() } : {}), totals: doc.totals as Quote, replayed };
 }
 function requestHash(input: CheckoutInput,customerId?:string,wholesale?:WholesaleCustomer) {
   return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(wholesale?{channel:'wholesale',owner:wholesale.id}:{}), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ) })).digest('hex');
