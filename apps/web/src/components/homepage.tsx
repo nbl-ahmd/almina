@@ -100,7 +100,7 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
 export async function HomeCategories({ categories }: { categories: Category[] }) {
   const locale=await getLocale();if(!categories.length)return null;
   const selected=categories.slice(0,5),bento=selected.length===5;
-  return <section aria-label={u(locale,'Shop by care')}><SectionHeading title={u(locale,'Shop by care')} href="/categories" link={u(locale,'All categories')} /><div className={`grid-flow-dense gap-3 ${bento?'scrollbar-none flex snap-x overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:grid-rows-2':'grid grid-cols-2 md:grid-cols-4'}`}>{selected.map((category,index)=><div key={category._id} className={`${bento&&index===0?'lg:col-span-2 lg:row-span-2':''} min-w-[170px] snap-start lg:min-w-0 [&>a]:h-full [&>a]:min-h-[170px] lg:[&>a]:min-h-[170px] ${bento&&index===0?'lg:[&>a]:min-h-full lg:[&_h3]:text-3xl':''}`} data-editorial-stack><CategoryTile category={category} /></div>)}</div></section>;
+  return <section aria-label={u(locale,'Shop by care')}><SectionHeading title={u(locale,'Shop by care')} href="/categories" link={u(locale,'All categories')} /><div className={`grid-flow-dense gap-3 ${bento?'scrollbar-none flex snap-x snap-proximity overflow-x-auto overscroll-x-contain pb-2 lg:grid lg:grid-cols-4 lg:grid-rows-2':'grid grid-cols-2 md:grid-cols-4'}`}>{selected.map((category,index)=><div key={category._id} className={`${bento&&index===0?'lg:col-span-2 lg:row-span-2':''} min-w-[170px] snap-start lg:min-w-0 [&>a]:h-full [&>a]:min-h-[170px] lg:[&>a]:min-h-[170px] ${bento&&index===0?'lg:[&>a]:min-h-full lg:[&_h3]:text-3xl':''}`} data-editorial-stack><CategoryTile category={category} /></div>)}</div></section>;
 }
 
 export async function HomeProductCarousel({ products }: { products: Product[] }) {
@@ -308,7 +308,7 @@ export async function HomeBrandStrip({ brands, products }: { brands: string[]; p
         href="/categories"
         link={u(locale,"Explore products")}
       />
-      <div className="brand-rail flex snap-x gap-3 overflow-x-auto pb-2 md:flex-wrap">
+      <div className="brand-rail flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain pb-2 md:flex-wrap">
         {brands.map((brand) => {
           const match = products.find(product => ((product.brand || product.familyBrand)?.toLowerCase() === brand.toLowerCase() || product.name.toLowerCase().startsWith(brand.toLowerCase())) && productImage(product) !== "/product-placeholder.svg");
           return (
@@ -406,7 +406,7 @@ export async function HomeCompactShelf({
   return (
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
-      <div className="scrollbar-none flex snap-x gap-3 overflow-x-auto pb-1 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-4">
+      <div className="scrollbar-none flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain pb-1 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-4">
         {products.slice(0, 4).map((product) => (
           <CompactProductCard key={product._id} product={product} />
         ))}

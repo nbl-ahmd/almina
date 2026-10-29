@@ -639,3 +639,22 @@ RTL behavior and the existing mobile header remain intact. Verified against the
 isolated synthetic catalogue at 1440, 768, 390 and 360px, including Arabic,
 keyboard switching and reload. Web typecheck, scoped ESLint, i18n/stylesheet tests
 and the Impeccable scan passed; no production configuration or data changed.
+
+### 29 October 2026 — shopping interaction refinement
+
+Added input-aware storefront motion, larger campaign controls, native shelf
+scrolling, local press/success feedback and a delivery-sheet transition. Keyboard
+navigation remains immediate and reduced-motion preferences retain their global
+opt-out. Checkout now focuses and aligns its response rather than leaving mobile
+shoppers at the bottom of the form. Commerce calculations, quote acceptance,
+idempotency and payment providers are unchanged.
+
+Validation: isolated production foundation build; scoped ESLint; 24 relevant unit
+tests; browser checks at 360/390/768/1440px and Arabic RTL; slow stock-check feedback,
+cart count/quantity persistence, keyboard sheets/carousels, changed-price rejection
+(no order, stock unchanged), and a successful synthetic checkout (one order,
+expected stock deduction and receipt). Next runtime/compilation diagnostics were
+empty. Added focus regression assertions to the existing checkout browser suite.
+The Impeccable scan reported five pre-existing palette/type advisories; no new
+motion finding. Evidence is under ignored outputs/shopping-interactions-2026-10-29.
+No production data or hosting configuration was changed.
