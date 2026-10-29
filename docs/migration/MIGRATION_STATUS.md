@@ -669,4 +669,6 @@ was corrected through admin, and Search Console validation started. Added
 Merchant-tag canonical regression coverage and independent homepage hero
 streaming with first-image priority and readable captions. See
 [activation and audit details](GOOGLE_CUSTOMER_REVIEWS_2026-10-29.md).
-Customer-data transmission approval and live activation verification remain pending.
+Owner approved customer-data transmission and activation; five Production settings are saved.
+Backend is deployed. Frontend release must use the authenticated Vercel-linked
+owner identity; live activation verification follows that release.
