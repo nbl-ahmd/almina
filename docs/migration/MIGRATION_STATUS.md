@@ -628,3 +628,14 @@ valid Merchant/Product/Breadcrumb markup. Customer-service details now match the
 public website. Full photo audit: 88 of the 90 initial close candidates pass the
 500px check; the two Bioderma candidates need larger originals. Other products were
 not approved automatically. Final external Google approval remains pending.
+
+### 29 October 2026 — storefront utility bar refinement
+
+Language preferences now use transparent text controls with an active underline,
+44px targets and visible keyboard focus, avoiding inherited commerce-button
+chrome. The desktop/tablet utility bar has explicit vertical padding, consistent
+contact spacing and wrapping announcement copy. Language cookies, reviewed copy,
+RTL behavior and the existing mobile header remain intact. Verified against the
+isolated synthetic catalogue at 1440, 768, 390 and 360px, including Arabic,
+keyboard switching and reload. Web typecheck, scoped ESLint, i18n/stylesheet tests
+and the Impeccable scan passed; no production configuration or data changed.

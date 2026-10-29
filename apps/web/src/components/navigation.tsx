@@ -32,14 +32,14 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
         {t(locale, 'skipToContent')}
       </a>
       <header className="storefront-header sticky top-0 z-40 bg-surface md:static md:z-auto">
-        <div className="hidden bg-care-mint text-ink md:block">
-          <div className="mx-auto flex min-h-11 max-w-[1344px] items-center justify-between gap-4 px-6 text-[13px] leading-5 text-ocean lg:px-8">
-            <span className="truncate">{t(locale, 'announcement')}</span>
-            <div className="flex shrink-0 items-center gap-2">
+        <div className="storefront-utility-bar hidden bg-care-mint text-ink md:block">
+          <div className="mx-auto flex max-w-[1344px] items-center justify-between gap-6 px-6 py-1 text-[13px] leading-5 text-ocean lg:px-8">
+            <span className="min-w-0 flex-1 text-pretty">{t(locale, 'announcement')}</span>
+            <div className="flex shrink-0 items-center gap-4">
               <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
               <span className="h-4 w-px bg-ink/15" aria-hidden="true" />
               <a
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-ink transition-colors hover:bg-white/60 hover:text-teal"
+                className="inline-flex min-h-11 items-center gap-2 text-ink underline-offset-4 hover:text-teal hover:underline"
                 href="tel:+971504825007"
                 dir="ltr"
               >
