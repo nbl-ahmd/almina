@@ -32,12 +32,17 @@
   --shadow-card: 0 6px 18px rgb(25 35 33 / 5%);
   --shadow-raised: 0 16px 45px -18px rgb(25 35 33 / 24%);
   --content-width: 1344px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* Component defaults live in the components layer so Tailwind utilities can override. */
 @layer components {
 /* The floating mobile navigation supplies its own clearance; the footer reserves bottom space. */
 body:has(.storefront-shell) { padding-bottom: 0; }
+/* Native dialogs keep their focus/top-layer semantics without background scroll. */
+html:has(.storefront-shell) { scrollbar-gutter: stable; }
+body:has(.delivery-area-sheet[open]) { overflow: hidden; }
 
 /* Typography: quieter headings, tighter display tracking. */
 .storefront-shell h1,
@@ -172,9 +177,9 @@ body:has(.storefront-shell) { padding-bottom: 0; }
   to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .campaign-frame:not([hidden]) { animation: campaign-enter 240ms cubic-bezier(0.16, 1, 0.3, 1); }
-  .storefront-shell .button:active,
-  .storefront-shell button:active:not(:disabled) { transform: scale(0.985); }
+  .storefront-shell[data-input-modality='pointer'] .campaign-frame:not([hidden]) { animation: campaign-enter 240ms var(--ease-out); }
+  .storefront-shell[data-input-modality='pointer'] .button:active,
+  .storefront-shell[data-input-modality='pointer'] button:active:not(:disabled) { transform: scale(0.97); }
 }
 
 /* Horizontal shelves retain scrolling without decorative browser chrome. */
@@ -215,9 +220,9 @@ body:has(.storefront-shell) { padding-bottom: 0; }
 /* Navigation opens close to its trigger; commerce remains still. */
 @keyframes care-navigation-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: no-preference) {
-  .storefront-mega-panel[data-state='open'],
-  .storefront-menu-sheet[data-state='open'] { animation: care-navigation-enter 160ms cubic-bezier(0.16,1,0.3,1); }
-  .storefront-search-panel { animation: care-navigation-enter 160ms cubic-bezier(0.16,1,0.3,1); }
+  .storefront-shell[data-input-modality='pointer'] .storefront-mega-panel[data-state='open'],
+  .storefront-shell[data-input-modality='pointer'] .storefront-menu-sheet[data-state='open'],
+  .storefront-shell[data-input-modality='pointer'] .storefront-search-panel { animation: care-navigation-enter 160ms var(--ease-out); }
 }
 
 /* Mobile app shell: compact persistent navigation, with space for purchase docks. */
@@ -235,3 +240,36 @@ body:has(.storefront-shell) { padding-bottom: 0; }
     margin-top: 2rem;
   }
 }
+
+/* Input-aware motion: feedback stays local, commerce amounts never move. */
+@media (prefers-reduced-motion: no-preference) {
+  .storefront-shell[data-input-modality='pointer'] :is(.mobile-tab, .quantity-step, .add-to-cart) {
+    transition: transform var(--motion-feedback) var(--ease-out), background-color var(--motion-feedback) ease, border-color var(--motion-feedback) ease;
+  }
+  .storefront-shell[data-input-modality='pointer'] .mobile-tab:active { transform: scale(0.97); }
+  .storefront-shell[data-input-modality='pointer'] .mobile-tab-icon {
+    transition: background-color var(--motion-feedback) ease;
+  }
+  .storefront-shell[data-input-modality='pointer'] .delivery-area-sheet {
+    opacity: 0;
+    transform: scale(0.97);
+    transition: opacity 160ms var(--ease-out), transform 240ms var(--ease-drawer), display 240ms allow-discrete, overlay 240ms allow-discrete;
+  }
+  .storefront-shell[data-input-modality='pointer'] .delivery-area-sheet[open] { opacity: 1; transform: none; }
+  @starting-style {
+    .storefront-shell[data-input-modality='pointer'] .delivery-area-sheet[open] { opacity: 0; transform: scale(0.97); }
+  }
+  @media (max-width: 639px) {
+    .storefront-shell[data-input-modality='pointer'] .delivery-area-sheet { transform: translateY(100%); }
+    .storefront-shell[data-input-modality='pointer'] .delivery-area-sheet[open] { transform: none; }
+    @starting-style {
+      .storefront-shell[data-input-modality='pointer'] .delivery-area-sheet[open] { transform: translateY(100%); }
+    }
+  }
+}
+/* Keyboard feedback is immediate, including components with utility transitions. */
+.storefront-shell[data-input-modality='keyboard'] :is(button, .mobile-tab, .campaign-frame, .storefront-mega-panel, .storefront-search-panel, .delivery-area-sheet) {
+  animation: none;
+  transition: none;
+}
+.storefront-shell[data-input-modality='keyboard'] button svg { animation: none; }
