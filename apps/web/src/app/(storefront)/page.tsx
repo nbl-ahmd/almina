@@ -4,7 +4,7 @@ import { shopText as u } from '../../lib/i18n-storefront';
 import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
 import { ScrollReveal } from "../../components/scroll-reveal";
-import { Suspense } from "react";
+import { Suspense, cache } from "react";
 import Link from "next/link";
 import { CatalogLoading } from "../../components/catalog-loading";
 import {
@@ -50,12 +50,24 @@ export async function generateMetadata({
     await searchParams,
   );
 }
+// Request-scoped sharing only: prices and inventory are never cached across visitors.
+const featuredProducts = cache(() => getProducts({ featured: true }));
+const homepageCampaigns = cache(async () => getHomepageCampaigns(await getLocale()).catch(() => []));
+
 export default function HomePage() {
-  return (
-    <Suspense fallback={<CatalogLoading />}>
-      <HomeContent />
-    </Suspense>
-  );
+  return <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
+    <Suspense fallback={<CatalogLoading />}><HomeLead /></Suspense>
+    <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent /></Suspense>
+  </div>;
+}
+async function HomeLead() {
+  const [banners, campaigns] = await Promise.allSettled([getBanners(), homepageCampaigns()]);
+  const liveBanners = banners.status === 'fulfilled' ? banners.value : [];
+  const liveCampaigns = campaigns.status === 'fulfilled' ? campaigns.value : [];
+  // Managed artwork needs no inventory search. Only the fallback hero uses a product.
+  const featured = liveBanners.length || liveCampaigns.some(page => page.homepagePlacement === 'hero')
+    ? [] : (await featuredProducts().catch(() => ({ products: [] }))).products;
+  return <HomeHero products={featured.filter(product => product.stock > 0)} banners={liveBanners} campaigns={liveCampaigns} />;
 }
 function categoryRank(name: string) {
   const index = [
@@ -73,15 +85,14 @@ async function HomeContent() {
   const [catalogue, settledCollections, campaigns] = await Promise.all([
     Promise.allSettled([
       getCategories(),
-      getProducts({ featured: true }),
+      featuredProducts(),
       getProducts(),
       getProducts({ offers: true }),
-      getBanners(),
     ] as const),
     Promise.allSettled(
       homeCollections.map((collection) => getCollectionProducts(collection)),
     ),
-    getHomepageCampaigns(locale).catch(()=>[]),
+    homepageCampaigns(),
   ]);
   const collectionResults = settledCollections.map((result) =>
     result.status === "fulfilled" ? result.value : [],
@@ -96,7 +107,6 @@ async function HomeContent() {
     catalogue[3].status === "fulfilled"
       ? catalogue[3].value.products.filter((product) => product.stock > 0)
       : [];
-  const banners = catalogue[4].status === "fulfilled" ? catalogue[4].value : [];
   const all = uniqueProducts([
     ...offers,
     ...featured,
@@ -107,7 +117,6 @@ async function HomeContent() {
   const photoReady = available.filter(
     (product) => productImage(product) !== "/product-placeholder.svg",
   );
-  const hero = photoReady.slice(0, 3);
   // Prefer a varied first shelf, then fill it from photo-ready inventory.
   const represented = new Set<string>();
   const varied = photoReady.filter((product) => {
@@ -149,13 +158,7 @@ async function HomeContent() {
       tone: ["bg-[#eaf1ea]", "bg-[#f7ece3]", "bg-[#eceaf5]"][index]!,
     }));
   return (
-    <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
       <ScrollReveal>
-        <HomeHero
-          products={hero}
-          banners={banners}
-          campaigns={campaigns}
-        />
         <HomeCategories
           categories={[...categories].sort(
             (a, b) => categoryRank(a.name) - categoryRank(b.name),
@@ -208,6 +211,5 @@ async function HomeContent() {
         <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
         <HomeSupport />
       </ScrollReveal>
-    </div>
   );
 }

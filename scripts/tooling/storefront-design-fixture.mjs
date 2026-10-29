@@ -14,12 +14,14 @@ const { server: base } = createStorefrontFixture();
 const baseHandler = base.listeners('request')[0];
 let failed = false;
 let slow = false;
+let slowSearch = false;
 const server = createServer((req, res) => {
   const url = new URL(req.url, 'http://fixture.invalid');
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
   if (url.pathname === '/__fixture/design-health') { res.end('almina-synthetic-design'); return; }
   if (url.pathname === '/__fixture/design-failure') { failed = url.searchParams.get('enabled') === '1'; res.end('OK'); return; }
   if (url.pathname === '/__fixture/design-slow') { slow = url.searchParams.get('enabled') === '1'; res.end('OK'); return; }
+  if (url.pathname === '/__fixture/design-slow-search') { slowSearch = url.searchParams.get('enabled') === '1'; res.end('OK'); return; }
   if (failed && url.pathname.startsWith('/api/')) { res.writeHead(503); res.end(); return; }
   function respond() {
     if (/^\/api\/products\/images\/synthetic-\d+(-back)?\.svg$/.test(url.pathname)) {
@@ -43,6 +45,7 @@ const server = createServer((req, res) => {
     if (byId) { res.end(JSON.stringify({ ...byId, category: byId.category._id })); return; }
     baseHandler(req, res);
   }
-  if (slow) setTimeout(respond, 1800); else respond();
+  if (slowSearch && url.pathname.startsWith('/api/v1/search')) setTimeout(respond, 3000);
+  else if (slow) setTimeout(respond, 1800); else respond();
 });
 server.listen(Number(process.env.PORT ?? 4120), '127.0.0.1', () => console.log('Synthetic visual catalog on loopback.'));

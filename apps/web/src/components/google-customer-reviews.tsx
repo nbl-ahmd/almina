@@ -19,7 +19,7 @@ export function GoogleCustomerReviews({ config, receipt, nonce, locale }: { conf
   function offer() {
     const google = window as GoogleWindow;
     google.___gcfg = { lang: locale };
-    google.gapi?.load('surveyoptin', () => {
+    try { google.gapi?.load('surveyoptin', () => {
       if (rendered.current || !google.gapi?.surveyoptin) return;
       try {
         const key = `almina.google-review.offered.${payload!.order_id}`;
@@ -28,7 +28,7 @@ export function GoogleCustomerReviews({ config, receipt, nonce, locale }: { conf
         rendered.current = true;
         try { sessionStorage.setItem(key, '1'); } catch { /* Never block a confirmed order. */ }
       } catch { /* The optional provider cannot change checkout success. */ }
-    });
+    }); } catch { /* An unavailable SDK cannot interrupt the receipt. */ }
   }
   return <Script id="google-customer-reviews" src="https://apis.google.com/js/platform.js" nonce={nonce} strategy="afterInteractive" referrerPolicy="origin" onReady={offer} />;
 }

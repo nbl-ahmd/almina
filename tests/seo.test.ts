@@ -100,3 +100,11 @@ test('sitemap database query accepts only scoped pagination', () => {
     assert.equal(sitemapQuerySchema.safeParse(query).success, false);
   }
 });
+
+test('Merchant Center auto-tagging preserves indexability and a clean canonical', () => {
+  assert.equal(hasDuplicateQuery({srsltid:'synthetic-click'}), false);
+  const tagged = pageMetadata('https://shop.invalid', true, 'Product', 'Description', '/products/example--PD1', {srsltid:'synthetic-click'});
+  assert.deepEqual(tagged.alternates, {canonical:'https://shop.invalid/products/example--PD1'});
+  assert.equal((tagged.robots as {index:boolean}).index, true);
+  assert.equal(hasDuplicateQuery({srsltid:'synthetic-click', q:'private search'}), true);
+});

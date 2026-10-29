@@ -79,7 +79,7 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
       {[
         ...heroCampaigns.map((page,index) => <CampaignArtwork cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index===0} />),
         ...banners.slice(0,8).map((banner,index) => {
-          const artwork=<div className="relative aspect-[2/1] overflow-hidden rounded-2xl bg-care-blue md:aspect-[2.7/1]"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:767px) 100vw, 1280px" loading={index===0&&!heroCampaigns.length?'eager':'lazy'} className="object-contain" /></div>;
+          const artwork=<div className="relative aspect-[2/1] overflow-hidden rounded-2xl bg-care-blue md:aspect-[2.7/1]"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:767px) 100vw, 1280px" loading={index===0&&!heroCampaigns.length?'eager':'lazy'} fetchPriority={index===0&&!heroCampaigns.length?'high':undefined} className="object-contain" /></div>;
           return banner.href?<Link href={banner.href} key={banner.image} className="block">{artwork}</Link>:<div key={banner.image}>{artwork}</div>;
         }),
         ...(!heroCampaigns.length&&!banners.length ? slides.map((slide,index) => <div key={slide.href} className={`relative isolate grid min-h-[340px] overflow-hidden rounded-2xl md:min-h-[410px] md:grid-cols-2 ${slide.tone}`}>
@@ -88,8 +88,8 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
             <p className="mb-6 max-w-[38ch] text-sm leading-6 text-ocean max-md:max-w-[23ch]">{slide.detail}</p>
             <div className="flex flex-wrap gap-2"><Link href={slide.href} className="button button-accent min-h-12 gap-3 px-5 text-sm">{slide.cta}<ArrowRightIcon className="size-4 rtl:rotate-180" /></Link><Link href="/offers" className="inline-flex min-h-12 items-center px-3 text-sm font-medium text-ink hover:text-teal">{u(locale,'Offers')}<ArrowUpRightIcon className="ms-2 size-4" /></Link></div>
           </div>
-          <div className="pointer-events-none absolute inset-y-0 end-0 -z-10 w-[46%] md:relative md:inset-auto md:z-0 md:w-full"><Image src={slide.image} alt="" fill sizes="(max-width:767px) 46vw, 640px" loading={index===0?'eager':'lazy'} className="object-cover object-right max-md:opacity-70" /></div>
-          {product&&index===0 ? <Link href={productHref(product)} className="absolute end-5 bottom-5 z-10 hidden max-w-[280px] items-center gap-3 rounded-xl bg-white p-3 text-ink md:flex"><span className="size-14 shrink-0"><Photo product={product} eager /></span><div className="min-w-0"><span className="mb-1 block line-clamp-2 text-xs font-medium">{product.name}</span><div className="text-sm"><Price product={product} /></div></div><ArrowUpRightIcon className="size-4 shrink-0" /></Link>:null}
+          <div className="pointer-events-none absolute inset-y-0 end-0 -z-10 w-[46%] md:relative md:inset-auto md:z-0 md:w-full"><Image src={slide.image} alt="" fill sizes="(max-width:767px) 46vw, 640px" loading={index===0?'eager':'lazy'} fetchPriority={index===0?'high':undefined} className="object-cover object-right max-md:opacity-70" /></div>
+          {product&&index===0 ? <Link href={productHref(product)} className="absolute end-5 bottom-5 z-10 hidden max-w-[280px] items-center gap-3 rounded-xl bg-white p-3 text-ink md:flex"><span className="size-14 shrink-0"><Photo product={product} /></span><div className="min-w-0"><span className="mb-1 block line-clamp-2 text-xs font-medium">{product.name}</span><div className="text-sm"><Price product={product} /></div></div><ArrowUpRightIcon className="size-4 shrink-0" /></Link>:null}
         </div>):[]),
       ]}
     </CampaignSlider>
@@ -271,11 +271,10 @@ export async function HomeCollectionTiles({
         >
           <div className="flex flex-col justify-between py-1">
             <div>
-              <p className="mb-3 text-xs font-semibold tracking-[0.14em] text-ink/45 uppercase">{u(locale,"Curated")}</p>
               <h2 className="mb-2 text-xl leading-[1.1] font-semibold tracking-[-0.025em] text-ink md:text-2xl">
                 {u(locale,collection.title)}
               </h2>
-              <p className="mb-3 max-w-[34ch] text-xs leading-5 text-ink/55">
+              <p className="mb-3 max-w-[34ch] text-xs leading-5 text-ocean">
                 {u(locale,collection.detail)}
               </p>
             </div>
