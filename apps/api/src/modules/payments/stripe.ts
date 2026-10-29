@@ -168,7 +168,7 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
     const attempt=await attemptFor(key),order=await(await getDb()).collection('orders').findOne({...selector,'payment.attemptId':key});
     if(!order)throw new HttpError(404,'NOT_FOUND');
     return {orderId:order.orderId,state:order.payment.state,checkoutUrl:order.payment.state==='awaiting_payment'?attempt.checkoutUrl:null,testMode,
-      totals:order.totals,paymentReceived:!!order.payment.paidAt||['paid','partially_refunded','refund_pending','refunded','disputed'].includes(order.payment.state)};
+      ...(order.createdAt instanceof Date ? {createdAt:order.createdAt.toISOString()}:{}),totals:order.totals,paymentReceived:!!order.payment.paidAt||['paid','partially_refunded','refund_pending','refunded','disputed'].includes(order.payment.state)};
   }
   async function accountReady(){
     try{const account=await configured().transport.account?.();return !!account&&account.id===options?.accountId&&account.chargesEnabled&&account.payoutsEnabled;}catch{return false;}

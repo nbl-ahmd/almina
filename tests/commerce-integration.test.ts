@@ -161,6 +161,8 @@ test('commerce against disposable real MongoDB replica set', { skip: !uri }, asy
       const replay = await commerce.checkout(input); assert.equal(replay!.totals.totalMinor, 2000);
       const doc = (await db.collection('orders').findOne({ _id: new ObjectId(replay!.id) }))!;
       assert.equal(orderDetailDto(doc).lines![0]!.name, 'Original fixture');
+      assert.equal(replay!.createdAt, doc.createdAt.toISOString());
+      assert.ok(results.every(result => result!.createdAt === replay!.createdAt));
       assert.equal(await db.collection('order_outbox').countDocuments({ orderId: doc._id }), 1);
     });
 

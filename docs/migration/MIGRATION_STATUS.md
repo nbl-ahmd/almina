@@ -658,3 +658,15 @@ empty. Added focus regression assertions to the existing checkout browser suite.
 The Impeccable scan reported five pre-existing palette/type advisories; no new
 motion finding. Evidence is under ignored outputs/shopping-interactions-2026-10-29.
 No production data or hosting configuration was changed.
+
+### 29 October 2026 — Merchant reviews and discovery integration
+
+Added default-off Google Customer Reviews on accepted/verified live confirmations,
+minimal survey payloads, original server timestamps and the current Merchant store
+widget with route-scoped CSP and privacy disclosure. Owner confirmed Google
+eligibility. Merchant automations/protection were enabled, the Oral-B identifier
+was corrected through admin, and Search Console validation started. Added
+Merchant-tag canonical regression coverage and independent homepage hero
+streaming with first-image priority and readable captions. See
+[activation and audit details](GOOGLE_CUSTOMER_REVIEWS_2026-10-29.md).
+Customer-data transmission approval and live activation verification remain pending.

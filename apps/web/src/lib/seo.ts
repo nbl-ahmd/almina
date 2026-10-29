@@ -14,7 +14,7 @@ export const siteName = 'Al Mina Pharmacy';
 export const siteDescription = 'Shop healthcare, skincare and pharmacy essentials from Al Mina Pharmacy in Ras Al Khaimah.';
 export type Query = Record<string, string | string[] | undefined>;
 export function hasDuplicateQuery(query: Query) {
-  return Object.keys(query).some(key => !/^(utm_[a-z_]+|gclid|fbclid)$/i.test(key) && query[key] !== undefined);
+  return Object.keys(query).some(key => !/^(utm_[a-z_]+|gclid|fbclid|srsltid)$/i.test(key) && query[key] !== undefined);
 }
 export function isPublicPath(path: string) {
   return ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', '/health-guides',

@@ -31,7 +31,7 @@ export const quoteDtoSchema = z.object({ currency: z.literal('AED'), policyVersi
   minimumOrderMinor: minor, totalMinor: minor,
 }).strict();
 export const checkoutDtoSchema = z.object({ id, orderId: z.string(), status: orderStatusSchema,
-  totals: quoteDtoSchema, replayed: z.boolean() }).strict();
+  createdAt: z.iso.datetime().optional(), totals: quoteDtoSchema, replayed: z.boolean() }).strict();
 export const commercePolicySchema = z.object({
   active: z.literal(true), version: z.string().min(1).max(100), currency: z.literal('AED'),
   vatMode: z.enum(['inclusive', 'exclusive']), vatRateBps: z.number().int().min(0).max(10000),
@@ -48,6 +48,6 @@ export const stripePaymentStateSchema=z.enum(['awaiting_payment','paid','expired
 export const stripeCheckoutDtoSchema = z.object({
   orderId: z.string(), state: stripePaymentStateSchema,
   checkoutUrl: z.url().refine(value => { const url = new URL(value); return url.protocol === 'https:' && url.hostname === 'checkout.stripe.com' && !url.username && !url.password; }).nullable(),
-  testMode: z.boolean(), totals:quoteDtoSchema, paymentReceived:z.boolean(),
+  createdAt: z.iso.datetime().optional(), testMode: z.boolean(), totals:quoteDtoSchema, paymentReceived:z.boolean(),
 }).strict();
 export const stripeStatusInputSchema = z.object({ idempotencyKey: z.uuid() }).strict();

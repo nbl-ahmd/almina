@@ -1,6 +1,8 @@
 'use client';
 import {searchAttributions,searchUsageAllowed,reportSearchEvent} from '../lib/search/attribution';
 import { Input } from './ui/input';
+import { GoogleCustomerReviews } from './google-customer-reviews';
+import type { GoogleCommerceConfiguration, ReviewReceipt } from '../lib/google/commerce';
 import { Button } from './ui/button';
 import { NativeSelect } from './ui/native-select';
 import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
@@ -63,7 +65,7 @@ async function send(path: string, body: unknown) {
   }
   return data;
 }
-export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=true }: { locale?: Locale; stripeMode?:'off'|'test'|'live';stripeTestMode?:boolean }) {
+export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=true, googleReviews, nonce }: { locale?: Locale; stripeMode?:'off'|'test'|'live';stripeTestMode?:boolean; googleReviews?: GoogleCommerceConfiguration; nonce?: string | undefined }) {
   const stripeEnabled=stripeMode!=='off';
   const formatted = (minor: number) => currencyFormat(locale).format(minor / 100);
   const errors = errorMessages(locale);
@@ -79,6 +81,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const [maplink, setMaplink] = useState('');
   const [locationMessage, setLocationMessage] = useState('');
   const [delivery, setDelivery] = useState({ address: '', emirate: 'Ras al-Khaimah', city: '' });
+  const [reviewReceipt, setReviewReceipt] = useState<ReviewReceipt | null>(null);
   const [paymentMethod,setPaymentMethod]=useState('cash');
   const [voucherCode,setVoucherCode]=useState('');
   const [savedAddresses,setSavedAddresses]=useState<SavedDeliveryAddress[]>([]);
@@ -225,6 +228,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
         return;
       }
       const committed = checkoutDtoSchema.parse(await send('/api/checkout', input));
+      if (committed.createdAt && committed.status !== 'cancelled') setReviewReceipt({ orderId: committed.orderId, email: input.customer.email, createdAt: committed.createdAt, deliveryCountry: 'AE' });
       setResult(committed); setAttempt(null); setReviewed(null);
       recordCommerceEvent('checkout_confirmed');
       try { sessionStorage.removeItem(pendingKey); } catch { /* A replay is safe if storage fails. */ }
@@ -245,9 +249,9 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const stripeAttempt=(attempt??reviewed)?.customer.payment==='stripe';
   const stripeOptionVisible=stripeEnabled||attempt?.customer.payment==='stripe';
   if (!ready) return <p role="status">{t(locale, 'checkoutLoading')}</p>;
-  if (result) return <section className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="order-confirmation">
+  if (result) return <><GoogleCustomerReviews config={googleReviews ?? {merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} locale={locale} nonce={nonce} /><section className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="order-confirmation">
     <div className="border-b border-border bg-subtle px-6 py-8 text-center sm:px-10"><span className="mx-auto mb-4 flex size-16 shrink-0 items-center justify-center rounded-full bg-accent text-teal"><Icon name="check" /></span><h2 ref={confirmation} tabIndex={-1} className="mb-2 text-2xl outline-none sm:text-3xl" id="order-confirmation">{t(locale, 'checkoutOrderReceived')}</h2><p className="m-0 text-sm text-ocean">{t(locale, 'checkoutThankYou')}</p></div>
-    <div className="p-5 sm:p-8"><div className="grid gap-4 border-b border-border pb-5 sm:grid-cols-2"><div><p className="mb-1 text-xs text-muted">{t(locale, 'checkoutOrderNumber')}</p><p role="status" className="m-0 text-xl font-bold">{result.orderId}</p></div><div className="sm:text-right"><p className="mb-1 text-xs text-muted">{t(locale, 'checkoutOrderTotal')}</p><p className="m-0 text-xl font-bold tabular-nums">{formatted(result.totals.totalMinor)}</p></div></div><h3 className="mt-6 mb-2 text-base">{t(locale, 'checkoutNextTitle')}</h3><p className="text-sm leading-relaxed text-ocean">{t(locale, 'checkoutNextBody')}</p><div className="mt-6 flex flex-wrap gap-3"><Link className="button min-h-11 flex-1 text-sm" href="/products">{t(locale, 'checkoutContinueShopping')} <Icon name="arrow" /></Link><Link className="button button-secondary min-h-11 flex-1 text-sm text-ocean" href="/contact">{t(locale, 'checkoutContactPharmacyShort')}</Link></div></div></section>;
+    <div className="p-5 sm:p-8"><div className="grid gap-4 border-b border-border pb-5 sm:grid-cols-2"><div><p className="mb-1 text-xs text-muted">{t(locale, 'checkoutOrderNumber')}</p><p role="status" className="m-0 text-xl font-bold">{result.orderId}</p></div><div className="sm:text-right"><p className="mb-1 text-xs text-muted">{t(locale, 'checkoutOrderTotal')}</p><p className="m-0 text-xl font-bold tabular-nums">{formatted(result.totals.totalMinor)}</p></div></div><h3 className="mt-6 mb-2 text-base">{t(locale, 'checkoutNextTitle')}</h3><p className="text-sm leading-relaxed text-ocean">{t(locale, 'checkoutNextBody')}</p><div className="mt-6 flex flex-wrap gap-3"><Link className="button min-h-11 flex-1 text-sm" href="/products">{t(locale, 'checkoutContinueShopping')} <Icon name="arrow" /></Link><Link className="button button-secondary min-h-11 flex-1 text-sm text-ocean" href="/contact">{t(locale, 'checkoutContactPharmacyShort')}</Link></div></div></section></>;
   const total: Quote | undefined = reviewed?.quote;
   return <section className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8" aria-label={t(locale, 'checkoutPlaceOrderAria')}>
     <form ref={form} aria-busy={working} onSubmit={review} onChange={() => { if (!attempt) setReviewed(null); }} className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface [&_section]:mb-0"><FieldGroup className="grid gap-0">

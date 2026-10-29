@@ -23,7 +23,11 @@ export default function PrivacyPage() {
     <article className="policy-page mx-auto max-w-3xl rounded-2xl border border-border bg-white p-6 md:p-9">
       <p className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Store policy</p>
       <h1 className="mb-3 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">Privacy policy</h1>
-      <p className="text-sm leading-7 text-muted">Last updated 2026-10-28. This policy explains what information Al Mina Pharmacy collects when you use this website, create an account or place an order, why we use it and the choices you have. You can shop and check out as a guest without creating an account.</p>
+      <p className="text-sm leading-7 text-muted">Last updated 2026-10-29. This policy explains what information Al Mina Pharmacy collects when you use this website, create an account or place an order, why we use it and the choices you have. You can shop and check out as a guest without creating an account.</p>
+
+      <h2 className="mt-8 text-xl font-semibold">Google Customer Reviews and store quality</h2>
+      <p className="mt-2 text-sm leading-7 text-muted">When Google Customer Reviews is offered after a confirmed order, Google receives your order reference, email address, delivery country and estimated delivery date to display its optional survey invitation. You choose whether to receive the survey. We do not send Google your product names, product identifiers, medical details, delivery address or payment information through this integration. The store-quality widget, when enabled on public discovery pages, may use Google cookies and collect aggregated widget views and clicks.</p>
+      <p className="mt-2 text-sm leading-7 text-muted">Read <a className="text-teal underline" href="https://policies.google.com/privacy" rel="noopener noreferrer" target="_blank">Google’s privacy policy</a> and manage advertising preferences through <a className="text-teal underline" href="https://myadcenter.google.com/" rel="noopener noreferrer" target="_blank">Google My Ad Center</a>. Declining a survey does not affect your order, pharmacy support or access to the website.</p>
 
       <h2 className="mt-8 text-xl font-semibold">Information we collect</h2>
       <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-7 text-muted">

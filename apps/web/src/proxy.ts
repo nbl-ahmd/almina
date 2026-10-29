@@ -1,3 +1,4 @@
+import {googleCommerceConfiguration} from './lib/google/commerce';
 import { readWebEnvironment } from '@almina/config/env';
 import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -35,13 +36,17 @@ export function proxy(request: NextRequest) {
   const apiMediaOrigin = new URL(environment.LEGACY_API_ORIGIN).origin;
   const nonce = randomBytes(16).toString('base64');
   const development = process.env.NODE_ENV === 'development';
+  const googleCommerce = googleCommerceConfiguration(process.env);
+  const googlePage = googleCommerce.survey && ['/checkout','/checkout/stripe'].includes(request.nextUrl.pathname) || googleCommerce.widget && ['/','/categories','/brands'].includes(request.nextUrl.pathname);
+  const googleConnections = googlePage ? ' https://apis.google.com https://www.google.com https://www.gstatic.com' : '';
+  const frameOrigins = [...(['/account','/wholesale'].includes(request.nextUrl.pathname) ? ['https://accounts.google.com'] : []), ...(googlePage ? ['https://www.google.com', 'https://apis.google.com'] : [])];
   const policy = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''}`,
     stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV, request.nextUrl.pathname === '/admin/marketing')+(['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com/gsi/style':''),
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
     `img-src 'self' data: blob: https://cdn.alminapharmacy.com ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
-    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(['/account','/wholesale'].includes(request.nextUrl.pathname) ? ["frame-src https://accounts.google.com"] : []), `connect-src 'self'${['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
+    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(frameOrigins.length ? [`frame-src ${frameOrigins.join(' ')}`] : []), `connect-src 'self'${googleConnections}${['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),
   ].join('; ');
