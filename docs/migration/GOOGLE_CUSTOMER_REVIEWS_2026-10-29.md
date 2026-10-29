@@ -1,6 +1,6 @@
 # Google Customer Reviews and discovery audit — 29 October 2026
 
-Owner explicitly confirmed Google eligibility for the UAE pharmacy and medical-device catalogue on 29 October. Activation still requires approval of the specific customer-data transfer to Google.
+Owner explicitly confirmed Google eligibility for the UAE pharmacy and medical-device catalogue on 29 October. Owner separately approved the specific customer-data transfer and public widget activation on 29 October.
 
 ## Additive implementation
 
@@ -26,6 +26,10 @@ Merchant srsltid auto-tagging parameters now preserve clean canonical indexing. 
 
 ## Verification
 
-249 unit tests; 179 disposable-database integration tests and 137 API tests passed. Checkout regression assertions verify original timestamps on replay. Production foundation build, typecheck and scoped lint passed. No production order or fake survey was submitted. Actual Google dialog/CSP and widget must be verified after approved activation; customer invitation delivery requires a genuine eligible order. Core Web Vitals has insufficient field data, so no field-performance pass is claimed.
+249 unit tests; 179 disposable-database integration tests and 137 API tests passed. Checkout regression assertions verify original timestamps on replay. Production foundation build, typecheck and scoped lint passed. No production order or fake survey was submitted. Actual Google dialog/CSP and widget must be verified after deployment; customer invitation delivery requires a genuine eligible order. Core Web Vitals has insufficient field data, so no field-performance pass is claimed.
 
 Official references: https://support.google.com/merchants/answer/14629205 (opt-in), https://support.google.com/merchants/answer/14632921 (widget), https://support.google.com/merchants/answer/15191080 (auto-tagging).
+
+## Production activation and release identity
+
+Saved all five Google settings above for Production in the existing Vercel project after owner approval. Render deployed ddb0d825383e2d6b284e0ff44c37164b758ee154 successfully. PR #82 passed every GitHub check. Its CLI squash merge was attributed to nbl-ahmd; Vercel blocked that frontend release because this Hobby project requires the owner account identity. Prior successful release commits use alminadev / pharmacy.spmb@gmail.com. The authenticated Spmb GitHub session is alminadev. Release follow-up changes through that existing owner session using a normal reviewed merge; do not rewrite history, spoof metadata, remove author checks or purchase a plan. Future production merges must use the actual Vercel-linked owner identity or an explicitly approved collaboration plan.
