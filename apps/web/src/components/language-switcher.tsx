@@ -10,10 +10,12 @@ export function LanguageSwitcher({ locale, label, size = 'compact' }: { locale: 
     document.cookie = `${localeCookie}=${next}; path=/; max-age=31536000; samesite=lax`;
     router.refresh();
   }
-  const dimensions = size === 'default' ? 'min-h-11 px-4 text-sm' : 'min-h-11 px-3 text-xs';
-  const style = (active: boolean) => `${dimensions} rounded-full border-0 shadow-none transition-[color,background-color] ${active ? 'bg-ink font-semibold text-white' : 'bg-transparent font-normal text-muted hover:text-ink'}`;
-  return <div className="language-switcher flex items-center gap-1" aria-label={label} role="group">
-    <button type="button" lang="en" aria-pressed={locale === 'en'} className={style(locale === 'en')} onClick={() => choose('en')}>English</button>
-    <button type="button" lang="ar" aria-pressed={locale === 'ar'} className={style(locale === 'ar')} onClick={() => choose('ar')}>العربية</button>
+  const dimensions = size === 'default' ? 'text-sm' : 'text-[13px]';
+  // Opt out of inherited commerce-button styling; these are quiet utility actions.
+  const style = (active: boolean) => `${dimensions} inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-none border-0 bg-transparent px-1 py-2 [font-family:inherit] leading-5 shadow-none underline-offset-4 decoration-1 hover:text-teal hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink motion-safe:active:scale-[0.97] ${active ? 'font-semibold text-ink underline' : 'font-normal text-ocean no-underline'}`;
+  return <div className="language-switcher flex shrink-0 items-center gap-2" aria-label={label} role="group" dir="ltr">
+    <button data-slot="language-option" type="button" lang="en" aria-pressed={locale === 'en'} className={style(locale === 'en')} onClick={() => choose('en')}>English</button>
+    <span className="text-ocean/40" aria-hidden="true">/</span>
+    <button data-slot="language-option" type="button" lang="ar" dir="rtl" aria-pressed={locale === 'ar'} className={style(locale === 'ar')} onClick={() => choose('ar')}>العربية</button>
   </div>;
 }

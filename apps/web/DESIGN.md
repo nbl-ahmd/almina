@@ -286,3 +286,12 @@ each other; GET navigation closes the panel to reveal results, and reopening
 retains applied values. Desktop has the heading/reset row and a collapsed
 secondary category list. Price bounds count as one refinement; ordering is not
 counted. No scroll animation or added motion dependency is used on this task UI.
+
+### Utility language preferences
+
+The mint header utility strip uses 4px block padding within the existing 24/32px
+page gutters. Language controls are transparent, borderless text actions with
+44px minimum touch targets, a quiet slash separator and an underline on the
+selected language. They keep visible keyboard focus and stable English/Arabic
+reading order within both LTR and RTL shells. Contact links use the same quiet
+text treatment; announcement copy can wrap at intermediate widths.
