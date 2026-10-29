@@ -72,6 +72,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const inputs = inputMessages(locale);
   const form = useRef<HTMLFormElement>(null);
   const confirmation = useRef<HTMLHeadingElement>(null);
+  const summary = useRef<HTMLHeadingElement>(null);
+  const feedback = useRef<HTMLParagraphElement>(null);
   const busy = useRef(false);
   const locationRequest = useRef(0);
   const locationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -89,6 +91,15 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const [reviewed, setReviewed] = useState<Reviewed | null>(null);
   const [attempt, setAttempt] = useState<CheckoutInput | null>(null);
   const [result, setResult] = useState<z.infer<typeof checkoutDtoSchema> | null>(null);
+  useEffect(() => {
+    // The response lives below the form on phones. Reveal it without animating
+    // the user's working fields or requiring them to hunt for the next action.
+    const target = error ? feedback.current : reviewed ? summary.current : null;
+    if (target) {
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
+  }, [error, reviewed]);
   useEffect(() => { if (result) confirmation.current?.focus(); }, [result]);
   useEffect(() => {
     let active = true;
@@ -243,7 +254,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     <div className="p-5 sm:p-8"><div className="grid gap-4 border-b border-border pb-5 sm:grid-cols-2"><div><p className="mb-1 text-xs text-muted">{t(locale, 'checkoutOrderNumber')}</p><p role="status" className="m-0 text-xl font-bold">{result.orderId}</p></div><div className="sm:text-right"><p className="mb-1 text-xs text-muted">{t(locale, 'checkoutOrderTotal')}</p><p className="m-0 text-xl font-bold tabular-nums">{formatted(result.totals.totalMinor)}</p></div></div><h3 className="mt-6 mb-2 text-base">{t(locale, 'checkoutNextTitle')}</h3><p className="text-sm leading-relaxed text-ocean">{t(locale, 'checkoutNextBody')}</p><div className="mt-6 flex flex-wrap gap-3"><Link className="button min-h-11 flex-1 text-sm" href="/products">{t(locale, 'checkoutContinueShopping')} <Icon name="arrow" /></Link><Link className="button button-secondary min-h-11 flex-1 text-sm text-ocean" href="/contact">{t(locale, 'checkoutContactPharmacyShort')}</Link></div></div></section></>;
   const total: Quote | undefined = reviewed?.quote;
   return <section className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8" aria-label={t(locale, 'checkoutPlaceOrderAria')}>
-    <form ref={form} onSubmit={review} onChange={() => { if (!attempt) setReviewed(null); }} className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface [&_section]:mb-0"><FieldGroup className="grid gap-0">
+    <form ref={form} aria-busy={working} onSubmit={review} onChange={() => { if (!attempt) setReviewed(null); }} className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface [&_section]:mb-0"><FieldGroup className="grid gap-0">
       <div className="border-b border-border bg-subtle px-5 py-5 sm:px-7"><h2 className="mb-1 text-xl">{t(locale, 'checkoutContactDeliveryTitle')}</h2><p className="m-0 text-xs text-muted">{t(locale, 'checkoutContactDeliveryIntro')}</p></div>
       <fieldset disabled={working || !!attempt} className="m-0 min-w-0 border-0 p-0">
         <legend className="sr-only">{t(locale, 'checkoutLegend')}</legend>
@@ -269,8 +280,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       <div className="border-t border-border bg-page px-5 py-5 sm:px-7">{!attempt ? <Button variant="default" size="default" type="submit" className="w-full" disabled={working || locating || !!error && error === t(locale, 'checkoutRecoverError')}>{working ? t(locale, 'checkoutChecking') : t(locale, 'checkoutReview')}<Icon name="arrow" /></Button> : <p className="m-0 text-sm" role="status">{t(locale, 'checkoutPendingNotice')}</p>}<p className="mt-3 mb-0 text-center text-xs text-muted">{t(locale, 'checkoutFinalTotalNote')}</p></div>
     </FieldGroup></form>
     <aside className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface lg:sticky lg:top-6" aria-labelledby="checkout-summary">
-      <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4"><h2 className="m-0 text-xl" id="checkout-summary">{t(locale, 'checkoutOrderSummary')}</h2><Icon name="bag" /></div><div className="p-5">
-      {error ? <p className="rounded-[14px] border border-warning/40 bg-warning-surface p-3 text-sm text-warning" role="alert">{error}</p> : null}
+      <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4"><h2 ref={summary} tabIndex={-1} className="m-0 scroll-mt-40 text-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink" id="checkout-summary">{t(locale, 'checkoutOrderSummary')}</h2><Icon name="bag" /></div><div className="p-5">
+      {error ? <p ref={feedback} tabIndex={-1} className="scroll-mt-40 rounded-[14px] border border-warning/40 bg-warning-surface p-3 text-sm text-warning focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink" role="alert">{error}</p> : null}
       {total ? <><ul className="m-0 list-none p-0">{total.lines.map(line => <li className="flex items-start justify-between gap-3 border-b border-border py-3 text-sm first:pt-0 wrap-anywhere" key={line.productId}><span>{line.name}{line.variantLabel?<span className="mt-1 block text-xs text-ocean">{line.variantLabel}</span>:null}<span className="mt-1 block text-xs text-muted">{tf(locale, 'checkoutQty', { count: line.quantity })}</span></span><strong className="shrink-0 tabular-nums">{formatted(line.lineTotalMinor)}</strong></li>)}</ul>
         <dl className="mt-5 grid grid-cols-[minmax(0,1fr)_auto] gap-3 text-sm tabular-nums"><dt>{t(locale, 'checkoutItems')}</dt><dd className="m-0 text-right">{formatted(total.subtotalMinor)}</dd>{total.voucher?<><dt>{t(locale, 'checkoutRewardVoucher')}</dt><dd className="m-0 text-right text-teal">−{formatted(total.voucher.discountMinor)}</dd></>:null}<dt>{t(locale, 'checkoutDelivery')}</dt><dd className="m-0 text-right">{formatted(total.deliveryFeeMinor)}</dd><dt>{total.vatMode === 'inclusive' ? t(locale, 'checkoutVatIncluded') : t(locale, 'checkoutVat')}</dt><dd className="m-0 text-right">{formatted(total.taxMinor)}</dd><dt className="border-t border-border pt-4 text-lg font-bold">{t(locale, 'checkoutTotal')}</dt><dd className="m-0 border-t border-border pt-4 text-right text-lg font-bold">{formatted(total.totalMinor)}</dd></dl></> : <div className="rounded-[16px] bg-page p-4"><p className="mb-2 text-sm font-semibold">{t(locale, 'checkoutReadyTitle')}</p><p className="m-0 text-xs leading-relaxed text-ocean">{t(locale, 'checkoutReadyBody')}</p></div>}
       {reviewed || attempt ? <Button variant="default" size="default" type="button" className="mt-5 w-full" disabled={working} onClick={() => { void place(); }}>{working ? t(locale, 'checkoutConfirming') : stripeAttempt&&!stripeTestMode?(locale==='ar'?(attempt?'متابعة الدفع الآمن':'الدفع بأمان'):(attempt?'Resume secure payment':'Pay securely')):stripeAttempt?(locale==='ar'?(attempt?'متابعة الدفع التجريبي':'المتابعة إلى اختبار Stripe'):(attempt?'Resume Stripe test checkout':'Continue to Stripe test checkout')):attempt ? t(locale, 'checkoutRetryPending') : tf(locale, 'checkoutPlaceOrder', { total: formatted(total!.totalMinor) })}</Button> : null}

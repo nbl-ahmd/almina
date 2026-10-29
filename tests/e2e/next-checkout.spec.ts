@@ -9,6 +9,7 @@ test.beforeEach(async ({ request }) => { await reset(request); });
 for (const width of [360, 390, 768, 1280]) test(`Next checkout at ${width}px confirms current totals without overflow`, async ({ page, request }) => {
   await page.setViewportSize({ width, height: 900 });
   await prepare(page);
+  await expect(page.getByRole('heading', { name: 'Order summary', exact: true })).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await expect(page.getByRole('group', { name: 'Contact and delivery details' })).toBeVisible();
   if(width===390||width===1280) await page.screenshot({path:`outputs/storefront-controls-2026-10-20/checkout-${width}.png`,fullPage:true});
@@ -40,6 +41,7 @@ test('Next checkout refuses changed prices and requires a fresh review', async (
   expect((await request.post(commerceOrigin + '/__fixture/price')).status()).toBe(204);
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
   await expect(page.locator('p[role="alert"]')).toContainText('Prices or delivery have changed');
+  await expect(page.locator('p[role="alert"]')).toBeFocused();
   expect((await state(request)).orders).toHaveLength(0);
   expect((await state(request)).stock).toBe(4);
   await page.getByRole('button', { name: 'Review order', exact: true }).click();

@@ -295,3 +295,20 @@ page gutters. Language controls are transparent, borderless text actions with
 selected language. They keep visible keyboard focus and stable English/Arabic
 reading order within both LTR and RTL shells. Contact links use the same quiet
 text treatment; announcement copy can wrap at intermediate widths.
+
+### Shopping interaction feedback
+
+Pointer actions use local press feedback (0.97 scale, 150ms) and the shared
+`--ease-out` curve. Mobile delivery selection enters as a bottom sheet (240ms,
+`--ease-drawer`); desktop remains a centered dialog. The native dialog retains
+focus trapping and Escape behavior; the document does not scroll behind it.
+Keyboard-initiated navigation and sheets are immediate. Reduced-motion settings
+suppress movement through the existing global media rule.
+
+Carousel indicators provide 44px targets; horizontal home shelves use native
+scrolling with proximity snap and contained horizontal overscroll. No page-wide
+entrance, auto-advancing campaign, or animated price/total is introduced. Cart
+checks show a visible progress glyph on mobile and a success check only after
+server validation/storage succeed. Checkout responses focus and immediately
+align their summary or error beneath the header so mobile shoppers can find the
+reviewed total and next action together.
