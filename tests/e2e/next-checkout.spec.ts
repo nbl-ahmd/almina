@@ -9,7 +9,7 @@ test.beforeEach(async ({ request }) => { await reset(request); });
 for (const width of [360, 390, 768, 1280]) test(`Next checkout at ${width}px confirms current totals without overflow`, async ({ page, request }) => {
   await page.setViewportSize({ width, height: 900 });
   await prepare(page);
-  await expect(page.getByRole('heading', { name: 'Order summary', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading',{name:width<1024?'Review & payment':'Order summary',exact:true})).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await expect(page.getByRole('group', { name: 'Contact and delivery details' })).toBeVisible();
   if(width===390||width===1280) await page.screenshot({path:`outputs/storefront-controls-2026-10-20/checkout-${width}.png`,fullPage:true});
@@ -40,8 +40,8 @@ test('Next checkout refuses changed prices and requires a fresh review', async (
   await prepare(page);
   expect((await request.post(commerceOrigin + '/__fixture/price')).status()).toBe(204);
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
-  await expect(page.locator('p[role="alert"]')).toContainText('Prices or delivery have changed');
-  await expect(page.locator('p[role="alert"]')).toBeFocused();
+  await expect(page.locator('main [role="alert"]')).toContainText('Prices or delivery have changed');
+  await expect(page.locator('main [role="alert"]')).toBeFocused();
   expect((await state(request)).orders).toHaveLength(0);
   expect((await state(request)).stock).toBe(4);
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
@@ -199,6 +199,7 @@ test('header delivery selector saves an area, persists on reload and prefills ch
   await page.reload();
   await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Al Barsha, Dubai');
   await expect(page.getByRole('complementary', { name: 'Choose your delivery area' })).toHaveCount(0);
+  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{id,quantity:1} ])), productId);
   await page.goto(origin + '/checkout');
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Al Barsha');
   await expect(page.getByRole('combobox', { name: 'Emirate', exact: true })).toHaveValue('Dubai');
@@ -231,4 +232,15 @@ test('storefront location uses consented GPS, confirms the area and saves no coo
   await expect(dialog.getByLabel('Delivery city / area', { exact: true })).toHaveValue('Synthetic area');
   await dialog.getByRole('button', { name: 'Save delivery area' }).click();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('almina.delivery-area.v1')!))).toEqual({ city: 'Synthetic area', emirate: 'Ras al-Khaimah' });
+});
+
+test('mobile checkout preserves delivery details when going back and payment choices are keyboard accessible',async({page,request})=>{
+ await page.setViewportSize({width:390,height:844});await prepare(page);
+ await page.getByRole('button',{name:'Back',exact:true}).click();
+ await expect(page.getByLabel('Name',{exact:true})).toHaveValue(customer.name);
+ await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
+ const cash=page.getByRole('radio',{name:/Cash on delivery/});await cash.focus();await page.keyboard.press('ArrowDown');
+ await expect(page.getByRole('radio',{name:/Credit or debit card/})).toBeChecked();
+ await expect(page.getByRole('button',{name:'Continue to test payment'})).toBeVisible();
+ expect((await state(request)).orders).toHaveLength(0);
 });
