@@ -672,3 +672,14 @@ streaming with first-image priority and readable captions. See
 Owner approved customer-data transmission and activation; five Production settings are saved.
 Backend is deployed. Frontend release must use the authenticated Vercel-linked
 owner identity; live activation verification follows that release.
+
+### 30 October 2026 — production payment labels
+
+Live Stripe acceptance was enabled in Render after owner-entered credentials
+passed account readiness. Production availability reports ready/available true,
+testMode false; verified the selectable card option without creating an order or
+charge. New checkout choices now use provider-neutral English/Arabic copy:
+Credit or debit card and Cash on delivery. Removed the separate card-on-delivery
+choice for new submissions while preserving original pending legacy methods and
+backend contracts. Updated payment-return copy and browser regression expectations.
+Pricing, reservations, payment processing and existing orders are unchanged.
