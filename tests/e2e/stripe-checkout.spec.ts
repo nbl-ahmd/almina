@@ -40,7 +40,7 @@ test('Stripe return verifies server payment state and refund, preserves basket, 
   await page.reload();await expect(page.getByRole('heading',{name:'Test payment successful'})).toBeVisible();
   await request.post(commerceOrigin+'/__fixture/stripe-refunded');await page.reload();
   await expect(page.getByRole('heading',{name:'Test payment refunded — stock released'})).toBeVisible();expect((await state(request)).stock).toBe(4);
-  await page.evaluate(()=>sessionStorage.clear());await page.reload();await expect(page.locator('[role="alert"]')).toContainText('could not verify');
+  await page.evaluate(()=>sessionStorage.clear());await page.reload();await expect(page.locator('main [role="alert"]')).toContainText('could not verify');
 });
 test('Stripe gateway remains unavailable on the storefront where the feature is disabled',async({request})=>{
   expect((await request.post('http://127.0.0.1:4710/api/checkout/stripe/start',{data:{},headers:{Origin:'http://127.0.0.1:4710','X-CSRF-Protection':'1'}})).status()).toBe(404);
@@ -81,7 +81,7 @@ test('Stripe authorization or rate-limit errors preserve the original payment ke
   await nextCheckoutPage(page);await page.getByRole('radio',{name:/Credit or debit card/}).check();
   await page.route('**/api/checkout/stripe/start',route=>route.fulfill({status:403,json:{error:{code:'FORBIDDEN'}}}));
   await page.getByRole('button',{name:'Continue to test payment'}).click();
-  await expect(page.locator('[role="alert"]')).toBeVisible();
+  await expect(page.locator('main [role="alert"]')).toBeVisible();
   const original=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('almina.checkout.pending.v1')!).idempotencyKey);
   await page.reload();await expect(page.getByRole('button',{name:'Resume test payment'})).toBeVisible();
   expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('almina.checkout.pending.v1')!).idempotencyKey)).toBe(original);

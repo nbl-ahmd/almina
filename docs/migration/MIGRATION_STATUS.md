@@ -1,6 +1,6 @@
-## 2026-10-30 — Responsive checkout UX (verification pending)
+## 2026-10-30 — Responsive checkout UX (locally verified)
 
-Implemented guided mobile checkout, desktop side-by-side review, native payment radios, contract validation and lightweight confirmation motion. Owner reference feedback prompted a neutral palette revision. Final visual verification remains pending after browser tooling became unavailable; nothing deployed. See [checkout UX](CHECKOUT_UX_2026-10-30.md).
+Implemented guided mobile checkout, desktop side-by-side review, native payment radios, contract validation and lightweight confirmation motion. Owner reference feedback is reflected in the final neutral palette. All 35 actual checkout/payment Playwright cases passed, covering responsive layouts, checkout/cash-confirmation axe checks, disposable cash orders, changed-price review, saved-intent retry, GPS and mocked card outcomes. The separate final capture test passed; final desktop/mobile/tablet/Arabic/confirmation renders were opened, and reduced-motion suppression was checked in the browser. Also passed: 252 unit and 179 disposable integration tests, typecheck, lint, isolated production build and clean Next.js MCP compilation diagnostics. Existing DESIGN.md and sidecar remain unchanged. Physical-phone and real-charge acceptance remain untested; no production order or deployment occurred. See [checkout UX, scoped design comparison and finish review](CHECKOUT_UX_2026-10-30.md).
 
 ## 2026-10-27 — Catalogue filter UI refinement
 

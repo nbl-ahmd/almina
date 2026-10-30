@@ -40,8 +40,8 @@ test('Next checkout refuses changed prices and requires a fresh review', async (
   await prepare(page);
   expect((await request.post(commerceOrigin + '/__fixture/price')).status()).toBe(204);
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
-  await expect(page.locator('[role="alert"]')).toContainText('Prices or delivery have changed');
-  await expect(page.locator('[role="alert"]')).toBeFocused();
+  await expect(page.locator('main [role="alert"]')).toContainText('Prices or delivery have changed');
+  await expect(page.locator('main [role="alert"]')).toBeFocused();
   expect((await state(request)).orders).toHaveLength(0);
   expect((await state(request)).stock).toBe(4);
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
@@ -199,6 +199,7 @@ test('header delivery selector saves an area, persists on reload and prefills ch
   await page.reload();
   await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Al Barsha, Dubai');
   await expect(page.getByRole('complementary', { name: 'Choose your delivery area' })).toHaveCount(0);
+  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{id,quantity:1} ])), productId);
   await page.goto(origin + '/checkout');
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Al Barsha');
   await expect(page.getByRole('combobox', { name: 'Emirate', exact: true })).toHaveValue('Dubai');
