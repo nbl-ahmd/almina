@@ -231,6 +231,16 @@ Product cards have 16px corners, white fill, pale 1px borders and 12px padding. 
 
 Shared Input and NativeSelect use subtle fill, `control-border`, 12px corners, 48px minimum height and 12px 16px padding. Hover/focus lifts the fill to white; focus uses an ink border and 2px outline/offset. Invalid states use sale boundaries and outlines; disabled states use neutral fill and muted text. Select chevrons use Heroicons. Checkboxes use a 20px square with 6px corners; checked state uses coral border/fill with an ink check and ink focus outline. The header search is a white bordered composite with a quiet white circular submit control and keyboard-operable suggestions. Field label/error relationships remain explicit.
 
+### Checkout fields (scoped extension)
+
+Checkout extends the shared 48px field baseline locally: persistent inset labels sit above entered values inside 60px fields below 1024px and 64px fields from 1024px, with 12px corners and no field shadow. Labels are 12px; input values remain 16px, while mobile select values use 14px. Associated labels remain visible during typing, with linked errors and a visible keyboard focus outline.
+
+These controls use charcoal text (`#202124`), gray labels (`#60646c`), a soft filled surface (`#f7f8fa`) and a 1px boundary (`#d7dbe0`). Hover uses `#a2a8b1` boundaries; focus changes the fill to white with a `#30343b` border and 2px outline at 2px offset. Invalid boundaries retain the existing sale semantic. This local neutral palette does not replace the storefront palette or shared control tokens.
+
+Emirate and City remain paired in two equal columns on phones; the street address spans both columns. Compact section spacing groups contact and delivery fields without adding individual field containers. The mobile location action uses shorter visible copy while retaining its full localized accessible name.
+
+Selects retain native semantics. Inside `@supports (appearance:base-select)`, `::picker(select)` receives a white menu with a `#d7dbe0` boundary, 14px corners, soft overlay shadow and at least 44px options; the selected option uses `#edf0f4` and semibold text. Other engines retain their system picker. This enhancement introduces no JavaScript dependency and is not a requirement to replace native selection on other surfaces.
+
 ### Navigation
 
 The category mega menu is a Radix Popover disclosure: two browsing columns at tablet widths and a third mint help panel at large widths. Mobile uses a Radix Dialog drawer with scrollable links, a fixed account/language footer and an explicit close action. Menus dismiss with Escape/outside interaction, restore focus, and close across the mobile breakpoint. Search is a neutral composite field with an ink submit action, useful initial suggestions, recent searches and keyboard-operable live results.
