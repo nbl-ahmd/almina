@@ -1,3 +1,7 @@
+## 2026-10-30 — Responsive checkout UX (verification pending)
+
+Implemented guided mobile checkout, desktop side-by-side review, native payment radios, contract validation and lightweight confirmation motion. Owner reference feedback prompted a neutral palette revision. Final visual verification remains pending after browser tooling became unavailable; nothing deployed. See [checkout UX](CHECKOUT_UX_2026-10-30.md).
+
 ## 2026-10-27 — Catalogue filter UI refinement
 
 Matched filters to the existing storefront: removed native square price framing, applied theme-correct control boundaries, simplified headings/counts, widened the desktop rail, collapsed secondary category links and retained the owner-selected inline mobile panel. A small client form validates reversed bounds while preserving native GET navigation and server catalogue rendering. Eleven isolated production-build browser cases, typecheck/lint/build, Next runtime diagnostics and the Impeccable detector passed. No production deployment or data changes. See [filter refinement and verification](CATALOG_FILTERS_2026-10-27.md).
