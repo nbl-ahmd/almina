@@ -13,7 +13,7 @@ Mode: Operate. Existing Al Mina storefront world; code-led refinement of the use
 
 THESIS: A guided handoff from delivery details to a confident final review. Replace the long mobile form and buried dropdown with two focused stages and native radio payment choices.
 
-OWN-WORLD: Existing Geist with a checkout-specific white, charcoal and cool-gray palette; charcoal progress and blue reserved for verified success. Crisp 9–14px checkout corners, 48px fields, Heroicons, honest totals and quiet separators; no new identity or motion dependency.
+OWN-WORLD: Existing Geist with a checkout-specific white, charcoal and cool-gray palette; charcoal progress and blue reserved for verified success. Crisp 12–14px checkout corners, 60px mobile/64px desktop inset-label fields, Heroicons, honest totals and quiet separators; no new identity or motion dependency.
 
 STORY: Recognise the basket, enter essential details, review the server-confirmed total, select card or cash, then receive a clear verified outcome. Back/edit preserves entered fields. Optional address details and vouchers disclose on demand.
 
@@ -24,3 +24,5 @@ FORM: Owner confirmed guided mobile stages and desktop side by side, following t
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 Constraints: two new-order payment choices, hosted card collection, immutable server totals, idempotency and legacy pending-method recovery. No fake trust claims, urgency or reviews. Reduced motion, keyboard radio navigation, RTL, explicit loading/error/retry states. No customer PII in persistent draft storage.
+
+Control refinement: persistent inset labels, soft filled fields, compact contact/address grouping, paired Emirate and City on phones. Styled native picker under appearance:base-select feature detection; other engines retain their system picker. No additional JavaScript or motion dependency. Mobile location action uses a shorter visible label with its full accessible name.
