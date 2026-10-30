@@ -47,14 +47,14 @@ export default async function ShippingPage() {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-sm leading-7 text-muted">Minimum order value: <strong>{formatAedMinor(policy.minimumOrderMinor)}</strong>. Prices include {policy.vatMode === 'inclusive' ? `${policy.vatRateBps / 100}% VAT` : `${policy.vatRateBps / 100}% VAT added at checkout`} where applicable. Product prices and the final delivery charge are calculated again on the server when you review and place your order.</p>
+        <p className="mt-3 text-sm leading-7 text-muted">Minimum order value: <strong>{formatAedMinor(policy.minimumOrderMinor)}</strong>. Prices include {policy.vatMode === 'inclusive' ? `${policy.vatRateBps / 100}% VAT` : `${policy.vatRateBps / 100}% VAT added at checkout`} where applicable. Your final order total, including any delivery charges, is confirmed at checkout.</p>
       </> : <p className="mt-2 text-sm leading-7 text-muted">The live delivery fee table is temporarily unavailable. Delivery charges are confirmed at checkout based on your emirate, or you can contact the pharmacy for a current quote.</p>}
 
       <h2 className="mt-8 text-xl font-semibold">Order handling and delivery time</h2>
       <p className="mt-2 text-sm leading-7 text-muted">Orders are prepared during pharmacy opening hours after stock and prescription checks, within {deliveryEstimate.handlingDays.max} business day. Delivery is estimated within {deliveryEstimate.transitDays.max} business days, and most Ras Al Khaimah deliveries arrive on the same or next day. These are estimates, not guaranteed times; the pharmacy will contact you if an order is delayed. Someone should be available to receive the order and show the order confirmation if asked.</p>
 
       <h2 className="mt-8 text-xl font-semibold">Payment</h2>
-      <p className="mt-2 text-sm leading-7 text-muted">Cash and card payment on delivery remain available. Any online payment option available for your order is shown at checkout. If you choose online card payment, Stripe processes it on its hosted checkout page; we do not collect or store full card numbers on this website. The final amount is shown before you confirm the order and is recalculated by the server from current catalog prices, stock, VAT and the delivery rule for your address.</p>
+      <p className="mt-2 text-sm leading-7 text-muted">Pay by credit or debit card, or choose cash on delivery. Available payment methods are shown at checkout. Card details are handled securely by our payment provider; we do not collect or store full card numbers. Review your final total, including VAT and any delivery charges, before confirming your order.</p>
 
       <h2 className="mt-8 text-xl font-semibold">Restricted and prescription items</h2>
       <p className="mt-2 text-sm leading-7 text-muted">Prescription medicines are supplied only against a valid prescription that our pharmacist can verify. Some health products may be unavailable for delivery, require an age or identity check, or need pharmacist advice. We may contact you before dispatch and cancel or refund an order that cannot be supplied safely.</p>
