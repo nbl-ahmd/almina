@@ -10,6 +10,7 @@ import { repairOrderArea, routingRecipients, legacyAreaExpression } from '../app
 import { createCommerceService } from '../apps/api/src/modules/orders/commerce';
 import { backfillOrderAreas } from '../scripts/migrations/order-routing';
 import { deactivateStaff } from '../apps/api/src/modules/auth/administration';
+import { orderOutbox } from '../apps/api/src/modules/notifications/outbox';
 import { orderReceiving } from '../apps/api/src/modules/orders/receiving';
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
@@ -67,6 +68,10 @@ test('branch routing partitions typed and GPS areas, sends every unknown to fall
     assert.equal(await db.collection('order_routing_audit').countDocuments({ orderId: orders[3]!._id }), 1);
     const alert = await db.collection('order_outbox').findOne({ orderId: orders[3]!._id });
     assert.equal(alert!.state, 'not_required'); assert.equal(alert!.pushState, 'pending');
+    let customerEmails = 0, emailFailures = 0;
+    const email = orderOutbox(() => db, { intervalMs: 60000, send: async () => { customerEmails++; }, onFailure: () => { emailFailures++; } });
+    await email.tick(); await email.stop();
+    assert.equal(customerEmails, 0); assert.equal(emailFailures, 0);
     const reviewed = (await db.collection('orders').findOne({ _id: orders[3]!._id }))!;
     assert.deepEqual((await db.collection('users').find(await routingRecipients(db, reviewed)).toArray()).map(row => String(row._id)).sort(), [admin.id, local.id].sort());
     const commerce = createCommerceService(async () => db);
