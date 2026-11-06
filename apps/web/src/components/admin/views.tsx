@@ -1,3 +1,4 @@
+import { OrderAreaReview } from './order-routing';
 import { PhotoIcon } from '@heroicons/react/24/outline';
 import { OrderCosts } from './order-costs';
 import { feedIssues } from '../../lib/catalog/feed';
@@ -519,6 +520,7 @@ export function OrderDetail({
   const id = display(order._id);
   const status = display(order.status);
   const stripePayment=order.payment as {provider?:string;state?:string;testMode?:boolean;reference?:string;refundIssue?:string}|undefined;
+  const readyForFulfilment = !stripePayment || (stripePayment.testMode === false && stripePayment.state === 'paid');
   return (
     <>
       <PageHeader
@@ -534,6 +536,7 @@ export function OrderDetail({
         }
       />
 
+      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="admin-alert admin-alert--danger">Check this address before dispatch. Its area was not recognized; the order remains in the fallback branch and administrator inbox.</p> : null}{admin ? <OrderAreaReview key={id + String(record(order.routing).revision)} orderId={id} revision={Number(record(order.routing).revision ?? 0)} currentArea={typeof record(order.routing).areaId === 'string' ? record(order.routing).areaId as string : null} /> : null}</Card>
       {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
       {stripePayment?.provider==='stripe'?<div className="admin-alert" role="status"><strong>{stripePayment.testMode?'Stripe test payment':'Stripe online payment'} · {display(stripePayment.state)}</strong><p>Only verified paid orders can be fulfilled. Paid-order cancellation requests a refund; cancellation finishes after Stripe confirms it. Dispatched goods are not automatically restocked.</p>{stripePayment.reference?<p>Stripe reference: {stripePayment.reference}</p>:null}{stripePayment.refundIssue?<p>{stripePayment.refundIssue}</p>:null}</div>:null}
       <div className="admin-grid admin-grid--2">
@@ -621,7 +624,10 @@ export function OrderDetail({
         ]}
       />
       <Card title="Order actions">
-        <AdminForm
+        {!readyForFulfilment ? <p className="admin-alert">Payment is not ready for fulfilment. Await a verified live payment before confirming, packing or dispatching.</p> : null}
+        {status === 'pending' && readyForFulfilment ? <div className="admin-alert"><p>Verify the delivery address and payment status, then accept this order for your pharmacy.</p><Command path={`orders/${id}/confirm`} method="POST" variant="primary">Confirm order</Command></div> : null}
+        {status === 'confirmed' && readyForFulfilment ? <div className="admin-alert"><p>Prepare and check every item before marking the order ready for dispatch.</p><Command path={`orders/${id}/pack`} method="POST" variant="primary">Mark as packed</Command></div> : null}
+        {readyForFulfilment ? <AdminForm
           path={`orders/${id}`}
           method="PUT"
           fields={[
@@ -638,7 +644,7 @@ export function OrderDetail({
           ]}
           label="Dispatch order"
           confirm="Dispatch this order with the entered billing details?"
-        />
+        /> : null}
         <hr className="admin-divider" />
         <div className="admin-actions">
           <Command

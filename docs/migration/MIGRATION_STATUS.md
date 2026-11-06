@@ -1,3 +1,7 @@
+## 2026-11-06 — Pharmacy receiving and configurable branch routing (release preparation)
+
+Replaced the optional activated city-text model with administrator-configured, exclusive area ownership and a staffed fallback branch. Added an attributed offline OSM RAK reference, branch-based staff provisioning/assignment, shared order/push access rules, address review/audit, safe historical reads and an additive backfill. Incoming counts, optional sound and direct confirmation/packing use the existing protected commerce lifecycle. Business configuration remains for administrators; no production data, staff assignments or activation changed. Verification and release checklist: [order routing](ORDER_ROUTING_2026-11-06.md).
+
 ## 2026-11-06 — Vercel compute efficiency (verified; deployment paused)
 
 Disabled speculative storefront route prefetch, added request-local read deduplication, isolated JSON/XML security work, bounded successful sitemap CDN caching and prevented unchanged order-stream reconnects from refreshing the whole admin page. HTML CSP and fresh commerce reads remain protected. The controlled catalogue visit/scroll went from 56 speculative route requests to zero; navigation still works. Verification passed: 256 unit, 137 API/security and 65 browser cases, typecheck/lint/build and clean Next runtime diagnostics. The existing Vercel allowance pause prevents release activation. See [incident, verification and rollback](VERCEL_COMPUTE_2026-11-06.md).

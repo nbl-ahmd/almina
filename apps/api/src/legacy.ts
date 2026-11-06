@@ -52,3 +52,7 @@ export { searchEmbeddingWorker } from './modules/search/embedding-worker.js';
 export * from './modules/payments/stripe.js';
 
 export { merchantSyncWorker } from './modules/catalog/merchant.js';
+
+export * from './modules/orders/routing.js';
+export * from './modules/orders/routing-admin.js';
+export * from './modules/orders/receiving.js';

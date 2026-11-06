@@ -1,3 +1,5 @@
+import { resolveDeliveryArea } from '@almina/contracts';
+import { branchOrderFilter } from './routing.js';
 import {verifiedSearchAttribution} from '../search/analytics.js';
 import {readSearchEnvironment} from '../search/config.js';
 import { visibleToRetail, wholesaleBusinessFields } from '@almina/contracts';
@@ -185,7 +187,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
           if (await db.collection('orders').findOne({ orderId }, { ...options, session, projection: { _id: 1 } })) {
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
-          const order = { _id, ...(stripeReservation ? {payment: {provider:'stripe', testMode:stripeReservation.testMode??true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
+          const order = { _id, routing: { version: 1, areaId: resolveDeliveryArea(input.customer), revision: 0 }, ...(stripeReservation ? {payment: {provider:'stripe', testMode:stripeReservation.testMode??true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
             createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
@@ -234,7 +236,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
         // Driver 5 (legacy) returns commit metadata; driver 7 returns the callback value. Capture only after commit.
         await session.withTransaction(async () => {
           outcome = undefined;
-          const order = await db.collection('orders').findOne({ ...orderFilter({ limit: 1 }, staff), _id: new ObjectId(id) }, { ...options, session });
+          const order = await db.collection('orders').findOne({ ...await branchOrderFilter(db, staff, orderFilter({ limit: 1 }, staff), session), _id: new ObjectId(id) }, { ...options, session });
           if (!order) throw new HttpError(404, 'NOT_FOUND');
           const current = historicalStatus(order);
           if(order.payment?.provider==='stripe'){

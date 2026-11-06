@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NextResponse, type NextRequest } from "next/server";
 import {
   currentIdentity,
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
       lastEventId: request.headers.get("last-event-id") ?? undefined,
       async sample(signal) {
         const result = await fetch(
-          `${env.LEGACY_API_ORIGIN}/api/orders?limit=25&offset=0`,
+          `${env.LEGACY_API_ORIGIN}/api/orders/receiving`,
           {
             headers: { cookie, origin: env.WEB_ORIGIN },
             cache: "no-store",
@@ -42,10 +43,8 @@ export async function GET(request: NextRequest) {
         if (result.status === 401 || result.status === 403)
           return { state: "revoked" };
         if (!result.ok) return { state: "unavailable" };
-        return {
-          state: "ready",
-          signature: JSON.stringify(await result.json()),
-        };
+        const value = z.object({ signature: z.string().regex(/^[a-f0-9]{64}$/), pendingCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), latestIds: z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(10) }).parse(await result.json());
+        return { state: 'ready', signature: value.signature, receiving: { pendingCount: value.pendingCount, latestIds: value.latestIds } };
       },
     });
     return new Response(stream, {

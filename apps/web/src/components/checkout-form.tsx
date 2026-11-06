@@ -74,6 +74,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const stripeEnabled=stripeMode!=='off';
   const ar=locale==='ar';
   const [stage,setStage]=useState<'details'|'payment'>('details');
+  const [reviewFocusRequest, setReviewFocusRequest] = useState(0);
   const [fieldErrors,setFieldErrors]=useState<Partial<Record<DetailField,string>>>({});
   const [showErrorSummary,setShowErrorSummary]=useState(false);
   const [validationAttempt,setValidationAttempt]=useState(0);
@@ -128,6 +129,14 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     }
   }, [error, reviewed]);
   useEffect(() => { if (result) confirmation.current?.focus(); }, [result]);
+  useEffect(() => {
+    if (!reviewFocusRequest || stage !== 'payment') return;
+    // Focus after React attaches the payment-stage heading, rather than racing a frame before commit.
+    const mobile = window.matchMedia('(max-width: 1023px)').matches;
+    const target = mobile ? stepHeading.current : summary.current;
+    target?.focus({ preventScroll: true });
+    if (mobile) target?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }, [reviewFocusRequest, stage]);
   useEffect(() => {
     let active = true;
     const requestState = locationRequest;
@@ -248,7 +257,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   async function review(event:FormEvent<HTMLFormElement>){
     event.preventDefault();if(await refreshQuote()){
       if(stage==='details'&&window.matchMedia('(max-width: 1023px)').matches){history.pushState({...history.state,alminaCheckoutStage:'payment'},'','#payment');}
-      setStage('payment');requestAnimationFrame(()=>{if(window.matchMedia('(max-width: 1023px)').matches){stepHeading.current?.focus({preventScroll:true});stepHeading.current?.scrollIntoView({block:'start',behavior:'instant'});}else summary.current?.focus({preventScroll:true});});
+      setStage('payment');setReviewFocusRequest(value => value + 1);
     }
   }
   function changePayment(value:string){

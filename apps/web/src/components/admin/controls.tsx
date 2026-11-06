@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-location-assign-relative-destination -- Session changes need a full reload to discard privileged router state. */
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from '../app-link';
 import { useRouter } from "next/navigation";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { adminFileLimit } from '../../lib/admin/upload-limits';
@@ -52,6 +53,7 @@ export async function adminRequest(
     const failure: unknown = await result.json().catch(() => null);
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'IMAGE_REVIEW_REQUIRED' && path.startsWith('image-review/')) throw new Error('This association needs another review. Confirm all required identity values and supporting evidence. Reload if the product or image has changed.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'CATALOG_REVIEW_REQUIRED') throw new Error('Complete the product content, classification, image rights and physical stock review before publishing.');
+    if ((path === 'auth/order-routing' || /^auth\/users\/[^/]+\/assignment$/.test(path)) && failure && typeof failure === 'object' && 'error' in failure && failure.error === 'INVALID_TRANSITION') throw new Error('Assign every staff account to a branch and keep at least one active staff member in each receiving branch before activating or changing routing.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'PRODUCT_FAMILY_CONFLICT') {
       throw new Error('Check the family name, brand, form, strength, category and option combinations. Each combination must be unique.');
     }
@@ -240,12 +242,36 @@ export function OrderMonitor() {
   const [updates, setUpdates] = useState(0);
   const [status, setStatus] = useState("Checking order updates…");
   const baseline = useRef<string | null>(null);
+  const seenOrders = useRef<Set<string> | null>(null);
+  const audio = useRef<AudioContext | null>(null);
+  const soundEnabled = useRef(false);
+  const [sound, setSound] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [arrivals, setArrivals] = useState(0);
   useEffect(() => {
     let healthy = false;
+    function receive(value: unknown) {
+      if (!value || typeof value !== 'object' || !('pendingCount' in value) || !('latestIds' in value)
+        || typeof value.pendingCount !== 'number' || !Number.isSafeInteger(value.pendingCount) || value.pendingCount < 0
+        || !Array.isArray(value.latestIds) || value.latestIds.length > 10 || !value.latestIds.every(id => typeof id === 'string' && /^[a-f0-9]{24}$/i.test(id))) return;
+      setPendingCount(value.pendingCount);
+      const fresh = seenOrders.current === null ? [] : value.latestIds.filter(id => !seenOrders.current!.has(id));
+      seenOrders.current = new Set([...(seenOrders.current ?? []), ...value.latestIds].slice(-1000));
+      if (fresh.length) {
+        setArrivals(count => count + fresh.length);
+        if (soundEnabled.current && audio.current?.state === 'running') {
+          const context = audio.current, oscillator = context.createOscillator(), gain = context.createGain();
+          oscillator.connect(gain); gain.connect(context.destination); oscillator.frequency.value = 660;
+          gain.gain.setValueAtTime(0.08, context.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.3);
+          oscillator.start(); oscillator.stop(context.currentTime + 0.3);
+        }
+      }
+    }
     const events = new EventSource("/api/admin/events");
-    events.addEventListener("connected", () => {
+    events.addEventListener("connected", event => {
       healthy = true;
       setStatus("Order updates connected");
+      try { receive(JSON.parse((event as MessageEvent<string>).data)); } catch { /* Only bounded receiving signals are accepted. */ }
     });
     events.onerror = () => {
       healthy = false;
@@ -254,7 +280,7 @@ export function OrderMonitor() {
     const closeStream = () => events.close();
     window.addEventListener("beforeunload", closeStream);
     window.addEventListener("pagehide", closeStream);
-    events.addEventListener("reconcile", () => router.refresh());
+    events.addEventListener("reconcile", () => { router.refresh(); });
     events.addEventListener("orders", () => {
       setUpdates((value) => value + 1);
       router.refresh();
@@ -277,7 +303,7 @@ export function OrderMonitor() {
       }
       controller = new AbortController();
       try {
-        const result = await fetch("/api/admin/orders?limit=25&offset=0", {
+        const result = await fetch("/api/admin/orders/receiving", {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -286,11 +312,13 @@ export function OrderMonitor() {
           return;
         }
         if (!result.ok) throw new Error();
-        const signature = JSON.stringify(await result.json());
+        const summary: unknown = await result.json();
+        const signature = JSON.stringify(summary);
+        receive(summary);
         if (stopped) return;
         if (baseline.current !== null && baseline.current !== signature) {
           setUpdates((value) => value + 1);
-          router.refresh();
+              router.refresh();
         } else
           setStatus(
             "Order updates connected · recovery check every 10 seconds",
@@ -308,7 +336,7 @@ export function OrderMonitor() {
       controller?.abort();
       void check();
     }
-    void check();
+    timer = setTimeout(check, 10000);
     window.addEventListener("online", resume);
     window.addEventListener("pageshow", resume);
     return () => {
@@ -318,6 +346,7 @@ export function OrderMonitor() {
       stopped = true;
       clearTimeout(timer);
       controller?.abort();
+      void audio.current?.close().catch(() => undefined); audio.current = null;
       window.removeEventListener("online", resume);
       window.removeEventListener("pageshow", resume);
     };
@@ -329,10 +358,17 @@ export function OrderMonitor() {
       ? "Reconnecting"
       : "Connecting";
   return (
-    <div className="admin-status" data-state={online ? "online" : "offline"}>
+    <div className="admin-status admin-status--receiving" data-state={online ? "online" : "offline"}>
       <p role="status" aria-label={status} title={status}>
         {short}
       </p>
+      {!online ? <button type="button" className="admin-btn--secondary" onClick={() => router.refresh()}>Refresh orders</button> : null}
+      {pendingCount !== null ? <Link href="/admin/orders?status=pending" aria-label={`${pendingCount} orders awaiting confirmation`}>{pendingCount} to confirm</Link> : null}
+      <button type="button" className="admin-btn--secondary" aria-pressed={sound} title="Optional sound while this page is open. Also enable push in Notifications." onClick={() => {
+        if (sound) { soundEnabled.current = false; setSound(false); return; }
+        try { audio.current ??= new AudioContext(); void audio.current.resume().then(() => { soundEnabled.current = true; setSound(true); }).catch(() => { soundEnabled.current = false; }); } catch { soundEnabled.current = false; }
+      }}>{sound ? 'Sound on' : 'Enable sound'}</button>
+      {arrivals > 0 ? <Link href="/admin/orders?status=pending" onClick={() => setArrivals(0)} role="status">Orders need attention · {arrivals}</Link> : null}
       {updates ? (
         <p
           role="status"

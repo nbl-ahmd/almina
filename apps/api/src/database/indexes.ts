@@ -38,6 +38,8 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
     { name: 'commerce_order_number_lookup', key: { orderId: 1 } },
     { name: 'commerce_v2_number_unique', key: { orderId: 1 }, unique: true, partialFilterExpression: { schemaVersion: 2 } },
     { name: 'commerce_order_status', key: { status: 1, _id: -1 } },
+    { name: 'order_area_received_v1', key: { 'routing.version': 1, 'routing.areaId': 1, createdAt: -1, _id: -1 } },
+    { name: 'order_area_status_received_v1', key: { 'routing.version': 1, 'routing.areaId': 1, status: 1, createdAt: -1, _id: -1 } },
     { name: 'v1_order_city_page', key: { 'customer.city': 1, _id: -1 } },
     { name: 'v1_order_state_page', key: { dispatched: 1, canceled: 1, _id: -1 } },
     { name: 'v1_order_city_state_page', key: { 'customer.city': 1, dispatched: 1, canceled: 1, _id: -1 } },

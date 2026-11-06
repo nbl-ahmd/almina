@@ -39,6 +39,19 @@ module.exports = function loginRoutes(auth, development = false, getDb = async (
   router.get('/users', wrap(async (req, res) => {
     res.json(await require('../commerce/dist/service.cjs').retainedStaffList(await getDb(), req.query, req.identity.id));
   }));
+  router.get('/order-routing', wrap(async (req, res) => {
+    if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+    const domain = require('../commerce/dist/service.cjs');
+    res.json(await domain.routingHealth(await getDb()));
+  }));
+  router.put('/order-routing', wrap(async (req, res) => {
+    if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+    res.json(await require('../commerce/dist/service.cjs').saveOrderRouting(await getDb(), req.body, req.identity.id));
+  }));
+  router.put('/users/:id/assignment', wrap(async (req, res) => {
+    if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+    res.json(await require('../commerce/dist/service.cjs').assignStaffBranch(await getDb(), req.params.id, req.body, req.identity.id));
+  }));
   // Preserve the URL while retaining the account identifier/history and revoking sessions.
   router.delete('/users/:id', wrap(async (req, res) => {
     if (Object.keys(req.query).length || Object.keys(req.body ?? {}).length) throw fail(400, 'INVALID_REQUEST');
