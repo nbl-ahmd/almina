@@ -20,7 +20,7 @@ export class PushFailure extends Error {
   constructor(readonly kind: 'expired' | 'retryable' | 'uncertain' | 'invalid') { super('Push delivery unavailable'); }
 }
 type Vapid = { subject: string; publicKey: string; privateKey: string };
-export type PushRequestFactory = (subscription: PushSubscription, payload: undefined, options: { TTL: number; topic: string; urgency: 'low'; vapidDetails: Vapid }) => { endpoint: string; method: string; headers: Record<string, string | number>; body?: Buffer };
+export type PushRequestFactory = (subscription: PushSubscription, payload: undefined, options: { TTL: number; topic: string; urgency: 'high'; vapidDetails: Vapid }) => { endpoint: string; method: string; headers: Record<string, string | number>; body?: Buffer };
 // Standard library generates VAPID; this module owns cancellable network transport, no payload/PII or retry.
 export function createPushSender(raw: unknown, generate: PushRequestFactory, options: { fetch?: typeof fetch; deadlineMs?: number } = {}) {
   const parsed = z.object({ subject: z.string().max(254).refine(value => value.startsWith('mailto:') && z.email().safeParse(value.slice(7)).success), publicKey: key(87, 65), privateKey: key(43, 32) }).strict().safeParse(raw);
@@ -44,7 +44,7 @@ export function createPushSender(raw: unknown, generate: PushRequestFactory, opt
     const operation = (async () => {
       if (controller.signal.aborted) throw new PushFailure('uncertain');
       let details: ReturnType<PushRequestFactory>;
-      try { details = generate(subscription, undefined, { TTL: 600, topic: 'almina-orders', urgency: 'low', vapidDetails: parsed.data }); }
+      try { details = generate(subscription, undefined, { TTL: 600, topic: 'almina-orders', urgency: 'high', vapidDetails: parsed.data }); }
       catch { throw new PushFailure('invalid'); }
       if (details.endpoint !== subscription.endpoint || details.method !== 'POST' || details.body?.length) throw new PushFailure('invalid');
       const response = await (options.fetch ?? fetch)(details.endpoint, { method: 'POST', redirect: 'error', signal: controller.signal,

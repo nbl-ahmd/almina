@@ -3800,4 +3800,22 @@
     .product-pricing { grid-area: pricing; }
     .product-access { grid-area: access; }
   }
+  .admin-status--receiving {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 20px;
+    padding: 10px 12px;
+    border-radius: var(--admin-radius);
+    font-size: 0.8125rem;
+  }
+  .admin-status--receiving p { font-size: 0.75rem; }
+  .admin-status--receiving a { font-size: 0.8125rem; font-weight: 600; }
+  .admin-status--receiving button { min-height: 44px; margin-inline-start: auto; }
+  .admin-status--receiving [role="status"]:not(p) { color: var(--admin-warning); }
+
+  .admin-app .admin-routing-choice { display: flex; align-items: center; gap: 12px; }
+  .admin-app .admin-routing-choice input { width: 20px; min-height: 20px; height: 20px; flex: none; margin: 0; }
+
 }

@@ -142,3 +142,15 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | POST | /api/image-review/publication/start | admin |
 | POST | /api/image-review/publication/resume | admin |
 | POST | /api/image-review/publication/pause | admin |
+
+## Branch order routing additions (2026-11-06)
+
+| Method | Path | Access | Owner |
+| --- | --- | --- | --- |
+| GET | /api/auth/order-routing | admin | Maintained routing health |
+| PUT | /api/auth/order-routing | admin | Revision-checked audited routing configuration |
+| PUT | /api/auth/users/:id/assignment | admin | Serialized staff branch assignment |
+| GET | /api/orders/receiving | orders | Scoped receiving signals |
+| PUT | /api/orders/:id/routing | admin | Audited delivery-area correction |
+| POST | /api/orders/:id/confirm | orders | Scoped pending-to-confirmed transition |
+| POST | /api/orders/:id/pack | orders | Scoped confirmed-to-packed transition |

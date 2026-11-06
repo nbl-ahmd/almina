@@ -8,6 +8,7 @@ export const identitySchema = z.object({
   name: z.string(),
   role: z.enum(["admin", "user"]),
   cities: z.array(z.string()),
+  branchId: z.uuid().nullable().optional(),
 });
 export type Identity = z.infer<typeof identitySchema>;
 export type AdminRecord = Record<string, unknown>;
@@ -40,6 +41,9 @@ export function canVisit(role: Identity["role"], section: string) {
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['GET', 'auth/order-routing', 'admin'], ['PUT', 'auth/order-routing', 'admin'], ['PUT', `auth/users/${id}/assignment`, 'admin'],
+  ['POST', `orders/${id}/confirm`, 'staff'], ['POST', `orders/${id}/pack`, 'staff'],
+  ['GET', 'orders/receiving', 'staff'], ['PUT', `orders/${id}/routing`, 'admin'],
   ['GET','search','admin'],['GET','search/test','admin'],...['synonyms','rules','enrichment','query'].map(kind=>['POST','search/'+kind,'admin'] as [string,string,'admin']),
   ['GET', 'image-review/publication', 'admin'],
   ['POST', 'image-review/publication/start', 'admin'], ['POST', 'image-review/publication/resume', 'admin'], ['POST', 'image-review/publication/pause', 'admin'],
@@ -175,6 +179,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
   if (path === "orders") {
     const query = listQuery
       .extend({
+        review: z.literal("1").optional(),
         status: z
           .enum([
             "pending",
@@ -191,6 +196,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
       limit: String(query.limit),
       offset: String(query.offset),
       ...(query.status ? { status: query.status } : {}),
+      ...(query.review ? { review: query.review } : {}),
     }).toString();
   }
   if (
@@ -217,7 +223,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
 }
 // Explicit recursive projection: provider IDs, hashes, subscriptions and unexpected fields never reach a browser.
 const fields = new Set([
-  "items", "reasons", "missingPhoto",
+  "items", "reasons", "missingPhoto", "branchId", "branchName", "routing", "areaId", "areaLabel", "needsReview", "revision", "branches", "areaIds", "fallbackBranchId", "staffing", "legacyStaff", "pendingCount", "reviewCount", "oldestPendingAt", "signature", "latestIds",
   ...productContentNames,
   "contactName", "phone", "tradeLicense", "taxRegistrationNumber", "deliveryAddress",
   "published","active","catalogManaged","websiteStockProposed","stockReviewedAt","previewId","errors","warnings","rows","row","field","message","sourceKey","action","productId","total","processed","complete","report","namespace","offset","nextOffset","previousPrice","previousStock","changedFields","unmappedCategories",

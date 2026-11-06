@@ -1,3 +1,4 @@
+import { branchOrderFilter, readOrderRouting, presentRouting, addressReviewScope } from './routing.js';
 import { z } from 'zod';
 import { ObjectId, type Db, type Document, type Filter } from 'mongodb';
 import { orderStatusSchema, type Staff } from '@almina/contracts';
@@ -8,10 +9,10 @@ import { orderDetailProjection } from './dto.js';
 import { legacyOrderDto } from './legacy-dto.js';
 const integer = z.string().regex(/^\d{1,5}$/).transform(Number);
 const querySchema = z.object({ limit: integer.pipe(z.number().int().min(1).max(100)).optional(), offset: integer.pipe(z.number().int().min(0).max(10000)).optional(),
-  status: orderStatusSchema.optional() }).strict();
+  status: orderStatusSchema.optional(), review: z.literal('1').optional() }).strict();
 export function retainedOrderQuery(raw: unknown) {
   const value = querySchema.safeParse(raw); if (!value.success) throw new HttpError(400, 'INVALID_REQUEST');
-  return { limit: value.data.limit ?? 25, offset: value.data.offset ?? 0, status: value.data.status };
+  return { limit: value.data.limit ?? 25, offset: value.data.offset ?? 0, status: value.data.status, ...(value.data.review ? { review: true } : {}) };
 }
 export function retainedOrderFilter(raw: unknown, staff: Staff) {
   const page = retainedOrderQuery(raw), scope = orderFilter({ limit: 1 }, staff);
@@ -41,14 +42,18 @@ async function compatibilityViews(db: Db, orders: Document[]) {
     _id: productById.get(String(item?._id)) ?? item?._id ?? null, quantity: item?.quantity,
   })) }));
 }
-export async function retainedOrderList(db: Db, raw: unknown, staff: Staff) {
+export async function retainedOrderList(db: Db, raw: unknown, staff: Staff): Promise<Document[]> {
   const { page, filter } = retainedOrderFilter(raw, staff);
-  const docs = await db.collection('orders').find(filter, { ...queryOptions, projection: orderDetailProjection })
+  const { ['customer.city']: _city, ...rest } = filter; void _city;
+  const access = await branchOrderFilter(db, staff, orderFilter({ limit: 1 }, staff));
+  const scoped = { $and: [access, rest, ...(page.review ? [addressReviewScope()] : [])] };
+  const docs = await db.collection('orders').find(scoped, { ...queryOptions, projection: orderDetailProjection })
     .sort({ createdAt: -1, _id: -1 }).skip(page.offset).limit(page.limit).toArray();
-  return compatibilityViews(db, docs);
+  const policy = await readOrderRouting(db);
+  return (await compatibilityViews(db, docs)).map(order => ({ ...order, routing: presentRouting(order, policy) }));
 }
-export async function retainedOrderDetail(db: Db, value: unknown, raw: unknown, staff: Staff) {
+export async function retainedOrderDetail(db: Db, value: unknown, raw: unknown, staff: Staff): Promise<Document> {
   if (!z.object({}).strict().safeParse(raw).success || !z.string().regex(/^[a-f0-9]{24}$/i).safeParse(value).success) throw new HttpError(400, 'INVALID_REQUEST');
-  const doc = await db.collection('orders').findOne({ ...orderFilter({ limit: 1 }, staff), _id: new ObjectId(String(value)) }, { ...queryOptions, projection: orderDetailProjection });
-  if (!doc) throw new HttpError(404, 'NOT_FOUND'); return (await compatibilityViews(db, [doc]))[0]!;
+  const doc = await db.collection('orders').findOne({ ...await branchOrderFilter(db, staff, orderFilter({ limit: 1 }, staff)), _id: new ObjectId(String(value)) }, { ...queryOptions, projection: orderDetailProjection });
+  if (!doc) throw new HttpError(404, 'NOT_FOUND'); return { ...(await compatibilityViews(db, [doc]))[0]!, routing: presentRouting(doc, await readOrderRouting(db)) };
 }

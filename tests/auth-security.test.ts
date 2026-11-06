@@ -280,7 +280,7 @@ test('legacy order reads and transactional commands enforce city scope and rejec
     return (filter['customer.city'] as { $in: string[] }).$in.includes(found.customer.city) ? found : null;
   }
   const db = { client: { startSession: () => ({ withTransaction: async (run: () => Promise<void>) => run(), endSession: async () => undefined }) },
-    collection: () => ({ findOne: async (filter: Record<string, unknown>) => find(filter),
+    collection: (name: string) => ({ findOne: async (filter: Record<string, unknown>) => name === 'growth_settings' ? null : find(filter),
       updateOne: async (_filter: unknown, update: { $set: Record<string, unknown> }) => { Object.assign(found, update.$set); saved++; return { modifiedCount: 1 }; } }) };
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities }) };
   await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: async () => db }), async origin => {

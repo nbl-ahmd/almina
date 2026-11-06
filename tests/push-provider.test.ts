@@ -19,7 +19,7 @@ test('real Web Push SDK signs a generic no-payload POST with fixed TTL/topic and
   const sender = createPushSender(config, sdk.generateRequestDetails, { fetch: async (url, options) => {
     calls++; assert.equal(String(url), subscription.endpoint); assert.equal(options!.redirect, 'error'); assert.equal(options!.method, 'POST'); assert.equal(options!.body, undefined);
     const headers = options!.headers as Record<string, string>;
-    assert.equal(headers.TTL, '600'); assert.equal(headers.Topic, 'almina-orders'); assert.match(headers.Authorization!, /^vapid /);
+    assert.equal(headers.TTL, '600'); assert.equal(headers.Urgency, 'high'); assert.equal(headers.Topic, 'almina-orders'); assert.match(headers.Authorization!, /^vapid /);
     return new Response(null, { status: 201 });
   } });
   await sender(subscription); assert.equal(calls, 1);

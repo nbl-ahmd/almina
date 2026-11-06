@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type OrderSample =
-  | { state: "ready"; signature: string }
+  | { state: "ready"; signature: string; receiving?: { pendingCount: number; latestIds: string[] } }
   | { state: "revoked" }
   | { state: "unavailable" };
 
@@ -47,8 +47,8 @@ export function orderEventStream({
         stop();
         return;
       }
-      function emit(event: string) {
-        controller.enqueue(encoder.encode(`${signature ? `id: ${signature}\n` : ''}event: ${event}\ndata: {}\n\n`));
+      function emit(event: string, receiving?: { pendingCount: number; latestIds: string[] }) {
+        controller.enqueue(encoder.encode(`${signature ? `id: ${signature}\n` : ''}event: ${event}\ndata: ${JSON.stringify(receiving ?? {})}\n\n`));
       }
       async function tick() {
         if (stopped || signal.aborted) return stop();
@@ -69,7 +69,7 @@ export function orderEventStream({
             signature = next;
             if (first) emit("reconcile");
             else if (changed) emit("orders");
-            emit("connected");
+            emit("connected", result.receiving);
           }
         } catch {
           if (!stopped) emit("unavailable");

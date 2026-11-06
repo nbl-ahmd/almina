@@ -26,6 +26,7 @@ const order = { _id: uid, orderId: 'ORD1', createdAt: new Date('2026-01-01T00:00
 type Call = { collection: string; operation: string; filter?: Document; options?: Document; pipeline?: Document[]; value?: Document };
 function matches(doc: Document, filter: Document): boolean {
   return Object.entries(filter).every(([key, value]) => {
+    if (key === '$and') return (value as Document[]).every(part => matches(doc, part));
     const actual = key.split('.').reduce<unknown>((result, field) => (result as Document | undefined)?.[field], doc);
     if (value instanceof ObjectId) return actual instanceof ObjectId && value.equals(actual);
     if (value && typeof value === 'object') {

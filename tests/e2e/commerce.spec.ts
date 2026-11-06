@@ -27,7 +27,7 @@ test('Next rejects exhausted stock after review without a partial order or stale
   const rejected = page.waitForResponse(res => res.request().method() === 'POST' && new URL(res.url()).pathname === '/api/checkout');
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
   expect((await rejected).status()).toBe(409);
-  await expect(page.locator('p[role="alert"]')).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Some items no longer have enough stock' })).toBeVisible();
   const result = await state(request); expect(result.orders).toHaveLength(0); expect(result.receipts).toBe(0); expect(result.stock).toBe(0);
   expect(await page.evaluate(() => sessionStorage.getItem('almina.checkout.pending.v1'))).toBeNull();
 });

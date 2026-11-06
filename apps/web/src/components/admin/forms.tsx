@@ -480,6 +480,7 @@ export function AdminForm({
     }
     if (productEditor && data.get('stockReason') === '') data.delete('stockReason');
     const json: Record<string, unknown> = Object.fromEntries(data);
+    if ("branchId" in json && json.branchId === "") json.branchId = null;
     if ("billamount" in json) json.billamount = Number(json.billamount);
     if ("cities" in json)
       json.cities = String(json.cities)

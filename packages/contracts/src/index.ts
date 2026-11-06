@@ -61,3 +61,5 @@ export * from './reporting';
 
 export * from "./marketing";
 export * from './image-review';
+
+export * from './order-routing';

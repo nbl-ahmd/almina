@@ -226,7 +226,6 @@ export function AdminShell({
                 <button type="submit" aria-label="Search inventory"><ChevronRightIcon width={14} height={14} aria-hidden="true" /></button>
               </form>
             ) : null}
-            <OrderMonitor />
             <span className="admin-user">
               <span className="admin-user__avatar" aria-hidden="true">
                 {initials(user.name)}
@@ -241,6 +240,7 @@ export function AdminShell({
             <SessionControls />
           </header>
           <main id="admin-main" tabIndex={-1} className="admin-content">
+            <OrderMonitor />
             {children}
           </main>
           <nav

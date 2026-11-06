@@ -1,3 +1,5 @@
+import { OrderRoutingSetup, StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
+import { orderRoutingSchema } from '@almina/contracts';
 import { reportDays } from '../../../../../lib/admin/dashboard';
 import { RowActions } from '../../../../../components/admin/row-actions';
 import { ImageReviewManager } from '../../../../../components/admin/image-review-manager';
@@ -519,13 +521,15 @@ export default async function AdminPage({
       );
     // Status is a presentation filter; city authorization is always applied by the API.
     const orders = rows(await adminRead("orders", qs));
+    const receiving = await adminRead("orders/receiving").then(record).catch(() => null);
     const active = typeof query.status === "string" ? query.status : "all";
     return (
       <>
         <PageHeader
           title="Orders"
-          description="Only orders permitted by your current role and city assignments are shown."
+          description="Review incoming orders, verify delivery details and confirm fulfilment. Administrators see every order; branch staff see their assigned queue."
         />
+        {receiving ? <ReceivingSummary pendingCount={Number(receiving.pendingCount)} reviewCount={Number(receiving.reviewCount)} oldestPendingAt={typeof receiving.oldestPendingAt === "string" ? receiving.oldestPendingAt : null} /> : <p role="alert" className="admin-alert">Receiving counts are temporarily unavailable. Your authorized orders are still listed below; refresh to check for updates.</p>}
         <nav aria-label="Order status views" className="admin-segmented">
           {[
             "all",
@@ -556,7 +560,9 @@ export default async function AdminPage({
           columns={[
             { key: "orderId", label: "Order" },
             { key: "customer.name", label: "Customer" },
-            { key: "customer.city", label: "City" },
+            { key: "customer.city", label: "Customer area" },
+            { key: "routing.branchName", label: "Receiving branch" },
+            { key: "routing.areaLabel", label: "Delivery area", render: order => <>{display(record(order.routing).areaLabel)}{record(order.routing).needsReview ? <Badge tone="warning">Review address</Badge> : null}</> },
             {
               key: "customer.totalAmount",
               label: "Total (AED)",
@@ -587,12 +593,15 @@ export default async function AdminPage({
   }
   if (section === "users") {
     const users = rows(await adminRead("auth/users", qs));
+    const setup = record(await adminRead("auth/order-routing"));
+    const routing = orderRoutingSchema.parse({ revision: setup.revision, active: setup.active, branches: setup.branches, fallbackBranchId: setup.fallbackBranchId });
     return (
       <>
         <PageHeader
           title="User management"
-          description="Provision staff accounts and assign the cities they may serve."
+          description="Assign staff to a branch. The shared routing setup determines which orders each branch receives."
         />
+        <details className="admin-create-panel"><summary>Configure branches & order routing{routing.active ? " · Active" : " · Setup required"}</summary><OrderRoutingSetup initial={routing} staffing={setup.staffing as {branchId: string; count: number}[]} legacyStaff={Number(setup.legacyStaff)} /></details>
         <details className="admin-create-panel"><summary>Create staff account</summary>
         <Card title="Create staff account">
           <AdminForm
@@ -627,16 +636,17 @@ export default async function AdminPage({
                   { value: "admin", label: "Administrator" },
                 ],
                 section: "Access",
-                sectionDescription: "Staff see orders for their cities only. Administrators manage the full store.",
+                sectionDescription: "Staff receive their branch’s orders. Administrators can see every order and configure routing.",
               },
               {
-                name: "cities",
-                label: "Assigned cities",
-                kind: "tags",
-                placeholder: "City A, City B",
-                hint: "Separate exact city names with commas. Unassigned staff cannot access orders.",
+                name: "branchId",
+                label: "Receiving branch",
+                required: false,
+                options: [{ value: "", label: "Select branch (save routing branches first)" }, ...routing.branches.map(branch => ({value: branch.id, label: branch.name}))],
+                hint: "Staff need a branch when routing is active. Administrators have access to every branch.",
                 section: "Access",
               },
+              { name: "cities", label: "Legacy cities", type: "hidden", value: "" },
             ]}
           />
         </Card>
@@ -656,10 +666,11 @@ export default async function AdminPage({
                 </Badge>
               ),
             },
-            { key: "cities", label: "Cities" },
+            { key: "branchId", label: "Receiving branch", render: item => item.role === "admin" ? "All branches" : routing.branches.find(branch => branch.id === item.branchId)?.name ?? "Not assigned — legacy access" },
           ]}
-          actions={(item) =>
-            display(item._id) === user.id ? (
+          actions={(item) => <>
+            {item.role !== "admin" ? <StaffBranchAssignment key={display(item._id) + display(item.branchId)} id={display(item._id)} branchId={typeof item.branchId === "string" ? item.branchId : null} branches={routing.branches} /> : null}
+            {display(item._id) === user.id ? (
               "Current account"
             ) : (
               <Command
@@ -670,7 +681,7 @@ export default async function AdminPage({
               >
                 Deactivate account
               </Command>
-            )
+            )}</>
           }
         />
         {users.length === 25 ? (
@@ -745,7 +756,7 @@ export default async function AdminPage({
         <Card title="Push notifications">
           <p>
             The dashboard and order lists always show committed, authorized
-            records. Push is an additional foreground aid.
+            records. Enable push on the pharmacy’s receiving device. Keep the Orders inbox open and enable its optional sound; browser permissions, sleep and connectivity can delay alerts, so the inbox remains the source of truth.
           </p>
           <NotificationSettings publicKey={adminPushPublicKey()} />
         </Card>

@@ -24,7 +24,7 @@ test('historical lookup overflow fails explicitly without truncating or querying
 test('immutable maintained order lines render independently of missing or unavailable live catalog', async () => {
   const snapshot = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', schemaVersion: 2, customer: { totalAmount: 20 },
     lines: [{ productId: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Purchased name', quantity: 1, unitPriceMinor: 2000, salePriceMinor: null }] };
-  const db = { collection(name: string) { assert.equal(name, 'orders'); return { findOne: async () => snapshot }; } } as unknown as Db;
+  const db = { collection(name: string) { return { findOne: async () => name === 'growth_settings' ? null : snapshot }; } } as unknown as Db;
   const result = await retainedOrderDetail(db, snapshot._id, {}, { ...staff, role: 'admin' });
   assert.equal(result.snapshotAvailable, true); assert.equal(result.cartItems[0]._id.name, 'Purchased name'); assert.equal(result.cartItems[0]._id.price, 20);
 });

@@ -29,6 +29,8 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
   await login(page);
   const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
   const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
+  const branchId = randomUUID();
+  expect((await page.request.put(adminOrigin + '/api/admin/auth/order-routing', { headers: { origin: adminOrigin, 'x-csrf-protection': '1' }, data: { revision: 0, active: false, branches: [{id: branchId, name: 'Synthetic branch', areaIds: []}], fallbackBranchId: branchId } })).ok()).toBeTruthy();
   await page.setViewportSize({ width, height: 900 }); await page.goto(adminOrigin + '/admin/users');
   await streamSettled(page);
   if (width < 768) {
@@ -59,7 +61,7 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
   await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption('user');
-  await page.getByRole('textbox', { name: /^Assigned cities/ }).fill('City A');
+  await page.getByRole('combobox', { name: /^Receiving branch/ }).selectOption(branchId);
   await page.getByRole('button', { name: 'Create staff account', exact: true }).focus(); await page.keyboard.press('Enter');
   const row = page.getByRole('row').filter({ hasText: username }); await expect(row).toBeVisible();
   await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');

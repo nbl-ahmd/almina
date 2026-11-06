@@ -1,0 +1,1300 @@
+{
+  "source": "https://download.geofabrik.de/asia/gcc-states-261104.osm.pbf",
+  "boundaryRelation": 3766485,
+  "license": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "places": [
+    {
+      "id": "rak-node-10899597969",
+      "name": "Ad Daqayiq",
+      "osmObjects": [
+        "node/10899597969"
+      ]
+    },
+    {
+      "id": "rak-node-2386418484",
+      "name": "Adhan",
+      "osmObjects": [
+        "node/2386418484"
+      ]
+    },
+    {
+      "id": "rak-node-12378959364",
+      "name": "Al 'Ijеli",
+      "osmObjects": [
+        "node/12378959364",
+        "way/1262523996"
+      ]
+    },
+    {
+      "id": "rak-node-8143186363",
+      "name": "Al Araibi",
+      "osmObjects": [
+        "node/8143186363"
+      ]
+    },
+    {
+      "id": "rak-node-8143186367",
+      "name": "Al Burairat",
+      "osmObjects": [
+        "node/8143186367"
+      ]
+    },
+    {
+      "id": "rak-node-7119328940",
+      "name": "Al Darbijaniya",
+      "osmObjects": [
+        "node/7119328940"
+      ]
+    },
+    {
+      "id": "rak-node-8143186373",
+      "name": "Al Dhait North",
+      "osmObjects": [
+        "node/8143186373"
+      ]
+    },
+    {
+      "id": "rak-node-8143186378",
+      "name": "Al Dhait South",
+      "osmObjects": [
+        "node/8143186378"
+      ]
+    },
+    {
+      "id": "rak-node-8143186377",
+      "name": "Al Fahlain",
+      "osmObjects": [
+        "node/8143186377"
+      ]
+    },
+    {
+      "id": "rak-node-11583898364",
+      "name": "Al Feriya",
+      "osmObjects": [
+        "node/11583898364"
+      ]
+    },
+    {
+      "id": "rak-node-11851017839",
+      "name": "Al Ghabah",
+      "osmObjects": [
+        "node/11851017839"
+      ]
+    },
+    {
+      "id": "rak-node-1464143702",
+      "name": "Al Ghail",
+      "osmObjects": [
+        "node/1464143702"
+      ]
+    },
+    {
+      "id": "rak-node-7119326576",
+      "name": "Al Ghubb",
+      "osmObjects": [
+        "node/7119326576",
+        "node/8143186352"
+      ]
+    },
+    {
+      "id": "rak-node-8143186362",
+      "name": "Al Gurum Resort",
+      "osmObjects": [
+        "node/8143186362"
+      ]
+    },
+    {
+      "id": "rak-node-8143186386",
+      "name": "Al Hamra Free Zone",
+      "osmObjects": [
+        "node/8143186386"
+      ]
+    },
+    {
+      "id": "rak-node-8143186387",
+      "name": "Al Hamra Industrial Area",
+      "osmObjects": [
+        "node/8143186387"
+      ]
+    },
+    {
+      "id": "rak-node-8143186384",
+      "name": "Al Hamraniyah",
+      "osmObjects": [
+        "node/8143186384"
+      ]
+    },
+    {
+      "id": "rak-node-6012396831",
+      "name": "Al Haniyah",
+      "osmObjects": [
+        "node/6012396831"
+      ]
+    },
+    {
+      "id": "rak-node-12288689808",
+      "name": "Al Hayilah",
+      "osmObjects": [
+        "node/12288689808"
+      ]
+    },
+    {
+      "id": "rak-node-7008871335",
+      "name": "Al Hayir",
+      "osmObjects": [
+        "node/7008871335"
+      ]
+    },
+    {
+      "id": "rak-node-8143186376",
+      "name": "Al Heel",
+      "osmObjects": [
+        "node/8143186376"
+      ]
+    },
+    {
+      "id": "rak-node-7119326572",
+      "name": "Al Hudaibah",
+      "osmObjects": [
+        "node/7119326572"
+      ]
+    },
+    {
+      "id": "rak-node-8143186351",
+      "name": "Al Hudiabah",
+      "osmObjects": [
+        "node/8143186351"
+      ]
+    },
+    {
+      "id": "rak-node-10840139323",
+      "name": "Al Jaddah",
+      "osmObjects": [
+        "node/10840139323"
+      ]
+    },
+    {
+      "id": "rak-node-12042955509",
+      "name": "Al jazeera heritage village",
+      "osmObjects": [
+        "node/12042955509"
+      ]
+    },
+    {
+      "id": "rak-node-8143186385",
+      "name": "Al Jazirah Al Hamra",
+      "osmObjects": [
+        "node/8143186385",
+        "node/11876582321"
+      ]
+    },
+    {
+      "id": "rak-node-5759499173",
+      "name": "Al Jeer",
+      "osmObjects": [
+        "node/5759499173"
+      ]
+    },
+    {
+      "id": "rak-node-8143186347",
+      "name": "Al Joulan",
+      "osmObjects": [
+        "node/8143186347"
+      ]
+    },
+    {
+      "id": "rak-node-8143186374",
+      "name": "Al Kharran",
+      "osmObjects": [
+        "node/8143186374"
+      ]
+    },
+    {
+      "id": "rak-node-10693108418",
+      "name": "Al Khashfah",
+      "osmObjects": [
+        "node/10693108418"
+      ]
+    },
+    {
+      "id": "rak-node-11587021202",
+      "name": "Al Latabah",
+      "osmObjects": [
+        "node/11587021202"
+      ]
+    },
+    {
+      "id": "rak-node-8143186349",
+      "name": "Al Mahatah",
+      "osmObjects": [
+        "node/8143186349"
+      ]
+    },
+    {
+      "id": "rak-node-8143186348",
+      "name": "Al Mairid",
+      "osmObjects": [
+        "node/8143186348"
+      ]
+    },
+    {
+      "id": "rak-node-8143186350",
+      "name": "Al Mamoura",
+      "osmObjects": [
+        "node/8143186350"
+      ]
+    },
+    {
+      "id": "rak-node-12247847625",
+      "name": "Al Manzafah",
+      "osmObjects": [
+        "node/12247847625"
+      ]
+    },
+    {
+      "id": "rak-node-10739904672",
+      "name": "Al Marah",
+      "osmObjects": [
+        "node/10739904672"
+      ]
+    },
+    {
+      "id": "rak-node-8143186388",
+      "name": "Al Marjan Island",
+      "osmObjects": [
+        "node/8143186388"
+      ]
+    },
+    {
+      "id": "rak-node-8143186345",
+      "name": "Al Mataf",
+      "osmObjects": [
+        "node/8143186345"
+      ]
+    },
+    {
+      "id": "rak-node-11587037860",
+      "name": "Al Midhnab Bani Sa'ad",
+      "osmObjects": [
+        "node/11587037860",
+        "way/1269875064"
+      ]
+    },
+    {
+      "id": "rak-node-11640138056",
+      "name": "Al Miherbani",
+      "osmObjects": [
+        "node/11640138056"
+      ]
+    },
+    {
+      "id": "rak-node-11640062363",
+      "name": "Al Miʻli",
+      "osmObjects": [
+        "node/11640062363"
+      ]
+    },
+    {
+      "id": "rak-node-8143186372",
+      "name": "Al Nadiyah",
+      "osmObjects": [
+        "node/8143186372"
+      ]
+    },
+    {
+      "id": "rak-node-8143186357",
+      "name": "Al Nakhil",
+      "osmObjects": [
+        "node/8143186357"
+      ]
+    },
+    {
+      "id": "rak-node-6780547801",
+      "name": "Al Naslah",
+      "osmObjects": [
+        "node/6780547801"
+      ]
+    },
+    {
+      "id": "rak-node-8143186346",
+      "name": "Al Nudood",
+      "osmObjects": [
+        "node/8143186346"
+      ]
+    },
+    {
+      "id": "rak-node-5713026022",
+      "name": "Al Qor",
+      "osmObjects": [
+        "node/5713026022",
+        "way/360442886"
+      ]
+    },
+    {
+      "id": "rak-node-8143186375",
+      "name": "Al Qusaidat",
+      "osmObjects": [
+        "node/8143186375"
+      ]
+    },
+    {
+      "id": "rak-node-8143186381",
+      "name": "Al Ragibah",
+      "osmObjects": [
+        "node/8143186381"
+      ]
+    },
+    {
+      "id": "rak-node-6480048680",
+      "name": "Al Sa'adi",
+      "osmObjects": [
+        "node/6480048680"
+      ]
+    },
+    {
+      "id": "rak-node-10688215563",
+      "name": "Al Sanat",
+      "osmObjects": [
+        "node/10688215563"
+      ]
+    },
+    {
+      "id": "rak-node-8143186356",
+      "name": "Al Seer",
+      "osmObjects": [
+        "node/8143186356"
+      ]
+    },
+    {
+      "id": "rak-node-8143186344",
+      "name": "Al Sharisha",
+      "osmObjects": [
+        "node/8143186344"
+      ]
+    },
+    {
+      "id": "rak-node-8143186368",
+      "name": "Al Tharfah",
+      "osmObjects": [
+        "node/8143186368"
+      ]
+    },
+    {
+      "id": "rak-node-12853411067",
+      "name": "Al Wa'ab",
+      "osmObjects": [
+        "node/12853411067"
+      ]
+    },
+    {
+      "id": "rak-node-11539722000",
+      "name": "Al Yabbanah",
+      "osmObjects": [
+        "node/11539722000"
+      ]
+    },
+    {
+      "id": "rak-node-11548762329",
+      "name": "Al Yafnah",
+      "osmObjects": [
+        "node/11548762329"
+      ]
+    },
+    {
+      "id": "rak-node-12323771503",
+      "name": "Al ‘Ayn al Ghumur",
+      "osmObjects": [
+        "node/12323771503"
+      ]
+    },
+    {
+      "id": "rak-node-11923496172",
+      "name": "An-Nahr",
+      "osmObjects": [
+        "node/11923496172"
+      ]
+    },
+    {
+      "id": "rak-node-8143186380",
+      "name": "Ar Rafa'ah",
+      "osmObjects": [
+        "node/8143186380"
+      ]
+    },
+    {
+      "id": "rak-node-10831641351",
+      "name": "Ar Rafisah",
+      "osmObjects": [
+        "node/10831641351"
+      ]
+    },
+    {
+      "id": "rak-node-12378630274",
+      "name": "As Simsimaniyah",
+      "osmObjects": [
+        "node/12378630274"
+      ]
+    },
+    {
+      "id": "rak-node-11640040272",
+      "name": "As Siyyat",
+      "osmObjects": [
+        "node/11640040272"
+      ]
+    },
+    {
+      "id": "rak-node-11584419721",
+      "name": "Atmar",
+      "osmObjects": [
+        "node/11584419721"
+      ]
+    },
+    {
+      "id": "rak-node-5714856842",
+      "name": "Ayim",
+      "osmObjects": [
+        "node/5714856842"
+      ]
+    },
+    {
+      "id": "rak-node-11594531283",
+      "name": "Az Zahar",
+      "osmObjects": [
+        "node/11594531283"
+      ]
+    },
+    {
+      "id": "rak-node-8143186365",
+      "name": "Az Zahrah",
+      "osmObjects": [
+        "node/8143186365"
+      ]
+    },
+    {
+      "id": "rak-node-10666312640",
+      "name": "Azhabat",
+      "osmObjects": [
+        "node/10666312640"
+      ]
+    },
+    {
+      "id": "rak-node-10603055812",
+      "name": "Baighit",
+      "osmObjects": [
+        "node/10603055812"
+      ]
+    },
+    {
+      "id": "rak-node-10666009982",
+      "name": "Baqal",
+      "osmObjects": [
+        "node/10666009982"
+      ]
+    },
+    {
+      "id": "rak-node-11553629885",
+      "name": "Barut",
+      "osmObjects": [
+        "node/11553629885"
+      ]
+    },
+    {
+      "id": "rak-way-1269836857",
+      "name": "Bin Zed Ad Janubiyyah",
+      "osmObjects": [
+        "way/1269836857"
+      ]
+    },
+    {
+      "id": "rak-node-11776512642",
+      "name": "Birkat Ad Dassah",
+      "osmObjects": [
+        "node/11776512642"
+      ]
+    },
+    {
+      "id": "rak-node-10683448627",
+      "name": "Dafalas",
+      "osmObjects": [
+        "node/10683448627",
+        "way/1297221406"
+      ]
+    },
+    {
+      "id": "rak-node-8143186370",
+      "name": "Dafan Al Khor",
+      "osmObjects": [
+        "node/8143186370"
+      ]
+    },
+    {
+      "id": "rak-node-8143186358",
+      "name": "Dafan Al Nakheel",
+      "osmObjects": [
+        "node/8143186358"
+      ]
+    },
+    {
+      "id": "rak-node-8143186371",
+      "name": "Dahan",
+      "osmObjects": [
+        "node/8143186371"
+      ]
+    },
+    {
+      "id": "rak-node-11586519912",
+      "name": "Danam",
+      "osmObjects": [
+        "node/11586519912"
+      ]
+    },
+    {
+      "id": "rak-node-12500922916",
+      "name": "Dardur",
+      "osmObjects": [
+        "node/12500922916"
+      ]
+    },
+    {
+      "id": "rak-node-11648965954",
+      "name": "Deira Al Ghayl",
+      "osmObjects": [
+        "node/11648965954"
+      ]
+    },
+    {
+      "id": "rak-node-10605283288",
+      "name": "Deira Al Takam",
+      "osmObjects": [
+        "node/10605283288"
+      ]
+    },
+    {
+      "id": "rak-node-11572394174",
+      "name": "Deira Al-Dairi",
+      "osmObjects": [
+        "node/11572394174"
+      ]
+    },
+    {
+      "id": "rak-node-10857515812",
+      "name": "Deira Al-Rakba",
+      "osmObjects": [
+        "node/10857515812",
+        "way/1255919561"
+      ]
+    },
+    {
+      "id": "rak-node-10897747286",
+      "name": "Deira Hayaneh",
+      "osmObjects": [
+        "node/10897747286"
+      ]
+    },
+    {
+      "id": "rak-node-12547781536",
+      "name": "Deira Sadur",
+      "osmObjects": [
+        "node/12547781536"
+      ]
+    },
+    {
+      "id": "rak-node-12237429437",
+      "name": "Dhaya",
+      "osmObjects": [
+        "node/12237429437"
+      ]
+    },
+    {
+      "id": "rak-node-8143186383",
+      "name": "Digdaga",
+      "osmObjects": [
+        "node/8143186383",
+        "node/12289978543"
+      ]
+    },
+    {
+      "id": "rak-node-6288511475",
+      "name": "Dirat al-Ba'iybah",
+      "osmObjects": [
+        "node/6288511475"
+      ]
+    },
+    {
+      "id": "rak-node-10825243260",
+      "name": "Dirat as-Sal",
+      "osmObjects": [
+        "node/10825243260"
+      ]
+    },
+    {
+      "id": "rak-node-11774670900",
+      "name": "Dirat Sabah",
+      "osmObjects": [
+        "node/11774670900"
+      ]
+    },
+    {
+      "id": "rak-node-5573883977",
+      "name": "Esfai",
+      "osmObjects": [
+        "node/5573883977"
+      ]
+    },
+    {
+      "id": "rak-node-5573962861",
+      "name": "Esfini",
+      "osmObjects": [
+        "node/5573962861"
+      ]
+    },
+    {
+      "id": "rak-node-5712979577",
+      "name": "Fashrah",
+      "osmObjects": [
+        "node/5712979577"
+      ]
+    },
+    {
+      "id": "rak-node-10693071427",
+      "name": "Gargaha",
+      "osmObjects": [
+        "node/10693071427"
+      ]
+    },
+    {
+      "id": "rak-node-5759509856",
+      "name": "Ghalilah",
+      "osmObjects": [
+        "node/5759509856",
+        "node/8143186340"
+      ]
+    },
+    {
+      "id": "rak-node-12475174013",
+      "name": "Ghubbat Khawrah",
+      "osmObjects": [
+        "node/12475174013"
+      ]
+    },
+    {
+      "id": "rak-node-5759479250",
+      "name": "Habhab",
+      "osmObjects": [
+        "node/5759479250"
+      ]
+    },
+    {
+      "id": "rak-node-10648428470",
+      "name": "Halhal",
+      "osmObjects": [
+        "node/10648428470"
+      ]
+    },
+    {
+      "id": "rak-node-10652051592",
+      "name": "Harat ‘Awali",
+      "osmObjects": [
+        "node/10652051592"
+      ]
+    },
+    {
+      "id": "rak-node-10605298558",
+      "name": "Helek",
+      "osmObjects": [
+        "node/10605298558"
+      ]
+    },
+    {
+      "id": "rak-node-11781618971",
+      "name": "Himer Al ‘Alam",
+      "osmObjects": [
+        "node/11781618971"
+      ]
+    },
+    {
+      "id": "rak-node-5712979576",
+      "name": "Huwaylat",
+      "osmObjects": [
+        "node/5712979576",
+        "way/360445265"
+      ]
+    },
+    {
+      "id": "rak-node-11587659919",
+      "name": "Jiddat Silayyah",
+      "osmObjects": [
+        "node/11587659919"
+      ]
+    },
+    {
+      "id": "rak-node-3500302834",
+      "name": "Julphar",
+      "osmObjects": [
+        "node/3500302834"
+      ]
+    },
+    {
+      "id": "rak-node-7008102484",
+      "name": "Kabdah",
+      "osmObjects": [
+        "node/7008102484"
+      ]
+    },
+    {
+      "id": "rak-node-5612143852",
+      "name": "Kadrah",
+      "osmObjects": [
+        "node/5612143852",
+        "way/360633790"
+      ]
+    },
+    {
+      "id": "rak-node-12553274869",
+      "name": "Kar Khanaan",
+      "osmObjects": [
+        "node/12553274869"
+      ]
+    },
+    {
+      "id": "rak-node-10837125742",
+      "name": "Karas",
+      "osmObjects": [
+        "node/10837125742"
+      ]
+    },
+    {
+      "id": "rak-node-11732213970",
+      "name": "Khab Al Lis",
+      "osmObjects": [
+        "node/11732213970"
+      ]
+    },
+    {
+      "id": "rak-node-10837168685",
+      "name": "Khabakhib",
+      "osmObjects": [
+        "node/10837168685"
+      ]
+    },
+    {
+      "id": "rak-node-11547100701",
+      "name": "Khabb",
+      "osmObjects": [
+        "node/11547100701"
+      ]
+    },
+    {
+      "id": "rak-node-10740030758",
+      "name": "Khanaan",
+      "osmObjects": [
+        "node/10740030758"
+      ]
+    },
+    {
+      "id": "rak-node-8143186382",
+      "name": "Khatt",
+      "osmObjects": [
+        "node/8143186382"
+      ]
+    },
+    {
+      "id": "rak-node-7015304054",
+      "name": "Khor Khwair",
+      "osmObjects": [
+        "node/7015304054"
+      ]
+    },
+    {
+      "id": "rak-node-5901318669",
+      "name": "Khuzam",
+      "osmObjects": [
+        "node/5901318669",
+        "node/8143186369",
+        "node/12323371754"
+      ]
+    },
+    {
+      "id": "rak-node-5714880181",
+      "name": "Kub",
+      "osmObjects": [
+        "node/5714880181"
+      ]
+    },
+    {
+      "id": "rak-node-11417096188",
+      "name": "Lahsa, Wadi Jib",
+      "osmObjects": [
+        "node/11417096188"
+      ]
+    },
+    {
+      "id": "rak-node-8143186366",
+      "name": "Liwa Badr",
+      "osmObjects": [
+        "node/8143186366"
+      ]
+    },
+    {
+      "id": "rak-node-1718026697",
+      "name": "Magam / Hebs Village Upper",
+      "osmObjects": [
+        "node/1718026697"
+      ]
+    },
+    {
+      "id": "rak-node-11594633201",
+      "name": "Mak Sikek",
+      "osmObjects": [
+        "node/11594633201",
+        "way/1335314064"
+      ]
+    },
+    {
+      "id": "rak-node-5572777679",
+      "name": "Mamduh",
+      "osmObjects": [
+        "node/5572777679"
+      ]
+    },
+    {
+      "id": "rak-node-12279655757",
+      "name": "Maqawwarah",
+      "osmObjects": [
+        "node/12279655757"
+      ]
+    },
+    {
+      "id": "rak-node-2325603721",
+      "name": "Maydarah",
+      "osmObjects": [
+        "node/2325603721"
+      ]
+    },
+    {
+      "id": "rak-node-8143186379",
+      "name": "Mina Al arab",
+      "osmObjects": [
+        "node/8143186379"
+      ]
+    },
+    {
+      "id": "rak-node-12092025329",
+      "name": "Minha",
+      "osmObjects": [
+        "node/12092025329"
+      ]
+    },
+    {
+      "id": "rak-node-5713026025",
+      "name": "Munay",
+      "osmObjects": [
+        "node/5713026025"
+      ]
+    },
+    {
+      "id": "rak-node-10603022963",
+      "name": "Musaibat",
+      "osmObjects": [
+        "node/10603022963"
+      ]
+    },
+    {
+      "id": "rak-node-6503812681",
+      "name": "Musseili",
+      "osmObjects": [
+        "node/6503812681"
+      ]
+    },
+    {
+      "id": "rak-node-11594538943",
+      "name": "Qada'ah",
+      "osmObjects": [
+        "node/11594538943"
+      ]
+    },
+    {
+      "id": "rak-node-10840124200",
+      "name": "Qaf'a",
+      "osmObjects": [
+        "node/10840124200"
+      ]
+    },
+    {
+      "id": "rak-node-11851033915",
+      "name": "Ra alat Bani Mihriz",
+      "osmObjects": [
+        "node/11851033915"
+      ]
+    },
+    {
+      "id": "rak-node-11795284219",
+      "name": "Ra'alat Ad Darah",
+      "osmObjects": [
+        "node/11795284219"
+      ]
+    },
+    {
+      "id": "rak-node-11593745030",
+      "name": "Ra's / Hebs Village Lower",
+      "osmObjects": [
+        "node/11593745030"
+      ]
+    },
+    {
+      "id": "rak-node-5712979578",
+      "name": "Rafaq",
+      "osmObjects": [
+        "node/5712979578"
+      ]
+    },
+    {
+      "id": "rak-node-5018676864",
+      "name": "Rahbah",
+      "osmObjects": [
+        "node/5018676864"
+      ]
+    },
+    {
+      "id": "rak-node-8143186360",
+      "name": "RAK City",
+      "osmObjects": [
+        "node/8143186360"
+      ]
+    },
+    {
+      "id": "rak-node-5614905195",
+      "name": "Ramlah",
+      "osmObjects": [
+        "node/5614905195"
+      ]
+    },
+    {
+      "id": "rak-node-8143186341",
+      "name": "Rams",
+      "osmObjects": [
+        "node/8143186341"
+      ]
+    },
+    {
+      "id": "rak-node-262479317",
+      "name": "Ras Al Khaimah",
+      "osmObjects": [
+        "node/262479317"
+      ]
+    },
+    {
+      "id": "rak-node-10666033524",
+      "name": "Ras Ash",
+      "osmObjects": [
+        "node/10666033524"
+      ]
+    },
+    {
+      "id": "rak-node-12595699556",
+      "name": "Ribiyyah",
+      "osmObjects": [
+        "node/12595699556"
+      ]
+    },
+    {
+      "id": "rak-node-5616718025",
+      "name": "Rima",
+      "osmObjects": [
+        "node/5616718025"
+      ]
+    },
+    {
+      "id": "rak-node-10840128311",
+      "name": "Rumayla",
+      "osmObjects": [
+        "node/10840128311"
+      ]
+    },
+    {
+      "id": "rak-node-12247846608",
+      "name": "Saham",
+      "osmObjects": [
+        "node/12247846608"
+      ]
+    },
+    {
+      "id": "rak-node-8143186355",
+      "name": "Saih Al Hudiabah",
+      "osmObjects": [
+        "node/8143186355"
+      ]
+    },
+    {
+      "id": "rak-node-10807644030",
+      "name": "Sal Dhayah",
+      "osmObjects": [
+        "node/10807644030",
+        "way/1314588967"
+      ]
+    },
+    {
+      "id": "rak-node-10824658925",
+      "name": "Sal Haqil",
+      "osmObjects": [
+        "node/10824658925"
+      ]
+    },
+    {
+      "id": "rak-node-6288494842",
+      "name": "Saliya Al-Baqal",
+      "osmObjects": [
+        "node/6288494842"
+      ]
+    },
+    {
+      "id": "rak-node-11760599566",
+      "name": "Salmadan",
+      "osmObjects": [
+        "node/11760599566"
+      ]
+    },
+    {
+      "id": "rak-node-10669861112",
+      "name": "Samarat",
+      "osmObjects": [
+        "node/10669861112",
+        "node/10800382379"
+      ]
+    },
+    {
+      "id": "rak-node-8143186354",
+      "name": "Seih Al Ghubb",
+      "osmObjects": [
+        "node/8143186354"
+      ]
+    },
+    {
+      "id": "rak-node-11810166454",
+      "name": "Seih Al Qurum",
+      "osmObjects": [
+        "node/11810166454"
+      ]
+    },
+    {
+      "id": "rak-node-8143186364",
+      "name": "Seih Al Uraibi",
+      "osmObjects": [
+        "node/8143186364"
+      ]
+    },
+    {
+      "id": "rak-node-5759499172",
+      "name": "Sha'am",
+      "osmObjects": [
+        "node/5759499172"
+      ]
+    },
+    {
+      "id": "rak-node-7772435055",
+      "name": "Sha'biyyat Milah",
+      "osmObjects": [
+        "node/7772435055"
+      ]
+    },
+    {
+      "id": "rak-node-8143186342",
+      "name": "Shabiat Rashed",
+      "osmObjects": [
+        "node/8143186342"
+      ]
+    },
+    {
+      "id": "rak-node-6288503986",
+      "name": "Shairi",
+      "osmObjects": [
+        "node/6288503986"
+      ]
+    },
+    {
+      "id": "rak-node-5616718023",
+      "name": "Shariyah",
+      "osmObjects": [
+        "node/5616718023"
+      ]
+    },
+    {
+      "id": "rak-node-10840173354",
+      "name": "Sharyat",
+      "osmObjects": [
+        "node/10840173354"
+      ]
+    },
+    {
+      "id": "rak-node-5572630168",
+      "name": "Shawka",
+      "osmObjects": [
+        "node/5572630168"
+      ]
+    },
+    {
+      "id": "rak-node-8143186353",
+      "name": "Shimal",
+      "osmObjects": [
+        "node/8143186353"
+      ]
+    },
+    {
+      "id": "rak-node-12328238283",
+      "name": "Sikhеbar",
+      "osmObjects": [
+        "node/12328238283"
+      ]
+    },
+    {
+      "id": "rak-node-10825234326",
+      "name": "Silay Al Khatami",
+      "osmObjects": [
+        "node/10825234326"
+      ]
+    },
+    {
+      "id": "rak-node-10825232540",
+      "name": "Slai Al-Ghalib",
+      "osmObjects": [
+        "node/10825232540"
+      ]
+    },
+    {
+      "id": "rak-node-12064752972",
+      "name": "Suhailah",
+      "osmObjects": [
+        "node/12064752972"
+      ]
+    },
+    {
+      "id": "rak-node-8143186359",
+      "name": "Suhaim",
+      "osmObjects": [
+        "node/8143186359",
+        "way/874795204"
+      ]
+    },
+    {
+      "id": "rak-node-10687832515",
+      "name": "Tabara al-Kabir",
+      "osmObjects": [
+        "node/10687832515",
+        "node/11923128545"
+      ]
+    },
+    {
+      "id": "rak-node-10858387790",
+      "name": "Tafif",
+      "osmObjects": [
+        "node/10858387790"
+      ]
+    },
+    {
+      "id": "rak-node-10801812995",
+      "name": "Tala",
+      "osmObjects": [
+        "node/10801812995"
+      ]
+    },
+    {
+      "id": "rak-node-11733844721",
+      "name": "Tawi Ghel",
+      "osmObjects": [
+        "node/11733844721"
+      ]
+    },
+    {
+      "id": "rak-node-5849659742",
+      "name": "Um al Ghaf",
+      "osmObjects": [
+        "node/5849659742"
+      ]
+    },
+    {
+      "id": "rak-node-6480046700",
+      "name": "Umm Urage",
+      "osmObjects": [
+        "node/6480046700"
+      ]
+    },
+    {
+      "id": "rak-node-10908944099",
+      "name": "Wab Saqar",
+      "osmObjects": [
+        "node/10908944099"
+      ]
+    },
+    {
+      "id": "rak-node-11582114963",
+      "name": "Wabain",
+      "osmObjects": [
+        "node/11582114963"
+      ]
+    },
+    {
+      "id": "rak-node-1583581170",
+      "name": "Wad Wid",
+      "osmObjects": [
+        "node/1583581170"
+      ]
+    },
+    {
+      "id": "rak-node-8143186343",
+      "name": "Wadi Ammar",
+      "osmObjects": [
+        "node/8143186343"
+      ]
+    },
+    {
+      "id": "rak-node-5712970311",
+      "name": "Wahala",
+      "osmObjects": [
+        "node/5712970311"
+      ]
+    },
+    {
+      "id": "rak-node-11590955170",
+      "name": "Wasideh",
+      "osmObjects": [
+        "node/11590955170"
+      ]
+    },
+    {
+      "id": "rak-node-10603794257",
+      "name": "Wassab",
+      "osmObjects": [
+        "node/10603794257"
+      ]
+    },
+    {
+      "id": "rak-node-12282463656",
+      "name": "Yaif",
+      "osmObjects": [
+        "node/12282463656"
+      ]
+    },
+    {
+      "id": "rak-node-11673106125",
+      "name": "Yib Al Miselli",
+      "osmObjects": [
+        "node/11673106125"
+      ]
+    },
+    {
+      "id": "rak-node-10653606147",
+      "name": "Yinainir",
+      "osmObjects": [
+        "node/10653606147"
+      ]
+    },
+    {
+      "id": "rak-node-1583581172",
+      "name": "العسيلي",
+      "osmObjects": [
+        "node/1583581172"
+      ]
+    }
+  ]
+}

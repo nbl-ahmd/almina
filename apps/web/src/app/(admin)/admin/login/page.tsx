@@ -80,7 +80,7 @@ export default async function LoginPage() {
           <LoginForm />
           <p className="admin-login__meta">
             Forgot your password or need access? Ask an administrator to reset
-            your account. Access is limited to the cities assigned to you.
+            your account. Staff order access follows the branch assigned to your account.
           </p>
           <p className="admin-login__switch">
             <Link href="/">Return to the storefront</Link>
