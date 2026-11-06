@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { ObjectId, type Db, type Document, type Filter, type ClientSession } from 'mongodb';
-import { orderRoutingSchema, areaKey, areaReplacements, rakEmirateKeys, rakDeliveryAreas, resolveDeliveryArea, routingDecision, type OrderRouting, type Staff } from '@almina/contracts';
+import { deliveryEmirates, orderRoutingSchema, areaKey, areaReplacements, rakEmirateKeys, rakDeliveryAreas, resolveDeliveryArea, routingDecision, type OrderRouting, type Staff } from '@almina/contracts';
 import { historicalStatus } from './status.js';
 import { HttpError } from '../../errors.js';
 const options = { maxTimeMS: 3000 };
+const otherEmirateKeys = deliveryEmirates.filter(value => !rakEmirateKeys.includes(areaKey(value))).flatMap(value => [areaKey(value), areaKey(value + ' Emirate')]);
 export async function readOrderRouting(db: Db, session?: ClientSession): Promise<OrderRouting> {
   const row = await db.collection<Document & { _id: string }>('growth_settings').findOne({ _id: 'order-routing' }, { ...options, ...(session ? { session } : {}) });
   return orderRoutingSchema.parse(row ? { revision: row.revision, active: row.active, branches: row.branches, fallbackBranchId: row.fallbackBranchId } : {});
@@ -13,7 +14,9 @@ export function orderArea(order: Document): string | null {
   return resolveDeliveryArea(order.customer ?? {});
 }
 export function presentRouting(order: Document, policy: OrderRouting) {
-  return { ...routingDecision(orderArea(order), policy), revision: Number.isSafeInteger(order.routing?.revision) ? order.routing.revision : 0 };
+  const areaId = orderArea(order);
+  const otherEmirate = typeof order.customer?.emirate === 'string' && otherEmirateKeys.includes(areaKey(order.customer.emirate));
+  return { ...routingDecision(areaId, policy), ...(areaId === null && (otherEmirate || order.routing?.reviewedAt instanceof Date) ? { needsReview: false, areaLabel: otherEmirate ? 'Other delivery areas' : 'Verified unlisted area' } : {}), revision: Number.isSafeInteger(order.routing?.revision) ? order.routing.revision : 0 };
 }
 function mongoKey(field: string): Document {
   let expression: Document = { $toLower: { $trim: { chars: ' \t\r\n', input: { $cond: [{ $eq: [{ $type: field }, 'string'] }, field, ''] } } } };
@@ -35,6 +38,9 @@ export function areaScope(areaIds: string[], complement = false): Filter<Documen
     { 'routing.version': 1, 'routing.areaId': { [complement ? '$nin' : '$in']: areaIds } },
     { 'routing.version': { $ne: 1 }, $expr: complement ? { $not: [{ $in: [legacyAreaExpression(), areaIds] }] } : { $in: [legacyAreaExpression(), areaIds] } },
   ] };
+}
+export function addressReviewScope(): Filter<Document> {
+  return { $and: [areaScope(rakDeliveryAreas.map(area => area.id), true), { 'routing.reviewedAt': { $exists: false } }, { $expr: { $not: [{ $in: [mongoKey('$customer.emirate'), otherEmirateKeys] }] } }] };
 }
 /** Branch policy replaces legacy city text only after an explicit administrator activation. */
 export async function branchOrderFilter(db: Db, user: Staff, legacy: Filter<Document>, session?: ClientSession): Promise<Filter<Document>> {
@@ -68,7 +74,7 @@ export async function routingHealth(db: Db) {
     legacyStaff: counts.filter(row => !policy.branches.some(branch => branch.id === row._id)).reduce((sum, row) => sum + row.count, 0) };
 }
 export async function repairOrderArea(db: Db, orderId: string, raw: unknown, actor: string) {
-  const parsed = z.object({ areaId: z.string().refine(value => rakDeliveryAreas.some(area => area.id === value)), revision: z.number().int().nonnegative(), reason: z.string().trim().min(5).max(500) }).strict().safeParse(raw);
+  const parsed = z.object({ areaId: z.string().refine(value => rakDeliveryAreas.some(area => area.id === value)).nullable(), revision: z.number().int().nonnegative(), reason: z.string().trim().min(5).max(500) }).strict().safeParse(raw);
   if (!parsed.success || !ObjectId.isValid(orderId)) throw new HttpError(400, 'INVALID_REQUEST');
   const session = db.client.startSession();
   try { await session.withTransaction(async () => {

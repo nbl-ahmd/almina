@@ -50,11 +50,11 @@ test('branch routing partitions typed and GPS areas, sends every unknown to fall
     const l = await retainedOrderList(db, {}, local), r = await retainedOrderList(db, {}, fallback), all = await retainedOrderList(db, {}, admin);
     assert.equal(l.length, 2); assert.equal(r.length, 4); assert.equal(all.length, 6);
     assert.equal(new Set([...l, ...r].map(order => String(order._id))).size, 6);
-    assert.equal((await orderReceiving(db, admin)).reviewCount, 3);
+    assert.equal((await orderReceiving(db, admin)).reviewCount, 2);
     assert.equal((await orderReceiving(db, fallback)).pendingCount, 4);
     assert.equal((await orderReceiving(db, local)).pendingCount, 2);
     assert.equal((await retainedOrderList(db, { review: '1' }, local)).length, 0);
-    assert.equal((await retainedOrderList(db, { review: '1' }, fallback)).length, 3);
+    assert.equal((await retainedOrderList(db, { review: '1' }, fallback)).length, 2);
     await assert.rejects(retainedOrderDetail(db, String(orders[3]!._id), {}, local), { code: 'NOT_FOUND' });
     assert.equal((await retainedOrderList(db, {}, { ...local, branchId: undefined })).length, 0);
     const receivers = await db.collection('users').find(await routingRecipients(db, orders[3]!)).toArray();
@@ -74,6 +74,9 @@ test('branch routing partitions typed and GPS areas, sends every unknown to fall
     assert.equal(customerEmails, 0); assert.equal(emailFailures, 0);
     const reviewed = (await db.collection('orders').findOne({ _id: orders[3]!._id }))!;
     assert.deepEqual((await db.collection('users').find(await routingRecipients(db, reviewed)).toArray()).map(row => String(row._id)).sort(), [admin.id, local.id].sort());
+    await repairOrderArea(db, String(orders[5]!._id), { areaId: null, revision: 0, reason: 'Verified unlisted area with customer' }, admin.id);
+    assert.equal((await orderReceiving(db, admin)).reviewCount, 0);
+    assert.equal((await retainedOrderList(db, {}, fallback)).length, 3);
     const commerce = createCommerceService(async () => db);
     await assert.rejects(commerce.transition(String(orders[0]!._id), { status: 'confirmed' }, fallback), { code: 'NOT_FOUND' });
     await commerce.transition(String(orders[0]!._id), { status: 'confirmed' }, local);

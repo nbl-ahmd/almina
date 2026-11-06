@@ -1,9 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { Db, Document } from 'mongodb';
 import type { Staff } from '@almina/contracts';
-import { branchOrderFilter, presentRouting, readOrderRouting, areaScope } from './routing.js';
+import { branchOrderFilter, presentRouting, readOrderRouting, addressReviewScope } from './routing.js';
 import { orderFilter } from './repository.js';
-import { rakDeliveryAreas } from '@almina/contracts';
 /** Counts are operational signals, never a substitute for the authorized, paginated order inbox. */
 export async function orderReceiving(db: Db, staff: Staff) {
   const scope = await branchOrderFilter(db, staff, orderFilter({ limit: 1 }, staff));
@@ -12,7 +11,7 @@ export async function orderReceiving(db: Db, staff: Staff) {
   const options = { maxTimeMS: 3000 };
   const [pendingCount, reviewCount, latest, oldest, policy, recent] = await Promise.all([
     db.collection('orders').countDocuments(pending, options),
-    db.collection('orders').countDocuments({ $and: [pending, areaScope(rakDeliveryAreas.map(area => area.id), true)] }, options),
+    db.collection('orders').countDocuments({ $and: [pending, addressReviewScope()] }, options),
     db.collection('orders').find(pending, { ...options, projection: { _id: 1, routing: 1, 'customer.city': 1, 'customer.emirate': 1 } }).sort({ createdAt: -1, _id: -1 }).limit(10).toArray(),
     db.collection('orders').find(pending, { ...options, projection: { createdAt: 1 } }).sort({ createdAt: 1, _id: 1 }).limit(1).toArray(),
     readOrderRouting(db),

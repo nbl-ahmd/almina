@@ -1,7 +1,7 @@
-import { branchOrderFilter, readOrderRouting, presentRouting, areaScope } from './routing.js';
+import { branchOrderFilter, readOrderRouting, presentRouting, addressReviewScope } from './routing.js';
 import { z } from 'zod';
 import { ObjectId, type Db, type Document, type Filter } from 'mongodb';
-import { rakDeliveryAreas, orderStatusSchema, type Staff } from '@almina/contracts';
+import { orderStatusSchema, type Staff } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 import { queryOptions } from '../../database.js';
 import { orderFilter } from './repository.js';
@@ -46,7 +46,7 @@ export async function retainedOrderList(db: Db, raw: unknown, staff: Staff): Pro
   const { page, filter } = retainedOrderFilter(raw, staff);
   const { ['customer.city']: _city, ...rest } = filter; void _city;
   const access = await branchOrderFilter(db, staff, orderFilter({ limit: 1 }, staff));
-  const scoped = { $and: [access, rest, ...(page.review ? [areaScope(rakDeliveryAreas.map(area => area.id), true)] : [])] };
+  const scoped = { $and: [access, rest, ...(page.review ? [addressReviewScope()] : [])] };
   const docs = await db.collection('orders').find(scoped, { ...queryOptions, projection: orderDetailProjection })
     .sort({ createdAt: -1, _id: -1 }).skip(page.offset).limit(page.limit).toArray();
   const policy = await readOrderRouting(db);
