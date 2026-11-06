@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from './app-link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Dialog, Popover } from 'radix-ui';

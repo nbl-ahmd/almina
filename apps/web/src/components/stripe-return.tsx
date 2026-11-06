@@ -7,7 +7,7 @@ import {useEffect,useState} from 'react';
 import {stripeCheckoutDtoSchema,checkoutInputSchema} from '@almina/contracts';
 import type {z} from 'zod';
 import {useRouter} from 'next/navigation';
-import Link from 'next/link';
+import Link from './app-link';
 import {Button} from './ui/button';
 import type {Locale} from '../lib/i18n';
 const pendingKey='almina.checkout.pending.v1';

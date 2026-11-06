@@ -6,7 +6,7 @@ import { SectionTabs, SectionPanel } from './section-tabs';
 import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
 import { wholesaleRequest } from '../wholesale/request';
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from '../app-link';
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { adminRequest } from "./controls";
 import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';

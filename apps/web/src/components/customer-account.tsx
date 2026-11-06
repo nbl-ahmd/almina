@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Field, FieldLabel } from './ui/field';
 
-import Link from 'next/link';
+import Link from './app-link';
 import { resetSavedAccount,loadSavedAccount } from '../lib/catalog/saved-account';
 import { CustomerRewards } from './customer-rewards';
 import { CustomerAddressBook } from './customer-address-book';

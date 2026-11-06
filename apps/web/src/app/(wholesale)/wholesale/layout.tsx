@@ -1,5 +1,5 @@
 import { getLocale } from '../../../lib/server/i18n';
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 import Image from 'next/image';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';

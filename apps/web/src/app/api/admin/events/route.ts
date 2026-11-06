@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const cookie = await sessionHeader();
     const stream = orderEventStream({
       signal: request.signal,
+      lastEventId: request.headers.get("last-event-id") ?? undefined,
       async sample(signal) {
         const result = await fetch(
           `${env.LEGACY_API_ORIGIN}/api/orders?limit=25&offset=0`,

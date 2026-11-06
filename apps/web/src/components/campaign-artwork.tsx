@@ -1,5 +1,5 @@
 import Image, { getImageProps } from 'next/image';
-import Link from 'next/link';
+import Link from './app-link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { campaignImageUrl, growthPagePath, type GrowthPage } from '@almina/contracts';
 

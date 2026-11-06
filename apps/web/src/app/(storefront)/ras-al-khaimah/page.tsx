@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 import { getBranchDirectory, getPharmacyProfile } from '../../../lib/server/growth';
 import { getCategories,getProducts } from '../../../lib/server/catalog';
 import { CategoryGrid,ProductGrid } from '../../../components/storefront';

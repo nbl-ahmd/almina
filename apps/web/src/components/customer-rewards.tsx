@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Field, FieldLabel, FieldGroup } from './ui/field';
 
 import { useEffect,useRef,useState } from 'react';
-import Link from 'next/link';
+import Link from './app-link';
 type Reward={enabled:boolean;points:number;pointsPerAed:number;pointsPerVoucher:number;voucherValueMinor:number;minimumSpendMinor:number;voucherDays:number;terms:string;referralCode:string|null;vouchers:{code:string;valueMinor:number;expiresAt:string;minimumSpendMinor:number}[]};
 async function request(action:string,body?:unknown){const response=await fetch('/api/customer/'+action,{method:body?'POST':'GET',cache:'no-store',headers:body?{'Content-Type':'application/json','X-CSRF-Protection':'1'}:{},...(body?{body:JSON.stringify(body)}:{})});if(!response.ok)throw new Error(response.status===409?'This reward is not available. Check your points and eligibility.':'Unable to update rewards. Please try again.');return (await response.json()).data;}
 export function CustomerRewards(){

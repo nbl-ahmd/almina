@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../../../components/app-link';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { EmptyState } from '../../../../../components/admin/ui';
 

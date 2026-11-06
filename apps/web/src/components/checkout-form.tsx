@@ -14,7 +14,7 @@ import { Field, FieldLabel, FieldDescription } from './ui/field';
 
 import { emirateLabel } from '../lib/i18n';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import Link from 'next/link';
+import Link from './app-link';
 import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, stripeCheckoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
 import { Icon } from './icon';
 import { savedArea } from '../lib/location/browser';

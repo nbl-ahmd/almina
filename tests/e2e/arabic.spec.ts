@@ -44,7 +44,7 @@ test('Arabic catalogue and PDP localize controls while retaining product identit
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.goto('/products/daily-care--PD0001');
   await expect(page.getByRole('link', { name: 'استفسارات التوصيل', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'عرض الفئة', exact: true })).toBeVisible();
+  await expect(page.locator('main').getByRole('link', { name: 'Skin Care', exact: true }).first()).toBeVisible();
   await expect(page.getByText('يتم تأكيد رسوم التوصيل والإجمالي النهائي عند الدفع قبل تقديم الطلب.', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'outputs/coral-redesign-2026-10-21/product-ar-390.png', fullPage: true });
   await page.getByRole('heading', { name: 'التوصيل في رأس الخيمة', exact: true }).evaluate(el => el.scrollIntoView({ block: 'center' }));
@@ -64,7 +64,7 @@ test('Arabic homepage campaign controls keep navigation and product names intact
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'صيدلية الميناء — الصحة والجمال والعناية اليومية' })).toHaveCount(1);
   const campaign = page.getByRole('region', { name: 'عروض الصيدلية', exact: true });
-  await campaign.getByRole('button', { name: 'التالي عرض', exact: true }).click();
+  await campaign.getByRole('button', { name: 'عرض عرض 2', exact: true }).click();
   await expect(campaign.getByRole('group', { name: '2 من 2', exact: true })).toBeVisible();
 });
 
@@ -89,9 +89,11 @@ test('Arabic checkout displays translated emirates while submitting canonical co
   await context.addCookies([{ name: 'almina_lang', value: 'ar', url: checkoutOrigin }]);
   await page.goto(checkoutOrigin + '/checkout');
   await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
+  await page.reload();
   for (const [name, value] of Object.entries(customer)) {
     const field = page.locator(`[name="${name}"]`);
-    if (name === 'emirate' || name === 'payment') await field.selectOption(value);
+    if (name === 'payment') { await page.getByRole('radio', { name: /نقداً عند الاستلام/ }).check(); continue; }
+    if (name === 'emirate') await field.selectOption(value);
     else await field.fill(value);
   }
   await expect(page.locator('select[name="emirate"] option:checked')).toHaveText('رأس الخيمة');

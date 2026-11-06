@@ -3,7 +3,7 @@ import { DeliveryProgress } from './delivery-progress';
 import { ReminderSignup } from './customer-reminders';
 import Image from 'next/image';
 import { useEffect, useState, type ReactNode } from 'react';
-import Link from 'next/link';
+import Link from './app-link';
 import { ProductImage } from './product-image';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
 import { loadCart, checkAddition } from '../app/(storefront)/cart/actions';

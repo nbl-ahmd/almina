@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 
 
-import Link from 'next/link';
+import Link from './app-link';
 import { accountErrorMessage } from '../lib/account/errors';
 import Script from 'next/script';
 import { useEffect, useRef, useState, type FormEvent } from 'react';

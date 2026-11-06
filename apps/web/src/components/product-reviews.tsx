@@ -7,7 +7,7 @@ import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
-import Link from 'next/link';
+import Link from './app-link';
 import { useState,type FormEvent } from 'react';
 export type ReviewSummary={items:{rating:number;displayName:string;title:string;body:string;createdAt:string;verifiedPurchase:true}[];ratingCount:number;average:number|null};
 export function ProductReviews({productId,reviews,locale='en'}:{productId:string;reviews:ReviewSummary|null;locale?:Locale}){const [open,setOpen]=useState(false),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);

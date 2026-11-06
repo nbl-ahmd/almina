@@ -4,7 +4,7 @@ import type { Locale } from '../lib/i18n';
 import { useState } from 'react';
 import { Icon } from './icon';
 import { Button } from './ui/button';
-import Link from 'next/link';
+import Link from './app-link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
 import { attributeCart } from '../lib/search/attribution';
 import { recordCommerceEvent } from '../lib/telemetry/browser';

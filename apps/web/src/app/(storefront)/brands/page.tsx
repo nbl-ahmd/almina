@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 import { knownGrowthBrands } from '../../../components/growth-landing';
 import { StorefrontIntro } from '../../../components/storefront-intro';
 import { metadataFor } from '../../../lib/server/seo';

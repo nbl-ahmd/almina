@@ -1,6 +1,6 @@
 'use client';
 import { t, type Locale } from '../lib/i18n';
-import Link from 'next/link';
+import Link from './app-link';
 import { useEffect,useId,useRef,useState,type KeyboardEvent } from 'react';
 import { MagnifyingGlassIcon,ArrowRightIcon,XMarkIcon,ClockIcon,ArrowUpRightIcon,Squares2X2Icon } from '@heroicons/react/24/outline';
 type Suggestion={name:string;href:string;kind?:'category'|'product'|'brand'|'collection'|'popular'|'related'};

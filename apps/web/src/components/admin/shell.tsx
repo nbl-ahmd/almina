@@ -1,5 +1,5 @@
 "use client";
-import Link from 'next/link';
+import Link from '../app-link';
 import { usePathname } from 'next/navigation';
 import { useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import { Dialog } from 'radix-ui';

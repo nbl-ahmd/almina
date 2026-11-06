@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from './app-link';
 import { Icon } from './icon';
 export function PharmacyHelp({ compact = false }: { compact?: boolean }) {
   return <section className={`pharmacy-help rounded-xl border border-border bg-surface p-4 shadow-sm ${compact ? '' : 'md:grid md:grid-cols-[200px_minmax(0,1fr)] md:gap-8 md:bg-ocean md:p-8 md:text-white'}`}>

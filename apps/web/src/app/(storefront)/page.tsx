@@ -5,7 +5,7 @@ import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
 import { ScrollReveal } from "../../components/scroll-reveal";
 import { Suspense, cache } from "react";
-import Link from "next/link";
+import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
 import {
   HomeManagedCampaigns,

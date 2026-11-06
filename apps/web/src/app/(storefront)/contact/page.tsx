@@ -1,5 +1,5 @@
 import { StorefrontIntro } from '../../../components/storefront-intro';
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 import { Breadcrumb } from '../../../components/storefront';
 import { metadataFor } from '../../../lib/server/seo';
 import type { Query } from '../../../lib/seo';

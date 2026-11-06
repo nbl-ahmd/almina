@@ -2,7 +2,7 @@
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
 import { useEffect,useState } from 'react';
-import Link from 'next/link';
+import Link from './app-link';
 import { ProductImage } from './product-image';
 import { readSaved } from '../lib/catalog/saved';
 const key='almina.recent-products.v1';

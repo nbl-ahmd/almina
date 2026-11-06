@@ -11,7 +11,7 @@ import { RecoveryImport } from "../../../../../components/admin/recovery-import"
 import { operationsSnapshotSchema } from '@almina/contracts';
 import { OperationsView } from '../../../../../components/admin/operations-view';
 import { AdminDashboard } from '../../../../../components/admin/dashboard';
-import Link from "next/link";
+import Link from '../../../../../components/app-link';
 import { notFound } from "next/navigation";
 import {
   requireIdentity,

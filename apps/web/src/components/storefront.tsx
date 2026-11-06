@@ -2,7 +2,7 @@ import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
 import { CategoryTile } from './category-tile';
 import { ProductCard } from './product-card';
-import Link from 'next/link';
+import Link from './app-link';
 import { type Category, type Product } from '../lib/catalog/model';
 import { Icon } from './icon';
 

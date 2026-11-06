@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from './app-link';
 import { useEffect,useState } from 'react';
 import { currentSaved,loadSavedAccount,changeSaved } from '../lib/catalog/saved-account';
 import { AddToCart } from './cart-controls';

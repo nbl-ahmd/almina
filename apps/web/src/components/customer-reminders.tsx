@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { Field, FieldLabel, FieldGroup } from './ui/field';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import Link from 'next/link';
+import Link from './app-link';
 import { reminderDtoSchema, retentionPolicySchema, type RetentionPolicy } from '@almina/contracts';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';

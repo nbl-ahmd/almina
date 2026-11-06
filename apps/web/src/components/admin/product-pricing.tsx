@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Link from '../app-link';
 import { wholesaleRequest } from '../wholesale/request';
 import type { ProductAudience } from './product-audience';
 import { type TradeType, type TradeTerms, type ProductTrade, type TradePriceDraft } from '../../lib/admin/product-pricing';

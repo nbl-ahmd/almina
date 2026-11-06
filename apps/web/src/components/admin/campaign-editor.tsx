@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from '../app-link';
 import { useState, type CSSProperties } from 'react';
 import { ComputerDesktopIcon, DevicePhoneMobileIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { campaignImageUrl, campaignReviewSchema, campaignState, growthPagePath, type GrowthPage, type CampaignReview } from '@almina/contracts';
