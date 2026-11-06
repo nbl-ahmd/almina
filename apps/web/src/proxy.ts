@@ -1,3 +1,4 @@
+import { isDataRequest, dataContentSecurityPolicy } from './lib/security/request-work';
 import {googleCommerceConfiguration} from './lib/google/commerce';
 import { readWebEnvironment } from '@almina/config/env';
 import { randomBytes } from 'node:crypto';
@@ -32,6 +33,18 @@ export function proxy(request: NextRequest) {
     response.headers.set('Cache-Control', 'private, no-store');
     return response;
   }
+  if (isDataRequest(request.nextUrl.pathname)) {
+    const response = NextResponse.next();
+    response.headers.set('Content-Security-Policy', dataContentSecurityPolicy);
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    if (request.nextUrl.pathname === '/api' || request.nextUrl.pathname.startsWith('/api/')) {
+      response.headers.set('Cache-Control', 'private, no-store');
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+    if (process.env.APP_ENV !== 'production') response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    // XML handlers decide successful caching; errors remain uncached.
+    return response;
+  }
   const environment = readWebEnvironment(process.env);
   const apiMediaOrigin = new URL(environment.LEGACY_API_ORIGIN).origin;
   const nonce = randomBytes(16).toString('base64');
@@ -64,4 +77,4 @@ export function proxy(request: NextRequest) {
   if(request.nextUrl.pathname.startsWith('/wholesale'))response.headers.set('X-Robots-Tag','noindex, nofollow');
   return response;
 }
-export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] };
+export const config = { matcher: ['/((?!_next/static|_next/image|favicon\\.ico$|design/.*\\.(?:png|jpe?g|webp|svg|avif)$|logo\\.png$|product-placeholder\\.svg$|manifest\\.json$|service-worker\\.js$|android-chrome-(?:192x192|512x512)\\.png$|apple-touch-icon\\.png$|favicon-32x32\\.png$|admin/worker\\.js$|templates/recovery-products\\.xlsx$).*)'] };

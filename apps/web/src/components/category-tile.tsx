@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from './app-link';
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import { categoryHref, type Category } from '../lib/catalog/model';
 import { categoryImage } from '../lib/server/catalog';

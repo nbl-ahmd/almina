@@ -7,6 +7,7 @@ import { sitemapPage, xmlResponse, unavailableSitemap } from '../../../../lib/se
 import { policyPaths } from '../../../../lib/policies';
 export const dynamic = 'force-dynamic';
 export async function GET(_request: Request, { params }: { params: Promise<{ kind: string; page: string }> }) {
+  if (new URL(_request.url).search) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
   const { kind, page } = await params;
   if (!['static', 'products', 'categories'].includes(kind) || !/^(first|[A-Za-z0-9_-]{1,512})\.xml$/.test(page)) return new Response('Not found', { status: 404 });
   if (kind === 'static' && page !== 'first.xml') return new Response('Not found', { status: 404 });

@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from '../app-link';
 import { SectionTabs } from './section-tabs';
 import { useEffect,useId,useState,type FormEvent } from 'react';
 import { wholesaleTypeSchema,wholesaleAccountInputSchema,type WholesaleAccount } from '@almina/contracts';

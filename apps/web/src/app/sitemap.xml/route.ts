@@ -1,7 +1,8 @@
 import { getWebEnvironment } from '../../lib/server/env';
 import { sitemapPage, xmlResponse, unavailableSitemap, type SitemapKind } from '../../lib/server/sitemap';
 export const dynamic = 'force-dynamic';
-export async function GET() {
+export async function GET(request: Request) {
+  if (new URL(request.url).search) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
   try {
     const env = getWebEnvironment();
     if (env.APP_ENV !== 'production') return xmlResponse('sitemapindex', []);

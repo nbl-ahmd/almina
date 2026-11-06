@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 import { growthPagePath } from '@almina/contracts';
 import { getGrowthPages } from '../../../lib/server/growth';
 import { StorefrontIntro } from '../../../components/storefront-intro';

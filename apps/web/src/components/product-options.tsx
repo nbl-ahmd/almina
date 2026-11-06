@@ -1,6 +1,6 @@
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
-import Link from 'next/link';
+import Link from './app-link';
 import { optionFields, optionLabels, sameFamilyIdentity } from '@almina/contracts';
 import { productHref, productOptionLabel, displayPrice, money, type Product } from '../lib/catalog/model';
 export async function ProductOptions({ product, variants }: {product:Product;variants:Product[]}) {

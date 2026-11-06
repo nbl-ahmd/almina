@@ -1,6 +1,6 @@
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
-import Link from 'next/link';
+import Link from './app-link';
 import type { Product } from '../lib/catalog/model';
 import { categoryHref } from '../lib/catalog/model';
 import { Icon } from './icon';

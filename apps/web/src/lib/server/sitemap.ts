@@ -1,4 +1,5 @@
 import 'server-only';
+import { publicSitemapCache } from '../security/request-work';
 import { sitemapPageSchema, successSchema } from '@almina/contracts';
 import { getWebEnvironment } from './env';
 import { categoryPath, productPath } from '../catalog/model';
@@ -21,7 +22,7 @@ export function xmlResponse(type: 'urlset' | 'sitemapindex', urls: string[]) {
   const tag = type === 'urlset' ? 'url' : 'sitemap';
   const body = `<?xml version="1.0" encoding="UTF-8"?><${type} xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(url => `<${tag}><loc>${escapeXml(url)}</loc></${tag}>`).join('')}</${type}>`;
   if (urls.length > 50000 || Buffer.byteLength(body) > 50 * 1024 * 1024) throw new Error('Sitemap protocol limit exceeded');
-  return new Response(body, { headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'no-store' } });
+  return new Response(body, { headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': publicSitemapCache, 'Vercel-CDN-Cache-Control': 'public, s-maxage=300' } });
 }
 export function unavailableSitemap() {
   return new Response('Sitemap temporarily unavailable', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '60' } });

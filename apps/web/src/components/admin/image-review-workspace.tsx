@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '../app-link';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ArrowTopRightOnSquareIcon, CheckIcon, MagnifyingGlassIcon, ForwardIcon, PauseIcon } from '@heroicons/react/24/outline';
 import type { ImageIdentityField, ImageReviewDecisionInput, ImageReviewDetail } from '@almina/contracts';

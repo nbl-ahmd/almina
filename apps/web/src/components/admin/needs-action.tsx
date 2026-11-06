@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../app-link';
 import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { display, record, rows } from './views';
 import { Badge, Card, Note, PageHeader } from './ui';

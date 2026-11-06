@@ -14,7 +14,7 @@ import { Command } from "./controls";
 import { AdminForm, type Field } from "./forms";
 import { Badge, Card, PageHeader, orderStatusTone } from "./ui";
 import { orderLinePresentation } from '../../lib/admin/order-lines';
-import Link from "next/link";
+import Link from '../app-link';
 export function record(value: unknown): AdminRecord {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as AdminRecord)

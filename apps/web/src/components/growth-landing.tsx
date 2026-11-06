@@ -1,6 +1,6 @@
 import { GrowthActivity } from './growth-activity';
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from './app-link';
 import { notFound } from 'next/navigation';
 import { campaignState,growthPagePath,type GrowthPage } from '@almina/contracts';
 import { getGrowthPage } from '../lib/server/growth';

@@ -12,13 +12,13 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
   await quantity.fill('999'); await quantity.blur();
   await expect(quantity).toHaveValue('4'); await expect(increase).toBeDisabled();
   await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
-  await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.header-cart'))).toBeVisible();
-  await page.reload(); await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.header-cart'))).toBeVisible();
-  await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.header-cart')).click();
+  await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toBeVisible();
+  await page.reload(); await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toBeVisible();
+  await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab')).click();
   await expect(page.locator('.quantity')).toHaveText('4');
   await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
   await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();
-  await expect(page.getByRole('link',{name:'Your cart',exact:true}).and(page.locator('.header-cart'))).toBeVisible();
+  await expect(page.getByRole('link',{name:'Cart',exact:true}).and(page.locator('.mobile-tab'))).toBeVisible();
   await expect(page.getByRole('navigation',{name:'Main navigation',exact:true}).getByRole('link',{name:'Cart',exact:true})).toBeVisible();
 });
 

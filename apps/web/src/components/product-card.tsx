@@ -1,6 +1,6 @@
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
-import Link from "next/link";
+import Link from './app-link';
 import { ArrowRightIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { ProductImage } from "./product-image";
 import { AddToCart } from "./cart-controls";

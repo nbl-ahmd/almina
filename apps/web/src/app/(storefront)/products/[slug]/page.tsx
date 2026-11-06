@@ -9,7 +9,7 @@ import { ProductInformation } from '../../../../components/product-information';
 import { ProductOptions } from '../../../../components/product-options';
 import { ProductGallery } from '../../../../components/product-gallery';
 import { PhotoCredit } from '../../../../components/photo-credit';
-import Link from 'next/link';
+import Link from '../../../../components/app-link';
 import { permanentRedirect } from 'next/navigation';
 import { getProductVariants, getProductRecommendations, productImages } from '../../../../lib/server/catalog';
 import { resolveProductRoute } from '../../../../lib/server/product-route';

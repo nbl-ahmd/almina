@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 import { Breadcrumb } from '../../../components/storefront';
 import { StructuredData } from '../../../components/structured-data';
 import { metadataFor } from '../../../lib/server/seo';

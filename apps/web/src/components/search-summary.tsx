@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from './app-link';
 import type { SearchMetadata } from '../lib/server/search';
 export function SearchSummary({result,query,locale,unavailable=false,filters={}}:{result:SearchMetadata|undefined;query:string;locale:'en'|'ar';unavailable?:boolean;filters?:Record<string,string>}){
  const ar=locale==='ar',links=result?[...result.collections,...result.categories,...result.brands,...result.querySuggestions].filter((item,index,rows)=>rows.findIndex(other=>other.href===item.href)===index).slice(0,8):[];

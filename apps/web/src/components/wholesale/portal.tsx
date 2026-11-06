@@ -1,6 +1,6 @@
 'use client';
 import { useAccountCopy } from "../account-locale";
-import Link from 'next/link';
+import Link from '../app-link';
 import { BusinessAccount } from './business-account';
 import { useEffect,useRef,useState,type FormEvent } from 'react';
 import type { WholesaleProduct } from '@almina/contracts';

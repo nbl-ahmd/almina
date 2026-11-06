@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../app-link';
 import { ArrowRightIcon, ArrowUpRightIcon, ArrowTrendingUpIcon, CubeIcon, InboxIcon, ShoppingBagIcon, TruckIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { adminRead } from '../../lib/server/admin/gateway';
 import { readDashboardReport } from '../../lib/server/admin/reporting';

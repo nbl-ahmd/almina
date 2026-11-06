@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../../components/app-link';
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import { ApiClientError } from '@almina/contracts/client';

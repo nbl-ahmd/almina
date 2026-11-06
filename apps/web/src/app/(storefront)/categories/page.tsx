@@ -5,7 +5,7 @@ import { getCategories } from '../../../lib/server/catalog';
 import { getLocale } from '../../../lib/server/i18n';
 import { CategoryGrid, Breadcrumb } from '../../../components/storefront';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import Link from '../../../components/app-link';
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Query> }) { return metadataFor('Categories', 'Browse healthcare, skincare and wellness categories at Al Mina Pharmacy.', '/categories', await searchParams); }
 export default async function CategoriesPage() {
   const locale=await getLocale(), ar=locale==='ar';

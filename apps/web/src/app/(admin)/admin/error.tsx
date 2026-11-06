@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from '../../../components/app-link';
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 export default function ErrorPage({ reset }: { reset: () => void }) {

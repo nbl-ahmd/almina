@@ -3,7 +3,7 @@ import { categoryHref } from "../lib/catalog/model";
 import { StorefrontMenu } from "./storefront-menu";
 import { SearchBox } from "./search-box";
 import Image from "next/image";
-import Link from "next/link";
+import Link from './app-link';
 import {
   PhoneIcon,
   UserCircleIcon,

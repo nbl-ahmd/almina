@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 export type OrderSample =
   | { state: "ready"; signature: string }
   | { state: "revoked" }
@@ -9,18 +11,20 @@ export function orderEventStream({
   sample,
   intervalMs = 5000,
   lifetimeMs = 20000,
+  lastEventId,
 }: {
   signal: AbortSignal;
   sample: (signal: AbortSignal) => Promise<OrderSample>;
   intervalMs?: number;
   lifetimeMs?: number;
+  lastEventId?: string | undefined;
 }) {
   const encoder = new TextEncoder();
   let cleanup = () => {};
   return new ReadableStream<Uint8Array>({
     start(controller) {
       let stopped = false;
-      let signature: string | undefined;
+      let signature = lastEventId && /^[a-f0-9]{64}$/.test(lastEventId) ? lastEventId : undefined;
       let timer: ReturnType<typeof setTimeout> | undefined;
       let active: AbortController | undefined;
       function stop() {
@@ -44,7 +48,7 @@ export function orderEventStream({
         return;
       }
       function emit(event: string) {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: {}\n\n`));
+        controller.enqueue(encoder.encode(`${signature ? `id: ${signature}\n` : ''}event: ${event}\ndata: {}\n\n`));
       }
       async function tick() {
         if (stopped || signal.aborted) return stop();
@@ -59,9 +63,12 @@ export function orderEventStream({
           }
           if (result.state === "unavailable") emit("unavailable");
           else {
-            if (signature === undefined) emit("reconcile");
-            else if (result.signature !== signature) emit("orders");
-            signature = result.signature;
+            const next = createHash('sha256').update(result.signature).digest('hex');
+            const first = signature === undefined;
+            const changed = signature !== next;
+            signature = next;
+            if (first) emit("reconcile");
+            else if (changed) emit("orders");
             emit("connected");
           }
         } catch {

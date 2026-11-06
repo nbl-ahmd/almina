@@ -69,14 +69,14 @@ export async function getProductRecommendations(product:Product){return (await g
 export async function getProductVariants(product:Product) {
   return product.familyKey ? (await getProductDetail(product.product_id)).variants : [];
 }
-export async function getProductById(id: string): Promise<Product | null> {
+export const getProductById = cache(async (id: string): Promise<Product | null> => {
   if (!objectId.test(id)) return null;
   const data = await legacyRead(`/api/products/${id}`, false, true);
   if (!data || typeof data !== 'object') return null;
   const raw = data as Record<string, unknown>;
   const category = typeof raw.category === 'string' ? await getCategory(raw.category) : raw.category;
   return readProduct({ ...raw, category });
-}
+});
 export async function resolveProduct(slug: string) {
   const id = slugIdentity(slug);
   return id ? getProductByPublicId(id) : null;

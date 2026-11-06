@@ -1,5 +1,5 @@
 "use client";
-import Link from 'next/link';
+import Link from '../app-link';
 import { useSyncExternalStore, useState } from 'react';
 import { adminRequest } from './controls';
 type Row={sourceKey:string;name:string;action:string;price:string;previousPrice?:string;websiteStockProposed:number;changedFields:string[]};

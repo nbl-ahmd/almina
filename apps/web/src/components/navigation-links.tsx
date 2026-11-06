@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from './app-link';
 import { usePathname } from 'next/navigation';
 import { HomeIcon, BuildingStorefrontIcon, TagIcon, ShoppingCartIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { cartCountText, t, type Locale, type MessageKey } from '../lib/i18n';
