@@ -27,3 +27,22 @@ test('unchanged order stream reconnect does not force an admin rerender; real ch
  const changed=await read(id,['private state B']);assert.match(changed,/event: orders/);assert.ok(!changed.includes('private state'));
  assert.match(await read('bad\nforged'),/event: reconcile/);
 });
+
+test('patched redirect client strips cross-realm custom credential headers across origins',async()=>{
+ const {createServer}=await import('node:http');
+ const {createRequire}=await import('node:module');
+ const {runInNewContext}=await import('node:vm');
+ const redirect=createRequire(import.meta.url)('follow-redirects') as {http:{get(options:Record<string,unknown>,callback:(response:import('node:http').IncomingMessage)=>void):import('node:http').ClientRequest}};
+ let forwarded:string|undefined;
+ const destination=createServer((req,res)=>{forwarded=req.headers['x-custom-token'] as string|undefined;res.end('ok');});
+ const source=createServer((_req,res)=>{const address=destination.address() as import('node:net').AddressInfo;res.writeHead(302,{Location:`http://127.0.0.1:${address.port}/`});res.end();});
+ try{
+  await new Promise<void>(resolve=>destination.listen(0,'127.0.0.1',resolve));
+  await new Promise<void>(resolve=>source.listen(0,'127.0.0.1',resolve));
+  const address=source.address() as import('node:net').AddressInfo;
+  await new Promise<void>((resolve,reject)=>{redirect.http.get({hostname:'127.0.0.1',port:address.port,path:'/',headers:{'X-Custom-Token':'synthetic-test-token'},sensitiveHeaders:runInNewContext('["X-Custom-Token"]')},response=>{response.resume();response.on('end',resolve);response.on('error',reject);}).on('error',reject);});
+  assert.equal(forwarded,undefined);
+ }finally{
+  await Promise.all([new Promise<void>(resolve=>source.close(()=>resolve())),new Promise<void>(resolve=>destination.close(()=>resolve()))]);
+ }
+});

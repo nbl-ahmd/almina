@@ -1,6 +1,6 @@
 ## 2026-11-06 — Vercel compute efficiency (verified; deployment paused)
 
-Disabled speculative storefront route prefetch, added request-local read deduplication, isolated JSON/XML security work, bounded successful sitemap CDN caching and prevented unchanged order-stream reconnects from refreshing the whole admin page. HTML CSP and fresh commerce reads remain protected. The controlled catalogue visit/scroll went from 56 speculative route requests to zero; navigation still works. Verification passed: 255 unit, 137 API/security and 65 browser cases, typecheck/lint/build and clean Next runtime diagnostics. The existing Vercel allowance pause prevents release activation. See [incident, verification and rollback](VERCEL_COMPUTE_2026-11-06.md).
+Disabled speculative storefront route prefetch, added request-local read deduplication, isolated JSON/XML security work, bounded successful sitemap CDN caching and prevented unchanged order-stream reconnects from refreshing the whole admin page. HTML CSP and fresh commerce reads remain protected. The controlled catalogue visit/scroll went from 56 speculative route requests to zero; navigation still works. Verification passed: 256 unit, 137 API/security and 65 browser cases, typecheck/lint/build and clean Next runtime diagnostics. The existing Vercel allowance pause prevents release activation. See [incident, verification and rollback](VERCEL_COMPUTE_2026-11-06.md).
 
 ## 2026-10-30 — Responsive checkout UX (locally verified)
 
