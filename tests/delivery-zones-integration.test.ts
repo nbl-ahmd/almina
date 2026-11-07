@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { MongoClient,ObjectId,type Document } from 'mongodb';
 import { createCommerceService,quoteHash } from '../apps/api/src/modules/orders/commerce';
 import { saveOrderRouting } from '../apps/api/src/modules/orders/routing-admin';
-import { saveZone,saveZoneSettings,setBranchInventory,reassignDelivery,deleteZone,deliverySettings } from '../apps/api/src/modules/delivery/service';
+import { saveZone,saveZoneSettings,setBranchInventory,reassignDelivery,deleteZone,deliverySettings,applyZoneQuote,touchDelivery } from '../apps/api/src/modules/delivery/service';
 import { retainedOrderList,retainedOrderDetail } from '../apps/api/src/modules/orders/compatibility-reads';
 import { routingRecipients, readOrderRouting } from '../apps/api/src/modules/orders/routing';
 import { migrateCommerce } from '../scripts/migrations/commerce';
@@ -30,6 +30,12 @@ test('real geospatial coverage, overlap priorities, atomic allocations, reassign
  let policy=await readOrderRouting(db);
  await t.test('a branch with a dispatched refundable card order cannot be removed',async()=>{
  const c=randomUUID();await saveOrderRouting(db,{...policy,branches:[...policy.branches,{id:c,name:'Synthetic retiring branch',areaIds:[],enabled:false}]},actor);policy=await readOrderRouting(db);const card=await db.collection('orders').insertOne({deliveryAssignment:{branchId:c},status:'dispatched',payment:{provider:'stripe',state:'paid'}});await assert.rejects(saveOrderRouting(db,{...policy,branches:policy.branches.filter(branch=>branch.id!==c)},actor),{code:'INVALID_TRANSITION'});await db.collection('orders').deleteOne({_id:card.insertedId});await saveOrderRouting(db,{...policy,branches:policy.branches.filter(branch=>branch.id!==c)},actor);policy=await readOrderRouting(db);
+ });
+ await t.test('first inactive checkout fences initialize safely under concurrent transactions',async()=>{await Promise.all(Array.from({length:5},async()=>{const session=client.startSession();try{await session.withTransaction(async()=>{await touchDelivery(db,session);});}finally{await session.endSession();}}));assert.equal((await db.collection<Document&{_id:string}>('delivery_controls').findOne({_id:'zones'}))!.orderFence,5);assert.equal((await deliverySettings(db)).active,false);});
+ await t.test('activation cannot race a no-pin order through the previous inactive snapshot',async()=>{
+ const temporary={...zone,id:randomUUID(),name:'Synthetic activation fence'};await saveZone(db,temporary,actor);const {coordinates:_point,...manual}=customer;void _point;const legacyQuote=await service.quote({customer:manual,items});let release!:()=>void,ready!:()=>void,attempts=0;const gate=new Promise<void>(resolve=>{release=resolve;}),read=new Promise<void>(resolve=>{ready=resolve;}),session=client.startSession();
+ try{const pending=session.withTransaction(async()=>{attempts++;const setting=await deliverySettings(db,session);if(attempts===1){assert.equal(setting.active,false);ready();await gate;}await applyZoneQuote(db,{},legacyQuote,session);await db.collection('orders').insertOne({syntheticActivationRace:true},{session});});await read;try{const settings=await deliverySettings(db);await saveZoneSettings(db,{active:true,revision:settings.revision},actor);}finally{release();}await assert.rejects(pending,{code:'DELIVERY_LOCATION_REQUIRED'});assert.equal(await db.collection('orders').countDocuments(),0);assert.ok(attempts>=2);}finally{await session.endSession();}
+ const settings=await deliverySettings(db);await saveZoneSettings(db,{active:false,revision:settings.revision},actor);await deleteZone(db,{id:temporary.id,revision:1},actor);
  });
  await t.test('activation is explicit; unknown pins and outside coverage are rejected without writes',async()=>{
  assert.equal((await deliverySettings(db)).active,false);await saveZone(db,zone,actor);const settings=await deliverySettings(db);await saveZoneSettings(db,{active:true,revision:settings.revision},actor);
