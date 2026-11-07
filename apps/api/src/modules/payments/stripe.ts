@@ -1,3 +1,5 @@
+import { branchOrderFilter } from '../orders/routing.js';
+import { restoreBranch } from '../delivery/service.js';
 import { createHash } from 'node:crypto';
 import Stripe from 'stripe';
 import { ObjectId, type Db, type Document } from 'mongodb';
@@ -123,7 +125,7 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
         if(restore&&!order.inventory.restored){for(const line of order.lines){
           const result=await db.collection('products').updateOne({_id:new ObjectId(line.productId),stock:{$gte:0,$lte:Number.MAX_SAFE_INTEGER-line.quantity,$mod:[1,0]}},{$inc:{stock:line.quantity}},{session});
           if(result.modifiedCount!==1)throw new HttpError(409,'INSUFFICIENT_STOCK');
-        }fields['inventory.restored']=true;}
+        }await restoreBranch(db,session,order);fields['inventory.restored']=true;}
         if(expired||refunded){
           const status=expired||order.payment.cancellationRequested?'cancelled':'refunded';
           Object.assign(fields,{status,canceled:status==='cancelled',statusHistory:[...(order.statusHistory??[]),{status,at:now,source:testMode?'stripe_test':'stripe'}]});
@@ -223,7 +225,7 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
       await synchronize(key);return response(key);
     },
     async beforeTransition(id:string,input:{status:OrderStatus},staff:Staff){
-      const db=await getDb(),order=await db.collection('orders').findOne({...orderFilter({limit:1},staff),_id:new ObjectId(id)});
+      const db=await getDb(),order=await db.collection('orders').findOne({...await branchOrderFilter(db,staff,orderFilter({limit:1},staff)),_id:new ObjectId(id)});
       if(!order||order.payment?.provider!=='stripe')return;
       if(!options||order.payment.testMode!==testMode||testMode)throw new HttpError(409,'INVALID_TRANSITION');
       const key=order.payment.attemptId;await synchronize(key);

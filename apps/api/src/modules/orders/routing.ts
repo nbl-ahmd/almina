@@ -14,6 +14,7 @@ export function orderArea(order: Document): string | null {
   return resolveDeliveryArea(order.customer ?? {});
 }
 export function presentRouting(order: Document, policy: OrderRouting) {
+  if(order.deliveryAssignment?.branchId) return {areaId:null,areaLabel:order.deliveryAssignment.zoneName,branchId:order.deliveryAssignment.branchId,branchName:policy.branches.find(branch=>branch.id===order.deliveryAssignment.branchId)?.name??order.deliveryAssignment.branchName,needsReview:false,revision:0};
   const areaId = orderArea(order);
   const otherEmirate = typeof order.customer?.emirate === 'string' && otherEmirateKeys.includes(areaKey(order.customer.emirate));
   return { ...routingDecision(areaId, policy), ...(areaId === null && (otherEmirate || order.routing?.reviewedAt instanceof Date) ? { needsReview: false, areaLabel: otherEmirate ? 'Other delivery areas' : 'Verified unlisted area' } : {}), revision: Number.isSafeInteger(order.routing?.revision) ? order.routing.revision : 0 };
@@ -40,24 +41,26 @@ export function areaScope(areaIds: string[], complement = false): Filter<Documen
   ] };
 }
 export function addressReviewScope(): Filter<Document> {
-  return { $and: [areaScope(rakDeliveryAreas.map(area => area.id), true), { 'routing.reviewedAt': { $exists: false } }, { $expr: { $not: [{ $in: [mongoKey('$customer.emirate'), otherEmirateKeys] }] } }] };
+  return { $and: [{ deliveryAssignment: { $exists: false } }, areaScope(rakDeliveryAreas.map(area => area.id), true), { 'routing.reviewedAt': { $exists: false } }, { $expr: { $not: [{ $in: [mongoKey('$customer.emirate'), otherEmirateKeys] }] } }] };
 }
 /** Branch policy replaces legacy city text only after an explicit administrator activation. */
 export async function branchOrderFilter(db: Db, user: Staff, legacy: Filter<Document>, session?: ClientSession): Promise<Filter<Document>> {
   if (user.role === 'admin') return legacy;
   const policy = await readOrderRouting(db, session);
-  if (!policy.active) return legacy;
+  const assigned = user.branchId ? { 'deliveryAssignment.branchId': user.branchId } : { _id: { $in: [] } };
+  if (!policy.active) return user.branchId ? { $or: [assigned, { $and: [legacy, { deliveryAssignment: { $exists: false } }] }] } : { ...legacy, deliveryAssignment: { $exists: false } };
   const branch = policy.branches.find(value => value.id === user.branchId);
-  if (!branch) return { _id: { $in: [] } };
+  if (!branch) return assigned;
   const specific = areaScope(branch.areaIds);
   const fallback = branch.id === policy.fallbackBranchId ? areaScope(policy.branches.flatMap(value => value.areaIds), true) : undefined;
-  return fallback ? { $or: [specific, fallback] } : specific;
+  const named = fallback ? { $or: [specific, fallback] } : specific;
+  return { $or: [assigned, { $and: [named, { deliveryAssignment: { $exists: false } }] }] };
 }
 export async function routingRecipients(db: Db, order: Document): Promise<Filter<Document>> {
   const policy = await readOrderRouting(db);
-  const branchId = routingDecision(orderArea(order), policy).branchId;
+  const branchId = order.deliveryAssignment?.branchId ?? routingDecision(orderArea(order), policy).branchId;
   return { disabled: { $ne: true }, subscription: { $type: 'object' }, $or: [
-    { role: 'admin' }, ...(policy.active ? branchId ? [{ role: 'user', branchId }] : [] : typeof order.customer?.city === 'string' ? [{ role: 'user', cities: order.customer.city }] : []),
+    { role: 'admin' }, ...((policy.active || order.deliveryAssignment) ? branchId ? [{ role: 'user', branchId }] : [] : typeof order.customer?.city === 'string' ? [{ role: 'user', cities: order.customer.city }] : []),
   ] };
 }
 export async function assertBranchAssignment(db: Db, branchId: string | null | undefined, role: string, session?: ClientSession) {
@@ -81,6 +84,7 @@ export async function repairOrderArea(db: Db, orderId: string, raw: unknown, act
     if (!ObjectId.isValid(actor) || !await db.collection('users').findOne({ _id: new ObjectId(actor), role: 'admin', disabled: { $ne: true } }, { ...options, session })) throw new HttpError(403, 'FORBIDDEN');
     const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) }, { ...options, session });
     if (!order) throw new HttpError(404, 'NOT_FOUND');
+    if(order.deliveryAssignment)throw new HttpError(409,'INVALID_TRANSITION');
     if ((order.routing?.revision ?? 0) !== parsed.data.revision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
     await db.collection('orders').updateOne({ _id: order._id }, { $set: { routing: { version: 1, areaId: parsed.data.areaId, revision: parsed.data.revision + 1, reviewedAt: new Date(), reviewedBy: actor } } }, { ...options, session });
     await db.collection('order_routing_audit').insertOne({ orderId: order._id, actor, before: orderArea(order), after: parsed.data.areaId, reason: parsed.data.reason, createdAt: new Date() }, { session });

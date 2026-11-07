@@ -39,6 +39,24 @@ module.exports = function loginRoutes(auth, development = false, getDb = async (
   router.get('/users', wrap(async (req, res) => {
     res.json(await require('../commerce/dist/service.cjs').retainedStaffList(await getDb(), req.query, req.identity.id));
   }));
+  router.get('/branches', wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.json(await require('../commerce/dist/service.cjs').branchWorkspace(await getDb()));}));
+  router.post('/branches',wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.status(201).json(await require('../commerce/dist/service.cjs').createBranch(await getDb(),req.body,req.identity.id));}));
+  router.post('/branch-login',wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.json(await require('../commerce/dist/service.cjs').saveBranchLogin(await getDb(),req.body,req.identity.id));}));
+  router.get('/delivery-zones', wrap(async (req, res) => {
+    if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+    res.json(await require('../commerce/dist/service.cjs').zoneAdministration(await getDb()));
+  }));
+  router.get('/branch-inventory', wrap(async (req, res) => {
+    res.json(await require('../commerce/dist/service.cjs').branchInventory(await getDb(), req.query));
+  }));
+  const deliveryMutation = action => wrap(async (req, res) => {
+    if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+    res.json(await require('../commerce/dist/service.cjs')[action](await getDb(), req.body, req.identity.id));
+  });
+  router.post('/delivery-zone', deliveryMutation('saveZone'));
+  router.post('/delivery-zone-delete', deliveryMutation('deleteZone'));
+  router.post('/delivery-settings', deliveryMutation('saveZoneSettings'));
+  router.post('/branch-inventory', deliveryMutation('setBranchInventory'));
   router.get('/order-routing', wrap(async (req, res) => {
     if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
     const domain = require('../commerce/dist/service.cjs');

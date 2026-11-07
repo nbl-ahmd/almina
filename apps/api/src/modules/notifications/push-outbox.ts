@@ -37,7 +37,7 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
       { ...query, sort: { createdAt: 1, _id: 1 }, returnDocument: 'after' });
       if (!job) return;
       const release = { $unset: { pushLeaseToken: '', pushLeaseUntil: '', pushNextAttemptAt: '' } };
-      const order = await db.collection('orders').findOne({ _id: job.orderId }, { ...query, projection: { 'customer.city': 1, 'customer.emirate': 1, routing: 1, payment:1, status:1 } });
+      const order = await db.collection('orders').findOne({ _id: job.orderId }, { ...query, projection: { deliveryAssignment: 1, 'customer.city': 1, 'customer.emirate': 1, routing: 1, payment:1, status:1 } });
       if (!order) {
         await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'failed' } }, query); options.onFailure(); return;
       }

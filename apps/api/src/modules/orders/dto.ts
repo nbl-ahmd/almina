@@ -4,7 +4,7 @@ import { historicalStatus } from './status.js';
 import { id, text, number } from '../dto-values.js';
 export const orderSummaryProjection = { 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1,'payment.paymentIntentId':1,'payment.sessionId':1, channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, 'totals.totalMinor': 1, createdAt: 1, dispatched: 1, canceled: 1,
   'customer.city': 1, 'customer.totalAmount': 1, billno: 1, billamount: 1 };
-export const orderDetailProjection = { routing: 1, 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1,'payment.paymentIntentId':1,'payment.sessionId':1, ...Object.fromEntries(Object.keys(wholesaleBusinessFields).map(key=>['wholesale.'+key,1])), channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, totals: 1, createdAt: 1, dispatched: 1, canceled: 1,
+export const orderDetailProjection = { deliveryAssignment:1, routing: 1, 'payment.provider':1,'payment.testMode':1,'payment.state':1,'payment.refundIssue':1,'payment.paymentIntentId':1,'payment.sessionId':1, ...Object.fromEntries(Object.keys(wholesaleBusinessFields).map(key=>['wholesale.'+key,1])), channel:1,'wholesale.businessName':1,'wholesale.typeId':1, _id: 1, orderId: 1, status: 1, schemaVersion: 1, totals: 1, createdAt: 1, dispatched: 1, canceled: 1,
   billno: 1, billamount: 1, cartItems: 1, lines: 1,
   ...Object.fromEntries(['name', 'mobile', 'email', 'emirate', 'city', 'buildingname', 'flatno', 'note', 'payment', 'address',
     'maplink', 'totalprice', 'totalSalePrice', 'totalVat', 'totalAmount', 'deliveryFee'].map(field => [`customer.${field}`, 1])) };

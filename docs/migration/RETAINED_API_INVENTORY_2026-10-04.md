@@ -154,3 +154,23 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | PUT | /api/orders/:id/routing | admin | Audited delivery-area correction |
 | POST | /api/orders/:id/confirm | orders | Scoped pending-to-confirmed transition |
 | POST | /api/orders/:id/pack | orders | Scoped confirmed-to-packed transition |
+
+## Polygon delivery (2026-11-06)
+
+| Method | Path | Access | Owner |
+| --- | --- | --- | --- |
+| GET | /api/auth/delivery-zones | admin | Delivery zone settings and branch configuration |
+| GET | /api/auth/branch-inventory | admin | Bounded branch allocation view |
+| POST | /api/auth/delivery-zone | admin | Audited polygon save |
+| POST | /api/auth/delivery-zone-delete | admin | Soft deletion |
+| POST | /api/auth/delivery-settings | admin | Explicit delivery activation |
+| POST | /api/auth/branch-inventory | admin | Idempotent branch stock allocation |
+| PUT | /api/orders/:id/branch | admin | Atomic reservation transfer |
+
+Branch-owned store login and unified setup (7 November 2026):
+
+| Method | URL | Access |
+| --- | --- | --- |
+| GET | /api/auth/branches | admin |
+| POST | /api/auth/branches | admin |
+| POST | /api/auth/branch-login | admin |

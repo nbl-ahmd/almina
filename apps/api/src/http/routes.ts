@@ -1,3 +1,4 @@
+import { deliveryPointSchema } from '@almina/contracts';
 import {stripeCheckoutDtoSchema} from '@almina/contracts';
 import type {StripePayments} from '../modules/payments/stripe.js';
 import { installSearchRoutes } from '../modules/search/routes.js';
@@ -224,7 +225,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   read('/customers/options',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,growthZ.object({googleClientId:growthZ.string().nullable(),emailEnabled:growthZ.boolean()}),customerAuthOptions());});
   read('/customers/me',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,customerSchema,await sessionCustomer(req));});
   read('/customers/orders',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);const orders=await customerOrders(await getDb(),customer);send(res,growthZ.array(growthZ.object({channel:growthZ.literal('wholesale').optional(),orderId:growthZ.string(),status:growthZ.string(),createdAt:growthZ.coerce.date(),totals:growthZ.object({totalMinor:growthZ.number().int().nonnegative(),lines:growthZ.array(growthZ.object({productId:growthZ.string(),name:growthZ.string(),quantity:growthZ.number().int()}))})})),orders);});
-  const addressDto=growthZ.object({id:growthZ.string().uuid(),label:growthZ.string(),name:growthZ.string(),mobile:growthZ.string(),emirate:growthZ.string(),city:growthZ.string(),address:growthZ.string(),buildingname:growthZ.string(),flatno:growthZ.string(),note:growthZ.string(),maplink:growthZ.string(),isDefault:growthZ.boolean(),createdAt:growthZ.coerce.date()});
+  const addressDto=growthZ.object({coordinates:deliveryPointSchema.optional(),id:growthZ.string().uuid(),label:growthZ.string(),name:growthZ.string(),mobile:growthZ.string(),emirate:growthZ.string(),city:growthZ.string(),address:growthZ.string(),buildingname:growthZ.string(),flatno:growthZ.string(),note:growthZ.string(),maplink:growthZ.string(),isDefault:growthZ.boolean(),createdAt:growthZ.coerce.date()});
   read('/customers/addresses',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.array(addressDto),await customerAddresses(await getDb(),customer.id));});
   router.post('/customers/addresses',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const customer=await limitedCustomer(req);send(res,growthZ.array(addressDto),await updateCustomerAddresses(await getDb(),customer.id,req.body));});
   router.all('/customers/addresses',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});

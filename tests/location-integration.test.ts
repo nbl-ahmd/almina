@@ -76,3 +76,8 @@ test('provider rate rejection applies shared cooldown before another upstream at
     assert.equal(calls, 2);
   } finally { await db.dropDatabase(); await client.close(); }
 });
+test('optional Geoapify adapter normalizes UAE results, caches safely and rejects outside countries', {skip:!uri},async()=>{
+ assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);const client=await new MongoClient(uri!).connect(),db=client.db('almina_geoapify_'+randomUUID().replaceAll('-',''));let calls=0,now=Date.now(),outside=false;
+ const service=createReverseLocationService(async()=>db,{provider:'geoapify',apiKey:'synthetic-key',endpoint:'https://geocoder.example.invalid/reverse',enabled:true,dailyLimit:10,userAgent:'Synthetic/1',now:()=>now,fetch:(async(url:string|URL|Request)=>{calls++;const parsed=new URL(String(url));assert.equal(parsed.searchParams.get('format'),'json');assert.equal(parsed.searchParams.get('apiKey'),'synthetic-key');return Response.json({results:[{formatted:'Synthetic verified street',country_code:outside?'om':'ae',state:'Ras al-Khaimah',state_code:'RK',suburb:'Synthetic neighbourhood'}]});}) as typeof fetch});
+ try{await applyIndexes(db);const point={latitude:25.75,longitude:55.95};const address=await service.lookup(point);assert.equal(address.emirate,'Ras al-Khaimah');assert.equal(address.city,'Synthetic neighbourhood');await service.lookup(point);assert.equal(calls,1);const stored=await db.collection('geocoding_cache').findOne({});assert.ok(!JSON.stringify(stored).includes('synthetic-key'));now+=2000;outside=true;await assert.rejects(service.lookup({latitude:25.76,longitude:55.95}),{code:'LOCATION_OUTSIDE_UAE'});}finally{await db.dropDatabase();await client.close();}
+});

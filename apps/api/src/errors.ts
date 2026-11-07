@@ -8,6 +8,10 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  BRANCH_LOGIN_CONFLICT: 'Choose an available branch login. Existing credentials were not changed.',
+  BRANCH_STOCK_CONFLICT: 'Review branch allocations before changing available stock.',
+  DELIVERY_SETUP_REQUIRED: 'Complete branch, staff, zone and index setup before enabling zone delivery.',
+  DELIVERY_LOCATION_REQUIRED: 'Choose an accurate delivery pin to check coverage.',
   REMINDERS_UNAVAILABLE: 'Requested reminders are not available right now.',
   REMINDER_PRODUCT_INELIGIBLE: 'Reminders are available only for reviewed general-care products. Check the selected product or basket.',
   REMINDER_LIMIT: 'You can have up to 20 active reminders. Cancel one in your account first.',
