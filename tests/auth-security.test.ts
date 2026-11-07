@@ -377,7 +377,7 @@ test('push unsubscribe deletes only the current staff subscription', async () =>
   const auth = { authenticate: async () => ({ id: id.toHexString(), role: 'user', cities: [] }) };
   await serve(createLegacyApp({ origins: [browserHeaders.Origin], development: true, auth, getCommerceDb: () => db }), async origin => {
     assert.equal((await fetch(`${origin}/api/orders/subscribe`, { method: 'DELETE', headers: browserHeaders })).status, 204);
-    assert.equal(owner, id.toHexString()); assert.deepEqual(update, { $unset: { subscription: '' } });
+    assert.equal(owner, id.toHexString()); assert.deepEqual(update, { $unset: { subscription: '', pushSubscriptions:'' } });
   });
 });
 

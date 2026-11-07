@@ -35,13 +35,22 @@ const groups: NavGroup[] = [
     label: 'Workspace',
     items: [
       { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
+
+
+    ],
+  },
+  {
+    label: 'Fulfilment',
+    items: [
       { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
-      { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
+      { id: 'branches', label: 'Branches & delivery', href: '/admin/branches', icon: MapPinIcon },
+      { id: 'notifications', label: 'Order alerts', href: '/admin/notifications', icon: BellIcon },
     ],
   },
   {
     label: 'Catalogue',
     items: [
+      { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
       { id: 'needs-action', label: 'Needs action', href: '/admin/needs-action', icon: ClipboardDocumentCheckIcon },
       { id: 'categories', label: 'Categories', href: '/admin/categories', icon: RectangleGroupIcon },
       { id: 'banners', label: 'Banners', href: '/admin/banners', icon: PhotoIcon },
@@ -63,15 +72,12 @@ const groups: NavGroup[] = [
       { id:'search',label:'Search',href:'/admin/search',icon:MagnifyingGlassIcon },
       { id: 'growth', label: 'Website & growth', href: '/admin/growth', icon: ChartBarSquareIcon },
       { id: 'whatsapp', label: 'WhatsApp', href: '/admin/whatsapp', icon: ChatBubbleLeftRightIcon },
-      { id:'branches',label:'Branches',href:'/admin/branches',icon:MapPinIcon },
-      { id:'delivery-zones',label:'Delivery zones',href:'/admin/delivery-zones',icon:MapPinIcon },
-      { id: 'notifications', label: 'Notifications', href: '/admin/notifications', icon: BellIcon },
     ],
   },
   {
     label: 'Administration',
     items: [
-      { id: 'users', label: 'Users', href: '/admin/users', icon: UsersIcon },
+      { id: 'users', label: 'Team & access', href: '/admin/users', icon: UsersIcon },
       { id: 'settings', label: 'Store settings', href: '/admin/settings', icon: Cog6ToothIcon },
       { id: 'batch', label: 'Product recovery', href: '/admin/batch', icon: DocumentArrowUpIcon },
     ],
@@ -80,7 +86,7 @@ const groups: NavGroup[] = [
 
 /* The phone tab bar keeps the four most-used destinations, then opens the full
    sheet. It is a different navigation model, not a squeezed sidebar. */
-const mobilePrimary = ['dashboard', 'orders', 'products'] as const;
+const mobilePrimary = ['orders', 'dashboard', 'products', 'notifications'] as const;
 
 function initials(name: string) {
   return (
@@ -98,7 +104,7 @@ export function AdminShell({
   allowed,
   children,
 }: {
-  user: { name: string; role: string; branchId?:string|null };
+  user: { name: string; role: string; branchId?:string|null; accountType?:"branch"|undefined };
   allowed: string[];
   children: ReactNode;
 }) {
@@ -189,7 +195,7 @@ export function AdminShell({
               <span className="admin-user__meta">
                 <span className="admin-user__name">{user.name}</span>
                 <span className="admin-user__role">
-                  {user.role === 'admin' ? 'Administrator' : user.branchId ? 'Branch store' : 'Staff'}
+                  {user.role === 'admin' ? 'Administrator' : user.accountType === 'branch' ? 'Store account' : 'Staff'}
                 </span>
               </span>
             </div>
@@ -235,7 +241,7 @@ export function AdminShell({
               <span className="admin-user__meta">
                 <span className="admin-user__name">{user.name}</span>
                 <span className="admin-user__role">
-                  {user.role === 'admin' ? 'Administrator' : user.branchId ? 'Branch store' : 'Staff'}
+                  {user.role === 'admin' ? 'Administrator' : user.accountType === 'branch' ? 'Store account' : 'Staff'}
                 </span>
               </span>
             </span>
@@ -341,7 +347,7 @@ export function AdminShell({
                 <span className="admin-user__meta">
                   <span className="admin-user__name">{user.name}</span>
                   <span className="admin-user__role">
-                    {user.role === 'admin' ? 'Administrator' : user.branchId ? 'Branch store' : 'Staff'}
+                    {user.role === 'admin' ? 'Administrator' : user.accountType === 'branch' ? 'Store account' : 'Staff'}
                   </span>
                 </span>
               </span>

@@ -2,7 +2,6 @@ import { BranchWorkspaceView } from '../../../../../components/admin/branch-work
 import type { BranchWorkspace } from '@almina/contracts';
 import { DeliveryZoneManagement } from '../../../../../components/admin/delivery-management';
 import { StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
-import { orderRoutingSchema } from '@almina/contracts';
 import { reportDays } from '../../../../../lib/admin/dashboard';
 import { RowActions } from '../../../../../components/admin/row-actions';
 import { ImageReviewManager } from '../../../../../components/admin/image-review-manager';
@@ -17,7 +16,7 @@ import { operationsSnapshotSchema } from '@almina/contracts';
 import { OperationsView } from '../../../../../components/admin/operations-view';
 import { AdminDashboard } from '../../../../../components/admin/dashboard';
 import Link from '../../../../../components/app-link';
-import { notFound } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import {
   requireIdentity,
   adminRead,
@@ -74,11 +73,12 @@ export default async function AdminPage({
 }) {
   const user = await requireIdentity();
   const path = (await params).section ?? [];
+  if (!path.length && user.accountType === "branch") redirect("/admin/orders?status=pending");
   const section = (path[0] ?? "dashboard") as Section;
   const detail = path[1];
   const query = await searchParams;
   if (!sections.includes(section) || path.length > 2) notFound();
-  if (!canVisit(user.role, section))
+  if (!canVisit(user.role, section, user.accountType))
     return (
       <>
         <PageHeader
@@ -593,49 +593,26 @@ export default async function AdminPage({
   }
   if (section === "users") {
     const users = rows(await adminRead("auth/users", qs));
-    const setup = record(await adminRead("auth/order-routing"));
-    const routing = orderRoutingSchema.parse({ revision: setup.revision, active: setup.active, branches: setup.branches, fallbackBranchId: setup.fallbackBranchId });
+    const workspace = await adminRead("auth/branches") as BranchWorkspace;
+    const routing = workspace.routing;
     return (
       <>
         <PageHeader
-          title="Administrators & existing staff"
-          description="Branch logins are managed in Branches. Existing staff accounts remain available."
+          title="Team & access"
+          description="Administrators manage the business. Each branch uses its own store account for orders. Review and retire old staff access below."
         />
         <p className="admin-alert">Each branch has its own store login. <Link href="/admin/branches">Manage branches and store logins</Link>.</p>
         <details className="admin-create-panel"><summary>Add administrator</summary><Card title="Add administrator"><AdminForm path="auth/signup" label="Create administrator" fields={[{name:'name',label:'Name',required:true},{name:'username',label:'Username',required:true},{name:'password',label:'Password (at least 12 characters)',type:'password',required:true},{name:'role',label:'Role',type:'hidden',value:'admin'},{name:'cities',label:'Cities',type:'hidden',value:''}]} /></Card></details>
-        <Table
-          caption="Staff accounts"
-          data={users}
-          columns={[
-            { key: "name", label: "Name" },
-            { key: "username", label: "Username" },
-            {
-              key: "role",
-              label: "Role",
-              render: (item) => (
-                <Badge tone={item.role === "admin" ? "brand" : "neutral"}>
-                  {item.role === "admin" ? "Administrator" : "Staff"}
-                </Badge>
-              ),
-            },
-            { key: "branchId", label: "Receiving branch", render: item => item.role === "admin" ? "All branches" : routing.branches.find(branch => branch.id === item.branchId)?.name ?? "Not assigned — legacy access" },
-          ]}
-          actions={(item) => <>
-            {item.role !== "admin" ? <StaffBranchAssignment key={display(item._id) + display(item.branchId)} id={display(item._id)} branchId={typeof item.branchId === "string" ? item.branchId : null} branches={routing.branches} /> : null}
-            {display(item._id) === user.id ? (
-              "Current account"
-            ) : (
-              <Command
-                path={`auth/users/${display(item._id)}`}
-                method="DELETE"
-                variant="danger"
-                confirm="Deactivate this staff account and revoke all of its sessions? The account history will be retained."
-              >
-                Deactivate account
-              </Command>
-            )}</>
-          }
-        />
+        <Card title="Store accounts" description="Created with each branch. Store accounts can receive and fulfil assigned orders; business settings remain administrator-only.">
+          <Table caption="Branch store accounts" data={workspace.logins.map(login=>({...login, name:routing.branches.find(branch=>branch.id===login.branchId)?.name??'Branch unavailable'}))} columns={[{key:'name',label:'Branch'},{key:'username',label:'Store login'},{key:'disabled',label:'Access',render:item=>item.disabled?'Paused':'Can sign in'}]} actions={()=> <Link href="/admin/branches">Manage in Branches</Link>} />
+        </Card>
+        <Card title="Administrators" description="Business-wide access to catalogue, settings, accounts and all orders.">
+          <Table caption="Administrator accounts" data={users.filter(item=>item.role==='admin')} columns={[{key:'name',label:'Name'},{key:'username',label:'Username'}]} actions={item=>display(item._id)===user.id?'Current account':<Command path={`auth/users/${display(item._id)}`} method="DELETE" variant="danger" confirm="Deactivate this administrator and revoke all sessions? History is retained.">Deactivate account</Command>} />
+        </Card>
+        {users.some(item=>item.role!=='admin')?<Card title="Legacy staff access" description="Review these older accounts before moving receiving devices to branch store logins.">
+          <p className="admin-alert">Legacy staff retain catalogue viewing, marketing and image-review access, in addition to assigned orders. Assign their receiving branch or deactivate them after replacing their login. New store accounts have narrower fulfilment permissions.</p>
+          <Table caption="Legacy staff accounts" data={users.filter(item=>item.role!=='admin')} columns={[{key:'name',label:'Name'},{key:'username',label:'Username'},{key:'role',label:'Access',render:()=> 'Legacy staff — broad access'},{key:'branchId',label:'Receiving branch',render:item=>routing.branches.find(branch=>branch.id===item.branchId)?.name??'Not assigned — review access'}]} actions={item=><><StaffBranchAssignment key={display(item._id)+display(item.branchId)} id={display(item._id)} branchId={typeof item.branchId==='string'?item.branchId:null} branches={routing.branches} /><Command path={`auth/users/${display(item._id)}`} method="DELETE" variant="danger" confirm="Deactivate this legacy account and revoke all sessions? History is retained.">Deactivate account</Command></>} />
+        </Card>:null}
         {users.length === 25 ? (
           <nav className="admin-pagination" aria-label="Pagination">
             <Link href={`/admin/users?before=${display(users.at(-1)?._id)}`}>
@@ -702,7 +679,7 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          title="Notification management"
+          title="Order alerts"
           description="Order updates stream from the server, with a recovery check every 10 seconds after missed events or a connection loss."
         />
         <Card title="Push notifications">

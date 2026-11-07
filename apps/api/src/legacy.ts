@@ -60,3 +60,7 @@ export * from './modules/orders/receiving.js';
 export * from './modules/delivery/service.js';
 
 export * from './modules/delivery/branches.js';
+
+export { storeAccountRouteAllowed } from '@almina/contracts';
+
+export { staffNotificationSettings, staffDeviceFingerprints } from './modules/notifications/settings.js';

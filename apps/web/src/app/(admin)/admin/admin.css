@@ -3872,3 +3872,27 @@
 }
 
 @layer components { .branch-workspace .admin-alert > button { white-space: nowrap; } }
+
+@layer components {
+ .admin-app .admin-status--receiving .admin-receiving-overdue { color: var(--admin-danger); text-decoration: underline; text-underline-offset: 3px; }
+ .branch-readiness { margin: 20px 0; padding: 18px 20px; background: white; border: 1px solid var(--admin-border); border-radius: 12px; }
+ .branch-readiness__next { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+ .branch-readiness__next p { margin: 4px 0 0; color: var(--admin-muted); font-size: 0.875rem; }
+ .branch-readiness details { margin-top: 14px; }
+ .branch-readiness ol { list-style: none; margin: 12px 0; padding: 0; }
+ .branch-readiness li { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--admin-border); }
+ .branch-readiness li > span { font-size: 0.75rem; color: var(--admin-muted); }
+ .admin-app .branch-choice input[type=radio] { accent-color: var(--admin-ink); }
+ @media(max-width:600px){.branch-readiness__next{align-items:stretch;flex-direction:column;}.branch-readiness__next>button{width:100%;min-height:44px;}.branch-readiness{padding:16px;}}
+}
+
+@layer components {
+ .admin-device-settings { display: grid; gap: 16px; }
+ .admin-device-settings > p { margin: 0; max-width: 70ch; }
+ .admin-device-settings__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+ @media(max-width:600px){.admin-device-settings__actions{flex-direction:column;align-items:stretch;}.admin-device-settings__actions>button{width:100%;min-height:44px;}}
+}
+
+@layer components {
+ .admin-app .admin-device-settings__actions button:disabled { background: var(--admin-control-disabled); color: var(--admin-faint); border-color: var(--admin-border); box-shadow: none; cursor: not-allowed; opacity: 1; }
+}

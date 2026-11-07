@@ -1,3 +1,7 @@
+## 2026-11-07 — Operational account and receiving consolidation (candidate)
+
+Audited live branches and deployment; removed the one paused branch through the protected API at the owner's request, retaining its audit/account history and all four pending orders. Prepared Render notification keys with delivery explicitly off. The candidate separates store permissions from legacy staff, consolidates delivery navigation, links public listings to branch IDs, adds persistent readiness/next steps, fixes paused-area routing, and supports per-device order alerts. Real branch configuration, device opt-in and candidate deployment remain required. See [audit, production actions, rollout and limitations](OPERATIONS_CONSOLE_2026-11-07.md).
+
 ## 2026-11-07 — Branch-owned store login and unified setup
 
 Branch creation now commits its store login, automatic branch assignment and optional first delivery area together. Replaced separate store staff provisioning with a two-step branch flow and a Branch & login / Delivery area / Stock workspace. Optional details and technical controls are disclosed progressively. Existing person accounts remain compatible; managed login resets revoke sessions and branch removal disables its credentials. No production configuration or data changed. See [branch account setup and safeguards](BRANCH_STORE_ACCOUNTS_2026-11-07.md).

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { receivingSignalSchema } from '../../../../lib/admin/receiving';
 import { NextResponse, type NextRequest } from "next/server";
 import {
   currentIdentity,
@@ -43,8 +44,8 @@ export async function GET(request: NextRequest) {
         if (result.status === 401 || result.status === 403)
           return { state: "revoked" };
         if (!result.ok) return { state: "unavailable" };
-        const value = z.object({ signature: z.string().regex(/^[a-f0-9]{64}$/), pendingCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), latestIds: z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(10) }).parse(await result.json());
-        return { state: 'ready', signature: value.signature, receiving: { pendingCount: value.pendingCount, latestIds: value.latestIds } };
+        const value = receivingSignalSchema.extend({signature:z.string().regex(/^[a-f0-9]{64}$/)}).parse(await result.json());
+        return { state: 'ready', signature: value.signature, receiving: { pendingCount: value.pendingCount, latestIds: value.latestIds, reviewCount:value.reviewCount, oldestPendingAt:value.oldestPendingAt } };
       },
     });
     return new Response(stream, {

@@ -1,8 +1,9 @@
+import { removePushDevice, pushDevices, subscriptionDigest, pushReceiptId } from './push-devices.js';
 import { routingRecipients } from '../orders/routing.js';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { bounded } from '../operations/lifecycle.js';
-import { PushFailure, pushSubscription, type PushSubscription } from './push.js';
+import { PushFailure, type PushSubscription } from './push.js';
 
 type RecordDocument = Document & { _id: string };
 function cursorId(value: unknown): ObjectId | undefined {
@@ -48,18 +49,24 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
       const cursor = cursorId(job.pushCursor);
       if (job.pushCursor !== undefined && !cursor) throw new Error('Invalid push cursor');
       const user = await db.collection('users').findOne({ ...scope, ...(cursor ? { _id: { $gt: cursor } } : {}) },
-        { ...query, sort: { _id: 1 }, projection: { _id: 1, subscription: 1 } });
+        { ...query, sort: { _id: 1 }, projection: { _id: 1, subscription: 1, pushSubscriptions:1 } });
       if (!user) { await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'done' } }, query); return; }
       if (!cursorId(user._id)) {
         await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'failed' } }, query); options.onFailure(); return;
       }
-      const advance = async (issue: boolean) => jobs.updateOne({ _id: job!._id, pushLeaseToken: token },
-        { ...release, $set: { pushCursor: user._id }, ...(issue ? { $inc: { pushIssues: 1 } } : {}) }, query);
-      let subscription: PushSubscription;
-      try { subscription = pushSubscription(user.subscription); } catch { options.onFailure(); await advance(true); return; }
-      const digest = createHash('sha256').update(JSON.stringify(subscription)).digest('hex');
-      const id = createHash('sha256').update(`${job._id}:${user._id}:${digest}`).digest('hex');
       const receipts = db.collection<RecordDocument>('staff_push_deliveries');
+      const devices=pushDevices(user);
+      const receiptIds=devices.map(device=>pushReceiptId(job!._id,user._id,device));
+      const terminal=['accepted','failed','uncertain','skipped'];
+      const advance = async (issue: boolean) => {
+        const finished=await receipts.countDocuments({_id:{$in:receiptIds},state:{$in:terminal}},query);
+        await jobs.updateOne({ _id:job!._id,pushLeaseToken:token },{...release,...(finished===devices.length?{$set:{pushCursor:user._id}}:{}),...(issue?{$inc:{pushIssues:1}}:{})},query);
+      };
+      if(!devices.length){ options.onFailure();await advance(true);return; }
+      const completed=await receipts.find({_id:{$in:receiptIds},state:{$in:terminal}},{...query,projection:{_id:1}}).toArray();
+      const subscription=devices.find(device=>!completed.some(row=>row._id===pushReceiptId(job!._id,user._id,device)));
+      if(!subscription){await advance(false);return;}
+      const digest=subscriptionDigest(subscription),id=pushReceiptId(job._id,user._id,subscription);
       try { await receipts.insertOne({ _id: id, jobId: job._id, userId: user._id, subscriptionDigest: digest, state: 'pending', attempts: 0, createdAt: now }, { ...query, writeConcern: { w: 'majority' } }); }
       catch (error) { if (!(error instanceof Error && 'code' in error && error.code === 11000)) throw error; }
       const receipt = await receipts.findOne({ _id: id }, query);
@@ -71,7 +78,7 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
       }
       // Authorization/subscription can change between selection and send. Never target a replacement subscription with an old receipt.
       const current = await db.collection('users').findOne({ ...await routingRecipients(db, order), _id: user._id,
-        'subscription.endpoint': subscription.endpoint, 'subscription.keys.p256dh': subscription.keys.p256dh, 'subscription.keys.auth': subscription.keys.auth }, { ...query, projection: { _id: 1 } });
+        $and:[{ $or:[{pushSubscriptions:{$elemMatch:subscription}},{pushSubscriptions:{$exists:false},'subscription.endpoint':subscription.endpoint,'subscription.keys.p256dh':subscription.keys.p256dh,'subscription.keys.auth':subscription.keys.auth}] }] }, { ...query, projection: { _id: 1 } });
       if (!current) { await receipts.updateOne({ _id: id }, { $set: { state: 'skipped' } }, query); await advance(false); return; }
       const claim = await receipts.updateOne({ _id: id, state: receipt.state, attempts: receipt.attempts },
         { $set: { state: 'sending' }, $inc: { attempts: 1 } }, { ...query, writeConcern: { w: 'majority' } });
@@ -81,7 +88,7 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
         cancellation.abort(); options.onFailure();
         const kind = error instanceof PushFailure ? error.kind : 'uncertain', attempts = Number(receipt.attempts) + 1;
         if (kind === 'expired') await db.collection('users').updateOne({ _id: user._id,
-          'subscription.endpoint': subscription.endpoint, 'subscription.keys.p256dh': subscription.keys.p256dh, 'subscription.keys.auth': subscription.keys.auth }, { $unset: { subscription: '' } }, query);
+          $or:[{pushSubscriptions:{$elemMatch:subscription}},{pushSubscriptions:{$exists:false},'subscription.endpoint':subscription.endpoint,'subscription.keys.p256dh':subscription.keys.p256dh,'subscription.keys.auth':subscription.keys.auth}] }, removePushDevice(subscription.endpoint), query);
         const retry = kind === 'retryable' && attempts < 8;
         await receipts.updateOne({ _id: id, state: 'sending' }, { $set: { state: retry ? 'retry' : kind === 'uncertain' ? 'uncertain' : 'failed' } }, { ...query, writeConcern: { w: 'majority' } });
         if (retry) await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { $set: { pushNextAttemptAt: new Date(Date.now() + Math.min(3600000, 10000 * 2 ** Math.min(attempts - 1, 8))) },

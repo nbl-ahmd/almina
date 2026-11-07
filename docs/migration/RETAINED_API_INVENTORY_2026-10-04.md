@@ -174,3 +174,5 @@ Branch-owned store login and unified setup (7 November 2026):
 | GET | /api/auth/branches | admin |
 | POST | /api/auth/branches | admin |
 | POST | /api/auth/branch-login | admin |
+
+| GET | /api/orders/notification-settings | staff | Notification readiness and public application-server key only |

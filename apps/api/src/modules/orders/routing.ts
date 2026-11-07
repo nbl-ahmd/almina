@@ -50,9 +50,9 @@ export async function branchOrderFilter(db: Db, user: Staff, legacy: Filter<Docu
   const assigned = user.branchId ? { 'deliveryAssignment.branchId': user.branchId } : { _id: { $in: [] } };
   if (!policy.active) return user.branchId ? { $or: [assigned, { $and: [legacy, { deliveryAssignment: { $exists: false } }] }] } : { ...legacy, deliveryAssignment: { $exists: false } };
   const branch = policy.branches.find(value => value.id === user.branchId);
-  if (!branch) return assigned;
+  if (!branch || branch.enabled === false) return assigned;
   const specific = areaScope(branch.areaIds);
-  const fallback = branch.id === policy.fallbackBranchId ? areaScope(policy.branches.flatMap(value => value.areaIds), true) : undefined;
+  const fallback = branch.id === policy.fallbackBranchId ? areaScope(policy.branches.filter(value=>value.enabled!==false).flatMap(value => value.areaIds), true) : undefined;
   const named = fallback ? { $or: [specific, fallback] } : specific;
   return { $or: [assigned, { $and: [named, { deliveryAssignment: { $exists: false } }] }] };
 }

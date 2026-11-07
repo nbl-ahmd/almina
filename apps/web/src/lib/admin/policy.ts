@@ -1,7 +1,7 @@
 import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
 import { productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
 import { z } from "zod";
-import { operationsSnapshotSchema,branchWorkspaceSchema } from '@almina/contracts';
+import { storeAccountRouteAllowed, operationsSnapshotSchema,branchWorkspaceSchema } from '@almina/contracts';
 export const identitySchema = z.object({
   id: z.string().regex(/^[a-f0-9]{24}$/i),
   username: z.string(),
@@ -9,6 +9,7 @@ export const identitySchema = z.object({
   role: z.enum(["admin", "user"]),
   cities: z.array(z.string()),
   branchId: z.uuid().nullable().optional(),
+  accountType: z.literal("branch").optional(),
 });
 export type Identity = z.infer<typeof identitySchema>;
 export type AdminRecord = Record<string, unknown>;
@@ -34,7 +35,8 @@ export const sections = [
   "marketing",
 ] as const;
 export type Section = (typeof sections)[number];
-export function canVisit(role: Identity["role"], section: string) {
+export function canVisit(role: Identity["role"], section: string, accountType?: Identity["accountType"]) {
+  if (accountType === "branch") return ["orders", "notifications"].includes(section);
   return (
     role === "admin" ||
     ["dashboard", "products", "orders", "notifications", "marketing", "image-review"].includes(section)
@@ -48,7 +50,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['PUT',`orders/${id}/branch`,'admin'],
   ['GET', 'auth/order-routing', 'admin'], ['PUT', 'auth/order-routing', 'admin'], ['PUT', `auth/users/${id}/assignment`, 'admin'],
   ['POST', `orders/${id}/confirm`, 'staff'], ['POST', `orders/${id}/pack`, 'staff'],
-  ['GET', 'orders/receiving', 'staff'], ['PUT', `orders/${id}/routing`, 'admin'],
+  ['GET', 'orders/notification-settings', 'staff'], ['GET', 'orders/receiving', 'staff'], ['PUT', `orders/${id}/routing`, 'admin'],
   ['GET','search','admin'],['GET','search/test','admin'],...['synonyms','rules','enrichment','query'].map(kind=>['POST','search/'+kind,'admin'] as [string,string,'admin']),
   ['GET', 'image-review/publication', 'admin'],
   ['POST', 'image-review/publication/start', 'admin'], ['POST', 'image-review/publication/resume', 'admin'], ['POST', 'image-review/publication/pause', 'admin'],
@@ -332,6 +334,7 @@ export function project(value: unknown): unknown {
   return value;
 }
 export function projectAdminResponse(path: string, value: unknown): unknown {
+  if(path==='orders/notification-settings')return z.object({enabled:z.boolean(),publicKey:z.string().regex(/^[A-Za-z0-9_-]{87}$/).nullable(),registeredDeviceIds:z.array(z.string().regex(/^[a-f0-9]{64}$/)).max(5)}).strict().parse(value);
   if(path==='auth/branches'||path==='auth/branch-login')return branchWorkspaceSchema.parse(value);
   if(path==='search'||path==='search/test'){const body=z.object({data:path==='search'?searchAdminSchema:searchTestSchema,requestId:z.uuid()}).strict().parse(value);return body.data;}
   if(/^search\/(synonyms|rules|enrichment|query)$/.test(path))return z.object({data:z.object({saved:z.literal(true)}).strict(),requestId:z.uuid()}).strict().parse(value).data;
@@ -341,3 +344,8 @@ export function projectAdminResponse(path: string, value: unknown): unknown {
 
 /** Return only reviewed, non-sensitive setup conflict codes for their own routes. */
 export function branchSetupConflict(path:string,body:unknown):string|null{if(!body||typeof body!=='object'||!('code' in body))return null;const code=body.code;if(code==='BRANCH_LOGIN_CONFLICT'&&['auth/branches','auth/branch-login'].includes(path))return code;if(code==='BRANCH_STOCK_CONFLICT'&&(path==='auth/branch-inventory'||/^products\/[a-f0-9]{24}$/i.test(path)))return code;if(code==='DELIVERY_SETUP_REQUIRED'&&path==='auth/delivery-settings')return code;return null;}
+
+export function canAccessAdminRoute(user: Identity, method: string, path: string) {
+  const policy = accessPolicy(method, path);
+  return Boolean(policy && (policy !== "admin" || user.role === "admin") && (user.accountType !== "branch" || storeAccountRouteAllowed(method, path)));
+}

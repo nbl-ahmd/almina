@@ -1,7 +1,8 @@
+import type { ReceivingSignal } from './receiving';
 import { createHash } from 'node:crypto';
 
 export type OrderSample =
-  | { state: "ready"; signature: string; receiving?: { pendingCount: number; latestIds: string[] } }
+  | { state: "ready"; signature: string; receiving?: ReceivingSignal }
   | { state: "revoked" }
   | { state: "unavailable" };
 
@@ -47,7 +48,7 @@ export function orderEventStream({
         stop();
         return;
       }
-      function emit(event: string, receiving?: { pendingCount: number; latestIds: string[] }) {
+      function emit(event: string, receiving?: ReceivingSignal) {
         controller.enqueue(encoder.encode(`${signature ? `id: ${signature}\n` : ''}event: ${event}\ndata: ${JSON.stringify(receiving ?? {})}\n\n`));
       }
       async function tick() {

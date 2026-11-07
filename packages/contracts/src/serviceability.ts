@@ -5,6 +5,7 @@ const safeMap = z.url().refine(value => value.startsWith('https://www.google.com
 
 /** A staff-maintained branch record. Nothing public is shown until the directory is explicitly verified. */
 export const branchSchema = z.object({
+  branchId:z.uuid().optional(),
   name: short.min(2), phone: z.string().trim().regex(/^\+?[0-9][0-9 -]{5,19}$/).or(z.literal('')).default(''),
   address: short.default(''), hours: short.default(''), deliveryHours: short.default(''), mapUrl: safeMap,
   areas: z.array(short.min(1)).max(50).default([]), verified: z.boolean().default(false),

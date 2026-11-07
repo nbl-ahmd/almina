@@ -17,6 +17,7 @@ export async function writeOrderRouting(db:Db,value:OrderRouting,actor:string,se
     await administrator(db, actor, session);
     const before = await readOrderRouting(db, session);
     if (before.revision !== value.revision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+    if(value.active&&!value.branches.some(branch=>branch.id===value.fallbackBranchId&&branch.enabled!==false))throw new HttpError(409,'INVALID_TRANSITION');
     const ids = value.branches.map(branch => branch.id);
     const removed=before.branches.map(branch=>branch.id).filter(id=>!ids.includes(id));
     if(removed.length && (await db.collection('orders').findOne({'deliveryAssignment.branchId':{$in:removed},$or:[{status:{$in:['pending','confirmed','packed']}},{'payment.provider':'stripe','payment.state':{$nin:['refunded','expired']}}]},{session}) || await db.collection('branch_inventory').findOne({branchId:{$in:removed},stock:{$gt:0}},{session}) || await db.collection('delivery_zones').findOne({active:true,'branches.branchId':{$in:removed},deletedAt:{$exists:false}},{session})))throw new HttpError(409,'INVALID_TRANSITION');

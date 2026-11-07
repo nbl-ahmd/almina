@@ -49,13 +49,13 @@ export async function nextCheckoutPage(page: Page) {
   if(await review.isVisible())await review.click();else await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 }
-export async function login(page: Page, username = 'synthetic-admin') {
+export async function login(page: Page, username = 'synthetic-admin', landing:'dashboard'|'orders'='dashboard') {
   await page.goto(adminOrigin + '/admin/login');
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password', { exact: true }).fill('synthetic-test-password');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(adminOrigin + '/admin');
-  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(adminOrigin + (landing==='orders'?'/admin/orders?status=pending':'/admin'));
+  await expect(page.getByRole('heading', { name: landing==='orders'?'Orders':'Dashboard', exact: true })).toBeVisible();
   await streamSettled(page);
 }
 export async function openAdminSection(page: Page, name: string) {

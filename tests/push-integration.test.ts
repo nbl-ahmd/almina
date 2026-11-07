@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID, createECDH, randomBytes } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { ObjectId, type MongoClient, type Db, type Document } from 'mongodb';
+import { staffDeviceFingerprints } from '../apps/api/src/modules/notifications/settings';
 import { staffPushOutbox } from '../apps/api/src/modules/notifications/push-outbox';
 import { PushFailure } from '../apps/api/src/modules/notifications/push';
 import { operationsSnapshot } from '../apps/api/src/modules/operations/snapshot';
@@ -56,6 +57,37 @@ async function seed(db: Db, id = 'confirmation:synthetic') {
   await db.collection<Document & { _id: string }>('order_outbox').insertOne({ _id: id, orderId, state: 'sent', attempts: 2, createdAt: new Date() });
   return orderId;
 }
+test('shared store registrations keep multiple devices, remove only the chosen device, and send once per remaining device', { skip: !uri }, async () => {
+  const f=await fixture(), actor=new ObjectId(), first=subscription('store-first'), second=subscription('store-second'), third=subscription('store-third');
+  const sent:string[]=[];
+  try{
+    await f.db.collection('users').insertOne({_id:actor,role:'admin',subscription:first});
+    await Promise.all([second,third].map(value=>registerStaffSubscription(f.db,{subscription:value},String(actor),{})));
+    let user=await f.db.collection('users').findOne({_id:actor});
+    assert.equal(user!.pushSubscriptions.length,3);const devices=await staffDeviceFingerprints(f.db,String(actor));assert.equal(devices.length,3);assert.ok(devices.every(id=>/^[a-f0-9]{64}$/.test(id)));assert.deepEqual(await staffDeviceFingerprints(f.db,String(new ObjectId())),[]);
+    await registerStaffSubscription(f.db,{subscription:second},String(actor),{});
+    assert.equal((await f.db.collection('users').findOne({_id:actor}))!.pushSubscriptions.length,3);
+    await removeStaffSubscription(f.db,{endpoint:second.endpoint},String(actor),{});
+    user=await f.db.collection('users').findOne({_id:actor});assert.equal(user!.pushSubscriptions.length,2);assert.notEqual(user!.subscription.endpoint,second.endpoint);
+    const worker=await staffPushOutbox(()=>f.db,{send:async value=>{sent.push(value.endpoint);},onFailure:()=>assert.fail('Unexpected push failure'),intervalMs:60000});f.workers.push(worker);
+    await seed(f.db,'confirmation:multiple-devices');for(let i=0;i<6;i++)await worker.tick();
+    assert.deepEqual(sent.sort(),[first.endpoint,third.endpoint].sort());
+    assert.equal(await f.db.collection('staff_push_deliveries').countDocuments({state:'accepted'}),2);
+    await removeStaffSubscription(f.db,{endpoint:first.endpoint},String(actor),{});
+    assert.equal((await f.db.collection('users').findOne({_id:actor}))!.subscription.endpoint,third.endpoint);
+  }finally{await f.close();}
+});
+test('an expired primary device does not suppress the other device on a shared account', {skip:!uri}, async()=>{
+  const f=await fixture(),actor=new ObjectId(), first=subscription('surviving'), expired=subscription('expired-primary');const sent:string[]=[];
+  try{
+    await f.db.collection('users').insertOne({_id:actor,role:'admin'});
+    for(const value of [first,expired])await registerStaffSubscription(f.db,{subscription:value},String(actor),{});
+    const worker=await staffPushOutbox(()=>f.db,{send:async value=>{sent.push(value.endpoint);if(value.endpoint===expired.endpoint)throw new PushFailure('expired');},onFailure:()=>{},intervalMs:60000});f.workers.push(worker);
+    await seed(f.db,'confirmation:expired-primary');for(let i=0;i<6;i++)await worker.tick();
+    assert.equal(sent.filter(endpoint=>endpoint===first.endpoint).length,1);
+    const user=await f.db.collection('users').findOne({_id:actor});assert.equal(user!.subscription.endpoint,first.endpoint);assert.equal(user!.pushSubscriptions.length,1);
+  }finally{await f.close();}
+});
 test('push derives only new committed jobs, scopes current staff, deduplicates competing workers and drains an active send', { skip: !uri }, async () => {
   const f = await fixture(); let calls = 0, release!: () => void, entered!: () => void;
   try {

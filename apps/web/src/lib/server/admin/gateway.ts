@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { cache } from "react";
 import { getWebEnvironment } from "../env";
 import {
+  canAccessAdminRoute,
   identitySchema,
   accessPolicy,
   projectAdminResponse,
@@ -71,7 +72,8 @@ export async function requireIdentity(admin = false) {
 export async function adminRead(path: string, query = new URLSearchParams()) {
   const policy = accessPolicy("GET", path);
   if (!policy) throw new AdminError(404);
-  await requireIdentity(policy === "admin");
+  const user = await requireIdentity(policy === "admin");
+  if (!canAccessAdminRoute(user, "GET", path)) throw new AdminError(403);
   const qs = upstreamQuery(path, query);
   const result = await upstream(path + (qs ? `?${qs}` : ""));
   if (result.status === 404) notFound();

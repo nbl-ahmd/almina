@@ -1,6 +1,7 @@
 import { ObjectId, type Db } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
+import { removePushDevice } from './push-devices.js';
 import { pushSubscription } from './push.js';
 
 const empty = z.object({}).strict();
@@ -8,7 +9,7 @@ const empty = z.object({}).strict();
 // only the independently authenticated identity selects the write target.
 const echo = { userId: z.string().max(100).optional() };
 const registration = z.object({ subscription: z.unknown(), ...echo }).strict();
-const removal = z.object(echo).strict();
+const removal = z.object({ ...echo, endpoint:z.string().min(1).max(4096).optional() }).strict();
 const actorId = z.string().regex(/^[a-f0-9]{24}$/i);
 function parsed<T extends z.ZodType>(schema: T, raw: unknown): z.infer<T> {
   const result = schema.safeParse(raw);
@@ -20,7 +21,7 @@ export function staffSubscriptionInput(raw: unknown, query: unknown) {
   return pushSubscription(parsed(registration, raw).subscription);
 }
 export function staffUnsubscriptionInput(raw: unknown, query: unknown) {
-  parsed(empty, query); parsed(removal, raw ?? {});
+  parsed(empty, query); return parsed(removal, raw ?? {});
 }
 const options = { maxTimeMS: 3000, timeoutMS: 4000, writeConcern: { w: 'majority' as const } };
 function owner(actor: string) {
@@ -31,12 +32,17 @@ function owner(actor: string) {
 export async function registerStaffSubscription(db: Db, raw: unknown, actor: string, query: unknown) {
   const subscription = staffSubscriptionInput(raw, query);
   const filter = owner(actor);
-  const result = await db.collection('users').updateOne(filter, { $set: { subscription } }, options);
+  const result = await db.collection('users').updateOne(filter, [
+    { $set: { pushSubscriptions: { $slice: [ { $concatArrays: [
+      { $filter: { input: { $cond: [{ $isArray:'$pushSubscriptions' },'$pushSubscriptions',{ $cond:[{ $eq:[{ $type:'$subscription' },'object'] },['$subscription'],[]] }] }, as:'device', cond:{ $ne:['$$device.endpoint',{ $literal:subscription.endpoint }] } } },
+      { $literal:[subscription] },
+    ] }, -5] }, subscription:{ $literal:subscription } } },
+  ], options);
   if (result.matchedCount !== 1) throw new HttpError(401, 'UNAUTHORIZED');
 }
 export async function removeStaffSubscription(db: Db, raw: unknown, actor: string, query: unknown) {
-  staffUnsubscriptionInput(raw, query);
+  const value=staffUnsubscriptionInput(raw, query);
   const filter = owner(actor);
-  const result = await db.collection('users').updateOne(filter, { $unset: { subscription: '' } }, options);
+  const result = await db.collection('users').updateOne(filter, value.endpoint ? removePushDevice(value.endpoint) : { $unset: { subscription: '', pushSubscriptions:'' } }, options);
   if (result.matchedCount !== 1) throw new HttpError(401, 'UNAUTHORIZED');
 }

@@ -8,6 +8,12 @@ const sdk = require('web-push') as { generateRequestDetails: PushRequestFactory 
 const curve = createECDH('prime256v1'); curve.generateKeys();
 const config = { subject: 'mailto:synthetic@example.invalid', publicKey: curve.getPublicKey().toString('base64url'), privateKey: curve.getPrivateKey().toString('base64url') };
 const subscription = { endpoint: 'https://fcm.googleapis.com/synthetic', keys: { p256dh: curve.getPublicKey().toString('base64url'), auth: randomBytes(16).toString('base64url') } };
+test('provider identification accepts a public contact page and rejects unsafe or local subjects',()=>{
+  assert.equal(typeof createPushSender({...config,subject:'https://shop.example.invalid/contact'},sdk.generateRequestDetails),'function');
+  for(const subject of ['http://shop.example.invalid/contact','https://localhost/contact','https://127.0.0.1/contact','https://shop.local/contact','https://user:pass@shop.example.invalid/contact','https://shop.example.invalid:8443/contact']){
+    assert.throws(()=>createPushSender({...config,subject},sdk.generateRequestDetails));
+  }
+});
 test('push validates subscription destinations, elliptic keys and matching server VAPID configuration', () => {
   for (const endpoint of ['http://localhost/private', 'https://fcm.googleapis.com.evil.invalid', 'https://user@fcm.googleapis.com/x', 'https://fcm.googleapis.com/x#fragment']) assert.throws(() => pushSubscription({ ...subscription, endpoint }), { status: 400 });
   for (const keys of [{ ...subscription.keys, p256dh: 'a'.repeat(87) }, { ...subscription.keys, auth: 'b'.repeat(22) }]) assert.throws(() => pushSubscription({ ...subscription, keys }), { status: 400 });
