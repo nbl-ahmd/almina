@@ -75,7 +75,7 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
   reward_vouchers:[{name:'reward_voucher_code',key:{code:1},unique:true},{name:'reward_voucher_owner',key:{customerId:1,state:1,expiresAt:1}}],
   reward_ledger:[{name:'reward_order_reversal',key:{orderId:1,reversed:1}}],
   growth_pages:[{name:'growth_public_pages',key:{locale:1,kind:1,published:1,updatedAt:-1}}, {name:'growth_homepage_campaigns',key:{locale:1,kind:1,published:1,homepagePlacement:1,priority:-1,slug:1}}],
-  users: [{ name: 'staff_push_scope', key: { role: 1, disabled: 1, _id: 1 } }],
+  users: [{name:'branch_login_identity',key:{branchId:1},unique:true,partialFilterExpression:{accountType:'branch'}},{ name: 'staff_push_scope', key: { role: 1, disabled: 1, _id: 1 } }],
   conversations: [{ name: 'whatsapp_sender_lookup', key: { from: 1 } }],
   whatsappposters: [{ name: 'whatsapp_poster_filename', key: { image: 1 } }],
   catalog_import_changes:[{name:'catalog_import_change_report',key:{previewId:1,rolledBack:1,_id:1}}],

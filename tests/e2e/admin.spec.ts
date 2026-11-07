@@ -25,7 +25,7 @@ test('authorized category edits refresh the warmed storefront cache and oversize
 // One independent viewport case per client: each case resets its own synthetic
 // client, so provisioning must stay inside the real per-IP API quota instead of
 // exhausting one bucket with four combined sessions.
-for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears credentials and deactivation revokes access at ${width}px`, async ({ page, request }) => {
+for (const width of [360, 390, 768, 1280]) test(`administrator creation clears credentials and deactivation revokes access at ${width}px`, async ({ page, request }) => {
   await login(page);
   const browser = { origin: commerceOrigin, 'x-csrf-protection': '1' };
   const username = `synthetic-new-${width}`, password = 'synthetic-long-password';
@@ -56,13 +56,11 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
     return (await audit.run(document.body)).violations.map(violation => violation.id);
   });
   expect(violations).toEqual([]);
-  await page.locator('summary').filter({hasText:'Create staff account'}).click();
-  await page.getByLabel('Full name', { exact: true }).fill('Synthetic created staff');
+  await page.locator('summary').filter({hasText:'Add administrator'}).click();
+  await page.getByLabel('Name', { exact: true }).fill('Synthetic created administrator');
   await page.getByLabel('Username', { exact: true }).fill(username);
   await page.getByLabel('Password (at least 12 characters)', { exact: true }).fill(password);
-  await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption('user');
-  await page.getByRole('combobox', { name: /^Receiving branch/ }).selectOption(branchId);
-  await page.getByRole('button', { name: 'Create staff account', exact: true }).focus(); await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Create administrator', exact: true }).focus(); await page.keyboard.press('Enter');
   const row = page.getByRole('row').filter({ hasText: username }); await expect(row).toBeVisible();
   await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');
   expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(200);
@@ -72,7 +70,7 @@ for (const width of [360, 390, 768, 1280]) test(`staff provisioning clears crede
   expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
   expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.reload(); await streamSettled(page); await expect(page.getByRole('heading', { name: 'User management', exact: true })).toBeVisible();
+  await page.reload(); await streamSettled(page); await expect(page.getByRole('heading', { name: 'Administrators & existing staff', exact: true })).toBeVisible();
 });
 test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
   await login(page);

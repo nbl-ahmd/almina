@@ -1,5 +1,7 @@
-import { BranchManagement, DeliveryZoneManagement } from '../../../../../components/admin/delivery-management';
-import { OrderRoutingSetup, StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
+import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
+import type { BranchWorkspace } from '@almina/contracts';
+import { DeliveryZoneManagement } from '../../../../../components/admin/delivery-management';
+import { StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
 import { orderRoutingSchema } from '@almina/contracts';
 import { reportDays } from '../../../../../lib/admin/dashboard';
 import { RowActions } from '../../../../../components/admin/row-actions';
@@ -512,7 +514,7 @@ export default async function AdminPage({
       </>
     );
   }
-  if(section==='branches'){const setup=record(await adminRead('auth/order-routing'));return <><PageHeader title="Branches" description="Manage receiving locations, branch availability and verified stock allocations." /><BranchManagement initial={orderRoutingSchema.parse({active:setup.active,revision:setup.revision,branches:setup.branches,fallbackBranchId:setup.fallbackBranchId})} /></>;}
+  if(section==='branches'){const setup=await adminRead('auth/branches');return <><PageHeader title="Branches" description="Create a store login, delivery area and stock setup in one place." /><BranchWorkspaceView initial={setup as BranchWorkspace} /></>;}
   if(section==='delivery-zones'){const data=await adminRead('auth/delivery-zones');return <><PageHeader title="Delivery zones" description="Manage coverage, delivery charges and prioritized branch assignments." /><DeliveryZoneManagement initial={data as Parameters<typeof DeliveryZoneManagement>[0]['initial']} /></>;}
   if (section === "orders") {
     if (detail)
@@ -596,59 +598,11 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          title="User management"
-          description="Assign staff to a branch. The shared routing setup determines which orders each branch receives."
+          title="Administrators & existing staff"
+          description="Branch logins are managed in Branches. Existing staff accounts remain available."
         />
-        <details className="admin-create-panel"><summary>Configure branches & order routing{routing.active ? " · Active" : " · Setup required"}</summary><OrderRoutingSetup initial={routing} staffing={setup.staffing as {branchId: string; count: number}[]} legacyStaff={Number(setup.legacyStaff)} /></details>
-        <details className="admin-create-panel"><summary>Create staff account</summary>
-        <Card title="Create staff account">
-          <AdminForm
-            path="auth/signup"
-            label="Create staff account"
-            fields={[
-              {
-                name: "name",
-                label: "Full name",
-                required: true,
-                section: "Account",
-                sectionDescription: "The person who will sign in to administration.",
-              },
-              {
-                name: "username",
-                label: "Username",
-                required: true,
-                section: "Account",
-              },
-              {
-                name: "password",
-                label: "Password (at least 12 characters)",
-                type: "password",
-                required: true,
-                section: "Account",
-              },
-              {
-                name: "role",
-                label: "Role",
-                options: [
-                  { value: "user", label: "Staff" },
-                  { value: "admin", label: "Administrator" },
-                ],
-                section: "Access",
-                sectionDescription: "Staff receive their branch’s orders. Administrators can see every order and configure routing.",
-              },
-              {
-                name: "branchId",
-                label: "Receiving branch",
-                required: false,
-                options: [{ value: "", label: "Select branch (save routing branches first)" }, ...routing.branches.map(branch => ({value: branch.id, label: branch.name}))],
-                hint: "Staff need a branch when routing is active. Administrators have access to every branch.",
-                section: "Access",
-              },
-              { name: "cities", label: "Legacy cities", type: "hidden", value: "" },
-            ]}
-          />
-        </Card>
-        </details>
+        <p className="admin-alert">Each branch has its own store login. <Link href="/admin/branches">Manage branches and store logins</Link>.</p>
+        <details className="admin-create-panel"><summary>Add administrator</summary><Card title="Add administrator"><AdminForm path="auth/signup" label="Create administrator" fields={[{name:'name',label:'Name',required:true},{name:'username',label:'Username',required:true},{name:'password',label:'Password (at least 12 characters)',type:'password',required:true},{name:'role',label:'Role',type:'hidden',value:'admin'},{name:'cities',label:'Cities',type:'hidden',value:''}]} /></Card></details>
         <Table
           caption="Staff accounts"
           data={users}

@@ -98,7 +98,7 @@ export function AdminShell({
   allowed,
   children,
 }: {
-  user: { name: string; role: string };
+  user: { name: string; role: string; branchId?:string|null };
   allowed: string[];
   children: ReactNode;
 }) {
@@ -189,7 +189,7 @@ export function AdminShell({
               <span className="admin-user__meta">
                 <span className="admin-user__name">{user.name}</span>
                 <span className="admin-user__role">
-                  {user.role === 'admin' ? 'Administrator' : 'Staff'}
+                  {user.role === 'admin' ? 'Administrator' : user.branchId ? 'Branch store' : 'Staff'}
                 </span>
               </span>
             </div>
@@ -235,7 +235,7 @@ export function AdminShell({
               <span className="admin-user__meta">
                 <span className="admin-user__name">{user.name}</span>
                 <span className="admin-user__role">
-                  {user.role === 'admin' ? 'Administrator' : 'Staff'}
+                  {user.role === 'admin' ? 'Administrator' : user.branchId ? 'Branch store' : 'Staff'}
                 </span>
               </span>
             </span>
@@ -341,7 +341,7 @@ export function AdminShell({
                 <span className="admin-user__meta">
                   <span className="admin-user__name">{user.name}</span>
                   <span className="admin-user__role">
-                    {user.role === 'admin' ? 'Administrator' : 'Staff'}
+                    {user.role === 'admin' ? 'Administrator' : user.branchId ? 'Branch store' : 'Staff'}
                   </span>
                 </span>
               </span>

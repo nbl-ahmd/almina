@@ -17,6 +17,7 @@ export const routePolicies = [
   ['GET', '/api/recovery/template', 'admin'], ['POST', '/api/recovery/preview', 'admin'], ['POST', '/api/recovery/commit', 'admin'],
   ['POST', '/api/auth/login', 'login'], ['POST', '/api/auth/logout', 'staff'],
   ['POST', '/api/auth/logout-all', 'staff'], ['GET', '/api/auth/me', 'staff'],
+  ['GET','/api/auth/branches','admin'], ['POST','/api/auth/branches','admin'], ['POST','/api/auth/branch-login','admin'],
   ['GET','/api/auth/delivery-zones','admin'], ['GET','/api/auth/branch-inventory','admin'],
   ...['delivery-zone','delivery-zone-delete','delivery-settings','branch-inventory'].map(path=>['POST','/api/auth/'+path,'admin'] as [string,string,RetainedAccess]),
   ['PUT','/api/orders/:id/branch','admin'],

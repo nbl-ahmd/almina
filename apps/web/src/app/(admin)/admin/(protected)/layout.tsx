@@ -10,7 +10,7 @@ export default async function ProtectedLayout({
   const user = await requireIdentity();
   return (
     <AdminShell
-      user={{ name: user.name, role: user.role }}
+      user={{ name: user.name, role: user.role, branchId:user.branchId??null }}
       allowed={sections.filter((section) => canVisit(user.role, section))}
     >
       {children}

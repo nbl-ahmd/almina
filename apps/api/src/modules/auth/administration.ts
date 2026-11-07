@@ -57,6 +57,7 @@ export async function deactivateStaff(db: Db, userId: string, actor: string) {
   await serializeStaffWrites(db, async session => {
     const actorId = await administrator(db, actor, session);
     const target = await db.collection('users').findOne({ _id: targetId }, { session });
+    if(target?.accountType==='branch')throw new HttpError(409,'INVALID_TRANSITION');
     if (!target || target.disabled === true) return; // Exact/repeated deactivation is a no-op.
     const routing = await readOrderRouting(db, session);
     if (routing.active && target.role === 'user' && routing.branches.some(branch => branch.id === target.branchId && branch.enabled !== false)
@@ -73,7 +74,7 @@ export async function retainedStaffList(db: Db, query: unknown, actor: string) {
   const value = validate(z.object({ limit: z.string().regex(/^\d{1,3}$/).transform(Number).pipe(z.number().int().min(1).max(100)).default(100),
     before: id.optional() }).strict(), query);
   await administrator(db, actor);
-  const docs = await db.collection('users').find({ disabled: { $ne: true }, ...(value.before ? { _id: { $lt: new ObjectId(value.before) } } : {}) },
+  const docs = await db.collection('users').find({ accountType:{$ne:'branch'},disabled: { $ne: true }, ...(value.before ? { _id: { $lt: new ObjectId(value.before) } } : {}) },
     { projection: { username: 1, name: 1, role: 1, cities: 1, branchId: 1 }, maxTimeMS: 3000 }).sort({ _id: -1 }).limit(value.limit).toArray();
   return docs.map(doc => ({ _id: doc._id, username: doc.username, name: doc.name, role: doc.role, branchId: typeof doc.branchId === 'string' ? doc.branchId : null,
     cities: Array.isArray(doc.cities) ? doc.cities.filter((value: unknown) => typeof value === 'string') : [] }));
@@ -87,6 +88,7 @@ export async function assignStaffBranch(db: Db, userId: string, raw: unknown, ac
     await administrator(db, actor, session);
     const target = await db.collection('users').findOne({ _id: targetId, disabled: { $ne: true } }, { session });
     if (!target) throw new HttpError(404, 'NOT_FOUND');
+    if(target.accountType==='branch')throw new HttpError(409,'INVALID_TRANSITION');
     if ((target.branchId ?? null) !== value.expectedBranchId) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
     await assertBranchAssignment(db, value.branchId, target.role, session);
     const policy = await readOrderRouting(db, session);

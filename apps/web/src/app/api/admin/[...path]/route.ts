@@ -7,7 +7,7 @@ import { getWebEnvironment } from "../../../../lib/server/env";
 import {
   accessPolicy,
   projectAdminResponse,
-  upstreamQuery,
+  upstreamQuery,branchSetupConflict,
 } from "../../../../lib/admin/policy";
 import {
   AdminError,
@@ -73,6 +73,7 @@ async function handle(
     const acceptedRedirect = path === "whatsapp/text" && result.status === 302;
     if (!result.ok && !acceptedRedirect) {
       const failure: unknown = result.status === 409 ? await result.json().catch(() => null) : null;
+      const setupConflict=result.status===409?branchSetupConflict(path,failure):null;if(setupConflict)return NextResponse.json({error:setupConflict},{status:409,headers});
       if (result.status === 409 && failure && typeof failure === 'object' && 'code' in failure && failure.code === 'CATALOG_REVIEW_REQUIRED' && /^image-review\/(?:decide|preview|import|publish)$/.test(path)) return NextResponse.json({ error: 'IMAGE_REVIEW_REQUIRED' }, { status: 409, headers });
       if (result.status === 409 && failure && typeof failure === 'object' && 'code' in failure && failure.code === 'CATALOG_REVIEW_REQUIRED' && /^products(?:\/(?:publish\/)?[a-f0-9]{24})?$/i.test(path)) return NextResponse.json({error:'CATALOG_REVIEW_REQUIRED'},{status:409,headers});
       if (result.status === 409 && isProductFamilyConflict(path, request.method, result.status, failure)) {

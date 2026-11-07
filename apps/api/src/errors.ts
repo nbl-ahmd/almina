@@ -8,6 +8,7 @@ export class HttpError extends Error {
 }
 
 export const errorMessages: Record<ErrorCode, string> = {
+  BRANCH_LOGIN_CONFLICT: 'Choose an available branch login. Existing credentials were not changed.',
   BRANCH_STOCK_CONFLICT: 'Review branch allocations before changing available stock.',
   DELIVERY_SETUP_REQUIRED: 'Complete branch, staff, zone and index setup before enabling zone delivery.',
   DELIVERY_LOCATION_REQUIRED: 'Choose an accurate delivery pin to check coverage.',

@@ -32,3 +32,10 @@ test('optional Geoapify setup is explicit and cannot start without a server key'
  const configured=readLocationOptions({GEOCODING_PROVIDER:'geoapify',GEOAPIFY_API_KEY:'synthetic-geocoding-key'});
  assert.equal(configured.endpoint,'https://api.geoapify.com/v1/geocode/reverse');assert.equal(configured.provider,'geoapify');
 });
+test('branch setup creates only branch-scoped credentials and validates delivery ownership',async()=>{
+ const {branchCreationSchema,branchLoginInputSchema}=await import('@almina/contracts');const id=randomUUID();const input={revision:0,branch:{id,name:'Synthetic',areaIds:[],enabled:false},login:{username:'synthetic-store',password:'synthetic-branch-password'}};
+ assert.ok(branchCreationSchema.safeParse(input).success);assert.equal(branchCreationSchema.safeParse({...input,login:{...input.login,role:'admin'}}).success,false);assert.equal(branchCreationSchema.safeParse({...input,login:{...input.login,password:'short'}}).success,false);assert.equal(branchCreationSchema.safeParse({...input,branch:{...input.branch,enabled:true}}).success,false);
+ assert.equal(branchLoginInputSchema.safeParse({key:randomUUID(),branchId:id,expectedLoginId:null,expectedRevision:0,username:'store',password:'😀'.repeat(20),enabled:true}).success,false);
+ for(const [method,path] of [['GET','auth/branches'],['POST','auth/branches'],['POST','auth/branch-login']]){assert.equal(accessPolicy(method!,path!),'admin');assert.equal(lookupPolicy(method!,'/api/'+path)?.policy,'admin');}
+});
+test('setup errors reveal only reviewed conflict codes on their corresponding admin routes',async()=>{const {branchSetupConflict}=await import('../apps/web/src/lib/admin/policy');assert.equal(branchSetupConflict('auth/branches',{code:'BRANCH_LOGIN_CONFLICT'}),'BRANCH_LOGIN_CONFLICT');assert.equal(branchSetupConflict('auth/branch-login',{code:'BRANCH_LOGIN_CONFLICT'}),'BRANCH_LOGIN_CONFLICT');assert.equal(branchSetupConflict('orders',{code:'BRANCH_LOGIN_CONFLICT'}),null);assert.equal(branchSetupConflict('auth/branches',{code:'password-or-internal-message'}),null);});

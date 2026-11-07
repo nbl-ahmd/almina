@@ -58,3 +58,5 @@ export * from './modules/orders/routing-admin.js';
 export * from './modules/orders/receiving.js';
 
 export * from './modules/delivery/service.js';
+
+export * from './modules/delivery/branches.js';
