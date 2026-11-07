@@ -1,3 +1,4 @@
+import { BranchManagement, DeliveryZoneManagement } from '../../../../../components/admin/delivery-management';
 import { OrderRoutingSetup, StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
 import { orderRoutingSchema } from '@almina/contracts';
 import { reportDays } from '../../../../../lib/admin/dashboard';
@@ -511,14 +512,11 @@ export default async function AdminPage({
       </>
     );
   }
+  if(section==='branches'){const setup=record(await adminRead('auth/order-routing'));return <><PageHeader title="Branches" description="Manage receiving locations, branch availability and verified stock allocations." /><BranchManagement initial={orderRoutingSchema.parse({active:setup.active,revision:setup.revision,branches:setup.branches,fallbackBranchId:setup.fallbackBranchId})} /></>;}
+  if(section==='delivery-zones'){const data=await adminRead('auth/delivery-zones');return <><PageHeader title="Delivery zones" description="Manage coverage, delivery charges and prioritized branch assignments." /><DeliveryZoneManagement initial={data as Parameters<typeof DeliveryZoneManagement>[0]['initial']} /></>;}
   if (section === "orders") {
     if (detail)
-      return (
-        <OrderDetail
-          order={record(await adminRead(`orders/${detail}`))}
-          admin={user.role === "admin"}
-        />
-      );
+      { const order=record(await adminRead(`orders/${detail}`));const setup=user.role==='admin'&&order.deliveryAssignment?record(await adminRead('auth/order-routing')):null;return <OrderDetail order={order} admin={user.role==='admin'} branches={setup?.branches as Parameters<typeof OrderDetail>[0]['branches']} />; }
     // Status is a presentation filter; city authorization is always applied by the API.
     const orders = rows(await adminRead("orders", qs));
     const receiving = await adminRead("orders/receiving").then(record).catch(() => null);

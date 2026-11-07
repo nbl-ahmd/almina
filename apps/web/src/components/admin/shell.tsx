@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useRef, useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import { Dialog } from 'radix-ui';
 import {
-  ArrowTopRightOnSquareIcon,
+  MapPinIcon,  ArrowTopRightOnSquareIcon,
   Bars3Icon,
   BellIcon,
   ChartBarSquareIcon,
@@ -63,6 +63,8 @@ const groups: NavGroup[] = [
       { id:'search',label:'Search',href:'/admin/search',icon:MagnifyingGlassIcon },
       { id: 'growth', label: 'Website & growth', href: '/admin/growth', icon: ChartBarSquareIcon },
       { id: 'whatsapp', label: 'WhatsApp', href: '/admin/whatsapp', icon: ChatBubbleLeftRightIcon },
+      { id:'branches',label:'Branches',href:'/admin/branches',icon:MapPinIcon },
+      { id:'delivery-zones',label:'Delivery zones',href:'/admin/delivery-zones',icon:MapPinIcon },
       { id: 'notifications', label: 'Notifications', href: '/admin/notifications', icon: BellIcon },
     ],
   },

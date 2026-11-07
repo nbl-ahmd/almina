@@ -56,6 +56,7 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       if (product.archivedAt) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
       if (!Number.isSafeInteger(product.stock) || product.stock < 0) throw new HttpError(409, 'COMMERCE_UNAVAILABLE');
       if (input.stock !== undefined && product.stock !== input.expectedStock) throw new HttpError(409, 'STOCK_CHANGED');
+      if(input.stock!==undefined){const allocated=await db.collection('branch_inventory').find({productId:product._id},{session}).limit(21).toArray();if(allocated.length>20||allocated.some(row=>!Number.isSafeInteger(row.stock)||row.stock<0)||allocated.reduce((sum,row)=>sum+(Number.isSafeInteger(row.stock)?row.stock:Number.MAX_SAFE_INTEGER),0)>input.stock)throw new HttpError(409,'BRANCH_STOCK_CONFLICT');}
       const delta = input.stock === undefined ? 0 : input.stock - product.stock;
       if (delta !== 0 && (!input.stockReason || !input.inventoryKey)) throw new HttpError(400, 'INVALID_REQUEST');
       const fields: Document = {};

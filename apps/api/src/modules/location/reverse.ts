@@ -33,9 +33,11 @@ export function normalizeLocation(raw: unknown): Omit<ReverseLocation, 'maplink'
   if (!emirate || !city) throw new HttpError(502, 'LOCATION_NOT_FOUND');
   return { address: parsed.data.display_name, emirate, city };
 }
-export interface LocationOptions { endpoint: string; userAgent: string; dailyLimit: number; enabled: boolean; fetch?: typeof fetch; now?: () => number }
+export interface LocationOptions { provider?: 'nominatim'|'geoapify'; apiKey?:string; endpoint: string; userAgent: string; dailyLimit: number; enabled: boolean; fetch?: typeof fetch; now?: () => number }
 export function readLocationOptions(source: Readonly<Record<string, string | undefined>>): LocationOptions {
-  const endpoint = source.GEOCODING_REVERSE_URL ?? 'https://nominatim.openstreetmap.org/reverse';
+  const provider=source.GEOCODING_PROVIDER??'nominatim';if(!['nominatim','geoapify'].includes(provider))throw new Error('Invalid GEOCODING_PROVIDER');
+  const apiKey=source.GEOAPIFY_API_KEY; if(provider==='geoapify'&&(!apiKey?.trim()||apiKey.length>300))throw new Error('Geoapify configuration missing');
+  const endpoint = source.GEOCODING_REVERSE_URL ?? (provider==='geoapify'?'https://api.geoapify.com/v1/geocode/reverse':'https://nominatim.openstreetmap.org/reverse');
   const url = new URL(endpoint);
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) throw new Error('Invalid GEOCODING_REVERSE_URL');
   const dailyLimit = Number(source.GEOCODING_DAILY_LIMIT ?? 500);
@@ -43,7 +45,7 @@ export function readLocationOptions(source: Readonly<Record<string, string | und
   const userAgent = source.GEOCODING_USER_AGENT ?? 'AlMinaPharmacy/1.0 (+https://alminapharmacy.com/contact)';
   if (!userAgent.trim() || userAgent.length > 300 || /[\r\n]/.test(userAgent)) throw new Error('Invalid GEOCODING_USER_AGENT');
   if (source.GEOCODING_ENABLED && !['true', 'false'].includes(source.GEOCODING_ENABLED)) throw new Error('Invalid GEOCODING_ENABLED');
-  return { endpoint, userAgent, dailyLimit, enabled: source.GEOCODING_ENABLED !== 'false' };
+  return { provider:provider as 'nominatim'|'geoapify', ...(provider==='geoapify'?{apiKey:apiKey!}:{}), endpoint, userAgent, dailyLimit, enabled: source.GEOCODING_ENABLED !== 'false' };
 }
 export function createReverseLocationService(getDb: GetDb, supplied?: LocationOptions) {
   return { async lookup(raw: unknown): Promise<ReverseLocation> {
@@ -84,6 +86,7 @@ export function createReverseLocationService(getDb: GetDb, supplied?: LocationOp
       url.searchParams.set('format', 'jsonv2'); url.searchParams.set('addressdetails', '1');
       url.searchParams.set('lat', latitude.toFixed(5)); url.searchParams.set('lon', longitude.toFixed(5));
       url.searchParams.set('accept-language', 'en');
+      if(options.provider==='geoapify'){url.searchParams.set('format','json');url.searchParams.set('apiKey',options.apiKey!);url.searchParams.set('lang','en');url.searchParams.delete('addressdetails');url.searchParams.delete('accept-language');}
       let address: Omit<ReverseLocation, 'maplink'>;
       try {
         const response = await (options.fetch ?? fetch)(url, { headers: { Accept: 'application/json', 'User-Agent': options.userAgent },
@@ -96,7 +99,8 @@ export function createReverseLocationService(getDb: GetDb, supplied?: LocationOp
         const chunks: Uint8Array[] = []; let size = 0;
         for (;;) { const part = await reader.read(); if (part.done) break; size += part.value.length;
           if (size > 65536) { await reader.cancel(); throw new HttpError(503, 'SERVICE_UNAVAILABLE'); } chunks.push(part.value); }
-        address = normalizeLocation(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        const raw:unknown=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+        if(options.provider==='geoapify'){const result=z.object({results:z.array(z.object({formatted:z.string(),country_code:z.string(),state:z.string().optional(),state_code:z.string().optional(),city:z.string().optional(),suburb:z.string().optional(),town:z.string().optional(),village:z.string().optional(),district:z.string().optional()}))}).parse(raw).results[0];if(!result)throw new HttpError(502,'LOCATION_NOT_FOUND');const {formatted,...fields}=result;address=normalizeLocation({display_name:formatted,address:{...fields,...(fields.state_code?{'ISO3166-2-lvl4':fields.state_code.startsWith('AE-')?fields.state_code:'AE-'+fields.state_code}:{})}});}else address = normalizeLocation(raw);
       } catch (error) { if (error instanceof HttpError) throw error; cooldown = 10000; throw new HttpError(503, 'SERVICE_UNAVAILABLE'); }
       const result = reverseLocationDtoSchema.parse({ ...address, maplink: map.href });
       await cache.updateOne({ _id: cacheKey }, { $set: { address, expiresAt: new Date(now() + 86400000) } }, { ...queryOptions, upsert: true });

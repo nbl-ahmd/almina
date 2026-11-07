@@ -1,3 +1,4 @@
+import { applyZoneQuote, reserveBranch, restoreBranch, deliverySettings } from '../delivery/service.js';
 import { resolveDeliveryArea } from '@almina/contracts';
 import { branchOrderFilter } from './routing.js';
 import {verifiedSearchAttribution} from '../search/analytics.js';
@@ -109,7 +110,7 @@ async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, cus
   const queryOptions = { ...options, ...(session ? { session } : {}) };
   const store = await db.collection('stores').findOne({}, queryOptions);
   if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
-  await assertServiceable(db, input.customer);
+  if(!(await deliverySettings(db,session)).active)await assertServiceable(db, input.customer);
   let products:Document[] = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
     { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
       stock: 1, disabled: 1, active: 1, published: 1, audience: 1, wholesaleAudience: 1, wholesaleTypeIds: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
@@ -119,9 +120,9 @@ async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, cus
   if(wholesale){if(input.voucherCode||input.customer.email.trim().toLowerCase()!==wholesale.email.toLowerCase())throw new HttpError(403,'FORBIDDEN');products=(await prepareWholesaleProducts(db,wholesale,products,normalizeItems(input.items),session)).products;}
   if (!wholesale && products.some(product => !visibleToRetail(product))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
   const policy=await policyFrom(db,session),base=calculateQuote(input,products,policy);
-  if(!input.voucherCode)return base;
+  if(!input.voucherCode)return applyZoneQuote(db,input.customer,base,session);
   const {allocation}=await voucherAllocation(db,input.voucherCode,customerId,products,base.lines,session);
-  return calculateQuote(input,products,policy,{code:input.voucherCode,allocation});
+  return applyZoneQuote(db,input.customer,calculateQuote(input,products,policy,{code:input.voucherCode,allocation}),session);
 }
 function checkoutResult(doc: Document, replayed: boolean) {
   // Public response has no PII or idempotency secret, even on a retry.
@@ -171,6 +172,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
           if(input.voucherCode)await consumeVoucher(db,session,input.voucherCode,customerId!,_id);
           // Claim key before stock changes. _id has a built-in unique index; receipt and order commit together.
           await db.collection<Document & { _id: string }>('checkout_requests').insertOne({ _id: key, fingerprint, orderId: _id, createdAt: now }, { session });
+          if (totals.delivery) await reserveBranch(db,session,totals.delivery.branchId,totals.lines);
           for (const item of input.items) {
             const result = await db.collection('products').updateOne({ _id: new ObjectId(item.productId), stock: { $gte: item.quantity },
               disabled: { $ne: true }, active: { $ne: false }, published: { $ne: false }, archivedAt:{$exists:false} },
@@ -187,7 +189,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
           if (await db.collection('orders').findOne({ orderId }, { ...options, session, projection: { _id: 1 } })) {
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
-          const order = { _id, routing: { version: 1, areaId: resolveDeliveryArea(input.customer), revision: 0 }, ...(stripeReservation ? {payment: {provider:'stripe', testMode:stripeReservation.testMode??true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
+          const order = { _id, ...(totals.delivery ? { deliveryAssignment: totals.delivery } : {}), routing: { version: 1, areaId: resolveDeliveryArea(input.customer), revision: 0 }, ...(stripeReservation ? {payment: {provider:'stripe', testMode:stripeReservation.testMode??true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
             createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
@@ -272,6 +274,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
                 stock: { $gte: 0, $lte: Number.MAX_SAFE_INTEGER - item.quantity, $mod: [1, 0] } }, { $inc: { stock: item.quantity } }, { ...options, session });
               if (restored.modifiedCount !== 1) throw new HttpError(409, 'INSUFFICIENT_STOCK');
             }
+            await restoreBranch(db,session,order);
             fields['inventory.restored'] = true;
           }
           if(['cancelled','refunded'].includes(input.status))await reverseOrderRewards(db,session,order);

@@ -1,4 +1,6 @@
 'use client';
+import { DeliveryPinPicker } from './delivery-pin-picker';
+import type { DeliveryPoint } from '@almina/contracts';
 import {searchAttributions,searchUsageAllowed,reportSearchEvent} from '../lib/search/attribution';
 import { Input } from './ui/input';
 import { GoogleCustomerReviews } from './google-customer-reviews';
@@ -28,6 +30,7 @@ const pendingKey = 'almina.checkout.pending.v1';
 const emirates = deliveryEmirates;
 function errorMessages(locale: Locale): Record<string, string> {
   return {
+    DELIVERY_LOCATION_REQUIRED: locale==='ar'?'حدد دبوس التوصيل للتحقق من التغطية.':'Choose a delivery pin to check coverage.',
     ADDRESS_NOT_SERVICEABLE: t(locale, 'checkoutErrorAddressNotServiceable'),
     VOUCHER_UNAVAILABLE: t(locale, 'checkoutErrorVoucherUnavailable'),
     VOUCHER_MINIMUM: t(locale, 'checkoutErrorVoucherMinimum'),
@@ -49,7 +52,7 @@ const inputMessages = (locale: Locale): Record<InputCode, string> => ({
 const currencyFormat = (locale: Locale) => new Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', { style: 'currency', currency: 'AED' });
 const acknowledgment = z.object({ quote: quoteDtoSchema, quoteHash: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
 type Reviewed = z.infer<typeof acknowledgment> & { customer: CheckoutInput['customer']; items: CheckoutInput['items'];voucherCode?:string };
-type SavedDeliveryAddress={id:string;label:string;name:string;mobile:string;emirate:string;city:string;address:string;buildingname:string;flatno:string;note:string;maplink:string;isDefault:boolean};
+type SavedDeliveryAddress={coordinates?:DeliveryPoint;id:string;label:string;name:string;mobile:string;emirate:string;city:string;address:string;buildingname:string;flatno:string;note:string;maplink:string;isDefault:boolean};
 type InputCode = 'CART_EMPTY' | 'CART_CHANGED';
 class CheckoutFailure extends Error {
   constructor(readonly code: string, readonly definite: boolean) { super(code); }
@@ -98,6 +101,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const locationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locating, setLocating] = useState(false);
   const [maplink, setMaplink] = useState('');
+  const [coordinates,setCoordinates]=useState<DeliveryPoint|null>(null);
   const [locationMessage, setLocationMessage] = useState('');
   const [delivery, setDelivery] = useState({ address: '', emirate: 'Ras al-Khaimah', city: '' });
   const [reviewReceipt, setReviewReceipt] = useState<ReviewReceipt | null>(null);
@@ -150,7 +154,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
         if (raw) {
           const value = checkoutInputSchema.parse(JSON.parse(raw));
           if (!value.acceptedQuoteHash) throw new Error('Missing acknowledgment');
-          setAttempt(value); setStage('payment'); setPaymentMethod(value.customer.payment); setDelivery({address:value.customer.address,emirate:value.customer.emirate,city:value.customer.city});setMaplink(value.customer.maplink);
+          setAttempt(value); setStage('payment'); setPaymentMethod(value.customer.payment); setDelivery({address:value.customer.address,emirate:value.customer.emirate,city:value.customer.city});setMaplink(value.customer.maplink);setCoordinates(value.customer.coordinates??null);
         }
       } catch { setError(t(locale, 'checkoutRecoverError')); }
       setReady(true);
@@ -163,7 +167,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   // One-shot recovery: re-running on a language switch would reset typed delivery details.
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{let active=true;void fetch('/api/customer/addresses',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:SavedDeliveryAddress[]};if(active&&Array.isArray(payload.data))setSavedAddresses(payload.data);}).catch(()=>{});return()=>{active=false;}},[]);
-  function applySavedAddress(id:string){const saved=savedAddresses.find(item=>item.id===id);if(!saved||!form.current)return;setDelivery({address:saved.address,emirate:saved.emirate,city:saved.city});setMaplink(saved.maplink);setLocationMessage(t(locale, 'checkoutSavedApplied'));for(const [name,value] of Object.entries({name:saved.name,mobile:saved.mobile,buildingname:saved.buildingname,flatno:saved.flatno,note:saved.note})){const field=form.current.elements.namedItem(name);if(field instanceof HTMLInputElement)field.value=value;}setReviewed(null);}
+  function applySavedAddress(id:string){const saved=savedAddresses.find(item=>item.id===id);if(!saved||!form.current)return;setDelivery({address:saved.address,emirate:saved.emirate,city:saved.city});setMaplink(saved.coordinates?`https://www.google.com/maps/search/?api=1&query=${saved.coordinates.latitude},${saved.coordinates.longitude}`:saved.maplink);setCoordinates(saved.coordinates??null);setLocationMessage(t(locale, 'checkoutSavedApplied'));for(const [name,value] of Object.entries({name:saved.name,mobile:saved.mobile,buildingname:saved.buildingname,flatno:saved.flatno,note:saved.note})){const field=form.current.elements.namedItem(name);if(field instanceof HTMLInputElement)field.value=value;}setReviewed(null);}
   function locate() {
     if (busy.current || attempt || locating) return;
     setReviewed(null);
@@ -198,7 +202,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
           const lowAccuracy = Number.isFinite(accuracy) && accuracy > 100;
           if (!finish(t(locale, lowAccuracy ? 'checkoutLocationFilledLowAccuracy' : 'checkoutLocationFilled'))) return;
           setDelivery({ address: result.address, emirate: result.emirate, city: result.city });
-          setMaplink(result.maplink);
+          setMaplink(result.maplink);setCoordinates({latitude,longitude});
         }).catch(failure => finish(failure instanceof CheckoutFailure && failure.code === 'LOCATION_OUTSIDE_UAE'
           ? t(locale, 'checkoutLocationOutsideUae')
           : failure instanceof CheckoutFailure && failure.code === 'RATE_LIMITED'
@@ -213,13 +217,14 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   }
   function editDelivery(field: keyof typeof delivery, value: string) {
     setDelivery(previous => ({ ...previous, [field]: value }));
+    if (coordinates) setCoordinates(null);
     if (maplink) { setMaplink(''); setLocationMessage(t(locale, 'checkoutAddressChanged')); }
   }
   function intent() {
     if (!form.current) throw new Error('Form unavailable');
     const data=Object.fromEntries(new FormData(form.current));
     if(typeof data.mobile==='string')data.mobile=normalizeCheckoutMobile(data.mobile);
-    const customer = customerInputSchema.parse(data);
+    const customer = customerInputSchema.parse({...data,...(coordinates?{coordinates}:{})});
     const items = storedCart().map(line => ({ productId: line.id, quantity: line.quantity }));
     if (!items.length) throw new InputError('CART_EMPTY');
     return { customer, items, ...(voucherCode.trim()?{voucherCode:voucherCode.trim().toUpperCase()}:{} ) };
@@ -364,8 +369,9 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
             </div></section>
             <section className="checkout-form-section" aria-labelledby="delivery-details-heading"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><h3 id="delivery-details-heading" className="m-0 text-base font-semibold">{t(locale,'checkoutDeliveryAddress')}</h3><Button variant="ghost" type="button" size="sm" disabled={locating} onClick={locate} aria-label={locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}><Icon name="pin"/><span className="lg:hidden">{locating?t(locale,'checkoutLocating'):(ar?'استخدام الموقع':'Use location')}</span><span className="hidden lg:inline">{locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}</span></Button></div>
               <input type="hidden" name="maplink" value={maplink}/>
+              <DeliveryPinPicker value={coordinates} geolocate={false} locale={locale} disabled={working||locating||!!attempt} onChange={point=>{setCoordinates(point);setMaplink(point?`https://www.google.com/maps/search/?api=1&query=${point.latitude},${point.longitude}`:'');setReviewed(null);}} onAddress={address=>{setDelivery({address:address.address,emirate:address.emirate,city:address.city});setReviewed(null);}} />
               {locationMessage?<p role="status" className="mb-4 rounded-xl bg-subtle p-3 text-sm leading-6 text-ocean">{locationMessage}</p>:null}
-              {maplink?<div className="mb-4 flex flex-wrap items-center gap-x-4 text-xs"><a className="inline-flex min-h-11 items-center text-teal underline" href={maplink} target="_blank" rel="noopener noreferrer" aria-label={t(locale,'checkoutCheckPinAria')}>{t(locale,'checkoutViewPin')}</a><button type="button" className="min-h-11 text-ocean" onClick={()=>{setMaplink('');setLocationMessage(t(locale,'checkoutPinRemoved'));setReviewed(null);}}>{t(locale,'checkoutRemovePin')}</button><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-ocean">{t(locale,'checkoutOsmCredit')}</a></div>:null}
+              {maplink?<div className="mb-4 flex flex-wrap items-center gap-x-4 text-xs"><a className="inline-flex min-h-11 items-center text-teal underline" href={maplink} target="_blank" rel="noopener noreferrer" aria-label={t(locale,'checkoutCheckPinAria')}>{t(locale,'checkoutViewPin')}</a>{!coordinates?<button type="button" className="min-h-11 text-ocean" onClick={()=>{setMaplink('');setCoordinates(null);setLocationMessage(t(locale,'checkoutPinRemoved'));setReviewed(null);}}>{t(locale,'checkoutRemovePin')}</button>:null}<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-ocean">{t(locale,'checkoutOsmCredit')}</a></div>:null}
               {savedAddresses.length?<Field className="mb-5"><FieldLabel htmlFor="checkout-form-field-4">{t(locale,'checkoutSavedAddress')}</FieldLabel><NativeSelect id="checkout-form-field-4" defaultValue="" onChange={event=>applySavedAddress(event.target.value)}><option value="">{t(locale,'checkoutChooseAddress')}</option>{savedAddresses.map(address=><option key={address.id} value={address.id}>{address.label}{address.isDefault?` · ${t(locale,'checkoutDefault')}`:''} — {address.city}</option>)}</NativeSelect></Field>:null}
               <div className="checkout-address-grid grid gap-5 sm:grid-cols-2"><Field><FieldLabel htmlFor={fieldIds.emirate}>{labels.emirate}</FieldLabel><NativeSelect id={fieldIds.emirate} name="emirate" value={delivery.emirate} disabled={locating} onChange={event=>editDelivery('emirate',event.target.value)} required autoComplete="address-level1" {...fieldState('emirate')}>{emirates.map(value=><option key={value} value={value}>{emirateLabel(locale,value)}</option>)}</NativeSelect>{fieldIssue('emirate')}</Field>
                 <Field><FieldLabel htmlFor={fieldIds.city}>{labels.city}</FieldLabel><Input id={fieldIds.city} name="city" value={delivery.city} disabled={locating} onChange={event=>editDelivery('city',event.target.value)} required maxLength={200} autoComplete="address-level2" placeholder={t(locale,'checkoutCityPlaceholder')} {...fieldState('city')}/>{fieldIssue('city')}</Field>
@@ -392,6 +398,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       <aside className={`checkout-order-panel min-w-0 rounded-2xl bg-subtle p-5 lg:sticky lg:top-6 lg:p-6 ${stage==='details'?'hidden lg:block':''}`} aria-labelledby="checkout-summary">
         <div className="mb-2 flex items-center justify-between gap-3"><h2 ref={summary} tabIndex={-1} className="m-0 scroll-mt-24 text-lg font-semibold outline-none" id="checkout-summary">{t(locale,'checkoutOrderSummary')}</h2><button type="button" aria-expanded={orderExpanded} aria-controls="checkout-order-items" className="inline-flex min-h-11 items-center gap-1 text-xs font-medium text-teal lg:hidden" onClick={()=>setOrderExpanded(value=>!value)}>{orderExpanded?(ar?'إخفاء':'Hide'):(ar?'عرض التفاصيل':'Details')}<ChevronDownIcon className="size-4" aria-hidden="true"/></button><Link href="/cart" className="hidden min-h-11 items-center text-sm font-medium text-teal lg:inline-flex">{ar?'تعديل':'Edit'}</Link></div>
         <div id="checkout-order-items" className={orderExpanded?'':'hidden lg:block'}>{total?<ul className="m-0 list-none p-0">{total.lines.map(line=><li key={line.productId} className="flex items-start gap-3 border-b border-border py-4"><ProductImage src={basket.find(item=>item.id===line.productId)?.image??'/product-placeholder.svg'} alt="" width={56} height={56} sizes="56px" className="size-14 shrink-0 rounded-lg bg-surface object-contain"/><span className="min-w-0 flex-1 text-sm font-medium leading-5">{line.name}{line.variantLabel?<span className="block text-xs text-ocean">{line.variantLabel}</span>:null}<span className="mt-1 block text-xs font-normal text-ocean">{tf(locale,'checkoutQty',{count:line.quantity})}</span></span><strong className="shrink-0 text-sm tabular-nums">{formatted(line.lineTotalMinor)}</strong></li>)}</ul>:basketLines()}</div>
+        {total?.delivery?<p className="my-3 text-sm text-ocean">{ar?'وقت التوصيل التقديري':'Estimated delivery'}: {total.delivery.estimatedMinutes} {ar?'دقيقة':'minutes'} · {total.delivery.branchName}</p>:null}
         {total?<dl className="my-5 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 text-sm tabular-nums"><dt>{t(locale,'checkoutItems')}</dt><dd className="m-0 text-end">{formatted(total.subtotalMinor)}</dd>{total.voucher?<><dt>{t(locale,'checkoutRewardVoucher')}</dt><dd className="m-0 text-end text-teal">−{formatted(total.voucher.discountMinor)}</dd></>:null}<dt>{t(locale,'checkoutDelivery')}</dt><dd className="m-0 text-end">{formatted(total.deliveryFeeMinor)}</dd><dt>{total.vatMode==='inclusive'?t(locale,'checkoutVatIncluded'):t(locale,'checkoutVat')}</dt><dd className="m-0 text-end">{formatted(total.taxMinor)}</dd><dt className="border-t border-border pt-4 text-lg font-semibold">{t(locale,'checkoutTotal')}</dt><dd className="m-0 border-t border-border pt-4 text-end text-lg font-semibold">{formatted(total.totalMinor)}</dd></dl>:<p className="my-5 min-h-18 text-sm leading-6 text-ocean" role="status">{working?t(locale,'checkoutChecking'):basketError|| (ar?'أضف تفاصيل التوصيل لتأكيد الإجمالي ورسوم التوصيل.':'Add your delivery details to confirm the total and delivery charge.')}</p>}
         <div className="hidden lg:block">{primaryAction('w-full min-h-12') }<p className="mt-3 text-center text-xs leading-5 text-ocean">{t(locale,'checkoutFinalTotalNote')}</p></div>
         {attempt?<p role="status" className="mt-4 text-sm leading-6 text-ocean">{t(locale,'checkoutPendingNotice')}</p>:null}

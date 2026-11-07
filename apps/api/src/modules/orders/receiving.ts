@@ -12,7 +12,7 @@ export async function orderReceiving(db: Db, staff: Staff) {
   const [pendingCount, reviewCount, latest, oldest, policy, recent] = await Promise.all([
     db.collection('orders').countDocuments(pending, options),
     db.collection('orders').countDocuments({ $and: [pending, addressReviewScope()] }, options),
-    db.collection('orders').find(pending, { ...options, projection: { _id: 1, routing: 1, 'customer.city': 1, 'customer.emirate': 1 } }).sort({ createdAt: -1, _id: -1 }).limit(10).toArray(),
+    db.collection('orders').find(pending, { ...options, projection: { _id: 1, deliveryAssignment:1, routing: 1, 'customer.city': 1, 'customer.emirate': 1 } }).sort({ createdAt: -1, _id: -1 }).limit(10).toArray(),
     db.collection('orders').find(pending, { ...options, projection: { createdAt: 1 } }).sort({ createdAt: 1, _id: 1 }).limit(1).toArray(),
     readOrderRouting(db),
     db.collection('orders').find(scope, { ...options, projection: { _id: 1, status: 1, dispatched: 1, canceled: 1, billno: 1, billamount: 1, 'payment.state': 1, 'routing.revision': 1 } }).sort({ createdAt: -1, _id: -1 }).limit(25).toArray(),

@@ -1,3 +1,4 @@
+import { deliveryPointSchema } from './delivery-zones';
 import { z } from 'zod';
 import { rakDeliveryAreas } from './rak-delivery-areas';
 export { rakDeliveryAreas } from './rak-delivery-areas';
@@ -17,6 +18,7 @@ export function resolveDeliveryArea(customer: { city?: unknown; emirate?: unknow
   return matches.length === 1 ? matches[0]!.id : null;
 }
 export const routingBranchSchema = z.object({ id: z.uuid(), name: z.string().trim().min(2).max(100),
+  enabled: z.boolean().optional(), kind: z.enum(['branch','warehouse']).optional(), address: z.string().trim().max(1000).optional(), phone: z.string().trim().max(30).optional(), email: z.union([z.email(),z.literal('')]).optional(), hours: z.string().trim().max(500).optional(), location: deliveryPointSchema.nullable().optional(),
   areaIds: z.array(z.string().refine(value => rakDeliveryAreas.some(area => area.id === value))).max(300),
 }).strict();
 export const orderRoutingSchema = z.object({ revision: z.number().int().nonnegative().default(0), active: z.boolean().default(false),

@@ -78,7 +78,7 @@ test('provider failure keeps email available; missing setup offers honest guest 
   await expect(page.getByText('Account sign-in is not connected yet.', { exact: false })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Continue as a guest', exact: false })).toHaveAttribute('href', '/checkout');
   await page.getByRole('link', { name: 'account privacy notice', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Account privacy notice', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Privacy policy', exact: true })).toBeVisible();
 });
 
 test('email verification uses the real gateway, HttpOnly session, reload and logout',async({page,request})=>{

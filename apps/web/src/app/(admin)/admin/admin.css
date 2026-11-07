@@ -3815,7 +3815,7 @@
   .admin-status--receiving button { min-height: 44px; margin-inline-start: auto; }
   .admin-status--receiving [role="status"]:not(p) { color: var(--admin-warning); }
 
-  .admin-app .admin-routing-choice { display: flex; align-items: center; gap: 12px; }
+  .admin-app .admin-routing-choice { display: flex; flex-direction: row; align-items: center; gap: 12px; }
   .admin-app .admin-routing-choice input { width: 20px; min-height: 20px; height: 20px; flex: none; margin: 0; }
 
 }

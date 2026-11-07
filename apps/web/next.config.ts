@@ -47,7 +47,7 @@ const config: NextConfig = {
       ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }] : []),
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-    ] }, ...['/', '/products/:path*', '/categories/:path*', '/search', '/offers', '/cart', '/checkout', '/about', '/contact', '/map'].map(source => ({ source, headers: [
+    ] }, ...['/', '/products/:path*', '/categories/:path*', '/search', '/offers', '/cart', '/checkout', '/about', '/contact', '/map', '/account', '/wholesale', '/ar/account', '/ar/wholesale', '/ar/checkout'].map(source => ({ source, headers: [
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), payment=()' },
     ] }))];
   },

@@ -1,3 +1,4 @@
+import { deliverySettings } from '../delivery/service.js';
 import { visibleToRetail } from '@almina/contracts';
 import { ObjectId,type Db,type Document } from 'mongodb';
 import { commercePolicySchema,quoteInputSchema,type CommercePolicy } from '@almina/contracts';
@@ -12,6 +13,7 @@ export async function previewDelivery(db:Db,raw:unknown){
   const parsed=z.object({emirate:z.string().min(1).max(200),city:z.string().trim().max(200).default(''),items:quoteInputSchema.shape.items}).strict().safeParse(raw);
   if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
   const {items,emirate,city}=parsed.data;
+  if((await deliverySettings(db)).active)throw new HttpError(400,'DELIVERY_LOCATION_REQUIRED');
   await assertServiceable(db,{emirate,city});
   const policy=await readDeliveryPolicy(db),rule=policy.delivery.find(item=>item.emirate===emirate);
   if(!rule)throw new HttpError(400,'INVALID_REQUEST');

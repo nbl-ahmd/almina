@@ -53,6 +53,10 @@ for (const [action, status] of [['confirm', 'confirmed'], ['pack', 'packed']]) {
     res.json(await commerceFor(req).transition(req.params.id, { status }, req.identity));
   });
 }
+Orderrouter.put('/:id/branch', async (req, res) => {
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
+  res.json(await require('../commerce/dist/service.cjs').reassignDelivery(await req.app.locals.getCommerceDb(), req.params.id, req.body, req.identity.id));
+});
 Orderrouter.put('/:id/routing', async (req, res) => {
   if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
   res.json(await require('../commerce/dist/service.cjs').repairOrderArea(await req.app.locals.getCommerceDb(), req.params.id, req.body, req.identity.id));

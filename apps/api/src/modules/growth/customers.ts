@@ -1,3 +1,4 @@
+import { deliveryPointSchema } from '@almina/contracts';
 import { customerOrderFilter } from './ownership.js';
 import { randomBytes,randomInt,createHash,createHmac,timingSafeEqual } from 'node:crypto';
 import { ObjectId,type Db,type Document } from 'mongodb';
@@ -51,7 +52,7 @@ export async function customerLogout(db:Db,token:string|undefined){if(token)awai
 export async function customerOrders(db:Db,customer:{email:string}){return db.collection('orders').find({...customerOrderFilter(customer.email),schemaVersion:2},{maxTimeMS:3000,projection:{channel:1,orderId:1,status:1,createdAt:1,'totals.totalMinor':1,'totals.lines.productId':1,'totals.lines.name':1,'totals.lines.quantity':1}}).sort({_id:-1}).limit(30).toArray().then(rows=>rows.map(row=>{if(row.channel!=='wholesale')delete row.channel;return row;}));}
 export async function saveCustomerPreferences(db:Db,id:string,raw:unknown){const input=z.object({marketingEmail:z.boolean(),marketingWhatsapp:z.boolean()}).strict().safeParse(raw);if(!input.success)throw new HttpError(400,'INVALID_REQUEST');await db.collection('customers').updateOne({_id:new ObjectId(id)},{$set:{...input.data,consentUpdatedAt:new Date(),consentVersion:'growth-v1'}});return input.data;}
 
-const addressSchema=z.object({label:z.string().trim().min(1).max(40),name:z.string().trim().min(1).max(200),mobile:z.string().regex(/^\+?[0-9]{9,15}$/),emirate:z.string().trim().min(1).max(200),city:z.string().trim().min(1).max(200),address:z.string().trim().min(1).max(1000),buildingname:z.string().trim().max(200).default(''),flatno:z.string().trim().max(200).default(''),note:z.string().trim().max(1000).default(''),maplink:z.union([z.literal(''),z.url().max(2048).refine(value=>value.startsWith('https://'))]).default(''),isDefault:z.boolean().default(false)}).strict();
+const addressSchema=z.object({coordinates:deliveryPointSchema.optional(),label:z.string().trim().min(1).max(40),name:z.string().trim().min(1).max(200),mobile:z.string().regex(/^\+?[0-9]{9,15}$/),emirate:z.string().trim().min(1).max(200),city:z.string().trim().min(1).max(200),address:z.string().trim().min(1).max(1000),buildingname:z.string().trim().max(200).default(''),flatno:z.string().trim().max(200).default(''),note:z.string().trim().max(1000).default(''),maplink:z.union([z.literal(''),z.url().max(2048).refine(value=>value.startsWith('https://'))]).default(''),isDefault:z.boolean().default(false)}).strict();
 const addressId=z.string().uuid();
 export async function customerAddresses(db:Db,id:string){const row=await db.collection('customers').findOne({_id:new ObjectId(id)},{maxTimeMS:3000,projection:{addresses:1}});return Array.isArray(row?.addresses)?row.addresses.slice(0,10):[];}
 export async function updateCustomerAddresses(db:Db,id:string,raw:unknown){

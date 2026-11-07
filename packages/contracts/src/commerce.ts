@@ -1,3 +1,4 @@
+import { deliveryPointSchema, zoneDeliverySchema } from './delivery-zones';
 import {searchAttributionSchema} from './search';
 import { z } from 'zod';
 
@@ -5,6 +6,7 @@ const id = z.string().regex(/^[a-fA-F0-9]{24}$/).transform(value => value.toLowe
 const shortText = z.string().trim().max(200);
 export const orderStatusSchema = z.enum(['pending', 'confirmed', 'packed', 'dispatched', 'cancelled', 'refunded']);
 export const customerInputSchema = z.object({
+  coordinates: deliveryPointSchema.optional(),
   name: shortText.min(1), mobile: z.string().regex(/^\+?[0-9]{9,15}$/), email: z.email().max(254),
   emirate: shortText.min(1), city: shortText.min(1), address: z.string().trim().min(1).max(1000),
   buildingname: shortText.default(''), flatno: shortText.default(''), note: z.string().max(1000).default(''),
@@ -25,7 +27,7 @@ export const lineSnapshotSchema = z.object({
   unitPriceMinor: minor, salePriceMinor: minor.nullable(), discountMinor: minor, voucherDiscountMinor:minor.optional(),
   taxRateBps: z.number().int().nonnegative(), taxMinor: minor, lineTotalMinor: minor,
 }).strict();
-export const quoteDtoSchema = z.object({ currency: z.literal('AED'), policyVersion: z.string(),
+export const quoteDtoSchema = z.object({ delivery: zoneDeliverySchema.optional(), currency: z.literal('AED'), policyVersion: z.string(),
   vatMode: z.enum(['inclusive', 'exclusive']), voucher:z.object({code:z.string().regex(/^AM-[A-F0-9]{24}$/),discountMinor:minor}).strict().optional(), lines: z.array(lineSnapshotSchema),
   subtotalMinor: minor, discountMinor: minor, taxMinor: minor, deliveryFeeMinor: minor,
   minimumOrderMinor: minor, totalMinor: minor,

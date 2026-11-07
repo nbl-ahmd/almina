@@ -30,6 +30,7 @@ function matches(doc: Document, filter: Document): boolean {
     const actual = key.split('.').reduce<unknown>((result, field) => (result as Document | undefined)?.[field], doc);
     if (value instanceof ObjectId) return actual instanceof ObjectId && value.equals(actual);
     if (value && typeof value === 'object') {
+      if ('$exists' in value) return value.$exists ? actual !== undefined : actual === undefined;
       if ('$gt' in value) return actual instanceof Date && actual > value.$gt;
       if ('$lt' in value) return actual instanceof ObjectId && actual.toHexString() < value.$lt.toHexString();
       if ('$ne' in value) return actual !== value.$ne;

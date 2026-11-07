@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const requestIdSchema = z.uuid();
 export const errorCodeSchema = z.enum([
+  'DELIVERY_SETUP_REQUIRED','DELIVERY_LOCATION_REQUIRED','BRANCH_STOCK_CONFLICT',
   'VOUCHER_UNAVAILABLE','VOUCHER_MINIMUM',
   'REMINDERS_UNAVAILABLE', 'REMINDER_PRODUCT_INELIGIBLE', 'REMINDER_LIMIT',
   'INVALID_REQUEST', 'NOT_FOUND', 'METHOD_NOT_ALLOWED', 'SERVICE_UNAVAILABLE', 'INTERNAL_ERROR',
@@ -63,3 +64,5 @@ export * from "./marketing";
 export * from './image-review';
 
 export * from './order-routing';
+
+export * from './delivery-zones';
