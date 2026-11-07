@@ -1,3 +1,7 @@
+## 2026-11-06 — Polygon delivery zones and branch stock (release preparation)
+
+Added administrator-managed branch details, Leaflet/Geoman delivery polygons, optional Geoapify lookup, customer pins/saved coordinates and server-authoritative priority-then-distance routing with whole-order branch stock. Shared and branch reservations, cancellation/card expiry restoration and audited reassignment are atomic. Existing city/fallback receiving remains for legacy orders; polygon assignments stay visible after configuration changes. Mode defaults off; administrators must enter real boundaries, locations and counted allocations. No production activation or data migration performed. See [setup, safety and rollback](DELIVERY_ZONES_2026-11-06.md).
+
 ## 2026-11-06 — Pharmacy receiving and configurable branch routing (release preparation)
 
 Replaced the optional activated city-text model with administrator-configured, exclusive area ownership and a staffed fallback branch. Added an attributed offline OSM RAK reference, branch-based staff provisioning/assignment, shared order/push access rules, address review/audit, safe historical reads and an additive backfill. Incoming counts, optional sound and direct confirmation/packing use the existing protected commerce lifecycle. Business configuration remains for administrators; no production data, staff assignments or activation changed. Verification and release checklist: [order routing](ORDER_ROUTING_2026-11-06.md).
