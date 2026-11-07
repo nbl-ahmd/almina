@@ -9,14 +9,14 @@ import { sessionLifetimeMs } from './cookies.js';
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 const dummyHash = '$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW';
 const queryOptions = { maxTimeMS: 3000, timeoutMS: 4000 };
-const staffProjection = { _id: 1, username: 1, name: 1, role: 1, cities: 1, branchId: 1, password: 1, disabled: 1 };
+const staffProjection = { _id: 1, username: 1, name: 1, role: 1, cities: 1, branchId: 1, accountType: 1, password: 1, disabled: 1 };
 type ErrorFactory = (status: number, code: ErrorCode) => Error;
 export function createSessionService(getDb: GetDb, error: ErrorFactory = (status, code) => new HttpError(status, code)) {
   const unauthorized = () => error(401, 'UNAUTHORIZED');
   function identity(doc: Document): Staff {
-    const result = staffDtoSchema.safeParse({ id: id(doc._id), username: doc.username, name: doc.name, role: doc.role, ...(typeof doc.branchId === 'string' ? { branchId: doc.branchId } : {}),
+    const result = staffDtoSchema.safeParse({ id: id(doc._id), username: doc.username, name: doc.name, role: doc.role, ...(doc.accountType === 'branch' ? { accountType: 'branch' } : {}), ...(typeof doc.branchId === 'string' ? { branchId: doc.branchId } : {}),
       cities: Array.isArray(doc.cities) ? doc.cities.filter((city: unknown) => typeof city === 'string') : [] });
-    if (!result.success) throw unauthorized(); return result.data;
+    if (!result.success || (doc.accountType === 'branch' && (!result.data.branchId || result.data.role !== 'user'))) throw unauthorized(); return result.data;
   }
   return {
     async login(raw: unknown) {

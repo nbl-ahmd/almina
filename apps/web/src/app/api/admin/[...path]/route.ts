@@ -1,3 +1,4 @@
+import { canAccessAdminRoute } from '../../../../lib/admin/policy';
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidateTag } from 'next/cache';
 import { catalogMutationTags, isProductFamilyConflict, readAdminBody, GatewayBodyTooLarge } from '../../../../lib/admin/gateway-policy';
@@ -38,7 +39,7 @@ async function handle(
     if (policy !== "login") {
       const user = await currentIdentity();
       if (!user) throw new AdminError(401);
-      if (policy === "admin" && user.role !== "admin")
+      if (!canAccessAdminRoute(user, request.method, path))
         throw new AdminError(403);
     }
     let query: string;

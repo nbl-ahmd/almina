@@ -23,7 +23,7 @@ export const routePolicies = [
   ['PUT','/api/orders/:id/branch','admin'],
   ['GET', '/api/auth/order-routing', 'admin'], ['PUT', '/api/auth/order-routing', 'admin'], ['PUT', '/api/auth/users/:id/assignment', 'admin'],
   ['POST', '/api/orders/:id/confirm', 'orders'], ['POST', '/api/orders/:id/pack', 'orders'],
-  ['GET', '/api/orders/receiving', 'orders'], ['PUT', '/api/orders/:id/routing', 'admin'],
+  ['GET', '/api/orders/notification-settings', 'staff'], ['GET', '/api/orders/receiving', 'orders'], ['PUT', '/api/orders/:id/routing', 'admin'],
   ['POST', '/api/auth/signup', 'admin'], ['GET', '/api/auth/users', 'admin'], ['DELETE', '/api/auth/users/:id', 'admin'],
   ['POST', '/api/products', 'admin'], ['GET', '/api/products', 'public'], ['GET', '/api/products/search', 'public'],
   ['GET', '/api/products/images/:filename', 'public'], ['GET', '/api/products/category/:categoryId', 'public'],

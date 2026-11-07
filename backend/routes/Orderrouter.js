@@ -3,6 +3,12 @@ const Orderrouter = express.Router();
 const { createCommerceService } = require('../commerce/dist/service.cjs');
 const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb, req.app.locals.stripePayments);
 
+Orderrouter.get('/notification-settings', require('../security/boundary.cjs').wrap(async (req,res) => {
+  if(Object.keys(req.query).length)return res.status(400).json({code:'INVALID_REQUEST'});
+  const domain=require('../commerce/dist/service.cjs');
+  res.json({...domain.staffNotificationSettings(process.env),registeredDeviceIds:await domain.staffDeviceFingerprints(await req.app.locals.getCommerceDb(),req.identity.id)});
+}));
+
 // Push subscriptions belong to the authenticated staff member, never to a caller-supplied user.
 Orderrouter.post('/subscribe', require('../security/boundary.cjs').wrap(async (req, res) => {
   const domain = require('../commerce/dist/service.cjs');

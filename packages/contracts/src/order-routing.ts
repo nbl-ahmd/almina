@@ -33,8 +33,8 @@ export const orderRoutingSchema = z.object({ revision: z.number().int().nonnegat
 });
 export type OrderRouting = z.infer<typeof orderRoutingSchema>;
 export function routingDecision(areaId: string | null, policy: OrderRouting) {
-  const explicit = policy.branches.find(branch => branch.areaIds.includes(areaId ?? ''));
-  const branch = policy.active ? explicit ?? policy.branches.find(branch => branch.id === policy.fallbackBranchId) : undefined;
+  const explicit = policy.branches.find(branch => branch.enabled !== false && branch.areaIds.includes(areaId ?? ''));
+  const branch = policy.active ? explicit ?? policy.branches.find(branch => branch.id === policy.fallbackBranchId && branch.enabled !== false) : undefined;
   return { areaId, areaLabel: rakDeliveryAreas.find(area => area.id === areaId)?.name ?? 'Unrecognized delivery area',
     branchId: branch?.id ?? null, branchName: branch?.name ?? 'Administrator inbox', needsReview: areaId === null };
 }

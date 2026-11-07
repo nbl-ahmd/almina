@@ -39,3 +39,10 @@ test('receiving signals share the existing stream without serializing its privat
   assert.ok(output.includes('"pendingCount":2')); assert.ok(output.includes('"latestIds":["aaaaaaaaaaaaaaaaaaaaaaaa"]'));
   assert.ok(!output.includes('private internal snapshot')); assert.match(output, /event: revoked/);
 });
+
+test('paused named-area branches stop receiving new routing decisions and fall back without duplicate assignment',()=>{
+ const area=rakDeliveryAreas[0]!, first=randomUUID(), second=randomUUID();
+ const policy=orderRoutingSchema.parse({active:true,fallbackBranchId:second,branches:[{id:first,name:'Paused',enabled:false,areaIds:[area.id]},{id:second,name:'Receiving',enabled:true,areaIds:[]}]});
+ assert.equal(routingDecision(area.id,policy).branchId,second);
+ assert.equal(routingDecision(area.id,{...policy,branches:policy.branches.map(branch=>({...branch,enabled:false}))}).branchId,null);
+});

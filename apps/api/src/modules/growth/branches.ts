@@ -1,5 +1,6 @@
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { branchDirectorySchema, serviceabilityPolicySchema, isServiceable, type BranchDirectory, type ServiceabilityPolicy } from '@almina/contracts';
+import { readOrderRouting } from '../orders/routing.js';
 import { HttpError } from '../../errors.js';
 const query = { maxTimeMS: 3000 };
 type Shape = Record<string, unknown>;
@@ -20,13 +21,21 @@ function conflict(error: unknown): never {
 export async function branchDirectory(db: Db, admin = false): Promise<BranchDirectory> {
   const row = await db.collection<Document & { _id: string }>('growth_settings').findOne({ _id: 'branches' }, query);
   const value = branchDirectorySchema.parse(storedKeys(branchDirectorySchema.shape, row ?? undefined));
-  return admin || value.verified ? value : branchDirectorySchema.parse({});
+  if(admin)return value;
+  if(!value.verified)return branchDirectorySchema.parse({});
+  const routing=await readOrderRouting(db);
+  const items=value.items.flatMap(item=>{if(!item.branchId)return [item];const branch=routing.branches.find(row=>row.id===item.branchId);return branch?[{...item,name:branch.name}]:[];});
+  return {...value,items,verified:items.length>0};
 }
 export async function saveBranchDirectory(db: Db, raw: unknown, actor: string): Promise<BranchDirectory> {
   if (!ObjectId.isValid(actor)) throw new HttpError(400, 'INVALID_REQUEST');
   const parsed = branchDirectorySchema.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
   const value = parsed.data;
+  const routing=await readOrderRouting(db), linked=value.items.flatMap(item=>item.branchId?[item.branchId]:[]);
+  if(new Set(linked).size!==linked.length||value.items.some(item=>item.branchId&&!routing.branches.some(branch=>branch.id===item.branchId)))throw new HttpError(400,'INVALID_REQUEST');
+  if(value.verified&&value.items.some(item=>!item.branchId))throw new HttpError(400,'INVALID_REQUEST');
+  value.items=value.items.map(item=>({...item,...(item.branchId?{name:routing.branches.find(branch=>branch.id===item.branchId)!.name}:{})}));
   // Staff cannot publish a directory that contains a branch they have not individually verified.
   if (value.verified && (!value.items.length || value.items.some(item => !item.verified || !item.name || !item.phone))) throw new HttpError(400, 'INVALID_REQUEST');
   try {

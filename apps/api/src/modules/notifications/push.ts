@@ -23,7 +23,7 @@ type Vapid = { subject: string; publicKey: string; privateKey: string };
 export type PushRequestFactory = (subscription: PushSubscription, payload: undefined, options: { TTL: number; topic: string; urgency: 'high'; vapidDetails: Vapid }) => { endpoint: string; method: string; headers: Record<string, string | number>; body?: Buffer };
 // Standard library generates VAPID; this module owns cancellable network transport, no payload/PII or retry.
 export function createPushSender(raw: unknown, generate: PushRequestFactory, options: { fetch?: typeof fetch; deadlineMs?: number } = {}) {
-  const parsed = z.object({ subject: z.string().max(254).refine(value => value.startsWith('mailto:') && z.email().safeParse(value.slice(7)).success), publicKey: key(87, 65), privateKey: key(43, 32) }).strict().safeParse(raw);
+  const parsed = z.object({ subject: z.string().max(254).refine(value => { if(value.startsWith('mailto:'))return z.email().safeParse(value.slice(7)).success;try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&!url.hash&&url.hostname.includes('.')&&!/^[\d.]+$/.test(url.hostname)&&!url.hostname.endsWith('.local');}catch{return false;} }), publicKey: key(87, 65), privateKey: key(43, 32) }).strict().safeParse(raw);
   if (!parsed.success) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
   try {
     const ecdh = createECDH('prime256v1'); ecdh.setPrivateKey(Buffer.from(parsed.data.privateKey, 'base64url'));

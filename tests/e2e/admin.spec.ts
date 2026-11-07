@@ -70,7 +70,7 @@ for (const width of [360, 390, 768, 1280]) test(`administrator creation clears c
   expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
   expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.reload(); await streamSettled(page); await expect(page.getByRole('heading', { name: 'Administrators & existing staff', exact: true })).toBeVisible();
+  await page.reload(); await streamSettled(page); await expect(page.getByRole('heading', { name: 'Team & access', exact: true })).toBeVisible();
 });
 test('operations shows scoped measurements and unknown acceptance at all required widths, and denies staff', async ({ page }) => {
   await login(page);

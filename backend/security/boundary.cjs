@@ -49,6 +49,7 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
     if (!['public', 'login', 'webhook', 'verification'].includes(route.policy)) {
       req.identity = await auth.authenticate(readSessionCookie(req.headers, development));
       if (route.policy === 'admin' && req.identity.role !== 'admin') throw fail(403, 'FORBIDDEN');
+      if (req.identity.accountType === 'branch' && !require('../commerce/dist/service.cjs').storeAccountRouteAllowed(req.method, req.originalUrl.split('?')[0])) throw fail(403, 'FORBIDDEN');
     }
     // Compatibility catalog reads share URLs with staff editors. Only a verified
     // server session may read drafts; anonymous filters cannot override publication.
@@ -56,7 +57,7 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
       && /^\/api\/(products|category)(?:\/|$)/.test(route.path) && !route.path.includes('/images/')) {
       const token = readSessionCookie(req.headers, development);
       if (token) {
-        try { req.identity = await auth.authenticate(token); }
+        try { const actor = await auth.authenticate(token); if(actor.accountType !== 'branch') req.identity = actor; }
         catch (error) { if ((error.status ?? error.statusCode) !== 401) throw error; }
       }
     }

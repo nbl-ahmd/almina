@@ -12,9 +12,9 @@ test('pharmacy routing setup, fallback inbox, sound opt-in and receiving work on
   await login(page);
   const area = rakDeliveryAreas.find(value => value.name === 'Al Nakhil')!;
   const localId=randomUUID(),fallbackId=randomUUID(),headers={origin:adminOrigin,'x-csrf-protection':'1'};
-  expect((await page.request.post(adminOrigin+'/api/admin/auth/branches',{headers,data:{revision:0,branch:{id:localId,name:'Local pharmacy',areaIds:[area.id],enabled:false},login:{username:'synthetic-local',password:'synthetic-test-password'}}})).ok()).toBeTruthy();
+  expect((await page.request.post(adminOrigin+'/api/admin/auth/branches',{headers,data:{revision:0,branch:{id:localId,name:'Local pharmacy',areaIds:[area.id],enabled:true,location:{latitude:25.75,longitude:55.95}},login:{username:'synthetic-local',password:'synthetic-test-password'}}})).ok()).toBeTruthy();
   const workspace=await(await page.request.get(adminOrigin+'/api/admin/auth/branches')).json();
-  expect((await page.request.post(adminOrigin+'/api/admin/auth/branches',{headers,data:{revision:workspace.routing.revision,branch:{id:fallbackId,name:'Central pharmacy',areaIds:[],enabled:false},login:{username:'synthetic-central',password:'synthetic-test-password'}}})).ok()).toBeTruthy();
+  expect((await page.request.post(adminOrigin+'/api/admin/auth/branches',{headers,data:{revision:workspace.routing.revision,branch:{id:fallbackId,name:'Central pharmacy',areaIds:[],enabled:true,location:{latitude:25.76,longitude:55.96}},login:{username:'synthetic-central',password:'synthetic-test-password'}}})).ok()).toBeTruthy();
   const routing=await(await page.request.get(adminOrigin+'/api/admin/auth/order-routing')).json();
   expect((await page.request.put(adminOrigin+'/api/admin/auth/order-routing',{headers,data:{revision:routing.revision,active:false,branches:routing.branches,fallbackBranchId:fallbackId}})).ok()).toBeTruthy();
   await page.goto(adminOrigin+'/admin/users');await streamSettled(page);
@@ -22,7 +22,7 @@ test('pharmacy routing setup, fallback inbox, sound opt-in and receiving work on
   await staffRow.getByRole('combobox', { name: 'Branch assignment', exact: true }).selectOption(localId!);
   await staffRow.getByRole('button', { name: 'Save branch', exact: true }).click();
   await expect(staffRow).toContainText('Local pharmacy');
-  await page.goto(adminOrigin+'/admin/branches');await streamSettled(page);await page.getByText('Receiving rules and existing staff',{exact:true}).click();
+  await page.goto(adminOrigin+'/admin/branches');await streamSettled(page);await page.getByText('Routing & fallback inbox',{exact:true}).click();
   await page.getByLabel('Enable branch routing', { exact: true }).check();
   await page.getByRole('button', { name: 'Save routing setup', exact: true }).click();
   await expect(page.getByText('Branch routing is active.', { exact: false })).toBeVisible();
@@ -39,7 +39,7 @@ test('pharmacy routing setup, fallback inbox, sound opt-in and receiving work on
     expect((await request.post(commerceOrigin + '/api/orders', { headers: { origin: commerceOrigin, 'x-csrf-protection': '1' }, data: { idempotencyKey: randomUUID(), items: [{ productId, quantity: 1 }], customer: { ...customer, city } } })).ok()).toBeTruthy();
   }
   await expect(page.getByRole('link', { name: '2 orders awaiting confirmation' })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByText('Orders need attention', { exact: false })).toBeVisible();
+  await expect(page.getByRole('link', { name: '1 addresses to review', exact: true })).toBeVisible();
   await expect(page.getByRole('table', { name: 'Orders', exact: true })).toContainText('Central pharmacy');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: '.verification-results/routing-inbox-mobile.png', fullPage: true });

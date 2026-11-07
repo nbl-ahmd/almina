@@ -23,6 +23,8 @@ export function installMarketingRoutes(
   origins: string[],
   identity: (req: Request, admin?: boolean) => Promise<Staff>,
 ) {
+  const authenticated = identity;
+  identity = async (req, admin) => { const user = await authenticated(req, admin); if (user.accountType === 'branch') throw new HttpError(403, 'FORBIDDEN'); return user; };
   const handler =
     (
       admin: boolean,
