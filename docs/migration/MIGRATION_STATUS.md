@@ -1,3 +1,7 @@
+## 2026-11-07 — Branch-owned store login and unified setup
+
+Branch creation now commits its store login, automatic branch assignment and optional first delivery area together. Replaced separate store staff provisioning with a two-step branch flow and a Branch & login / Delivery area / Stock workspace. Optional details and technical controls are disclosed progressively. Existing person accounts remain compatible; managed login resets revoke sessions and branch removal disables its credentials. No production configuration or data changed. See [branch account setup and safeguards](BRANCH_STORE_ACCOUNTS_2026-11-07.md).
+
 ## 2026-11-06 — Polygon delivery zones and branch stock (release preparation)
 
 Added administrator-managed branch details, Leaflet/Geoman delivery polygons, optional Geoapify lookup, customer pins/saved coordinates and server-authoritative priority-then-distance routing with whole-order branch stock. Shared and branch reservations, cancellation/card expiry restoration and audited reassignment are atomic. Existing city/fallback receiving remains for legacy orders; polygon assignments stay visible after configuration changes. Mode defaults off; administrators must enter real boundaries, locations and counted allocations. No production activation or data migration performed. See [setup, safety and rollback](DELIVERY_ZONES_2026-11-06.md).

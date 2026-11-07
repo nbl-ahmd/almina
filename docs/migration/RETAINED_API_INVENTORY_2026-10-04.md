@@ -166,3 +166,11 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | POST | /api/auth/delivery-settings | admin | Explicit delivery activation |
 | POST | /api/auth/branch-inventory | admin | Idempotent branch stock allocation |
 | PUT | /api/orders/:id/branch | admin | Atomic reservation transfer |
+
+Branch-owned store login and unified setup (7 November 2026):
+
+| Method | URL | Access |
+| --- | --- | --- |
+| GET | /api/auth/branches | admin |
+| POST | /api/auth/branches | admin |
+| POST | /api/auth/branch-login | admin |
