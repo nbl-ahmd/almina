@@ -44,6 +44,7 @@ export function canVisit(role: Identity["role"], section: string, accountType?: 
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
+  ['POST','auth/delivery-place-search','admin'],
   ['GET','auth/branch-login-availability','admin'], ['GET','auth/branches','admin'], ['POST','auth/branches','admin'], ['POST','auth/branch-login','admin'],
   ['GET','auth/delivery-zones','admin'], ['GET','auth/branch-inventory','admin'],
   ...['delivery-zone','delivery-zone-delete','delivery-settings','branch-inventory'].map(path=>['POST','auth/'+path,'admin'] as [string,string,'admin']),
@@ -232,7 +233,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
 }
 // Explicit recursive projection: provider IDs, hashes, subscriptions and unexpected fields never reach a browser.
 const fields = new Set([
-  "logins", "username", "disabled", "items", "reasons", "missingPhoto", "zoneId", "zoneName", "zoneRevision", "deliveryAssignment", "enabled", "kind", "location", "latitude", "longitude", "hours", "geometry", "coordinates", "type", "zones", "settings", "priority", "color", "deliveryFeeMinor", "minimumOrderMinor", "estimatedMinutes", "availableGlobal", "branchStock", "branchId", "branchName", "routing", "areaId", "areaLabel", "needsReview", "revision", "branches", "areaIds", "fallbackBranchId", "staffing", "legacyStaff", "pendingCount", "reviewCount", "oldestPendingAt", "signature", "latestIds",
+  "logins", "username", "disabled", "items", "reasons", "missingPhoto", "zoneId", "zoneName", "zoneRevision", "deliveryAssignment", "enabled", "kind", "location", "latitude", "longitude", "point", "hours", "geometry", "coordinates", "type", "zones", "settings", "priority", "color", "deliveryFeeMinor", "minimumOrderMinor", "estimatedMinutes", "availableGlobal", "branchStock", "branchId", "branchName", "routing", "areaId", "areaLabel", "needsReview", "revision", "branches", "areaIds", "fallbackBranchId", "staffing", "legacyStaff", "pendingCount", "reviewCount", "oldestPendingAt", "signature", "latestIds",
   ...productContentNames,
   "contactName", "phone", "tradeLicense", "taxRegistrationNumber", "deliveryAddress",
   "published","active","catalogManaged","websiteStockProposed","stockReviewedAt","previewId","errors","warnings","rows","row","field","message","sourceKey","action","productId","total","processed","complete","report","namespace","offset","nextOffset","previousPrice","previousStock","changedFields","unmappedCategories",

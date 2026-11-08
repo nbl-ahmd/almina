@@ -40,6 +40,7 @@ module.exports = function loginRoutes(auth, development = false, getDb = async (
     res.json(await require('../commerce/dist/service.cjs').retainedStaffList(await getDb(), req.query, req.identity.id));
   }));
   router.get('/branch-login-availability',wrap(async(req,res)=>{res.json(await require('../commerce/dist/service.cjs').branchLoginAvailability(await getDb(),req.query,req.identity.id));}));
+  router.post('/delivery-place-search',wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.json(await require('../commerce/dist/service.cjs').searchDeliveryPlaces(await getDb(),req.body,req.identity.id));}));
   router.get('/branches', wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.json(await require('../commerce/dist/service.cjs').branchWorkspace(await getDb()));}));
   router.post('/branches',wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.status(201).json(await require('../commerce/dist/service.cjs').createBranch(await getDb(),req.body,req.identity.id));}));
   router.post('/branch-login',wrap(async(req,res)=>{if(Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');res.json(await require('../commerce/dist/service.cjs').saveBranchLogin(await getDb(),req.body,req.identity.id));}));

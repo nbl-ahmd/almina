@@ -11,16 +11,32 @@ export async function deliverySettings(db:Db,session?:ClientSession){const row=a
 export async function touchDelivery(db:Db,session:ClientSession){await db.collection<Document&{_id:string}>('delivery_controls').updateOne({_id:'zones'},{$inc:{orderFence:1},$setOnInsert:{active:false,revision:0}},{session,upsert:true});}
 export async function zoneList(db:Db){return (await db.collection('delivery_zones').find({deletedAt:{$exists:false}},query).sort({priority:1,_id:1}).limit(100).toArray()).map(row=>deliveryZoneSchema.parse({...Object.fromEntries(Object.keys(deliveryZoneSchema.shape).map(key=>[key,row[key]])),id:String(row._id)}));}
 export async function zoneAdministration(db:Db){return {settings:await deliverySettings(db),zones:await zoneList(db),routing:await readOrderRouting(db)};}
-export async function saveZone(db:Db,raw:unknown,actor:string){const parsed=deliveryZoneSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');const value=parsed.data;
+export async function saveZone(db:Db,raw:unknown,actor:string){const parsed=deliveryZoneSchema.extend({enableDelivery:z.boolean().optional()}).safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');const {enableDelivery,...value}=parsed.data;
  await serializeStaffWrites(db,async session=>{await administrator(db,actor,session);const routing=await readOrderRouting(db,session);if(value.branches.some(row=>!routing.branches.some(branch=>branch.id===row.branchId)))throw new HttpError(400,'INVALID_REQUEST');
  const zones=db.collection<Document&{_id:string}>('delivery_zones'),prior=await zones.findOne({_id:value.id},{session});if(prior?.deletedAt|| (prior?.revision??0)!==value.revision)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');if(!prior&&await zones.countDocuments({deletedAt:{$exists:false}},{session})>=100)throw new HttpError(409,'INVALID_TRANSITION');
  await db.collection<Document&{_id:string}>('delivery_controls').updateOne({_id:'zones'},{$inc:{revision:1},$setOnInsert:{active:false}},{upsert:true,session});
- await zones.updateOne({_id:value.id},{$set:{...value,revision:value.revision+1,updatedAt:new Date()}},{upsert:true,session});await db.collection('delivery_audit').insertOne({action:'zone-save',actor,before:prior,after:{...value,revision:value.revision+1},at:new Date()},{session});});return zoneAdministration(db);}
+ await zones.updateOne({_id:value.id},{$set:{...value,revision:value.revision+1,updatedAt:new Date()}},{upsert:true,session});if(enableDelivery){if(!value.active)throw new HttpError(400,'INVALID_REQUEST');await enableBranchZones(db,session,value.branches.map(row=>row.branchId),actor);}
+ await db.collection('delivery_audit').insertOne({action:'zone-save',actor,before:prior,after:{...value,revision:value.revision+1},at:new Date()},{session});});return zoneAdministration(db);}
 export async function deleteZone(db:Db,raw:unknown,actor:string){const value=z.object({id:z.uuid(),revision:z.number().int().nonnegative()}).strict().safeParse(raw);if(!value.success)throw new HttpError(400,'INVALID_REQUEST');await serializeStaffWrites(db,async session=>{await administrator(db,actor,session);const result=await db.collection<Document&{_id:string}>('delivery_zones').updateOne({_id:value.data.id,revision:value.data.revision,deletedAt:{$exists:false}},{$set:{active:false,deletedAt:new Date()},$inc:{revision:1}},{session});if(result.modifiedCount!==1)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');await touchDelivery(db,session);await db.collection('delivery_audit').insertOne({action:'zone-delete',actor,...value.data,at:new Date()},{session});});return zoneAdministration(db);}
+/** The saved branch polygon is both delivery coverage and the receiving assignment. */
+export async function enableBranchZones(db:Db,session:ClientSession,branchIds:string[],actor:string){
+ await administrator(db,actor,session);
+ const policy=await readOrderRouting(db,session);
+ for(const id of branchIds){
+  const branch=policy.branches.find(row=>row.id===id);
+  if(!branch?.location||!await db.collection('users').findOne({role:'user',branchId:id,disabled:{$ne:true}},{session,projection:{_id:1}})||!await db.collection('delivery_zones').findOne({active:true,deletedAt:{$exists:false},'branches.branchId':id},{session,projection:{_id:1}}))throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');
+ }
+ await requireZoneIndex(db);
+ const next={...policy,branches:policy.branches.map(branch=>branchIds.includes(branch.id)?{...branch,enabled:true}:branch),revision:policy.revision+1};
+ await db.collection<Document&{_id:string}>('growth_settings').updateOne({_id:'order-routing'},{$set:{...next,updatedAt:new Date(),updatedBy:actor}},{session});
+ await db.collection<Document&{_id:string}>('delivery_controls').updateOne({_id:'zones'},{$set:{active:true},$inc:{revision:1},$setOnInsert:{orderFence:0}},{session,upsert:true});
+ await db.collection('delivery_audit').insertOne({action:'branch-zone-enable',actor,branchIds,at:new Date()},{session});
+}
+async function requireZoneIndex(db:Db){let ready=false;try{ready=(await db.collection('delivery_zones').listIndexes().toArray()).some(index=>index.key?.geometry==='2dsphere');}catch{throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');}if(!ready)throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');}
 export async function saveZoneSettings(db:Db,raw:unknown,actor:string){const parsed=zoneSettingsSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');await serializeStaffWrites(db,async session=>{await administrator(db,actor,session);const before=await deliverySettings(db,session);if(before.revision!==parsed.data.revision)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');if(parsed.data.active){
- const policy=await readOrderRouting(db,session);if(!policy.active||!policy.branches.some(branch=>branch.enabled!==false&&branch.location))throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');
+ const policy=await readOrderRouting(db,session);if(!policy.branches.some(branch=>branch.enabled!==false&&branch.location))throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');
  if(!await db.collection('delivery_zones').findOne({active:true,deletedAt:{$exists:false}},{session}))throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');
- let ready=false;try{const indexes=await db.collection('delivery_zones').listIndexes().toArray();ready=indexes.some(index=>index.key?.geometry==='2dsphere');}catch{throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');}if(!ready)throw new HttpError(409,'DELIVERY_SETUP_REQUIRED');
+ await requireZoneIndex(db);
  }
  await db.collection<Document&{_id:string}>('delivery_controls').updateOne({_id:'zones'},{$set:{active:parsed.data.active,revision:before.revision+1},$setOnInsert:{orderFence:0}},{session,upsert:true});await db.collection('delivery_audit').insertOne({action:'zone-activation',actor,before,after:parsed.data,at:new Date()},{session});});return zoneAdministration(db);}
 export function distanceMeters(a:DeliveryPoint,b:DeliveryPoint){const radians=(value:number)=>value*Math.PI/180;const dlat=radians(b.latitude-a.latitude),dlon=radians(b.longitude-a.longitude),x=Math.sin(dlat/2)**2+Math.cos(radians(a.latitude))*Math.cos(radians(b.latitude))*Math.sin(dlon/2)**2;return 6371000*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));}
@@ -31,8 +47,9 @@ export async function selectDelivery(db:Db,customer:{coordinates?:DeliveryPoint|
  const zones=await db.collection('delivery_zones').find({active:true,deletedAt:{$exists:false},geometry:{$geoIntersects:{$geometry:{type:'Point',coordinates:[point.longitude,point.latitude]}}}},options).sort({priority:1,_id:1}).limit(101).toArray();
  if(zones.length>100)throw new HttpError(503,'SERVICE_UNAVAILABLE');if(!zones.length)throw new HttpError(422,'ADDRESS_NOT_SERVICEABLE');
  const policy=await readOrderRouting(db,session),branches=policy.branches.filter(branch=>branch.enabled!==false&&branch.location&&(!targetBranch||branch.id===targetBranch));
+ const receiving=await db.collection('users').find({role:'user',disabled:{$ne:true},branchId:{$in:branches.map(branch=>branch.id)}},{...options,projection:{branchId:1}}).limit(1001).toArray();if(receiving.length>1000)throw new HttpError(503,'SERVICE_UNAVAILABLE');
  const candidates:Candidate[]=[];let minimumFailed=false;
- for(const branch of branches){const eligible=zones.filter(zone=>zone.branches.some((row:{branchId:string})=>row.branchId===branch.id));if(!eligible.length)continue;
+ for(const branch of branches){if(!receiving.some(user=>user.branchId===branch.id))continue;const eligible=zones.filter(zone=>zone.branches.some((row:{branchId:string})=>row.branchId===branch.id));if(!eligible.length)continue;
  const zone=eligible[0]!,assignment=zone.branches.find((row:{branchId:string})=>row.branchId===branch.id)!;
  if(quote.subtotalMinor<Math.max(quote.minimumOrderMinor,zone.minimumOrderMinor)){minimumFailed=true;continue;}
  candidates.push({delivery:{branchId:branch.id,branchName:branch.name,zoneId:String(zone._id),zoneName:zone.name,zoneRevision:zone.revision,estimatedMinutes:zone.estimatedMinutes},fee:zone.deliveryFeeMinor,minimum:Math.max(quote.minimumOrderMinor,zone.minimumOrderMinor),priority:assignment.priority,distance:distanceMeters(point,branch.location!)});

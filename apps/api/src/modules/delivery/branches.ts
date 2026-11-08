@@ -5,7 +5,7 @@ import { branchCreationSchema,branchLoginInputSchema,orderRoutingSchema,branchWo
 import { administrator,serializeStaffWrites } from '../auth/administration.js';
 import { readOrderRouting,routingHealth } from '../orders/routing.js';
 import { writeOrderRouting } from '../orders/routing-admin.js';
-import { zoneAdministration } from './service.js';
+import { zoneAdministration, enableBranchZones } from './service.js';
 import { HttpError } from '../../errors.js';
 const query={maxTimeMS:3000};
 export async function branchWorkspace(db:Db){
@@ -33,8 +33,9 @@ export async function createBranch(db:Db,raw:unknown,actor:string){
   }
   const branch={...value.branch,enabled:value.branch.enabled??false},next=orderRoutingSchema.safeParse({...before,branches:[...before.branches,branch],fallbackBranchId:before.fallbackBranchId??branch.id});if(!next.success)throw new HttpError(400,'INVALID_REQUEST');
   const userId=new ObjectId();await db.collection('users').insertOne({_id:userId,accountType:'branch',branchId:branch.id,role:'user',name:branch.name,username:value.login.username,password,loginRevision:1,cities:[],disabled:false,createdAt:new Date()},{session});
-  await writeOrderRouting(db,next.data,actor,session);
+  await writeOrderRouting(db,next.data,actor,session,!!value.zone&&value.branch.enabled===true);
   if(value.zone){const zone=value.zone,collection=db.collection<Document&{_id:string}>('delivery_zones');if(await collection.findOne({_id:zone.id},{session})||await collection.countDocuments({deletedAt:{$exists:false}},{session})>=100)throw new HttpError(409,'INVALID_TRANSITION');await collection.insertOne({...zone,_id:zone.id,revision:1,updatedAt:new Date()},{session});await db.collection<Document&{_id:string}>('delivery_controls').updateOne({_id:'zones'},{$inc:{revision:1},$setOnInsert:{active:false}},{upsert:true,session});await db.collection('delivery_audit').insertOne({action:'zone-create-with-branch',actor,after:{...zone,revision:1},at:new Date()},{session});}
+  if(value.zone&&value.branch.enabled===true)await enableBranchZones(db,session,[branch.id],actor);
   await receipts.insertOne({_id:branch.id,actor,username:value.login.username,userId,createdAt:new Date()},{session});await db.collection('auth_administration_audit').insertOne({actorId,targetUserId:userId,action:'branch-create',branchId:branch.id,createdAt:new Date()},{session});
  });return branchWorkspace(db);
 }
@@ -44,7 +45,8 @@ export async function saveBranchLogin(db:Db,raw:unknown,actor:string){
   const actorId=await administrator(db,actor,session),receipts=db.collection<Document&{_id:string}>('branch_login_receipts');const prior=await receipts.findOne({_id:value.key},{session});if(prior){if(prior.actor!==actor||prior.branchId!==value.branchId||prior.username!==value.username)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');return;}
   const policy=await readOrderRouting(db,session),branch=policy.branches.find(row=>row.id===value.branchId);if(!branch)throw new HttpError(404,'NOT_FOUND');const current=await db.collection('users').findOne({accountType:'branch',branchId:branch.id},{session});if((current?String(current._id):null)!==value.expectedLoginId||(current?.loginRevision??0)!==value.expectedRevision)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');
   if(await db.collection('users').findOne({username:value.username,...(current?{_id:{$ne:current._id}}:{})},{session,projection:{_id:1}}))throw new HttpError(409,'BRANCH_LOGIN_CONFLICT');
-  if(!value.enabled&&policy.active&&branch.enabled!==false&&await db.collection('users').countDocuments({role:'user',branchId:branch.id,disabled:{$ne:true},...(current?{_id:{$ne:current._id}}:{})},{session})===0)throw new HttpError(409,'INVALID_TRANSITION');
+  const zoneSettings=await db.collection<Document&{_id:string}>('delivery_controls').findOne({_id:'zones'},{session});
+  if(!value.enabled&&(policy.active||zoneSettings?.active)&&branch.enabled!==false&&await db.collection('users').countDocuments({role:'user',branchId:branch.id,disabled:{$ne:true},...(current?{_id:{$ne:current._id}}:{})},{session})===0)throw new HttpError(409,'INVALID_TRANSITION');
   const userId=current?._id??new ObjectId();await db.collection('users').updateOne({_id:userId},{$set:{accountType:'branch',role:'user',branchId:branch.id,name:branch.name,username:value.username,password,loginRevision:(current?.loginRevision??0)+1,disabled:!value.enabled,cities:[]},$setOnInsert:{createdAt:new Date()},$unset:{subscription:'',pushSubscriptions:''}},{session,upsert:true});await db.collection('api_sessions').deleteMany({userId},{session});
   await receipts.insertOne({_id:value.key,actor,branchId:branch.id,username:value.username,userId,createdAt:new Date()},{session});await db.collection('auth_administration_audit').insertOne({actorId,targetUserId:userId,action:current?'branch-login-reset':'branch-login-create',branchId:branch.id,createdAt:new Date()},{session});
  });return branchWorkspace(db);
