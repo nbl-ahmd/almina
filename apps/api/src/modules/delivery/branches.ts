@@ -10,9 +10,8 @@ import { HttpError } from '../../errors.js';
 const query={maxTimeMS:3000};
 export async function branchWorkspace(db:Db){
  const [{routing,zones,settings},health]=await Promise.all([zoneAdministration(db),routingHealth(db)]);const logins=await db.collection('users').find({accountType:'branch',branchId:{$in:routing.branches.map(branch=>branch.id)}},{...query,projection:{_id:1,branchId:1,username:1,disabled:1,loginRevision:1}}).limit(21).toArray();if(logins.length>20||new Set(logins.map(login=>login.branchId)).size!==logins.length)throw new HttpError(503,'SERVICE_UNAVAILABLE');
- const stocks=await db.collection('branch_inventory').aggregate<{_id:string;count:number}>([{$match:{branchId:{$in:routing.branches.map(branch=>branch.id)},stock:{$gt:0}}},{$group:{_id:'$branchId',count:{$sum:1}}}],query).toArray();
  // Deleted branch credentials remain disabled for history, but are not part of the workspace.
- return branchWorkspaceSchema.parse({routing,zones,settings,stockedProducts:routing.branches.map(branch=>({branchId:branch.id,count:stocks.find(stock=>stock._id===branch.id)?.count??0})),staffing:health.staffing,legacyStaff:health.legacyStaff,logins:logins.filter(login=>routing.branches.some(branch=>branch.id===login.branchId)).map(login=>({id:String(login._id),branchId:login.branchId,username:login.username,revision:login.loginRevision??0,disabled:login.disabled===true}))});
+ return branchWorkspaceSchema.parse({routing,zones,settings,stockedProducts:[],staffing:health.staffing,legacyStaff:health.legacyStaff,logins:logins.filter(login=>routing.branches.some(branch=>branch.id===login.branchId)).map(login=>({id:String(login._id),branchId:login.branchId,username:login.username,revision:login.loginRevision??0,disabled:login.disabled===true}))});
 }
 export async function createBranch(db:Db,raw:unknown,actor:string){
  const parsed=branchCreationSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');const value=parsed.data;await administrator(db,actor);

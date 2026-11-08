@@ -1,5 +1,10 @@
 # Multi-branch delivery zones — 6 November 2026
 
+> Stock allocation and dual-reservation details below describe the original release.
+> The owner replaced them with [shared main stock](SHARED_STOCK_DELIVERY_2026-11-08.md)
+> on 8 November 2026; retain this document as historical implementation evidence.
+
+
 ## Scope and current state
 
 Additive implementation over the existing pharmacy receiving and named-area routing workflow. Polygon mode defaults off. No production branches, boundaries, available-stock allocations, staff assignments or activation have been created by this change. The repository's maintained commerce API uses the native MongoDB driver; no second ORM or infrastructure was introduced.

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
+import { MongoServerError, ObjectId, type Db, type Document, type ClientSession } from 'mongodb';
 import {
   cloudinaryImage, imageReviewStageSchema, imageReviewListQuerySchema, imageReviewDecisionSchema,
   imageReviewSelectionSchema, imageReviewImportSchema, imageReviewExportQuerySchema, imageReviewPublishSchema,
@@ -244,44 +244,55 @@ export async function importImageReviewApprovals(db: Db, raw: unknown, actor: st
   const receipts = db.collection<Document & { _id: string }>('image_review_imports');
   const existing = await receipts.findOne({ _id: manifest.manifestId }, queryOptions);
   if (existing) return { imported: existing.imported as number, replayed: true, manifestId: manifest.manifestId };
-  // Check immutable original bytes before the transaction, never upload or rename.
-  await Promise.all(manifest.mappings.map(async mapping => {
-    const row = await items(db).findOne({ _id: mapping.itemId }, queryOptions);
-    if (!row || row.approvalId !== mapping.approvalId || row.status !== 'approved') throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-    await verifyOriginal(row.source, cloudName, transport);
-  }));
-  const session = db.client.startSession(); let replayed = false;
   try {
-    await session.withTransaction(async () => {
-      const receipt = await receipts.findOne({ _id: manifest.manifestId }, { session });
-      if (receipt) { replayed = true; return; }
-      await authorize(db, actor, true, session);
-      const groups = new Map<string, ImageReviewApprovedMapping[]>();
-      for (const mapping of manifest.mappings) groups.set(mapping.productId, [...(groups.get(mapping.productId) ?? []), mapping]);
-      for (const [productId, group] of groups) {
-        const product = await productByBusinessId(db, productId, session);
-        for (const mapping of group) {
-          const row = await items(db).findOne({ _id: mapping.itemId, approvalId: mapping.approvalId, status: 'approved' }, { session });
-          if (!row || (await approvedMapping(db, row, session)).productRevision !== mapping.productRevision || imageReviewProductRevision(product) !== mapping.productRevision) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+    // Check immutable original bytes before the transaction, never upload or rename.
+    await Promise.all(manifest.mappings.map(async mapping => {
+      const row = await items(db).findOne({ _id: mapping.itemId }, queryOptions);
+      if (!row || row.approvalId !== mapping.approvalId || row.status !== 'approved') throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      await verifyOriginal(row.source, cloudName, transport);
+    }));
+    const session = db.client.startSession(); let replayed = false;
+    try {
+      await session.withTransaction(async () => {
+        const receipt = await receipts.findOne({ _id: manifest.manifestId }, { session });
+        if (receipt) { replayed = true; return; }
+        await authorize(db, actor, true, session);
+        const groups = new Map<string, ImageReviewApprovedMapping[]>();
+        for (const mapping of manifest.mappings) groups.set(mapping.productId, [...(groups.get(mapping.productId) ?? []), mapping]);
+        for (const [productId, group] of groups) {
+          const product = await productByBusinessId(db, productId, session);
+          for (const mapping of group) {
+            const row = await items(db).findOne({ _id: mapping.itemId, approvalId: mapping.approvalId, status: 'approved' }, { session });
+            if (!row || (await approvedMapping(db, row, session)).productRevision !== mapping.productRevision || imageReviewProductRevision(product) !== mapping.productRevision) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+          }
+          if (product.cloudinaryImages !== undefined && (!Array.isArray(product.cloudinaryImages) || product.cloudinaryImages.some((v: unknown) => typeof v !== 'string'))) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+          const urls = [...new Set([...(product.cloudinaryImages ?? []) as string[], ...group.map(m => m.imageUrl)])];
+          if (urls.length > 8 || !Number.isSafeInteger(Number(product.mediaRevision ?? 0))) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+          const next = { ...product, cloudinaryImages: urls, mediaRevision: Number(product.mediaRevision ?? 0) + 1 };
+          if (urls.length !== (product.cloudinaryImages?.length ?? 0)) {
+            await recordMediaHistory(db, 'products', product, next, actor, `Pharmacist image review ${manifest.manifestId}`, session);
+            const saved = await db.collection('products').updateOne({ _id: product._id, ...(product.mediaRevision === undefined ? { mediaRevision: { $exists: false } } : { mediaRevision: product.mediaRevision }) }, { $set: { cloudinaryImages: urls, mediaRevision: next.mediaRevision } }, { session });
+            if (saved.modifiedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+          }
         }
-        if (product.cloudinaryImages !== undefined && (!Array.isArray(product.cloudinaryImages) || product.cloudinaryImages.some((v: unknown) => typeof v !== 'string'))) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-        const urls = [...new Set([...(product.cloudinaryImages ?? []) as string[], ...group.map(m => m.imageUrl)])];
-        if (urls.length > 8 || !Number.isSafeInteger(Number(product.mediaRevision ?? 0))) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-        const next = { ...product, cloudinaryImages: urls, mediaRevision: Number(product.mediaRevision ?? 0) + 1 };
-        if (urls.length !== (product.cloudinaryImages?.length ?? 0)) {
-          await recordMediaHistory(db, 'products', product, next, actor, `Pharmacist image review ${manifest.manifestId}`, session);
-          const saved = await db.collection('products').updateOne({ _id: product._id, ...(product.mediaRevision === undefined ? { mediaRevision: { $exists: false } } : { mediaRevision: product.mediaRevision }) }, { $set: { cloudinaryImages: urls, mediaRevision: next.mediaRevision } }, { session });
-          if (saved.modifiedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+        for (const mapping of manifest.mappings) {
+          const changed = await items(db).updateOne({ _id: mapping.itemId, status: 'approved', approvalId: mapping.approvalId }, { $set: { status: 'imported', importedAt: new Date(), importManifestId: manifest.manifestId }, $inc: { revision: 1 } }, { session });
+          if (changed.modifiedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
         }
-      }
-      for (const mapping of manifest.mappings) {
-        const changed = await items(db).updateOne({ _id: mapping.itemId, status: 'approved', approvalId: mapping.approvalId }, { $set: { status: 'imported', importedAt: new Date(), importManifestId: manifest.manifestId }, $inc: { revision: 1 } }, { session });
-        if (changed.modifiedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
-      }
-      await receipts.insertOne({ _id: manifest.manifestId, actor, imported: manifest.mappings.length, manifest, createdAt: new Date() }, { session });
-    }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
-  } finally { await session.endSession(); }
-  return { imported: manifest.mappings.length, replayed, manifestId: manifest.manifestId };
+        await receipts.insertOne({ _id: manifest.manifestId, actor, imported: manifest.mappings.length, manifest, createdAt: new Date() }, { session });
+      }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
+    } finally { await session.endSession(); }
+    return { imported: manifest.mappings.length, replayed, manifestId: manifest.manifestId };
+  } catch (error) {
+    const conflict = error instanceof HttpError && ['CATALOG_REVIEW_REQUIRED', 'IDEMPOTENCY_CONFLICT'].includes(error.code);
+    if (!conflict && !(error instanceof MongoServerError && error.code === 11000)) throw error;
+    // Another caller can commit after our initial receipt read, including while
+    // preflight or transaction validation is running.
+    // Only an atomic completion of this exact validated manifest permits replay.
+    const completed = await receipts.findOne({ _id: manifest.manifestId }, queryOptions);
+    if (!completed) throw error;
+    return { imported: completed.imported as number, replayed: true, manifestId: manifest.manifestId };
+  }
 }
 
 /** One explicit administrator action; the existing preflight/import gates stay intact. */
