@@ -1,4 +1,4 @@
-import { applyZoneQuote, reserveBranch, restoreBranch, deliverySettings } from '../delivery/service.js';
+import { applyZoneQuote, restoreBranch, deliverySettings } from '../delivery/service.js';
 import { resolveDeliveryArea } from '@almina/contracts';
 import { branchOrderFilter } from './routing.js';
 import {verifiedSearchAttribution} from '../search/analytics.js';
@@ -172,7 +172,6 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
           if(input.voucherCode)await consumeVoucher(db,session,input.voucherCode,customerId!,_id);
           // Claim key before stock changes. _id has a built-in unique index; receipt and order commit together.
           await db.collection<Document & { _id: string }>('checkout_requests').insertOne({ _id: key, fingerprint, orderId: _id, createdAt: now }, { session });
-          if (totals.delivery) await reserveBranch(db,session,totals.delivery.branchId,totals.lines);
           for (const item of input.items) {
             const result = await db.collection('products').updateOne({ _id: new ObjectId(item.productId), stock: { $gte: item.quantity },
               disabled: { $ne: true }, active: { $ne: false }, published: { $ne: false }, archivedAt:{$exists:false} },
@@ -190,7 +189,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
             throw new HttpError(503, 'COMMERCE_UNAVAILABLE'); // Never advance past an unreviewed counter collision.
           }
           const order = { _id, ...(totals.delivery ? { deliveryAssignment: totals.delivery } : {}), routing: { version: 1, areaId: resolveDeliveryArea(input.customer), revision: 0 }, ...(stripeReservation ? {payment: {provider:'stripe', testMode:stripeReservation.testMode??true, state:'awaiting_payment', ...stripeReservation}} : {}), ...(wholesaleAccess?{channel:'wholesale',wholesale:{...Object.fromEntries(Object.keys(wholesaleBusinessFields).filter(key=>wholesaleAccess.account[key]!==undefined).map(key=>[key,wholesaleAccess.account[key]])),accountId:wholesaleAccess.account._id,typeId:wholesaleAccess.type._id,businessName:wholesaleAccess.account.businessName,accountRevision:wholesaleAccess.account.revision}}:{}), customerEmailKey:input.customer.email.trim().toLowerCase(), ...(customerId?{customerId}:{}), schemaVersion: 2, orderId, status: 'pending', statusHistory: [{ status: 'pending', at: now }],
-            createdAt: now, lines: totals.lines, totals, inventory: { deducted: true, restored: false },
+            createdAt: now, lines: totals.lines, totals, inventory: { source: 'main', deducted: true, restored: false },
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
             dispatched: false, canceled: false,
