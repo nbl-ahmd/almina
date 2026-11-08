@@ -728,3 +728,7 @@ exposed a concurrent image-import replay race, not a restored browser suite.
 Recognize only an exact atomically completed import receipt after expected
 conflicts; deterministic overtaking tests preserve stale-review rejection and
 single-write history. See [CI notes](CI_2026-10-23.md).
+
+### Staff notifications — 2026-11-08 (review candidate)
+
+Replaced the repeating pending-order chime with one-shot, account-deduplicated foreground events. Added a persistent personal inbox, order/stock/payment alert episodes, category preferences, revisioned stock thresholds, self-only rate-limited test pushes, installable admin manifest and privacy-preserving service-worker window reuse. Reuses standard Web Push and existing credentials; workers remain on the persistent service. No production commerce data or deployment changed. See [staff notification operations and rollback](STAFF_ALERTS_2026-11-08.md).

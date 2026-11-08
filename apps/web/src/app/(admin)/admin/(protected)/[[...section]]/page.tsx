@@ -1,3 +1,4 @@
+import { NotificationCenter } from '../../../../../components/admin/notification-center';
 import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
 import type { BranchWorkspace } from '@almina/contracts';
 import { DeliveryZoneManagement } from '../../../../../components/admin/delivery-management';
@@ -679,10 +680,11 @@ export default async function AdminPage({
     return (
       <>
         <PageHeader
-          title="Order alerts"
-          description="Order updates stream from the server, with a recovery check every 10 seconds after missed events or a connection loss."
+          title="Notifications"
+          description="Order activity, stock alerts and device delivery in one place."
         />
-        <Card title="Push notifications">
+        <NotificationCenter admin={user.role==='admin'}/>
+        <Card title="Browser & installed app notifications">
           <p>
             The dashboard and order lists always show committed, authorized
             records. Enable push on the pharmacy’s receiving device. Keep the Orders inbox open and enable its optional sound; browser permissions, sleep and connectivity can delay alerts, so the inbox remains the source of truth.

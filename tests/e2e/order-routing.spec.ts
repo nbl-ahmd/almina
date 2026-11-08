@@ -39,7 +39,7 @@ test('pharmacy routing setup, fallback inbox, sound opt-in and receiving work on
     expect((await request.post(commerceOrigin + '/api/orders', { headers: { origin: commerceOrigin, 'x-csrf-protection': '1' }, data: { idempotencyKey: randomUUID(), items: [{ productId, quantity: 1 }], customer: { ...customer, city } } })).ok()).toBeTruthy();
   }
   await expect(page.getByRole('link', { name: '2 orders awaiting confirmation' })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('link', { name: '1 addresses to review', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: '1 address to review', exact: true })).toBeVisible();
   await expect(page.getByRole('table', { name: 'Orders', exact: true })).toContainText('Central pharmacy');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: '.verification-results/routing-inbox-mobile.png', fullPage: true });

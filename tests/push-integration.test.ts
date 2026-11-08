@@ -174,3 +174,98 @@ test('accepted push persists before cursor failure and resumes without provider 
     await worker.tick(); await worker.tick(); assert.equal(calls, 1);
   } finally { await f.close(); }
 });
+
+import { prepareStaffAlertStorage,observeStock,notificationFeed,markNotifications,recordOrderAlert,testStaffNotification,saveAlertPreferences,saveAlertRules } from '../apps/api/src/modules/notifications/center';
+test('stock alerts have quiet baseline, one push per episode, zero escalation and no commerce writes',{skip:!uri},async()=>{
+ const f=await fixture(),actor=new ObjectId(),product=new ObjectId();
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertOne({_id:actor,role:'admin'});
+  await f.db.collection('products').insertOne({_id:product,product_id:'PD-TEST',stock:3,price:50});
+  await observeStock(f.db,product);await observeStock(f.db,product);
+  let feed=await notificationFeed(f.db,{},String(actor));assert.equal(feed.items.length,1);assert.equal(feed.items[0]!.announce,false);assert.equal(await f.db.collection('order_outbox').countDocuments(),0);
+  await f.db.collection('products').updateOne({_id:product},{$set:{stock:10}});await observeStock(f.db,product);
+  assert.equal((await notificationFeed(f.db,{},String(actor))).items[0]!.resolved,true);
+  await f.db.collection('products').updateOne({_id:product},{$set:{stock:2}});await Promise.all([observeStock(f.db,product),observeStock(f.db,product)]);
+  assert.equal(await f.db.collection('order_outbox').countDocuments(),1);
+  await f.db.collection('products').updateOne({_id:product},{$set:{stock:0}});await observeStock(f.db,product);await observeStock(f.db,product);
+  assert.equal(await f.db.collection('order_outbox').countDocuments(),2);
+  feed=await notificationFeed(f.db,{},String(actor));assert.equal(feed.items[0]!.kind,'out-of-stock');assert.equal(feed.items[0]!.announce,true);assert.equal(feed.items.filter(item=>!item.resolved).length,1);
+  await markNotifications(f.db,{ids:[feed.items[0]!.id]},String(actor));assert.equal((await notificationFeed(f.db,{},String(actor))).items[0]!.read,true);
+  const source=await f.db.collection('products').findOne({_id:product});assert.equal(source!.price,50);assert.equal(source!.stock,0);assert.equal(await f.db.collection('orders').countDocuments(),0);
+  await saveAlertRules(f.db,{lowStockThreshold:2,revision:0},String(actor));await observeStock(f.db,product);assert.equal(await f.db.collection('order_outbox').countDocuments(),2);
+ }finally{await f.close();}
+});
+test('notification reads, legacy/branch orders and settings enforce current identity and personal scope',{skip:!uri},async()=>{
+ const f=await fixture(),admin=new ObjectId(),a=new ObjectId(),b=new ObjectId(),orderA=new ObjectId(),orderB=new ObjectId();
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertMany([{_id:admin,role:'admin'},{_id:a,role:'user',branchId:'branch-a',cities:['City A']},{_id:b,role:'user',branchId:'branch-b',cities:['City B']}]);
+  const first={_id:orderA,status:'pending',createdAt:new Date(),orderId:'ODTEST-A',deliveryAssignment:{branchId:'branch-a'},customer:{city:'City A'}};
+  const second={_id:orderB,status:'pending',createdAt:new Date(),orderId:'ODTEST-B',deliveryAssignment:{branchId:'branch-b'},customer:{city:'City B'}};
+  await f.db.collection('orders').insertMany([first,second]);await recordOrderAlert(f.db,first);await recordOrderAlert(f.db,second);
+  const feedA=await notificationFeed(f.db,{},String(a)),feedB=await notificationFeed(f.db,{},String(b));assert.equal(feedA.items.length,1);assert.match(feedA.items[0]!.description,/ODTEST-A/);assert.equal(feedB.items.length,1);
+  await assert.rejects(markNotifications(f.db,{ids:[feedB.items[0]!.id]},String(a)),{status:404});
+  await markNotifications(f.db,{ids:[feedA.items[0]!.id]},String(a));assert.equal((await notificationFeed(f.db,{},String(admin))).items.every(item=>!item.read),true);
+  await assert.rejects(saveAlertRules(f.db,{lowStockThreshold:4,revision:0},String(a)),{status:403});
+  await assert.rejects(saveAlertPreferences(f.db,{pushOrders:false,userId:String(b)},String(a)),{status:400});
+  await f.db.collection('users').updateOne({_id:a},{$set:{disabled:true}});await assert.rejects(notificationFeed(f.db,{},String(a)),{status:403});
+ }finally{await f.close();}
+});
+test('test pushes are idempotent, rate limited and cannot fan out to another account',{skip:!uri},async()=>{
+ const f=await fixture(),actor=new ObjectId(),other=new ObjectId(),own=subscription('test-own'),foreign=subscription('test-foreign'),sent:string[]=[];
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertMany([{_id:actor,role:'admin',subscription:own},{_id:other,role:'admin',subscription:foreign}]);
+  const worker=await staffPushOutbox(()=>f.db,{intervalMs:60000,send:async(value)=>{sent.push(value.endpoint);},onFailure:()=>assert.fail('unexpected push failure')});f.workers.push(worker);
+  const key=randomUUID();await testStaffNotification(f.db,{key},String(actor));await testStaffNotification(f.db,{key},String(actor));
+  await assert.rejects(testStaffNotification(f.db,{key:randomUUID()},String(actor)),{status:429});
+  for(let i=0;i<5;i++)await worker.tick();assert.deepEqual(sent,[own.endpoint]);assert.equal(await f.db.collection('order_outbox').countDocuments(),1);
+  assert.equal((await notificationFeed(f.db,{},String(other))).items.length,0);
+ }finally{await f.close();}
+});
+test('stock background preferences and resolved alerts suppress obsolete delivery',{skip:!uri},async()=>{
+ const f=await fixture(),actor=new ObjectId(),device=subscription('stock-admin'),product=new ObjectId();let sends=0;
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertOne({_id:actor,role:'admin',subscription:device});
+  const worker=await staffPushOutbox(()=>f.db,{intervalMs:60000,send:async()=>{sends++;},onFailure:()=>assert.fail('unexpected push failure')});f.workers.push(worker);
+  await saveAlertPreferences(f.db,{pushStock:false},String(actor));await f.db.collection('products').insertOne({_id:product,stock:10});await observeStock(f.db,product);
+  await f.db.collection('products').updateOne({_id:product},{$set:{stock:2}});await observeStock(f.db,product);for(let i=0;i<4;i++)await worker.tick();assert.equal(sends,0);
+  await saveAlertPreferences(f.db,{pushStock:true},String(actor));await f.db.collection('products').updateOne({_id:product},{$set:{stock:0}});await observeStock(f.db,product);
+  await f.db.collection('products').updateOne({_id:product},{$set:{stock:10}});await observeStock(f.db,product);for(let i=0;i<4;i++)await worker.tick();assert.equal(sends,0);
+  await notificationMaintenance(f.db);await notificationMaintenance(f.db);
+ }finally{await f.close();}
+});
+
+import { notificationMaintenance } from '../apps/api/src/modules/notifications/alert-worker';
+
+test('payment issues bootstrap quietly, notify new issues, resolve and stay administrator-only',{skip:!uri},async()=>{
+ const f=await fixture(),admin=new ObjectId(),staff=new ObjectId(),oldOrder=new ObjectId(),newOrder=new ObjectId();
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertMany([{_id:admin,role:'admin'},{_id:staff,role:'user',cities:[]}]);
+  await f.db.collection('orders').insertOne({_id:oldOrder,orderId:'OD-OLD',payment:{provider:'stripe',refundIssue:'synthetic-old'}});
+  await notificationMaintenance(f.db);let feed=await notificationFeed(f.db,{},String(admin));assert.equal(feed.items[0]!.kind,'payment');assert.equal(feed.items[0]!.announce,false);assert.equal(await f.db.collection('order_outbox').countDocuments(),0);
+  await f.db.collection('orders').insertOne({_id:newOrder,orderId:'OD-NEW',payment:{provider:'stripe',refundIssue:'synthetic-new'}});await notificationMaintenance(f.db);await notificationMaintenance(f.db);
+  feed=await notificationFeed(f.db,{},String(admin));assert.equal(feed.items.filter(item=>item.kind==='payment'&&item.announce).length,1);assert.equal(await f.db.collection('order_outbox').countDocuments(),1);assert.equal((await notificationFeed(f.db,{},String(staff))).items.length,0);
+  await f.db.collection('orders').updateOne({_id:newOrder},{$unset:{'payment.refundIssue':''}});await notificationMaintenance(f.db);feed=await notificationFeed(f.db,{},String(admin));assert.equal(feed.items.find(item=>item.description.includes('OD-NEW'))!.resolved,true);
+ }finally{await f.close();}
+});
+test('reassignment back to a previous branch creates a new order-alert episode',{skip:!uri},async()=>{
+ const f=await fixture(),admin=new ObjectId(),order=new ObjectId();
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertOne({_id:admin,role:'admin'});
+  const source={_id:order,status:'pending',createdAt:new Date(),orderId:'OD-MOVING',deliveryAssignment:{branchId:'a'}};
+  await f.db.collection('orders').insertOne(source);await recordOrderAlert(f.db,source);
+  const moved={...source,deliveryAssignment:{branchId:'b'},assignmentHistory:[{at:new Date()}]};await f.db.collection('orders').replaceOne({_id:order},moved);await recordOrderAlert(f.db,moved);
+  const back={...source,assignmentHistory:[...moved.assignmentHistory,{at:new Date()}]};await f.db.collection('orders').replaceOne({_id:order},back);await recordOrderAlert(f.db,back);
+  const feed=await notificationFeed(f.db,{},String(admin));assert.equal(feed.items.length,3);assert.equal(feed.items.filter(item=>!item.resolved).length,1);assert.equal(feed.items[0]!.resolved,false);
+ }finally{await f.close();}
+});
+
+test('payment alert reconciliation recovers an interrupted push enqueue without duplicating or waking baseline issues',{skip:!uri},async()=>{
+ const f=await fixture(),actor=new ObjectId(),order=new ObjectId();
+ try{
+  await prepareStaffAlertStorage(f.db);await f.db.collection('users').insertOne({_id:actor,role:'admin'});await notificationMaintenance(f.db);
+  await f.db.collection('orders').insertOne({_id:order,orderId:'OD-RETRY',payment:{provider:'stripe',refundIssue:'synthetic-enqueue-failure'}});
+  const interrupted=Object.create(f.db) as Db;Object.defineProperty(interrupted,'collection',{value:(name:string)=>{const collection=f.db.collection(name);if(name!=='order_outbox')return collection;return new Proxy(collection,{get(target,key){if(key==='updateOne')return async()=>{throw new Error('Synthetic enqueue failure');};const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;}});}});
+  await assert.rejects(notificationMaintenance(interrupted));assert.equal(await f.db.collection('staff_alerts').countDocuments({kind:'payment'}),1);assert.equal(await f.db.collection('order_outbox').countDocuments(),0);
+  await notificationMaintenance(f.db);await notificationMaintenance(f.db);assert.equal(await f.db.collection('staff_alerts').countDocuments({kind:'payment'}),1);assert.equal(await f.db.collection('order_outbox').countDocuments(),1);
+ }finally{await f.close();}
+});

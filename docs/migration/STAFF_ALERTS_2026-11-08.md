@@ -1,0 +1,52 @@
+# Staff notification centre
+
+## Scope and release
+
+This change is additive. It does not change order confirmation, payment, branch routing, stock reservations, prices, customer messages, or existing email delivery. It replaces the repeating foreground order reminder with event-based alerts. Production release requires the normal reviewed merge/deploy instruction.
+
+## Behaviour
+
+- The status bar keeps the existing authorized SSE order summary and recovery polling. Pending backlog never triggers a repeating sound. Sound must be enabled by a user gesture in each open session; **Test sound** is explicit.
+- A single Sonner toaster in the authenticated shell announces new, unread, unresolved events after that visible session's server timestamp. Startup, tab return, reconnection backlog and initial stock reconciliation are quiet. Polling is every 15 seconds while visible, with immediate checks following order invalidations/push messages. One chime per batch; Web Locks plus account-scoped bounded local storage deduplicate across tabs where supported. Without Web Locks, simultaneous-tab deduplication is best effort. If storage is blocked, in-memory deduplication still applies.
+- The personal activity inbox supports read/unread, a recent unread filter, pagination and actionable links. Read state never changes order status. Recorded history/read receipts expire after 30 days; active stock alerts are retained while unresolved and pending orders can be materialized again quietly; Orders remains the operational source of truth. Badge counts reflect the newest bounded 250 eligible alerts, rather than claiming an exact lifetime unread total.
+- Order alerts are derived from committed outbox jobs and current authorized pending orders. Live Stripe orders must be paid; sandbox/unpaid/cancelled/refunded orders do not generate new order alerts. Current order authorization is rechecked on reads and mark-read operations. Reassignments create new assignment episodes and resolve superseded alerts. Legacy authorized city-based orders remain visible until that branch workflow is migrated.
+- Stock alerts observe main catalogue availability, never change it. Initial low stock is listed quietly. A transition into low stock queues one alert; reaching zero creates a new escalation. Recovery resolves the previous episode. Administrators configure the threshold (default 5); rule changes do not blast existing stock to devices. Orders prompt stock reconciliation; a rolling scan also catches ERP/import/admin updates. There is no per-branch stock copy.
+- Stripe refund reconciliation issues produce administrator alerts. Existing issues are bootstrapped quietly, new issues notify, and cleared/superseded issues resolve. This is operational reconciliation, not a new automatic refund mechanism.
+- Orders reach currently authorized receiving accounts and administrators; stock/payment alerts reach administrators only. Device category preferences are personal and enforced by the worker. No stock/payment alerts are exposed to branch accounts.
+
+## Browser/PWA delivery
+
+The existing persistent Render Web Push outbox is reused: durable per-device receipts, leases, bounded retries, stale-device cleanup, current authorization, and quarantine of uncertain outcomes. The standard `web-push` implementation remains the sender. Sonner 2.0.8 is the only new dependency (MIT). Web Push and in-app delivery do not require a paid messaging provider; existing hosting/database/network costs still apply. No SMS or new external email service is introduced.
+
+The worker intentionally receives no order/customer/medical payload. Lock-screen text is generic. Push notifications group under one tag and focus/navigate an existing admin window. Visible admin tabs use the in-app chime and a silent OS notification to avoid double sounds. Background alerts follow OS sound settings. Both maintained service-worker URLs share this behaviour. No signed-in pages or customer data are cached, and there are no offline commerce writes.
+
+`/admin/manifest.webmanifest` describes **Al Mina Operations**, with a staff-only scope that includes `/admin` and its subroutes. On iPhone/iPad (16.4+), use Share → Add to Home Screen, launch the installed app, then enable notifications with a direct gesture. Other supported browsers can install through their install menu. Browser permission, OS notifications/Focus, connectivity, power management and browser policies can delay/suppress delivery; background JavaScript cannot force continuous sound or bypass those controls.
+
+**Send test notification** creates a personal in-app event and queues the actor's registered devices only. It is idempotent for a request key and limited to one new test per minute. A queued message/provider acceptance is not proof that a person saw the OS notification. Verify on each actual receiving device after release. Disable on this device preserves other registrations.
+
+## Runtime, configuration and storage
+
+No new mandatory environment variables or keys. Reuse the existing production persistent service configuration:
+
+- `ADMIN_PUSH_ENABLED=true`
+- Existing `ADMIN_PUSH_PUBLIC_KEY`, `ADMIN_PUSH_PRIVATE_KEY`, `ADMIN_PUSH_SUBJECT` (contact: `mailto:info@alminapharmacy.com`). **Do not rotate keys** as part of this change.
+
+The Next.js application runs no stock scan or notification delivery worker. The persistent service owns `staffAlertWorker`; it processes committed order jobs, scans up to 100 catalogue records and 25 payment issues per 5-second cycle with a shared lease. Unchanged stock is read without a transaction/write. Source products/orders are never rewritten by notification reconciliation. Alerts and push use independent outbox fields and non-email job states, preserving the existing SMTP contract. Workers drain before the database closes.
+
+New owned collections: `staff_alerts`, `staff_alert_reads`, `staff_alert_preferences`, `staff_stock_state`; new namespaced controls in `notification_controls`. `order_outbox` gains additive alert job kinds and `inAppState`. Startup creates the new notification indexes and an additive, non-unique `order_outbox` index for pending in-app jobs: unique event identity, feed scope/order, 30-day TTL; personal read owner/alert uniqueness and TTL. Activation/rolling cursors persist; reruns do not duplicate event episodes. No production backfill command or destructive migration is required. Existing pending orders are materialized quietly when authorized staff open the inbox.
+
+API adapters: GET `/api/orders/notifications`, POST `.../read`, GET/PUT `.../preferences`, POST `.../test`, admin GET/PUT `.../rules`; browser access remains through the authenticated, same-origin `/api/admin` gateway. All external inputs are strict, bounded contracts. Fixed GET/HEAD status reads (`auth/me`, `orders/receiving`, `orders/notifications`) have an independent 240/minute IP allowance, enforced before authentication; they cannot spend the existing 120/minute allowance for other API operations. This does not bypass authentication, RBAC, login limits, or the personal test-notification limit. Read markers and tests cannot select another actor. Stock rule edits are serialized, revision checked, administrator only. Disabled/changed roles are rechecked against current records.
+
+Sonner's injected stylesheet and initial empty style node are permitted by their **exact SHA-256** hashes, restricted to admin CSP. Arbitrary inline stylesheet access remains disabled in production. The stylesheet test fails if a future Sonner update changes those bytes; review/recompute the hash with any upgrade.
+
+## Verification and rollback
+
+Focused tests cover quiet backlog, low/zero-stock episodes and recovery, concurrent observation, source stock/price immutability, read ownership, branch privacy, rules RBAC, test idempotency/rate limit/self-only targeting, category preferences, and suppression of resolved pushes. Existing push lease/retry/expired-device/uncertain-response/provider tests remain in use. Browser verification covers persistent reads/preferences, threshold saving, install manifest, 320/390/768/1280 layouts, and a simulated multi-minute sound regression. Strict CSP, worker privacy/window reuse and production builds are checked separately. Verification uses synthetic loopback databases; no production orders or notifications are fabricated.
+
+Rollback: redeploy the previous web/API revisions together. Retain all new collections/indexes and existing VAPID keys; old readers ignore them. The previous push worker safely ignores alert jobs lacking an order, but stop the new workers before rollback. Old frontend code includes the repeating reminder, so disabling foreground sound is advised when reverting. Browser workers update on the next registration/update visit; use the two maintained URLs for any worker rollback. Do not delete production subscriptions, orders, stock or alert history to roll back.
+
+Remaining delivery limits: supported browsers/devices need permission and registration; Web Push has no cross-platform guarantee of display/read, custom background beep loops, or delivery while the device cannot receive push. This implementation does not add SMS, WhatsApp escalation, native-app critical alerts or email stock digests. Existing transactional email/WhatsApp integration stays unchanged.
+
+### Local verification recorded
+
+Passed: 274 unit tests, 165 API/security tests, 218 disposable-database integration tests, and 9 production-browser workflows (branch accounts, notifications and receiving). Typecheck, lint, production foundation build and diff checks passed. The fresh build's strict stylesheet policy was checked in the sound test; both immutable Sonner CSS and its initial empty style element have exact hashes, without enabling arbitrary inline styles. A running Next.js 16.4.2 Turbopack demo also returned no compilation issues or application/browser errors through `/_next/mcp` and browser checks. Actual production OS push display remains a post-deployment receiving-device check, not something simulated tests can certify.

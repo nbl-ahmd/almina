@@ -3,6 +3,15 @@ const Orderrouter = express.Router();
 const { createCommerceService } = require('../commerce/dist/service.cjs');
 const commerceFor = req => createCommerceService(req.app.locals.getCommerceDb, req.app.locals.stripePayments);
 
+const wrapAlert = handler => require('../security/boundary.cjs').wrap(async(req,res)=>{if(Object.keys(req.query).length&&req.method!=='GET')throw require('../security/boundary.cjs').fail(400,'INVALID_REQUEST');const domain=require('../commerce/dist/service.cjs');res.json(await handler(domain,await req.app.locals.getCommerceDb(),req));});
+Orderrouter.get('/notifications',wrapAlert((domain,db,req)=>domain.notificationFeed(db,req.query,req.identity.id)));
+Orderrouter.post('/notifications/read',wrapAlert((domain,db,req)=>domain.markNotifications(db,req.body,req.identity.id)));
+Orderrouter.get('/notifications/preferences',wrapAlert((domain,db,req)=>{if(Object.keys(req.query).length)throw require('../security/boundary.cjs').fail(400,'INVALID_REQUEST');return domain.alertPreferences(db,req.identity.id);}));
+Orderrouter.put('/notifications/preferences',wrapAlert((domain,db,req)=>domain.saveAlertPreferences(db,req.body,req.identity.id)));
+Orderrouter.post('/notifications/test',wrapAlert((domain,db,req)=>domain.testStaffNotification(db,req.body,req.identity.id)));
+Orderrouter.get('/notifications/rules',wrapAlert(async(domain,db,req)=>{if(Object.keys(req.query).length)throw require('../security/boundary.cjs').fail(400,'INVALID_REQUEST');await domain.administrator(db,req.identity.id);return domain.alertRules(db);}));
+Orderrouter.put('/notifications/rules',wrapAlert((domain,db,req)=>domain.saveAlertRules(db,req.body,req.identity.id)));
+
 Orderrouter.get('/notification-settings', require('../security/boundary.cjs').wrap(async (req,res) => {
   if(Object.keys(req.query).length)return res.status(400).json({code:'INVALID_REQUEST'});
   const domain=require('../commerce/dist/service.cjs');

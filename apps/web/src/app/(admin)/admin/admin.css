@@ -3896,3 +3896,16 @@
 @layer components {
  .admin-app .admin-device-settings__actions button:disabled { background: var(--admin-control-disabled); color: var(--admin-faint); border-color: var(--admin-border); box-shadow: none; cursor: not-allowed; opacity: 1; }
 }
+
+/* Persistent staff alerts reuse the administration surface and touch targets. */
+.admin-notification-heading,.admin-notification-toolbar,.admin-notification-title{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.admin-notification-heading p,.admin-notification-note,.admin-notification-rules p{color:var(--admin-muted,#62666a);font-size:.875rem;max-width:65ch}
+.admin-notification-toolbar{margin:1.5rem 0}.admin-notification-toolbar>div{display:flex;gap:.5rem}
+.admin-notification-toolbar button[aria-pressed=true]{background:#181818;color:white;border-color:#181818}
+.admin-notification-list{list-style:none;margin:0;padding:0}.admin-notification-list li{display:grid;grid-template-columns:2rem 1fr auto;gap:1rem;align-items:start;padding:1.25rem 0;border-top:1px solid #e5e7eb}
+.admin-notification-mark{width:2rem;height:2rem;display:grid;place-items:center;border-radius:50%;background:#f0f1f3;color:#53565b}
+.admin-notification-list li[data-unread=true] .admin-notification-mark{background:#e9efff;color:#294e9b}
+.admin-notification-title a{font-weight:600}.admin-notification-title span,.admin-notification-list time{font-size:.75rem;color:#63666b}.admin-notification-list p{margin:.375rem 0;font-size:.875rem}.admin-notification-list time{display:block}
+.admin-notification-empty{text-align:center;padding:2.5rem 1rem}.admin-notification-preferences{display:grid;gap:.5rem;margin:1rem 0}.admin-notification-preferences label{display:flex;align-items:center;gap:.75rem;min-height:44px}.admin-notification-preferences input{width:20px;height:20px;accent-color:#181818}
+.admin-notification-rules{border-top:1px solid #e5e7eb;margin-top:1.5rem;padding-top:1.5rem}.admin-notification-rules>div{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}.admin-notification-rules input{max-width:8rem}
+@media(max-width:600px){.admin-notification-list li{grid-template-columns:1.75rem minmax(0,1fr);gap:.75rem}.admin-notification-list li>button{grid-column:2;justify-self:start}.admin-notification-heading>button{width:100%}.admin-notification-toolbar{align-items:stretch}.admin-notification-toolbar>div{flex:1}.admin-notification-title{gap:.375rem}.admin-notification-list p{overflow-wrap:anywhere}}

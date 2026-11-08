@@ -12,6 +12,8 @@ const adminFont = localFont({
   preload: false,
 });
 export const metadata: Metadata = {
+  manifest: "/admin/manifest.webmanifest",
+  appleWebApp: {capable:true,title:"Al Mina Operations",statusBarStyle:"default"},
   title: { default: "Administration", template: "%s | Al Mina Admin" },
   robots: {
     index: false,

@@ -36,3 +36,13 @@ test('an unmatched current staff update cannot silently report subscription succ
     assert.deepEqual(write.options, { maxTimeMS: 3000, timeoutMS: 4000, writeConcern: { w: 'majority' } });
   }
 });
+
+import { newStaffAlerts } from '../apps/web/src/lib/admin/alert-events';
+import type { StaffAlert } from '@almina/contracts';
+test('foreground alerts ignore backlog, resolved work, already read items and duplicate polls',()=>{
+ const item:StaffAlert={id:'event',kind:'order',title:'Order received',description:'Review order',href:'/admin/orders',createdAt:'2026-11-08T10:01:00.000Z',resolved:false,read:false,announce:true};
+ const cutoff='2026-11-08T10:00:00.000Z';
+ assert.deepEqual(newStaffAlerts([item],cutoff,new Set()),[item]);
+ for(const excluded of [{...item,createdAt:cutoff},{...item,resolved:true},{...item,read:true},{...item,announce:false}])assert.deepEqual(newStaffAlerts([excluded],cutoff,new Set()),[]);
+ assert.deepEqual(newStaffAlerts([item],cutoff,new Set(['event'])),[]);
+});

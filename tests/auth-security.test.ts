@@ -381,22 +381,27 @@ test('push unsubscribe deletes only the current staff subscription', async () =>
   });
 });
 
-test('both maintained push worker URLs ignore incoming PII and execute no remote scripts', async () => {
+test('both maintained push worker URLs ignore incoming PII, group alerts and reuse an admin window', async () => {
   const { runInNewContext } = await import('node:vm');
   for (const file of ['apps/web/public/service-worker.js', 'apps/web/public/admin/worker.js']) {
     const source = readFileSync(file, 'utf8');
     const handlers: Record<string, (event: unknown) => void> = {};
-    const notifications: { title: string; options: { body: string } }[] = [];
-    const opened: string[] = [];
-    runInNewContext(source, { self: { addEventListener: (type: string, handler: (event: unknown) => void) => { handlers[type] = handler; },
-      registration: { showNotification: (title: string, options: { body: string }) => { notifications.push({ title, options }); return Promise.resolve(); } },
-      clients: { openWindow: (path: string) => { opened.push(path); return Promise.resolve(); } } } });
+    const notifications: { title: string; options: { body: string;tag:string;silent:boolean } }[] = [];
+    const opened: string[] = [],navigated:string[]=[];
+    let windows:object[]=[],task:Promise<unknown>|undefined,focused=0,messages=0;
+    const waitUntil=(value:Promise<unknown>)=>{task=value;};
+    runInNewContext(source, {URL, self: { addEventListener: (type: string, handler: (event: unknown) => void) => { handlers[type] = handler; },
+      registration: { showNotification: (title: string, options: typeof notifications[number]['options']) => { notifications.push({ title, options }); return Promise.resolve(); } },
+      clients: {matchAll:async()=>windows, openWindow: (path: string) => { opened.push(path); return Promise.resolve(); } } } });
     for (const payload of [{ title: 'Synthetic PII', body: 'Sensitive detail' }, { notification: { title: 'Synthetic PII', body: 'Sensitive detail' } }]) {
-      handlers.push!({ data: { json: () => payload }, waitUntil: () => undefined });
-      assert.deepEqual(JSON.parse(JSON.stringify(notifications.at(-1))), { title: 'Al Mina Pharmacy', options: { body: 'Order updates are available. Sign in to review them.' } });
+      handlers.push!({ data: { json: () => payload }, waitUntil });await task;
+      const notification=notifications.at(-1)!;assert.equal(notification.title,'Al Mina Pharmacy');assert.equal(notification.options.body,'New activity is available. Sign in to review your notifications.');assert.equal(notification.options.tag,'almina-activity');assert.equal(notification.options.silent,false);assert.ok(!JSON.stringify(notification).includes('Sensitive'));
     }
-    handlers.notificationclick!({ notification: { close: () => undefined }, waitUntil: () => undefined });
-    assert.deepEqual(opened, ['/admin/orders']); assert.ok(!source.includes('importScripts'));
+    handlers.notificationclick!({ notification: { close: () => undefined }, waitUntil });await task;
+    assert.deepEqual(opened, ['/admin/notifications']); assert.ok(!source.includes('importScripts'));
+    windows=[{url:'https://example.invalid/admin/orders',visibilityState:'visible',postMessage:()=>{messages++;},navigate:async(path:string)=>{navigated.push(path);},focus:async()=>{focused++;}}];
+    handlers.push!({waitUntil});await task;assert.equal(messages,1);assert.equal(notifications.at(-1)!.options.silent,true);
+    handlers.notificationclick!({notification:{close:()=>undefined},waitUntil});await task;assert.deepEqual(navigated,['/admin/notifications']);assert.equal(focused,1);assert.equal(opened.length,1);
   }
 });
 
@@ -440,4 +445,15 @@ for(const route of ['/api/unknown-route','/api/v1/unknown-route'])test(`Render r
     const other=await fetch(origin+route,{headers:{'X-Forwarded-For':'198.51.100.11, 172.64.0.1, 10.1.2.3'}});assert.equal(other.status,404);
   });
   assert.deepEqual(errors,[],'no rate-limit proxy validation error may be suppressed');
+});
+
+test('live notification polling is independently bounded and cannot starve order actions or bypass authorization',async()=>{
+ const auth=express.Router();auth.get('/me',(_req,res)=>res.json({ok:true}));
+ const app=createLegacyApp({origins:[browserHeaders.Origin],development:true,routers:{auth},auth:{authenticate:async()=>({id:'a'.repeat(24),role:'admin',name:'Synthetic',cities:[]})}});
+ await serve(app,async origin=>{
+  for(let index=0;index<=240;index++){const response=await fetch(origin+'/api/auth/me');assert.equal(response.status,index<240?200:429);}
+  assert.equal((await fetch(origin+'/api/unknown-route')).status,404,'live polling must not spend the normal API budget');
+ });
+ const denied=createLegacyApp({origins:[browserHeaders.Origin],development:true,routers:{auth},auth:{authenticate:async()=>{throw Object.assign(new Error('Synthetic'),{status:401,code:'UNAUTHORIZED'});}}});
+ await serve(denied,async origin=>{for(const path of ['/api/auth/me','/api/orders/notifications','/api/orders/receiving'])assert.equal((await fetch(origin+path)).status,401);});
 });

@@ -23,6 +23,13 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 | POST | /api/catalog-import/commit | admin | maintained transactional draft importer, stable source IDs and stock ledger, at most 100 rows per call |
 | POST | /api/catalog-import/report | admin | actor-bound paginated change report, 500 rows per call |
 | POST | /api/catalog-import/rollback | admin | checksum-protected rollback of unchanged drafts; archives new drafts, preserves journal and inventory audits |
+| GET | /api/orders/notifications | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
+| POST | /api/orders/notifications/read | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
+| GET | /api/orders/notifications/preferences | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
+| PUT | /api/orders/notifications/preferences | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
+| POST | /api/orders/notifications/test | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
+| GET | /api/orders/notifications/rules | admin | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
+| PUT | /api/orders/notifications/rules | admin | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
 | GET | /api/operations | admin | Maintained process metrics and bounded read-only integrity/queue snapshot |
 | GET | /api/recovery/template | admin | maintained recovery/csv.ts; no provider effects |
 | POST | /api/media/products/:id | admin | Maintained signed Cloudinary upload/reference ledger; bounded authenticated adapter |

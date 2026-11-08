@@ -51,6 +51,7 @@ export async function adminRequest(
     const seconds = Number(result.headers.get('retry-after') ?? '60');
     throw new AdminRateLimitError(Number.isInteger(seconds) && seconds >= 1 && seconds <= 300 ? seconds : 60);
   }
+  if (result.status === 409 && path === 'orders/notifications/rules') throw new Error('Stock rules changed on another device. Reload to review the latest settings.');
   if (result.status === 409) {
     const failure: unknown = await result.json().catch(() => null);
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'IMAGE_REVIEW_REQUIRED' && path.startsWith('image-review/')) throw new Error('This association needs another review. Confirm all required identity values and supporting evidence. Reload if the product or image has changed.');

@@ -9,7 +9,6 @@ export function OrderMonitor() {
   const router = useRouter();
   const [status, setStatus] = useState("Checking order updates…");
   const baseline = useRef<string | null>(null);
-  const seenOrders = useRef<Set<string> | null>(null);
   const audio = useRef<AudioContext | null>(null);
   const soundEnabled = useRef(false);
   const [sound, setSound] = useState(false);
@@ -17,9 +16,8 @@ export function OrderMonitor() {
   const [oldest, setOldest] = useState<string | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [clock, setClock] = useState<number | null>(null);
-  const pending = useRef(0);
   function chime() {
-    if (!soundEnabled.current || audio.current?.state !== 'running') return;
+    if (!soundEnabled.current || document.visibilityState !== 'visible' || !navigator.onLine || audio.current?.state !== 'running') return;
     const context=audio.current, oscillator=context.createOscillator(), gain=context.createGain();
     oscillator.connect(gain); gain.connect(context.destination); oscillator.frequency.value=660;
     gain.gain.setValueAtTime(0.08,context.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,context.currentTime+0.3);
@@ -29,17 +27,13 @@ export function OrderMonitor() {
   useEffect(() => {
     let healthy = false;
     const ageTimer=setInterval(()=>setClock(Date.now()),30000);
-    const reminderTimer=setInterval(()=>{if(pending.current>0)chime();},60000);
+    window.addEventListener("almina:new-alert", chime);
     function receive(value: unknown) {
       const parsed=receivingSignalSchema.safeParse(value); if(!parsed.success)return;
       const signal=parsed.data;
-      setPendingCount(signal.pendingCount); pending.current=signal.pendingCount;
+      setPendingCount(signal.pendingCount);
       setOldest(signal.oldestPendingAt??null); setReviewCount(signal.reviewCount??0); setClock(Date.now());
-      const fresh = seenOrders.current === null ? [] : signal.latestIds.filter(id => !seenOrders.current!.has(id));
-      seenOrders.current = new Set([...(seenOrders.current ?? []), ...signal.latestIds].slice(-1000));
-      if (fresh.length) {
-        chime();
-      }
+
     }
     const events = new EventSource("/api/admin/events");
     events.addEventListener("connected", event => {
@@ -56,7 +50,7 @@ export function OrderMonitor() {
     window.addEventListener("pagehide", closeStream);
     events.addEventListener("reconcile", () => { router.refresh(); });
     events.addEventListener("orders", () => {
-      router.refresh();
+      router.refresh(); window.dispatchEvent(new Event("almina:orders-updated"));
     });
     events.addEventListener("revoked", () => {
       events.close();
@@ -113,7 +107,7 @@ export function OrderMonitor() {
     window.addEventListener("pageshow", resume);
     return () => {
       events.close();
-      clearInterval(ageTimer);clearInterval(reminderTimer);
+      clearInterval(ageTimer);window.removeEventListener("almina:new-alert", chime);
       window.removeEventListener("beforeunload", closeStream);
       window.removeEventListener("pagehide", closeStream);
       stopped = true;
@@ -137,13 +131,15 @@ export function OrderMonitor() {
         {short}
       </p>
       {!online ? <button type="button" className="admin-btn--secondary" onClick={() => router.refresh()}>Refresh orders</button> : null}
-      {pendingCount !== null ? <Link href="/admin/orders?status=pending" aria-label={`${pendingCount} orders awaiting confirmation`}>{pendingCount} to confirm</Link> : null}
-      <button type="button" className="admin-btn--secondary" aria-pressed={sound} title="Sound for new orders and a reminder every minute while orders await confirmation. Enable push in Order alerts for background delivery." onClick={() => {
+      {pendingCount !== null ? <Link href="/admin/orders?status=pending" aria-label={`${pendingCount} ${pendingCount===1?'order':'orders'} awaiting confirmation`}>{pendingCount} to confirm</Link> : null}
+      <button type="button" className="admin-btn--secondary" aria-pressed={sound} title="One sound for each new alert while this page is visible. No repeating reminders. Enable device notifications for background delivery." onClick={() => {
         if (sound) { soundEnabled.current = false; setSound(false); return; }
-        try { audio.current ??= new AudioContext(); void audio.current.resume().then(() => { soundEnabled.current = true; setSound(true); if(pending.current>0)chime(); }).catch(() => { soundEnabled.current = false; }); } catch { soundEnabled.current = false; }
+        try { audio.current ??= new AudioContext(); void audio.current.resume().then(() => { soundEnabled.current = true; setSound(true); }).catch(() => { soundEnabled.current = false; }); } catch { soundEnabled.current = false; }
       }}>{sound ? 'Sound on' : 'Enable sound'}</button>
-      {pendingCount!==null&&pendingCount>0&&age>=5?<Link className="admin-receiving-overdue" href="/admin/orders?status=pending" role="status">Oldest order waiting {age} min</Link>:null}
-      {reviewCount>0?<Link href="/admin/orders?status=pending&review=1">{reviewCount} addresses to review</Link>:null}
+      {sound?<button type="button" className="admin-btn--secondary" onClick={chime}>Test sound</button>:null}
+      <Link href="/admin/notifications" aria-label="Open notifications">Notifications</Link>
+      {pendingCount!==null&&pendingCount>0&&age>=5?<Link className="admin-receiving-overdue" href="/admin/orders?status=pending" role="status">Oldest order waiting {age>=1440?`${Math.floor(age/1440)}d`:age>=60?`${Math.floor(age/60)}h ${age%60}m`:`${age} min`}</Link>:null}
+      {reviewCount>0?<Link href="/admin/orders?status=pending&review=1">{reviewCount} {reviewCount===1?'address':'addresses'} to review</Link>:null}
 
     </div>
   );

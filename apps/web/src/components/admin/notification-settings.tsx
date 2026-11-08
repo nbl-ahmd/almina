@@ -12,6 +12,7 @@ export function NotificationSettings({
   const [deviceSubscribed,setDeviceSubscribed]=useState(false);
   const [deviceConnected,setDeviceConnected]=useState(false);
   const [deviceChecked,setDeviceChecked]=useState(false);
+  const [supported,setSupported]=useState(true);
   const [pending, setPending] = useState(false);
   const [serverKey,setServerKey]=useState(publicKey);
   const [configurationChecked,setConfigurationChecked]=useState(false);
@@ -20,6 +21,7 @@ export function NotificationSettings({
     void (async()=>{
       try{
         const settings=await adminRequest('orders/notification-settings') as {enabled:boolean;publicKey:string|null;registeredDeviceIds:string[]};
+        if(!stopped)setSupported("serviceWorker" in navigator && "PushManager" in window && "Notification" in window);
         const registration='serviceWorker' in navigator?await navigator.serviceWorker.getRegistration('/admin/'):undefined;
         const subscription=await registration?.pushManager.getSubscription();
         let connected=false;
@@ -32,6 +34,8 @@ export function NotificationSettings({
   },[]);
   return (
     <div className="admin-device-settings">
+      {!supported?<p role="status">Push is not available in this browser. On iPhone or iPad, add this admin page to your Home Screen, open the installed app, then enable notifications.</p>:null}
+      <p>For an app-style experience, install Al Mina Operations from your browser’s install menu. On iPhone or iPad use Share → Add to Home Screen. Delivery and background sounds follow your device’s notification and Focus settings.</p>
       <p role="status">{feedback==='error'&&!configurationChecked?'Device status unavailable.':!deviceChecked?'Checking this device…':deviceConnected?'This device is registered for this account.':deviceSubscribed?'This browser has a notification registration. Enable it to connect this account.':'Notifications are off on this device.'}</p>
       <div className="admin-device-settings__actions"><button
         className="admin-btn--secondary"
@@ -57,7 +61,7 @@ export function NotificationSettings({
         Disable on this device
       </button>
       <button
-        disabled={pending || !serverKey || !configurationChecked || (deviceConnected && deviceSubscribed)}
+        disabled={!supported || pending || !serverKey || !configurationChecked || (deviceConnected && deviceSubscribed)}
         onClick={async () => {
           setPending(true);setMessage('');
           try {
@@ -107,7 +111,7 @@ export function NotificationSettings({
             );
             let subscription=await registration.pushManager.getSubscription();
             const priorKey=subscription?.options.applicationServerKey;
-            if(subscription&&priorKey&&[...new Uint8Array(priorKey)].some((byte,index)=>byte!==bytes[index])){await subscription.unsubscribe();subscription=null;}
+            if(subscription&&priorKey&&(priorKey.byteLength!==bytes.length||[...new Uint8Array(priorKey)].some((byte,index)=>byte!==bytes[index]))){await subscription.unsubscribe();subscription=null;}
             subscription??=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes});
             setDeviceSubscribed(true);
             await adminRequest("orders/subscribe", "POST", {

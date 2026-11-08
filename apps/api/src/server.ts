@@ -1,3 +1,5 @@
+import { prepareStaffAlertStorage } from './modules/notifications/center.js';
+import { staffAlertWorker } from './modules/notifications/alert-worker.js';
 import { merchantSyncWorker } from './modules/catalog/merchant.js';
 import {stripeReconciler,prepareStripeStorage} from './modules/payments/stripe.js';
 import { searchEmbeddingWorker } from './modules/search/embedding-worker.js';
@@ -26,6 +28,8 @@ async function main() {
   }) : undefined;
   const campaigns=process.env.MARKETING_EMAIL_ENABLED==='true'?marketingWorker(()=>database.getDb()):undefined;
   const searchWorker = searchEmbeddingWorker(() => database.getDb());
+  await prepareStaffAlertStorage(await database.getDb());
+  const alerts=staffAlertWorker(()=>database.getDb(),()=>logger.log('warn','request_failed'));
   const merchantWorker = merchantSyncWorker(() => database.getDb());
   let stopping = false;
   const allowedOrigins = typeof env.WEB_ORIGIN === 'string' ? [env.WEB_ORIGIN] : env.WEB_ORIGIN;
@@ -59,7 +63,7 @@ async function main() {
     const deadline = setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000);
     deadline.unref();
     server.close(() => {
-      void (async () => { await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await campaigns?.stop(); await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
+      void (async () => { await alerts.stop(); await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await campaigns?.stop(); await reminders?.stop(); await orderEmails?.stop(); await database.close(); })().then(() => logger.log('info', 'api_stopped'))
         .catch(() => { logger.log('error', 'shutdown_failed'); process.exitCode = 1; })
         .finally(() => clearTimeout(deadline));
     });
