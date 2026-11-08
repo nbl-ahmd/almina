@@ -1,3 +1,7 @@
+## 2026-11-08 — Production alerts active; branch login collision fix (candidate)
+
+Verified the owner-deployed PR #90 merge in production. Enabled the existing Render notification worker with the supplied contact, preserved its keys, and verified one registered administrator receiving device. The real `almina` branch (`almina-admin` login) and all four pending orders remain unchanged. A new candidate adds early login availability/suggestions and race recovery without overwriting retained accounts or losing delivery drafts. See [activation evidence, fix and compatibility](BRANCH_LOGIN_AVAILABILITY_2026-11-08.md).
+
 ## 2026-11-07 — Operational account and receiving consolidation (candidate)
 
 Audited live branches and deployment; removed the one paused branch through the protected API at the owner's request, retaining its audit/account history and all four pending orders. Prepared Render notification keys with delivery explicitly off. The candidate separates store permissions from legacy staff, consolidates delivery navigation, links public listings to branch IDs, adds persistent readiness/next steps, fixes paused-area routing, and supports per-device order alerts. Real branch configuration, device opt-in and candidate deployment remain required. See [audit, production actions, rollout and limitations](OPERATIONS_CONSOLE_2026-11-07.md).

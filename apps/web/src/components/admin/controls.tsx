@@ -7,6 +7,9 @@ import { adminFileLimit } from '../../lib/admin/upload-limits';
 export class AdminRateLimitError extends Error {
   constructor(readonly retryAfterSeconds: number) { super('Too many requests. Please wait.'); }
 }
+export class AdminConflictError extends Error {
+  constructor(readonly code: string, message: string) { super(message); }
+}
 export async function adminRequest(
   path: string,
   method = "GET",
@@ -52,7 +55,7 @@ export async function adminRequest(
     const failure: unknown = await result.json().catch(() => null);
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'IMAGE_REVIEW_REQUIRED' && path.startsWith('image-review/')) throw new Error('This association needs another review. Confirm all required identity values and supporting evidence. Reload if the product or image has changed.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'CATALOG_REVIEW_REQUIRED') throw new Error('Complete the product content, classification, image rights and physical stock review before publishing.');
-    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'BRANCH_LOGIN_CONFLICT') throw new Error('This login is already in use. Choose another username; existing credentials were not changed.');
+    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'BRANCH_LOGIN_CONFLICT') throw new AdminConflictError('BRANCH_LOGIN_CONFLICT', 'This login is already in use. Choose another username; existing credentials were not changed.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'BRANCH_STOCK_CONFLICT') throw new Error('The branch allocations would exceed available catalogue stock. Review other branches before assigning this quantity or reducing catalogue stock.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'DELIVERY_SETUP_REQUIRED') throw new Error('Prepare the delivery indexes, staff and enable branches with actual locations, then save an active zone before enabling zone delivery.');
     if ((path === 'auth/order-routing' || /^auth\/users\/[^/]+\/assignment$/.test(path)) && failure && typeof failure === 'object' && 'error' in failure && failure.error === 'INVALID_TRANSITION') throw new Error('Choose an enabled fallback branch, assign existing staff to their stores, and keep an active login in each receiving branch. Clear open orders, stock and zones before removing a branch.');
