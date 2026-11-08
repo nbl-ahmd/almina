@@ -26,3 +26,16 @@
 .delivery-map .leaflet-pm-toolbar .button-container > a { display: flex; align-items: center; gap: 6px; width: auto; min-width: 96px; min-height: 44px; padding: 0 8px; text-decoration: none; }
 .delivery-map .leaflet-pm-toolbar .control-icon { width: 26px; height: 30px; flex-shrink: 0; }
 .delivery-map-tool-label { font: 600 12px/1.2 Arial, sans-serif; }
+
+.delivery-place-search { padding: 12px 16px; border-bottom: 1px solid #e5e5e5; background: #fff; max-height: 38dvh; overflow-y: auto; }
+.delivery-place-search__input { display: flex; align-items: end; gap: 8px; }
+.delivery-place-search label { display: grid; flex: 1; gap: 4px; font-size: 13px; font-weight: 600; min-width: 0; }
+.delivery-place-search input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid #a3a3a3; border-radius: 8px; background: #fff; color: #171717; font-size: 16px; }
+.delivery-place-search button { min-height: 44px; padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #fff; color: #171717; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.delivery-place-search button:disabled { opacity: .5; }
+.delivery-place-search :is(input,button):focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+.delivery-place-search p,.delivery-place-search small { display: block; margin: 6px 0 0; color: #525252; font-size: 12px; line-height: 1.4; }
+.delivery-place-search ul { list-style: none; margin: 8px 0; padding: 0; }
+.delivery-place-search li { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid #e5e5e5; font-size: 13px; }
+.delivery-place-search li>div { display: flex; gap: 8px; flex-wrap: wrap; }
+@media(max-width:600px){.delivery-place-search{padding:10px 12px;}.delivery-place-search__input{flex-wrap:wrap;}.delivery-place-search__input label{flex-basis:100%;}}

@@ -60,7 +60,8 @@ export async function deactivateStaff(db: Db, userId: string, actor: string) {
     if(target?.accountType==='branch')throw new HttpError(409,'INVALID_TRANSITION');
     if (!target || target.disabled === true) return; // Exact/repeated deactivation is a no-op.
     const routing = await readOrderRouting(db, session);
-    if (routing.active && target.role === 'user' && routing.branches.some(branch => branch.id === target.branchId && branch.enabled !== false)
+    const polygonMode=(await db.collection<Document&{_id:string}>('delivery_controls').findOne({_id:'zones'},{session}))?.active===true;
+    if ((routing.active||polygonMode) && target.role === 'user' && routing.branches.some(branch => branch.id === target.branchId && branch.enabled !== false)
       && await db.collection('users').countDocuments({ role: 'user', branchId: target.branchId, disabled: { $ne: true } }, { session }) <= 1) throw new HttpError(409, 'INVALID_TRANSITION');
     if (target.role === 'admin' && await db.collection('users').countDocuments({ role: 'admin', disabled: { $ne: true } }, { session }) <= 1) throw new HttpError(409, 'INVALID_TRANSITION');
     await db.collection('users').updateOne({ _id: targetId }, { $set: { disabled: true, deactivatedAt: new Date(), deactivatedBy: actorId } }, { session });
@@ -92,7 +93,8 @@ export async function assignStaffBranch(db: Db, userId: string, raw: unknown, ac
     if ((target.branchId ?? null) !== value.expectedBranchId) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
     await assertBranchAssignment(db, value.branchId, target.role, session);
     const policy = await readOrderRouting(db, session);
-    if (policy.active && target.role === 'user' && target.branchId !== value.branchId && policy.branches.some(branch => branch.id === target.branchId && branch.enabled !== false)
+    const polygonMode=(await db.collection<Document&{_id:string}>('delivery_controls').findOne({_id:'zones'},{session}))?.active===true;
+    if ((policy.active||polygonMode) && target.role === 'user' && target.branchId !== value.branchId && policy.branches.some(branch => branch.id === target.branchId && branch.enabled !== false)
       && await db.collection('users').countDocuments({ role: 'user', branchId: target.branchId, disabled: { $ne: true } }, { session }) <= 1) throw new HttpError(409, 'INVALID_TRANSITION');
     await db.collection('users').updateOne({ _id: targetId }, { $set: { branchId: value.branchId } }, { session });
     await db.collection('auth_administration_audit').insertOne({ actorId: new ObjectId(actor), targetUserId: targetId, action: 'assign-branch', before: target.branchId ?? null, after: value.branchId, reason: value.reason, createdAt: new Date() }, { session });

@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useId, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+const DeliveryPlaceSearch=dynamic(()=>import('./admin/delivery-place-search').then(module=>module.DeliveryPlaceSearch),{ssr:false});
 import type { Map as LeafletMap, Polygon, Marker } from 'leaflet';
 import type { DeliveryPoint, DeliveryPolygon } from '@almina/contracts';
 import 'leaflet/dist/leaflet.css';
@@ -46,6 +48,7 @@ export default function DeliveryMap({point,onPoint,geometry,onGeometry,onZoneSel
  useEffect(()=>{if(point){placePin.current?.(point);map.current?.panTo([point.latitude,point.longitude],{animate:false});}else if(pin.current){pin.current.remove();pin.current=null;}},[point]);
  return <dialog ref={dialog} open className="delivery-map-workspace" aria-labelledby={titleId} aria-modal={expanded?true:undefined} onCancel={event=>{event.preventDefault();collapse();}}>
  <div className="delivery-map-toolbar"><div><strong id={titleId}>{onGeometry?'Delivery boundary':onZoneSelect?'Delivery coverage':ar?'موقع التوصيل':'Delivery location'}</strong><p>{onGeometry?(geometry?'Boundary ready · changes are saved with the form':'Draw the area this branch delivers to'):onZoneSelect?'Select a zone on the map or use its Edit button':ar?'اختر الموقع الدقيق':'Choose the exact location'}</p></div><div className="delivery-map-actions"><button type="button" className="admin-btn--secondary" disabled={!ready||drawing} onClick={()=>fit.current?.()}>{ar?'عرض الكل':'Fit area'}</button>{expanded?<button type="button" onClick={collapse}>{ar?'العودة إلى النموذج':'Done — back to form'}</button>:<button ref={expandButton} type="button" className="admin-btn--secondary" disabled={!ready} onClick={expand}>{ar?'ملء الشاشة':'Full screen'}</button>}</div></div>
+ {onGeometry?<DeliveryPlaceSearch onLocate={point=>map.current?.setView([point.latitude,point.longitude],15,{animate:false})} onBoundary={boundary=>latest.current.onGeometry?.(boundary)} />:null}
  <div ref={element} className="delivery-map" role="region" aria-label={onGeometry?'Draw and edit delivery zone boundaries':onZoneSelect?'Delivery zones map':ar?'اختر دبوس التوصيل على الخريطة':'Choose delivery pin on map'} />{error?<p role="alert">{error}</p>:null}
  <div className="delivery-map-guidance"><p role="status">{onGeometry?(drawing?'Click each corner. Finish by clicking the first point, or choose Finish. Cancel leaves your previous boundary unchanged.':geometry?'Choose Edit to move boundary points. Draw a replacement to start again; the old boundary stays until you finish.':'Choose Draw on the map, then click each corner of your delivery area. Overlaps are allowed.'):onZoneSelect?'Select a saved boundary to edit it. Overlapping zones are shown together.':ar?'اختر نقطة على الخريطة أو اسحب الدبوس. تحقق من عنوان التوصيل الكامل.':'Select a point on the map or drag the pin. Confirm the full delivery address.'}</p><small>{ar?'مركز الخريطة افتراضي للعرض، وليس موقع فرع محدد.':'Map centre is a viewing default, not a configured branch.'}</small></div>
  </dialog>;

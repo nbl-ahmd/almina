@@ -23,7 +23,7 @@ test('coordinates are additive, finite and cannot carry caller-controlled branch
 });
 test('branch allocation writes do not require list-only URL filters',()=>{assert.equal(upstreamQuery('auth/branch-inventory',new URLSearchParams()),'');const id=randomUUID();assert.match(upstreamQuery('auth/branch-inventory',new URLSearchParams({branchId:id})),/branchId=/);assert.throws(()=>upstreamQuery('auth/branch-inventory',new URLSearchParams({unexpected:'1'})));});
 test('delivery administration is consistently administrator-only at both gateways',()=>{
- for(const [method,path] of [['GET','auth/delivery-zones'],['GET','auth/branch-inventory'],['POST','auth/delivery-zone'],['POST','auth/delivery-zone-delete'],['POST','auth/delivery-settings'],['POST','auth/branch-inventory'],['PUT','orders/aaaaaaaaaaaaaaaaaaaaaaaa/branch']]){assert.equal(accessPolicy(method!,path!),'admin');assert.equal(lookupPolicy(method!,'/api/'+path)?.policy,'admin');}
+ for(const [method,path] of [['POST','auth/delivery-place-search'],['GET','auth/delivery-zones'],['GET','auth/branch-inventory'],['POST','auth/delivery-zone'],['POST','auth/delivery-zone-delete'],['POST','auth/delivery-settings'],['POST','auth/branch-inventory'],['PUT','orders/aaaaaaaaaaaaaaaaaaaaaaaa/branch']]){assert.equal(accessPolicy(method!,path!),'admin');assert.equal(lookupPolicy(method!,'/api/'+path)?.policy,'admin');}
 });
 test('optional Geoapify setup is explicit and cannot start without a server key',async()=>{
  const {readLocationOptions}=await import('../apps/api/src/modules/location/reverse');

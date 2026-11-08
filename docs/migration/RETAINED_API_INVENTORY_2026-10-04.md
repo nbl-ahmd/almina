@@ -159,13 +159,14 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 
 | Method | Path | Access | Owner |
 | --- | --- | --- | --- |
+| POST | /api/auth/delivery-place-search | admin | Explicit cached UAE place search; shared geocoder quota |
 | GET | /api/auth/delivery-zones | admin | Delivery zone settings and branch configuration |
 | GET | /api/auth/branch-inventory | admin | Bounded main-stock view (legacy response shape) |
-| POST | /api/auth/delivery-zone | admin | Audited polygon save |
+| POST | /api/auth/delivery-zone | admin | Audited polygon save; optional atomic enableDelivery |
 | POST | /api/auth/delivery-zone-delete | admin | Soft deletion |
 | POST | /api/auth/delivery-settings | admin | Explicit delivery activation |
 | POST | /api/auth/branch-inventory | admin | Retired allocation write; 409 BRANCH_STOCK_RETIRED |
-| PUT | /api/orders/:id/branch | admin | Atomic reservation transfer |
+| PUT | /api/orders/:id/branch | admin | Covered branch reassignment; main reservation unchanged |
 
 Branch-owned store login and unified setup (7 November 2026):
 

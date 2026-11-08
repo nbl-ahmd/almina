@@ -728,3 +728,14 @@ exposed a concurrent image-import replay race, not a restored browser suite.
 Recognize only an exact atomically completed import receipt after expected
 conflicts; deterministic overtaking tests preserve stale-review rejection and
 single-write history. See [CI notes](CI_2026-10-23.md).
+
+### Branch polygons unify delivery and receiving — 2026-11-08
+
+Replaced separate city-allocation/receiving activation screens with a single
+transactional save-and-enable action on the branch polygon. New branch creation
+can enable its login, location, zone and receiving together. Pausing is branch
+scoped; no separate fallback or named-city setup is required. Legacy data and
+orders remain compatible. Optional explicit place search shares the existing
+geocoder's cache, global quota and rate limit. See
+[branch-zone workflow](BRANCH_ZONE_WORKFLOW_2026-11-08.md) for cutover, provider
+policy, rollback and verification. Production changes require release review.

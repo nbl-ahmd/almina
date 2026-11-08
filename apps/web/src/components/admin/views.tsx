@@ -1,6 +1,5 @@
 import { ZoneOrderReassignment } from './delivery-management';
 import type { OrderRouting } from '@almina/contracts';
-import { OrderAreaReview } from './order-routing';
 import { PhotoIcon } from '@heroicons/react/24/outline';
 import { OrderCosts } from './order-costs';
 import { feedIssues } from '../../lib/catalog/feed';
@@ -540,7 +539,7 @@ export function OrderDetail({
         }
       />
 
-      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="admin-alert admin-alert--danger">Check this address before dispatch. Its area was not recognized; the order remains in the fallback branch and administrator inbox.</p> : null}{admin && !order.deliveryAssignment ? <OrderAreaReview key={id + String(record(order.routing).revision)} orderId={id} revision={Number(record(order.routing).revision ?? 0)} currentArea={typeof record(order.routing).areaId === 'string' ? record(order.routing).areaId as string : null} /> : null}</Card>
+      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="admin-alert admin-alert--danger">Check this address before dispatch. The order remains visible to administrators.</p> : null}{!order.deliveryAssignment?<p className="text-sm text-muted">This older order has no saved polygon assignment. Verify the original address before dispatch. Administrators retain access.</p>:null}</Card>
       {admin&&order.deliveryAssignment&&branches?<ZoneOrderReassignment orderId={id} branchId={String(record(order.deliveryAssignment).branchId)} branches={branches} />:null}
       {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
       {stripePayment?.provider==='stripe'?<div className="admin-alert" role="status"><strong>{stripePayment.testMode?'Stripe test payment':'Stripe online payment'} · {display(stripePayment.state)}</strong><p>Only verified paid orders can be fulfilled. Paid-order cancellation requests a refund; cancellation finishes after Stripe confirms it. Dispatched goods are not automatically restocked.</p>{stripePayment.reference?<p>Stripe reference: {stripePayment.reference}</p>:null}{stripePayment.refundIssue?<p>{stripePayment.refundIssue}</p>:null}</div>:null}
