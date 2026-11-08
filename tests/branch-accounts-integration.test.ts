@@ -68,3 +68,33 @@ test('reserved legacy logins get safe suggestions without adopting accounts; adv
   assert.equal((await branchLoginAvailability(db,{username:'retired-store'},String(actor))).available,false);
  }finally{await db.dropDatabase();await client.close();}
 });
+
+test('one saved branch polygon enables checkout and receiving without city allocation or a routing activation', {skip:!uri}, async()=>{
+ const client=await new MongoClient(uri!).connect(),db=client.db('almina_zone_workflow_'+randomUUID().replaceAll('-','')),actor=String(new ObjectId()),id=randomUUID();
+ try{
+  await applyIndexes(db);await db.collection('users').insertMany([{_id:new ObjectId(actor),role:'admin',username:'synthetic-admin',subscription:{}},{role:'user',username:'synthetic-old-operator',cities:['Old spelling'],subscription:{}}]);
+  const category=new ObjectId(),product=new ObjectId();await db.collection('categories').insertOne({_id:category,name:'Synthetic'});await db.collection('stores').insertOne({status:'open'});await db.collection('products').insertOne({_id:product,product_id:'SYNTHETIC',name:'Synthetic product',category,price:20,stock:3,vat:false});
+  const {migrateCommerce}=await import('../scripts/migrations/commerce');await migrateCommerce(db);
+  const geometry={type:'Polygon' as const,coordinates:[[[55.8,25.6],[56.1,25.6],[56.1,25.9],[55.8,25.9],[55.8,25.6]]]},zone={id:randomUUID(),revision:0,name:'Synthetic branch area',active:true,color:'#2563eb',priority:100,branches:[{branchId:id,priority:100}],geometry,deliveryFeeMinor:500,minimumOrderMinor:0,estimatedMinutes:45};
+  let workspace=await createBranch(db,{revision:0,branch:{id,name:'Synthetic ready store',location:{latitude:25.75,longitude:55.95},areaIds:[],enabled:true},login:{username:'synthetic-ready',password:'synthetic-test-password'},zone},actor);
+  assert.equal(workspace.settings.active,true);assert.equal(workspace.routing.active,false);assert.deepEqual(workspace.routing.branches[0]!.areaIds,[]);
+  const staff={id:workspace.logins[0]!.id,role:'user' as const,name:'Synthetic store',username:'synthetic-ready',branchId:id,cities:[]};
+  const commerce=createCommerceService(async()=>db),customer={name:'Synthetic',email:'synthetic@example.invalid',mobile:'0501234567',emirate:'Ras al-Khaimah',city:'Deliberately misspelled',address:'Synthetic address',payment:'cash',coordinates:{latitude:25.75,longitude:55.95}},items=[{productId:String(product),quantity:1}];
+  const quote=await commerce.quote({customer,items});assert.equal(quote.delivery!.branchId,id);assert.equal(quote.deliveryFeeMinor,500);
+  const placed=await commerce.checkout({customer,items,idempotencyKey:randomUUID()});assert.equal((await retainedOrderList(db,{},staff)).length,1);assert.equal((await db.collection('products').findOne({_id:product}))!.stock,2);
+  const {routingRecipients}=await import('../apps/api/src/modules/orders/routing');const order=(await db.collection('orders').findOne({_id:new ObjectId(placed.id)}))!;await db.collection('users').updateOne({_id:new ObjectId(staff.id)},{$set:{subscription:{}}});const recipients=await db.collection('users').find(await routingRecipients(db,order)).toArray();assert.deepEqual(recipients.map(row=>String(row._id)).sort(),[actor,staff.id].sort());
+  const {coordinates:_pin,...manual}=customer;void _pin;await assert.rejects(commerce.quote({customer:manual,items}),{code:'DELIVERY_LOCATION_REQUIRED'});await assert.rejects(commerce.quote({customer:{...customer,coordinates:{latitude:24,longitude:54}},items}),{code:'ADDRESS_NOT_SERVICEABLE'});
+  await assert.rejects(saveBranchLogin(db,{key:randomUUID(),branchId:id,expectedLoginId:staff.id,expectedRevision:workspace.logins[0]!.revision,username:'synthetic-ready',password:'synthetic-test-password',enabled:false},actor),{code:'INVALID_TRANSITION'});
+  await saveOrderRouting(db,{...workspace.routing,branches:workspace.routing.branches.map(branch=>({...branch,enabled:false}))},actor);await assert.rejects(commerce.quote({customer,items}),{code:'ADDRESS_NOT_SERVICEABLE'});assert.equal((await retainedOrderList(db,{},staff)).length,1);
+  const {saveZone}=await import('../apps/api/src/modules/delivery/service');await saveZone(db,{...workspace.zones[0]!,enableDelivery:true},actor);workspace=await branchWorkspace(db);assert.equal(workspace.routing.active,false);assert.equal((await commerce.quote({customer,items})).delivery!.branchId,id);
+  await db.collection('users').updateOne({_id:new ObjectId(staff.id)},{$set:{disabled:true}});await assert.rejects(commerce.quote({customer,items}),{code:'ADDRESS_NOT_SERVICEABLE'});
+ }finally{await db.dropDatabase();await client.close();}
+});
+
+test('first polygon activation is not blocked by unrelated legacy city operators', {skip:!uri},async()=>{
+ const client=await new MongoClient(uri!).connect(),db=client.db('almina_first_polygon_'+randomUUID().replaceAll('-','')),actor=String(new ObjectId()),old=randomUUID(),id=randomUUID();
+ try{await applyIndexes(db);await db.collection('users').insertMany([{_id:new ObjectId(actor),role:'admin'},{role:'user',username:'synthetic-unassigned-legacy',cities:['Old area']}]);await db.collection<Document&{_id:string}>('growth_settings').insertOne({_id:'order-routing',revision:0,active:true,fallbackBranchId:old,branches:[{id:old,name:'Synthetic legacy branch',enabled:true,areaIds:[]}]});
+  const result=await createBranch(db,{revision:0,branch:{id,name:'Synthetic polygon store',enabled:true,areaIds:[],location:{latitude:25.75,longitude:55.95}},login:{username:'synthetic-polygon-store',password:'synthetic-test-password'},zone:{id:randomUUID(),revision:0,name:'Synthetic polygon area',active:true,color:'#2563eb',priority:100,branches:[{branchId:id,priority:100}],geometry:{type:'Polygon',coordinates:[[[55.8,25.6],[56.1,25.6],[56.1,25.9],[55.8,25.9],[55.8,25.6]]]},deliveryFeeMinor:500,minimumOrderMinor:0,estimatedMinutes:45}},actor);
+  assert.equal(result.settings.active,true);assert.ok(result.routing.branches.some(branch=>branch.id===old));assert.equal((await db.collection('users').findOne({username:'synthetic-unassigned-legacy'}))!.branchId,undefined);
+ }finally{await db.dropDatabase();await client.close();}
+});

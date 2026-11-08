@@ -1,5 +1,10 @@
 # Pharmacy order receiving and deterministic branch routing — 2026-11-06
 
+> The named-city setup below is historical. Current branch delivery and receiving
+> use the [saved polygon workflow](BRANCH_ZONE_WORKFLOW_2026-11-08.md); historical
+> order compatibility remains without a separate receiving-rules screen.
+
+
 ## Previous behaviour
 
 Staff order access and push recipients depended on exact `customer.city` text matching `users.cities`. A typed spelling difference, OSM neighbourhood label or empty staff assignment could hide an order from that staff account. Administrators retained access. Public branch-directory areas were presentation/serviceability data, not order ownership.

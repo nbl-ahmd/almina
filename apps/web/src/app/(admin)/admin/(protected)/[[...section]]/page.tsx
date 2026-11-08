@@ -1,7 +1,6 @@
 import { NotificationCenter } from '../../../../../components/admin/notification-center';
 import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
 import type { BranchWorkspace } from '@almina/contracts';
-import { DeliveryZoneManagement } from '../../../../../components/admin/delivery-management';
 import { StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
 import { reportDays } from '../../../../../lib/admin/dashboard';
 import { RowActions } from '../../../../../components/admin/row-actions';
@@ -515,8 +514,8 @@ export default async function AdminPage({
       </>
     );
   }
-  if(section==='branches'){const setup=await adminRead('auth/branches');return <><PageHeader title="Branches" description="Create a store login, delivery area and stock setup in one place." /><BranchWorkspaceView initial={setup as BranchWorkspace} /></>;}
-  if(section==='delivery-zones'){const data=await adminRead('auth/delivery-zones');return <><PageHeader title="Delivery zones" description="Manage coverage, delivery charges and prioritized branch assignments." /><DeliveryZoneManagement initial={data as Parameters<typeof DeliveryZoneManagement>[0]['initial']} /></>;}
+  if(section==='branches'){const setup=await adminRead('auth/branches');return <><PageHeader title="Branches" description="Create a branch login and draw its delivery area. Orders follow the saved polygon." /><BranchWorkspaceView initial={setup as BranchWorkspace} /></>;}
+  if(section==='delivery-zones')redirect('/admin/branches');
   if (section === "orders") {
     if (detail)
       { const order=record(await adminRead(`orders/${detail}`));const setup=user.role==='admin'&&order.deliveryAssignment?record(await adminRead('auth/order-routing')):null;return <OrderDetail order={order} admin={user.role==='admin'} branches={setup?.branches as Parameters<typeof OrderDetail>[0]['branches']} />; }

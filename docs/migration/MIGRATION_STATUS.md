@@ -732,3 +732,15 @@ single-write history. See [CI notes](CI_2026-10-23.md).
 ### Staff notifications — 2026-11-08 (review candidate)
 
 Replaced the repeating pending-order chime with one-shot, account-deduplicated foreground events. Added a persistent personal inbox, order/stock/payment alert episodes, category preferences, revisioned stock thresholds, self-only rate-limited test pushes, installable admin manifest and privacy-preserving service-worker window reuse. Reuses standard Web Push and existing credentials; workers remain on the persistent service. No production commerce data or deployment changed. See [staff notification operations and rollback](STAFF_ALERTS_2026-11-08.md).
+### Branch polygons unify delivery and receiving — 2026-11-08
+
+Replaced separate city-allocation/receiving activation screens with a single
+transactional save-and-enable action on the branch polygon. New branch creation
+can enable its login, location, zone and receiving together. Pausing is branch
+scoped; no separate fallback or named-city setup is required. Legacy data and
+orders remain compatible. Optional explicit place search shares the existing
+geocoder's cache, global quota and rate limit. See
+[branch-zone workflow](BRANCH_ZONE_WORKFLOW_2026-11-08.md) for cutover, provider
+policy, rollback and verification. Production changes require release review.
+
+PR #94 compatibility follow-up: integrated the merged PR #93 polygon workflow into the notification candidate. Shared API exports and authorization lists retain both place search and notification routes. Browser receiving coverage follows the current polygon assignment workflow, alongside the notification inbox and sound regression checks.
