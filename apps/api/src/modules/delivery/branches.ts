@@ -1,3 +1,4 @@
+import { retiredStoreLogin } from './login-availability.js';
 import { hash } from 'bcryptjs';
 import { ObjectId,type Db,type Document } from 'mongodb';
 import { branchCreationSchema,branchLoginInputSchema,orderRoutingSchema,branchWorkspaceSchema } from '@almina/contracts';
@@ -20,11 +21,11 @@ export async function createBranch(db:Db,raw:unknown,actor:string){
   const actorId=await administrator(db,actor,session);const receipts=db.collection<Document&{_id:string}>('branch_creation_receipts'),prior=await receipts.findOne({_id:value.branch.id},{session});
   if(prior){if(prior.actor!==actor||prior.username!==value.login.username)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');if(!(await readOrderRouting(db,session)).branches.some(branch=>branch.id===value.branch.id))throw new HttpError(409,'INVALID_TRANSITION');return;}
   const before=await readOrderRouting(db,session);if(before.revision!==value.revision)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');if(before.branches.some(branch=>branch.id===value.branch.id))throw new HttpError(409,'INVALID_TRANSITION');
-  const existing=await db.collection('users').findOne({username:value.login.username},{session,projection:{_id:1,accountType:1,disabled:1,branchId:1}});
+  const existing=await db.collection('users').findOne({username:value.login.username},{session,projection:{_id:1,accountType:1,role:1,disabled:1,branchId:1}});
   if(existing){
    // A removed store may be recreated with its old login name, but never adopt a
    // person account, a paused current store, its credentials or its history.
-   if(existing.accountType!=='branch'||existing.disabled!==true||before.branches.some(branch=>branch.id===existing.branchId))throw new HttpError(409,'BRANCH_LOGIN_CONFLICT');
+   if(!retiredStoreLogin(existing,before))throw new HttpError(409,'BRANCH_LOGIN_CONFLICT');
    const retiredUsername='retired-'+String(existing._id);
    if(await db.collection('users').findOne({username:retiredUsername},{session,projection:{_id:1}}))throw new HttpError(409,'BRANCH_LOGIN_CONFLICT');
    await db.collection('users').updateOne({_id:existing._id},{$set:{username:retiredUsername,retiredUsername:value.login.username},$unset:{subscription:'',pushSubscriptions:''}},{session});

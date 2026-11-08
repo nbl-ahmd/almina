@@ -1,7 +1,7 @@
 import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
 import { productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
 import { z } from "zod";
-import { storeAccountRouteAllowed, operationsSnapshotSchema,branchWorkspaceSchema } from '@almina/contracts';
+import { branchLoginAvailabilitySchema,branchLoginAvailabilityQuerySchema,storeAccountRouteAllowed, operationsSnapshotSchema,branchWorkspaceSchema } from '@almina/contracts';
 export const identitySchema = z.object({
   id: z.string().regex(/^[a-f0-9]{24}$/i),
   username: z.string(),
@@ -44,7 +44,7 @@ export function canVisit(role: Identity["role"], section: string, accountType?: 
 }
 const id = "[a-fA-F0-9]{24}";
 const rules: [string, string, "admin" | "staff" | "login"][] = [
-  ['GET','auth/branches','admin'], ['POST','auth/branches','admin'], ['POST','auth/branch-login','admin'],
+  ['GET','auth/branch-login-availability','admin'], ['GET','auth/branches','admin'], ['POST','auth/branches','admin'], ['POST','auth/branch-login','admin'],
   ['GET','auth/delivery-zones','admin'], ['GET','auth/branch-inventory','admin'],
   ...['delivery-zone','delivery-zone-delete','delivery-settings','branch-inventory'].map(path=>['POST','auth/'+path,'admin'] as [string,string,'admin']),
   ['PUT',`orders/${id}/branch`,'admin'],
@@ -127,6 +127,7 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
   if (new Set(input.keys()).size !== [...input.keys()].length)
     throw new Error("Invalid query");
   const values = Object.fromEntries(input);
+  if(path==='auth/branch-login-availability')return new URLSearchParams(branchLoginAvailabilityQuerySchema.parse(values)).toString();
   if(path==='search/test'){const query=searchQuerySchema.parse(values);return new URLSearchParams(Object.entries(query).filter(([,value])=>value!==undefined).map(([key,value])=>[key,String(value)])).toString();}
   if (path === 'image-review' || path === 'image-review/export') {
     const parsed = (path.endsWith('/export') ? imageReviewExportQuerySchema : imageReviewListQuerySchema).parse(values);
@@ -334,6 +335,7 @@ export function project(value: unknown): unknown {
   return value;
 }
 export function projectAdminResponse(path: string, value: unknown): unknown {
+  if(path==='auth/branch-login-availability')return branchLoginAvailabilitySchema.parse(value);
   if(path==='orders/notification-settings')return z.object({enabled:z.boolean(),publicKey:z.string().regex(/^[A-Za-z0-9_-]{87}$/).nullable(),registeredDeviceIds:z.array(z.string().regex(/^[a-f0-9]{64}$/)).max(5)}).strict().parse(value);
   if(path==='auth/branches'||path==='auth/branch-login')return branchWorkspaceSchema.parse(value);
   if(path==='search'||path==='search/test'){const body=z.object({data:path==='search'?searchAdminSchema:searchTestSchema,requestId:z.uuid()}).strict().parse(value);return body.data;}

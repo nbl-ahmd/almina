@@ -64,3 +64,5 @@ export * from './modules/delivery/branches.js';
 export { storeAccountRouteAllowed } from '@almina/contracts';
 
 export { staffNotificationSettings, staffDeviceFingerprints } from './modules/notifications/settings.js';
+
+export { branchLoginAvailability } from './modules/delivery/login-availability.js';
