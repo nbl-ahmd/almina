@@ -720,3 +720,11 @@ new-order markers and legacy restoration guards. Map editing adds full-screen
 focus/scroll handling, retained drafts and fitted saved coverage. See
 [shared-stock delivery notes](SHARED_STOCK_DELIVERY_2026-11-08.md) for deployment,
 verification and rollback constraints. This change requires release review.
+
+### PR #92 CI race correction — 2026-11-08
+
+The automatic CI reduction from 23 October remains intact. Its first hosted run
+exposed a concurrent image-import replay race, not a restored browser suite.
+Recognize only an exact atomically completed import receipt after expected
+conflicts; deterministic overtaking tests preserve stale-review rejection and
+single-write history. See [CI notes](CI_2026-10-23.md).

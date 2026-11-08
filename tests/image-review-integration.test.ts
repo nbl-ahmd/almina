@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient, ObjectId, type Db } from 'mongodb';
 import { imageIdentitySchema, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
 import { stageImageReview, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
 import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker } from '../apps/api/src/modules/media/image-review-publication';
@@ -218,6 +218,58 @@ test('one-click publication preflights, links existing images and safely resumes
     assert.equal((await db.collection('products').findOne({ _id: product }))!.cloudinaryImages.length, 8);
     assert.equal(await db.collection('media_history').countDocuments(), 2);
   } finally { await db.dropDatabase(); await client.close(); }
+});
+test('a completed concurrent import is replayed when it overtakes preflight or the transaction receipt read', { skip: !uri }, async t => {
+  for (const phase of ['preflight', 'transaction'] as const) await t.test(phase, async () => {
+    const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_replay_' + randomUUID().replaceAll('-', ''));
+    const actor = new ObjectId();
+    let release!: () => void, arrived!: () => void, paused = false;
+    const gate = new Promise<void>(resolve => { release = resolve; }), waiting = new Promise<void>(resolve => { arrived = resolve; });
+    try {
+      await db.collection('users').insertOne({ _id: actor, role: 'admin' });
+      await db.collection('products').insertOne({ product_id: 'PD_TEST', name: 'Acme Skin Cream 50 g', brand: 'Acme', productForm: 'Cream', packLabel: '50 g', stock: 7, price: 12.5 });
+      await stageImageReview(db, pack([source('replay-' + phase)]), String(actor), 'synthetic');
+      const row = (await listImageReviews(db, {}, String(actor))).items[0]!;
+      const approval = await decideImageReview(db, decision(await getImageReview(db, row.itemId, String(actor))), String(actor));
+      const manifest = await previewImageReviewImport(db, { approvalIds: [approval.approvalId] }, String(actor));
+      const input = { manifestId: manifest.manifestId, approvalIds: [approval.approvalId] };
+      // Pause only this caller at a real database boundary; the other caller commits normally.
+      const delayed = new Proxy(db, { get(target, key) {
+        if (key === 'collection') return (...args: Parameters<Db['collection']>) => {
+          const collection = target.collection(...args);
+          const selected = args[0] === (phase === 'preflight' ? 'image_review_items' : 'image_review_imports');
+          if (!selected) return collection;
+          return new Proxy(collection, { get(targetCollection, method) {
+            if (method === 'findOne') return async (...params: Parameters<typeof collection.findOne>) => {
+              if (!paused && (phase === 'preflight' || params[1]?.session)) {
+                paused = true;
+                if (phase === 'transaction') {
+                  const before = await targetCollection.findOne(...params);
+                  arrived(); await gate; return before;
+                }
+                arrived(); await gate;
+              }
+              return targetCollection.findOne(...params);
+            };
+            const value: unknown = Reflect.get(targetCollection, method);
+            return typeof value === 'function' ? value.bind(targetCollection) : value;
+          } });
+        };
+        const value: unknown = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      } });
+      const slow = importImageReviewApprovals(delayed, input, String(actor), 'synthetic', async () => new Response(bytes));
+      await waiting;
+      try { assert.equal((await importImageReviewApprovals(db, input, String(actor), 'synthetic', async () => new Response(bytes))).replayed, false); }
+      finally { release(); }
+      assert.equal((await slow).replayed, true);
+      assert.equal(await db.collection('image_review_imports').countDocuments(), 1);
+      assert.equal(await db.collection('media_history').countDocuments(), 1);
+      const product = (await db.collection('products').findOne({ product_id: 'PD_TEST' }))!;
+      assert.equal(product.cloudinaryImages.length, 1); assert.equal(product.mediaRevision, 1);
+      assert.equal(product.stock, 7); assert.equal(product.price, 12.5);
+    } finally { release(); await db.dropDatabase(); await client.close(); }
+  });
 });
 test('retained HTTP boundary authenticates review routes, prevents staff imports and enforces CSRF and feature disablement', { skip: !uri }, async () => {
   const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_review_http_' + randomUUID().replaceAll('-', ''));
