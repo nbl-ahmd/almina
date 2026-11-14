@@ -1,4 +1,5 @@
 import { removePushDevice, pushDevices, subscriptionDigest, pushReceiptId } from './push-devices.js';
+import { historicalStatus } from '../orders/status.js';
 import { routingRecipients } from '../orders/routing.js';
 import { randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
@@ -38,22 +39,26 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
       { ...query, sort: { createdAt: 1, _id: 1 }, returnDocument: 'after' });
       if (!job) return;
       const release = { $unset: { pushLeaseToken: '', pushLeaseUntil: '', pushNextAttemptAt: '' } };
-      const order = await db.collection('orders').findOne({ _id: job.orderId }, { ...query, projection: { deliveryAssignment: 1, 'customer.city': 1, 'customer.emirate': 1, routing: 1, payment:1, status:1 } });
-      if (!order) {
-        await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'failed' } }, query); options.onFailure(); return;
-      }
-      if(order.payment?.provider==='stripe'&&(order.payment.testMode!==false||order.payment.state!=='paid'||order.payment.refundRequested||['cancelled','refunded'].includes(order.status))){
+      const operational=job.kind==='stock-alert'||job.kind==='operational-alert',test=job.kind==='test-notification';
+      const alert=operational?await db.collection('staff_alerts').findOne({eventId:job.alertId,resolved:false},query):null;
+      const order=operational||test?null:await db.collection('orders').findOne({_id:job.orderId},{...query,projection:{deliveryAssignment:1,'customer.city':1,'customer.emirate':1,routing:1,payment:1,status:1,canceled:1,dispatched:1}});
+      if((operational&&!alert)||(!operational&&!test&&!order)||order&&(historicalStatus(order)!=='pending'||(order.payment?.provider==='stripe'&&(order.payment.testMode!==false||order.payment.state!=='paid'||order.payment.refundRequested)))){
         await jobs.updateOne({_id:job._id,pushLeaseToken:token},{...release,$set:{pushState:'done'}},query);return;
       }
-      const scope = await routingRecipients(db, order);
+      const kind=test?'test':operational?alert!.kind:'order';
+      const scope=operational?{role:'admin',disabled:{$ne:true},subscription:{$type:'object'}}:test?{_id:new ObjectId(job.userId),role:{$in:['admin','user']},disabled:{$ne:true},subscription:{$type:'object'}}:await routingRecipients(db!,order!);
+      const currentScope=()=>operational||test?Promise.resolve(scope):routingRecipients(db!,order!);
       const cursor = cursorId(job.pushCursor);
       if (job.pushCursor !== undefined && !cursor) throw new Error('Invalid push cursor');
-      const user = await db.collection('users').findOne({ ...scope, ...(cursor ? { _id: { $gt: cursor } } : {}) },
+      const user = await db.collection('users').findOne({ $and:[scope, ...(cursor ? [{ _id: { $gt: cursor } }] : [])] },
         { ...query, sort: { _id: 1 }, projection: { _id: 1, subscription: 1, pushSubscriptions:1 } });
       if (!user) { await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'done' } }, query); return; }
       if (!cursorId(user._id)) {
         await jobs.updateOne({ _id: job._id, pushLeaseToken: token }, { ...release, $set: { pushState: 'failed' } }, query); options.onFailure(); return;
       }
+      const preferences=await db.collection<RecordDocument>('staff_alert_preferences').findOne({_id:String(user._id)},query);
+      const preference=kind==='order'?'pushOrders':kind==='payment'?'pushPayment':'pushStock';
+      if(kind!=='test'&&preferences?.[preference]===false){await jobs.updateOne({_id:job._id,pushLeaseToken:token},{...release,$set:{pushCursor:user._id}},query);return;}
       const receipts = db.collection<RecordDocument>('staff_push_deliveries');
       const devices=pushDevices(user);
       const receiptIds=devices.map(device=>pushReceiptId(job!._id,user._id,device));
@@ -77,7 +82,7 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
         await advance(true); return;
       }
       // Authorization/subscription can change between selection and send. Never target a replacement subscription with an old receipt.
-      const current = await db.collection('users').findOne({ ...await routingRecipients(db, order), _id: user._id,
+      const current = await db.collection('users').findOne({ ...await currentScope(), _id: user._id,
         $and:[{ $or:[{pushSubscriptions:{$elemMatch:subscription}},{pushSubscriptions:{$exists:false},'subscription.endpoint':subscription.endpoint,'subscription.keys.p256dh':subscription.keys.p256dh,'subscription.keys.auth':subscription.keys.auth}] }] }, { ...query, projection: { _id: 1 } });
       if (!current) { await receipts.updateOne({ _id: id }, { $set: { state: 'skipped' } }, query); await advance(false); return; }
       const claim = await receipts.updateOne({ _id: id, state: receipt.state, attempts: receipt.attempts },

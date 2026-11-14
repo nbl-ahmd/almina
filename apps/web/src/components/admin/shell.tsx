@@ -24,6 +24,7 @@ import {
   UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { AlertMonitor } from './alert-monitor';
 import { OrderMonitor, SessionControls } from './controls';
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -44,7 +45,7 @@ const groups: NavGroup[] = [
     items: [
       { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
       { id: 'branches', label: 'Branches & delivery', href: '/admin/branches', icon: MapPinIcon },
-      { id: 'notifications', label: 'Order alerts', href: '/admin/notifications', icon: BellIcon },
+      { id: 'notifications', label: 'Notifications', href: '/admin/notifications', icon: BellIcon },
     ],
   },
   {
@@ -104,7 +105,7 @@ export function AdminShell({
   allowed,
   children,
 }: {
-  user: { name: string; role: string; branchId?:string|null; accountType?:"branch"|undefined };
+  user: { id:string; name: string; role: string; branchId?:string|null; accountType?:"branch"|undefined };
   allowed: string[];
   children: ReactNode;
 }) {
@@ -249,6 +250,7 @@ export function AdminShell({
           </header>
           <main id="admin-main" tabIndex={-1} className="admin-content">
             <OrderMonitor />
+            <AlertMonitor actor={user.id}/>
             {children}
           </main>
           <nav

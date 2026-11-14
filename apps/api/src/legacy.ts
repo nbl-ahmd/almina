@@ -67,4 +67,7 @@ export { staffNotificationSettings, staffDeviceFingerprints } from './modules/no
 
 export { branchLoginAvailability } from './modules/delivery/login-availability.js';
 
+export * from './modules/notifications/center.js';
+
+export * from './modules/notifications/alert-worker.js';
 export { searchDeliveryPlaces } from './modules/location/place-search.js';

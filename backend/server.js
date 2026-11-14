@@ -15,14 +15,16 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
-let stripeWorker, worker, pushWorker, reminderWorker, campaignWorker, imageReviewWorker, searchWorker, merchantWorker;
+let stripeWorker, worker, pushWorker, reminderWorker, campaignWorker, imageReviewWorker, searchWorker, merchantWorker, alertWorker;
 let shutdown;
 database.connect().then(async () => {
   if (app.locals.draining) return database.close();
   if (!await domain.retainedReadiness(() => database.getDb(), false)) throw new Error('Database unavailable');
   if (app.locals.draining) return database.close();
+  await domain.prepareStaffAlertStorage(database.getDb());
+  alertWorker=domain.staffAlertWorker(()=>database.getDb(),()=>console.error(JSON.stringify({level:'error',service:'api',event:'staff_alert_failed'})));
   pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb());
-  if (app.locals.draining) { await pushWorker?.stop(); return database.close(); }
+  if (app.locals.draining) { await alertWorker?.stop(); await pushWorker?.stop(); return database.close(); }
   if (process.env.EMAIL_PROVIDER === 'resend') await domain.prepareEmailStorage(database.getDb());
   worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb());
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || origins[0];
@@ -36,7 +38,7 @@ database.connect().then(async () => {
   server.listen(runtime.port, development ? '127.0.0.1' : undefined, () => console.log('Express API listening'));
 }).catch(async () => {
   if (!app.locals.draining) { console.error('API initialization failed'); process.exitCode = 1; }
-  await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await imageReviewWorker?.stop(); await pushWorker?.stop(); await database.close();
+  await alertWorker?.stop(); await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await imageReviewWorker?.stop(); await pushWorker?.stop(); await database.close();
 });
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
@@ -53,7 +55,7 @@ function stop() {
       io.close(() => resolve());
       server.closeIdleConnections();
     }),
-    stopWorkers: async () => { await Promise.all([merchantWorker?.stop(), stripeWorker?.stop(), worker?.stop(), pushWorker?.stop(), reminderWorker?.stop(), campaignWorker?.stop(), imageReviewWorker?.stop(), searchWorker?.stop()]); },
+    stopWorkers: async () => { await Promise.all([alertWorker?.stop(),merchantWorker?.stop(), stripeWorker?.stop(), worker?.stop(), pushWorker?.stop(), reminderWorker?.stop(), campaignWorker?.stop(), imageReviewWorker?.stop(), searchWorker?.stop()]); },
     closeDatabase: async () => { await database.close(); },
     forceConnections: () => { io.disconnectSockets(true); server.closeAllConnections(); },
   }).catch(() => { console.error('Retained shutdown deadline failed'); process.exit(1); });

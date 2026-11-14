@@ -70,3 +70,4 @@ export * from './delivery-zones';
 export * from './branch-management';
 
 export * from './staff-access';
+export * from './staff-notifications';

@@ -2,6 +2,15 @@ import type { Db, IndexDescription } from 'mongodb';
 
 // Additive only. No uniqueness changes without a production duplicate inventory.
 export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = {
+  staff_alerts: [
+    {name:'staff_alert_event_unique',key:{eventId:1},unique:true},
+    {name:'staff_alert_feed',key:{audience:1,branchId:1,_id:-1}},
+    {name:'staff_alert_admin_feed',key:{audience:1,_id:-1}},
+    {name:'staff_alert_personal_feed',key:{audience:1,userId:1,_id:-1}},
+    {name:'staff_alert_resolution',key:{kind:1,resolved:1,_id:1}},
+    {name:'staff_alert_expiry',key:{expiresAt:1},expireAfterSeconds:0}
+  ],
+  staff_alert_reads:[{name:'staff_alert_read_owner',key:{userId:1,alertId:1},unique:true},{name:'staff_alert_read_expiry',key:{expiresAt:1},expireAfterSeconds:0}],
   image_review_publications: [{ name: 'image_publication_worker', key: { phase: 1, leaseUntil: 1, createdAt: 1 } }],
   image_review_publication_groups: [{ name: 'image_publication_groups', key: { jobId: 1, state: 1, _id: 1 } }],
   image_review_publication_entries: [{ name: 'image_publication_entries', key: { groupId: 1, resolved: 1, _id: 1 } }],
@@ -59,7 +68,7 @@ export const indexPlan: Readonly<Record<string, readonly IndexDescription[]>> = 
   delivery_zones:[{name:'delivery_zone_geometry_v1',key:{geometry:'2dsphere'}},{name:'delivery_zone_active_v1',key:{active:1,priority:1}}],
   branch_inventory:[{name:'branch_product_unique_v1',key:{branchId:1,productId:1},unique:true}],
   delivery_audit:[{name:'delivery_history_v1',key:{at:-1}}],
-  order_outbox: [{ name: 'commerce_outbox_claim', key: { state: 1, leaseUntil: 1, createdAt: 1 } },
+  order_outbox: [{name:'staff_alert_job_claim',key:{inAppState:1,createdAt:1,_id:1}},{ name: 'commerce_outbox_claim', key: { state: 1, leaseUntil: 1, createdAt: 1 } },
     { name: 'staff_push_job_claim', key: { createdAt: 1, pushState: 1, pushLeaseUntil: 1, pushNextAttemptAt: 1 } }],
   staff_push_deliveries: [{ name: 'staff_push_review', key: { state: 1, createdAt: 1 } }],
   catalog_search_terms:[{name:'search_token_prefix',key:{terms:1}}],
