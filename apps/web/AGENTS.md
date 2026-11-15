@@ -129,34 +129,29 @@ Specify responsive sizing appropriately.
 
 # Styling
 
-The customer storefront design system was retired on 15 November 2026.
-This phase is cleanup only. No visual direction, palette, typography, layout,
-replacement tokens or new design guide is approved. Wait for owner-supplied
-reference images and/or Figma screens before proposing a replacement.
+The owner approved a new reference-led storefront phase on 15 November 2026.
+Use `PRODUCT.md` for product truth and `DESIGN.md` for the implemented visual
+system. The three owner references and their interpretation are recorded in
+`docs/design/storefront/references/README.md`; the surface brief records scope.
+Image 1 supplies product cards, image 2 the gallery-first PDP, and image 3 home
+structure and the purchase dock. Logo coral/aqua colours are explicitly selected.
+The owner chose working coded previews and iterative refinement. Do not infer
+new discounts, ratings, certifications, medical claims or delivery guarantees.
 
-Read `PRODUCT.md` for product facts and
-`docs/migration/STOREFRONT_DESIGN_RETIREMENT_2026-11-15.md` from the repository
-root for the legacy dependency inventory. Existing storefront CSS, utility
-classes, fonts, artwork and captures are temporary implementation compatibility,
-not visual authority. Do not infer the next identity from them or from archived
-migration records. Do not regenerate tokens or re-create DESIGN.md/sidecars
-from the incumbent code. General-purpose design skills remain available but
-must not fill the pending direction with their own aesthetic defaults.
+The scoped source is `(storefront)/storefront-tokens.css`; Tailwind utilities
+and customer component CSS consume its semantic roles. Compatibility aliases
+resolve to the same system while remaining route markup migrates. Do not add an
+independent palette, font or styling stack. The shared root baseline, admin and
+wholesale retain separate consumers and must not be restyled by customer rules.
+Keep campaign-artwork’s admin preview compatible. Retired documents/metadata and
+old Figma/screenshots remain historical; never restore their authority.
 
-Preserve the existing Tailwind build and component APIs while consumers remain.
-Do not add a styling stack, reset, icon library or font during cleanup. Retain
-shared global CSS until storefront, admin, wholesale and root-error consumers
-are isolated and verified. Keep admin-only design specifications, metadata and
-styling authoritative within their scope. Migrate shared campaign previews and
-controls explicitly before deleting their dependencies.
-
-Future owner-provided references belong under `docs/design/storefront/references/`
-with source/provenance notes. Only a later owner-approved phase may establish
-`apps/web/DESIGN.md` and its scoped metadata. Neither exists as active storefront
-authority during this cleanup. Record functional requirements separately from
-visual interpretations. Preserve English/Arabic, RTL, semantic controls, focus,
-contrast, touch targets, reduced motion, responsive behavior and truthful
-commerce content. No deployment is authorized.
+Use the project profile for safeguards, Impeccable for deliberate UI design and
+review, version-matched Next docs for framework work, and runtime/browser checks
+for verification. Preserve product IDs/URLs, search/filter query semantics,
+English/Arabic and RTL, responsive controls, visible focus, contrast, touch targets,
+reduced motion, true loading/empty/error states, SEO and server-authoritative
+commerce. Design tasks do not authorize production data changes or deployment.
 
 ---
 

@@ -55,11 +55,11 @@ export async function ProductInformation({ product }: { product: Product }) {
           <div className="pb-5"><Description text={value} /></div>
         </details>)}
       </div>
-      <aside className="min-w-0 space-y-7 rounded-2xl bg-page p-5">
+      <aside className="min-w-0 space-y-7 border-t border-border pt-6 lg:border-t-0 lg:border-s lg:ps-8 lg:pt-0">
         <div id="product-facts" className="scroll-mt-6" aria-labelledby="product-specifications-title">
           <h2 id="product-specifications-title" className="mb-4 text-lg font-bold">{u(locale,"Product specifications")}</h2>
           <dl className="m-0 divide-y divide-border border-y border-border text-sm">
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 py-3"><dt className="text-muted">{u(locale,"Category")}</dt><dd className="m-0 wrap-anywhere"><Link className="text-muted hover:text-ink" href={categoryHref(product.category)}>{product.category.name}</Link></dd></div>
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 py-3"><dt className="text-muted">{u(locale,"Category")}</dt><dd className="m-0 wrap-anywhere"><Link className="text-muted hover:text-ink" href={categoryHref(product.category)}>{u(locale,product.category.name)}</Link></dd></div>
             {facts.map(([label, value]) => <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 py-3"><dt className="text-muted">{u(locale,label)}</dt><dd className="m-0 font-medium wrap-anywhere">{value}</dd></div>)}
           </dl>
         </div>

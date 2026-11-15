@@ -3,7 +3,6 @@ import { getLocale } from '../../lib/server/i18n';
 import { shopText as u } from '../../lib/i18n-storefront';
 import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
-import { ScrollReveal } from "../../components/scroll-reveal";
 import { Suspense, cache } from "react";
 import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
@@ -11,9 +10,7 @@ import {
   HomeManagedCampaigns,
   HomeBenefits,
   HomeBrandStrip,
-  HomeCollectionTiles,
   HomeCompactShelf,
-  HomeRoutine,
   HomeCategories,
   HomeEditorial,
   HomeHero,
@@ -31,7 +28,6 @@ import { metadataFor } from "../../lib/server/seo";
 import type { Query } from "../../lib/seo";
 import {
   homeCollections,
-  collectionHref,
   catalogueBrands,
   uniqueProducts,
   prioritizeShelf,
@@ -77,7 +73,7 @@ function categoryRank(name: string) {
     "oral care",
     "hair care",
     "first aid",
-  ].findIndex((label) => name.toLowerCase().includes(label));
+  ].findIndex((label) => name.toLowerCase().replace(/\s+/g, "").includes(label.replace(/\s+/g, "")));
   return index < 0 ? 99 : index;
 }
 async function HomeContent() {
@@ -134,7 +130,6 @@ async function HomeContent() {
   const offerShelf = offers.filter(
     (product) => !shelf.some((item) => item._id === product._id),
   );
-  const skin = collectionResults[0] ?? [];
   const dailyProducts = collectionResults[2] ?? [];
   const daily = prioritizeShelf(dailyProducts, shelf);
   const budgetProducts = collectionResults[3] ?? [];
@@ -146,31 +141,20 @@ async function HomeContent() {
     return true;
   });
   const budgetShelf = uniqueProducts([...variedBudget, ...budget]);
-  const collectionTiles = homeCollections
-    .slice(0, 3)
-    .map((collection, index) => ({
-      title: collection.title,
-      detail: collection.description,
-      href: collectionHref(collection),
-      products: (collectionResults[index] ?? []).filter(
-        (product) => productImage(product) !== "/product-placeholder.svg",
-      ),
-      tone: ["bg-[#eaf1ea]", "bg-[#f7ece3]", "bg-[#eceaf5]"][index]!,
-    }));
   return (
-      <ScrollReveal>
+      <div className="contents">
         <HomeCategories
           categories={[...categories].sort(
             (a, b) => categoryRank(a.name) - categoryRank(b.name),
           )}
         />
-        <HomeBenefits />
         <HomeShelf
           title={u(locale,"Your everyday essentials")}
           description={u(locale,"Small essentials. A little more care, every day.")}
           products={shelf}
           href="/collections/daily-care"
         />
+        <HomeBenefits />
         {!all.length ? (
           <section className="rounded-2xl border border-border p-6">
             <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
@@ -182,7 +166,6 @@ async function HomeContent() {
             </Link>
           </section>
         ) : null}
-        <HomeCollectionTiles collections={collectionTiles} />
         {offerShelf.length >= 2 ? (
           <HomeShelf
             title={u(locale,"A little more value")}
@@ -198,7 +181,6 @@ async function HomeContent() {
           products={daily}
           href="/collections/daily-care"
         />
-        <HomeRoutine products={skin} />
         <HomeEditorial />
         <HomeCompactShelf
           title={u(locale,"AED 50 & under")}
@@ -210,6 +192,6 @@ async function HomeContent() {
         <HomeManagedCampaigns campaigns={campaigns} />
         <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
         <HomeSupport />
-      </ScrollReveal>
+      </div>
   );
 }

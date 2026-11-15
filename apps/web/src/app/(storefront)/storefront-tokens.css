@@ -1,0 +1,40 @@
+/* Customer storefront only. Logo coral/aqua selected by the owner, 2026-11-15.
+   Admin/wholesale/global baseline consumers never inherit this scope. */
+.storefront-shell,
+.storefront-footer {
+  --color-ink: #192f3a;
+  --color-muted: #586973;
+  --color-brand: #ff6363;
+  --color-brand-hover: #f35353;
+  --color-page: #f7f9fa;
+  --color-surface: #ffffff;
+  --color-subtle: #f0f4f5;
+  --color-border: #dce5e8;
+  --color-accent: #e4f5f4;
+  --color-teal: #126c70;
+  --color-ocean: #395865;
+  --color-sale: #a62e43;
+  --color-sale-surface: #fff0f1;
+  --color-warning: #805213;
+  --color-warning-surface: #fff5e2;
+  --color-focus: #126c70;
+  --color-control-border: #889aa4;
+  --color-control-hover: #47636f;
+  --color-control-disabled: #e9eef0;
+  --color-primary-foreground: var(--color-ink);
+  --color-secondary-foreground: var(--color-ink);
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --content-width: 1280px;
+  --shadow-raised: 0 12px 36px -14px rgb(32 53 65 / 22%);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+  --ease-drawer: cubic-bezier(.32,.72,0,1);
+  --motion-feedback: 150ms;
+  /* Compatibility aliases for existing customer routes, all resolving to this
+     system rather than maintaining the retired multi-pastel palette. */
+  --color-care-blue: var(--color-accent);
+  --color-care-mint: var(--color-accent);
+  --color-care-peach: var(--color-sale-surface);
+  --color-care-sun: var(--color-warning-surface);
+}

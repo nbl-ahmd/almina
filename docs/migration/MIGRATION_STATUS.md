@@ -1,3 +1,17 @@
+## 2026-11-15 — Reference-led customer storefront redesign (local candidate)
+
+Owner selected image-1 cards, image-2 gallery-first PDP, image-3 home/purchase
+dock and the real logo coral/aqua palette. Refreshed product context, scoped
+customer tokens/fonts, integrated header/search/address, home merchandising,
+listing filters, cards, PDP, footer and customer theme compatibility. Shared
+admin/wholesale systems and commerce/auth/API behavior remain intact. All 57
+selected compiled browser cases and 32 focused units passed, plus typecheck,
+lint/build, 42 bilingual responsive checks and clean Next dev diagnostics.
+Independent review resolved its scored fixes; current implementation is recorded
+in DESIGN.md/scoped metadata. Local preview uses clearly labelled synthetic
+prices/stock; no production data change or deployment. See [implementation,
+verification, boundaries and preview](STOREFRONT_REFERENCE_REDESIGN_2026-11-15.md).
+
 ## 2026-11-15 — Customer storefront design authority retired (cleanup only)
 
 Retired storefront guides, generated metadata, briefs and project aesthetic

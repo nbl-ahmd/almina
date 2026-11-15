@@ -47,27 +47,6 @@
   --color-control-disabled: #eef0f4;
 }
 
-/* The shared footer also renders on the global not-found route, outside the
-   storefront shell, so it carries the storefront surface and action colours itself. */
-.storefront-footer {
-  --color-brand: #ff6363;
-  --color-brand-hover: #f35353;
-  --color-ink: #192321;
-  --color-muted: #56605d;
-  --color-ocean: #334a46;
-  --color-surface: #ffffff;
-  --color-page: #fafbfa;
-  --color-subtle: #f3f6f5;
-  --color-border: #dce3e0;
-  --color-care-blue: #e6f2fc;
-  --color-care-mint: #e6f3e9;
-  --color-sale: #a32b38;
-}
-
-.storefront-footer :focus-visible {
-  outline-color: #192321;
-}
-
 /* Keep the verified component styles while migrating components to utilities.
    Preflight is deliberately omitted to preserve existing form/admin rendering. */
 :root {

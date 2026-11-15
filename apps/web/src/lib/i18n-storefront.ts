@@ -2,6 +2,16 @@ import type { Locale } from './i18n';
 
 // Interface labels only. Product names, attributes and clinical/editorial content remain staff-owned.
 export const arabicShopCopy: Record<string, string> = {
+  "Your neighbourhood pharmacy, just a conversation away.": "صيدليتك القريبة، على بُعد محادثة.",
+  "Care & buying guides": "أدلة العناية والشراء",
+  "Shop brands": "تسوق العلامات التجارية",
+  "Skin Care": "العناية بالبشرة",
+  "Vitamins & Supplements": "الفيتامينات والمكملات",
+  "Baby Care": "عناية الطفل",
+  "Oral Care": "العناية بالفم",
+  "Hair Care": "العناية بالشعر",
+  "First Aid": "الإسعافات الأولية",
+
   "Al Mina care": "عناية الميناء",
   "Shop by care": "تسوّق حسب العناية",
   "Talk to your pharmacy": "تحدّث إلى صيدليتك",

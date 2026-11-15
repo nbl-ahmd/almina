@@ -3,6 +3,7 @@ import { shopText as u } from '../lib/i18n-storefront';
 import Link from './app-link';
 import { ArrowRightIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { ProductImage } from "./product-image";
+import { SaveProduct } from "./save-product";
 import { AddToCart } from "./cart-controls";
 import { productImage } from "../lib/server/catalog";
 import { getWebEnvironment } from "../lib/server/env";
@@ -78,74 +79,27 @@ export async function ProductCard({
     : 0;
   const brand = product.brand || product.familyBrand;
   return (
-    <article data-product-id={product._id} className="product-card group flex min-w-0 flex-col rounded-2xl border border-border bg-white p-3 transition-[border-color,box-shadow] duration-200 hover:border-ink/20 hover:shadow-[0_18px_40px_-32px_rgba(21,23,26,0.35)] md:p-3">
-      <Link
-        href={productHref(product)}
-        aria-label={locale === "en" ? `View ${product.name}` : `عرض ${product.name}`}
-        className="product-media relative mb-3 block aspect-square overflow-hidden rounded-xl bg-subtle p-4"
-      >
-        <ProductPhoto product={product} />
-        {saving > 0 ? (
-          <span className="absolute top-2 left-2 rounded-full bg-care-peach px-2.5 py-1 text-xs font-semibold text-sale shadow-sm">
-            {locale === "en" ? `Save ${money(saving,locale)}` : `وفّر ${money(saving,locale)}`}
-          </span>
-        ) : null}
-      </Link>
-      <Link
-        href={brand ? `/search?q=${encodeURIComponent(brand)}` : categoryHref(product.category)}
-        className="mb-1.5 text-xs leading-4 font-medium text-muted hover:text-teal"
-      >
-        {brand || product.category.name}
-      </Link>
-      <Heading className="mb-2 text-[14px] leading-5 font-medium tracking-[-0.015em] md:text-base md:leading-6">
-        <Link className="text-ink hover:text-teal" href={productHref(product)}>
-          {product.familyName || product.name}
+    <article data-product-id={product._id} className="product-card group">
+      <div className="product-card-visual">
+        <Link href={productHref(product)} aria-label={locale === 'en' ? `View ${product.name}` : `عرض ${product.name}`} className="product-media">
+          <ProductPhoto product={product} />
         </Link>
-      </Heading>
-      {optionLabel ? (
-        <p className="mb-2 text-xs leading-5 text-muted">{optionLabel}</p>
-      ) : null}
-      {options ? (
-        <p className="mb-2 text-xs font-medium text-teal">
-          {locale === "en" ? `${locale === "en" ? `${product.familyOptionCount} options` : `${product.familyOptionCount} خيارات`} available` : `${product.familyOptionCount} خيارات متاحة`}
-        </p>
-      ) : null}
-      <div className="mt-auto">
-        <p
-          className={`mb-2 flex items-center gap-1.5 text-xs ${product.stock > 0 ? "text-teal" : "text-muted"}`}
-        >
-          <span
-            className={`size-1.5 rounded-full ${product.stock > 0 ? "bg-brand" : "bg-muted"}`}
-            aria-hidden="true"
-          />
-          {product.stock > 0 ? u(locale,"In stock") : u(locale,"Currently unavailable")}
-        </p>
-        <div className="mb-3 text-base md:text-lg">
-          <ProductPrice product={product} />
-        </div>
-        {options ? (
-          <Link
-            className="button min-h-11 w-full rounded-xl px-2 text-sm text-ink"
-            href={productHref(product)}
-          >{u(locale,"Choose options")}</Link>
-        ) : (
-          <div className="[&_.purchase-control-row]:block [&_.add-label]:not-sr-only [&_.add-mobile]:hidden [&_.add-desktop]:hidden">
-            <AddToCart
-              locale={locale}
-              id={product._id}
-              stock={product.stock}
-              name={product.name}
-            />
-          </div>
-        )}
+        <span className={`product-stock ${product.stock > 0 ? '' : 'is-unavailable'}`}>{product.stock > 0 ? u(locale, 'In stock') : u(locale, 'Currently unavailable')}</span>
+        <div className="product-card-save"><SaveProduct locale={locale} id={product._id} name={product.name} compact /></div>
       </div>
+      <div className="product-card-tags"><Link href={brand ? `/search?q=${encodeURIComponent(brand)}` : categoryHref(product.category)}>{brand || product.category.name}</Link>{optionLabel ? <span>{optionLabel}</span> : null}</div>
+      <Heading className="product-card-title"><Link href={productHref(product)}>{product.familyName || product.name}</Link></Heading>
+      {options ? <p className="product-card-options">{locale === 'en' ? `${product.familyOptionCount} options available` : `${product.familyOptionCount} خيارات متاحة`}</p> : null}
+      {saving > 0 ? <p className="product-card-saving">{locale === 'en' ? `Save ${money(saving, locale)}` : `وفّر ${money(saving, locale)}`}</p> : null}
+      <div className="product-card-bottom"><ProductPrice product={product} />{options ? <Link className="product-option-link" href={productHref(product)}>{u(locale, 'Choose options')}<ArrowRightIcon className="size-4 rtl:rotate-180" /></Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} compact />}</div>
     </article>
   );
 }
+
 export async function CompactProductCard({ product }: { product: Product }) {
   const locale = await getLocale();
   return (
-    <article className="flex w-[272px] shrink-0 snap-start flex-col rounded-2xl border border-border bg-white p-3 md:w-auto">
+    <article className="compact-product-card flex w-[272px] shrink-0 snap-start flex-col rounded-2xl border border-border bg-white p-3 md:w-auto">
       <div className="mb-3 grid grid-cols-[64px_1fr] items-start gap-3">
         <Link
           href={productHref(product)}
