@@ -1,3 +1,5 @@
+> SUPERSEDED VISUAL CANDIDATE — owner rejected this design on 15 November 2026. Historical implementation/test evidence only; not current visual guidance.
+
 # Reference-led customer storefront — 15 November 2026
 
 Branch: `codex/storefront-reference-redesign`, based on the separately committed

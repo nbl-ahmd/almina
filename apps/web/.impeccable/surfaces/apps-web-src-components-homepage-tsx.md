@@ -5,20 +5,18 @@ primary_target: "apps/web/src/components/homepage.tsx"
 related_targets: ["apps/web/src/components/navigation.tsx","apps/web/src/components/product-card.tsx","apps/web/src/app/(storefront)/products/[slug]/page.tsx","apps/web/src/app/(storefront)/storefront.css"]
 ---
 
-Scope: customer storefront; admin and wholesale keep their independent systems. Mode: Operate; homepage introduces the same shopping flow.
+Scope: complete customer storefront replacement. Mode: Operate. Preserve production contracts and independent admin/wholesale systems. Owner authorized implementation of the new guide on 15 November 2026; no deployment.
 
 ## Direction contract
 
-THESIS: A familiar pharmacy app that becomes a spacious retail website on desktop. Product choice and purchase remain immediate; no inherited pastel bento or giant editorial footer.
+THESIS: The searchable pharmacy: finding a real pack is immediate, with compact category discovery and readable commercial facts. Replace the rejected pale-panel/repeated-shelf composition, not just its paint.
 
-OWN-WORLD: Owner-selected coral/aqua logo palette with dark blue-gray ink, white product surfaces and quiet cool-gray canvas. Manrope and a purpose-chosen Arabic face; rounded cards, contained catalogue photography, honest status and 44–52px controls. Image 1 supplies cards, image 2 the gallery-first PDP, image 3 home rhythm and purchase dock.
+OWN-WORLD: Exact #FF5A5F accent with dark labels, clear white product ground, charcoal ink, supporting aqua used sparingly, Figtree/Alexandria, softly squared controls. One scoped customer palette; no inherited care-colour families.
 
-STORY: Choose an area, search or browse a department, compare actual products, inspect images/options and use the existing validated cart/checkout.
+STORY: Address context and search lead into real category links/results, factual product cards, gallery-first detail and persistent mobile buying access. Checkout remains server-authoritative and feature-gated.
 
-FIRST VIEWPORT: Mobile: logo/cart and delivery row, full-width search, compact campaign, departments, two-column product shelf. Desktop: one integrated logo/search/address/account/cart row, department navigation, wide campaign, compact categories and four-column products. PDP images lead; purchase dock clears navigation and safe areas.
+FIRST VIEWPORT: Mobile: compact identity/address/cart, full-width search, 03-like category controls, one coral-led campaign and immediate 01-like products. Desktop: integrated search-led header, department navigation, category index and a large campaign with a separate browse destination. PDP uses large real gallery and a concise buying column; mobile dock stays clear of navigation and keyboard.
 
-FORM: User-pinned composite overrides assigned candidate 5 (seed: see `docs/design/storefront/reference-direction-roll.txt`) and its unrelated challengers. The grounded set was care counter, pharmacy app, product shelf, local service directory, everyday retail catalogue (5), wellness guide, department index. User selected the combination and code-first review explicitly. Challengers declined: departure board and acetate layers obscure retail affordances; map lobes and character catalog impose unrelated visual identities; bitmap specimen harms product-label legibility. Retain only their discipline of stable state, clear grouping and readable hierarchy. No random world or generated comp is authorized over the supplied references.
+FORM: The owner's supplied guide/references and explicit build instruction override the earlier unchosen concept cards. Authentic installed-tool evidence is preserved verbatim in docs/design/storefront/identity-overhaul/direction-roll.txt; the assigned grounded candidate 5's department-led retail topology is translated into the pinned searchable-pharmacy direction, not treated as approval of its earlier card. Signature interaction is the existing keyboard-operable search, with immediate query feedback; motion stays local to state changes and manual campaign transitions.
 
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
-
-Stages: foundation/shared controls; header/home/cards; listing/PDP; remaining customer surfaces through the scoped theme; runtime/regression review; record the implemented system. No new commerce/auth/API behavior, claims or production deployment. Reference photos are not shipping assets. Build uses real catalogue media, configured campaigns and truthful empty/error states.
+FINISH: bounded bilingual responsive/commerce/admin verification, independent finish review and documentation from shipped source. No invented claims, production writes, deployment, unrelated UI library or competing visual generator.

@@ -1,40 +1,43 @@
-/* Customer storefront only. Logo coral/aqua selected by the owner, 2026-11-15.
-   Admin/wholesale/global baseline consumers never inherit this scope. */
+/* Al Mina customer identity. Isolated from admin, wholesale and shared defaults. */
 .storefront-shell,
 .storefront-footer {
-  --color-ink: #192f3a;
-  --color-muted: #586973;
-  --color-brand: #ff6363;
-  --color-brand-hover: #f35353;
-  --color-page: #f7f9fa;
+  --color-brand: #ff5a5f;
+  --color-brand-hover: #ff7478;
+  --color-ink: #24272b;
+  --color-muted: #5d6269;
+  --color-page: #ffffff;
   --color-surface: #ffffff;
-  --color-subtle: #f0f4f5;
-  --color-border: #dce5e8;
-  --color-accent: #e4f5f4;
-  --color-teal: #126c70;
-  --color-ocean: #395865;
-  --color-sale: #a62e43;
+  --color-subtle: #f5f5f4;
+  --color-border: #d8dadd;
+  --color-accent: #fce8e8;
+  --color-teal: #175b5a;
+  --color-ocean: #454c53;
+  --color-sale: #b4232d;
   --color-sale-surface: #fff0f1;
-  --color-warning: #805213;
-  --color-warning-surface: #fff5e2;
-  --color-focus: #126c70;
-  --color-control-border: #889aa4;
-  --color-control-hover: #47636f;
-  --color-control-disabled: #e9eef0;
+  --color-warning: #80530d;
+  --color-warning-surface: #fff4dc;
+  --color-success: #196443;
+  --color-success-surface: #edf5f0;
+  --color-logo-aqua: #66bfbf;
+  --color-focus: #24272b;
+  --color-control-border: #8b8f96;
+  --color-control-hover: #454c53;
+  --color-control-disabled: #eceeed;
   --color-primary-foreground: var(--color-ink);
   --color-secondary-foreground: var(--color-ink);
-  --radius-control: 12px;
-  --radius-card: 16px;
-  --radius-panel: 24px;
-  --content-width: 1280px;
-  --shadow-raised: 0 12px 36px -14px rgb(32 53 65 / 22%);
+  --radius-control: 10px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --content-width: 1360px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --shadow-raised: 0 10px 32px -12px rgb(36 39 43 / 25%);
   --ease-out: cubic-bezier(.22,1,.36,1);
   --ease-drawer: cubic-bezier(.32,.72,0,1);
   --motion-feedback: 150ms;
-  /* Compatibility aliases for existing customer routes, all resolving to this
-     system rather than maintaining the retired multi-pastel palette. */
-  --color-care-blue: var(--color-accent);
-  --color-care-mint: var(--color-accent);
-  --color-care-peach: var(--color-sale-surface);
-  --color-care-sun: var(--color-warning-surface);
 }

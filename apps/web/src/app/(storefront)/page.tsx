@@ -8,15 +8,11 @@ import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
 import {
   HomeManagedCampaigns,
-  HomeBenefits,
   HomeBrandStrip,
-  HomeCompactShelf,
   HomeCategories,
   HomeEditorial,
   HomeHero,
-  HomeProductCarousel,
   HomeShelf,
-  HomeSupport,
 } from "../../components/homepage";
 import {
   getBanners,
@@ -30,7 +26,6 @@ import {
   homeCollections,
   catalogueBrands,
   uniqueProducts,
-  prioritizeShelf,
 } from "../../lib/catalog/merchandising";
 import { getCollectionProducts } from "../../lib/server/collections";
 
@@ -51,19 +46,21 @@ const featuredProducts = cache(() => getProducts({ featured: true }));
 const homepageCampaigns = cache(async () => getHomepageCampaigns(await getLocale()).catch(() => []));
 
 export default function HomePage() {
-  return <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
+  return <div className="home-page">
     <Suspense fallback={<CatalogLoading />}><HomeLead /></Suspense>
     <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent /></Suspense>
   </div>;
 }
 async function HomeLead() {
-  const [banners, campaigns] = await Promise.allSettled([getBanners(), homepageCampaigns()]);
-  const liveBanners = banners.status === 'fulfilled' ? banners.value : [];
-  const liveCampaigns = campaigns.status === 'fulfilled' ? campaigns.value : [];
-  // Managed artwork needs no inventory search. Only the fallback hero uses a product.
-  const featured = liveBanners.length || liveCampaigns.some(page => page.homepagePlacement === 'hero')
-    ? [] : (await featuredProducts().catch(() => ({ products: [] }))).products;
-  return <HomeHero products={featured.filter(product => product.stock > 0)} banners={liveBanners} campaigns={liveCampaigns} />;
+  const [banners, campaigns, categories, featured] = await Promise.allSettled([
+    getBanners(), homepageCampaigns(), getCategories(), featuredProducts(),
+  ]);
+  const locale = await getLocale();
+  const products = featured.status === 'fulfilled' ? featured.value.products.filter(product => product.stock > 0) : [];
+  return <div className="home-lead"><h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
+    <HomeCategories categories={categories.status === 'fulfilled' ? [...categories.value].sort((a,b) => categoryRank(a.name)-categoryRank(b.name)) : []} products={products} />
+    <HomeHero products={products} banners={banners.status === 'fulfilled' ? banners.value : []} campaigns={campaigns.status === 'fulfilled' ? campaigns.value : []} />
+  </div>;
 }
 function categoryRank(name: string) {
   const index = [
@@ -80,7 +77,6 @@ async function HomeContent() {
   const locale = await getLocale();
   const [catalogue, settledCollections, campaigns] = await Promise.all([
     Promise.allSettled([
-      getCategories(),
       featuredProducts(),
       getProducts(),
       getProducts({ offers: true }),
@@ -93,15 +89,13 @@ async function HomeContent() {
   const collectionResults = settledCollections.map((result) =>
     result.status === "fulfilled" ? result.value : [],
   );
-  const categories =
-    catalogue[0].status === "fulfilled" ? catalogue[0].value : [];
   const featured =
-    catalogue[1].status === "fulfilled" ? catalogue[1].value.products : [];
+    catalogue[0].status === "fulfilled" ? catalogue[0].value.products : [];
   const general =
-    catalogue[2].status === "fulfilled" ? catalogue[2].value.products : [];
+    catalogue[1].status === "fulfilled" ? catalogue[1].value.products : [];
   const offers =
-    catalogue[3].status === "fulfilled"
-      ? catalogue[3].value.products.filter((product) => product.stock > 0)
+    catalogue[2].status === "fulfilled"
+      ? catalogue[2].value.products.filter((product) => product.stock > 0)
       : [];
   const all = uniqueProducts([
     ...offers,
@@ -130,31 +124,14 @@ async function HomeContent() {
   const offerShelf = offers.filter(
     (product) => !shelf.some((item) => item._id === product._id),
   );
-  const dailyProducts = collectionResults[2] ?? [];
-  const daily = prioritizeShelf(dailyProducts, shelf);
-  const budgetProducts = collectionResults[3] ?? [];
-  const budget = prioritizeShelf(budgetProducts, [...shelf, ...daily]);
-  const budgetCategories = new Set<string>();
-  const variedBudget = budget.filter((product) => {
-    if (budgetCategories.has(product.category._id)) return false;
-    budgetCategories.add(product.category._id);
-    return true;
-  });
-  const budgetShelf = uniqueProducts([...variedBudget, ...budget]);
   return (
       <div className="contents">
-        <HomeCategories
-          categories={[...categories].sort(
-            (a, b) => categoryRank(a.name) - categoryRank(b.name),
-          )}
-        />
         <HomeShelf
           title={u(locale,"Your everyday essentials")}
           description={u(locale,"Small essentials. A little more care, every day.")}
           products={shelf}
           href="/collections/daily-care"
         />
-        <HomeBenefits />
         {!all.length ? (
           <section className="rounded-2xl border border-border p-6">
             <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
@@ -174,24 +151,10 @@ async function HomeContent() {
             href="/offers"
           />
         ) : null}
-        <HomeProductCarousel products={photoReady.filter(product => !shelf.some(item => item._id === product._id)).slice(0,4)} />
-        <HomeCompactShelf
-          title={u(locale,"Personal care for every day")}
-          description={u(locale,"Discover body, hair and personal care essentials.")}
-          products={daily}
-          href="/collections/daily-care"
-        />
         <HomeEditorial />
-        <HomeCompactShelf
-          title={u(locale,"AED 50 & under")}
-          description={u(locale,"Available essentials within your budget.")}
-          products={budgetShelf}
-          href="/collections/under-50"
-        />
-        <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} />
+        <HomeBrandStrip brands={catalogueBrands(available)} />
         <HomeManagedCampaigns campaigns={campaigns} />
         <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-        <HomeSupport />
       </div>
   );
 }

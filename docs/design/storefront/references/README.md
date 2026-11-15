@@ -1,3 +1,7 @@
+> Current analysis: [storefront reference guide](../../../../apps/web/docs/design/references.md).
+> Search now leads the brief; category controls follow 03 and product detail follows 02.
+> This folder contains reference-only originals, not shipping artwork or final tokens.
+
 # Owner-supplied storefront references — 15 November 2026
 
 The owner supplied these screenshots in chat to inform the new homepage and
@@ -50,3 +54,25 @@ logo, a complementary readable font pairing, an app-like mobile experience and
 a deliberate desktop UX. Improve the header’s navigation/search/address grouping
 and campaign banners. Review through coded previews, then refine. This explicit
 selection supersedes the earlier question about choosing one reference alone.
+
+## Rejected implementation
+
+The owner rejected the first coded interpretation (`72c9f77`) because the old
+theme and layout remained too apparent. The screenshots and interaction requests
+remain inputs; the candidate's palette assignments, typography, rounded-panel
+composition and repeated-shelf page are not the approved visual identity.
+A replacement direction is being selected through Impeccable. Do not use the
+archived candidate guide or generated metadata as a baseline.
+
+## Current reference-analysis entry point
+
+The organized source-by-source analysis, current explicit preferences, observed
+live-site evidence and unknown behaviours are in
+[apps/web/docs/design/references.md](../../../../apps/web/docs/design/references.md).
+The latest request prioritizes search while retaining category discovery; it
+prefers reference 03 category controls and reference 02 product detail. No
+strongest overall reference, final identity or token system is selected.
+Reference 4.png is supplemental; no priority was stated for it.
+[manifest.json](manifest.json) inventories all four originals and reuse limits.
+Keep these assets outside public/runtime bundles; do not publish screenshot
+frames, watermarks, viewer UI, unrelated branding or unsupported claims.

@@ -113,7 +113,7 @@ export async function CompactProductCard({ product }: { product: Product }) {
           )}
         </Link>
         <div className="min-w-0">
-          <p className="mb-1 text-xs font-medium tracking-[0.05em] text-muted uppercase">
+          <p className="mb-1 text-xs font-medium text-muted">
             {product.brand || product.familyBrand || product.category.name}
           </p>
           <h3 className="mb-0 text-sm leading-5 font-medium">

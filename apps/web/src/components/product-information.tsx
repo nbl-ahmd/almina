@@ -36,7 +36,7 @@ export async function ProductInformation({ product }: { product: Product }) {
     ['Sold as', product.saleUnit], ['Form', product.productForm], ['Strength', product.strength],
     ['Manufacturer', product.manufacturer], ['GTIN', product.gtin], ['Product ID', product.product_id],
   ].filter((fact): fact is [string, string] => Boolean(fact[1]));
-  return <section className="product-info-panel rounded-2xl border border-border bg-surface p-5 md:p-7" aria-label={u(locale,"Product details")}>
+  return <section className="product-info-panel border-t border-border pt-6" aria-label={u(locale,"Product details")}>
     <nav className="mb-7 flex gap-5 scrollbar-none overflow-x-auto border-b border-border text-sm font-semibold whitespace-nowrap" aria-label={u(locale,"Product information sections")}>
       <a className="inline-flex min-h-11 items-center border-b-2 border-ink text-ink" href="#product-description">{u(locale,"Overview")}</a>
       {product.usage ? <a className="inline-flex min-h-11 items-center text-muted hover:text-ink" href="#product-usage">{u(locale,"How to use")}</a> : null}

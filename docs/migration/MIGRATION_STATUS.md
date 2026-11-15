@@ -1,3 +1,56 @@
+## 2026-11-15 — Search-led storefront replacement implemented locally
+
+Owner authorized the build from the new guide, with exact coral #FF5A5F.
+Implemented customer tokens, Figtree/Alexandria, search/address shell, category
+controls, home/campaign/card/listing/PDP/footer composition and customer theme
+migration. Commerce/auth/API/admin/wholesale logic and production data unchanged.
+57 compiled regressions plus 8 final navigation cases, 33 focused units, typecheck,
+lint/build and 42 bilingual route/viewport cases passed; 6 axe scans had 0 violations.
+Tablet review fix resolved; reviewer disposition remains **fix** only for a
+version-incompatible tool-issued seed-reference format, with genuine provenance
+verified. Owner visual acceptance is pending. No deployment. See the
+[implementation and verification report](STOREFRONT_IDENTITY_OVERHAUL_2026-11-15.md).
+
+## 2026-11-15 — Forward storefront design specification
+
+Owner requested DESIGN.md and supporting directions, pinning primary accent
+`#FF5A5F`. Wrote the forward customer guide and screen directions; synchronized
+PRODUCT/brief/decisions and active styling instructions. Supporting palette,
+Figtree/Alexandria fonts and measurements remain candidates for screen review.
+Contrast pairings calculated locally; font metadata verified. No runtime CSS,
+tokens, fonts, screens, generated component sidecar or deployment changed.
+This supersedes the earlier exclusion of DESIGN.md creation only.
+
+## 2026-11-15 — Replacement storefront product context and brief (draft)
+
+Rewrote `apps/web/PRODUCT.md` around verified customers/tasks/source capabilities
+and current search-first intent. Added `apps/web/DESIGN-BRIEF.md` and an evidence/
+decision register under `apps/web/docs/design/decisions.md`. Requirements,
+proposals, source-versus-production limits and pre-screen decisions are explicit.
+Business-priority and palette/font placeholders remain unfilled. Owner review
+pending; no final DESIGN.md, tokens, screen generation, implementation or deployment.
+
+## 2026-11-15 — Storefront reference inventory (planning only)
+
+Organized four supplied images and reviewed Life Pharmacy, Apollo Pharmacy and
+Tata 1mg for search/address, categories, cards, detail and empty-cart patterns.
+The latest owner instruction makes search primary and pins reference-03 category
+controls/reference-02 detail hierarchy. Explicit preferences, interpretations,
+rights and unverified behaviours are separated in
+[reference analysis](../../apps/web/docs/design/references.md). Asset originals
+remain outside runtime bundles with a provenance/hash manifest. No final visual
+identity, tokens, screen implementation or deployment selected in this phase.
+
+## 2026-11-15 — Full storefront visual replacement in progress
+
+The owner rejected the reference-led candidate as too close to the old theme
+and layout. New branch `codex/storefront-identity-overhaul`: PRODUCT.md rewritten
+around confirmed capabilities; rejected customer guide/metadata/brief archived
+and active styling instructions reset. Admin/wholesale specifications remain
+independent. Impeccable replacement direction selection precedes the new tokens
+and rebuilt page structures. Runtime CSS remains temporarily for continuity;
+no new implementation or verification result is claimed yet. No deployment.
+
 ## 2026-11-15 — Reference-led customer storefront redesign (local candidate)
 
 Owner selected image-1 cards, image-2 gallery-first PDP, image-3 home/purchase

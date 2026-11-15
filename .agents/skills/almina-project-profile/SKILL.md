@@ -4,14 +4,19 @@ description: Preserve Al Mina product, commerce, accessibility and production co
 ---
 
 Read root AGENTS.md, apps/web/AGENTS.md and apps/web/PRODUCT.md.
-The owner supplied and selected a new composite on 15 November 2026: image 1
-product cards, image 2 gallery-first PDP, image 3 homepage and sticky purchase
-bar, adapted to the Al Mina logo’s coral/aqua family. Read apps/web/DESIGN.md,
-`docs/design/storefront/references/README.md` and the scoped surface brief.
-The owner chose working coded previews. Use the new scoped token source;
-archive records and old screenshots have no visual authority. Do not invent
-commercial or medical claims from reference content. General-purpose skills
-remain available, with Impeccable guiding the chosen direction and review.
+The owner rejected the prior customer design candidate and requested a complete
+new visual identity through Impeccable init/new-work. That candidate's archived
+guide, metadata, tokens and composition have no current visual authority.
+Preserve the real logo colour family, owner reference interaction patterns and
+working coded preview workflow. Establish a replacement direction before UI
+implementation. The owner subsequently requested a forward DESIGN.md and fixed
+primary accent #FF5A5F. Read that guide, DESIGN-BRIEF.md and the decision/screen
+directions under apps/web/docs/design. Preserve their confirmed/candidate status;
+the latest owner request authorizes local implementation. Current DESIGN.md and
+scoped metadata record the built candidate; owner acceptance and release remain
+separate. Runtime tokens live in the customer-scoped storefront-tokens.css.
+General-purpose design skills remain available; do not restore project-specific
+bindings to the rejected theme. No reference screenshot claims are product facts.
 
 Preserve real catalogue content, contacts, identifiers, URLs, metadata,
 structured data and indexing policy. Keep English/Arabic and RTL, keyboard

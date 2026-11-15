@@ -129,29 +129,34 @@ Specify responsive sizing appropriately.
 
 # Styling
 
-The owner approved a new reference-led storefront phase on 15 November 2026.
-Use `PRODUCT.md` for product truth and `DESIGN.md` for the implemented visual
-system. The three owner references and their interpretation are recorded in
-`docs/design/storefront/references/README.md`; the surface brief records scope.
-Image 1 supplies product cards, image 2 the gallery-first PDP, and image 3 home
-structure and the purchase dock. Logo coral/aqua colours are explicitly selected.
-The owner chose working coded previews and iterative refinement. Do not infer
-new discounts, ratings, certifications, medical claims or delivery guarantees.
+The owner rejected the previous storefront candidate and explicitly requested
+complete visual replacement on 15 November 2026. Its guide, generated metadata,
+page composition, fonts and token values are not a baseline for new work.
+Historical material is excluded from current visual guidance. PRODUCT.md owns
+confirmed facts. The owner requested the current DESIGN.md as a forward
+specification and pinned the primary accent to #FF5A5F. Read its confirmed versus
+candidate labels, DESIGN-BRIEF.md, docs/design/screen-directions.md and the decision
+register. Do not extract a replacement guide from rejected runtime styling.
+The owner subsequently authorized implementation. DESIGN.md and the scoped
+metadata record the built local candidate; storefront-tokens.css owns its runtime
+values. Owner visual acceptance and production release are separate. Preserve
+exact primary #FF5A5F and do not restore retired care-colour families.
 
-The scoped source is `(storefront)/storefront-tokens.css`; Tailwind utilities
-and customer component CSS consume its semantic roles. Compatibility aliases
-resolve to the same system while remaining route markup migrates. Do not add an
-independent palette, font or styling stack. The shared root baseline, admin and
-wholesale retain separate consumers and must not be restyled by customer rules.
-Keep campaign-artwork’s admin preview compatible. Retired documents/metadata and
-old Figma/screenshots remain historical; never restore their authority.
+Keep the real logo/brand colour family and the supplied interaction references.
+The new direction must visibly replace header/navigation, first-screen structure,
+category browsing, cards, listing, gallery/purchase hierarchy and footer, together
+with a coherent token, type, spacing, shape, state and motion system. Renaming
+existing tokens or appending override styles does not constitute replacement.
+Retained runtime CSS is temporary implementation, not aesthetic authority.
 
-Use the project profile for safeguards, Impeccable for deliberate UI design and
-review, version-matched Next docs for framework work, and runtime/browser checks
-for verification. Preserve product IDs/URLs, search/filter query semantics,
-English/Arabic and RTL, responsive controls, visible focus, contrast, touch targets,
-reduced motion, true loading/empty/error states, SEO and server-authoritative
-commerce. Design tasks do not authorize production data changes or deployment.
+Keep customer styling scoped. Trace shared/admin/wholesale consumers before
+removing shared rules, fonts, component APIs or campaign preview dependencies.
+Migrate customer consumers to the replacement system before retiring their old
+bindings. Do not introduce a second active customer palette or styling stack.
+Preserve English/Arabic/RTL, keyboard use, semantics, visible focus, contrast,
+touch targets, reduced motion, loading/empty/error states, routes, query URLs,
+SEO and every server-authoritative commerce/auth/API contract. Local preview
+only; no production data access, commerce changes or deployment.
 
 ---
 
