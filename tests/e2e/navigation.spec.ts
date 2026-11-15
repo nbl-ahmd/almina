@@ -17,7 +17,9 @@ for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigat
   await expect(page).toHaveURL(/\/search\?q=Daily$/); await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.reload(); if(width<1024)await page.locator('#catalog-filters > summary').click(); await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
   if(width<768){
-    await expect(page.getByRole('button',{name:'Open shopping menu',exact:true})).toHaveCount(0);
+    const menu=page.getByRole('button',{name:'Open shopping menu',exact:true});
+    await menu.click();await expect(page.getByRole('dialog',{name:'Explore Al Mina',exact:true})).toBeVisible();
+    await page.keyboard.press('Escape');await expect(menu).toBeFocused();
     await navigation.getByRole('link',{name:'Shop',exact:true}).click();
   } else {
     await navigation.getByRole('button',{name:'All categories',exact:true}).click();

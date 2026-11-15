@@ -1,6 +1,10 @@
+> **C15 — Latest product-card correction:** R05 now controls card anatomy. Owner requested dirham instead of visible AED and denser/faster purchasing. Implement stock/wishlist/contained photo, factual brand/pack chips, semibold deduplicated visible name (full accessible name retained), stronger symbol price and rounded-square coral quick add with actual cart count. No copied rating/green palette, no fabricated pack metadata, and no change to server monetary/stock authority.
+
+> **Current owner correction, 15 November 2026 — C14:** The previous local candidate (9d2d39b) was rejected as nowhere near the image. Reference **02-pharmacy-app.png** now controls the overall home and PDP composition. The owner requested an actual new ad banner and an Impeccable review/fix. Implement search → courier ad → circular categories → horizontal home product rail; unframed PDP gallery → identity/price/options/purchase → compact similar products. Keep #FF5A5F, RTL, existing functions and mobile persistent purchase. This supersedes C03's 03 category priority, C04's home-grid geometry, old supporting measurements and any unresolved pre-screen permission table below. The local coded workflow is already authorized; owner appearance acceptance remains pending. No deployment.
+
 # Storefront Planning — Decisions and Evidence
 
-Updated: 15 November 2026. Branch: `codex/storefront-identity-overhaul`.
+Updated: 15 November 2026. Branch: `codex/storefront-pharmacy-app-reference`.
 Status: forward DESIGN.md and screen directions written at the owner's request.
 Primary accent confirmed; the authorized local implementation now carries the
 supporting candidates. Owner visual acceptance and production release are pending.
@@ -68,9 +72,9 @@ verification limits; historical test outcomes were not rerun for this task.
 | P05 | Review keyboard operation, 200% text, touch targets, intermediate widths, RTL/mixed content and errors alongside attractive default states. | Prevents approval of a home-only or English-only system. These are evaluation proposals, not final tokens. |
 | P06 | Use a labelled local representative catalogue for previews with exact, rights-cleared pack images; no live production mutation. | Realistic length/options/states without inventing business claims or touching production. The existing small fixture is insufficient to prove full catalogue coverage. |
 
-## Decisions needed before screen generation
+## Historical pre-screen questions — superseded by local-build authorization
 
-These decisions are for the next phase. None blocks saving/reviewing this brief.
+This table records earlier planning questions. The owner has since authorized local implementation and pinned reference 02. It is not an approval gate. Business facts and native Arabic review remain open only where relevant; unsupported claims stay omitted.
 
 | Priority | Open decision | Proposed resolution / minimum answer |
 | --- | --- | --- |
@@ -137,19 +141,8 @@ documentation belongs to the later authorized design/build phase.
 - The scoped sidecar is documented from actual components, not extracted from
   rejected CSS or fabricated from preimplementation proposals.
 
-## Implemented candidate — current status
+## Implemented candidate — reference 02 correction
 
-The owner explicitly requested the build after the documentation phase. One
-scoped customer palette now uses the exact coral, Figtree/Alexandria, category-first
-home discovery, new campaign/shell/card/PDP/footer presentation and preserved
-shopping contracts. DESIGN.md and its sidecar record actual source, not screen
-approval. Earlier “no implementation” statements describe the preceding phase.
+The owner rejected the identity-overhaul composition and requested a replacement from reference 02. Current branch `codex/storefront-pharmacy-app-reference` implements compact search, a generated photographic ad, circular categories, a horizontal mobile/tablet home product rail and image-first white cards. PDP uses an unframed gallery, real buying controls, persistent mobile purchase and compact related rows. Coral remains exactly #FF5A5F. The actual product summary is preserved below related rows; commercial calculations and requests are unchanged.
 
-The complete implementation/verification and review limits are recorded in
-[the migration report](../../../../docs/migration/STOREFRONT_IDENTITY_OVERHAUL_2026-11-15.md).
-All 57 compiled cases passed, plus 8 final navigation cases after tablet correction,
-33 focused units, type/lint/build, 42 bilingual route/size checks and 6 axe scans.
-The finish reviewer resolved the tablet defect but kept disposition **fix** for
-an incompatible tool-issued seed-reference format; evidence integrity was verified.
-This is reported openly rather than called a review pass. No further UI repair
-was identified in its scored fix list. No production deployment or data access.
+The previous [identity-overhaul report](../../../../docs/migration/STOREFRONT_IDENTITY_OVERHAUL_2026-11-15.md) is historical evidence for a rejected visual candidate; its previous reviewer metadata issue is not approval of this build. The current [reference-02 report](../../../../docs/migration/STOREFRONT_PHARMACY_APP_REFERENCE_2026-11-15.md) records new verification, asset provenance and review limitations. Owner visual acceptance remains pending. No deployment or production data access.

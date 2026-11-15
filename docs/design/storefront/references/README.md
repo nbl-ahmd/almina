@@ -1,3 +1,5 @@
+> **Current precedence — 15 November 2026:** The owner subsequently rejected both local compositions and explicitly pinned **02-pharmacy-app.png** as the principal home/PDP reference, requesting an ad banner. Borrow search → photographic ad → circular categories → image-led rail, and the unframed PDP gallery/purchase sequence. Keep exact coral #FF5A5F and persistent mobile buying access. Older 03-category and 01-home-grid preferences below are historical where they conflict. Screenshot copy, ratings, discount, device chrome and unsupported controls remain excluded. The source-by-source analysis below records its earlier date/scope; it does not override this correction. See DESIGN-BRIEF.md and decisions.md for the current implemented interpretation.
+
 > Current analysis: [storefront reference guide](../../../../apps/web/docs/design/references.md).
 > Search now leads the brief; category controls follow 03 and product detail follows 02.
 > This folder contains reference-only originals, not shipping artwork or final tokens.

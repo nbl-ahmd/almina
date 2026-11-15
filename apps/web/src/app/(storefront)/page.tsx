@@ -58,8 +58,8 @@ async function HomeLead() {
   const locale = await getLocale();
   const products = featured.status === 'fulfilled' ? featured.value.products.filter(product => product.stock > 0) : [];
   return <div className="home-lead"><h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
-    <HomeCategories categories={categories.status === 'fulfilled' ? [...categories.value].sort((a,b) => categoryRank(a.name)-categoryRank(b.name)) : []} products={products} />
     <HomeHero products={products} banners={banners.status === 'fulfilled' ? banners.value : []} campaigns={campaigns.status === 'fulfilled' ? campaigns.value : []} />
+    <HomeCategories categories={categories.status === 'fulfilled' ? [...categories.value].sort((a,b) => categoryRank(a.name)-categoryRank(b.name)) : []} products={products} />
   </div>;
 }
 function categoryRank(name: string) {

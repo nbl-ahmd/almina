@@ -1,3 +1,7 @@
+## 2026-11-15 — Reference-02 rebuild and compact product cards
+
+Replaced the rejected category-first storefront composition with the owner's pharmacy-app reference: photographic ad, circular categories, scrolling home product rail and unframed PDP. Latest close-up card request adds brand/pack chips, dirham-symbol prices, compact coral add controls and actual cart count. Active guide/sidecar/brief/instructions now record this build. Preserved server-authoritative commerce, routes, localization and independent admin/wholesale. Local checks/build, bilingual responsive/accessibility scans and targeted basket-count/stock/reload regressions passed. Owner visual acceptance remains pending; no deployment. See [current report](STOREFRONT_PHARMACY_APP_REFERENCE_2026-11-15.md). The following identity-overhaul entry is historical evidence for the subsequently rejected visual candidate.
+
 ## 2026-11-15 — Search-led storefront replacement implemented locally
 
 Owner authorized the build from the new guide, with exact coral #FF5A5F.

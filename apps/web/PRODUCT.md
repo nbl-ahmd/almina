@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Status: planning record, 15 November 2026. Confirmed owner requirements and
+Status: product context for the local reference-02 rebuild, 15 November 2026. Confirmed owner requirements and
 repository-verified capabilities are distinguished below. Source presence does
 not establish production enablement, live data quality or provider readiness.
 See [decisions and evidence](docs/design/decisions.md) for traceable sources.
@@ -93,10 +93,9 @@ optional visual polish.
 Keep the actual Al Mina name, logo, contact facts and logo colour family. The
 owner explicitly pinned the primary accent to `#FF5A5F` on 15 November 2026. The
 owner wants an app-like mobile experience and a deliberate desktop experience.
-The annotated references establish component preferences, not an approved whole
-identity: [reference analysis](docs/design/references.md).
+The latest owner correction pins `02-pharmacy-app.png` as the principal composition reference for home and product detail. This supersedes the previous category-first composition and reference-03 category geometry. Search → photographic ad → circular category links → image-led product rail is the implemented home sequence. Product detail leads with an unframed gallery, identity, price, options/quantity and purchase. The fixed coral remains required. Supporting choices remain subject to owner screen review: [reference analysis](docs/design/references.md).
 
-Use real catalogue/media/content. Do not invent reviews, sales popularity,
+Use real catalogue/media/content for saleable products. Generic generated courier and category illustrations may support the interface; they must never be associated with a product ID, impersonate actual staff or establish availability. Keep their provenance under `docs/design/storefront/campaigns/`. Do not invent reviews, sales popularity,
 certifications, discounts, delivery promises, medical claims, payment methods
 or services from competitor pages or reference screenshots. Demonstration prices
 and stock must be identified as sample data; media rights/pack fidelity must be

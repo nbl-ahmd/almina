@@ -1,3 +1,7 @@
+> **Latest card preference — R05:** The owner supplied a close-up product card and requested its anatomy, a dirham symbol, greater information density and purchase efficiency. Borrow the stock/wishlist/photo → brand/pack chips → clear name → strong price/rounded-square add sequence. Keep confirmed coral rather than copying the screenshot's green. Omit the pictured rating unless real aggregate data exists. The image cannot establish quantity behavior, hover/focus, failure states or stock validation. Current coded adaptation shows actual cart count after adding, preserves server checks and full accessible product names, and keeps RTL currency/pack runs legible.
+
+> **Current precedence — 15 November 2026:** The owner subsequently rejected both local compositions and explicitly pinned **02-pharmacy-app.png** as the principal home/PDP reference, requesting an ad banner. Borrow search → photographic ad → circular categories → image-led rail, and the unframed PDP gallery/purchase sequence. Keep exact coral #FF5A5F and persistent mobile buying access. Older 03-category and 01-home-grid preferences below are historical where they conflict. Screenshot copy, ratings, discount, device chrome and unsupported controls remain excluded. The source-by-source analysis below records its earlier date/scope; it does not override this correction. See DESIGN-BRIEF.md and decisions.md for the current implemented interpretation.
+
 # Al Mina storefront — reference analysis
 
 Reviewed: 15 November 2026. Status: **reference planning only**. No final visual

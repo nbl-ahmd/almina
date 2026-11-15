@@ -1,490 +1,163 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-15T13:55:00.966361+00:00",
+  "generatedAt": "2026-11-15T16:44:01.270539+00:00",
   "title": "Design System: Al Mina Customer Storefront",
   "extensions": {
     "colorMeta": {
       "brand": {
         "role": "primary",
-        "displayName": "Brand",
-        "tonalRamp": [
-          "oklch(15.00% 0.20039 22.38)",
-          "oklch(26.43% 0.20039 22.38)",
-          "oklch(37.86% 0.20039 22.38)",
-          "oklch(49.29% 0.20039 22.38)",
-          "oklch(60.71% 0.20039 22.38)",
-          "oklch(72.14% 0.20039 22.38)",
-          "oklch(83.57% 0.20039 22.38)",
-          "oklch(95.00% 0.20039 22.38)"
-        ]
+        "displayName": "Brand"
       },
       "brand-hover": {
         "role": "primary",
-        "displayName": "Brand Hover",
-        "tonalRamp": [
-          "oklch(15.00% 0.16982 20.53)",
-          "oklch(26.43% 0.16982 20.53)",
-          "oklch(37.86% 0.16982 20.53)",
-          "oklch(49.29% 0.16982 20.53)",
-          "oklch(60.71% 0.16982 20.53)",
-          "oklch(72.14% 0.16982 20.53)",
-          "oklch(83.57% 0.16982 20.53)",
-          "oklch(95.00% 0.16982 20.53)"
-        ]
+        "displayName": "Brand Hover"
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Ink",
-        "tonalRamp": [
-          "oklch(15.00% 0.00860 255.58)",
-          "oklch(26.43% 0.00860 255.58)",
-          "oklch(37.86% 0.00860 255.58)",
-          "oklch(49.29% 0.00860 255.58)",
-          "oklch(60.71% 0.00860 255.58)",
-          "oklch(72.14% 0.00860 255.58)",
-          "oklch(83.57% 0.00860 255.58)",
-          "oklch(95.00% 0.00860 255.58)"
-        ]
+        "displayName": "Ink"
       },
       "muted": {
         "role": "neutral",
-        "displayName": "Muted",
-        "tonalRamp": [
-          "oklch(15.00% 0.01279 256.74)",
-          "oklch(26.43% 0.01279 256.74)",
-          "oklch(37.86% 0.01279 256.74)",
-          "oklch(49.29% 0.01279 256.74)",
-          "oklch(60.71% 0.01279 256.74)",
-          "oklch(72.14% 0.01279 256.74)",
-          "oklch(83.57% 0.01279 256.74)",
-          "oklch(95.00% 0.01279 256.74)"
-        ]
+        "displayName": "Muted"
       },
       "page": {
         "role": "neutral",
-        "displayName": "Page",
-        "tonalRamp": [
-          "oklch(15.00% 0.00000 89.88)",
-          "oklch(26.43% 0.00000 89.88)",
-          "oklch(37.86% 0.00000 89.88)",
-          "oklch(49.29% 0.00000 89.88)",
-          "oklch(60.71% 0.00000 89.88)",
-          "oklch(72.14% 0.00000 89.88)",
-          "oklch(83.57% 0.00000 89.88)",
-          "oklch(95.00% 0.00000 89.88)"
-        ]
+        "displayName": "Page"
       },
       "surface": {
         "role": "neutral",
-        "displayName": "Surface",
-        "tonalRamp": [
-          "oklch(15.00% 0.00000 89.88)",
-          "oklch(26.43% 0.00000 89.88)",
-          "oklch(37.86% 0.00000 89.88)",
-          "oklch(49.29% 0.00000 89.88)",
-          "oklch(60.71% 0.00000 89.88)",
-          "oklch(72.14% 0.00000 89.88)",
-          "oklch(83.57% 0.00000 89.88)",
-          "oklch(95.00% 0.00000 89.88)"
-        ]
+        "displayName": "Surface"
       },
       "subtle": {
         "role": "neutral",
-        "displayName": "Subtle",
-        "tonalRamp": [
-          "oklch(15.00% 0.00132 106.42)",
-          "oklch(26.43% 0.00132 106.42)",
-          "oklch(37.86% 0.00132 106.42)",
-          "oklch(49.29% 0.00132 106.42)",
-          "oklch(60.71% 0.00132 106.42)",
-          "oklch(72.14% 0.00132 106.42)",
-          "oklch(83.57% 0.00132 106.42)",
-          "oklch(95.00% 0.00132 106.42)"
-        ]
+        "displayName": "Subtle"
       },
       "border": {
         "role": "neutral",
-        "displayName": "Border",
-        "tonalRamp": [
-          "oklch(15.00% 0.00464 258.33)",
-          "oklch(26.43% 0.00464 258.33)",
-          "oklch(37.86% 0.00464 258.33)",
-          "oklch(49.29% 0.00464 258.33)",
-          "oklch(60.71% 0.00464 258.33)",
-          "oklch(72.14% 0.00464 258.33)",
-          "oklch(83.57% 0.00464 258.33)",
-          "oklch(95.00% 0.00464 258.33)"
-        ]
+        "displayName": "Border"
       },
       "accent": {
         "role": "neutral",
-        "displayName": "Accent",
-        "tonalRamp": [
-          "oklch(15.00% 0.02186 17.55)",
-          "oklch(26.43% 0.02186 17.55)",
-          "oklch(37.86% 0.02186 17.55)",
-          "oklch(49.29% 0.02186 17.55)",
-          "oklch(60.71% 0.02186 17.55)",
-          "oklch(72.14% 0.02186 17.55)",
-          "oklch(83.57% 0.02186 17.55)",
-          "oklch(95.00% 0.02186 17.55)"
-        ]
+        "displayName": "Accent"
       },
       "teal": {
-        "role": "secondary",
-        "displayName": "Teal",
-        "tonalRamp": [
-          "oklch(15.00% 0.06522 193.55)",
-          "oklch(26.43% 0.06522 193.55)",
-          "oklch(37.86% 0.06522 193.55)",
-          "oklch(49.29% 0.06522 193.55)",
-          "oklch(60.71% 0.06522 193.55)",
-          "oklch(72.14% 0.06522 193.55)",
-          "oklch(83.57% 0.06522 193.55)",
-          "oklch(95.00% 0.06522 193.55)"
-        ]
+        "role": "neutral",
+        "displayName": "Teal"
       },
       "ocean": {
         "role": "neutral",
-        "displayName": "Ocean",
-        "tonalRamp": [
-          "oklch(15.00% 0.01483 248.19)",
-          "oklch(26.43% 0.01483 248.19)",
-          "oklch(37.86% 0.01483 248.19)",
-          "oklch(49.29% 0.01483 248.19)",
-          "oklch(60.71% 0.01483 248.19)",
-          "oklch(72.14% 0.01483 248.19)",
-          "oklch(83.57% 0.01483 248.19)",
-          "oklch(95.00% 0.01483 248.19)"
-        ]
+        "displayName": "Ocean"
       },
       "sale": {
         "role": "neutral",
-        "displayName": "Sale",
-        "tonalRamp": [
-          "oklch(15.00% 0.17974 23.60)",
-          "oklch(26.43% 0.17974 23.60)",
-          "oklch(37.86% 0.17974 23.60)",
-          "oklch(49.29% 0.17974 23.60)",
-          "oklch(60.71% 0.17974 23.60)",
-          "oklch(72.14% 0.17974 23.60)",
-          "oklch(83.57% 0.17974 23.60)",
-          "oklch(95.00% 0.17974 23.60)"
-        ]
+        "displayName": "Sale"
       },
       "sale-surface": {
         "role": "neutral",
-        "displayName": "Sale Surface",
-        "tonalRamp": [
-          "oklch(15.00% 0.01627 12.78)",
-          "oklch(26.43% 0.01627 12.78)",
-          "oklch(37.86% 0.01627 12.78)",
-          "oklch(49.29% 0.01627 12.78)",
-          "oklch(60.71% 0.01627 12.78)",
-          "oklch(72.14% 0.01627 12.78)",
-          "oklch(83.57% 0.01627 12.78)",
-          "oklch(95.00% 0.01627 12.78)"
-        ]
+        "displayName": "Sale Surface"
       },
       "warning": {
         "role": "neutral",
-        "displayName": "Warning",
-        "tonalRamp": [
-          "oklch(15.00% 0.09821 71.21)",
-          "oklch(26.43% 0.09821 71.21)",
-          "oklch(37.86% 0.09821 71.21)",
-          "oklch(49.29% 0.09821 71.21)",
-          "oklch(60.71% 0.09821 71.21)",
-          "oklch(72.14% 0.09821 71.21)",
-          "oklch(83.57% 0.09821 71.21)",
-          "oklch(95.00% 0.09821 71.21)"
-        ]
+        "displayName": "Warning"
       },
       "warning-surface": {
         "role": "neutral",
-        "displayName": "Warning Surface",
-        "tonalRamp": [
-          "oklch(15.00% 0.03359 86.31)",
-          "oklch(26.43% 0.03359 86.31)",
-          "oklch(37.86% 0.03359 86.31)",
-          "oklch(49.29% 0.03359 86.31)",
-          "oklch(60.71% 0.03359 86.31)",
-          "oklch(72.14% 0.03359 86.31)",
-          "oklch(83.57% 0.03359 86.31)",
-          "oklch(95.00% 0.03359 86.31)"
-        ]
+        "displayName": "Warning Surface"
       },
       "success": {
         "role": "neutral",
-        "displayName": "Success",
-        "tonalRamp": [
-          "oklch(15.00% 0.09047 159.76)",
-          "oklch(26.43% 0.09047 159.76)",
-          "oklch(37.86% 0.09047 159.76)",
-          "oklch(49.29% 0.09047 159.76)",
-          "oklch(60.71% 0.09047 159.76)",
-          "oklch(72.14% 0.09047 159.76)",
-          "oklch(83.57% 0.09047 159.76)",
-          "oklch(95.00% 0.09047 159.76)"
-        ]
+        "displayName": "Success"
       },
       "success-surface": {
         "role": "neutral",
-        "displayName": "Success Surface",
-        "tonalRamp": [
-          "oklch(15.00% 0.01073 158.85)",
-          "oklch(26.43% 0.01073 158.85)",
-          "oklch(37.86% 0.01073 158.85)",
-          "oklch(49.29% 0.01073 158.85)",
-          "oklch(60.71% 0.01073 158.85)",
-          "oklch(72.14% 0.01073 158.85)",
-          "oklch(83.57% 0.01073 158.85)",
-          "oklch(95.00% 0.01073 158.85)"
-        ]
+        "displayName": "Success Surface"
+      },
+      "ad-surface": {
+        "role": "neutral",
+        "displayName": "Ad Surface"
       },
       "logo-aqua": {
-        "role": "secondary",
-        "displayName": "Logo Aqua",
-        "tonalRamp": [
-          "oklch(15.00% 0.08567 195.48)",
-          "oklch(26.43% 0.08567 195.48)",
-          "oklch(37.86% 0.08567 195.48)",
-          "oklch(49.29% 0.08567 195.48)",
-          "oklch(60.71% 0.08567 195.48)",
-          "oklch(72.14% 0.08567 195.48)",
-          "oklch(83.57% 0.08567 195.48)",
-          "oklch(95.00% 0.08567 195.48)"
-        ]
+        "role": "neutral",
+        "displayName": "Logo Aqua"
       },
       "focus": {
         "role": "neutral",
-        "displayName": "Focus",
-        "tonalRamp": [
-          "oklch(15.00% 0.00860 255.58)",
-          "oklch(26.43% 0.00860 255.58)",
-          "oklch(37.86% 0.00860 255.58)",
-          "oklch(49.29% 0.00860 255.58)",
-          "oklch(60.71% 0.00860 255.58)",
-          "oklch(72.14% 0.00860 255.58)",
-          "oklch(83.57% 0.00860 255.58)",
-          "oklch(95.00% 0.00860 255.58)"
-        ]
+        "displayName": "Focus"
       },
       "control-border": {
         "role": "neutral",
-        "displayName": "Control Border",
-        "tonalRamp": [
-          "oklch(15.00% 0.01139 261.78)",
-          "oklch(26.43% 0.01139 261.78)",
-          "oklch(37.86% 0.01139 261.78)",
-          "oklch(49.29% 0.01139 261.78)",
-          "oklch(60.71% 0.01139 261.78)",
-          "oklch(72.14% 0.01139 261.78)",
-          "oklch(83.57% 0.01139 261.78)",
-          "oklch(95.00% 0.01139 261.78)"
-        ]
+        "displayName": "Control Border"
       },
       "control-hover": {
         "role": "neutral",
-        "displayName": "Control Hover",
-        "tonalRamp": [
-          "oklch(15.00% 0.01483 248.19)",
-          "oklch(26.43% 0.01483 248.19)",
-          "oklch(37.86% 0.01483 248.19)",
-          "oklch(49.29% 0.01483 248.19)",
-          "oklch(60.71% 0.01483 248.19)",
-          "oklch(72.14% 0.01483 248.19)",
-          "oklch(83.57% 0.01483 248.19)",
-          "oklch(95.00% 0.01483 248.19)"
-        ]
+        "displayName": "Control Hover"
       },
       "control-disabled": {
         "role": "neutral",
-        "displayName": "Control Disabled",
-        "tonalRamp": [
-          "oklch(15.00% 0.00251 165.07)",
-          "oklch(26.43% 0.00251 165.07)",
-          "oklch(37.86% 0.00251 165.07)",
-          "oklch(49.29% 0.00251 165.07)",
-          "oklch(60.71% 0.00251 165.07)",
-          "oklch(72.14% 0.00251 165.07)",
-          "oklch(83.57% 0.00251 165.07)",
-          "oklch(95.00% 0.00251 165.07)"
-        ]
-      }
-    },
-    "typographyMeta": {
-      "display": {
-        "displayName": "Campaign display",
-        "purpose": "English campaign heading; Arabic uses local Alexandria and its observed line-height override."
-      },
-      "body-arabic": {
-        "displayName": "Arabic body",
-        "purpose": "Local Alexandria with RTL shell reading metrics; native review remains pending."
+        "displayName": "Control Disabled"
       }
     },
     "shadows": [
       {
+        "name": "wishlist",
+        "value": "0 2px 4px rgb(36 39 43 / 6%)",
+        "purpose": "Small wishlist control separation."
+      },
+      {
         "name": "raised",
         "value": "0 10px 32px -12px rgb(36 39 43 / 25%)",
-        "purpose": "Search suggestions and temporary menu overlays."
+        "purpose": "Temporary overlays."
       }
     ],
     "motion": [
       {
         "name": "feedback",
         "value": "150ms",
-        "purpose": "Local colour and boundary feedback."
-      },
-      {
-        "name": "ease-out",
-        "value": "cubic-bezier(.22,1,.36,1)",
-        "purpose": "Retained local checkout transitions."
-      },
-      {
-        "name": "ease-drawer",
-        "value": "cubic-bezier(.32,.72,0,1)",
-        "purpose": "Declared customer drawer easing; not a mandate for new motion."
+        "purpose": "Existing control color/state feedback."
       }
     ],
     "breakpoints": [
       {
-        "name": "checkout-choice-columns",
-        "value": "640px"
+        "name": "mobile-max",
+        "value": "767px"
       },
       {
-        "name": "desktop-shell",
-        "value": "768px"
+        "name": "tablet-rail-max",
+        "value": "1023px"
       },
       {
-        "name": "wide-commerce",
-        "value": "1024px"
-      },
-      {
-        "name": "header-compact-max",
+        "name": "compact-header-max",
         "value": "1100px"
       }
     ]
   },
   "components": [
     {
-      "name": "Primary purchase",
+      "name": "Quick add",
       "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Customer button variant; includes source focus and unavailable treatment.",
-      "html": "<button class=\"ds-button-primary\" type=\"button\">Add to cart</button>",
-      "css": ".ds-button-primary{font-family:Figtree,Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border:1px solid var(--color-brand, #ff5a5f);border-radius:10px;background:var(--color-brand, #ff5a5f);color:var(--color-ink, #24272b);font-size:16px;font-weight:600;line-height:1.3;cursor:pointer;transition:background-color 150ms,border-color 150ms;}.ds-button-primary:hover:not(:disabled){background:var(--color-brand-hover, #ff7478);border-color:var(--color-brand-hover, #ff7478);}.ds-button-primary:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}.ds-button-primary:disabled{background:var(--color-control-disabled, #eceeed);color:var(--color-muted, #5d6269);border-color:var(--color-border, #d8dadd);}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none;}}"
-    },
-    {
-      "name": "Ink action",
-      "kind": "button",
-      "refersTo": "button-ink",
-      "description": "Customer button variant; includes source focus and unavailable treatment.",
-      "html": "<button class=\"ds-button-ink\" type=\"button\">Explore the range</button>",
-      "css": ".ds-button-ink{font-family:Figtree,Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border:1px solid var(--color-ink, #24272b);border-radius:10px;background:var(--color-ink, #24272b);color:var(--color-surface, #ffffff);font-size:16px;font-weight:600;line-height:1.3;cursor:pointer;transition:background-color 150ms,border-color 150ms;}.ds-button-ink:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}.ds-button-ink:disabled{background:var(--color-control-disabled, #eceeed);color:var(--color-muted, #5d6269);border-color:var(--color-border, #d8dadd);}@media(prefers-reduced-motion:reduce){.ds-button-ink{transition:none;}}"
-    },
-    {
-      "name": "Secondary action",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Customer button variant; includes source focus and unavailable treatment.",
-      "html": "<button class=\"ds-button-secondary\" type=\"button\">Continue shopping</button>",
-      "css": ".ds-button-secondary{font-family:Figtree,Arial,sans-serif;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border:1px solid var(--color-control-border, #8b8f96);border-radius:10px;background:var(--color-surface, #ffffff);color:var(--color-ink, #24272b);font-size:16px;font-weight:600;line-height:1.3;cursor:pointer;transition:background-color 150ms,border-color 150ms;}.ds-button-secondary:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}.ds-button-secondary:disabled{background:var(--color-control-disabled, #eceeed);color:var(--color-muted, #5d6269);border-color:var(--color-border, #d8dadd);}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none;}}"
-    },
-    {
-      "name": "Search entry",
-      "kind": "input",
-      "refersTo": "search",
-      "description": "Header entry and submit; suggestions remain an application behaviour.",
-      "html": "<form class=\"ds-search\" role=\"search\"><input class=\"ds-search-input\" aria-label=\"Search products\" placeholder=\"Search products or brands\" type=\"search\"><button class=\"ds-search-submit\" type=\"submit\" aria-label=\"Search\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3\"/></svg></button></form>",
-      "css": ".ds-search{font-family:Figtree,Arial,sans-serif;display:flex;align-items:center;gap:8px;min-height:54px;padding:4px 4px 4px 16px;border:1.5px solid var(--color-ink, #24272b);border-radius:10px;background:var(--color-surface, #ffffff);}.ds-search:focus-within{outline:2px solid var(--color-ink, #24272b);outline-offset:2px;}.ds-search-input{font-family:Figtree,Arial,sans-serif;min-width:0;min-height:44px;flex:1;border:0;background:transparent;padding:0;color:var(--color-ink, #24272b);font-size:16px;}.ds-search-input::placeholder{color:var(--color-muted, #5d6269);}.ds-search-input:focus-visible{outline:none;}.ds-search-submit{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:7px;background:var(--color-brand, #ff5a5f);color:var(--color-ink, #24272b);cursor:pointer;}.ds-search-submit:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}"
-    },
-    {
-      "name": "Department navigation",
-      "kind": "nav",
-      "refersTo": "navigation-link",
-      "description": "Plain desktop destination with current underline and local hover state.",
-      "html": "<nav aria-label=\"Shop navigation\" class=\"ds-navigation\"><a class=\"ds-navigation-link\" href=\"/offers\" aria-current=\"page\">Offers</a><a class=\"ds-navigation-link\" href=\"/brands\">Shop brands</a></nav>",
-      "css": ".ds-navigation{font-family:Figtree,Arial,sans-serif;display:flex;flex-wrap:wrap;gap:4px;}.ds-navigation-link{position:relative;display:inline-flex;align-items:center;min-height:48px;padding:0 12px;font-size:13px;font-weight:500;color:var(--color-ink, #24272b);text-decoration:none;}.ds-navigation-link::after{content:\"\";position:absolute;inset-inline:12px;bottom:0;height:2px;border-radius:9999px;background:var(--color-brand, #ff5a5f);transform:scaleX(0);transition:transform 200ms;}.ds-navigation-link[aria-current=page]{font-weight:600;}.ds-navigation-link[aria-current=page]::after,.ds-navigation-link:hover::after{transform:scaleX(1);}.ds-navigation-link:hover{color:var(--color-teal, #175b5a);}.ds-navigation-link:hover:not([aria-current=page])::after{opacity:.4;}.ds-navigation-link:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-navigation-link::after{transition:none;}}"
-    },
-    {
-      "name": "Category route chip",
-      "kind": "chip",
-      "refersTo": "catalog-chip",
-      "description": "Listing route chip; selected state uses ink and white.",
-      "html": "<a class=\"ds-catalog-chip\" href=\"/categories\">Skin Care</a>",
-      "css": ".ds-catalog-chip{font-family:Figtree,Arial,sans-serif;display:inline-flex;align-items:center;min-height:36px;padding:6px 14px;border:1px solid var(--color-border, #d8dadd);border-radius:9999px;background:var(--color-surface, #ffffff);color:color-mix(in oklab,var(--color-ink, #24272b) 75%,transparent);font-size:12px;text-decoration:none;transition:border-color 150ms,background-color 150ms;}.ds-catalog-chip:hover{border-color:var(--color-ink, #24272b);}.ds-catalog-chip[aria-current=page]{background:var(--color-ink, #24272b);color:var(--color-surface, #ffffff);border-color:var(--color-ink, #24272b);}.ds-catalog-chip:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-catalog-chip{transition:none;}}"
-    },
-    {
-      "name": "Category control",
-      "kind": "custom",
-      "refersTo": "category-control",
-      "description": "Compact home category link using the existing inline SVG fallback.",
-      "html": "<a class=\"ds-category\" href=\"/categories\"><span class=\"ds-category-media\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z\"/></svg></span><h3 class=\"ds-category-title\">Everyday essentials</h3></a>",
-      "css": ".ds-category{font-family:Figtree,Arial,sans-serif;display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:10px;min-height:72px;padding:10px 12px;border:1px solid transparent;border-radius:8px;background:var(--color-subtle, #f5f5f4);color:var(--color-ink, #24272b);text-decoration:none;}.ds-category-media{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;color:var(--color-teal, #175b5a);}.ds-category-title{margin:0;font-size:13px;font-weight:600;line-height:1.5;overflow-wrap:anywhere;}.ds-category:hover{border-color:var(--color-control-hover, #454c53);}.ds-category:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}"
-    },
-    {
-      "name": "Product card fallback",
-      "kind": "card",
-      "refersTo": "product-card",
-      "description": "Real missing-photo treatment; factual text remains visible without image assets.",
-      "html": "<article class=\"ds-product-card\"><a class=\"ds-product-media\" href=\"/products\" aria-label=\"View product\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z\"/></svg><span>Photo coming soon</span></a><p class=\"ds-product-meta\">Pack details</p><h3 class=\"ds-product-title\"><a href=\"/products\">Product name and selected pack</a></h3><p class=\"ds-product-options\">Choose options</p></article>",
-      "css": ".ds-product-card{font-family:Figtree,Arial,sans-serif;display:flex;flex-direction:column;min-width:0;max-width:280px;padding:12px;border:1px solid var(--color-border, #d8dadd);border-radius:12px;background:var(--color-surface, #ffffff);color:var(--color-ink, #24272b);transition:border-color 150ms;}.ds-product-card:hover{border-color:var(--color-control-hover, #454c53);}.ds-product-media{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;aspect-ratio:1;padding:28px 8px 12px;margin-bottom:12px;color:var(--color-muted, #5d6269);font-size:12px;text-decoration:none;}.ds-product-meta{margin:0 0 6px;color:var(--color-muted, #5d6269);font-size:12px;}.ds-product-title{margin:0 0 12px;font-size:16px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}.ds-product-title a{color:inherit;text-decoration:none;}.ds-product-options{margin:0 0 8px;font-size:13px;color:var(--color-teal, #175b5a);}.ds-product-card a:focus-visible{outline:2px solid var(--color-focus, #24272b);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-product-card{transition:none;}}"
-    },
-    {
-      "name": "Checkout inset field",
-      "kind": "input",
-      "refersTo": "checkout-field",
-      "description": "Persistent field label and source focus/invalid treatment.",
-      "html": "<div class=\"ds-checkout-field\"><label class=\"ds-checkout-label\" for=\"ds-customer-name\">Full name</label><input class=\"ds-checkout-input\" id=\"ds-customer-name\" autocomplete=\"name\"></div>",
-      "css": ".ds-checkout-field{font-family:Figtree,Arial,sans-serif;position:relative;}.ds-checkout-label{position:absolute;top:9px;inset-inline-start:15px;max-width:calc(100% - 30px);color:var(--color-muted, #5d6269);font-size:12px;font-weight:500;line-height:16px;pointer-events:none;}.ds-checkout-input{font-family:Figtree,Arial,sans-serif;width:100%;height:64px;padding:26px 14px 9px;border:1px solid var(--color-border, #d8dadd);border-radius:12px;background:var(--color-subtle, #f5f5f4);color:var(--color-ink, #24272b);font-size:16px;}.ds-checkout-input:hover:enabled{border-color:var(--color-control-hover, #454c53);}.ds-checkout-input:focus-visible{background:var(--color-surface, #ffffff);border-color:var(--color-focus, #24272b);outline:2px solid var(--color-focus, #24272b);outline-offset:2px;}.ds-checkout-input[aria-invalid=true]{border-color:var(--color-sale, #b4232d);}.ds-checkout-field:focus-within .ds-checkout-label{color:var(--color-ink, #24272b);}"
+      "refersTo": "quick-add",
+      "description": "Single product add; actual cart count after adding.",
+      "html": "<button class=\"quick-add\" aria-label=\"Add to cart\">+</button>",
+      "css": ".quick-add{width:44px;height:44px;border:0;border-radius:13px;background:#ff5a5f;color:#24272b;font:600 24px sans-serif;}"
     }
   ],
   "narrative": {
-    "northStar": "The searchable pharmacy",
-    "overview": "Al Mina puts useful search before browsing and keeps real packs, prices and buying controls easy to compare. Coral emphasis, white product ground and charcoal typography form a compact retail identity; category rectangles and contained photography connect discovery to the catalogue.\n\nThis records the implemented customer storefront candidate on 15 November 2026, replacing the earlier forward specification under the owner’s explicit redesign instruction. Implementation does not establish owner visual approval or production deployment. The exact coral accent and search priority are owner requirements; supporting tokens are extracted from the build. Admin and wholesale retain independent systems.",
+    "northStar": "A pharmacy app, ready to shop.",
+    "overview": "Reference 02 composition, reference 05 product-card anatomy, exact owner coral and preserved commerce. Implemented local candidate pending owner visual acceptance.",
     "keyCharacteristics": [
-      "Search leads the shared header on phone and desktop.",
-      "Flat white product cards keep pack, availability, name, price and action together.",
-      "Compact categories use links, images and wrapping labels.",
-      "English Figtree and Arabic Alexandria carry equivalent task hierarchy.",
-      "Mobile purchase access stays above bottom navigation and safe areas."
+      "Search before discovery",
+      "Photographic campaign and circular categories",
+      "Image-led compact cards",
+      "Unframed product gallery",
+      "Bilingual purchase continuity"
     ],
-    "rules": [
-      {
-        "name": "The Coral Legibility Rule",
-        "body": "Use ink labels on coral buying actions and reserve deep teal or ink for ordinary links on white.",
-        "section": "colors"
-      },
-      {
-        "name": "The State Is Content Rule",
-        "body": "Keep availability, savings, errors and pending outcomes explicit in words; colour alone does not establish a commerce fact.",
-        "section": "colors"
-      },
-      {
-        "name": "The Exact Pack Rule",
-        "body": "Let identifying names and pack details wrap rather than clipping them to manufacture equal card heights.",
-        "section": "typography"
-      },
-      {
-        "name": "The Flat Comparison Rule",
-        "body": "Preserve the stable card plane; distinguish active boundaries and floating overlays without lifting every product surface.",
-        "section": "elevation"
-      }
-    ],
+    "rules": [],
     "dos": [
-      "Do use coral with ink foreground for primary buying emphasis.",
-      "Do preserve complete pack identity, factual stock, actual imagery and locale-aware prices.",
-      "Do keep visible focus, textual states, keyboard search and reduced-motion behaviour.",
-      "Do compose RTL with logical geometry while retaining literal product and logo orientation.",
-      "Do keep customer tokens scoped and preserve independent admin/wholesale consumers."
+      "Preserve factual pack/product identity and server authority."
     ],
     "donts": [
-      "Don't turn implementation evidence into owner visual approval or production release acceptance.",
-      "Don't use ordinary white labels on coral buying actions or small coral text on white.",
-      "Don't invent ratings, certifications, delivery promises or sale states from reference imagery.",
-      "Don't promote retained checkout blue/grey exceptions or legacy care-colour families into this palette.",
-      "Don't introduce decorative kickers, card-lift choreography or duplicate fixed buying controls."
+      "Do not invent ratings, discounts, services or delivery promises.",
+      "Do not deploy."
     ]
   }
 }

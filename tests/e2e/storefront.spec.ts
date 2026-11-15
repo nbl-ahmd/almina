@@ -12,9 +12,9 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
   await quantity.fill('999'); await quantity.blur();
   await expect(quantity).toHaveValue('4'); await expect(increase).toBeDisabled();
   await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
-  await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toBeVisible();
-  await page.reload(); await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toBeVisible();
-  await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab')).click();
+  await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.pdp-mobile-toolbar .header-cart'))).toBeVisible();
+  await page.reload(); await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.pdp-mobile-toolbar .header-cart'))).toBeVisible();
+  await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.pdp-mobile-toolbar .header-cart')).click();
   await expect(page.locator('.quantity')).toHaveText('4');
   await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
   await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();
@@ -110,4 +110,25 @@ test('add to cart, authoritative price, stock limit and persistence work on desk
   }
   await page.goto('/checkout');
   await expect(page.locator('main')).toContainText('Ordering is not available in this preview.');
+});
+
+
+test('card quick add shows the real cart count, rejects excess stock and survives reload', async ({ page }) => {
+  await page.setViewportSize({width:390,height:900});
+  await page.goto('/products');
+  const card=page.locator('.product-card').filter({has:page.getByRole('heading',{name:'Daily Care',exact:true})});
+  const add=card.getByRole('button',{name:'Add to cart: Daily Care',exact:true});
+  await expect(card.locator('.product-card-bottom .currency-amount').first()).toHaveAttribute('aria-label','AED 20.00');
+  await expect(card.locator('.product-card-bottom .currency-visual').first()).toHaveAttribute('dir','ltr');
+  const initialHeight=await card.evaluate(el=>el.getBoundingClientRect().height);
+  for(let quantity=1;quantity<=4;quantity++){
+    await add.click();await expect(add).toHaveAttribute('aria-busy','false');
+    await expect(add.locator('.card-cart-count')).toHaveText(String(quantity));
+    expect(await card.evaluate(el=>el.getBoundingClientRect().height)).toBe(initialHeight);
+  }
+  await add.click();await expect(card.getByRole('status')).toContainText('Stock is low.');
+  await expect(add.locator('.card-cart-count')).toHaveText('4');
+  await page.reload();await expect(add.locator('.card-cart-count')).toHaveText('4');
+  await expect(add).toHaveAccessibleDescription('In cart: 4');
+  await page.goto('/cart');await expect(page.locator('.quantity')).toHaveText('4');
 });

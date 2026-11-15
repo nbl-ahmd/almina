@@ -31,3 +31,7 @@ small client boundaries, optimized fonts/media and version-matched Next docs.
 Server pricing, stock, auth, permissions, order and provider contracts remain
 authoritative. Do not access production data, change commerce behavior or deploy
 as part of this redesign. Verify affected storefront and admin runtime paths.
+
+## Latest storefront reference precedence
+
+The owner rejected the category-first identity-overhaul candidate on 15 November 2026. Reference `docs/design/storefront/references/02-pharmacy-app.png` now leads home and PDP. Preserve search → photographic ad → circular categories → image-led home rail, and unframed product gallery → buying sequence → compact related rows. Retain exact primary #FF5A5F and persistent mobile buying access. Earlier 03-style categories, dark campaign asides and the rejected guide are not current authority. Read the current DESIGN.md/brief/decision register. Generated generic campaign/category illustrations may not replace factual product imagery or create claims. Owner visual acceptance remains pending; no deployment.

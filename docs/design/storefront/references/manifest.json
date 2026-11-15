@@ -47,6 +47,17 @@
       "origin": "Present in user-specified reference directory; original creator/source not supplied",
       "rights": "Not established; internal reference analysis only",
       "shippingAsset": false
+    },
+    {
+      "id": "R05",
+      "file": "05-product-card.png",
+      "title": "Owner-selected compact pharmacy product card",
+      "width": 276,
+      "height": 406,
+      "sha256": "cd15fe8d69a6d70849f59c628bcd5c18aab7e90ff580b2fe0525f60e32fb650b",
+      "origin": "User attachment, latest product-card request, 15 November 2026",
+      "rights": "Internal reference only; source rights not established",
+      "shippingAsset": false
     }
   ]
 }

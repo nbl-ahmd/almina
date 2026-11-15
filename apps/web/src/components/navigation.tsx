@@ -21,6 +21,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
     <header className="storefront-header">
       <div className="header-content sf-container">
         <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width:767px) 116px, 160px" className="h-auto w-full" /></Link>
+        <div className="header-mobile-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
         <div className="header-search"><SearchBox locale={locale} /></div>
         <DeliveryLocation locale={locale} />
         <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account"><UserCircleIcon className="size-6" aria-hidden="true" /><span>{t(locale, 'navAccount')}</span></Link>
