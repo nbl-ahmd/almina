@@ -1,6 +1,8 @@
-/* Al Mina storefront theme. Component layout/state styling lives in Tailwind classes.
-   Direction: warm neutral canvas, ink actions, hairline borders, generous radii and
-   pastel bento surfaces. Tokens cascade to every shared control and route. */
+/* LEGACY IMPLEMENTATION ONLY (2026-11-15): retained for existing consumers.
+   Not design authority; see docs/migration/STOREFRONT_DESIGN_RETIREMENT_2026-11-15.md.
+   Shared/root dependencies must migrate before removal. */
+/* Retained storefront cascade. Component layout/state styling also lives in
+   Tailwind classes. These values describe the current implementation only. */
 .storefront-shell {
   --color-ink: #192321;
   --color-muted: #56605d;
@@ -11,7 +13,6 @@
   --color-surface: #ffffff;
   --color-subtle: #f3f6f5;
   --color-border: #dce3e0;
-  --color-line: #dce3e0;
   --color-sale: #a32b38;
   --color-sale-surface: #fff0f1;
   --color-focus: #192321;
@@ -29,7 +30,6 @@
   --radius-control: 12px;
   --radius-card: 16px;
   --radius-panel: 20px;
-  --shadow-card: 0 6px 18px rgb(25 35 33 / 5%);
   --shadow-raised: 0 16px 45px -18px rgb(25 35 33 / 24%);
   --content-width: 1344px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);

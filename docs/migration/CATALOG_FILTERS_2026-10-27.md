@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: storefront aesthetic decisions here are historical evidence only, excluded from current design guidance. Functional and production requirements remain in force.
+
 # Catalogue filter refinement — 27 October 2026
 
 The owner requested filters that match the existing Al Mina storefront and chose

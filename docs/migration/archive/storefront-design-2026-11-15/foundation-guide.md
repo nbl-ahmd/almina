@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Al Mina storefront UI system
 
 Established 2026-10-03 before implementation. Applies to the additive `apps/web` storefront. Legacy deployment remains intact; checkout activation is a separate commerce migration.

@@ -1,3 +1,5 @@
+> 2026-11-15: storefront aesthetic references in this historical record are superseded and excluded from current design guidance. Admin specifications, functional contracts and production safeguards remain in force.
+
 # Delivery zones UI extension review — 2026-11-07
 
 Disposition: ordinary Operate-mode extension matches the incumbent systems. The independent delivery finish review returned **ship** after the refreshed screenshot matrix, Arabic picker localization and duplicate pin-removal action were resolved. This is a scoped UI evidence record, not production activation, verification of real provider geography, or a whole-application review.

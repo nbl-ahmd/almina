@@ -129,49 +129,34 @@ Specify responsive sizing appropriately.
 
 # Styling
 
-For storefront UI, read `DESIGN.md`, `PRODUCT.md`,
-`docs/migration/REDESIGN_SETUP_2026-10-18.md` from the repository root and the
-`almina-project-profile` skill. The owner requested a replacement direction after
-the Life, myAster, BinSina and RAK competitor review; the old Figma/PNG layouts and
-pale-blue bordered theme are historical references, not constraints on the new
-redesign. Keep Heroicons, one optimized storefront font and Tailwind-first styling.
-Impeccable owns composition, hierarchy and critique; gpt-taste supplies creative
-alternatives within the retail brief; Emil Kowalski's skills own purposeful motion
-and interaction details. Load the relevant skill for the task, not every skill.
-The official shadcn skill applies only to shadcn component work.
-The older overlapping design generators (`frontend-design`, `ui-ux-pro-max`,
-`ui-styling`, `design-system`, `design`, `brand`) are not default direction sources
-for this project. Use them only for a separately requested task where relevant.
-Preserve actual Al Mina content and commerce behaviour. When a new Figma frame
-is selected, extract its tokens/components before implementation. Otherwise
-establish a coherent replacement system from the competitor-based brief.
+The customer storefront design system was retired on 15 November 2026.
+This phase is cleanup only. No visual direction, palette, typography, layout,
+replacement tokens or new design guide is approved. Wait for owner-supplied
+reference images and/or Figma screens before proposing a replacement.
 
-Shopping task success, accessibility, truthful product information and performance
-override generic skill prescriptions. Do not force AIDA onto catalogue/PDP/cart,
-randomize layouts, simulate tool execution, mandate cinematic spacing, install
-GSAP, add scroll pinning or use unrelated placeholder imagery just because a
-skill recommends it. Choose motion only when it supports the interaction and
-honour reduced motion. Do not copy competitor assets or unsupported claims.
+Read `PRODUCT.md` for product facts and
+`docs/migration/STOREFRONT_DESIGN_RETIREMENT_2026-11-15.md` from the repository
+root for the legacy dependency inventory. Existing storefront CSS, utility
+classes, fonts, artwork and captures are temporary implementation compatibility,
+not visual authority. Do not infer the next identity from them or from archived
+migration records. Do not regenerate tokens or re-create DESIGN.md/sidecars
+from the incumbent code. General-purpose design skills remain available but
+must not fill the pending direction with their own aesthetic defaults.
 
-Use one coherent styling/design system.
+Preserve the existing Tailwind build and component APIs while consumers remain.
+Do not add a styling stack, reset, icon library or font during cleanup. Retain
+shared global CSS until storefront, admin, wholesale and root-error consumers
+are isolated and verified. Keep admin-only design specifications, metadata and
+styling authoritative within their scope. Migrate shared campaign previews and
+controls explicitly before deleting their dependencies.
 
-Do not reintroduce overlapping styling stacks such as:
-
-- Bootstrap
-- React-Bootstrap
-- MUI
-- multiple icon systems
-
-unless there is a specific migration requirement.
-
-Target:
-
-- Tailwind CSS
-- accessible primitives/components
-- one icon family
-- reusable project-specific UI components
-
-Visual changes must work on mobile and desktop.
+Future owner-provided references belong under `docs/design/storefront/references/`
+with source/provenance notes. Only a later owner-approved phase may establish
+`apps/web/DESIGN.md` and its scoped metadata. Neither exists as active storefront
+authority during this cleanup. Record functional requirements separately from
+visual interpretations. Preserve English/Arabic, RTL, semantic controls, focus,
+contrast, touch targets, reduced motion, responsive behavior and truthful
+commerce content. No deployment is authorized.
 
 ---
 

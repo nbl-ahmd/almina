@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Growth extension UI review — 19 October 2026
 
 This records an ordinary extension of the incumbent Al Mina interface. It is a visual review checkpoint, not certification of the complete growth programme, authentication, rewards accounting, checkout, production readiness or deployment.

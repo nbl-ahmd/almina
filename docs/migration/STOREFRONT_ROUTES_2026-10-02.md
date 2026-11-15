@@ -1,3 +1,5 @@
+> 2026-11-15: aesthetic choices in this historical route record are superseded and excluded from current design guidance. Route, SEO, data and compatibility contracts remain in force.
+
 # Storefront route migration — 2026-10-02
 
 > SEO follow-up (2026-10-03): production indexing and permanent redirect defaults below are superseded by [the storefront SEO implementation](STOREFRONT_SEO_2026-10-03.md). Non-production previews remain noindex; no production cutover has occurred.

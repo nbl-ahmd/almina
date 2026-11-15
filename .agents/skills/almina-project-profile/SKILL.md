@@ -1,44 +1,28 @@
 ---
 name: almina-project-profile
-description: Apply Al Mina's storefront redesign brief and production constraints to UI work. Coordinates the competitor-based direction, scoped design skills, Tailwind, Heroicons, optimized fonts, SEO and commerce integrity.
+description: Preserve Al Mina product, commerce, accessibility and production constraints during storefront work. No active storefront visual direction.
 ---
 
-Read the repository AGENTS.md, apps/web/AGENTS.md and apps/web/DESIGN.md before
-storefront work. Read docs/migration/REDESIGN_SETUP_2026-10-18.md for the active
-replacement brief and skill responsibilities. Old Figma screens and the prior
-blue bordered theme do not constrain the owner-requested redesign.
-apps/web/PRODUCT.md records product facts; existing API/model
-contracts remain authoritative for commerce behavior.
+Read root AGENTS.md, apps/web/AGENTS.md and apps/web/PRODUCT.md.
+The old customer visual system is retired. Read
+`docs/migration/STOREFRONT_DESIGN_RETIREMENT_2026-11-15.md` for cleanup boundaries
+and legacy consumers, not aesthetic guidance. Do not load archived guides,
+old Figma screens, screenshots or generated metadata as design authority.
+Do not recreate DESIGN.md or tokens from existing code. Await owner-provided
+references and an explicitly approved later design phase. No palette, font,
+geometry, composition, competitor brief or visual skill is a project default.
+General-purpose skills remain installed; apply only when the task calls for them.
 
-Use Tailwind utilities and shared semantic theme tokens. Retain custom CSS only
-for theme definitions, inherited baseline compatibility or documented browser
-exceptions. Replace the corresponding old component rules after verifying each
-migrated component. Do not enable a global reset that changes admin rendering.
+Preserve real catalogue content, contacts, identifiers, URLs, metadata,
+structured data and indexing policy. Keep English/Arabic and RTL, keyboard
+operation, semantics, labels, visible focus, touch targets, contrast, responsive
+states and reduced motion. Never invent reviews, discounts or services.
 
-Use Heroicons outline for interface icons. Keep one optimized font family via
-next/font; the incumbent Plus Jakarta Sans remains until a replacement is chosen
-for the new design on real catalogue content. Do not change fonts solely because
-a generic skill bans a family. Keep client boundaries
-small and product media responsive through next/image.
-
-Impeccable owns composition, hierarchy and critique. Use gpt-taste selectively
-for creative exploration and Emil's skills for purposeful interaction/motion.
-Retail usability, accessible controls, performance and the explicit project brief
-override random layouts, mandatory GSAP/AIDA, cinematic spacing and unrelated
-imagery in generic skills. Never simulate execution or claim checks not run.
-Use the
-official shadcn skill only for shadcn component APIs; Vercel React guidance owns
-performance patterns; next-dev-loop owns runtime verification. Figma skills are
-conditional on Figma operations. Do not combine the older design generators,
-ui-styling, design-system, frontend-design or ui-ux-pro-max as competing sources
-of direction for routine Al Mina storefront work.
-
-Preserve real catalog content, contacts, identifiers, URLs, metadata, structured
-data and indexing policy. Never invent discounts, reviews, certifications or
-services from reference screens. Server pricing/stock/order validation remains
-authoritative. A UI library does not authorize changes to commerce or auth.
-
-Verify mobile, tablet and desktop rendering, focus, contrast, text scaling,
-loading/empty/error states, direct navigation/reload and relevant regression
-tests. Compare compiled asset transfer when claiming a performance improvement;
-fixture measurements are not proof of production Core Web Vitals.
+Keep current build tooling and shared component APIs working. Active legacy
+styles remain implementation compatibility until their consumers migrate;
+never delete shared/admin dependencies because they look storefront-specific.
+Admin retains its own scoped specification. Keep Server Components by default,
+small client boundaries, optimized fonts/media and version-matched Next docs.
+Server pricing, stock, auth, permissions, order and provider contracts remain
+authoritative. Do not access production data, change commerce behavior or deploy
+as part of design cleanup. Verify affected storefront and admin runtime paths.

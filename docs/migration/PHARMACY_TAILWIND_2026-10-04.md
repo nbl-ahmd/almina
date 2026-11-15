@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Pharmacy component migration — 2026-10-04
 
 The product grid, product cards, stock labels, compact category tiles, gallery and catalog loading grid now use Tailwind utilities backed by the existing pharmacy palette. Base element defaults are layered so component utilities can override them. Preflight remains omitted to preserve retained admin and form rendering. Navigation, checkout and admin component styles remain incremental work; this is not a blanket CSS replacement.

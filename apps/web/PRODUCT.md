@@ -6,15 +6,17 @@ search offers, inspect product details, save product quantities in their cart
 and review delivery and server-calculated totals at checkout. Administration,
 inventory and order management are existing production workflows.
 
-The owner supplied eight desktop/mobile Figma reference screens and requested a
-complete responsive storefront redesign using their visual ideas while keeping
-only content/features that belong to Al Mina. The owner subsequently approved
-Heroicons, a single optimized font, Tailwind-first component styling and a
-smaller skill set. Impeccable is a visual guidance tool within those constraints.
+Product names, prices, availability, categories, images and descriptions come
+from the application. Customers must be able to find products, compare options,
+understand current prices/availability and complete the existing shopping flow.
+Labels must describe actual actions; never invent claims, reviews, discounts or
+services. Preserve English/Arabic content, locale switching and RTL behavior,
+accessible keyboard/touch controls, loading/empty/error states and existing SEO.
 
-The storefront should be lively, professional, legible and simple to shop.
-Labels name real actions. Product names, prices, stock, category names, images
-and descriptions come from the application; reference products/claims do not.
+The previous storefront visual requirements have been retired. No replacement
+visual direction has been approved; the owner will supply reference images
+and/or Figma screens in a later phase. Existing appearance is temporary legacy
+implementation, not a requirement for future design.
 
 Production safety, security, server-authoritative commerce and backward
 compatibility take precedence over visual changes. Development verification

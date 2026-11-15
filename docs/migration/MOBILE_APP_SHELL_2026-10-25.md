@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: storefront aesthetic decisions here are historical evidence only, excluded from current design guidance. Functional and production requirements remain in force.
+
 # Mobile storefront shell — 25 October 2026
 
 Local implementation; not deployed by this task.

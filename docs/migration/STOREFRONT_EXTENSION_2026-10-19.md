@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: storefront aesthetic decisions here are historical evidence only, excluded from current design guidance. Functional and production requirements remain in force.
+
 # Storefront design extension — 19 October 2026
 
 ## Scope and direction

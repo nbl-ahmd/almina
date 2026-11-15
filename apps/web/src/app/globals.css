@@ -1,3 +1,6 @@
+/* LEGACY IMPLEMENTATION ONLY (2026-11-15): retained for existing consumers.
+   Not design authority; see docs/migration/STOREFRONT_DESIGN_RETIREMENT_2026-11-15.md.
+   Shared/root dependencies must migrate before removal. */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
@@ -18,17 +21,13 @@
   --color-warning: #744513;
   --color-warning-surface: #fff5e6;
   --color-focus: #075dc7;
-  --color-line: #c9d4cf;
   --color-ocean: #35646c;
   --color-teal: #087775;
   --color-care-peach: #fff0eb;
-  --color-care-lilac: #eef0fb;
   --color-care-blue: #e6f2fc;
   --color-care-mint: #e6f3e9;
   --color-care-sun: #fff5df;
-  --shadow-card: 0 4px 16px rgb(32 62 70 / 5%);
   --shadow-raised: 0 10px 28px rgb(32 62 70 / 10%);
-  --shadow-nav: 0 -6px 18px rgb(32 62 70 / 6%);
 }
 
 /* shadcn semantic aliases resolve to the current surface's palette, including RTL. */
@@ -74,12 +73,11 @@
 :root {
   color-scheme: light;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
-  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px;
   --radius-control: 8px; --radius-card: 12px; --radius-panel: 20px;
   --content-width: 1280px;
   --gutter: var(--space-4);
-  --text-small: .875rem; --text-base: 1rem; --text-price: 1.25rem;
-  --layer-nav: 20;
+  --text-small: .875rem; --text-base: 1rem;
   --motion-feedback: 150ms;
 }
 @layer base {
