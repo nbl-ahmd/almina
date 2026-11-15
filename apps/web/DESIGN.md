@@ -40,9 +40,9 @@ typography:
     fontWeight: 600
     lineHeight: 1.3
   product-title:
-    fontSize: "16px"
+    fontSize: "15px"
     fontWeight: 600
-    lineHeight: 1.4
+    lineHeight: 1.35
   body:
     fontFamily: "Figtree, sans-serif"
     fontSize: "16px"
@@ -58,7 +58,7 @@ typography:
     fontWeight: 500
     lineHeight: 1.4
   price:
-    fontSize: "22px"
+    fontSize: "20px"
     fontWeight: 700
     lineHeight: 1.2
 rounded:
@@ -94,12 +94,12 @@ components:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.card}"
-    padding: "12px"
+    padding: "10px"
   category-chip:
     backgroundColor: "{colors.subtle}"
     textColor: "{colors.ocean}"
     rounded: "{rounded.label}"
-    padding: "3px 6px"
+    padding: "2px 5px"
   search:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -125,7 +125,7 @@ Cool pale lavender `page`, white `surface` and dark `ink` reproduce the referenc
 
 Self-hosted Figtree and Alexandria remain deliberate choices for a rounded, restrained sans hierarchy, with retained OFL files and next/font/local. Section headings are 600 weight; normal text is 400. Arabic has 1.75 body line height and normal tracking; script-specific headings retain their observed local rules.
 
-Product names are 16px/1.4, 600; mobile names are 14px with wrapping rather than truncation. Main card prices are 22px/1.2, 700; mobile prices are 20px. Compact related rows use smaller 14px amounts. Chips are 12px; stock labels 11px. Mobile PDP title is 23px/1.35, 500; campaign title 24px/1.15. Header/supporting metadata uses 10–14px according to role. These role sizes are observed implementation, not a universal modular scale.
+Product names are 15px/1.35, 600; mobile names are 14px with wrapping rather than truncation. Main card prices are 20px/1.2, 700; mobile prices are 18px. Compact related rows use smaller 14px amounts. Chips and stock labels are 11px. Mobile PDP title is 23px/1.35, 500; campaign title 24px/1.15. Header/supporting metadata uses 10–14px according to role. These role sizes are observed implementation, not a universal modular scale.
 
 Brand and trailing pack may be removed from the visible title only when they exactly repeat the adjacent factual chips. The full original name remains the product-link accessible name. Never shorten distinct variant/strength information or invent a replacement product title.
 
@@ -147,7 +147,7 @@ Feedback uses short color/border transitions. Existing motion-safe image scaling
 
 ## Shapes
 
-Cards use 18px corners and 12px padding. Quick add uses a 44px square with 13px corners. Search and compact category photographs are round; wishlist is a bordered white circle. Category photos are 68px on mobile, 88px on desktop, with labels beneath. Chips use 5px corners, stock labels 4px. Ad uses 22px mobile/24px desktop corners. Radius tokens are not a mandate to give every element the same form.
+Cards use 18px corners and 10px padding. Media areas are capped at 156px on desktop and 120px on mobile, with contained photography. Chips use compact 2px 5px padding, and names have an 8px gap before the purchase row; full names may wrap beyond two lines. Quick add uses a 44px square with 13px corners. Search and compact category photographs are round; wishlist is a bordered white circle. Category photos are 68px on mobile, 88px on desktop, with labels beneath. Chips use 5px corners, stock labels 4px. Ad uses 22px mobile/24px desktop corners. Radius tokens are not a mandate to give every element the same form.
 
 ## Components
 
