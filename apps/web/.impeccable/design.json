@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-15T16:44:01.270539+00:00",
+  "generatedAt": "2026-11-16T00:41:30.094612+00:00",
   "title": "Design System: Al Mina Customer Storefront",
   "extensions": {
     "colorMeta": {
@@ -118,16 +118,28 @@
     ],
     "breakpoints": [
       {
-        "name": "mobile-max",
-        "value": "767px"
+        "name": "narrow-phone-max",
+        "value": "359px"
       },
       {
-        "name": "tablet-rail-max",
-        "value": "1023px"
+        "name": "three-column-listing-min",
+        "value": "600px"
+      },
+      {
+        "name": "tablet-min",
+        "value": "768px"
+      },
+      {
+        "name": "desktop-min",
+        "value": "1024px"
       },
       {
         "name": "compact-header-max",
         "value": "1100px"
+      },
+      {
+        "name": "wide-listing-min",
+        "value": "1280px"
       }
     ]
   },

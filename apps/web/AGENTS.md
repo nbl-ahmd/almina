@@ -233,6 +233,14 @@ Check:
 
 For substantial UI changes use browser automation/visual inspection instead of assuming CSS is correct.
 
+For design-language or layout changes, preserve responsive behavior as a release
+requirement. Test live resizing of the same loaded page across phone/tablet/desktop
+breakpoints, not only fresh navigation at fixed sizes. Check header collisions,
+filter disclosure state, grid/card widths, local rails, RTL, and portrait/short
+landscape purchase-bar clearance. Keep `tests/e2e/responsive-layout.spec.ts`
+passing alongside relevant existing shopping/admin regressions.
+
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

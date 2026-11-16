@@ -4,7 +4,7 @@ Updated 15 November 2026. This replaces the rejected category-first/packshot-cam
 
 ## Home
 
-Compact search, delivery-area context and cart → generated courier ad with live HTML copy/CTA → circular category photos and labels → image-led product rail. Mobile shows roughly two cards plus continuation; desktop provides four columns. Keep actual managed campaign slides and useful catalogue links. Coral #FF5A5F is fixed; do not restore the old care-colour theme or dark campaign aside.
+Compact search, delivery-area context and cart → generated courier ad with live HTML copy/CTA → circular category photos and labels → image-led product rail. Mobile keeps 156–220px cards with continuation; tablet uses 240px cards. Desktop pairs the campaign with a circular category directory above four product columns, so real products appear earlier. Header/search and listing grids must adapt continuously while resizing, not only on initial navigation. Keep actual managed campaign slides and useful catalogue links. Coral #FF5A5F is fixed; do not restore the old care-colour theme or dark campaign aside.
 
 ## Listing and search
 

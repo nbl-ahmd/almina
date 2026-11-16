@@ -1,3 +1,7 @@
+## 2026-11-16 — Responsive repair and desktop layout
+
+Adapted tablet search/navigation, desktop campaign/category composition, result grids/filter access, narrow-phone rails and short-landscape purchase controls. Added live-resize regressions and persistent responsive guardrails for future design work. Customer identity and commerce contracts retained; admin/shared/wholesale source unchanged. Type/lint/build, responsive/browser/accessibility and selected existing regressions passed. No deployment. See [responsive repair report](STOREFRONT_RESPONSIVE_REPAIR_2026-11-16.md).
+
 ## 2026-11-15 — Reference-02 rebuild and compact product cards
 
 Replaced the rejected category-first storefront composition with the owner's pharmacy-app reference: photographic ad, circular categories, scrolling home product rail and unframed PDP. Latest close-up card request adds brand/pack chips, dirham-symbol prices, compact coral add controls and actual cart count. Active guide/sidecar/brief/instructions now record this build. Preserved server-authoritative commerce, routes, localization and independent admin/wholesale. Local checks/build, bilingual responsive/accessibility scans and targeted basket-count/stock/reload regressions passed. Owner visual acceptance remains pending; no deployment. See [current report](STOREFRONT_PHARMACY_APP_REFERENCE_2026-11-15.md). The following identity-overhaul entry is historical evidence for the subsequently rejected visual candidate.
