@@ -254,3 +254,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Latest storefront reference precedence
 
 The owner rejected the category-first identity-overhaul candidate on 15 November 2026. Reference `docs/design/storefront/references/02-pharmacy-app.png` now leads home and PDP. Preserve search → photographic ad → circular categories → image-led home rail, and unframed product gallery → buying sequence → compact related rows. Retain exact primary #FF5A5F and persistent mobile buying access. Earlier 03-style categories, dark campaign asides and the rejected guide are not current authority. Read the current DESIGN.md/brief/decision register. Generated generic campaign/category illustrations may not replace factual product imagery or create claims. Owner visual acceptance remains pending; no deployment.
+
+## Storefront control ownership
+
+`src/app/(storefront)/storefront-controls.css` owns customer action/search/cart
+geometry, colour roles and states. Components use semantic variants/classes; do
+not add competing background/radius/size utilities to those controls. Route CSS
+owns layout only. Shared Button variants and admin/wholesale themes remain
+independent. Ghost/link actions must use explicit variants, not inherit the legacy
+native button fill. Keep native checkout quantity, auth, quote and payment logic
+unchanged during visual work. Cart estimates come from server-loaded catalogue
+prices and are never the final checkout quote.

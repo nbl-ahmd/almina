@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-16T00:41:30.094612+00:00",
+  "generatedAt": "2026-11-16T13:43:12.574655+00:00",
   "title": "Design System: Al Mina Customer Storefront",
   "extensions": {
     "colorMeta": {
@@ -163,7 +163,13 @@
       "Unframed product gallery",
       "Bilingual purchase continuity"
     ],
-    "rules": [],
+    "rules": [
+      {
+        "name": "Control ownership",
+        "body": "Customer control roles, geometry and states are owned by storefront-controls.css. Page CSS supplies layout. Shared/admin variants remain independent.",
+        "section": "components"
+      }
+    ],
     "dos": [
       "Preserve factual pack/product identity and server authority."
     ],

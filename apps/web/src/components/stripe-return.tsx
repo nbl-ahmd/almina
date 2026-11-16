@@ -1,4 +1,5 @@
 'use client';
+import { CurrencyAmount } from './currency-amount';
 import {ConfirmationMark,CheckoutProgress} from './checkout-ui';
 import {GoogleCustomerReviews} from './google-customer-reviews';
 import type {GoogleCommerceConfiguration, ReviewReceipt} from '../lib/google/commerce';
@@ -39,7 +40,7 @@ export function StripeReturn({locale,cancelled,testMode=true,googleReviews,nonce
     <h1 id="stripe-title" aria-live="polite" className="mb-3 text-2xl">{message}</h1>
     <p className="text-sm text-muted">{isTest?(ar?'لا تُحصّل أموال حقيقية ولا يتم توصيل طلب تجريبي. تبقى سلة التسوق محفوظة.':'No real money is collected and no test order will be delivered. Your shopping basket is kept.'):(payment?.state==='paid'?(ar?'تم استلام طلبك. سيتواصل معك فريق الصيدلية بشأن التوصيل.':'Your order has been received. Our pharmacy team will contact you about delivery.'):ar?'يمكنك التواصل مع الصيدلية لمتابعة طلبك. لا تعِد الدفع إذا كانت حالته غير مؤكدة.':'Contact the pharmacy about your order. Please do not pay again while its status is uncertain.')}</p>
     {payment?<p className="text-sm">{isTest?(ar?'مرجع الاختبار: ':'Test reference: '):(ar?'رقم الطلب: ':'Order number: ')}<strong>{payment.orderId}</strong></p>:null}
-    {payment&&!isTest?<p className="text-sm font-semibold">{new Intl.NumberFormat(ar?'ar-AE':'en-AE',{style:'currency',currency:'AED'}).format(payment.totals.totalMinor/100)}</p>:null}
+    {payment&&!isTest?<p className="text-sm font-semibold"><CurrencyAmount value={payment.totals.totalMinor/100} locale={ar?'ar':'en'} /></p>:null}
     {working?<p role="status" className="text-sm">{ar?'جارٍ التحقق من الدفع…':'Verifying your payment…'}</p>:null}
     {error?<p role="alert" className="text-sm text-danger">{error}</p>:null}
     <div className="mt-5 flex flex-wrap gap-3">

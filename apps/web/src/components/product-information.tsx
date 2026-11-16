@@ -32,7 +32,7 @@ export async function ProductInformation({ product }: { product: Product }) {
     ['product-storage', 'Storage', product.storage],
   ].filter((section): section is [string, string, string] => Boolean(section[2]?.trim()));
   const facts = [
-    ['Brand', product.brand || product.familyBrand], ['Pack size', product.packLabel],
+    ['Brand', product.brand || product.familyBrand], ['Pack size', product.packLabel || [...product.name.matchAll(/\b\d+(?:[.,]\d+)?\s*(?:ml|kg|g|litres?|liters?)\b/gi)].at(-1)?.[0]],
     ['Sold as', product.saleUnit], ['Form', product.productForm], ['Strength', product.strength],
     ['Manufacturer', product.manufacturer], ['GTIN', product.gtin], ['Product ID', product.product_id],
   ].filter((fact): fact is [string, string] => Boolean(fact[1]));
@@ -46,7 +46,7 @@ export async function ProductInformation({ product }: { product: Product }) {
       <div className="min-w-0 max-w-prose">
         <div id="product-description" className="scroll-mt-6 pb-6">
           <h2 className="mb-4 text-xl font-bold">{u(locale,"About this product")}</h2>
-          <Description text={product.description || u(locale,'Contact the pharmacy for more information about this product.')} />
+          <Description text={product.description || product.summary || u(locale,'Contact the pharmacy for more information about this product.')} />
         </div>
         {sections.map(([id, title, value]) => <details key={id} id={id} className="group scroll-mt-6 border-t border-border">
           <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-semibold [&::-webkit-details-marker]:hidden">

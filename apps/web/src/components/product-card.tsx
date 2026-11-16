@@ -82,7 +82,8 @@ export async function ProductCard({
   const brand = product.brand || product.familyBrand;
   const fullName = product.familyName || product.name;
   const withoutBrand = brand && fullName.toLowerCase().startsWith(brand.toLowerCase() + ' ') ? fullName.slice(brand.length).trim() : fullName;
-  const withoutPack = optionLabel && withoutBrand.toLowerCase().endsWith(optionLabel.toLowerCase()) ? withoutBrand.slice(0, -optionLabel.length).trim().replace(/[,–-]$/, '').trim() : withoutBrand;
+  const nameWithoutLiteralSize = namedSize && optionLabel === namedSize ? withoutBrand.replace(namedSize, '').replace(/\s{2,}/g, ' ').trim() : withoutBrand;
+  const withoutPack = nameWithoutLiteralSize !== withoutBrand ? nameWithoutLiteralSize : optionLabel && withoutBrand.toLowerCase().endsWith(optionLabel.toLowerCase()) ? withoutBrand.slice(0, -optionLabel.length).trim().replace(/[,–-]$/, '').trim() : withoutBrand;
   const cardName = withoutPack || fullName;
   return (
     <article data-product-id={product._id} className="product-card group">

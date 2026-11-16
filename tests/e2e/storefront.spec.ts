@@ -94,7 +94,8 @@ test('add to cart, authoritative price, stock limit and persistence work on desk
   await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
   await expect(page.locator('main')).toContainText('Added to cart.');
   await page.goto('/cart');
-  await expect(page.locator('main')).toContainText('AED 20.00 per item');
+  await expect(page.locator('.cart-unit-price [role="img"]')).toHaveAccessibleName('AED 20.00');
+  await expect(page.locator('.cart-unit-price')).toContainText('per item');
   for (let quantity = 2; quantity <= 4; quantity++) {
     await page.getByRole('button', { name: 'Increase Daily Care quantity' }).click();
     await expect(page.locator('.quantity')).toHaveText(String(quantity));

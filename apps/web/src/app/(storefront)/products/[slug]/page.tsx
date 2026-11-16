@@ -18,10 +18,11 @@ import { metadataFor } from '../../../../lib/server/seo';
 import { getWebEnvironment } from '../../../../lib/server/env';
 import { aggregateRatingData, breadcrumbData, productData, reviewListData, type Query } from '../../../../lib/seo';
 import { StructuredData } from '../../../../components/structured-data';
-import { categoryHref, productOptionLabel, productHref, money, displayPrice } from '../../../../lib/catalog/model';
+import { categoryHref, productOptionLabel, productHref, displayPrice } from '../../../../lib/catalog/model';
 import { Breadcrumb, StockState } from '../../../../components/storefront';
 import { Icon } from '../../../../components/icon';
 import { CompactProductCard } from '../../../../components/product-card';
+import { CurrencyAmount } from '../../../../components/currency-amount';
 import { CartLink } from '../../../../components/cart-link';
 import { AddToCart } from '../../../../components/cart-controls';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
@@ -60,10 +61,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
         {productImages(product).some(image => !image.startsWith('/')) ? <PhotoCredit source={product.imageSource} /> : null}
       </div>
       <div className="product-information min-w-0"><h1>{product.name}</h1><div className="product-identity">{product.brand || product.familyBrand ? <Link href={`/search?q=${encodeURIComponent(product.brand || product.familyBrand || '')}`}>{product.brand || product.familyBrand}</Link> : null}<Link href={categoryHref(product.category)}>{u(locale,product.category.name)}</Link></div>
-        <div className="product-price-panel"><span>{u(locale,'Price')}</span><p className="price">{money(currentPrice,locale)}</p>{saving ? <><del>{money(product.price,locale)}</del><span className="pdp-saving">{locale==='en'?`Save ${saving}%`:`وفّر ${saving}%`}</span></> : null}</div>
+        <div className="product-price-panel"><span>{u(locale,'Price')}</span><p className="price"><CurrencyAmount value={currentPrice} locale={locale} /></p>{saving ? <><del><CurrencyAmount value={product.price} locale={locale} /></del><span className="pdp-saving">{locale==='en'?`Save ${saving}%`:`وفّر ${saving}%`}</span></> : null}</div>
         <ProductOptions product={product} variants={variants} />
         <div className="pdp-stock-line"><StockState stock={product.stock} /></div>
-        <div className="pdp-purchase"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice,locale)} /></div>
+        <div className="pdp-purchase"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel=<CurrencyAmount value={currentPrice} locale={locale} /> /></div>
 
         <div className="pdp-save-secondary"><SaveProduct locale={locale} id={product._id} name={product.name} /></div>
         {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}

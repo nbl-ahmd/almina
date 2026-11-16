@@ -1,3 +1,7 @@
+## 2026-11-16 — Storefront review repairs and styling ownership
+
+Fixed the verified review findings, consolidated customer control styling, restored mobile cart access and clarified server-derived catalogue estimates without changing checkout authority. Updated active guidance and added focused regressions. Type/lint/build, units, compiled commerce/UI tests, bilingual responsive/accessibility scans and local runtime diagnostics passed. Verified replacement catalogue photos/descriptions remain content inputs. No deployment. See [repair report](STOREFRONT_UI_REPAIRS_2026-11-16.md).
+
 ## 2026-11-16 — Responsive repair and desktop layout
 
 Adapted tablet search/navigation, desktop campaign/category composition, result grids/filter access, narrow-phone rails and short-landscape purchase controls. Added live-resize regressions and persistent responsive guardrails for future design work. Customer identity and commerce contracts retained; admin/shared/wholesale source unchanged. Type/lint/build, responsive/browser/accessibility and selected existing regressions passed. No deployment. See [responsive repair report](STOREFRONT_RESPONSIVE_REPAIR_2026-11-16.md).

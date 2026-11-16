@@ -53,6 +53,10 @@ typography:
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.75
+  supporting:
+    fontSize: "13px"
+    fontWeight: 500
+    lineHeight: 1.5
   label:
     fontSize: "12px"
     fontWeight: 500
@@ -103,7 +107,7 @@ components:
   search:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.pill}"
+    rounded: "{rounded.panel}"
 ---
 # Design System: Al Mina Customer Storefront
 
@@ -125,7 +129,7 @@ Cool pale lavender `page`, white `surface` and dark `ink` reproduce the referenc
 
 Self-hosted Figtree and Alexandria remain deliberate choices for a rounded, restrained sans hierarchy, with retained OFL files and next/font/local. Section headings are 600 weight; normal text is 400. Arabic has 1.75 body line height and normal tracking; script-specific headings retain their observed local rules.
 
-Product names are 15px/1.35, 600; mobile names are 14px with wrapping rather than truncation. Main card prices are 20px/1.2, 700; mobile prices are 18px. Compact related rows use smaller 14px amounts. Chips and stock labels are 11px. Mobile PDP title is 23px/1.35, 500; campaign title 24px/1.15. Header/supporting metadata uses 10–14px according to role. These role sizes are observed implementation, not a universal modular scale.
+Product names are 15px/1.35, 600; mobile names are 14px with wrapping rather than truncation. Main card prices are 20px/1.2, 700; mobile prices are 18px. Compact related rows use smaller 14px amounts. Chips and stock labels are 12px; supporting search/navigation labels use the documented 13px role. Mobile PDP title is 23px/1.35, 500; campaign title 24px/1.15. Header/supporting metadata uses 10–14px according to role. These role sizes are observed implementation, not a universal modular scale.
 
 Brand and trailing pack may be removed from the visible title only when they exactly repeat the adjacent factual chips. The full original name remains the product-link accessible name. Never shorten distinct variant/strength information or invent a replacement product title.
 
@@ -147,7 +151,7 @@ Feedback uses short color/border transitions. Existing motion-safe image scaling
 
 ## Shapes
 
-Cards use 18px corners and 10px padding. Media areas are capped at 156px on desktop and 120px on mobile, with contained photography. Chips use compact 2px 5px padding, and names have an 8px gap before the purchase row; full names may wrap beyond two lines. Quick add uses a 44px square with 13px corners. Search and compact category photographs are round; wishlist is a bordered white circle. Category photos are 68px on mobile, 72px on tablet and 60px in the desktop category directory, with labels beneath. Chips use 5px corners, stock labels 4px. Ad uses 22px mobile/24px desktop corners. Radius tokens are not a mandate to give every element the same form.
+Cards use 18px corners and 10px padding. Media areas are capped at 156px on desktop and 120px on mobile, with contained photography. Chips use compact 2px 5px padding, and names have an 8px gap before the purchase row; full names may wrap beyond two lines. Quick add uses a 44px square with 13px corners. Search uses a 24px field frame with a 16px labelled action. Desktop cart uses a 16px labelled control; phone icon cart and wishlist controls are equal-sided circles. Category photographs remain circular. Category photos are 68px on mobile, 72px on tablet and 60px in the desktop category directory, with labels beneath. Chips use 5px corners, stock labels 4px. Ad uses 22px mobile/24px desktop corners. Radius tokens are not a mandate to give every element the same form.
 
 ## Components
 
@@ -158,6 +162,12 @@ Cards use 18px corners and 10px padding. Media areas are capped at 156px on desk
 **Purchase.** An initial plus enables one-click add for a single product; products requiring variant selection link to their existing options. The same server check validates each addition. Compact controls show actual device-cart quantity plus a small plus after adding, restore on reload and synchronize through existing storage/cart events. Accessible description announces the count. Pending, unavailable and failed additions remain explicit; rejected additions never increment the visible quantity. This is not an authoritative stock indicator. Cart/PDP retain existing quantity/removal flows.
 
 **Campaign and category media.** Generated courier and six generic category illustrations are decorative owned assets, with exact prompts/provenance under docs/design/storefront/campaigns. Campaign text/CTA are live bilingual HTML. Actual category media wins; generated illustration never substitutes for saleable product photography or depicts actual staff.
+
+**Control ownership.** `storefront-controls.css` is the sole customer owner for primary action colours, radius, hover/disabled states and search/cart geometry. Shared Button APIs retain admin behavior. Customer default/accent actions are coral/ink, secondary actions outlined, ghost/link actions transparent. Page CSS supplies layout; do not recreate slot styling in page overrides. Labelled buttons use the control radius; a 50% radius is reserved for equal-sided icon controls. Search submit, clear and delivery controls retain44px hit areas. The phone suggestion panel spans the header shell rather than the narrow input wrapper.
+
+**Cart.** One mobile next-step bar sits above bottom navigation; desktop uses one summary action. Server-loaded unit prices supply integer-minor-unit line and merchandise estimates, explicitly separated from delivery/tax/final quote. Counts identify total items and distinct products. Unavailable ordering uses state-specific copy; no checkout enablement changes. Summary precedes recommendations; recommendations exclude already-saved cart product IDs. Repeated help and continuation sections are consolidated. Core currency presentation includes PDP/cart/checkout, saved/recent cards and hosted-payment return, with ISO currency retained internally.
+
+**Secondary navigation and empty states.** Phone footer groups and secondary menu groups collapse natively; desktop links remain expanded. Single-page pagination is omitted. Empty search has one main no-results explanation and localized surrounding labels for literal search terms. Review-list failures are distinguished from verified-purchase submission requirements. Real product summaries can fill an otherwise absent description; no medical content is invented.
 
 **Search, location and navigation.** Preserve existing suggestions, keyboard/Escape behavior, query fallback, manual/GPS area choice, errors, reload and route semantics. Do not infer scanner, camera or chat features from the reference.
 

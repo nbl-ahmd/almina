@@ -105,7 +105,7 @@
 .checkout-order-panel { background:#f7f8f9; border-radius:14px; }
 .checkout-order-panel h2 { font-size:1.125rem; }
 .checkout-order-panel dl>dt:nth-last-child(2),.checkout-order-panel dl>dd:last-child { font-size:1.375rem; }
-.checkout-flow .button,.checkout-flow button[type='submit'] { border-radius:10px; }
+.checkout-flow .button,.checkout-flow button[type='submit'] { border-radius:var(--radius-control); }
 .checkout-mobile-action { box-shadow:0 -4px 20px rgb(0 0 0 / 3%); }
 .checkout-success-mark { position:relative; color:#2459a6; background:#edf3fc; width:5rem; height:5rem; }
 .checkout-success-mark::after { content:''; position:absolute; inset:-7px; border:1px solid #b9cdec; border-radius:50%; }
