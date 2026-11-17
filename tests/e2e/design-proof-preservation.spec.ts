@@ -20,3 +20,13 @@ test('P1-04 preserves admin login and dashboard', async ({page}) => {
   await login(page);
   await expect(page.getByRole('heading', {name:'Dashboard', exact:true})).toBeVisible();
 });
+
+test('P2-01 accepted tokens do not leak into wholesale or root missing-page compatibility', async ({page}) => {
+  for(const path of ['/wholesale','/missing-p2-01-synthetic']) {
+    await page.goto(path);
+    const shell=page.locator('.storefront-shell').first();
+    await expect(shell).toBeVisible();
+    expect(await shell.evaluate(el=>getComputedStyle(el).getPropertyValue('--store-action').trim())).toBe('');
+    expect(await shell.evaluate(el=>getComputedStyle(el).getPropertyValue('--color-page').trim())).toBe('#f6f6fe');
+  }
+});

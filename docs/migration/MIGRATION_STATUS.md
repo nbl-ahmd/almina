@@ -1,3 +1,7 @@
+## 2026-11-17 — P1 direction gate closed; P2-01 token foundation verified
+
+Owner continued after the revised N03 mobile PDP. Established one scoped accepted storefront token source with primitive/semantic/component roles and actual proof consumers. Shared legacy customer/wholesale/root-404 values retained; additive font variables preserve existing class consumers. [Evidence/consumer/Tailwind migration contract](../../apps/web/docs/design/implementation-evidence/p2-01-system.md). Seventeen flow tests, eight checkout/admin/responsive/boundary checks, units/type/lint/build and runtime smoke pass; matched renders show no material visual drift. Next P2-02 cascade/scope; final guide authority is P2-05. No production theme/data/provider change, order submission or deployment.
+
 ## 2026-11-17 — P1-05 N03 image-first PDP replaces rejected toolbar preview
 
 Owner requested full top image and other N03 mobile PDP aspects. Implemented full-width gallery with overlay Back/Save/Cart, compact summary and related-product rail, retaining sticky buying, selected A/five home/support roles and desktop composition. [Latest report/eight captures](../../apps/web/docs/design/implementation-evidence/p1-05-image.md); 17 proof interaction tests/types/lint/build pass. Revised PDP awaits review; no final system/shared/commerce switch, production access or deployment.

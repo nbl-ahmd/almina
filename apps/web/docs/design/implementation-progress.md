@@ -4,23 +4,23 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P1-05 owner-selected A/five and shown supporting system; revised mobile PDP awaiting review.** Owner rejected the standalone toolbar and requested N03 image-first composition. [Latest full-width image/overlay-controls revision](implementation-evidence/p1-05-image.md) is implemented and verified; earlier toolbar is superseded.
-- **Next eligible task:** **Complete P1-05 against the latest N03 PDP revision.** Record owner response to [current screens](implementation-evidence/p1-05-image.md), recapture any material corrections, then P2-01. Selected A/five/fonts/support roles remain settled; do not restore rejected standalone toolbar.
-- **Verified implementation tasks:** 9 of 34 (all Phase 0 tasks plus P1-01–P1-04). These are equal checklist counts, not a weighted completion percentage.
+- **Current work:** **P1-05 closed on owner “continue next” after revised N03 PDP; P2-01 verified.** Accepted-system token source and first opted-in consumers are established. [P2-01 report/migration map](implementation-evidence/p2-01-system.md). No production theme switch or deployment.
+- **Next eligible task:** **P2-02 — cascade and scope ownership.** Read [P2-01 consumer/Tailwind migration contract](implementation-evidence/p2-01-system.md), P0-02 ownership matrix and state findings. Prove compiled/computed base/variant/state/foreground behavior, portals and navigation boundaries without changing admin/wholesale/root compatibility. Final guide alignment is P2-05.
+- **Verified implementation tasks:** 11 of 34 (all Phase 0/1 tasks plus P2-01). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P1-04: 15 bilingual proof interaction tests, 7 existing-harness checkout/admin/responsive checks, 14 selected units, web type/lint/build pass. Ten curated mode captures retained. Live Next compilation/session errors empty; desktop search smoke clean. Native device/keyboard/zoom remain unverified. Preview 4870/4871 restarted to load proof fixture changes and left running; original 4860/4861 preserved; test servers/browser closed. See [evidence and limits](implementation-evidence/p1-04-modes.md).
-- **No production data access or deployment. No final replacement visual approval inferred.**
+- **Runtime/testing this checkpoint:** P2-01: 17 opted-in proof flow tests, 8 existing-harness checkout/admin/responsive/wholesale/root-404 checks, 5 selected units, types/lint/build and bounded live Next/browser smoke pass. Fourteen retained renders; six matched PDP comparisons show five pixel-exact, one differs by one pixel. Native/device/provider certification remains open. Original/proof previews preserved, test processes closed.
+- **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
 
 | Phase | Status | Entry / unresolved gate | Evidence |
 | --- | --- | --- | --- |
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
-| 1 Direction proof | in_progress | P1-01–P1-04 verified; P1-05 awaiting_review, screen decision still required | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
-| 2 Accepted system | not_started | Needs concrete Phase 1 screen decision | — |
+| 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
+| 2 Accepted system | in_progress | P2-01 verified; P2-02–P2-05 remain | [Token foundation](implementation-evidence/p2-01-system.md) |
 | 3 Shell/home | not_started | Needs Phase 2 system and state/consumer verification | — |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
@@ -41,8 +41,8 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P1-02 | verified | [Coded proof/runbook/limits](implementation-evidence/p1-02-coded-proof.md), [16-view manifest](implementation-evidence/phase-1-proof/capture-manifest.json); starting 33f248e; no final visual approval |
 | P1-03 | verified | [Density/colour/type/hard-case evidence](implementation-evidence/p1-03-density.md), [90-case index](implementation-evidence/p1-03-density/case-index.json); starting 44b12e3; no final supporting-value/lead acceptance |
 | P1-04 | verified | [Modes/continuity/limits](implementation-evidence/p1-04-modes.md), [captures](implementation-evidence/p1-04-modes/capture-manifest.json); starting 82e202a, no final screen acceptance |
-| P1-05 | awaiting_review | Owner selected A/five + shown supporting system; rejected toolbar bar and requested N03 full-image PDP. [Latest correction/eight captures](implementation-evidence/p1-05-image.md), 17 tests/type/lint/build pass; only revised PDP review remains |
-| P2-01 | not_started | — |
+| P1-05 | verified | Owner selected A/five/support system, requested N03 revision, then said “continue next” after [revised PDP](implementation-evidence/p1-05-image.md) was shown; record closes local direction gate, not release |
+| P2-01 | verified | [Token foundation/consumer map](implementation-evidence/p2-01-system.md), [token index](implementation-evidence/p2-01-system/token-consumers.json); source c5fd8e4, opt-in consumers, legacy shared values frozen |
 | P2-02 | not_started | — |
 | P2-03 | not_started | — |
 | P2-04 | not_started | — |
@@ -85,6 +85,8 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | D12 | Prototype modes and continuity | P1-04 verifies focused search, query/scroll/back, server-checked cart, localized recovery and synthetic SKU/media association; enabled checkout review/admin regressions pass | Proof checkout/account remain explicit limited contracts. No order submission, global NEW-004/005 fix, native-device certification or final screen approval. P1-05 owner decision is next. |
 | D13 | Owner screen selection | Owner structured response chose A/full-width campaign, five wide-screen home columns and retained shown Figtree/Alexandria/near-white/dark-on-coral/compact-card system | Confirmed, supersedes B recommendation. No need to ask these settled choices again. Final token architecture remains P2. |
 | D14 | Compact phone PDP toolbar | Owner requested correction preview; implemented/verified Back/details/cart toolbar and six revised captures | Correction preview awaits owner response; P1-05 remains awaiting_review. No release/deployment approval. |
+| D15 | Revised direction accepted for next stage | Owner said “continue next” after N03 PDP revision was shown | Close P1-05 and execute P2-01; does not authorize deployment or treat later screens as approved. |
+| D16 | Accepted-system source and migration boundary | P2-01 uses scoped tokens.module.css with primitive/semantic/component roles and actual proof consumers | Old shared customer/wholesale/root styling remains frozen compatibility; alias/cascade verification P2-02, final guide P2-05. |
 
 Append dated decisions/corrections with affected task/coverage IDs and source (owner message or verified repository evidence). Link durable visual decisions into decisions.md; do not erase previous decisions or mistake proposed values for approval.
 
@@ -245,3 +247,11 @@ When interrupted or handing off, update this file before yielding where possible
 - **Changed:** full-width phone image with overlay Back/Save/Cart, no toolbar-title strip/browse header; compact product summary, local related-product rail, existing sticky purchase. Desktop/shared/commerce untouched.
 - **Evidence:** [latest report and eight captures](implementation-evidence/p1-05-image.md), 17 interaction tests/types/lint/build pass. No independent/native-device/release certification inferred.
 - **Next:** review this revised PDP before closing P1-05/P2. Previous toolbar captures are superseded history, not a fallback. Count stays 9/34; no final design/token authority change or deployment.
+
+### 2026-11-17 — P1-05 closed, P2-01 verified
+
+- **Owner instruction:** “continue next” following the shown N03 image-first PDP. Recorded as authorization to close the direction checkpoint and begin P2; A/five and the shown supporting system remain selected. No release/deployment approval inferred.
+- **Implemented:** one scoped primitive → semantic → component CSS value source, actual proof consumers migrated, additive bilingual font variables, removed raw proof palette and repeated visual scales; explicit legacy consumer/Tailwind migration map. Old shared values untouched, misleading legacy token isolation comment corrected.
+- **Verification:** 17 proof flows, 8 incumbent-harness checkout/admin/responsive/boundary checks, 5 units, type/lint/build and live Next/browser smoke pass. Fourteen retained captures and six matched comparisons show no material visual drift. [Full report and limits](implementation-evidence/p2-01-system.md).
+- **Ownership:** only accepted system/proof consumers, additive font bindings, legacy comment, focused tests and evidence changed. No root/admin/wholesale/API/commerce/style value switch or dependency change. No orders submitted. Original/proof previews retained, test/browser processes closed, generated next-env noise restored.
+- **Next:** P2-02 actual cascade/scope/literal foreground/state/portal verification. P2-03 specimen, P2-04 refinements and P2-05 authority alignment remain separate. Count 11/34; no production access/deployment.

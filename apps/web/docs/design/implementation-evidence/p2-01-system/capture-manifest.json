@@ -1,0 +1,231 @@
+{
+  "startingCommit": "c5fd8e4",
+  "source": "Accepted-system foundation working changes committed with this evidence",
+  "conditions": "Fresh Chromium EN/AR contexts, 320/390/1440 viewport emulation, fonts/photos settled; sample catalogue. Development diagnostics hidden only in screenshots. No page errors or document overflow in these captures.",
+  "captures": [
+    {
+      "file": "pdp-phone-en.png",
+      "lang": "en",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 1061.609375,
+        "bottom": 1105.609375
+      },
+      "sha256": "7d111ec047e941dbb50d85ea53c23b575cd247acf6ce29689dc7e2b365ffc5e7"
+    },
+    {
+      "file": "pdp-narrow-en.png",
+      "lang": "en",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 1018.421875,
+        "bottom": 1062.421875
+      },
+      "sha256": "23285a64c8474de2143873e159136bddd12902cde4b96b8d4159c9b86813f012"
+    },
+    {
+      "file": "pdp-desktop-en.png",
+      "lang": "en",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 1079.84375,
+        "bottom": 1123.84375
+      },
+      "sha256": "a27fad0ce4de61c8e06ab65904152f4b654b06cd97adb81a4a0110a20b1eeaba"
+    },
+    {
+      "file": "pdp-phone-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 1041.109375,
+        "bottom": 1085.109375
+      },
+      "sha256": "1f34358384f29f83bcc552a2e675fd571dc18914bed1aca7794959fd898d73b0"
+    },
+    {
+      "file": "pdp-narrow-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 1041.171875,
+        "bottom": 1085.171875
+      },
+      "sha256": "dc1a86061a075af565d77c2844cce5cfb82bcabd8a1705f39444612712acf96e"
+    },
+    {
+      "file": "pdp-desktop-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 1111.4375,
+        "bottom": 1155.4375
+      },
+      "sha256": "62736d017906e179efe6ba885652e79108ab7db6fc0a40e834119f1d53365985"
+    },
+    {
+      "file": "home-wide-en.png",
+      "lang": "en",
+      "path": "/design-proof?lead=full&columns=5",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 925.375,
+        "bottom": 969.375
+      },
+      "sha256": "53f2ef8ec9fba699879593c50297e3ca96eff4d133d2e352cccba56a58426d21"
+    },
+    {
+      "file": "home-phone-en.png",
+      "lang": "en",
+      "path": "/design-proof?lead=full&columns=5",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 721.5,
+        "bottom": 765.5
+      },
+      "sha256": "9d75b38947975a64a9a0efbe3b7ae18fb09b8b2195cd53d38ccb3578780b4571"
+    },
+    {
+      "file": "listing-wide-en.png",
+      "lang": "en",
+      "path": "/design-proof/products",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 612,
+        "bottom": 656
+      },
+      "sha256": "71325e6e8ae7ad8ef8906c7b5a5c9ae7589f0414bf46c382b39b2b2d57d6ebb6"
+    },
+    {
+      "file": "listing-phone-en.png",
+      "lang": "en",
+      "path": "/design-proof/products",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 608,
+        "bottom": 652
+      },
+      "sha256": "b380d32470570d5dbc2c1c6301fba95470cfcab24eb0f67043b8f4efcc1af7e1"
+    },
+    {
+      "file": "home-wide-ar.png",
+      "lang": "ar",
+      "path": "/design-proof?lead=full&columns=5",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 946.375,
+        "bottom": 990.375
+      },
+      "sha256": "a673af5b32b914db3785cfa3e5fc5feb9d4337bc5329c4804ae4bf76d83156de"
+    },
+    {
+      "file": "home-phone-ar.png",
+      "lang": "ar",
+      "path": "/design-proof?lead=full&columns=5",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 721.5,
+        "bottom": 765.5
+      },
+      "sha256": "e7eb24308a31bf71dcc25541de03a21ca3d557cb32983aab2cfedd68c844a2cb"
+    },
+    {
+      "file": "listing-wide-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 612,
+        "bottom": 656
+      },
+      "sha256": "2b6d98485bda6cf14345cbc4c47a62818fadf5de73a6f57a3a6ad1d29ea4c5da"
+    },
+    {
+      "file": "listing-phone-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstAdd": {
+        "top": 608,
+        "bottom": 652
+      },
+      "sha256": "723fe03753bfeb8a975256b0d8f34f87b2dfd658f705f1201129a2a09d4ee651"
+    }
+  ]
+}

@@ -1,5 +1,8 @@
 # Phase 1 evidence — comparable coded direction proof
 
+> **Phase 1 exit:** Owner said “continue next” after the revised N03 PDP was presented, closing the local direction gate. A/five/support choices and latest image-first PDP carry into [P2-01](p2-01-system.md). Earlier pending-review notes below are historical. No release approval.
+
+
 Started 17 November 2026. **Phase 1 in progress; P1-01–P1-03 are verified.** Mutable status: [progress](../implementation-progress.md). Scope: [phase plan](../implementation-phases.md). Inputs: [handoff](../phase-1-input-packet.md), [Phase 0 exit](phase-0-summary.md) and source review/reference documents.
 
 ## P1-01 — Prototype contract

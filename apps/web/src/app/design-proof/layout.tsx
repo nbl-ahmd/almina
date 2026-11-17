@@ -6,6 +6,7 @@ import { storefrontLatin, storefrontArabic } from "../../lib/storefront-fonts";
 import { requireProof, words } from "../../components/design-proof/shared";
 import { ProofLocaleProvider } from "../../components/design-proof/locale";
 import { ProofChrome } from "../../components/design-proof/controls";
+import system from "../../components/storefront-system/tokens.module.css";
 import s from "../../components/design-proof/proof.module.css";
 export function generateMetadata(): Metadata {
   requireProof();
@@ -28,7 +29,7 @@ export default async function Layout({
   const lang = await getLocale();
   return (
     <div
-      className={`${s.root} ${lang === "ar" ? storefrontArabic.className : storefrontLatin.className}`}
+      className={`${system.system} ${s.root} ${storefrontLatin.variable} ${storefrontArabic.variable}`}
       dir={lang === "ar" ? "rtl" : "ltr"}
       lang={lang}
       data-proof-root

@@ -1,4 +1,6 @@
-/* Al Mina customer identity. Isolated from admin, wholesale and shared defaults. */
+/* LEGACY COMPATIBILITY: incumbent customer, wholesale and root-404 consumers.
+   Frozen during accepted-system migration; not the replacement design authority.
+   See docs/design/implementation-evidence/p2-01-system.md before removal. */
 .storefront-shell,
 .storefront-footer {
   --color-brand: #ff5a5f;
