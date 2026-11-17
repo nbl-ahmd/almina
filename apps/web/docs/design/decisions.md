@@ -1,3 +1,5 @@
+> **P0-01 reconciled — 17 November 2026:** Owner expressly requested baseline reconciliation. [Evidence](implementation-evidence/phase-0.md) verifies clean starting HEAD 005ad88, unchanged reviewed runtime/source-plan fingerprints and a responding isolated catalogue preview. Existing implementation styling remains incumbent evidence; new supporting visuals are still proposals. No new visual approval, runtime change, production operation or deployment. Next task P0-02; see [progress](implementation-progress.md).
+
 > **Implementation tracking — 17 November 2026:** Owner requested durable phased execution and progress preservation from the three review documents. [Phases](implementation-phases.md), [coverage](implementation-coverage.md) and the single mutable [progress ledger](implementation-progress.md) define seven stages, 34 tasks, evidence/acceptance gates and resume instructions. Preparation is complete; implementation phases are not started. Candidate visuals remain proposals pending screen review; no new runtime changes or deployment approval.
 
 # Review supplement — 17 November 2026

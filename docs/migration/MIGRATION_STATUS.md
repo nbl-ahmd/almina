@@ -1,3 +1,7 @@
+## 2026-11-17 — P0-01 storefront baseline reconciled
+
+Verified source-plan fingerprints, clean branch/HEAD and unchanged reviewed runtime; rediscovered the loopback synthetic catalogue preview and performed read-only HTTP/Next error checks. Recorded authority/approval boundaries, preview restart runbook and capability limits. P0-01 verified; Phase 0 remains in progress, next P0-02 consumer/cascade inventory. No runtime change, restart, production data access or deployment. See [Phase 0 evidence](../../apps/web/docs/design/implementation-evidence/phase-0.md) and [progress](../../apps/web/docs/design/implementation-progress.md).
+
 ## 2026-11-17 — Replacement storefront implementation tracking prepared
 
 Read the system review, direction plan and per-image reference review. Created seven phased stages, 34 stable tasks, 63 coverage requirements and a progress/resume ledger with evidence, decision and handoff rules. No replacement implementation phase has started; final visual decisions and deployment remain separate. Resume at [implementation progress](../../apps/web/docs/design/implementation-progress.md), next task P0-01 (baseline reconciliation).

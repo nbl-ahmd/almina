@@ -4,21 +4,21 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** implementation planning/tracking prepared; no replacement implementation phase executed.
-- **Next eligible task:** **P0-01 — reconcile the baseline, branch/HEAD, approvals and local setup**. Then P0-02 consumer/cascade inventory. Do not start final tokens or broad screen replacement first.
-- **Verified implementation tasks:** 0 of 34. These are equal checklist counts, not a weighted completion percentage.
+- **Current work:** P0-01 baseline reconciliation verified; Phase 0 is in progress. No replacement UI implementation has started.
+- **Next eligible task:** **P0-02 — consumer/cascade inventory**. Start with customer tokens, global theme aliases/layers and button state precedence; trace shared/admin/wholesale and portal consumers before any removal or redesign.
+- **Verified implementation tasks:** 1 of 34 (P0-01, baseline documentation/setup reconciliation; no redesigned screens). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** not run; documentation-only work. Earlier review browser/tests are historical evidence, not current phase verification.
+- **Runtime/testing this checkpoint:** read-only loopback fixture identity and home/products/cart/checkout HTTP smoke passed; sample-data notice present; local Next error report empty. No browser matrix, app test suite, build or restart cycle run; those remain distinct checks. See Phase 0 evidence.
 - **No production data access or deployment. No final replacement visual approval inferred.**
 
 ## Phase status
 
 | Phase | Status | Entry / unresolved gate | Evidence |
 | --- | --- | --- | --- |
-| 0 Baseline/ownership | not_started | Ready to reconcile actual current repository and isolated setup | — |
+| 0 Baseline/ownership | in_progress | P0-01 verified; P0-02–P0-05 remain | [P0-01 evidence](implementation-evidence/phase-0.md) |
 | 1 Direction proof | not_started | Needs verified Phase 0 and authorised prototype execution | — |
 | 2 Accepted system | not_started | Needs concrete Phase 1 screen decision | — |
 | 3 Shell/home | not_started | Needs Phase 2 system and state/consumer verification | — |
@@ -32,7 +32,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 
 | Task | Status | Evidence / commit / limitation |
 | --- | --- | --- |
-| P0-01 | not_started | — |
+| P0-01 | verified | [Baseline reconciliation](implementation-evidence/phase-0.md#p0-01--baseline-reconciliation); starting HEAD 005ad88; read-only runtime smoke, no restart/visual acceptance |
 | P0-02 | not_started | — |
 | P0-03 | not_started | — |
 | P0-04 | not_started | — |
@@ -76,7 +76,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | D03 | Figtree/Alexandria | Existing licensed candidate; retention is unapproved | Deliberately compare on realistic bilingual content; one alternative only if warranted. |
 | D04 | Existing routes, accessibility, localization, server authority, auth and integrations | Confirmed product/production constraints | Preserve in every phase; tests required for commerce/auth changes. |
 | D05 | Create phases/progress/context preservation | Current owner request, 17 November 2026 | Preparation completed; does not itself record approval of a future visual candidate. |
-| D06 | Implementation/prototype authorisation | Reconcile current instruction/session when execution starts | Do not ask routine permissions already granted; screen acceptance is still a distinct evidence gate. |
+| D06 | Local work authorisation | P0-01 expressly requested 17 November 2026; earlier local implementation authorisation retained within scope | This checkpoint executes P0-01 only. No renewed routine permission needed; new candidate screen acceptance remains a distinct gate. |
 | D07 | Production deployment | Excluded by owner instructions | No phase may deploy. |
 
 Append dated decisions/corrections with affected task/coverage IDs and source (owner message or verified repository evidence). Link durable visual decisions into decisions.md; do not erase previous decisions or mistake proposed values for approval.
@@ -100,7 +100,7 @@ No implementation blocker has been demonstrated at this checkpoint. Future block
 - Reference originals: repository-root `docs/design/storefront/references/2026-11-17/manifest.json` (N01–N07, four families; private planning assets).
 - Historical independent review notes: `.verification-results/direction-review-2026-11-17/assessment-a.md` and `assessment-b.md`; ignored/raw evidence may not exist in another checkout. Durable synthesis is the tracked system review.
 - Historical critique snapshot: repository-root `.impeccable/critique/2026-11-17T03-50-30Z__apps-web-src-app-storefront-storefront-tokens-css.md`. 28/40 is the past usability review, not a current phase pass.
-- Phase evidence: none yet. On first completed work create `implementation-evidence/phase-0.md`, then append per-task checkpoint evidence. Large captures/logs use ignored `.verification-results/storefront-replacement/phase-N/` and are indexed by source commit, viewport/locale/state and conditions.
+- Phase evidence: [P0-01 baseline reconciliation](implementation-evidence/phase-0.md) and [preview runbook](implementation-evidence/preview-runbook.md). Raw smoke: `.verification-results/storefront-replacement/phase-0/p0-01-runtime.json`. Existing preview preserved; no restart tested. Future captures/logs are indexed by source commit, viewport/locale/state and conditions.
 
 ## Source-plan fingerprints at preparation
 
@@ -122,6 +122,16 @@ These identify the reviewed inputs, not a runtime lock. If a source changes, rer
 - **Completed:** preparation only; all implementation tasks remain not_started.
 - **Decision/gap:** no new final visual approval, production access or deployment.
 - **Next:** P0-01 baseline reconciliation, followed by P0-02 ownership/cascade inventory. Read the current repository and instructions before touching runtime files.
+
+### 2026-11-17 — P0-01 verified
+
+- **Authorisation:** owner explicitly requested baseline reconciliation. No new supporting palette/font/layout or final visual approval inferred.
+- **Starting state:** branch `codex/storefront-pharmacy-app-reference`, HEAD `005ad88713063a4257742273eeadbb5f1609fe63`, clean tree. Runtime source unchanged from 324a2ed; all three review fingerprints matched.
+- **Completed:** baseline/version/authority reconciliation, current loopback preview identification, safe runbook and capability limits. [Evidence](implementation-evidence/phase-0.md) records commands/results, source and approval boundaries, rollback and partial coverage contributions.
+- **Checks:** exact synthetic fixture identity and four HTTP routes 200/sample notice; local Next errors empty; installed Node/npm/Next recorded. New document links, source hashes, runbook shell syntax and diff checked. Full browser/capture matrix, build/tests and restart cycle not run and not claimed.
+- **Remaining:** P0-02–P0-05, actual new-screen decisions and known content/rights/operational inputs. No demonstrated blocker to the next task.
+- **Next:** P0-02; inspect storefront-tokens.css, global @theme/layers, storefront-controls.css and cart-controls.tsx, then trace consumer/scope/portal and admin/wholesale dependencies. Record safe migration/removal conditions.
+- **Cleanup:** no process started/stopped and no runtime code/config changed; existing healthy preview retained. Raw ignored smoke evidence indexed above. Commit contains this checkpoint; resolve it through Git history rather than embedding its own hash.
 
 ## Checkpoint template — append; do not replace earlier history
 
