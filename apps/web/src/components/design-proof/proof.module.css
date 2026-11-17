@@ -112,6 +112,7 @@
   font-size: 12px;
   min-height: 44px;
   padding: 0 20px;
+  padding-block-start: var(--proof-safe-top, env(safe-area-inset-top));
 }
 .notice button {
   min-width: 44px;
@@ -181,7 +182,7 @@
   border-radius: 12px;
   background: #f7f9f9;
 }
-.search input {
+.root .search input {
   border: 0;
   background: transparent;
   padding: 0;
@@ -193,7 +194,7 @@
   outline: none;
   box-shadow: none;
 }
-.search:focus-within {
+.search:has(input:focus-visible) {
   outline: 2px solid #125d87;
   outline-offset: 2px;
 }
@@ -223,6 +224,8 @@
   border-radius: 12px;
   box-shadow: 0 8px 24px #202a301c;
   padding: 12px;
+  max-height: 65dvh;
+  overflow-y: auto;
 }
 .suggestions p {
   font-size: 12px;
@@ -856,11 +859,12 @@
   margin: 24px auto;
 }
 .cartPanel p {
-  margin: 20px 0;
+  margin: 12px 0;
 }
 .cartLine {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
   gap: 12px;
   padding: 20px 0;
   border-bottom: 1px solid var(--proof-line);
@@ -1238,9 +1242,6 @@
   .purchaseError {
     flex-basis: 100%;
   }
-  .cartLine {
-    grid-template-columns: 1fr auto;
-  }
 }
 @media (prefers-reduced-motion: no-preference) {
   .root a,
@@ -1393,4 +1394,145 @@
 }
 .filters details[open] summary svg {
   transform: rotate(180deg);
+}
+
+/* P1-04 task modes: owned proof composition, never a shared storefront override. */
+.taskBack {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline !important;
+}
+.modePanel {
+  max-width: 680px;
+  margin: 32px auto !important;
+}
+.modePanel p {
+  margin: 20px 0;
+}
+.modeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-top: 24px;
+}
+.modeActions > a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.root .secondary {
+  border: 1px solid var(--proof-control-line);
+  background: white;
+}
+.root .remove {
+  text-decoration: underline;
+  min-width: 44px;
+}
+.cartEstimate {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--proof-line);
+  padding-top: 20px;
+}
+.searchCancel {
+  display: flex !important;
+  margin-inline-start: auto;
+}
+.suggestions small {
+  display: block;
+  font-size: 11px;
+  color: var(--proof-muted);
+}
+.realGallery {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  gap: 8px;
+}
+.galleryImage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.realGallery .sampleThumbs {
+  padding: 8px;
+  flex-shrink: 0;
+}
+@media (max-width: 899px) {
+  .root:has(.searchWrap[data-search-open="true"]) .header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .root:has(.searchWrap[data-search-open="true"]) .headerRow {
+    display: flex;
+  }
+  .root:has(.searchWrap[data-search-open="true"])
+    .headerRow
+    > :not(.searchWrap) {
+    display: none;
+  }
+  .root:has(.searchWrap[data-search-open="true"])
+    :is(.main, .footer, .bottomNav) {
+    visibility: hidden;
+  }
+  .searchWrap[data-search-open="true"] .suggestions {
+    max-height: calc(100dvh - 140px);
+    background: white;
+  }
+  .taskBack {
+    grid-column: 2/-1;
+    justify-content: flex-end;
+  }
+  .headerRow:has(.taskBack) {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+  .headerRow:has(.taskBack) .headerCart {
+    display: none;
+  }
+  .cartLine {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .cartLine > div:first-child {
+    grid-column: 1/-1;
+  }
+  .dialog input,
+  .dialog select {
+    font-size: 16px;
+  }
+}
+@media (max-width: 899px) {
+  .headerRow,
+  .main,
+  .footer {
+    padding-left: max(16px, var(--proof-safe-left, env(safe-area-inset-left)));
+    padding-right: max(
+      16px,
+      var(--proof-safe-right, env(safe-area-inset-right))
+    );
+  }
+  .dock {
+    padding-bottom: max(
+      10px,
+      var(--proof-safe-bottom, env(safe-area-inset-bottom))
+    );
+    padding-left: max(16px, var(--proof-safe-left, env(safe-area-inset-left)));
+    padding-right: max(
+      16px,
+      var(--proof-safe-right, env(safe-area-inset-right))
+    );
+  }
+  .bottomNav {
+    padding-bottom: max(
+      6px,
+      var(--proof-safe-bottom, env(safe-area-inset-bottom))
+    );
+  }
 }

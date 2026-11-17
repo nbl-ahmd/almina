@@ -7,7 +7,11 @@ import {
   words,
 } from "../../../components/design-proof/shared";
 import { shopText } from "../../../lib/i18n-storefront";
-import { ResponsiveFilters } from "../../../components/design-proof/controls";
+import {
+  ResponsiveFilters,
+  ListingRestoration,
+} from "../../../components/design-proof/controls";
+import { proofListingReturn } from "../../../lib/design-proof-navigation";
 import s from "../../../components/design-proof/proof.module.css";
 export default async function Listing({
   searchParams,
@@ -20,7 +24,12 @@ export default async function Listing({
   }>;
 }) {
   requireProof();
-  const params = await searchParams;
+  const raw = await searchParams;
+  const params = Object.fromEntries(
+    Object.entries(raw).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  ) as Awaited<typeof searchParams>;
   const lang = await getLocale();
   const sort =
     params.sort === "price-asc" ||
@@ -41,8 +50,12 @@ export default async function Listing({
   ]);
   const href = (values: Record<string, string>) =>
     `/design-proof/products?${new URLSearchParams({ ...params, ...values })}`;
+  const returnTo = proofListingReturn(
+    "/design-proof/products?" + new URLSearchParams(params),
+  );
   return (
     <>
+      <ListingRestoration url={returnTo} />
       <p className={s.breadcrumb}>
         <Link href="/design-proof">{words(lang, "Home", "الرئيسية")}</Link> /{" "}
         {words(lang, "Products", "المنتجات")}
@@ -123,7 +136,12 @@ export default async function Listing({
           ) : catalog.products.length ? (
             <div className={s.grid}>
               {catalog.products.map((product) => (
-                <Card key={product._id} product={product} lang={lang} />
+                <Card
+                  key={product._id}
+                  product={product}
+                  lang={lang}
+                  returnTo={returnTo}
+                />
               ))}
             </div>
           ) : (

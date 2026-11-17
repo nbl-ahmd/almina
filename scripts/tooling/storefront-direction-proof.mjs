@@ -7,6 +7,11 @@ const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
 );
+if (process.argv.slice(2).some((arg) => arg !== "--test"))
+  throw new Error("Use no arguments or --test.");
+const testing = process.argv.includes("--test"),
+  webPort = testing ? 4896 : 4870,
+  fixturePort = testing ? 4897 : 4871;
 const clean = {
   PATH: process.env.PATH,
   HOME: process.env.HOME,
@@ -17,16 +22,16 @@ const clean = {
   NEXT_TELEMETRY_DISABLED: "1",
   ALMINA_DIRECTION_PROOF: "1",
   AL_MINA_ISOLATED_BUILD: "1",
-  AL_MINA_VERIFICATION_TAG: "p1-proof",
-  WEB_ORIGIN: "http://127.0.0.1:4870",
-  API_ORIGIN: "http://127.0.0.1:4871",
-  LEGACY_API_ORIGIN: "http://127.0.0.1:4871",
+  AL_MINA_VERIFICATION_TAG: testing ? "p1-mode-test" : "p1-proof",
+  WEB_ORIGIN: `http://127.0.0.1:${webPort}`,
+  API_ORIGIN: `http://127.0.0.1:${fixturePort}`,
+  LEGACY_API_ORIGIN: `http://127.0.0.1:${fixturePort}`,
   CHECKOUT_ENABLED: "false",
   STRIPE_ENABLED: "false",
 };
 // Refuse occupied ports before either child starts; never attach to another preview.
 await Promise.all(
-  [4870, 4871].map(
+  [webPort, fixturePort].map(
     (port) =>
       new Promise((resolve, reject) => {
         const probe = createServer();
@@ -60,7 +65,7 @@ function launch(args, cwd, extra = {}) {
   child.on("error", stop);
 }
 launch(["scripts/tooling/storefront-reference-fixture.mjs"], root, {
-  PORT: "4871",
+  PORT: String(fixturePort),
 });
 launch(
   [
@@ -70,7 +75,7 @@ launch(
     "--hostname",
     "127.0.0.1",
     "--port",
-    "4870",
+    String(webPort),
   ],
   root + "/apps/web",
 );

@@ -32,6 +32,13 @@ Started 17 November 2026. **Phase 1 in progress; P1-01–P1-03 are verified.** M
 - Web type/lint/build, 30 selected units, five incumbent responsive E2E tests, 90 geometry cases and 22 live-resize/clearance checks pass. Scoped axe clean. Reviewer scored its one disclosure correction resolved; **ship only at that scored scope**. Native zoom/device and complete continuity remain unverified.
 - P1-03 verified as experiment/proof; supporting palette/fonts/measurements remain candidates. No final guide/token/authority replacement or production operation/deployment. Original/shared consumers preserved; local proof retained for review.
 
+## P1-04 — Screen modes and interaction continuity
+
+- Starting 82e202a; [modes/continuity report](p1-04-modes.md) records confirmed flows, test-found corrections, synthetic SKU/gallery proof, checkout/account boundaries and retained captures.
+- 15 bilingual proof tests, 7 existing-harness checkout/admin/responsive checks, 14 selected units, type/lint/build and bounded live MCP/browser verification pass. No order submitted or provider enabled.
+- Mobile focused search and desktop suggestion mode; explicit query/scroll/focus return plus native Back; cart errors/retry/stale-stock rejection; locale-aware error `retry()` per Next 16.4.2. No final guide/system/shared-theme edits.
+- Native keyboard/device/zoom/speech, real provider behavior and full authenticated account parity remain unverified. Existing global NEW-001–006 assignments remain open; proof-local fixes are not global completion.
+
 ## Remaining Phase 1 work
 
-P1-04 and P1-05 are not started. Next P1-04 screen modes/cart/account/empty/error contracts, keyboard/safe-area/RTL and true return/query/scroll continuity; actual family/media/search suggestion parity proof. Read the latest density report and keep its native/device limitations and review obligations. Owner selection is P1-05, not inferred from a continue instruction. Progress remains the single mutable ledger.
+P1-04 is verified for prototype scope. Next P1-05 owner screen selection: present existing same-data desktop leads, density/type/support proposals and shared mobile/listing/PDP, together with P1-04 working flows and explicit limits. Owner selection is P1-05, not inferred from a continue instruction. Progress remains the single mutable ledger.

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { ProductImage } from "../product-image";
 import {
   useEffect,
   useId,
@@ -7,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   MagnifyingGlassIcon,
   ShoppingBagIcon,
@@ -22,21 +23,23 @@ import {
 } from "@heroicons/react/24/outline";
 import { deliveryEmirates } from "@almina/contracts";
 import Link from "../app-link";
-import { type Product, type CartLine } from "../../lib/catalog/model";
+import { type Product } from "../../lib/catalog/model";
 import { storedCart, saveCart } from "../../lib/catalog/browser-cart";
 import { useCartCount } from "../../lib/catalog/use-cart-count";
 import { readSaved, savedKey, setSaved } from "../../lib/catalog/saved";
 import { savedArea, saveArea, areaSchema } from "../../lib/location/browser";
-import { checkAddition, loadCart } from "../../app/(storefront)/cart/actions";
-import { CurrencyAmount } from "../currency-amount";
+import { checkAddition } from "../../app/(storefront)/cart/actions";
+import { proofSuggestionHref } from "../../lib/design-proof-navigation";
 import s from "./proof.module.css";
 type Lang = "en" | "ar";
 const w = (lang: Lang, en: string, ar: string) => (lang === "ar" ? ar : en);
 export function ProofChrome({ lang }: { lang: Lang }) {
+  const query = useSearchParams().get("q") ?? "";
   const path = usePathname(),
     count = useCartCount();
   const detail = /\/products\/.+/.test(path) || path === "/design-proof/stress",
-    cart = path === "/design-proof/cart";
+    cart = path === "/design-proof/cart",
+    checkout = path === "/design-proof/checkout";
   return (
     <>
       <div className={s.notice}>
@@ -68,33 +71,51 @@ export function ProofChrome({ lang }: { lang: Lang }) {
               priority
             />
           </Link>
-          <Location lang={lang} />
-          <Search lang={lang} />
-          <Link href="/design-proof/cart" className={s.headerCart}>
-            <ShoppingBagIcon aria-hidden="true" />
-            <span>
-              {w(lang, "Cart", "السلة")}
-              <b aria-label={w(lang, `${count} items`, `${count} منتجات`)}>
-                {count}
-              </b>
-            </span>
-          </Link>
+          {!cart && !checkout && <Location lang={lang} />}
+          {!cart && !checkout && (
+            <Search key={path + query} lang={lang} initialQuery={query} />
+          )}
+          {(cart || checkout) && (
+            <Link
+              className={s.taskBack}
+              href={checkout ? "/design-proof/cart" : "/design-proof/products"}
+            >
+              {w(
+                lang,
+                checkout ? "Back to cart" : "Continue shopping",
+                checkout ? "العودة إلى السلة" : "تابع التسوق",
+              )}
+            </Link>
+          )}
+          {!checkout && (
+            <Link href="/design-proof/cart" className={s.headerCart}>
+              <ShoppingBagIcon aria-hidden="true" />
+              <span>
+                {w(lang, "Cart", "السلة")}
+                <b aria-label={w(lang, `${count} items`, `${count} منتجات`)}>
+                  {count}
+                </b>
+              </span>
+            </Link>
+          )}
         </div>
-        <nav
-          className={s.departments}
-          aria-label={w(lang, "Shop navigation", "التنقل في المتجر")}
-        >
-          <Link href="/design-proof/products">
-            {w(lang, "Shop all", "تسوق الكل")}
-          </Link>
-          <Link href="/design-proof/products?q=skincare">
-            {w(lang, "Skincare", "العناية بالبشرة")}
-          </Link>
-          <Link href="/design-proof/products?q=CeraVe">CeraVe</Link>
-          <Link href="/design-proof/products?q=Bioderma">Bioderma</Link>
-        </nav>
+        {!cart && !checkout && (
+          <nav
+            className={s.departments}
+            aria-label={w(lang, "Shop navigation", "التنقل في المتجر")}
+          >
+            <Link href="/design-proof/products">
+              {w(lang, "Shop all", "تسوق الكل")}
+            </Link>
+            <Link href="/design-proof/products?q=skincare">
+              {w(lang, "Skincare", "العناية بالبشرة")}
+            </Link>
+            <Link href="/design-proof/products?q=CeraVe">CeraVe</Link>
+            <Link href="/design-proof/products?q=Bioderma">Bioderma</Link>
+          </nav>
+        )}
       </header>
-      {!detail && !cart && (
+      {!detail && !cart && !checkout && (
         <nav
           className={s.bottomNav}
           aria-label={w(lang, "Main navigation", "التنقل الرئيسي")}
@@ -233,18 +254,35 @@ function areaSnapshot() {
   const area = savedArea();
   return area ? `${area.city}, ${area.emirate}` : "";
 }
-type Suggestion = { name: string; href: string };
-function Search({ lang }: { lang: Lang }) {
+type Suggestion = {
+  name: string;
+  href: string;
+  kind?: string;
+  existing?: boolean;
+};
+type Suggestions = Partial<
+  Record<
+    | "products"
+    | "categories"
+    | "brands"
+    | "collections"
+    | "popular"
+    | "related",
+    Suggestion[]
+  >
+> & { unavailable?: boolean };
+function Search({ lang, initialQuery }: { lang: Lang; initialQuery: string }) {
   const id = useId(),
     ref = useRef<HTMLDivElement>(null);
-  const [q, setQ] = useState(""),
+  const [q, setQ] = useState(initialQuery.slice(0, 80)),
     [items, setItems] = useState<Suggestion[]>([]),
     [open, setOpen] = useState(false),
     [active, setActive] = useState(-1),
     [failed, setFailed] = useState(false),
-    [recent, setRecent] = useState<string[]>([]);
+    [recent, setRecent] = useState<string[]>([]),
+    [loading, setLoading] = useState(false);
   const trimmed = q.trim();
-  const choices =
+  const choices: Suggestion[] =
     trimmed.length >= 2
       ? items
       : !trimmed
@@ -281,19 +319,47 @@ function Search({ lang }: { lang: Lang }) {
           if (!r.ok) throw new Error("Suggestion request failed");
           return r.json();
         })
-        .then((data: { products?: Suggestion[]; unavailable?: boolean }) => {
+        .then((data: Suggestions) => {
           if (!ctrl.signal.aborted) {
             setFailed(Boolean(data.unavailable));
+            setLoading(false);
             setItems(
-              (data.products ?? []).map((item) => ({
-                ...item,
-                href: "/design-proof" + item.href,
-              })),
+              (
+                [
+                  "popular",
+                  "brands",
+                  "collections",
+                  "categories",
+                  "products",
+                  "related",
+                ] as const
+              )
+                .flatMap((kind) =>
+                  (Array.isArray(data[kind]) ? data[kind]! : [])
+                    .slice(0, kind === "products" ? 4 : 2)
+                    .flatMap((item) => {
+                      const href = proofSuggestionHref(item.href);
+                      return href && typeof item.name === "string"
+                        ? [
+                            {
+                              name: item.name,
+                              href,
+                              kind,
+                              existing: !href.startsWith("/design-proof/"),
+                            },
+                          ]
+                        : [];
+                    }),
+                )
+                .slice(0, 10),
             );
           }
         })
         .catch(() => {
-          if (!ctrl.signal.aborted) setFailed(true);
+          if (!ctrl.signal.aborted) {
+            setFailed(true);
+            setLoading(false);
+          }
         });
     }, 220);
     return () => {
@@ -304,6 +370,7 @@ function Search({ lang }: { lang: Lang }) {
   return (
     <div
       className={s.searchWrap}
+      data-search-open={open}
       ref={ref}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
@@ -336,7 +403,9 @@ function Search({ lang }: { lang: Lang }) {
           aria-controls={open ? id + "-list" : undefined}
           aria-autocomplete="list"
           aria-activedescendant={
-            open && active >= 0 ? id + "-" + active : undefined
+            open && active >= 0 && choices[active]
+              ? id + "-" + active
+              : undefined
           }
           onFocus={() => {
             setOpen(true);
@@ -347,7 +416,12 @@ function Search({ lang }: { lang: Lang }) {
               if (Array.isArray(raw))
                 setRecent(
                   raw
-                    .filter((item): item is string => typeof item === "string")
+                    .filter(
+                      (item): item is string =>
+                        typeof item === "string" &&
+                        item.trim().length > 0 &&
+                        item.length <= 80,
+                    )
                     .slice(0, 5),
                 );
             } catch {
@@ -358,11 +432,14 @@ function Search({ lang }: { lang: Lang }) {
             setQ(event.target.value);
             setItems([]);
             setFailed(false);
+            setLoading(event.target.value.trim().length >= 2);
             setActive(-1);
             setOpen(true);
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
+              event.preventDefault();
+              event.stopPropagation();
               setOpen(false);
               setActive(-1);
             }
@@ -406,6 +483,16 @@ function Search({ lang }: { lang: Lang }) {
       </form>
       {open && (
         <div className={s.suggestions}>
+          <button
+            className={s.searchCancel}
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              ref.current?.querySelector("input")?.blur();
+            }}
+          >
+            {w(lang, "Cancel search", "إلغاء البحث")}
+          </button>
           <p>
             {w(
               lang,
@@ -426,11 +513,50 @@ function Search({ lang }: { lang: Lang }) {
                 aria-selected={active === index}
               >
                 <Link href={item.href} onClick={() => remember(item.name)}>
-                  {item.name}
+                  <span>
+                    {item.name}
+                    {item.existing && (
+                      <small>
+                        {w(lang, " · existing site", " · الموقع الحالي")}
+                      </small>
+                    )}
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
+          <p role="status">
+            {loading
+              ? w(lang, "Finding suggestions…", "جارٍ البحث عن اقتراحات…")
+              : !trimmed && !recent.length
+                ? w(
+                    lang,
+                    "Search by product or brand name.",
+                    "ابحث باسم المنتج أو العلامة التجارية.",
+                  )
+                : trimmed.length >= 2 && !choices.length && !failed
+                  ? w(
+                      lang,
+                      "No suggestions. Press Search for results.",
+                      "لا توجد اقتراحات. اضغط بحث لعرض النتائج.",
+                    )
+                  : ""}
+          </p>
+          {!trimmed && recent.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  localStorage.removeItem("almina.proof-searches.v1");
+                  setRecent([]);
+                } catch {
+                  /* Search remains usable. */
+                }
+              }}
+            >
+              {w(lang, "Clear recent searches", "مسح عمليات البحث الأخيرة")}
+            </button>
+          )}
           {failed && (
             <p>
               {w(
@@ -445,12 +571,24 @@ function Search({ lang }: { lang: Lang }) {
     </div>
   );
 }
-export function Save({ id, lang }: { id: string; lang: Lang }) {
+export function Save({
+  id,
+  lang,
+  name,
+}: {
+  id: string;
+  lang: Lang;
+  name?: string;
+}) {
   const [saved, setState] = useState(false),
     [error, setError] = useState(false);
   useEffect(() => {
     function sync() {
-      setState(readSaved(localStorage.getItem(savedKey)).includes(id));
+      try {
+        setState(readSaved(localStorage.getItem(savedKey)).includes(id));
+      } catch {
+        setError(true);
+      }
     }
     try {
       sync();
@@ -458,17 +596,23 @@ export function Save({ id, lang }: { id: string; lang: Lang }) {
       /* Optional device state. */
     }
     window.addEventListener("almina-saved-change", sync);
-    return () => window.removeEventListener("almina-saved-change", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("almina-saved-change", sync);
+      window.removeEventListener("storage", sync);
+    };
   }, [id]);
   return (
     <>
       <button
         className={s.save}
-        aria-label={w(
-          lang,
-          saved ? "Remove from saved" : "Save product",
-          saved ? "إزالة من المحفوظات" : "حفظ المنتج",
-        )}
+        aria-label={
+          w(
+            lang,
+            saved ? "Remove from saved" : "Save product",
+            saved ? "إزالة من المحفوظات" : "حفظ المنتج",
+          ) + (name ? " " + name : "")
+        }
         aria-pressed={saved}
         onClick={() => {
           try {
@@ -662,79 +806,6 @@ export function Purchase({
     </div>
   );
 }
-export function CartContinuation({ lang }: { lang: Lang }) {
-  const [state, setState] = useState<Awaited<
-      ReturnType<typeof loadCart>
-    > | null>(null),
-    [error, setError] = useState("");
-  useEffect(() => {
-    let active = true;
-    void Promise.resolve()
-      .then(() => {
-        const lines: CartLine[] = storedCart();
-        return loadCart(lines);
-      })
-      .then((data) => {
-        if (active) setState(data);
-      })
-      .catch(() => {
-        if (active)
-          setError(
-            w(
-              lang,
-              "Unable to read cart. Reload to retry.",
-              "تعذر قراءة السلة. أعد التحميل للمحاولة.",
-            ),
-          );
-      });
-    return () => {
-      active = false;
-    };
-  }, [lang]);
-  return (
-    <section className={s.cartPanel}>
-      <h1>{w(lang, "Your cart", "سلتك")}</h1>
-      {!state && !error && (
-        <p role="status">
-          {w(lang, "Checking your cart…", "جارٍ التحقق من السلة…")}
-        </p>
-      )}
-      <p role="alert">{error || state?.error}</p>
-      {state?.items.map((item) => (
-        <div className={s.cartLine} key={item.id}>
-          <Link href={"/design-proof" + item.href}>{item.name}</Link>
-          <span>
-            {w(lang, "Quantity", "الكمية")} {item.quantity}
-          </span>
-          {item.price !== null && (
-            <CurrencyAmount value={item.price} locale={lang} />
-          )}
-          <span>
-            {w(
-              lang,
-              item.available ? "Available" : "Unavailable",
-              item.available ? "متوفر" : "غير متوفر",
-            )}
-          </span>
-        </div>
-      ))}
-      {state?.items.length === 0 && (
-        <p>{w(lang, "Your cart is empty.", "سلتك فارغة.")}</p>
-      )}
-      <p>
-        {w(
-          lang,
-          "This preview stops here. Checkout, delivery fees and payments are not enabled. No order will be placed.",
-          "تتوقف المعاينة هنا. إتمام الطلب ورسوم التوصيل والدفع غير مفعّلة. لن يتم إنشاء طلب.",
-        )}
-      </p>
-      <Link className={s.primary} href="/design-proof/products">
-        {w(lang, "Continue shopping", "تابع التسوق")}
-      </Link>
-    </section>
-  );
-}
-
 export function ResponsiveFilters({
   children,
   label,
@@ -833,6 +904,151 @@ export function SampleGallery({ lang }: { lang: Lang }) {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+const returnMemory = "almina.proof-return.v1";
+export function ProofProductLink({
+  href,
+  returnTo,
+  memoryKey,
+  className,
+  children,
+  name,
+}: {
+  href: string;
+  returnTo?: string;
+  memoryKey: string;
+  className: string | undefined;
+  children: React.ReactNode;
+  name: string;
+}) {
+  return (
+    <Link
+      id={memoryKey}
+      href={href}
+      className={className}
+      aria-label={name}
+      onClick={() => {
+        if (returnTo)
+          try {
+            sessionStorage.setItem(
+              returnMemory,
+              JSON.stringify({
+                url: returnTo,
+                y: window.scrollY,
+                id: memoryKey,
+              }),
+            );
+          } catch {
+            /* Native navigation still works. */
+          }
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+export function ReturnToResults({ href, lang }: { href: string; lang: Lang }) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      onClick={() => {
+        try {
+          sessionStorage.setItem(returnMemory + ".restore", href);
+        } catch {
+          /* Query return still works. */
+        }
+      }}
+    >
+      {w(lang, "Back to results", "العودة إلى النتائج")}
+    </Link>
+  );
+}
+export function ListingRestoration({ url }: { url: string }) {
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(returnMemory + ".restore") !== url) return;
+      sessionStorage.removeItem(returnMemory + ".restore");
+      const raw: unknown = JSON.parse(
+        sessionStorage.getItem(returnMemory) ?? "null",
+      );
+      if (
+        !raw ||
+        typeof raw !== "object" ||
+        !("url" in raw) ||
+        raw.url !== url ||
+        !("y" in raw) ||
+        typeof raw.y !== "number" ||
+        !Number.isFinite(raw.y) ||
+        !("id" in raw) ||
+        typeof raw.id !== "string"
+      )
+        return;
+      const target = document.getElementById(raw.id);
+      target?.focus({ preventScroll: true });
+      window.scrollTo(0, Math.max(0, raw.y));
+    } catch {
+      /* Native back/navigation is available without storage. */
+    }
+  }, [url]);
+  return null;
+}
+
+export function ProofGallery({
+  images,
+  name,
+  lang,
+}: {
+  images: string[];
+  name: string;
+  lang: Lang;
+}) {
+  const [selected, setSelected] = useState(0);
+  const actual = images.filter((src) => src !== "/product-placeholder.svg");
+  return (
+    <div className={s.realGallery}>
+      {actual.length ? (
+        <>
+          <div className={s.galleryImage}>
+            <ProductImage
+              src={actual[Math.min(selected, actual.length - 1)]!}
+              alt={name}
+              fill
+              sizes="(min-width:900px) 500px,90vw"
+              className={s.pack}
+            />
+          </div>
+          {actual.length > 1 && (
+            <div
+              className={s.sampleThumbs}
+              role="group"
+              aria-label={w(lang, "Product photos", "صور المنتج")}
+            >
+              {actual.map((src, index) => (
+                <button
+                  key={src}
+                  aria-label={w(
+                    lang,
+                    `View product photo ${index + 1}`,
+                    `عرض صورة المنتج ${index + 1}`,
+                  )}
+                  aria-pressed={selected === index}
+                  onClick={() => setSelected(index)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className={s.sampleMedia}>
+          {w(lang, "Product photo unavailable", "صورة المنتج غير متاحة")}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Image from "next/image";
 import Link from "../../components/app-link";
 import { getLocale } from "../../lib/server/i18n";
 import { storefrontLatin, storefrontArabic } from "../../lib/storefront-fonts";
 import { requireProof, words } from "../../components/design-proof/shared";
+import { ProofLocaleProvider } from "../../components/design-proof/locale";
 import { ProofChrome } from "../../components/design-proof/controls";
 import s from "../../components/design-proof/proof.module.css";
 export function generateMetadata(): Metadata {
@@ -13,6 +14,10 @@ export function generateMetadata(): Metadata {
     robots: { index: false, follow: false },
     alternates: { canonical: null },
   };
+}
+export function generateViewport(): Viewport {
+  requireProof();
+  return { width: "device-width", initialScale: 1, viewportFit: "cover" };
 }
 export default async function Layout({
   children,
@@ -33,7 +38,7 @@ export default async function Layout({
       </a>
       <ProofChrome lang={lang} />
       <main id="proof-content" className={s.main}>
-        {children}
+        <ProofLocaleProvider value={lang}>{children}</ProofLocaleProvider>
       </main>
       <footer className={s.footer}>
         <Image src="/logo.png" alt="Al Mina Pharmacy" width={142} height={46} />
@@ -47,6 +52,9 @@ export default async function Layout({
         <nav aria-label={words(lang, "Footer", "التذييل")}>
           <Link href="/design-proof/products">
             {words(lang, "All products", "جميع المنتجات")}
+          </Link>
+          <Link href="/design-proof/account">
+            {words(lang, "Account preview", "معاينة الحساب")}
           </Link>
           <Link href="/contact">
             {words(

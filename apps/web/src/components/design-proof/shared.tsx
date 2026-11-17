@@ -10,8 +10,7 @@ import {
 import { productImage } from "../../lib/server/catalog";
 import { ProductImage } from "../product-image";
 import { CurrencyAmount } from "../currency-amount";
-import Link from "../app-link";
-import { Purchase, Save } from "./controls";
+import { Purchase, Save, ProofProductLink } from "./controls";
 import s from "./proof.module.css";
 export function requireProof() {
   if (!directionProofAllowed(process.env)) notFound();
@@ -54,6 +53,8 @@ export function CardFrame({
   action,
   href,
   lang,
+  returnTo,
+  memoryKey = "proof-sample",
 }: {
   name: string;
   brand?: string;
@@ -65,6 +66,8 @@ export function CardFrame({
   action: ReactNode;
   href?: string;
   lang: Lang;
+  returnTo?: string;
+  memoryKey?: string;
 }) {
   const visible =
     brand &&
@@ -83,9 +86,15 @@ export function CardFrame({
         </span>
         {save}
         {href ? (
-          <Link href={href} className={s.photoLink} aria-label={name}>
+          <ProofProductLink
+            href={href}
+            {...(returnTo ? { returnTo } : {})}
+            memoryKey={memoryKey + "-photo"}
+            className={s.photoLink}
+            name={name ?? ""}
+          >
             {media}
-          </Link>
+          </ProofProductLink>
         ) : (
           <div className={s.photoLink}>{media}</div>
         )}
@@ -97,9 +106,15 @@ export function CardFrame({
           </p>
         )}
         {href ? (
-          <Link href={href} className={s.productName} aria-label={name}>
+          <ProofProductLink
+            href={href}
+            {...(returnTo ? { returnTo } : {})}
+            memoryKey={memoryKey + "-name"}
+            className={s.productName}
+            name={name ?? ""}
+          >
             <bdi>{visible}</bdi>
-          </Link>
+          </ProofProductLink>
         ) : (
           <h3 className={s.productName}>
             <bdi>{visible}</bdi>
@@ -126,7 +141,15 @@ export function CardFrame({
     </article>
   );
 }
-export function Card({ product, lang }: { product: Product; lang: Lang }) {
+export function Card({
+  product,
+  lang,
+  returnTo,
+}: {
+  product: Product;
+  lang: Lang;
+  returnTo?: string;
+}) {
   return (
     <CardFrame
       name={product.name}
@@ -134,9 +157,14 @@ export function Card({ product, lang }: { product: Product; lang: Lang }) {
       price={displayPrice(product)}
       stock={product.stock}
       media={<Photo product={product} />}
-      save={<Save id={product._id} lang={lang} />}
+      save={<Save id={product._id} lang={lang} name={product.name} />}
       action={<Purchase product={product} lang={lang} />}
-      href={proofHref(product)}
+      href={
+        proofHref(product) +
+        (returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : "")
+      }
+      {...(returnTo ? { returnTo } : {})}
+      memoryKey={"proof-product-" + product._id}
       lang={lang}
     />
   );

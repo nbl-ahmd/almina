@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "../../../../components/app-link";
 import {
   resolveProduct,
+  productImages,
   getProductVariants,
   getProductRecommendations,
 } from "../../../../lib/server/catalog";
@@ -12,7 +13,6 @@ import {
 } from "../../../../lib/catalog/model";
 import {
   Card,
-  Photo,
   requireProof,
   words,
   proofHref,
@@ -21,34 +21,46 @@ import {
   Purchase,
   Save,
   PurchaseDock,
+  ReturnToResults,
+  ProofGallery,
 } from "../../../../components/design-proof/controls";
+import { proofListingReturn } from "../../../../lib/design-proof-navigation";
+import { sameFamilyIdentity } from "@almina/contracts";
 import { CurrencyAmount } from "../../../../components/currency-amount";
 import s from "../../../../components/design-proof/proof.module.css";
 export default async function Detail({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ returnTo?: string }>;
 }) {
   requireProof();
   const product = await resolveProduct((await params).slug);
   if (!product) notFound();
   const lang = await getLocale();
+  const returnTo = proofListingReturn((await searchParams).returnTo);
   const [variants, related] = await Promise.all([
     getProductVariants(product),
     getProductRecommendations(product),
   ]);
+  const members = variants.filter((member) =>
+    sameFamilyIdentity(product, member),
+  );
   return (
     <>
       <p className={s.breadcrumb}>
-        <Link href="/design-proof/products">
-          {words(lang, "All products", "جميع المنتجات")}
-        </Link>{" "}
-        / {product.brand}
+        <ReturnToResults href={returnTo} lang={lang} /> / {product.brand}
       </p>
       <div className={s.pdp}>
         <div className={s.gallery}>
-          <Save id={product._id} lang={lang} />
-          <Photo product={product} large />
+          <Save id={product._id} lang={lang} name={product.name} />
+          <ProofGallery
+            key={product._id}
+            images={productImages(product)}
+            name={product.name}
+            lang={lang}
+          />
         </div>
         <section className={s.buyColumn}>
           <h1>{product.name}</h1>
@@ -63,13 +75,17 @@ export default async function Detail({
           <p className={s.detailPrice}>
             <CurrencyAmount value={displayPrice(product)} locale={lang} />
           </p>
-          {variants.length > 0 && (
+          {members.length > 1 && (
             <div className={s.options}>
               <h2>{words(lang, "Choose your pack", "اختر العبوة")}</h2>
-              {variants.map((item) => (
+              {members.map((item) => (
                 <Link
                   key={item._id}
-                  href={proofHref(item)}
+                  href={
+                    proofHref(item) +
+                    "?returnTo=" +
+                    encodeURIComponent(returnTo)
+                  }
                   aria-current={item._id === product._id ? "page" : undefined}
                 >
                   {productOptionLabel(item) || item.name}
@@ -84,7 +100,12 @@ export default async function Detail({
                 <CurrencyAmount value={displayPrice(product)} locale={lang} />
               </strong>
             </span>
-            <Purchase product={product} lang={lang} detailed />
+            <Purchase
+              key={product._id}
+              product={product}
+              lang={lang}
+              detailed
+            />
           </PurchaseDock>
           <div className={s.facts}>
             <h2>{words(lang, "Product information", "معلومات المنتج")}</h2>
