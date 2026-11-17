@@ -76,7 +76,7 @@ Each phase evidence record cites the coverage IDs it verifies and any partial/de
 
 ## Findings added during baseline execution
 
-Recorded from P0-02; these assignments are not implementation completion. Evidence: [ownership matrix](implementation-evidence/p0-02-style-ownership.md).
+Recorded across P0-02–P0-04; these assignments are not implementation completion. Evidence: [ownership matrix](implementation-evidence/p0-02-style-ownership.md), [route/state map](implementation-evidence/p0-03-routes-states-tests.md), [capture baseline](implementation-evidence/p0-04-baseline.md).
 
 | ID | Finding / requirement | Owning tasks | Acceptance proof |
 | --- | --- | --- | --- |
@@ -86,3 +86,7 @@ Recorded from P0-02; these assignments are not implementation completion. Eviden
 | NEW-004 | No explicit catalogue search/filter → PDP → browser-back query/scroll restoration assertion found; PDP toolbar back goes to category. | P3-04, P4-05, P6-02 | Actual browser-back/query/filter/scroll checks on representative data; preserve continuity without claiming an observed failure from source absence. |
 | NEW-005 | Generic storefront/global error copy is English in source; P0-04 also observed English saved-products/root-404 content inside the Arabic shell. | P3-04, P5-04–P5-05, P6-02 | Exercise customer/error states in EN/AR, preserve actual product identity and retry/status/navigation semantics, and handle UI-copy localisation explicitly. |
 | NEW-006 | Two longer supplemental H1 dev-browser navigation sequences stayed on Arabic home loading shell; direct HTTP/fresh initial contexts resolved. Cause unassigned. | P3-04, P4-05, P6-02 | Bounded reproduction on isolated fixtures and browser/back/scroll checks; distinguish tooling/dev-streaming/application causes before claiming a fix or production defect. See P0-04 evidence. |
+
+## Phase 0 reconciliation checkpoint
+
+P0-05 reconciled all 63 requirements and six new findings into the [dated evidence/future-owner snapshot](implementation-evidence/p0-05-reconciliation.json). Zero unmapped rows; implementation acceptance remains open for every spanning obligation. See [exit summary](implementation-evidence/phase-0-summary.md) and [Phase 1 input packet](phase-1-input-packet.md). Mutable status continues exclusively in progress; this checkpoint is not final requirement closure.

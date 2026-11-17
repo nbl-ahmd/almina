@@ -1,6 +1,6 @@
 # Phase 0 evidence — baseline and ownership
 
-Started 17 November 2026. **Phase 0 remains in progress; P0-01 through P0-04 are verified in their separate checkpoints below; P0-05 synthesis remains.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
+Started 17 November 2026. **Phase 0 complete for baseline scope; all five tasks are verified in their separate checkpoints below.** See [exit summary](phase-0-summary.md) and [Phase 1 handoff](../phase-1-input-packet.md). Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
 
 ## P0-01 — Baseline reconciliation
 
@@ -118,6 +118,10 @@ All task browser sessions and owned disposable harness stopped cleanly; original
 
 Outcome: **P0-04 verified as baseline work with explicit limitations**. Multi-phase requirements remain open. Documentation/artifact rollback only. Next P0-05: publish a consolidated baseline and Phase 1 input packet, reconcile all requirements/new findings and unresolved content/authority/runtime observations. No screen implementation in synthesis.
 
-## Remaining Phase 0 work
+## P0-05 — Baseline synthesis and Phase 1 handoff
 
-P0-05 baseline synthesis is not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.
+Starting f1a7d99, clean tree. [Exit summary](phase-0-summary.md) consolidates P0-01–P0-04 and their scope/limits; [reconciliation](p0-05-reconciliation.json) maps 63 requirements and six new findings to baseline evidence/future owners/proof; [Phase 1 packet](../phase-1-input-packet.md) prepares P1-01 without executing it. Zero unmapped requirements, all 69 implementation obligations remain open. Supporting visuals unapproved; no screens/generated tokens or authority rewrite.
+
+Validated source-plan fingerprints, all task/coverage IDs and paths, retained image integrity and absence of runtime diff. No browser/build/test rerun or process change in synthesis. Content/rights/provider uncertainty and NEW-001–006 are explicitly carried forward, including unassigned loading-shell cause. Documentation-only rollback.
+
+**P0-05 verified; Phase 0 complete for baseline scope. Next P1-01 prototype contract.** Progress is the sole mutable status ledger; the dated evidence/packet is not final visual or production acceptance.

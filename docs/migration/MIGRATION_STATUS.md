@@ -1,3 +1,7 @@
+## 2026-11-17 — Phase 0 storefront baseline complete
+
+P0-05 consolidated source/authority, consumer/cascade, route/state/test and fresh capture/content evidence. All 63 requirements and six new findings have evidence, future owners and proof still owed; no implementation requirement silently closed. All five baseline tasks verified. Next P1-01 prototype contract from the [input packet](../../apps/web/docs/design/phase-1-input-packet.md). No new design, tokens, runtime changes, production access or deployment. See [exit summary](../../apps/web/docs/design/implementation-evidence/phase-0-summary.md) and [progress](../../apps/web/docs/design/implementation-progress.md).
+
 ## 2026-11-17 — P0-04 fresh storefront baseline captured
 
 Recorded 94 representative EN/AR phone/tablet/desktop cases with full/viewport images, durable manifest, nine retained captures, hierarchy/reading-width measurements and factual media/content limits. Isolated build passed; synthetic checkout reached quotes only, no orders/payments. Documented localisation gaps and unresolved dev loading-shell observation, without runtime fixes or release claims. Temporary harness/browser contexts closed, existing preview retained. P0-04 verified; next P0-05 synthesis. See [baseline report](../../apps/web/docs/design/implementation-evidence/p0-04-baseline.md) and [progress](../../apps/web/docs/design/implementation-progress.md).

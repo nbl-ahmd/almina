@@ -4,22 +4,22 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** P0-01–P0-04 verified: baseline, consumers, routes/states and fresh captures/content inventory. Phase 0 is in progress. No replacement UI implementation has started.
-- **Next eligible task:** **P0-05 — baseline synthesis and Phase 1 input packet**. Consolidate P0-01–P0-04 evidence, reconcile C01–C63/NEW-001–006, preserve open content/runtime findings and prepare the direction-proof handoff. No new screens/final tokens in this synthesis task.
-- **Verified implementation tasks:** 4 of 34 (P0-01–P0-04 baseline work; no redesigned screens). These are equal checklist counts, not a weighted completion percentage.
+- **Current work:** **Phase 0 complete for baseline scope**: P0-01–P0-05 verified. Baseline/consumers/routes/captures/requirement synthesis complete; no replacement UI implementation or final visual acceptance.
+- **Next eligible task:** **P1-01 — prototype contract**. Read [Phase 1 input packet](phase-1-input-packet.md), reconcile current source/owner steering and declare the isolated coded proof scope/data/states/reference borrowing/experiments/review criteria. This packet is not that contract. No final tokens or broad page replacement before the concrete screen gate.
+- **Verified implementation tasks:** 5 of 34 (all Phase 0 baseline tasks; no redesigned screens). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** 94 fresh responsive-view cases/188 PNGs across EN/AR phone/tablet/desktop; final cases have no document overflow or collected page errors. Isolated build passed; disposable synthetic harness used for signed-out/account/staff draft and quote-only checkout. No orders/payments; not a full functional/a11y/native-device test pass. NEW-006 loading-shell observation remains unresolved; see report.
+- **Runtime/testing this checkpoint:** P0-05 documentation-only synthesis; source fingerprints, task/requirement mappings, evidence links and nine retained image hashes rechecked. No build/browser/functional suite rerun. P0-04 94-case capture/build results remain dated evidence with explicit limits; NEW-006 unresolved.
 - **No production data access or deployment. No final replacement visual approval inferred.**
 
 ## Phase status
 
 | Phase | Status | Entry / unresolved gate | Evidence |
 | --- | --- | --- | --- |
-| 0 Baseline/ownership | in_progress | P0-01–P0-04 verified; P0-05 synthesis remains | [Phase evidence](implementation-evidence/phase-0.md) |
-| 1 Direction proof | not_started | Needs verified Phase 0 and authorised prototype execution | — |
+| 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
+| 1 Direction proof | not_started | Baseline input ready; next P1-01 contract, then coded proof and actual screen-review gate | [Input packet](phase-1-input-packet.md) |
 | 2 Accepted system | not_started | Needs concrete Phase 1 screen decision | — |
 | 3 Shell/home | not_started | Needs Phase 2 system and state/consumer verification | — |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
@@ -36,7 +36,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P0-02 | verified | [Ownership matrix](implementation-evidence/p0-02-style-ownership.md), [consumer index](implementation-evidence/p0-02-style-consumers.json); source d6fd0f5, no runtime edits |
 | P0-03 | verified | [Routes/states/harness map](implementation-evidence/p0-03-routes-states-tests.md), [route/test index](implementation-evidence/p0-03-route-index.json); source 944bf72, read-only Next route reconciliation |
 | P0-04 | verified | [Fresh baseline/content report](implementation-evidence/p0-04-baseline.md), [94-case manifest](implementation-evidence/p0-04-capture-manifest.json), nine retained images; source 85bebc7, limitations/NEW-006 explicit |
-| P0-05 | not_started | — |
+| P0-05 | verified | [Exit summary](implementation-evidence/phase-0-summary.md), [69-row reconciliation](implementation-evidence/p0-05-reconciliation.json), [Phase 1 packet](phase-1-input-packet.md); starting source f1a7d99, documentation only |
 | P1-01 | not_started | — |
 | P1-02 | not_started | — |
 | P1-03 | not_started | — |
@@ -78,6 +78,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | D05 | Create phases/progress/context preservation | Current owner request, 17 November 2026 | Preparation completed; does not itself record approval of a future visual candidate. |
 | D06 | Local work authorisation | P0-01 expressly requested, then successive “do next” instructions executed P0-02–P0-04; earlier local authorisation retained within scope | Routine task execution does not require repeated permission; final candidate screen acceptance remains a distinct gate. |
 | D07 | Production deployment | Excluded by owner instructions | No phase may deploy. |
+| D08 | Phase 0 baseline exit | P0-05 reconciles all five baseline tasks and 69 requirement/finding assignments | Ready for P1-01 contract preparation; not a screen/colour/font approval, product readiness or deployment decision. |
 
 Append dated decisions/corrections with affected task/coverage IDs and source (owner message or verified repository evidence). Link durable visual decisions into decisions.md; do not erase previous decisions or mistake proposed values for approval.
 
@@ -95,7 +96,7 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O08 | NEW-004: search/PDP browser back and query/scroll restoration lack explicit E2E assertions; NEW-005: English saved/root-404 copy observed inside Arabic shell, generic error copy also English in source | Verify actual continuity and localised failure states on correct fixtures; source gap is not observed browser failure. | P3-04, P4-05, P5-05, P6-02 |
 | O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Bounded reproduction across isolated fixtures and actual browser/back/scroll checks owed; not fixed or generalised to production. | P3-04, P4-05, P6-02 |
 
-No implementation blocker has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
+No blocker to P1-01 contract preparation has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
 
 ## Evidence index
 
@@ -103,7 +104,7 @@ No implementation blocker has been demonstrated at this checkpoint. Future block
 - Reference originals: repository-root `docs/design/storefront/references/2026-11-17/manifest.json` (N01–N07, four families; private planning assets).
 - Historical independent review notes: `.verification-results/direction-review-2026-11-17/assessment-a.md` and `assessment-b.md`; ignored/raw evidence may not exist in another checkout. Durable synthesis is the tracked system review.
 - Historical critique snapshot: repository-root `.impeccable/critique/2026-11-17T03-50-30Z__apps-web-src-app-storefront-storefront-tokens-css.md`. 28/40 is the past usability review, not a current phase pass.
-- Phase evidence: [baseline checkpoints](implementation-evidence/phase-0.md), [P0-04 capture/content report](implementation-evidence/p0-04-baseline.md), [94-case manifest](implementation-evidence/p0-04-capture-manifest.json), [P0-03 routes/states/harness map](implementation-evidence/p0-03-routes-states-tests.md), [route/test index](implementation-evidence/p0-03-route-index.json), [P0-02 ownership matrix](implementation-evidence/p0-02-style-ownership.md), [complete consumer index](implementation-evidence/p0-02-style-consumers.json) and [preview runbook](implementation-evidence/preview-runbook.md). Raw smoke: `.verification-results/storefront-replacement/phase-0/p0-01-runtime.json`. Existing preview preserved; no restart tested. Future captures/logs are indexed by source commit, viewport/locale/state and conditions.
+- Phase evidence: [Phase 0 exit summary](implementation-evidence/phase-0-summary.md), [69-row reconciliation](implementation-evidence/p0-05-reconciliation.json), [Phase 1 input packet](phase-1-input-packet.md), [baseline checkpoints](implementation-evidence/phase-0.md), [P0-04 capture/content report](implementation-evidence/p0-04-baseline.md), [94-case manifest](implementation-evidence/p0-04-capture-manifest.json), [P0-03 routes/states/harness map](implementation-evidence/p0-03-routes-states-tests.md), [route/test index](implementation-evidence/p0-03-route-index.json), [P0-02 ownership matrix](implementation-evidence/p0-02-style-ownership.md), [complete consumer index](implementation-evidence/p0-02-style-consumers.json) and [preview runbook](implementation-evidence/preview-runbook.md). Raw smoke: `.verification-results/storefront-replacement/phase-0/p0-01-runtime.json`. Existing preview preserved; no restart tested. Future captures/logs are indexed by source commit, viewport/locale/state and conditions.
 
 ## Source-plan fingerprints at preparation
 
@@ -169,6 +170,15 @@ These identify the reviewed inputs, not a runtime lock. If a source changes, rer
 - **Coverage:** baseline contributions recorded in phase/report; C/NEW implementation requirements remain open. Existing catalogue/rights/business claims remain unverified, not invented.
 - **Cleanup/rollback:** all five owned browser sessions closed; temporary H2–H4 harness exited 0, ports stopped and disposable fixture cleaned. Original H1 preview retained. Generated next-env change restored. Documentation/artifacts only; raw scripts/logs/large images intentionally ignored, representative images retained.
 - **Next:** P0-05 synthesize the Phase 0 evidence/coverage/open-items packet for Phase 1. No new visual direction implementation or final token approval inferred.
+
+### 2026-11-17 — P0-05 verified; Phase 0 baseline complete
+
+- **Authorisation/source:** owner said “do next”; P0-05 was next. Starting f1a7d99 on existing focused branch, clean tree. App/package/tooling source unchanged from reviewed 324a2ed; source-plan fingerprints still match.
+- **Completed:** [consolidated exit summary](implementation-evidence/phase-0-summary.md), [per-row reconciliation](implementation-evidence/p0-05-reconciliation.json) and [Phase 1 input packet](phase-1-input-packet.md). All 63 C-requirements and six NEW-findings have baseline evidence, valid future tasks and explicit proof still owed; zero unmapped.
+- **Disposition:** P0-01–P0-05 verified for baseline scope. All 69 implementation obligations remain open in the dated reconciliation, not falsely closed by inventory/captures. Content/rights/provider unknowns and NEW-001–006 remain visible. Supporting visuals still proposed.
+- **Verification:** source/coverage/task IDs, future owners, evidence/reference paths, source fingerprints, manifest/retained hashes and diff checked; no runtime edit. No new browser/build/fixture/test suite in this documentation-only task. P0-04 measurements/build are dated baseline evidence, not current release proof.
+- **Next:** P1-01 prototype contract using the input packet. Define isolated coded proof scope, matched data, home/listing/PDP device/locale/state coverage, one direction's experiments and actual screen-review criteria. Do not mark P1-01 complete from preparation or start final guide/tokens before screen approval.
+- **Cleanup/rollback:** existing preview untouched; no task process started/stopped. Documentation-only rollback. Progress remains single status authority; all later checkpoints must preserve decisions/open findings and source drift.
 
 ## Checkpoint template — append; do not replace earlier history
 

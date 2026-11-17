@@ -1,0 +1,1427 @@
+{
+  "checkpoint": "P0-05",
+  "preparedFromCommit": "f1a7d9978ff3893b460ea27ee0dd127a044c3ea7",
+  "statusAuthority": "../implementation-progress.md",
+  "purpose": "Baseline evidence and future-owner reconciliation, not another mutable completion ledger. Refresh/reconcile if coverage changes. All implementation obligations remain open after Phase 0.",
+  "sourcePlans": [
+    {
+      "path": "system-review-2026-11-17.md",
+      "sha256": "301fc808dfcfc0f5e225af8ef06de4901efc5700d7d729a0d590030337413021"
+    },
+    {
+      "path": "storefront-direction-plan-2026-11-17.md",
+      "sha256": "0ad4464c3d4c040e281ca5d35f59b4d0132d5ed72077747a8b4f9c116848acd7"
+    },
+    {
+      "path": "reference-review-2026-11-17.md",
+      "sha256": "6e620940f7f4a25d8126f5578726b8ebde6f1744783ec53142a2fcb41ec68307"
+    }
+  ],
+  "requirementCount": 63,
+  "newFindingCount": 6,
+  "unmappedCount": 0,
+  "rows": [
+    {
+      "id": "C01",
+      "requirement": "Preserve exact coral #FF5A5F, real logo/business/contact facts and known-item search priority.",
+      "source": "DP \u00a71; RR Confirmed intent",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "phase-0.md"
+      ],
+      "taskOwners": [
+        "P0-01",
+        "P1-01",
+        "P2-05",
+        "P6-04"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Contract distinguishes confirmed facts from proposals; built values/content match.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C02",
+      "requirement": "Supporting palette/font/measurements/desktop lead require screen review; no inherited rejected identity.",
+      "source": "DP \u00a71, \u00a78; SR Verdict",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "phase-0.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P2-05"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Comparable accepted screens and dated decisions before final guide/token approval.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C03",
+      "requirement": "Preserve incremental architecture, routes/identifiers/legacy redirects/query URLs/SEO and small server/client boundaries.",
+      "source": "DP \u00a71, \u00a77; SR What to retain",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P3-04",
+        "P4-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P3-04",
+      "acceptanceProofStillRequired": "Route/consumer map; metadata/direct navigation/reload checks and architecture inspection.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C04",
+      "requirement": "Preserve authoritative prices/tax/fees/discounts/stock/final totals/auth, order integrity and idempotency.",
+      "source": "DP \u00a71, \u00a74 Cart, \u00a77",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P4-05",
+        "P5-01",
+        "P5-02",
+        "P5-03"
+      ],
+      "nextOwningTask": "P4-05",
+      "acceptanceProofStillRequired": "Isolated commerce/auth tests; client hints never become authority.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C05",
+      "requirement": "No production data access/deployment/provider replacement or invented capabilities/claims.",
+      "source": "DP \u00a71; RR all Avoid/Unknown",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "phase-0.md"
+      ],
+      "taskOwners": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-05",
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04",
+        "P5-05",
+        "P6-01",
+        "P6-02",
+        "P6-03",
+        "P6-04",
+        "P6-05"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Scope/fixture provenance and diff review; unverified operational content excluded.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C06",
+      "requirement": "Preserve English/Arabic/RTL, factual mixed-script identity, locale currency, keyboard semantics/focus/reduced motion.",
+      "source": "DP \u00a71, \u00a74, \u00a77",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P1-04",
+        "P2-04",
+        "P3-04",
+        "P4-05",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Actual locale/interaction captures and checks; no fabricated product translations.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C07",
+      "requirement": "Customer/shared/admin/wholesale dependencies must be traced and migrated before removal.",
+      "source": "DP \u00a72 CSS, \u00a76; SR priority 1",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P0-02",
+        "P2-01",
+        "P2-02",
+        "P6-01"
+      ],
+      "nextOwningTask": "P2-01",
+      "acceptanceProofStillRequired": "Definition/consumer/migration/removal matrix and cross-surface regressions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C08",
+      "requirement": "One runtime customer value source with primitive \u2192 semantic \u2192 component roles; no parallel palette/library or renamed old system.",
+      "source": "DP \u00a73, \u00a76; SR priority 1",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P2-01",
+        "P2-05",
+        "P6-01"
+      ],
+      "nextOwningTask": "P2-01",
+      "acceptanceProofStillRequired": "Consumer adoption, generated alias inspection, no restoring automation/competing authority.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C09",
+      "requirement": "Resolve unlayered button versus added-state utilities; one base/variant/state owner.",
+      "source": "SR priority 1; DP \u00a72 State, \u00a73",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P0-02",
+        "P2-02",
+        "P2-03"
+      ],
+      "nextOwningTask": "P2-02",
+      "acceptanceProofStillRequired": "Computed pending/added/disabled styles and working count/announcements; distinguish risk from add failure.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C10",
+      "requirement": "Resolve inline white versus scoped ink primary foreground; use compliant actual pairings.",
+      "source": "SR priorities 1/4; DP \u00a73",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P2-02",
+        "P2-04"
+      ],
+      "nextOwningTask": "P2-02",
+      "acceptanceProofStillRequired": "Emitted CSS and normal/hover/focus/disabled contrast, not variable names alone.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C11",
+      "requirement": "Adopt meaningful spacing, width and shape roles; literal inventory is not a defect count.",
+      "source": "SR priority 1; DP \u00a72, \u00a73",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P0-02",
+        "P2-01",
+        "P2-04"
+      ],
+      "nextOwningTask": "P2-01",
+      "acceptanceProofStillRequired": "Nominal width/spacing/radius changes predictably affect appropriate consumers; intentional exceptions documented.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C12",
+      "requirement": "Consolidate duplicate checkout styles, hard-coded neutral/blue confirmation and route-specific geometry.",
+      "source": "SR priorities 1/4; DP \u00a72, \u00a74 Cart",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P0-02",
+        "P2-03",
+        "P5-02"
+      ],
+      "nextOwningTask": "P2-03",
+      "acceptanceProofStillRequired": "State comparison and preserved form/payment behaviour; obsolete declarations removed safely.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C13",
+      "requirement": "Scope selectors and portal theme inheritance; verify client navigation between customer/admin/wholesale.",
+      "source": "DP \u00a73, \u00a77; SR priority 1",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P0-02",
+        "P2-02",
+        "P3-04",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P2-02",
+      "acceptanceProofStillRequired": "Actual portal/computed styles and route-transition regressions, not comments alone.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C14",
+      "requirement": "Small bilingual type-role hierarchy; test Figtree/Alexandria intentionally, at most one alternative pair if needed.",
+      "source": "DP \u00a71, \u00a72 Typography, \u00a73, \u00a75",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-03",
+        "P2-01",
+        "P2-04"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "Same realistic text on comparable screens; Arabic optical density, long identities and zoom accepted.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C15",
+      "requirement": "Quiet shopping ground, deliberate secondary/media surfaces, controlled coral/aqua and campaign emphasis.",
+      "source": "SR priority 4; DP \u00a71, \u00a72 Colour",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P1-03",
+        "P2-04",
+        "P3-03"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Screen decision and surface/foreground pairings; no lavender/pink/teal/blue collage.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C16",
+      "requirement": "Distinguish selected/success/sale/error/saved/focus; promotion must not create another UI theme.",
+      "source": "DP \u00a73; SR priority 4",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P2-03",
+        "P2-04",
+        "P5-02"
+      ],
+      "nextOwningTask": "P2-03",
+      "acceptanceProofStillRequired": "State specimen and actual component transitions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C17",
+      "requirement": "Shape/border/elevation/icon/motion roles; do not enclose every section or add decorative shopping delays.",
+      "source": "DP \u00a72 Shape, \u00a73; SR priority 4",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-03",
+        "P2-03",
+        "P2-04",
+        "P3-03"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "Distinct quiet commerce/campaign/overlay hierarchy and reduced-motion behavior.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C18",
+      "requirement": "Resolve 10px badge exception, compact stock inset, guarded hover zoom explicitly.",
+      "source": "SR Minor observations, Detector",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-03",
+        "P2-04",
+        "P4-02"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "Intentional role/decision, full accessible count labels; no false \u201cfailed touch target\u201d claim.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C19",
+      "requirement": "Reduce phone vertical setup, protect wide search and early merchandise/price access.",
+      "source": "SR priority 2; DP \u00a74 Mobile/Home, \u00a75",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P1-03",
+        "P3-01",
+        "P3-03",
+        "P4-01"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "First-view positions at realistic heights compared; no shrinking readable facts/44px targets.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C20",
+      "requirement": "Location/cart context, compact header, labelled existing bottom destinations/active state.",
+      "source": "DP \u00a74 Mobile; RR N01\u2013N03/N05",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-04",
+        "P3-01",
+        "P3-02"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Existing destinations intact; area is not represented as quoted fee/full address/ETA.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C21",
+      "requirement": "Browse/focused-search/PDP/checkout modes; usable query/clear/back/suggestions above keyboard.",
+      "source": "DP \u00a74 Mobile; SR priority 2",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-04",
+        "P3-01",
+        "P5-02"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Live keyboard, Enter/Escape/arrows, suggestions/failure/GET fallback and mode transitions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C22",
+      "requirement": "Preserve actual back/query/filter/scroll continuity; category back is not browser-history restoration.",
+      "source": "SR User control/Personas; DP \u00a74 Mobile",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P1-04",
+        "P4-05"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Search \u2192 PDP \u2192 return inspection; persistence changes scoped and non-authoritative.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C23",
+      "requirement": "Safe areas, short landscape, software keyboard, zoom/large text; browser semantics/URLs remain.",
+      "source": "DP \u00a74 Mobile, \u00a77",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-04",
+        "P3-04",
+        "P4-03",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Last content reachable, one appropriate dock, no disabled zoom/fake device chrome.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C24",
+      "requirement": "Desktop independent useful merchandising, not widened phone modules or empty space.",
+      "source": "SR priority 3; DP \u00a74 Home",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P3-02",
+        "P3-03"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Deliberate header/category/shelves/managed blocks/footer at 100% scale.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C25",
+      "requirement": "Compare shallow full-width versus split desktop lead; keep hero bounded and search prominent.",
+      "source": "SR priority 3; DP \u00a74 Home, \u00a78",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P3-03"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Same-data comparison and actual owner decision, not inherited composition.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C26",
+      "requirement": "Replace generic blank editorial tiles; conditional real categories/brands/campaigns, deliberate sparse-data page.",
+      "source": "SR priority 3; DP \u00a74 Home",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P0-04",
+        "P3-03"
+      ],
+      "nextOwningTask": "P3-03",
+      "acceptanceProofStillRequired": "Real content rules, no duplicate-product padding shelves/unsupported sections; empty/error states.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C27",
+      "requirement": "Density experiments: gutters/gaps/section passages/card internals/first view/4 vs 5 columns.",
+      "source": "DP \u00a75",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-03",
+        "P2-04",
+        "P3-04",
+        "P4-02"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "Prototype comparison at 100%; ranges remain proposals until accepted; whitespace separates decisions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C28",
+      "requirement": "Listing count/filter/sort/selected chips, desktop rail and accessible phone sheet/disclosure, compact intro.",
+      "source": "DP \u00a74 Listing; SR priority 2",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P4-01"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Preserved GET/query semantics, keyboard and lower setup burden; no squeezed card facts.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C29",
+      "requirement": "Listing skeleton/empty/partial/error/no-stock/pagination; no redundant prose or lone page 1.",
+      "source": "DP \u00a74 Listing; SR retain",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-04",
+        "P4-01"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "State matrix and recovery/navigation checks.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C30",
+      "requirement": "Search matching/Arabic quality evaluated on representative data, separate from styling scope.",
+      "source": "DP \u00a74 Listing",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P4-05"
+      ],
+      "nextOwningTask": "P4-05",
+      "acceptanceProofStillRequired": "Record observed quality limits as backlog; no unapproved search-provider overhaul.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C31",
+      "requirement": "Compact factual standard/related cards: exact identity/strength/pack/price/availability/options/add/save.",
+      "source": "DP \u00a74 Listing/PDP; RR synthesis",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P1-03",
+        "P4-02"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Long names and price/action alignment, full accessible facts, server checks/count persistence.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C32",
+      "requirement": "Truthful imagery and provenance: exact-pack associations, consistent frames, missing/poor-photo fallback.",
+      "source": "SR priority 5/Minor; DP \u00a72 Imagery; RR Assets",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P0-04",
+        "P1-02",
+        "P4-02",
+        "P6-04"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Verified source/rights/pack registry; fixture content not generalised; no generated saleable packs.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C33",
+      "requirement": "PDP phone toolbar/gallery/buying dock and desktop gallery/thumbnails/compact buying column.",
+      "source": "DP \u00a74 PDP; RR N01\u2013N03",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P4-03"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Actual pack/price/stock/options relationship; dock replaces competing global phone nav.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C34",
+      "requirement": "Single/multiple/missing images/options handled honestly; no fake dots or invented variants.",
+      "source": "DP \u00a74 PDP",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-03",
+        "P4-03"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "Fixture cases, selectable actual options, accessible gallery and fallback.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C35",
+      "requirement": "Verified product summary/facts/help before alternatives; detailed information/policies retained.",
+      "source": "SR priority 5, Personas; DP \u00a74 PDP",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-02",
+        "P4-04"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Complete-content and missing-content screen evidence; no fabricated advice/reviews/ratings.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C36",
+      "requirement": "Preserve dirham presentation/locale digits and underlying monetary/SEO contracts.",
+      "source": "DP \u00a71, \u00a74; SR retain",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P2-03",
+        "P4-02",
+        "P5-01",
+        "P5-02",
+        "P5-03"
+      ],
+      "nextOwningTask": "P2-03",
+      "acceptanceProofStillRequired": "Currency accessible labels, mixed-script runs and underlying amounts/ISO unchanged.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C37",
+      "requirement": "Cart unit/line amounts, selected pack, quantities/removal/stock, server estimate distinct from final quote.",
+      "source": "DP \u00a74 Cart; SR retain",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P5-01",
+        "P5-03"
+      ],
+      "nextOwningTask": "P5-01",
+      "acceptanceProofStillRequired": "Empty/populated/unavailable/error checks; forged client hints cannot change authority.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C38",
+      "requirement": "One principal next action/device; summary before subordinate filtered recommendations; bounded empty reading width.",
+      "source": "DP \u00a74 Mobile/Cart; SR Minor",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P4-03",
+        "P5-01",
+        "P5-02"
+      ],
+      "nextOwningTask": "P4-03",
+      "acceptanceProofStillRequired": "Dock/navigation clearance; no duplicates and clear gated-ordering copy.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C39",
+      "requirement": "Checkout existing steps/quotes/payment gates/validation/recovery retained; intentional unavailable states.",
+      "source": "DP \u00a74 Cart; SR limitations",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P5-02",
+        "P5-03"
+      ],
+      "nextOwningTask": "P5-02",
+      "acceptanceProofStillRequired": "Enabled/disabled screenshots and corresponding existing transaction regressions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C40",
+      "requirement": "Full customer surfaces: account/saved/recent/orders/reorder/addresses/preferences/auth/rewards/help/policies/editorial landings.",
+      "source": "DP \u00a74 Cart, \u00a76",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P5-04",
+        "P5-05"
+      ],
+      "nextOwningTask": "P5-04",
+      "acceptanceProofStillRequired": "P0 route inventory reconciled; no unstyled islands or invented programme/service facts.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C41",
+      "requirement": "Reference N01: grouped context/search, categories/gallery/options/dock; exclude pet/seller/360/video/nav decoration.",
+      "source": "RR N01",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P3-01",
+        "P4-03"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Annotated screen borrowing; unknown behaviour tested, not copied.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C42",
+      "requirement": "N02: short pharmacy home sequence/dense cards; exclude tiny text, claims and unsupported utilities.",
+      "source": "RR N02",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P3-03",
+        "P4-02"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Compact readable real content and no invented capability.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C43",
+      "requirement": "N03: image-led buying sequence/early merchandise; no onboarding gate, assumed identity/medical copy.",
+      "source": "RR N03",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P3-03",
+        "P4-03"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Functional preview hierarchy and real product/route state evidence.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C44",
+      "requirement": "N04: desktop header/grouping/shelves/brands/campaigns; no huge Pharmacy/consultation/prescription/taxonomy invention.",
+      "source": "RR N04",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P3-02",
+        "P3-03"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Purposeful desktop screen adapted to actual catalogue.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C45",
+      "requirement": "N05: broad search/location/labelled discovery; reject oversized gaps, voice/scan/prescription/mock discounts.",
+      "source": "RR N05",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P3-01",
+        "P3-03"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Density/keyboard proof; real navigation/capabilities only.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C46",
+      "requirement": "N06: modular desktop rhythm/end; no copied length, testimonials/Trustpilot/app/healthcard/unsupported FAQs.",
+      "source": "RR N06",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P3-03",
+        "P5-04"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Data-conditional modules, factual footer and absent-content composition.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C47",
+      "requirement": "N07: pack/name/amount/action discipline and category/brand distinction; no unsupported ratings/discounts/concern tabs.",
+      "source": "RR N07",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P3-03",
+        "P4-02"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Actual scale/readability and real associations/values.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C48",
+      "requirement": "Seven files/four families; screenshot proportions and colours are not specs, capabilities or votes for green.",
+      "source": "RR Confirmed intent/Synthesis; SR References",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P1-01",
+        "P1-05"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "One direction, exact coral retained; owner choice recorded from composed screens.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C49",
+      "requirement": "No watermarks/device frames/creator marks/unrelated brands/copy; references private outside runtime, rights/provenance recorded.",
+      "source": "RR Assets/all Avoid",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P0-04",
+        "P1-02",
+        "P6-01"
+      ],
+      "nextOwningTask": "P1-02",
+      "acceptanceProofStillRequired": "Asset manifest, source attribution and runtime-import check; no decorative reference copy shipped.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C50",
+      "requirement": "Static references do not establish sticky/keyboard/back/cart/checkout/RTL/performance.",
+      "source": "RR all Unknown; SR References",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "../reference-review-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P1-04",
+        "P6-02"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Uncertainty register resolved by observed local behaviour or retained as unknown.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C51",
+      "requirement": "Phone/tablet/desktop/RTL same-page resize, short landscape, zoom, reduced motion and keyboard matrix.",
+      "source": "DP \u00a77",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P3-04",
+        "P4-05",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P3-04",
+      "acceptanceProofStillRequired": "Exact widths/heights/locale/state/source commit recorded, no stale captures.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C52",
+      "requirement": "Full difficult-data/state range and feature-gate coverage.",
+      "source": "DP \u00a77; SR Personas",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P0-04",
+        "P1-03",
+        "P1-04",
+        "P6-02"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "Fixture/state matrix includes missing/unknown/unavailable/error, not only ideal packshots.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C53",
+      "requirement": "Accessibility: focus/semantics/combobox/dialog/touch/contrast/scroll/docks; scan supplements interaction checks.",
+      "source": "DP \u00a77",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P2-04",
+        "P3-04",
+        "P4-05",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P2-04",
+      "acceptanceProofStillRequired": "Manual and appropriate automated checks with limits stated; no page overflow.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C54",
+      "requirement": "Runtime/console/network, SEO/image delivery/performance checked; no unmeasured speed/conversion claims.",
+      "source": "DP \u00a77",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P4-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P4-05",
+      "acceptanceProofStillRequired": "Version-matched Next/runtime and relevant delivery evidence; measured claims only.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C55",
+      "requirement": "Preserve strengths: GET fallback, factual cards/counts, PDP dock, locale mirroring and verified responsive work.",
+      "source": "SR What to retain",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P0-03",
+        "P3-04",
+        "P4-05",
+        "P5-05"
+      ],
+      "nextOwningTask": "P3-04",
+      "acceptanceProofStillRequired": "Regression map distinguishes preservation from replacement aesthetics.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C56",
+      "requirement": "Do not treat >4 familiar categories/products as automatic cognitive-load failure; five labelled destinations remain.",
+      "source": "SR Cognitive load",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md"
+      ],
+      "taskOwners": [
+        "P1-04",
+        "P3-01",
+        "P4-01"
+      ],
+      "nextOwningTask": "P1-04",
+      "acceptanceProofStillRequired": "Simplify repetition/travel and test destination priority without speculative taxonomy.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C57",
+      "requirement": "Interruptions, cautious first visit and Arabic/edge cases shape preview/recovery.",
+      "source": "SR Personas/Emotional journey",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P1-03",
+        "P1-04",
+        "P4-04",
+        "P4-05",
+        "P5-05"
+      ],
+      "nextOwningTask": "P1-03",
+      "acceptanceProofStillRequired": "End-to-end task review includes return context, product confidence and truthful fallbacks.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C58",
+      "requirement": "Detector advisories/false positives not design quality verdict; development chrome is not production UI.",
+      "source": "SR Minor/Detector",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P0-04",
+        "P2-04",
+        "P6-03"
+      ],
+      "nextOwningTask": "P2-04",
+      "acceptanceProofStillRequired": "Manual adjudication; no arbitrary divider padding or false accessibility/production claims.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C59",
+      "requirement": "Baseline/review 28/40 and historic passing tests are not current visual acceptance or production certification.",
+      "source": "SR Design health; DP \u00a72/\u00a77",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "phase-0.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P0-01",
+        "P6-02",
+        "P6-03",
+        "P6-04",
+        "P6-05"
+      ],
+      "nextOwningTask": "P6-02",
+      "acceptanceProofStillRequired": "Fresh evidence, named review scope/disposition and separate owner/release decisions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C60",
+      "requirement": "Retire superseded design authority, generators, prototype bindings/assets only after consumer migration; preserve useful marked history.",
+      "source": "DP \u00a76; SR Plan",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md",
+        "../storefront-direction-plan-2026-11-17.md"
+      ],
+      "taskOwners": [
+        "P2-05",
+        "P6-01",
+        "P6-04"
+      ],
+      "nextOwningTask": "P2-05",
+      "acceptanceProofStillRequired": "No active restoration links/automation or duplicate customer system; safe shared retention explained.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C61",
+      "requirement": "Bounded independent finish review, evidence-backed remediation and updated docs from built artifact.",
+      "source": "DP \u00a76; SR Plan",
+      "baselineDisposition": "mapped_for_future_implementation_not_accepted_or_closed",
+      "baselineEvidence": [
+        "../storefront-direction-plan-2026-11-17.md",
+        "../implementation-phases.md"
+      ],
+      "taskOwners": [
+        "P6-03",
+        "P6-04"
+      ],
+      "nextOwningTask": "P6-03",
+      "acceptanceProofStillRequired": "Reviewer verdict/fix scope, final guide/sidecar/source alignment and no concealed open findings.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C62",
+      "requirement": "Content/rights/operational gaps remain visible; no needless questionnaire or approval inferred from silence.",
+      "source": "DP \u00a71 Open, \u00a78; SR Plan",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "phase-0.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P0-04",
+        "P1-05",
+        "P6-04",
+        "P6-05"
+      ],
+      "nextOwningTask": "P1-05",
+      "acceptanceProofStillRequired": "Owner decisions explicit; structural fixtures can proceed, final unresolved needs not marked complete.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "C63",
+      "requirement": "Preserve execution context, progress, decisions and every source recommendation across sessions.",
+      "source": "Owner request 17 November 2026",
+      "baselineDisposition": "baseline_constraint_recorded",
+      "baselineEvidence": [
+        "phase-0.md"
+      ],
+      "taskOwners": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05",
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-05",
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04",
+        "P5-05",
+        "P6-01",
+        "P6-02",
+        "P6-03",
+        "P6-04",
+        "P6-05"
+      ],
+      "nextOwningTask": "P1-01",
+      "acceptanceProofStillRequired": "Stable task IDs, dated evidence/status/next action; reconcile source drift and C01\u2013C63/NEW rows before completion.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "NEW-001",
+      "requirement": "Wholesale directly imports full storefront CSS and .storefront-shell, shares UI controls and old care colours.",
+      "source": "P0-02",
+      "baselineDisposition": "open_dependency",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P2-01",
+        "P2-02",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P2-01",
+      "acceptanceProofStillRequired": "Isolate or provide explicit compatibility before customer token switch; preserve wholesale appearance/behaviour and verify route/state transitions.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "NEW-002",
+      "requirement": "Root 404 outside route group imports customer CSS/fonts/Navigation/Footer.",
+      "source": "P0-02",
+      "baselineDisposition": "open_dependency",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P2-02",
+        "P3-04",
+        "P6-01"
+      ],
+      "nextOwningTask": "P2-02",
+      "acceptanceProofStillRequired": "Unknown/direct URLs and cross-surface navigation retain correct error theme/links/semantics before consumer removal.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "NEW-003",
+      "requirement": "Admin campaign preview shares CampaignArtwork and Outfit with historical preview palette.",
+      "source": "P0-02",
+      "baselineDisposition": "open_dependency",
+      "baselineEvidence": [
+        "p0-02-style-ownership.md"
+      ],
+      "taskOwners": [
+        "P2-03",
+        "P3-03",
+        "P6-01"
+      ],
+      "nextOwningTask": "P2-03",
+      "acceptanceProofStillRequired": "Explicit preview policy, retained editor/artwork/validation contract and verified font/component consumers before removal; admin chrome remains independent.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "NEW-004",
+      "requirement": "No explicit catalogue search/filter \u2192 PDP \u2192 browser-back query/scroll restoration assertion found; PDP toolbar back goes to category.",
+      "source": "P0-03/P0-04",
+      "baselineDisposition": "open_verification_or_localisation_gap",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P3-04",
+        "P4-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P3-04",
+      "acceptanceProofStillRequired": "Actual browser-back/query/filter/scroll checks on representative data; preserve continuity without claiming an observed failure from source absence.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "NEW-005",
+      "requirement": "Generic storefront/global error copy is English in source; P0-04 also observed English saved-products/root-404 content inside the Arabic shell.",
+      "source": "P0-03/P0-04",
+      "baselineDisposition": "open_verification_or_localisation_gap",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P3-04",
+        "P5-04",
+        "P5-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P3-04",
+      "acceptanceProofStillRequired": "Exercise customer/error states in EN/AR, preserve actual product identity and retry/status/navigation semantics, and handle UI-copy localisation explicitly.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    },
+    {
+      "id": "NEW-006",
+      "requirement": "Two longer supplemental H1 dev-browser navigation sequences stayed on Arabic home loading shell; direct HTTP/fresh initial contexts resolved. Cause unassigned.",
+      "source": "P0-03/P0-04",
+      "baselineDisposition": "open_runtime_observation_cause_unassigned",
+      "baselineEvidence": [
+        "p0-03-routes-states-tests.md",
+        "p0-04-baseline.md"
+      ],
+      "taskOwners": [
+        "P3-04",
+        "P4-05",
+        "P6-02"
+      ],
+      "nextOwningTask": "P3-04",
+      "acceptanceProofStillRequired": "Bounded reproduction on isolated fixtures and browser/back/scroll checks; distinguish tooling/dev-streaming/application causes before claiming a fix or production defect. See P0-04 evidence.",
+      "implementationStatus": "open",
+      "notes": "Phase 0 evidence/assignment is not implementation, owner visual acceptance or release proof."
+    }
+  ]
+}
