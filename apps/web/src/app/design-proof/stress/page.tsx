@@ -143,7 +143,7 @@ export default async function Stress({
               ].map((label) => (
                 <Link
                   key={label}
-                  aria-current={params.pack === label ? "page" : undefined}
+                  data-store-control="option" aria-current={params.pack === label ? "page" : undefined}
                   href={`/design-proof/stress?sample=${complete ? "complete" : "pdp"}&pack=${encodeURIComponent(label)}`}
                 >
                   {label}

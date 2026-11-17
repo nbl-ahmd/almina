@@ -30,7 +30,10 @@ import { useCartCount } from "../../lib/catalog/use-cart-count";
 import { readSaved, savedKey, setSaved } from "../../lib/catalog/saved";
 import { savedArea, saveArea, areaSchema } from "../../lib/location/browser";
 import { checkAddition } from "../../app/(storefront)/cart/actions";
-import { proofListingReturn, proofSuggestionHref } from "../../lib/design-proof-navigation";
+import {
+  proofListingReturn,
+  proofSuggestionHref,
+} from "../../lib/design-proof-navigation";
 import s from "./proof.module.css";
 type Lang = "en" | "ar";
 const w = (lang: Lang, en: string, ar: string) => (lang === "ar" ? ar : en);
@@ -62,15 +65,27 @@ export function ProofChrome({ lang }: { lang: Lang }) {
           {lang === "en" ? "العربية" : "English"}
         </button>
       </div>
-      <header className={s.header} data-product-mode={detail ? "true" : undefined}>
+      <header
+        className={s.header}
+        data-product-mode={detail ? "true" : undefined}
+      >
         {detail && (
-          <nav className={s.detailToolbar} aria-label={w(lang, "Product navigation", "التنقل في المنتج")}>
-            <ReturnToResults href={proofListingReturn(searchParams.get("returnTo"))} lang={lang} compact />
+          <nav
+            className={s.detailToolbar}
+            aria-label={w(lang, "Product navigation", "التنقل في المنتج")}
+          >
+            <ReturnToResults
+              href={proofListingReturn(searchParams.get("returnTo"))}
+              lang={lang}
+              compact
+            />
             <span>{w(lang, "Product details", "تفاصيل المنتج")}</span>
             <Link href="/design-proof/cart" className={s.detailCart}>
               <ShoppingBagIcon aria-hidden="true" />
               <span>{w(lang, "Cart", "السلة")}</span>
-              <b aria-label={w(lang, `${count} items`, `${count} منتجات`)}>{count}</b>
+              <b aria-label={w(lang, `${count} items`, `${count} منتجات`)}>
+                {count}
+              </b>
             </Link>
           </nav>
         )}
@@ -248,12 +263,23 @@ function Location({ lang }: { lang: Lang }) {
           </label>
           <label>
             {w(lang, "City / area", "المدينة / المنطقة")}
-            <input name="city" maxLength={200} required defaultValue=""
-              data-store-control="field" aria-invalid={invalid || undefined}
+            <input
+              name="city"
+              maxLength={200}
+              required
+              defaultValue=""
+              data-store-control="field"
+              aria-invalid={invalid || undefined}
               aria-describedby={error ? messageId : undefined}
-              onChange={() => { setInvalid(false); setError(""); }} />
+              onChange={() => {
+                setInvalid(false);
+                setError("");
+              }}
+            />
           </label>
-          <p role="alert" id={messageId}>{error}</p>
+          <p role="alert" id={messageId}>
+            {error}
+          </p>
           <button className={s.primary} type="submit">
             {w(lang, "Save area", "حفظ المنطقة")}
           </button>
@@ -750,7 +776,11 @@ export function Purchase({
       data-store-state={count > 0 ? "added" : pending ? "pending" : "idle"}
     >
       {detailed && count === 0 && product.stock > 0 && (
-        <div className={s.stepper} data-store-control="quantity" data-store-state={count > 0 ? "added" : "idle"}>
+        <div
+          className={s.stepper}
+          data-store-control="quantity"
+          data-store-state={count > 0 ? "added" : "idle"}
+        >
           <button
             aria-label={w(lang, "Decrease quantity", "تقليل الكمية")}
             disabled={qty <= 1}
@@ -769,7 +799,11 @@ export function Purchase({
         </div>
       )}
       {count > 0 ? (
-        <div className={s.stepper} data-store-control="quantity" data-store-state={count > 0 ? "added" : "idle"}>
+        <div
+          className={s.stepper}
+          data-store-control="quantity"
+          data-store-state={count > 0 ? "added" : "idle"}
+        >
           <button
             disabled={pending}
             aria-label={w(
@@ -860,12 +894,18 @@ export function ResponsiveFilters({
 }
 
 /** Size the clearance from the actual dock, including wrapped Arabic and large text. */
-export function PurchaseDock({ children }: { children: React.ReactNode }) {
+export function PurchaseDock({
+  children,
+  embedded = false,
+}: {
+  children: React.ReactNode;
+  embedded?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current,
       root = el?.closest("[data-proof-root]") as HTMLElement | null;
-    if (!el || !root) return;
+    if (!el || !root || embedded) return;
     const update = () =>
       root.style.setProperty(
         "--proof-dock-clearance",
@@ -878,9 +918,9 @@ export function PurchaseDock({ children }: { children: React.ReactNode }) {
       observer.disconnect();
       root.style.removeProperty("--proof-dock-clearance");
     };
-  }, []);
+  }, [embedded]);
   return (
-    <div ref={ref} className={s.dock}>
+    <div ref={ref} className={`${s.dock} ${embedded ? s.embeddedDock : ""}`}>
       {children}
     </div>
   );
@@ -917,6 +957,7 @@ export function SampleGallery({ lang }: { lang: Lang }) {
         {[1, 2, 3].map((value) => (
           <button
             key={value}
+            data-store-control="thumbnail"
             aria-pressed={selected === value}
             aria-label={w(
               lang,
@@ -975,7 +1016,15 @@ export function ProofProductLink({
     </Link>
   );
 }
-export function ReturnToResults({ href, lang, compact = false }: { href: string; lang: Lang; compact?: boolean }) {
+export function ReturnToResults({
+  href,
+  lang,
+  compact = false,
+}: {
+  href: string;
+  lang: Lang;
+  compact?: boolean;
+}) {
   return (
     <Link
       href={href}
@@ -991,7 +1040,13 @@ export function ReturnToResults({ href, lang, compact = false }: { href: string;
       }}
     >
       {compact && <ArrowLeftIcon aria-hidden="true" />}
-      <span>{w(lang, compact ? "Back" : "Back to results", compact ? "عودة" : "العودة إلى النتائج")}</span>
+      <span>
+        {w(
+          lang,
+          compact ? "Back" : "Back to results",
+          compact ? "عودة" : "العودة إلى النتائج",
+        )}
+      </span>
     </Link>
   );
 }
@@ -1063,6 +1118,7 @@ export function ProofGallery({
                     `View product photo ${index + 1}`,
                     `عرض صورة المنتج ${index + 1}`,
                   )}
+                  data-store-control="thumbnail"
                   aria-pressed={selected === index}
                   onClick={() => setSelected(index)}
                 >

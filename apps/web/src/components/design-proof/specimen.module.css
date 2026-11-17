@@ -1,0 +1,14 @@
+/* Specimen composition only; values and state meaning stay in the accepted system. */
+.specimen { min-width: 0; }
+.specimen > p { margin-block: var(--store-space-16); max-width: 70ch; }
+.index { display: flex; flex-wrap: wrap; gap: var(--store-space-8) var(--store-space-16); margin-block: var(--store-space-16); }
+.index a { display: inline-flex; align-items: center; min-height: var(--store-target-min); text-decoration: underline; }
+.section { padding-block-start: var(--store-space-24); margin-block: var(--store-space-32); border-top: 1px solid var(--store-border); scroll-margin-top: var(--store-space-16); }
+.section > h2 { margin-bottom: var(--store-space-16); }
+:where(.specimen h3) { font-size: var(--store-type-18); font-weight: var(--store-weight-semibold); margin-block: var(--store-space-12) var(--store-space-8); }
+.section p { margin-block: var(--store-space-12); max-width: 70ch; }
+.section > label { display: block; margin-block: var(--store-space-12); }
+.section > a { display: inline-flex; min-height: var(--store-target-min); align-items: center; text-decoration: underline; }
+.section [data-store-notice] { margin-top: var(--store-space-16); }
+.prices { display: flex; flex-wrap: wrap; gap: var(--store-space-24); font-size: var(--store-type-22); font-weight: var(--store-weight-semibold); }
+.specimen .gallery { max-width: 500px; height: 320px; margin-block: var(--store-space-16); }

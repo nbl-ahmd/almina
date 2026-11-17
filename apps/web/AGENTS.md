@@ -273,8 +273,11 @@ consumers. Opted-in replacement consumers use
 `src/components/storefront-system/boundary.module.css` for native base treatment,
 shared variants and final states; `tokens.module.css` remains their value source.
 Keep colour ownership for these migrated controls out of route layout modules
-and competing utilities. Remaining option/gallery selection styles migrate with
-the P2-03 component specimen.
+and competing utilities. Option/gallery selection and notice meaning styles now
+share this owner.
+The gated `/design-proof/components` specimen reuses working components; see
+`docs/design/implementation-evidence/p2-03-specimen.md` for actual versus
+demonstration states and retained checkout consumers.
 Compiled foreground/control aliases resolve through scoped `--ui-*` bridges;
 verify the actual scope/fallback rather than assuming a raw custom property wins.
 See `docs/design/implementation-evidence/p2-02-cascade.md` before changing shared

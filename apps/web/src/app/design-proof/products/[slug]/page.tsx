@@ -15,7 +15,6 @@ import {
   Card,
   requireProof,
   words,
-  proofHref,
 } from "../../../../components/design-proof/shared";
 import {
   Purchase,
@@ -25,7 +24,7 @@ import {
   ProofGallery,
 } from "../../../../components/design-proof/controls";
 import { proofListingReturn } from "../../../../lib/design-proof-navigation";
-import { sameFamilyIdentity } from "@almina/contracts";
+import { ProductOptions } from "../../../../components/design-proof/options";
 import { CurrencyAmount } from "../../../../components/currency-amount";
 import s from "../../../../components/design-proof/proof.module.css";
 export default async function Detail({
@@ -44,9 +43,6 @@ export default async function Detail({
     getProductVariants(product),
     getProductRecommendations(product),
   ]);
-  const members = variants.filter((member) =>
-    sameFamilyIdentity(product, member),
-  );
   return (
     <>
       <p className={`${s.breadcrumb} ${s.detailBreadcrumb}`}>
@@ -75,24 +71,12 @@ export default async function Detail({
           <p className={s.detailPrice}>
             <CurrencyAmount value={displayPrice(product)} locale={lang} />
           </p>
-          {members.length > 1 && (
-            <div className={s.options}>
-              <h2>{words(lang, "Choose your pack", "اختر العبوة")}</h2>
-              {members.map((item) => (
-                <Link
-                  key={item._id}
-                  href={
-                    proofHref(item) +
-                    "?returnTo=" +
-                    encodeURIComponent(returnTo)
-                  }
-                  aria-current={item._id === product._id ? "page" : undefined}
-                >
-                  {productOptionLabel(item) || item.name}
-                </Link>
-              ))}
-            </div>
-          )}
+          <ProductOptions
+            product={product}
+            variants={variants}
+            returnTo={returnTo}
+            lang={lang}
+          />
           <PurchaseDock>
             <span>
               <small>{words(lang, "Price", "السعر")}</small>

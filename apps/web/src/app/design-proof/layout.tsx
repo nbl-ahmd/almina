@@ -55,6 +55,9 @@ export default async function Layout({
           <Link href="/design-proof/products">
             {words(lang, "All products", "جميع المنتجات")}
           </Link>
+          <Link href="/design-proof/components">
+            {words(lang, "Component specimen", "نماذج المكونات")}
+          </Link>
           <Link href="/design-proof/account">
             {words(lang, "Account preview", "معاينة الحساب")}
           </Link>

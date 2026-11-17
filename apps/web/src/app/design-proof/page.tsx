@@ -1,5 +1,3 @@
-import Image from "next/image";
-import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import Link from "../../components/app-link";
 import { getProducts, getCategories } from "../../lib/server/catalog";
 import { getLocale } from "../../lib/server/i18n";
@@ -8,7 +6,10 @@ import {
   requireProof,
   words,
 } from "../../components/design-proof/shared";
-import { shopText } from "../../lib/i18n-storefront";
+import {
+  Campaign,
+  CategoryLane,
+} from "../../components/design-proof/merchandising";
 import s from "../../components/design-proof/proof.module.css";
 export default async function Home({
   searchParams,
@@ -71,70 +72,9 @@ export default async function Home({
         {missingCampaign ? (
           <h1>{words(lang, "Everyday essentials", "الأساسيات اليومية")}</h1>
         ) : (
-          <section className={s.campaign} aria-labelledby="campaign-heading">
-            <div>
-              <h1 id="campaign-heading">
-                {words(
-                  lang,
-                  "Everyday care.\nOne easy stop.",
-                  "عنايتك اليومية.\nفي مكان واحد.",
-                )}
-              </h1>
-              <p>
-                {words(
-                  lang,
-                  "Find your skincare and daily essentials.",
-                  "اكتشف منتجات العناية والبضائع اليومية.",
-                )}
-              </p>
-              <Link className={s.primary} href="/design-proof/products">
-                {words(lang, "Shop essentials", "تسوق الأساسيات")}
-                <ArrowUpRightIcon aria-hidden="true" />
-              </Link>
-            </div>
-            <Image
-              src="/design/campaigns/almina-care-courier.png"
-              alt=""
-              width={500}
-              height={500}
-              priority
-              className={s.courier}
-            />
-          </section>
+          <Campaign lang={lang} />
         )}
-        <section className={s.categories} aria-labelledby="categories-heading">
-          <div className={s.sectionHead}>
-            <h2 id="categories-heading">
-              {words(lang, "Shop by category", "تسوق حسب الفئة")}
-            </h2>
-            <Link href="/design-proof/products">
-              {words(lang, "View all", "عرض الكل")}
-            </Link>
-          </div>
-          <div className={s.categoryList}>
-            {categories.map((category, index) => (
-              <Link
-                key={category._id}
-                href={`/design-proof/products?category=${category._id}`}
-                className={s.category}
-              >
-                <span className={s.categoryArt}>
-                  <Image
-                    src="/design/categories/pharmacy-categories.png"
-                    alt=""
-                    width={1536}
-                    height={1024}
-                    style={{
-                      left: `-${(index % 3) * 100}%`,
-                      top: `-${Math.floor(index / 3) * 100}%`,
-                    }}
-                  />
-                </span>
-                <span>{shopText(lang, category.name)}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
+        <CategoryLane categories={categories} lang={lang} />
       </div>
       <section className={s.shelf}>
         <div className={s.sectionHead}>

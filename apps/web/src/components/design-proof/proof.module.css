@@ -312,12 +312,14 @@
   z-index: 1;
   width: 60%;
 }
-.campaign h1 {
+.campaign .campaignTitle {
   font-size: var(--store-type-32);
   line-height: var(--store-leading-display);
   white-space: pre-line;
   margin: var(--store-space-8) 0 var(--store-space-10);
   max-width: 430px;
+  font-weight: var(--store-weight-bold);
+  letter-spacing: var(--store-tracking-title);
 }
 .campaign p {
   font-size: var(--store-type-14);
@@ -374,8 +376,12 @@
 .categories .sectionHead {
   margin-bottom: var(--store-space-8);
 }
-.categories h2 {
+.categories :is(h2, h3) {
   font-size: var(--store-type-18);
+  font-weight: var(--store-weight-bold);
+  line-height: var(--store-leading-heading);
+  letter-spacing: var(--store-tracking-heading);
+  margin: 0;
 }
 .categoryList {
   display: grid;
@@ -502,7 +508,7 @@
   font-size: var(--store-type-12);
   color: var(--store-text-muted);
 }
-.productName {
+.cardBody .productName {
   display: block;
   font-size: var(--store-type-15);
   line-height: var(--store-leading-product);
@@ -720,10 +726,14 @@
   gap: var(--store-space-8);
   min-width: 0;
 }
-.options h2 {
+.options .optionTitle {
   flex-basis: 100%;
   font-size: var(--store-type-15);
   margin-bottom: var(--store-space-8);
+  font-weight: var(--store-weight-bold);
+  line-height: var(--store-leading-heading);
+  letter-spacing: var(--store-tracking-heading);
+  margin-top: 0;
 }
 .options a {
   max-width: 100%;
@@ -734,10 +744,7 @@
   border: 1px solid var(--store-border-control);
   border-radius: var(--store-radius-8);
 }
-.options a[aria-current] {
-  border-color: var(--store-text);
-  background: var(--store-selected-surface);
-}
+
 .facts {
   margin-top: var(--store-space-24);
   font-size: var(--store-type-13);
@@ -876,7 +883,7 @@
   .leadSplit {
     grid-template-columns: 1.4fr 1fr;
   }
-  .campaign h1 {
+  .campaign .campaignTitle {
     font-size: var(--store-type-30);
   }
 }
@@ -1027,7 +1034,7 @@
     padding: var(--store-space-12) var(--store-space-16);
     border-radius: var(--store-radius-14);
   }
-  .campaign h1 {
+  .campaign .campaignTitle {
     font-size: var(--store-type-23);
     margin: 0 0 var(--store-space-4);
   }
@@ -1053,7 +1060,7 @@
   .categories .sectionHead {
     margin-bottom: var(--store-space-4);
   }
-  .categories h2 {
+  .categories :is(h2, h3) {
     font-size: 17px;
   }
   .sectionHead > a {
@@ -1093,7 +1100,7 @@
   .sectionHead {
     margin-bottom: var(--store-space-8);
   }
-  .sectionHead h2 {
+  .sectionHead :is(h2, h3) {
     font-size: var(--store-type-19);
   }
   .grid,
@@ -1117,7 +1124,7 @@
   .pack {
     padding: var(--store-space-8);
   }
-  .productName {
+  .cardBody .productName {
     font-size: var(--store-type-14);
     line-height: var(--store-leading-product);
     min-height: var(--store-target-min);
@@ -1200,7 +1207,7 @@
   .footer {
     padding: var(--store-space-24) var(--store-space-16) 100px;
   }
-  .root:has(.dock) .footer {
+  .root:has(.dock:not(.embeddedDock)) .footer {
     padding-bottom: calc(var(--store-space-24) + var(--proof-dock-clearance, 160px));
   }
   .root:has(.pdp) .main {
@@ -1415,7 +1422,7 @@
     position: static;
     padding: var(--store-space-12) 0;
   }
-  .root:has(.dock) .footer {
+  .root:has(.dock:not(.embeddedDock)) .footer {
     padding-bottom: var(--store-space-32);
   }
 }
@@ -1439,10 +1446,7 @@
   border: 1px solid var(--store-border);
   min-width: var(--store-target-min);
 }
-.root .sampleThumbs button[aria-pressed="true"] {
-  background: var(--store-text);
-  color: var(--store-surface);
-}
+
 
 .filters summary::-webkit-details-marker {
   display: none;
@@ -1592,3 +1596,6 @@
     );
   }
 }
+
+/* An embedded specimen uses the real dock without claiming screen-fixed behavior. */
+.root .embeddedDock { position: static; inset: auto; margin-block: var(--store-space-16); padding: var(--store-space-12); }

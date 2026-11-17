@@ -1,3 +1,7 @@
+## 2026-11-17 — P2-03 component/state specimen verified
+
+Added the gated reusable component specimen and mapped retained checkout consumers. Removed 21 proven overridden checkout declarations with exact selected computed-style parity across eight bilingual details/review states; real checkout/server behavior remains unchanged. [Report/captures/ownership map](../../apps/web/docs/design/implementation-evidence/p2-03-specimen.md). 26 proof tests, 14 compiled regressions, 16 units/type/lint/build and live verification pass. Existing public/admin/shared styling remains isolated; no orders, production data/provider access or deployment. Next P2-04; final guide authority remains P2-05. Owned preview restart/cache preservation and remaining verification limits documented.
+
 ## 2026-11-17 — P2-02 cascade/control scope verified
 
 Fixed compiled foreground alias and legacy added/saved feedback ownership; established opt-in accepted control/variant/state boundary and actual invalid-field semantics. EN/AR computed portal/focus/client-navigation contracts pass. [Report and retained measurements](../../apps/web/docs/design/implementation-evidence/p2-02-cascade.md). Twenty-two proof tests, ten compiled checkout/admin/wholesale/root-404/feedback/responsive checks, six units/type/lint/build and live smoke pass. Shared palettes/domains remain independent; no pricing/inventory/auth implementation change, order submission, production access or deployment. Next P2-03 full component/state specimen and retained checkout visual map.

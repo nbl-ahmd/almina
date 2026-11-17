@@ -84,6 +84,10 @@
 .boundary [data-slot='button'][data-variant='link']:where(:hover:not(:disabled):not([aria-busy='true'])) {
   color: var(--store-text);
 }
+.boundary [data-slot='button']:is([data-variant='default'], [data-variant='accent']):where(:active:not(:disabled):not([aria-busy='true'])),
+.boundary [data-store-control='purchase'][aria-busy='false']:where(:active:not(:disabled)) {
+  background: var(--store-action-hover); border-color: var(--store-action-hover);
+}
 /* Meaning states follow variants at equal specificity; hover adds zero specificity. */
 .boundary [data-slot='button'][data-added='true'],
 .boundary [data-store-control='quantity'][data-store-state='added'] {
@@ -115,3 +119,14 @@
   opacity: 1;
   cursor: progress;
 }
+
+/* Options and real/synthetic gallery controls share selected semantics. */
+.boundary [data-store-control='option'][aria-current='page'],
+.boundary [data-store-control='state-choice'][aria-pressed='true'] {
+  background: var(--store-selected-surface); border-color: var(--store-text);
+}
+.boundary [data-store-control='thumbnail'][aria-pressed='true'] {
+  background: var(--store-text); color: var(--store-surface);
+}
+.boundary [data-store-notice='error'] { border-color: var(--store-error); }
+.boundary [data-store-notice='success'] { border-color: var(--store-positive); }

@@ -8,7 +8,13 @@ import { PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import s from "./proof.module.css";
 type Lang = "en" | "ar";
 const w = (lang: Lang, en: string, ar: string) => (lang === "ar" ? ar : en);
-export function CartContinuation({ lang }: { lang: Lang }) {
+export function CartContinuation({
+  lang,
+  headingAs: Heading = "h1",
+}: {
+  lang: Lang;
+  headingAs?: "h1" | "h3";
+}) {
   const [state, setState] = useState<Awaited<
       ReturnType<typeof loadCart>
     > | null>(null),
@@ -89,7 +95,7 @@ export function CartContinuation({ lang }: { lang: Lang }) {
   }
   return (
     <section className={s.cartPanel}>
-      <h1>{w(lang, "Your cart", "سلتك")}</h1>
+      <Heading>{w(lang, "Your cart", "سلتك")}</Heading>
       {loading && (
         <p role="status">
           {w(lang, "Checking your cart…", "جارٍ التحقق من السلة…")}

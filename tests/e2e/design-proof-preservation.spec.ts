@@ -9,7 +9,7 @@ test('P1-04 retains enabled checkout quote/review without placing an order', asy
   expect(await state(request)).toEqual(before);
   expect(before.orders).toHaveLength(0);
   expect(before.receipts).toBe(0);
-  for (const path of ['/design-proof', '/design-proof/cart', '/design-proof/checkout', '/design-proof/account', '/design-proof/style-contract']) {
+  for (const path of ['/design-proof', '/design-proof/cart', '/design-proof/checkout', '/design-proof/account', '/design-proof/style-contract', '/design-proof/components']) {
     const response = await request.get(checkoutOrigin + path);
     expect(response.status()).toBe(404);
     expect(await response.text()).not.toContain('data-proof-root');
