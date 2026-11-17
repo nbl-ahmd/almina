@@ -744,3 +744,15 @@ geocoder's cache, global quota and rate limit. See
 policy, rollback and verification. Production changes require release review.
 
 PR #94 compatibility follow-up: integrated the merged PR #93 polygon workflow into the notification candidate. Shared API exports and authorization lists retain both place search and notification routes. Browser receiving coverage follows the current polygon assignment workflow, alongside the notification inbox and sound regression checks.
+
+### PR #95 CI dependency security — 17 November 2026
+
+Repaired the new picomatch audit failure with a hash-verified, expiring local
+repeated-extglob mitigation and focused regression tests; raw audit reports and
+unrelated high/critical failures remain intact. Updated Next.js and matching
+ESLint packages to stable 16.4.6 after a local framework security build stop.
+Local lint/types, 279 unit tests, release tests, security gate, production build,
+SEO smoke and synthetic storefront browser/MCP checks pass. Hosted CI verification
+on the repair commit remains required. No production data or deployment changed.
+See [PR #95 notes](PR95_SECURITY_2026-11-17.md); review the temporary mitigation
+before its 17 December 2026 UTC expiry.

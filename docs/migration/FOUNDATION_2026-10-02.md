@@ -152,3 +152,15 @@ References: [16.4.2 release](https://github.com/vercel/next.js/releases/tag/v16.
 ### 2026-10-25 — Patched DevTools schema dependency
 
 Next.js stays at 16.4.2 and Next DevTools at 0.4.0. The latter's Zod dependency is scoped to 4.6.7. `scripts/tooling/patch-next-devtools.mjs` runs on installation to replace its incompatible Zod-3-internals converter with the public Zod 4 input-mode JSON Schema converter. Original/patched source hashes pin the reviewed bridge; unknown upstream source fails installation. A stdio/SSE protocol regression and real Next runtime route/compilation checks verify compatibility. The root/backend security audits pass without gate suppression. See `RELEASE_REVIEW_2026-10-25.md`.
+
+### PR #95 verification follow-up — 17 November 2026
+
+Next.js, its ESLint config and plugin are pinned together to **16.4.6**, the
+registry's latest stable 16.x at execution time. Node 24.21.0 satisfies >=20.9;
+existing React/React DOM 19.3.0 satisfy the published ^19 peer range. Reviewed
+[release notes](https://github.com/vercel/next.js/releases/tag/v16.4.6), including
+route-handler compression and Turbopack GC fixes, and the installed 16.4.6
+`next/dist/docs/01-app/02-guides/{upgrading/version-16,mcp}.md`. No application API
+migration was needed. The previous 16.4.2 build emitted a security stop locally.
+See [PR #95 security notes](PR95_SECURITY_2026-11-17.md) for the separate pinned
+picomatch mitigation, audit policy, verification and rollback.
