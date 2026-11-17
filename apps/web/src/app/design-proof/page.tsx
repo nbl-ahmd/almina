@@ -13,7 +13,7 @@ import s from "../../components/design-proof/proof.module.css";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ lead?: string }>;
+  searchParams: Promise<{ lead?: string; columns?: string; campaign?: string }>;
 }) {
   requireProof();
   const [params, lang, catalog, categories] = await Promise.all([
@@ -22,9 +22,11 @@ export default async function Home({
     getProducts(),
     getCategories(),
   ]);
-  const split = params.lead === "split";
+  const missingCampaign = params.campaign === "none";
+  const split = params.lead === "split" && !missingCampaign;
+  const columns = params.columns === "5" ? 5 : 4;
   return (
-    <>
+    <div data-proof-columns={columns}>
       <nav
         className={s.comparison}
         aria-label={words(
@@ -35,52 +37,71 @@ export default async function Home({
       >
         <span>{words(lang, "Desktop lead", "بداية سطح المكتب")}</span>
         <Link
-          href="/design-proof?lead=full"
+          href={`/design-proof?lead=full&columns=${columns}`}
           aria-current={!split ? "page" : undefined}
         >
           {words(lang, "A · Full campaign", "A · بانر كامل")}
         </Link>
         <Link
-          href="/design-proof?lead=split"
+          href={`/design-proof?lead=split&columns=${columns}`}
           aria-current={split ? "page" : undefined}
         >
           {words(lang, "B · Split discovery", "B · اكتشاف جانبي")}
+        </Link>
+        <Link
+          href={`/design-proof?lead=${split ? "split" : "full"}&columns=4`}
+          aria-current={columns === 4 ? "page" : undefined}
+        >
+          {words(lang, "4 columns", "٤ أعمدة")}
+        </Link>
+        <Link
+          href={`/design-proof?lead=${split ? "split" : "full"}&columns=5`}
+          aria-current={columns === 5 ? "page" : undefined}
+        >
+          {words(lang, "5 columns", "٥ أعمدة")}
+        </Link>
+        <Link href="/design-proof/stress">
+          {words(lang, "Stress samples", "عينات الاختبار")}
         </Link>
         <small>
           {words(lang, "Same mobile sequence", "نفس الترتيب على الهاتف")}
         </small>
       </nav>
       <div className={split ? s.leadSplit : s.leadFull}>
-        <section className={s.campaign} aria-labelledby="campaign-heading">
-          <div>
-            <h1 id="campaign-heading">
-              {words(
-                lang,
-                "Everyday care.\nOne easy stop.",
-                "عنايتك اليومية.\nفي مكان واحد.",
-              )}
-            </h1>
-            <p>
-              {words(
-                lang,
-                "Find your skincare and daily essentials.",
-                "اكتشف منتجات العناية والبضائع اليومية.",
-              )}
-            </p>
-            <Link className={s.primary} href="/design-proof/products">
-              {words(lang, "Shop essentials", "تسوق الأساسيات")}
-              <ArrowUpRightIcon aria-hidden="true" />
-            </Link>
-          </div>
-          <Image
-            src="/design/campaigns/almina-care-courier.png"
-            alt=""
-            width={500}
-            height={500}
-            priority
-            className={s.courier}
-          />
-        </section>
+        {missingCampaign ? (
+          <h1>{words(lang, "Everyday essentials", "الأساسيات اليومية")}</h1>
+        ) : (
+          <section className={s.campaign} aria-labelledby="campaign-heading">
+            <div>
+              <h1 id="campaign-heading">
+                {words(
+                  lang,
+                  "Everyday care.\nOne easy stop.",
+                  "عنايتك اليومية.\nفي مكان واحد.",
+                )}
+              </h1>
+              <p>
+                {words(
+                  lang,
+                  "Find your skincare and daily essentials.",
+                  "اكتشف منتجات العناية والبضائع اليومية.",
+                )}
+              </p>
+              <Link className={s.primary} href="/design-proof/products">
+                {words(lang, "Shop essentials", "تسوق الأساسيات")}
+                <ArrowUpRightIcon aria-hidden="true" />
+              </Link>
+            </div>
+            <Image
+              src="/design/campaigns/almina-care-courier.png"
+              alt=""
+              width={500}
+              height={500}
+              priority
+              className={s.courier}
+            />
+          </section>
+        )}
         <section className={s.categories} aria-labelledby="categories-heading">
           <div className={s.sectionHead}>
             <h2 id="categories-heading">
@@ -136,6 +157,6 @@ export default async function Home({
           ))}
         </div>
       </section>
-    </>
+    </div>
   );
 }

@@ -17,7 +17,11 @@ import {
   words,
   proofHref,
 } from "../../../../components/design-proof/shared";
-import { Purchase, Save } from "../../../../components/design-proof/controls";
+import {
+  Purchase,
+  Save,
+  PurchaseDock,
+} from "../../../../components/design-proof/controls";
 import { CurrencyAmount } from "../../../../components/currency-amount";
 import s from "../../../../components/design-proof/proof.module.css";
 export default async function Detail({
@@ -73,7 +77,7 @@ export default async function Detail({
               ))}
             </div>
           )}
-          <div className={s.dock}>
+          <PurchaseDock>
             <span>
               <small>{words(lang, "Price", "السعر")}</small>
               <strong>
@@ -81,7 +85,7 @@ export default async function Detail({
               </strong>
             </span>
             <Purchase product={product} lang={lang} detailed />
-          </div>
+          </PurchaseDock>
           <div className={s.facts}>
             <h2>{words(lang, "Product information", "معلومات المنتج")}</h2>
             <dl>

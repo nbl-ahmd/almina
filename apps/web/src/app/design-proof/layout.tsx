@@ -26,6 +26,7 @@ export default async function Layout({
       className={`${s.root} ${lang === "ar" ? storefrontArabic.className : storefrontLatin.className}`}
       dir={lang === "ar" ? "rtl" : "ltr"}
       lang={lang}
+      data-proof-root
     >
       <a className={s.skip} href="#proof-content">
         {words(lang, "Skip to products", "انتقل إلى المنتجات")}

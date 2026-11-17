@@ -1,0 +1,68 @@
+[
+  {
+    "role": "ink/canvas",
+    "fg": "#202a30",
+    "bg": "#fafbfb",
+    "ratio": 14.11
+  },
+  {
+    "role": "muted/canvas",
+    "fg": "#58636b",
+    "bg": "#fafbfb",
+    "ratio": 5.94
+  },
+  {
+    "role": "ink/coral",
+    "fg": "#202a30",
+    "bg": "#ff5a5f",
+    "ratio": 4.79
+  },
+  {
+    "role": "ink/hover",
+    "fg": "#202a30",
+    "bg": "#fb565c",
+    "ratio": 4.59
+  },
+  {
+    "role": "positive/stock",
+    "fg": "#26604d",
+    "bg": "#eaf3ef",
+    "ratio": 6.49
+  },
+  {
+    "role": "unavailable",
+    "fg": "#685941",
+    "bg": "#f2eee6",
+    "ratio": 5.87
+  },
+  {
+    "role": "saved",
+    "fg": "#a72d42",
+    "bg": "#fff2f3",
+    "ratio": 6.21
+  },
+  {
+    "role": "focus/canvas",
+    "fg": "#125d87",
+    "bg": "#fafbfb",
+    "ratio": 6.89
+  },
+  {
+    "role": "selected",
+    "fg": "#ffffff",
+    "bg": "#202a30",
+    "ratio": 14.63
+  },
+  {
+    "role": "active nav",
+    "fg": "#a52b38",
+    "bg": "#ffffff",
+    "ratio": 6.99
+  },
+  {
+    "role": "control boundary/white",
+    "fg": "#7c898f",
+    "bg": "#ffffff",
+    "ratio": 3.6
+  }
+]

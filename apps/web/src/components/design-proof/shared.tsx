@@ -1,4 +1,5 @@
 import "server-only";
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { directionProofAllowed } from "../../lib/design-proof-gate";
 import {
@@ -41,34 +42,102 @@ export function Photo({
     />
   );
 }
-export function Card({ product, lang }: { product: Product; lang: Lang }) {
+/** One presentation frame for real catalogue cards and explicitly noncommercial layout samples. */
+export function CardFrame({
+  name,
+  brand,
+  pack,
+  price,
+  stock,
+  media,
+  save,
+  action,
+  href,
+  lang,
+}: {
+  name: string;
+  brand?: string;
+  pack?: string;
+  price: number | null;
+  stock: number;
+  media: ReactNode;
+  save: ReactNode;
+  action: ReactNode;
+  href?: string;
+  lang: Lang;
+}) {
+  const visible =
+    brand &&
+    name.toLocaleLowerCase().startsWith(brand.toLocaleLowerCase() + " ")
+      ? name.slice(brand.length).trimStart()
+      : name;
   return (
     <article className={s.card}>
       <div className={s.cardMedia}>
-        <span className={product.stock > 0 ? s.stock : s.unavailable}>
+        <span className={stock > 0 ? s.stock : s.unavailable}>
           {words(
             lang,
-            product.stock > 0 ? "In stock" : "Unavailable",
-            product.stock > 0 ? "متوفر" : "غير متوفر",
+            stock > 0 ? "In stock" : "Unavailable",
+            stock > 0 ? "متوفر" : "غير متوفر",
           )}
         </span>
-        <Save id={product._id} lang={lang} />
-        <Link href={proofHref(product)} className={s.photoLink}>
-          <Photo product={product} />
-        </Link>
+        {save}
+        {href ? (
+          <Link href={href} className={s.photoLink} aria-label={name}>
+            {media}
+          </Link>
+        ) : (
+          <div className={s.photoLink}>{media}</div>
+        )}
       </div>
       <div className={s.cardBody}>
-        <p className={s.meta}>{product.brand}</p>
-        <Link href={proofHref(product)} className={s.productName}>
-          {product.name}
-        </Link>
+        {brand && (
+          <p className={s.meta}>
+            <bdi>{brand}</bdi>
+          </p>
+        )}
+        {href ? (
+          <Link href={href} className={s.productName} aria-label={name}>
+            <bdi>{visible}</bdi>
+          </Link>
+        ) : (
+          <h3 className={s.productName}>
+            <bdi>{visible}</bdi>
+          </h3>
+        )}
+        {pack && (
+          <p className={s.meta}>
+            <bdi>{pack}</bdi>
+          </p>
+        )}
         <div className={s.cardBuy}>
           <strong>
-            <CurrencyAmount value={displayPrice(product)} locale={lang} />
+            {price === null ? (
+              <span className={s.priceUnknown}>
+                {words(lang, "Price unavailable", "السعر غير متاح")}
+              </span>
+            ) : (
+              <CurrencyAmount value={price} locale={lang} />
+            )}
           </strong>
-          <Purchase product={product} lang={lang} />
+          {action}
         </div>
       </div>
     </article>
+  );
+}
+export function Card({ product, lang }: { product: Product; lang: Lang }) {
+  return (
+    <CardFrame
+      name={product.name}
+      {...(product.brand ? { brand: product.brand } : {})}
+      price={displayPrice(product)}
+      stock={product.stock}
+      media={<Photo product={product} />}
+      save={<Save id={product._id} lang={lang} />}
+      action={<Purchase product={product} lang={lang} />}
+      href={proofHref(product)}
+      lang={lang}
+    />
   );
 }

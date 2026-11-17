@@ -1,6 +1,6 @@
 # Phase 1 evidence — comparable coded direction proof
 
-Started 17 November 2026. **Phase 1 in progress; P1-01 and P1-02 are verified.** Mutable status: [progress](../implementation-progress.md). Scope: [phase plan](../implementation-phases.md). Inputs: [handoff](../phase-1-input-packet.md), [Phase 0 exit](phase-0-summary.md) and source review/reference documents.
+Started 17 November 2026. **Phase 1 in progress; P1-01–P1-03 are verified.** Mutable status: [progress](../implementation-progress.md). Scope: [phase plan](../implementation-phases.md). Inputs: [handoff](../phase-1-input-packet.md), [Phase 0 exit](phase-0-summary.md) and source review/reference documents.
 
 ## P1-01 — Prototype contract
 
@@ -25,6 +25,13 @@ Started 17 November 2026. **Phase 1 in progress; P1-01 and P1-02 are verified.**
 - Local 4870/4871 proof left running for review; original 4860/4861 untouched; temporary 4880 production-gate process stopped. No provider/production data operation or deployment. No final DESIGN.md, token/instruction replacement or shared theme deletion.
 - Coverage contributes coded evidence to PC01–PC08 and associated C01–C02/C05–C06/C19–C35/C41–C50/C52/C56/C57/C62/C63; future verification/selection obligations remain open. NEW-001–006 are not silently resolved.
 
+## P1-03 — Density, typography, colour, shape and hard cases
+
+- [Detailed results/limits](p1-03-density.md), [90-case index](p1-03-density/case-index.json), retained comparisons, contrast and runtime checks capture the isolated refinement from `44b12e3`.
+- 390px first purchase now ends Y765.5 above navY780; same-data 4/5 desktop grids remain switchable. Long/mixed-script/optional metadata/large-zero-unknown prices, missing/populated/sparse/unavailable states exercised with explicit synthetic limits and no invented product images/claims.
+- Web type/lint/build, 30 selected units, five incumbent responsive E2E tests, 90 geometry cases and 22 live-resize/clearance checks pass. Scoped axe clean. Reviewer scored its one disclosure correction resolved; **ship only at that scored scope**. Native zoom/device and complete continuity remain unverified.
+- P1-03 verified as experiment/proof; supporting palette/fonts/measurements remain candidates. No final guide/token/authority replacement or production operation/deployment. Original/shared consumers preserved; local proof retained for review.
+
 ## Remaining Phase 1 work
 
-P1-03 through P1-05 are not started. Next: P1-03 density/type/colour/shape and hard cases. Read the coded-proof report's measurements/limits and the same-data captures; improve complete first-view purchase access, compare four/five desktop columns and stress bilingual names, prices/options/stock/media, readability/contrast and 44px targets. Do not select final values from the proof's existence. Progress remains the single mutable status ledger.
+P1-04 and P1-05 are not started. Next P1-04 screen modes/cart/account/empty/error contracts, keyboard/safe-area/RTL and true return/query/scroll continuity; actual family/media/search suggestion parity proof. Read the latest density report and keep its native/device limitations and review obligations. Owner selection is P1-05, not inferred from a continue instruction. Progress remains the single mutable ledger.

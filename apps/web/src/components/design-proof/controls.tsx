@@ -35,7 +35,7 @@ const w = (lang: Lang, en: string, ar: string) => (lang === "ar" ? ar : en);
 export function ProofChrome({ lang }: { lang: Lang }) {
   const path = usePathname(),
     count = useCartCount();
-  const detail = /\/products\/.+/.test(path),
+  const detail = /\/products\/.+/.test(path) || path === "/design-proof/stress",
     cart = path === "/design-proof/cart";
   return (
     <>
@@ -754,8 +754,85 @@ export function ResponsiveFilters({
   }, []);
   return (
     <details ref={ref}>
-      <summary>{label}</summary>
+      <summary>
+        <span>{label}</span>
+        <ChevronDownIcon aria-hidden="true" />
+      </summary>
       {children}
     </details>
+  );
+}
+
+/** Size the clearance from the actual dock, including wrapped Arabic and large text. */
+export function PurchaseDock({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current,
+      root = el?.closest("[data-proof-root]") as HTMLElement | null;
+    if (!el || !root) return;
+    const update = () =>
+      root.style.setProperty(
+        "--proof-dock-clearance",
+        `${el.getBoundingClientRect().height}px`,
+      );
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    update();
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--proof-dock-clearance");
+    };
+  }, []);
+  return (
+    <div ref={ref} className={s.dock}>
+      {children}
+    </div>
+  );
+}
+
+export function SampleGallery({ lang }: { lang: Lang }) {
+  const [selected, setSelected] = useState(1);
+  return (
+    <div className={s.sampleGallery}>
+      <div
+        className={s.sampleMedia}
+        role="img"
+        aria-label={w(
+          lang,
+          `Synthetic image region ${selected}, no product photograph`,
+          `مساحة صورة اصطناعية ${selected} دون صورة منتج`,
+        )}
+      >
+        {w(
+          lang,
+          `Sample image region ${selected} — no product photo`,
+          `مساحة صورة تجريبية ${selected} — دون صورة منتج`,
+        )}
+      </div>
+      <div
+        className={s.sampleThumbs}
+        role="group"
+        aria-label={w(
+          lang,
+          "Synthetic image selection",
+          "اختيار صورة اصطناعية",
+        )}
+      >
+        {[1, 2, 3].map((value) => (
+          <button
+            key={value}
+            aria-pressed={selected === value}
+            aria-label={w(
+              lang,
+              `Select sample image ${value}`,
+              `اختر الصورة التجريبية ${value}`,
+            )}
+            onClick={() => setSelected(value)}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
