@@ -96,7 +96,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
         className="floating-contact fixed right-4 bottom-[calc(84px+env(safe-area-inset-bottom))] z-30 md:right-6 md:bottom-6"
       >
         <a
-          href={`https://wa.me/${businessContact.telephone.replace(/\\D/g, '')}`}
+          href={`https://wa.me/${businessContact.telephone.replace(/\D/g, '')}`}
           aria-label={locale === 'ar' ? 'تواصل مع صيدلية المينا عبر واتساب' : 'Chat with Al Mina Pharmacy on WhatsApp'}
           target="_blank"
           rel="noopener noreferrer"
