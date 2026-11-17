@@ -756,3 +756,12 @@ SEO smoke and synthetic storefront browser/MCP checks pass. Hosted CI verificati
 on the repair commit remains required. No production data or deployment changed.
 See [PR #95 notes](PR95_SECURITY_2026-11-17.md); review the temporary mitigation
 before its 17 December 2026 UTC expiry.
+
+### WhatsApp inquiry message — 17 November 2026
+
+The floating WhatsApp link now URL-encodes the owner-approved prefilled message:
+“Hi Al Mina Pharmacy! I'd like to make an inquiry about your products.”
+Verified the decoded destination text on desktop and mobile after reload, no
+horizontal overflow, no browser errors, and no Turbopack compilation issues.
+Component lint passes. Follow-up PR review/merge remains pending; no deployment
+or WhatsApp message was sent by verification.
