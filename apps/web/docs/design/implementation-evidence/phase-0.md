@@ -1,6 +1,6 @@
 # Phase 0 evidence — baseline and ownership
 
-Started 17 November 2026. **Phase 0 remains in progress; P0-01, P0-02 and P0-03 are verified in their separate checkpoints below.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
+Started 17 November 2026. **Phase 0 remains in progress; P0-01 through P0-04 are verified in their separate checkpoints below; P0-05 synthesis remains.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
 
 ## P0-01 — Baseline reconciliation
 
@@ -108,6 +108,16 @@ Coverage contributions: C03–C06, C19–C23, C28–C40, C50–C59, C62–C63 an
 
 Outcome: **P0-03 verified as inventory work**. No browser, build, functional test, database/provider operation or server lifecycle change. Documentation-only rollback. Next P0-04: establish correct fixture/commit/locale/viewport/state capture manifest, take fresh baseline screenshots and inventory content/media limitations. P0-05 synthesis follows.
 
+## P0-04 — Fresh captures and content/media baseline
+
+Starting HEAD 85bebc7, clean tree; no redesign. [Baseline report](p0-04-baseline.md) and [capture manifest](p0-04-capture-manifest.json) record 94 representative cases/188 PNGs, nine retained images, EN/AR phone/tablet/desktop, source/fixture identities, hashes, first-card/purchase-row positions, reading widths and content/media gaps. H1 reference photographs are distinct from H3/H4 synthetic account/business/staff/checkout fixtures.
+
+Fresh isolated build passed. Final recorded cases show no document overflow or collected page errors; this is not a full interaction/a11y/native-device/security/performance pass. Synthetic checkout reached quotes only: zero orders/receipts/payments and unchanged stock. Staff campaign draft remained unsaved. NEW-005 expands with English saved/root-404 copy in Arabic shell; NEW-006 carries repeated long-session dev-browser loading-shell observation with cause unassigned. Capture mistakes/retries and unknowns are explicit in report, not silently counted as passes.
+
+All task browser sessions and owned disposable harness stopped cleanly; original 4860/4861 preview retained. Build-generated next-env restored. Source-plan hashes retained; app/package/script code unchanged. Raw `.verification-results/storefront-replacement/phase-0/p0-04-*` evidence intentionally ignored; representative images and concise manifest/report tracked.
+
+Outcome: **P0-04 verified as baseline work with explicit limitations**. Multi-phase requirements remain open. Documentation/artifact rollback only. Next P0-05: publish a consolidated baseline and Phase 1 input packet, reconcile all requirements/new findings and unresolved content/authority/runtime observations. No screen implementation in synthesis.
+
 ## Remaining Phase 0 work
 
-P0-04 fresh captures/content inventory and P0-05 baseline synthesis are not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.
+P0-05 baseline synthesis is not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.

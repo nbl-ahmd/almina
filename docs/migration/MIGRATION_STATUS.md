@@ -1,3 +1,7 @@
+## 2026-11-17 — P0-04 fresh storefront baseline captured
+
+Recorded 94 representative EN/AR phone/tablet/desktop cases with full/viewport images, durable manifest, nine retained captures, hierarchy/reading-width measurements and factual media/content limits. Isolated build passed; synthetic checkout reached quotes only, no orders/payments. Documented localisation gaps and unresolved dev loading-shell observation, without runtime fixes or release claims. Temporary harness/browser contexts closed, existing preview retained. P0-04 verified; next P0-05 synthesis. See [baseline report](../../apps/web/docs/design/implementation-evidence/p0-04-baseline.md) and [progress](../../apps/web/docs/design/implementation-progress.md).
+
 ## 2026-11-17 — P0-03 storefront routes/states/tests mapped
 
 Reconciled physical routes/boundaries with local Next discovery; mapped query/locale/SEO/compatibility rules, gated customer/business/checkout states and existing tests to isolated fixtures. Added explicit continuity/error-localisation verification gaps. P0-03 verified as inventory only; no runtime change or test/deployment claim. Next P0-04 fresh captures/content inventory. See [route/state/harness map](../../apps/web/docs/design/implementation-evidence/p0-03-routes-states-tests.md) and [progress](../../apps/web/docs/design/implementation-progress.md).
