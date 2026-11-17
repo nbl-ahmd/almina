@@ -4,8 +4,8 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **Phase 1 in progress; P1-01 contract, P1-02 coded proof and P1-03 density/stress and P1-04 modes/continuity verified.** Phase 0 remains complete for baseline scope. Working local previews exist; no final replacement visual approval yet.
-- **Next eligible task:** **P1-05 — owner screen selection**. Read [P1-04 modes/continuity evidence](implementation-evidence/p1-04-modes.md), [P1-03 density comparisons](implementation-evidence/p1-03-density.md) and [prototype contract](prototype-contract.md). Present working full/split desktop leads plus shared mobile/listing/PDP and provisional density/type/colour roles for an explicit screen decision. Do not infer acceptance from “continue”; no final system work before this gate.
+- **Current work:** **P1-05 awaiting owner screen selection.** P1-01–P1-04 verified; Phase 0 complete for baseline scope. [Selection packet](implementation-evidence/p1-05-selection.md) contains fresh comparable captures and recommendation. No final replacement visual approval yet.
+- **Next eligible task:** **Complete P1-05 from the owner response.** Present [selection packet](implementation-evidence/p1-05-selection.md), record lead/density/type/colour/shape choices and requested corrections, recapture changed screens. P2-01 is eligible only after that decision; “do next” authorized preparation and presentation, not acceptance of the candidate.
 - **Verified implementation tasks:** 9 of 34 (all Phase 0 tasks plus P1-01–P1-04). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
@@ -19,7 +19,7 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 | Phase | Status | Entry / unresolved gate | Evidence |
 | --- | --- | --- | --- |
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
-| 1 Direction proof | in_progress | P1-01–P1-04 verified; P1-05 remains, screen decision still required | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
+| 1 Direction proof | in_progress | P1-01–P1-04 verified; P1-05 awaiting_review, screen decision still required | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | not_started | Needs concrete Phase 1 screen decision | — |
 | 3 Shell/home | not_started | Needs Phase 2 system and state/consumer verification | — |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
@@ -41,7 +41,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P1-02 | verified | [Coded proof/runbook/limits](implementation-evidence/p1-02-coded-proof.md), [16-view manifest](implementation-evidence/phase-1-proof/capture-manifest.json); starting 33f248e; no final visual approval |
 | P1-03 | verified | [Density/colour/type/hard-case evidence](implementation-evidence/p1-03-density.md), [90-case index](implementation-evidence/p1-03-density/case-index.json); starting 44b12e3; no final supporting-value/lead acceptance |
 | P1-04 | verified | [Modes/continuity/limits](implementation-evidence/p1-04-modes.md), [captures](implementation-evidence/p1-04-modes/capture-manifest.json); starting 82e202a, no final screen acceptance |
-| P1-05 | not_started | — |
+| P1-05 | awaiting_review | [Screen decision packet](implementation-evidence/p1-05-selection.md), [18 fresh captures](implementation-evidence/p1-05-selection/capture-manifest.json); source b541e42, proposed B/wide-five and shown support roles; owner selection/corrections pending |
 | P2-01 | not_started | — |
 | P2-02 | not_started | — |
 | P2-03 | not_started | — |
@@ -220,3 +220,11 @@ When interrupted or handing off, update this file before yielding where possible
 - **Ownership:** only dev-only proof, fixtures/tooling/tests and progress evidence changed. Current storefront/admin/wholesale CSS, APIs/commerce logic, final authority and dependencies unchanged. Three source hashes unchanged.
 - **Cleanup:** normal proof 4870/4871 restarted with current fixture; original 4860/4861 untouched. Test-owned servers and browser closed, generated next-env noise restored. No production access/deployment.
 - **Next:** P1-05 owner screen decision; present concrete comparisons and remaining limitations before P2 final system work.
+
+### 2026-11-17 — P1-05 presented for owner review
+
+- **Authorisation:** owner said “do next”; prepared the concrete screen-selection task from b541e42, clean tree. No runtime code changed.
+- **Deliverable:** [Selection packet](implementation-evidence/p1-05-selection.md) and 18 fresh current-source captures compare both desktop leads at both home densities, plus shared phone/desktop listing/PDP in EN/AR. Reference interpretations, proposed support roles/fonts/shapes, limitations and the compact-PDP-toolbar discrepancy are explicit.
+- **Recommendation:** B split discovery, five home columns at the tested wide size, four listing columns beside filters, responsive reduction/shared phone sequence and shown supporting system. Recommendation is not owner acceptance. Lead brings purchase row 140px higher at this fixture/viewport; no conversion claim.
+- **Checks:** captured 18 routes/states at 200, fonts/images settled, no document overflow/browser page errors; references/screens inspected, local links/manifest hashes/diff checked. No app changes, so no repeat build/unit suites. Capture browser closed, preview processes preserved.
+- **State:** P1-05 awaiting_review, verified count remains 9/34. Record actual owner response and any changed evidence before P2. No final DESIGN.md/tokens/instruction changes, production access or deployment.

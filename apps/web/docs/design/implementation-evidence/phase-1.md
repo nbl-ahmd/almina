@@ -39,6 +39,10 @@ Started 17 November 2026. **Phase 1 in progress; P1-01–P1-03 are verified.** M
 - Mobile focused search and desktop suggestion mode; explicit query/scroll/focus return plus native Back; cart errors/retry/stale-stock rejection; locale-aware error `retry()` per Next 16.4.2. No final guide/system/shared-theme edits.
 - Native keyboard/device/zoom/speech, real provider behavior and full authenticated account parity remain unverified. Existing global NEW-001–006 assignments remain open; proof-local fixes are not global completion.
 
+## P1-05 — Screen selection presented, awaiting owner review
+
+[Selection packet](p1-05-selection.md) and [18 current-source captures](p1-05-selection/capture-manifest.json) present both desktop leads at four/five home columns plus shared EN/AR mobile/listing/PDP. Proposed B/wide-five and support/type/shape roles remain unapproved. PDP toolbar mismatch toward reference 02 is explicitly flagged. No runtime edits. Owner selection/corrections and changed evidence are required before P2; verified count remains 9/34.
+
 ## Remaining Phase 1 work
 
 P1-04 is verified for prototype scope. Next P1-05 owner screen selection: present existing same-data desktop leads, density/type/support proposals and shared mobile/listing/PDP, together with P1-04 working flows and explicit limits. Owner selection is P1-05, not inferred from a continue instruction. Progress remains the single mutable ledger.

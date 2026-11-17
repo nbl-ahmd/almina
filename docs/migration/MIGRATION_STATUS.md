@@ -1,3 +1,7 @@
+## 2026-11-17 — P1-05 storefront screen selection awaiting owner review
+
+Prepared [concrete review packet](../../apps/web/docs/design/implementation-evidence/p1-05-selection.md) with 18 fresh EN/AR captures of same-content desktop lead/density comparisons and shared mobile/listing/PDP. Proposed split lead/wide-five and supporting system are recommendations only; reference/PDP-toolbar difference and implementation limits explicit. No app code changed. Owner decision and correction recaptures required before P2; 9/34 verified tasks unchanged. No final design/token system or deployment.
+
 ## 2026-11-17 — P1-04 storefront modes and continuity verified
 
 Implemented only in gated proof: focused search, safe result return, synthetic SKU/gallery associations, cart recovery and localized refetch, checkout/account contracts. Fifteen proof tests, seven existing-harness checkout/admin/responsive checks, fourteen selected units, web types/lint/build and bounded live runtime checks pass. Actual checkout review never submits an order; fixture stock/orders/receipts unchanged. Native device/keyboard/zoom remain unverified; global shared ownership/findings remain open. No production/shared theme, commerce/auth logic, final design authority or deployment changed. [Evidence/limits](../../apps/web/docs/design/implementation-evidence/p1-04-modes.md); next P1-05 owner screen decision.
