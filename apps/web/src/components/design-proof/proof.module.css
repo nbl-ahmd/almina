@@ -125,6 +125,9 @@
   background: white;
   border-bottom: 1px solid var(--proof-line);
 }
+.detailToolbar {
+  display: none;
+}
 .headerRow {
   max-width: 1240px;
   margin: auto;
@@ -924,6 +927,48 @@
     min-width: 44px;
     font-size: 11px;
   }
+  .header[data-product-mode="true"] {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .header[data-product-mode="true"] :is(.headerRow, .departments),
+  .detailBreadcrumb {
+    display: none;
+  }
+  .detailToolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    min-height: 60px;
+    padding-block-start: max(8px, var(--proof-safe-top, env(safe-area-inset-top)));
+  }
+  .detailToolbar > span {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .detailBack,
+  .detailCart {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .detailCart b {
+    background: var(--proof-accent);
+    border-radius: 5px;
+    min-width: 20px;
+    text-align: center;
+  }
+  .root[dir="rtl"] .detailBack svg {
+    transform: rotate(180deg);
+  }
   .headerRow {
     padding: 8px 16px;
     display: grid;
@@ -1465,20 +1510,20 @@
   flex-shrink: 0;
 }
 @media (max-width: 899px) {
-  .root:has(.searchWrap[data-search-open="true"]) .header {
+  .root:has(.header:not([data-product-mode="true"]) .searchWrap[data-search-open="true"]) .header {
     position: sticky;
     top: 0;
     z-index: 40;
   }
-  .root:has(.searchWrap[data-search-open="true"]) .headerRow {
+  .root:has(.header:not([data-product-mode="true"]) .searchWrap[data-search-open="true"]) .headerRow {
     display: flex;
   }
-  .root:has(.searchWrap[data-search-open="true"])
+  .root:has(.header:not([data-product-mode="true"]) .searchWrap[data-search-open="true"])
     .headerRow
     > :not(.searchWrap) {
     display: none;
   }
-  .root:has(.searchWrap[data-search-open="true"])
+  .root:has(.header:not([data-product-mode="true"]) .searchWrap[data-search-open="true"])
     :is(.main, .footer, .bottomNav) {
     visibility: hidden;
   }
@@ -1510,6 +1555,7 @@
 }
 @media (max-width: 899px) {
   .headerRow,
+  .detailToolbar,
   .main,
   .footer {
     padding-left: max(16px, var(--proof-safe-left, env(safe-area-inset-left)));

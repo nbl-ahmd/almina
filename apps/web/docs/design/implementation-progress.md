@@ -4,8 +4,8 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P1-05 awaiting owner screen selection.** P1-01–P1-04 verified; Phase 0 complete for baseline scope. [Selection packet](implementation-evidence/p1-05-selection.md) contains fresh comparable captures and recommendation. No final replacement visual approval yet.
-- **Next eligible task:** **Complete P1-05 from the owner response.** Present [selection packet](implementation-evidence/p1-05-selection.md), record lead/density/type/colour/shape choices and requested corrections, recapture changed screens. P2-01 is eligible only after that decision; “do next” authorized preparation and presentation, not acceptance of the candidate.
+- **Current work:** **P1-05 owner selected A/full-width campaign, five wide-screen home columns and shown supporting system.** Compact phone PDP toolbar correction is implemented/verified and [presented for review](implementation-evidence/p1-05-toolbar.md). P1-01–P1-04 remain verified; no final system switch yet.
+- **Next eligible task:** **Complete P1-05 from the revised toolbar response.** Record acceptance/corrections for [compact toolbar](implementation-evidence/p1-05-toolbar.md), recapture if changed; then P2-01 becomes eligible. Do not reopen selected A/five/Figtree/Alexandria/support roles or silently infer acceptance of the newly previewed toolbar.
 - **Verified implementation tasks:** 9 of 34 (all Phase 0 tasks plus P1-01–P1-04). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
@@ -41,7 +41,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P1-02 | verified | [Coded proof/runbook/limits](implementation-evidence/p1-02-coded-proof.md), [16-view manifest](implementation-evidence/phase-1-proof/capture-manifest.json); starting 33f248e; no final visual approval |
 | P1-03 | verified | [Density/colour/type/hard-case evidence](implementation-evidence/p1-03-density.md), [90-case index](implementation-evidence/p1-03-density/case-index.json); starting 44b12e3; no final supporting-value/lead acceptance |
 | P1-04 | verified | [Modes/continuity/limits](implementation-evidence/p1-04-modes.md), [captures](implementation-evidence/p1-04-modes/capture-manifest.json); starting 82e202a, no final screen acceptance |
-| P1-05 | awaiting_review | [Screen decision packet](implementation-evidence/p1-05-selection.md), [18 fresh captures](implementation-evidence/p1-05-selection/capture-manifest.json); source b541e42, proposed B/wide-five and shown support roles; owner selection/corrections pending |
+| P1-05 | awaiting_review | Owner selected **A/five + shown supporting system** in structured response; [toolbar correction/evidence](implementation-evidence/p1-05-toolbar.md), six revised captures, 17 tests/type/lint/build pass. Awaiting only revised toolbar review before final phase gate |
 | P2-01 | not_started | — |
 | P2-02 | not_started | — |
 | P2-03 | not_started | — |
@@ -83,6 +83,8 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | D10 | Working isolated coded proof | P1-02 verifies same-data A/B, shared phone/listing/PDP, EN/AR, gates and bounded helper/runtime checks | Provisional roles/fonts/density only. Local 4870/4871; no existing route/theme switch. Reviewer's four fixes resolved; P1-03/P1-04/P1-05 still required. |
 | D11 | Density/typography/colour/shape experiments | P1-03 verifies 4/5 comparisons, readable hard cases, mobile purchase clearance and provisional state contrast; one reviewer correction resolved | Proposals only, no accepted palette/font/grid/lead. P1-04 continuity and P1-05 screen decision remain. |
 | D12 | Prototype modes and continuity | P1-04 verifies focused search, query/scroll/back, server-checked cart, localized recovery and synthetic SKU/media association; enabled checkout review/admin regressions pass | Proof checkout/account remain explicit limited contracts. No order submission, global NEW-004/005 fix, native-device certification or final screen approval. P1-05 owner decision is next. |
+| D13 | Owner screen selection | Owner structured response chose A/full-width campaign, five wide-screen home columns and retained shown Figtree/Alexandria/near-white/dark-on-coral/compact-card system | Confirmed, supersedes B recommendation. No need to ask these settled choices again. Final token architecture remains P2. |
+| D14 | Compact phone PDP toolbar | Owner requested correction preview; implemented/verified Back/details/cart toolbar and six revised captures | Correction preview awaits owner response; P1-05 remains awaiting_review. No release/deployment approval. |
 
 Append dated decisions/corrections with affected task/coverage IDs and source (owner message or verified repository evidence). Link durable visual decisions into decisions.md; do not erase previous decisions or mistake proposed values for approval.
 
@@ -228,3 +230,11 @@ When interrupted or handing off, update this file before yielding where possible
 - **Recommendation:** B split discovery, five home columns at the tested wide size, four listing columns beside filters, responsive reduction/shared phone sequence and shown supporting system. Recommendation is not owner acceptance. Lead brings purchase row 140px higher at this fixture/viewport; no conversion claim.
 - **Checks:** captured 18 routes/states at 200, fonts/images settled, no document overflow/browser page errors; references/screens inspected, local links/manifest hashes/diff checked. No app changes, so no repeat build/unit suites. Capture browser closed, preview processes preserved.
 - **State:** P1-05 awaiting_review, verified count remains 9/34. Record actual owner response and any changed evidence before P2. No final DESIGN.md/tokens/instruction changes, production access or deployment.
+
+### 2026-11-17 — P1-05 owner selection and toolbar correction
+
+- **Owner response:** A/full-width campaign, five wide-screen home columns; retain shown supporting system and preview compact PDP toolbar. These choices supersede B recommendation. No further palette/font/lead vote needed.
+- **Changed:** proof defaults to selected A/five; phone PDP has compact sticky Back/details/cart toolbar instead of browse header/breadcrumb. Desktop unchanged; sanitized query/scroll/focus return and server purchase logic reused.
+- **Evidence:** [correction report](implementation-evidence/p1-05-toolbar.md), six revised current screenshots; 17 interaction tests, types/lint/build, live Next compile/session and browser checks pass. No independent review or native-device certification inferred.
+- **Boundary:** only proof UI/tests/evidence changed, no shared/admin/wholesale/commerce implementation. Generated next-env noise restored; original/proof previews preserved, test browsers/servers closed. No production data/provider access/deployment.
+- **Next:** only toolbar revision acceptance/correction remains; P1-05 awaiting_review and count 9/34 until response, then P2-01.

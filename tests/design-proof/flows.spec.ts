@@ -533,3 +533,31 @@ for (const lang of ["en", "ar"] as const) {
     });
   });
 }
+
+for (const lang of ['en', 'ar'] as const) {
+  test(`${lang} compact PDP toolbar retains back/cart and survives live desktop search resize`, async ({page, context}) => {
+    await context.addCookies([{name:'almina_lang',value:lang,url:origin}]);
+    const path='/design-proof/products/sample--PD1186?returnTo='+encodeURIComponent('/design-proof/products?q=CeraVe&sort=price-asc');
+    await page.goto(path);
+    const toolbar=page.getByRole('navigation',{name:lang==='en'?'Product navigation':'التنقل في المنتج',exact:true});
+    for (const width of [320,390,768]) {
+      await page.setViewportSize({width,height:844});
+      await expect(toolbar).toBeVisible();
+      await expect(page.getByRole('search')).not.toBeVisible();
+      await expect(toolbar.getByRole('link',{name:lang==='en'?'Back to results':'العودة إلى النتائج',exact:true})).toHaveAttribute('href','/design-proof/products?q=CeraVe&sort=price-asc');
+      const bounds=await toolbar.evaluate(el=>Array.from(el.querySelectorAll('a')).map(a=>{const b=a.getBoundingClientRect();return {width:b.width,height:b.height};}));
+      expect(bounds.every(b=>b.width>=44&&b.height>=44)).toBeTruthy();
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();
+    }
+    await page.evaluate(()=>window.scrollTo(0,300));
+    expect(await page.locator('header[data-product-mode]').evaluate(el=>el.getBoundingClientRect().top)).toBe(0);
+    await page.setViewportSize({width:1440,height:900});
+    await expect(toolbar).not.toBeVisible();
+    await page.getByRole('combobox').fill('CeraVe');
+    await page.setViewportSize({width:390,height:844});
+    await expect(toolbar).toBeVisible();
+    await expect(page.locator('main')).toHaveCSS('visibility','visible');
+    await toolbar.getByRole('link',{name:/Cart|السلة/}).click();
+    await expect(page).toHaveURL(/\/design-proof\/cart$/);
+  });
+}

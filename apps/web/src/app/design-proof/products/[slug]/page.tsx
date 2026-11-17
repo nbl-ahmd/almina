@@ -49,7 +49,7 @@ export default async function Detail({
   );
   return (
     <>
-      <p className={s.breadcrumb}>
+      <p className={`${s.breadcrumb} ${s.detailBreadcrumb}`}>
         <ReturnToResults href={returnTo} lang={lang} /> / {product.brand}
       </p>
       <div className={s.pdp}>

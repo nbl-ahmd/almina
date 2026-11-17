@@ -24,7 +24,7 @@ export default async function Home({
   ]);
   const missingCampaign = params.campaign === "none";
   const split = params.lead === "split" && !missingCampaign;
-  const columns = params.columns === "5" ? 5 : 4;
+  const columns = params.columns === "4" ? 4 : 5;
   return (
     <div data-proof-columns={columns}>
       <nav

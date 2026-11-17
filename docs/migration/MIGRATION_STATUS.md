@@ -1,3 +1,7 @@
+## 2026-11-17 — P1-05 owner selected A/five; compact PDP correction previewed
+
+Owner selected full-width desktop campaign, five wide-screen home columns and shown supporting system, superseding the B recommendation. Implemented compact phone PDP Back/details/cart toolbar in gated proof; desktop search composition and commerce helpers unchanged. Seventeen proof interaction tests, types/lint/build and bounded live runtime checks pass. [Six revised captures/report](../../apps/web/docs/design/implementation-evidence/p1-05-toolbar.md). Only revised toolbar review remains before P1-05 closes/P2 starts; no final guide/token/shared-style switch, production access or deployment.
+
 ## 2026-11-17 — P1-05 storefront screen selection awaiting owner review
 
 Prepared [concrete review packet](../../apps/web/docs/design/implementation-evidence/p1-05-selection.md) with 18 fresh EN/AR captures of same-content desktop lead/density comparisons and shared mobile/listing/PDP. Proposed split lead/wide-five and supporting system are recommendations only; reference/PDP-toolbar difference and implementation limits explicit. No app code changed. Owner decision and correction recaptures required before P2; 9/34 verified tasks unchanged. No final design/token system or deployment.

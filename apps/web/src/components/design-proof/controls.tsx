@@ -20,6 +20,7 @@ import {
   HomeIcon,
   Squares2X2Icon,
   XMarkIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { deliveryEmirates } from "@almina/contracts";
 import Link from "../app-link";
@@ -29,12 +30,13 @@ import { useCartCount } from "../../lib/catalog/use-cart-count";
 import { readSaved, savedKey, setSaved } from "../../lib/catalog/saved";
 import { savedArea, saveArea, areaSchema } from "../../lib/location/browser";
 import { checkAddition } from "../../app/(storefront)/cart/actions";
-import { proofSuggestionHref } from "../../lib/design-proof-navigation";
+import { proofListingReturn, proofSuggestionHref } from "../../lib/design-proof-navigation";
 import s from "./proof.module.css";
 type Lang = "en" | "ar";
 const w = (lang: Lang, en: string, ar: string) => (lang === "ar" ? ar : en);
 export function ProofChrome({ lang }: { lang: Lang }) {
-  const query = useSearchParams().get("q") ?? "";
+  const searchParams = useSearchParams();
+  const query = searchParams.get("q") ?? "";
   const path = usePathname(),
     count = useCartCount();
   const detail = /\/products\/.+/.test(path) || path === "/design-proof/stress",
@@ -60,7 +62,18 @@ export function ProofChrome({ lang }: { lang: Lang }) {
           {lang === "en" ? "العربية" : "English"}
         </button>
       </div>
-      <header className={s.header}>
+      <header className={s.header} data-product-mode={detail ? "true" : undefined}>
+        {detail && (
+          <nav className={s.detailToolbar} aria-label={w(lang, "Product navigation", "التنقل في المنتج")}>
+            <ReturnToResults href={proofListingReturn(searchParams.get("returnTo"))} lang={lang} compact />
+            <span>{w(lang, "Product details", "تفاصيل المنتج")}</span>
+            <Link href="/design-proof/cart" className={s.detailCart}>
+              <ShoppingBagIcon aria-hidden="true" />
+              <span>{w(lang, "Cart", "السلة")}</span>
+              <b aria-label={w(lang, `${count} items`, `${count} منتجات`)}>{count}</b>
+            </Link>
+          </nav>
+        )}
         <div className={s.headerRow}>
           <Link href="/design-proof" className={s.logo}>
             <Image
@@ -950,10 +963,12 @@ export function ProofProductLink({
     </Link>
   );
 }
-export function ReturnToResults({ href, lang }: { href: string; lang: Lang }) {
+export function ReturnToResults({ href, lang, compact = false }: { href: string; lang: Lang; compact?: boolean }) {
   return (
     <Link
       href={href}
+      className={compact ? s.detailBack : undefined}
+      aria-label={w(lang, "Back to results", "العودة إلى النتائج")}
       scroll={false}
       onClick={() => {
         try {
@@ -963,7 +978,8 @@ export function ReturnToResults({ href, lang }: { href: string; lang: Lang }) {
         }
       }}
     >
-      {w(lang, "Back to results", "العودة إلى النتائج")}
+      {compact && <ArrowLeftIcon aria-hidden="true" />}
+      <span>{w(lang, compact ? "Back" : "Back to results", compact ? "عودة" : "العودة إلى النتائج")}</span>
     </Link>
   );
 }

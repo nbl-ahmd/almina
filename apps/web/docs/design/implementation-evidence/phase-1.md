@@ -41,8 +41,8 @@ Started 17 November 2026. **Phase 1 in progress; P1-01–P1-03 are verified.** M
 
 ## P1-05 — Screen selection presented, awaiting owner review
 
-[Selection packet](p1-05-selection.md) and [18 current-source captures](p1-05-selection/capture-manifest.json) present both desktop leads at four/five home columns plus shared EN/AR mobile/listing/PDP. Proposed B/wide-five and support/type/shape roles remain unapproved. PDP toolbar mismatch toward reference 02 is explicitly flagged. No runtime edits. Owner selection/corrections and changed evidence are required before P2; verified count remains 9/34.
+[Selection packet](p1-05-selection.md) and [18 current-source captures](p1-05-selection/capture-manifest.json) present both desktop leads at four/five home columns plus shared EN/AR mobile/listing/PDP. Original B recommendation was superseded by the owner's choice of **A/wide-five and the shown supporting system**. [Compact PDP toolbar correction](p1-05-toolbar.md) is now implemented/verified with six revised captures; only that revision awaits owner review before P2. Verified count remains 9/34.
 
 ## Remaining Phase 1 work
 
-P1-04 is verified for prototype scope. Next P1-05 owner screen selection: present existing same-data desktop leads, density/type/support proposals and shared mobile/listing/PDP, together with P1-04 working flows and explicit limits. Owner selection is P1-05, not inferred from a continue instruction. Progress remains the single mutable ledger.
+P1-04 is verified for prototype scope. Owner has selected A/five and the shown supporting system. Only the implemented compact phone PDP toolbar revision awaits review before P1-05 closes and P2 begins. Keep the native-device/content/shared-consumer limitations explicit. Progress remains the single mutable ledger.

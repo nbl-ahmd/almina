@@ -1,5 +1,8 @@
 # P1-05 — screen selection for the replacement storefront
 
+> **Subsequent owner response:** Selected **A/full-width campaign + five wide-screen home columns**, retaining the shown supporting system. Earlier B recommendation below is historical and superseded. Requested compact phone PDP toolbar preview is [implemented and captured separately](p1-05-toolbar.md); only that revision awaits review. Original captures below intentionally retain source b541e42, before the correction.
+
+
 17 November 2026. Runtime source `b541e42`, branch `codex/storefront-pharmacy-app-reference`. **Awaiting owner review.** This packet records proposals and concrete screens; it is not a final DESIGN.md, token system, acceptance record or release approval. [Phase 1's screen-selection gate](../implementation-phases.md#phase-1--comparable-coded-direction-proof) requires an owner decision before P2.
 
 ## Recommendation and decision
