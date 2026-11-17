@@ -7,7 +7,6 @@ import Link from './app-link';
 import {
   PhoneIcon,
   UserCircleIcon,
-  ChatBubbleLeftRightIcon,
   EnvelopeIcon,
   MapPinIcon,
   ArrowUpRightIcon,
@@ -19,7 +18,7 @@ import { DeliveryLocation } from "./delivery-location";
 import { UsagePreferences } from "./usage-preferences";
 import { LanguageSwitcher } from "./language-switcher";
 import { t, type Locale, type MessageKey } from "../lib/i18n";
-import { policyLinks } from "../lib/policies";
+import { businessContact, policyLinks } from "../lib/policies";
 
 export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
   const categories = (await getCategories().catch(()=>[])).filter(category=>!category.disabled).map(category=>({name:category.name,href:categoryHref(category)}));
@@ -96,13 +95,17 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
         aria-label={t(locale, 'quickContactAria')}
         className="floating-contact fixed right-4 bottom-[calc(84px+env(safe-area-inset-bottom))] z-30 md:right-6 md:bottom-6"
       >
-        <Link
-          href="/contact"
-          aria-label={t(locale, 'contactAria')}
-          className="flex size-12 items-center justify-center rounded-full bg-ink text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 md:size-14"
+        <a
+          href={`https://wa.me/${businessContact.telephone.replace(/\D/g, '')}`}
+          aria-label={locale === 'ar' ? 'تواصل مع صيدلية المينا عبر واتساب' : 'Chat with Al Mina Pharmacy on WhatsApp'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex size-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink md:size-14"
         >
-          <ChatBubbleLeftRightIcon className="size-6" />
-        </Link>
+          <svg className="size-7" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true" focusable="false">
+            <path d="M16.027 3C9.389 3 4 8.222 4 14.667c0 2.47.873 4.75 2.34 6.586L5 29l8.083-2.57c.909.254 1.87.393 2.944.393 6.638 0 12.027-5.223 12.027-11.667C28.055 8.223 22.666 3 16.027 3zm0 2.4c5.326 0 9.638 4.2 9.638 9.333 0 5.134-4.312 9.334-9.638 9.334-.955 0-1.873-.136-2.72-.4l-1.12-.343-4.68 1.486 1.06-4.11-.727-.867c-1.15-1.351-1.8-3.08-1.8-5.1 0-5.133 4.311-9.333 9.637-9.333zm-4.088 4.672c-.182 0-.485.07-.738.352-.254.282-.968.944-.968 2.3 0 1.356.992 2.667 1.13 2.852.14.188 1.918 3.064 4.74 4.17 2.82 1.106 2.82.737 3.327.69.508-.047 1.64-.67 1.873-1.32.232-.65.232-1.207.163-1.324-.07-.118-.254-.188-.53-.33-.276-.141-1.64-.808-1.894-.9-.254-.094-.44-.142-.626.14-.186.284-.716.9-.878 1.08-.163.188-.325.212-.598.07-.277-.141-1.16-.426-2.212-1.35-.818-.715-1.37-1.6-1.532-1.883-.163-.282-.017-.434.123-.574.126-.124.277-.324.416-.486.139-.165.185-.283.277-.472.093-.188.046-.353-.023-.495-.07-.142-.618-1.512-.874-2.07-.23-.503-.465-.575-.647-.58z" />
+          </svg>
+        </a>
       </nav>
     </>
   );
