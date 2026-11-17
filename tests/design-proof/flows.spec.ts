@@ -535,7 +535,7 @@ for (const lang of ["en", "ar"] as const) {
 }
 
 for (const lang of ['en', 'ar'] as const) {
-  test(`${lang} compact PDP toolbar retains back/cart and survives live desktop search resize`, async ({page, context}) => {
+  test(`${lang} image-overlay PDP controls retain back/cart and survive live desktop search resize`, async ({page, context}) => {
     await context.addCookies([{name:'almina_lang',value:lang,url:origin}]);
     const path='/design-proof/products/sample--PD1186?returnTo='+encodeURIComponent('/design-proof/products?q=CeraVe&sort=price-asc');
     await page.goto(path);
@@ -549,8 +549,9 @@ for (const lang of ['en', 'ar'] as const) {
       expect(bounds.every(b=>b.width>=44&&b.height>=44)).toBeTruthy();
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();
     }
-    await page.evaluate(()=>window.scrollTo(0,300));
-    expect(await page.locator('header[data-product-mode]').evaluate(el=>el.getBoundingClientRect().top)).toBe(0);
+    const gallery=page.locator('div[class*=gallery]').first();
+    expect(await gallery.evaluate(el=>Math.round(el.getBoundingClientRect().left))).toBe(0);
+    expect(await gallery.evaluate(el=>Math.round(el.getBoundingClientRect().width))).toBe(768);
     await page.setViewportSize({width:1440,height:900});
     await expect(toolbar).not.toBeVisible();
     await page.getByRole('combobox').fill('CeraVe');

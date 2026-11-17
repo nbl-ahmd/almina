@@ -1,3 +1,7 @@
+## 2026-11-17 — P1-05 N03 image-first PDP replaces rejected toolbar preview
+
+Owner requested full top image and other N03 mobile PDP aspects. Implemented full-width gallery with overlay Back/Save/Cart, compact summary and related-product rail, retaining sticky buying, selected A/five home/support roles and desktop composition. [Latest report/eight captures](../../apps/web/docs/design/implementation-evidence/p1-05-image.md); 17 proof interaction tests/types/lint/build pass. Revised PDP awaits review; no final system/shared/commerce switch, production access or deployment.
+
 ## 2026-11-17 — P1-05 owner selected A/five; compact PDP correction previewed
 
 Owner selected full-width desktop campaign, five wide-screen home columns and shown supporting system, superseding the B recommendation. Implemented compact phone PDP Back/details/cart toolbar in gated proof; desktop search composition and commerce helpers unchanged. Seventeen proof interaction tests, types/lint/build and bounded live runtime checks pass. [Six revised captures/report](../../apps/web/docs/design/implementation-evidence/p1-05-toolbar.md). Only revised toolbar review remains before P1-05 closes/P2 starts; no final guide/token/shared-style switch, production access or deployment.

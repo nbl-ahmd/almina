@@ -1,5 +1,8 @@
 # P1-05 — owner selection and compact PDP correction
 
+> **Latest status:** Owner rejected the standalone toolbar; [N03 full-image PDP correction](p1-05-image.md) supersedes that preview. A/five and the shown supporting system remain selected. Read the latest correction for current review state.
+
+
 17 November 2026; starting commit `00f9870`, clean branch `codex/storefront-pharmacy-app-reference`. **Owner choices recorded; corrected phone toolbar presented for review.** No final guide, production token or shared styling switch yet.
 
 ## Confirmed owner decisions

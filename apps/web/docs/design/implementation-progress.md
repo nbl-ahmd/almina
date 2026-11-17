@@ -4,8 +4,8 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P1-05 owner selected A/full-width campaign, five wide-screen home columns and shown supporting system.** Compact phone PDP toolbar correction is implemented/verified and [presented for review](implementation-evidence/p1-05-toolbar.md). P1-01–P1-04 remain verified; no final system switch yet.
-- **Next eligible task:** **Complete P1-05 from the revised toolbar response.** Record acceptance/corrections for [compact toolbar](implementation-evidence/p1-05-toolbar.md), recapture if changed; then P2-01 becomes eligible. Do not reopen selected A/five/Figtree/Alexandria/support roles or silently infer acceptance of the newly previewed toolbar.
+- **Current work:** **P1-05 owner-selected A/five and shown supporting system; revised mobile PDP awaiting review.** Owner rejected the standalone toolbar and requested N03 image-first composition. [Latest full-width image/overlay-controls revision](implementation-evidence/p1-05-image.md) is implemented and verified; earlier toolbar is superseded.
+- **Next eligible task:** **Complete P1-05 against the latest N03 PDP revision.** Record owner response to [current screens](implementation-evidence/p1-05-image.md), recapture any material corrections, then P2-01. Selected A/five/fonts/support roles remain settled; do not restore rejected standalone toolbar.
 - **Verified implementation tasks:** 9 of 34 (all Phase 0 tasks plus P1-01–P1-04). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
@@ -41,7 +41,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P1-02 | verified | [Coded proof/runbook/limits](implementation-evidence/p1-02-coded-proof.md), [16-view manifest](implementation-evidence/phase-1-proof/capture-manifest.json); starting 33f248e; no final visual approval |
 | P1-03 | verified | [Density/colour/type/hard-case evidence](implementation-evidence/p1-03-density.md), [90-case index](implementation-evidence/p1-03-density/case-index.json); starting 44b12e3; no final supporting-value/lead acceptance |
 | P1-04 | verified | [Modes/continuity/limits](implementation-evidence/p1-04-modes.md), [captures](implementation-evidence/p1-04-modes/capture-manifest.json); starting 82e202a, no final screen acceptance |
-| P1-05 | awaiting_review | Owner selected **A/five + shown supporting system** in structured response; [toolbar correction/evidence](implementation-evidence/p1-05-toolbar.md), six revised captures, 17 tests/type/lint/build pass. Awaiting only revised toolbar review before final phase gate |
+| P1-05 | awaiting_review | Owner selected A/five + shown supporting system; rejected toolbar bar and requested N03 full-image PDP. [Latest correction/eight captures](implementation-evidence/p1-05-image.md), 17 tests/type/lint/build pass; only revised PDP review remains |
 | P2-01 | not_started | — |
 | P2-02 | not_started | — |
 | P2-03 | not_started | — |
@@ -238,3 +238,10 @@ When interrupted or handing off, update this file before yielding where possible
 - **Evidence:** [correction report](implementation-evidence/p1-05-toolbar.md), six revised current screenshots; 17 interaction tests, types/lint/build, live Next compile/session and browser checks pass. No independent review or native-device certification inferred.
 - **Boundary:** only proof UI/tests/evidence changed, no shared/admin/wholesale/commerce implementation. Generated next-env noise restored; original/proof previews preserved, test browsers/servers closed. No production data/provider access/deployment.
 - **Next:** only toolbar revision acceptance/correction remains; P1-05 awaiting_review and count 9/34 until response, then P2-01.
+
+### 2026-11-17 — P1-05 N03 image-first correction
+
+- **Owner request:** rejected standalone toolbar; directed mobile PDP toward 03-green-pharmacy-screens, “top full for image” and other aspects. Existing A/five/support choices unchanged.
+- **Changed:** full-width phone image with overlay Back/Save/Cart, no toolbar-title strip/browse header; compact product summary, local related-product rail, existing sticky purchase. Desktop/shared/commerce untouched.
+- **Evidence:** [latest report and eight captures](implementation-evidence/p1-05-image.md), 17 interaction tests/types/lint/build pass. No independent/native-device/release certification inferred.
+- **Next:** review this revised PDP before closing P1-05/P2. Previous toolbar captures are superseded history, not a fallback. Count stays 9/34; no final design/token authority change or deployment.

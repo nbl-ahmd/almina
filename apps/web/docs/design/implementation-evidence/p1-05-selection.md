@@ -1,5 +1,8 @@
 # P1-05 — screen selection for the replacement storefront
 
+> **Latest status:** Owner rejected the standalone toolbar; [N03 full-image PDP correction](p1-05-image.md) supersedes that preview. A/five and the shown supporting system remain selected. Read the latest correction for current review state.
+
+
 > **Subsequent owner response:** Selected **A/full-width campaign + five wide-screen home columns**, retaining the shown supporting system. Earlier B recommendation below is historical and superseded. Requested compact phone PDP toolbar preview is [implemented and captured separately](p1-05-toolbar.md); only that revision awaits review. Original captures below intentionally retain source b541e42, before the correction.
 
 

@@ -928,8 +928,9 @@
     font-size: 11px;
   }
   .header[data-product-mode="true"] {
-    position: sticky;
-    top: 0;
+    position: relative;
+    height: 0;
+    border: 0;
     z-index: 40;
   }
   .header[data-product-mode="true"] :is(.headerRow, .departments),
@@ -937,33 +938,48 @@
     display: none;
   }
   .detailToolbar {
+    position: absolute;
+    inset: 0 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
-    min-height: 60px;
-    padding-block-start: max(8px, var(--proof-safe-top, env(safe-area-inset-top)));
+    padding: 16px;
+    pointer-events: none;
+    padding-block-start: max(16px, var(--proof-safe-top, env(safe-area-inset-top)));
   }
-  .detailToolbar > span {
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
+  .detailToolbar > span,
+  .detailBack span,
+  .detailCart > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
   .detailBack,
   .detailCart {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    min-height: 44px;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
     min-width: 44px;
-    font-size: 12px;
-    flex-shrink: 0;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid var(--proof-line);
+    pointer-events: auto;
   }
   .detailCart b {
+    position: absolute;
+    top: -2px;
+    inset-inline-end: -2px;
     background: var(--proof-accent);
-    border-radius: 5px;
-    min-width: 20px;
+    border-radius: 8px;
+    min-width: 18px;
+    padding-inline: 3px;
+    font-size: 10px;
     text-align: center;
   }
   .root[dir="rtl"] .detailBack svg {
@@ -1217,26 +1233,50 @@
   .root:has(.dock) .footer {
     padding-bottom: calc(24px + var(--proof-dock-clearance, 160px));
   }
-  .pdp {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .gallery {
-    height: 300px;
-    border-radius: 12px;
-  }
-  .gallery .pack {
-    padding: 24px;
-  }
-  .buyColumn {
+  .root:has(.pdp) .main {
     padding: 0;
   }
+  .pdp {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .gallery {
+    height: clamp(300px, 88vw, 420px);
+    border-radius: 0;
+    background: white;
+  }
+  .gallery .pack {
+    padding: 64px 40px 24px;
+  }
+  .gallery .save {
+    top: max(16px, var(--proof-safe-top, env(safe-area-inset-top)));
+    inset-inline-end: max(68px, calc(var(--proof-safe-right, env(safe-area-inset-right)) + 52px));
+    background: white;
+  }
+  .buyColumn {
+    padding: 20px max(16px, var(--proof-safe-right, env(safe-area-inset-right))) 0 max(16px, var(--proof-safe-left, env(safe-area-inset-left)));
+  }
   .buyColumn h1 {
-    font-size: 24px;
-    margin: 8px 0 12px;
+    font-size: 22px;
+    margin: 0 0 8px;
   }
   .detailPrice {
-    font-size: 26px;
+    font-size: 24px;
+    margin-top: 12px !important;
+  }
+  .root:has(.pdp) .main > .shelf {
+    padding-inline: max(16px, var(--proof-safe-left, env(safe-area-inset-left)));
+  }
+  .pdpRelated .grid {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x proximity;
+  }
+  .pdpRelated .grid > article {
+    flex: 0 0 46%;
+    min-width: 150px;
+    scroll-snap-align: start;
   }
   .dock {
     position: fixed;
@@ -1556,7 +1596,7 @@
 @media (max-width: 899px) {
   .headerRow,
   .detailToolbar,
-  .main,
+  .main:not(:has(.pdp)),
   .footer {
     padding-left: max(16px, var(--proof-safe-left, env(safe-area-inset-left)));
     padding-right: max(

@@ -137,7 +137,7 @@ export default async function Detail({
         </section>
       </div>
       {related.length > 0 && (
-        <section className={s.shelf}>
+        <section className={`${s.shelf} ${s.pdpRelated}`}>
           <div className={s.sectionHead}>
             <h2>
               {words(
