@@ -1,3 +1,7 @@
+## 2026-11-17 — P0-02 storefront styling consumers inventoried
+
+Recorded all customer token references, CSS/layer ownership, shared components/fonts/assets/portals and generator bindings. Confirmed emitted added-state precedence and discovered wholesale's direct dependency on storefront CSS/shell, plus root 404 and staff campaign preview consumers. No resources removed or restyled. P0-02 verified; Phase 0 continues with P0-03 route/state/test mapping. See [ownership matrix](../../apps/web/docs/design/implementation-evidence/p0-02-style-ownership.md) and [progress](../../apps/web/docs/design/implementation-progress.md).
+
 ## 2026-11-17 — P0-01 storefront baseline reconciled
 
 Verified source-plan fingerprints, clean branch/HEAD and unchanged reviewed runtime; rediscovered the loopback synthetic catalogue preview and performed read-only HTTP/Next error checks. Recorded authority/approval boundaries, preview restart runbook and capability limits. P0-01 verified; Phase 0 remains in progress, next P0-02 consumer/cascade inventory. No runtime change, restart, production data access or deployment. See [Phase 0 evidence](../../apps/web/docs/design/implementation-evidence/phase-0.md) and [progress](../../apps/web/docs/design/implementation-progress.md).

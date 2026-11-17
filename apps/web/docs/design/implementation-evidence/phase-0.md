@@ -1,6 +1,6 @@
 # Phase 0 evidence — baseline and ownership
 
-Started 17 November 2026. **Phase 0 remains in progress; only P0-01 is verified in this checkpoint.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
+Started 17 November 2026. **Phase 0 remains in progress; P0-01 and P0-02 are verified in their separate checkpoints below.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
 
 ## P0-01 — Baseline reconciliation
 
@@ -88,6 +88,16 @@ P0-01 contributes baseline authority/version/approval evidence to C01–C07, C19
 
 **Changes/rollback:** documentation and progress updates only. Reverting this checkpoint's documentation commit restores the tracker state; there is no runtime/data migration to roll back. Existing servers and temporary launcher remain as found. No transient process was started by this task.
 
+## P0-02 — Consumer and cascade inventory
+
+Owner requested “do next”, resolving to P0-02 in the ledger. Starting HEAD d6fd0f5, clean tree; inventory and documentation only. [Ownership matrix](p0-02-style-ownership.md) records definitions → consumers → destination tasks → removal conditions. [Durable index](p0-02-style-consumers.json) preserves all customer token references, shared primitive consumers and public asset references. Bounded AST/PostCSS audit and two emitted stylesheet extracts are documented with limitations in the report.
+
+Key evidence: wholesale directly imports storefront.css and uses .storefront-shell (NEW-001); root not-found imports customer CSS/fonts/shell (NEW-002); admin campaign editor shares CampaignArtwork/Outfit (NEW-003). Emitted added-state utility colours lose to unlayered customer accent rules; foreground alias is a dormant contract risk with no matching utility rule found in this homepage output. Old care colours, map/vendor CSS, root native defaults, PWA assets and preview fonts still have non-customer consumers. No resource is marked safe to delete merely because a lexical reference is absent.
+
+Coverage contributions: C07–C18, C32, C41–C50 reference/media boundaries, C58/C60/C63 and NEW-001–NEW-003. Multi-phase requirements remain open. Exact raw evidence prefix: `.verification-results/storefront-replacement/phase-0/p0-02-`; no browser or commerce-state checks claimed. Local app source, packages, scripts and running services unchanged.
+
+Outcome: **P0-02 verified**, no blocker to P0-03. Next: actual route/state/test-harness map, including root error, wholesale and shared admin preview. Rollback is documentation-only; no data/runtime migration. No process was started/stopped; raw audit artifacts intentionally retained as local evidence.
+
 ## Remaining Phase 0 work
 
-P0-02 consumer/cascade inventory, P0-03 route/state/test map, P0-04 fresh captures/content inventory and P0-05 baseline synthesis are not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.
+P0-03 route/state/test map, P0-04 fresh captures/content inventory and P0-05 baseline synthesis are not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.

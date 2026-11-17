@@ -73,3 +73,13 @@ Sources: **SR** = [system review](system-review-2026-11-17.md); **DP** = [direct
 ## How to close coverage
 
 Each phase evidence record cites the coverage IDs it verifies and any partial/deferred cases. Progress records phase evidence links and remaining requirement IDs. A requirement spanning several tasks is satisfied only when all relevant proof exists; a checked task alone is insufficient. Before final completion reconcile **C01–C63 and every NEW-###** with an evidence/disposition row in the Phase 6 report. Deferred requirements retain their rationale/owner and must not be described as completed work.
+
+## Findings added during baseline execution
+
+Recorded from P0-02; these assignments are not implementation completion. Evidence: [ownership matrix](implementation-evidence/p0-02-style-ownership.md).
+
+| ID | Finding / requirement | Owning tasks | Acceptance proof |
+| --- | --- | --- | --- |
+| NEW-001 | Wholesale directly imports full storefront CSS and .storefront-shell, shares UI controls and old care colours. | P2-01–P2-02, P5-05, P6-02 | Isolate or provide explicit compatibility before customer token switch; preserve wholesale appearance/behaviour and verify route/state transitions. |
+| NEW-002 | Root 404 outside route group imports customer CSS/fonts/Navigation/Footer. | P2-02, P3-04, P6-01 | Unknown/direct URLs and cross-surface navigation retain correct error theme/links/semantics before consumer removal. |
+| NEW-003 | Admin campaign preview shares CampaignArtwork and Outfit with historical preview palette. | P2-03, P3-03, P6-01 | Explicit preview policy, retained editor/artwork/validation contract and verified font/component consumers before removal; admin chrome remains independent. |
