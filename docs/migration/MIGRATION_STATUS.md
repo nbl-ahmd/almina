@@ -1,3 +1,7 @@
+## 2026-11-17 — P2-04 accepted-system refinements verified
+
+Measured bilingual contrast, type/reflow, shapes, icons and reduced motion. Fixed scoped default-button geometry and enlarged-text overflow, separated offer/error meaning and consolidated accepted motion ownership. [Evidence and explicit badge/stock/hover decisions](../../apps/web/docs/design/implementation-evidence/p2-04-refinement.md). 32 proof tests, 14 compiled retained regressions, 17 units/type/lint/build and live checks pass. Public/admin/shared themes, domains and providers unchanged; no orders, production access or deployment. Next P2-05 final guide/sidecar/instruction reconciliation.
+
 ## 2026-11-17 — P2-03 component/state specimen verified
 
 Added the gated reusable component specimen and mapped retained checkout consumers. Removed 21 proven overridden checkout declarations with exact selected computed-style parity across eight bilingual details/review states; real checkout/server behavior remains unchanged. [Report/captures/ownership map](../../apps/web/docs/design/implementation-evidence/p2-03-specimen.md). 26 proof tests, 14 compiled regressions, 16 units/type/lint/build and live verification pass. Existing public/admin/shared styling remains isolated; no orders, production data/provider access or deployment. Next P2-04; final guide authority remains P2-05. Owned preview restart/cache preservation and remaining verification limits documented.

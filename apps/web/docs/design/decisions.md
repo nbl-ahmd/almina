@@ -189,3 +189,8 @@ The previous [identity-overhaul report](../../../../docs/migration/STOREFRONT_ID
 ## P2-03 — reusable specimen and retained checkout boundary (17 November 2026)
 
 Implementation decision within the owner's staged continuation: `/design-proof/components` reuses actual accepted components and explicitly labels synthetic visual/feedback samples. It cannot place an order. Selected option/gallery states have one accepted boundary owner. Conservative removal of 21 overridden checkout declarations preserves measured details/review appearance; active checkout rules remain legacy until P5. This is not a new visual direction or approval of later refinements. [Evidence and state/consumer map](implementation-evidence/p2-03-specimen.md). P2-04 and P2-05 remain pending.
+
+
+## P2-04 — measured system refinements (17 November 2026)
+
+Implementation decisions under the owner's staged continuation, not a new direction: retain accepted Figtree/Alexandria, exact coral and composition. Default accepted shared buttons use the10px control role; explicit pill/rounded shapes remain. Label wrapping supports enlarged text. Offer styling uses existing ink/campaign roles rather than error colour. Allow 10px redundant count hints with full accessible names, use 11px stock labels and explicit compact insets, keep accepted product photography static and feedback 120ms/reduced-motion immediate. Legacy badge/hover consumers remain until P3/P4. [Measurements, captures and boundaries](implementation-evidence/p2-04-refinement.md). P2-05 final documentation/authority remains pending; no production release acceptance.

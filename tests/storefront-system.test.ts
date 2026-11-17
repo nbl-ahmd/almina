@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const file='apps/web/src/components/storefront-system/tokens.module.css';
 const tokens=readFileSync(file,'utf8');
-const consumer=readFileSync('apps/web/src/components/design-proof/proof.module.css','utf8');
+const consumer=['apps/web/src/components/design-proof/proof.module.css','apps/web/src/components/design-proof/specimen.module.css','apps/web/src/components/storefront-system/boundary.module.css'].map(file=>readFileSync(file,'utf8')).join('\n');
 const refs=(value:string)=>Array.from(value.matchAll(/var\((--[\w-]+)/g),m=>m[1]!);
 test('accepted storefront token references resolve without cycles or global theme leakage',()=>{
  const definitions=new Map<string,string[]>();

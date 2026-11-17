@@ -14,7 +14,7 @@
   --color-control-border: var(--store-border-control);
   --color-control-hover: var(--store-focus);
   --color-control-disabled: var(--store-disabled-surface);
-  --color-sale: var(--store-error);
+  --color-sale: var(--store-offer-text);
   --color-teal: var(--store-positive);
   --color-ocean: var(--store-text-muted);
   --shadow-raised: var(--store-elevation-overlay);
@@ -43,6 +43,13 @@
   border: 1px solid transparent;
   background: transparent;
   color: var(--store-text);
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.boundary [data-slot='button'][data-shape='default'] {
+  border-radius: var(--store-control-radius);
 }
 .boundary [data-slot='button']:is([data-variant='default'], [data-variant='accent']) {
   background: var(--store-purchase-surface);
@@ -130,3 +137,22 @@
 }
 .boundary [data-store-notice='error'] { border-color: var(--store-error); }
 .boundary [data-store-notice='success'] { border-color: var(--store-positive); }
+.boundary [data-store-notice='offer'] {
+  color: var(--store-offer-text);
+  background: var(--store-offer-surface);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .boundary :is(a, button, input, select, summary) {
+    transition-property: background-color, border-color, color;
+    transition-duration: var(--store-motion-feedback);
+    transition-timing-function: var(--store-motion-easing);
+  }
+}
+/* Covers shared portal/menu utilities as well as native proof controls. */
+@media (prefers-reduced-motion: reduce) {
+  .boundary *, .boundary *::before, .boundary *::after {
+    transition: none;
+    animation: none;
+    scroll-behavior: auto;
+  }
+}

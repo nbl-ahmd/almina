@@ -19,4 +19,11 @@ Starting 2d35c15. [Cascade/state/scope report](p2-02-cascade.md) records settled
 
 Starting 33f8f65. [Full component/state specimen and retained checkout map](p2-03-specimen.md) documents working components versus labelled demonstrations, actual EN/AR interactions, selected-state ownership and safe embedded-dock semantics. Twenty-one dead checkout declarations removed; active legacy consumers remain mapped for P5, with eight measured details/review states unchanged. Fourteen captures include zero-pixel matched home views. 26 proof tests, 14 compiled regressions, 16 units, type/lint/build and live verification pass. Owned long-running preview export failure/restart and evidence-helper corrections are recorded. No production theme switch, orders or deployment.
 
-**Next P2-04:** contrast, typography, shape, icons and motion using the full specimen and actual routes. P2-05 final authority alignment remains separate; Phase 2 remains in progress.
+**Historical next at P2-03:** contrast, typography, shape, icons and motion using the full specimen and actual routes. P2-05 final authority alignment remains separate; Phase 2 remains in progress.
+
+
+## P2-04 verified — 17 November 2026
+
+Starting f83f29f. [Measured refinements](p2-04-refinement.md) preserve accepted identity/composition while resolving default-shape drift, enlarged-text button overflow, offer/error alias coupling and scoped feedback/reduced-motion ownership. Compact badge, stock inset, icon stroke and static-image decisions explicit. Actual EN/AR state contrast and before/after 16-case text sweeps retained. Nine captures, 32 proof tests, 14 compiled retained regressions, 17 units, type/lint/build and live Next/browser checks pass. No production switch, orders or deployment.
+
+**Next P2-05:** rewrite/align final DESIGN.md, sidecar, brief/screen directions/product context and styling authority. Phase 2 is still in progress; shared/legacy runtime retirement waits for consumer migration.

@@ -79,6 +79,8 @@
   --store-ref-target: 44px;
   --store-ref-icon: 22px;
   --store-ref-feedback: 120ms;
+  --store-ref-easing-feedback: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --store-ref-icon-stroke: 1.5;
   --store-ref-circle: 50%;
   --store-ref-type-21: 21px;
   --store-ref-type-23: 23px;
@@ -131,6 +133,8 @@
   --store-disabled-text: var(--store-ref-color-disabled-text);
   --store-disabled-surface: var(--store-ref-color-disabled-surface);
   --store-error: var(--store-ref-color-error);
+  --store-offer-text: var(--store-text);
+  --store-offer-surface: var(--store-campaign-surface);
   --store-selected-surface: var(--store-ref-color-selected-surface);
   --store-secondary-surface: var(--store-ref-color-secondary-surface);
   --store-scrim: var(--store-ref-color-scrim);
@@ -186,14 +190,23 @@
   --store-layout-container: var(--store-ref-container);
   --store-target-min: var(--store-ref-target);
   --store-icon-size: var(--store-ref-icon);
+  --store-icon-stroke: var(--store-ref-icon-stroke);
   --store-radius-round: var(--store-ref-circle);
   --store-motion-feedback: var(--store-ref-feedback);
+  --store-motion-easing: var(--store-ref-easing-feedback);
   --store-elevation-overlay: 0 var(--store-space-8) var(--store-space-24) var(--store-overlay-shadow-color);
   /* Component roles; layout-specific geometry remains in its owner. */
   --store-control-radius: var(--store-radius-10);
   --store-card-radius: var(--store-radius-14);
   --store-card-padding: var(--store-space-10);
   --store-card-gap: var(--store-space-14);
+  /* Counts are redundant visual hints; status labels carry product information. */
+  --store-count-size: var(--store-type-10);
+  --store-stock-size: var(--store-type-11);
+  --store-stock-inset-block: var(--store-space-3);
+  --store-stock-inset-inline: var(--store-space-8);
+  --store-stock-inset-block-phone: var(--store-space-2);
+  --store-stock-inset-inline-phone: var(--store-space-6);
   --store-search-radius: var(--store-radius-12);
   --store-search-action-radius: var(--store-radius-8);
   --store-search-surface: var(--store-input-surface);

@@ -46,6 +46,11 @@ export function FeedbackSamples({ lang }: { lang: "en" | "ar" }) {
             : "Interface state sample only; no request was sent and no order was created."}
         </p>
       </ProofNotice>
+      <p data-store-notice="offer">
+        {lang === "ar"
+          ? "عينة تنسيق العرض فقط؛ لا تعلن عن عرض ترويجي."
+          : "Offer style sample only; no promotion is advertised."}
+      </p>
     </>
   );
 }

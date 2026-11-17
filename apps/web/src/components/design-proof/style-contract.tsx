@@ -79,6 +79,12 @@ export function ControlStateExamples({ lang }: { lang: "en" | "ar" }) {
         <Button variant="destructive" data-testid="destructive-variant">
           {label("Destructive sample", "عينة إجراء تحذيري")}
         </Button>
+        <Button variant="outline" shape="pill" data-testid="pill-shape">
+          {label("Pill shape sample", "عينة الشكل البيضاوي")}
+        </Button>
+        <Button variant="outline" shape="rounded" data-testid="rounded-shape">
+          {label("Rounded shape sample", "عينة الزوايا المستديرة")}
+        </Button>
       </div>
       <label>
         {label("Normal field", "حقل عادي")}
