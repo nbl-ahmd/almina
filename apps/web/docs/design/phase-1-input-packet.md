@@ -1,6 +1,6 @@
 # Phase 1 input packet — comparable coded direction proof
 
-Prepared 17 November 2026 by P0-05 from the completed baseline. **This is a handoff, not the P1-01 prototype contract, a final design system, or approval of new screens.** Mutable state/next action: [progress](implementation-progress.md). Scope/tasks/gates: [phases](implementation-phases.md#phase-1--comparable-coded-direction-proof).
+Prepared 17 November 2026 by P0-05 from the completed baseline. **Handoff update:** P1-01 has since authored the [prototype contract](prototype-contract.md); follow progress for the current task rather than treating the original resume sequence below as mutable status. **This is a handoff, not the P1-01 prototype contract, a final design system, or approval of new screens.** Mutable state/next action: [progress](implementation-progress.md). Scope/tasks/gates: [phases](implementation-phases.md#phase-1--comparable-coded-direction-proof).
 
 ## Resume sequence
 

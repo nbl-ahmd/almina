@@ -1,3 +1,7 @@
+## 2026-11-17 — P1-01 storefront prototype contract prepared
+
+Phase 1 started with the [prototype contract](../../apps/web/docs/design/prototype-contract.md): dev-only isolated Next proof, matched fixtures/home lead comparisons, shared phone/listing/PDP identity, bilingual states/reference interpretation and explicit review/cleanup gates. Mechanism is planned, not launched. No UI/final-token/runtime change or new visual approval. Next P1-02 validates isolation and builds working coded previews. See [progress](../../apps/web/docs/design/implementation-progress.md) and [phase evidence](../../apps/web/docs/design/implementation-evidence/phase-1.md).
+
 ## 2026-11-17 — Phase 0 storefront baseline complete
 
 P0-05 consolidated source/authority, consumer/cascade, route/state/test and fresh capture/content evidence. All 63 requirements and six new findings have evidence, future owners and proof still owed; no implementation requirement silently closed. All five baseline tasks verified. Next P1-01 prototype contract from the [input packet](../../apps/web/docs/design/phase-1-input-packet.md). No new design, tokens, runtime changes, production access or deployment. See [exit summary](../../apps/web/docs/design/implementation-evidence/phase-0-summary.md) and [progress](../../apps/web/docs/design/implementation-progress.md).

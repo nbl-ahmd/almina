@@ -90,3 +90,7 @@ Recorded across P0-02–P0-04; these assignments are not implementation completi
 ## Phase 0 reconciliation checkpoint
 
 P0-05 reconciled all 63 requirements and six new findings into the [dated evidence/future-owner snapshot](implementation-evidence/p0-05-reconciliation.json). Zero unmapped rows; implementation acceptance remains open for every spanning obligation. See [exit summary](implementation-evidence/phase-0-summary.md) and [Phase 1 input packet](phase-1-input-packet.md). Mutable status continues exclusively in progress; this checkpoint is not final requirement closure.
+
+## P1-01 contract checkpoint
+
+[Prototype contract PC01–PC08](prototype-contract.md) records planning for the P1-01-owned requirements (C01–C02, C41–C50/C63 and related proof constraints) and NEW-001–006 handling. It does not close their coded/interaction/owner acceptance proofs. Planned isolation/fixtures/styles/gates must be verified in P1-02; see [Phase 1 evidence](implementation-evidence/phase-1.md) and the single progress ledger.
