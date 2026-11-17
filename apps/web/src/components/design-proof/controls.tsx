@@ -160,7 +160,9 @@ export function ProofChrome({ lang }: { lang: Lang }) {
 }
 function Location({ lang }: { lang: Lang }) {
   const area = useSyncExternalStore(subscribeArea, areaSnapshot, () => ""),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [invalid, setInvalid] = useState(false);
+  const messageId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <>
@@ -178,6 +180,7 @@ function Location({ lang }: { lang: Lang }) {
             emirate.value = saved?.emirate ?? "Sharjah";
           }
           setError("");
+          setInvalid(false);
           dialog.current?.showModal();
         }}
       >
@@ -198,6 +201,7 @@ function Location({ lang }: { lang: Lang }) {
               city: data.get("city"),
             });
             if (!result.success) {
+              setInvalid(true);
               setError(
                 w(lang, "Enter your city or area.", "أدخل المدينة أو المنطقة."),
               );
@@ -244,9 +248,12 @@ function Location({ lang }: { lang: Lang }) {
           </label>
           <label>
             {w(lang, "City / area", "المدينة / المنطقة")}
-            <input name="city" maxLength={200} required defaultValue="" />
+            <input name="city" maxLength={200} required defaultValue=""
+              data-store-control="field" aria-invalid={invalid || undefined}
+              aria-describedby={error ? messageId : undefined}
+              onChange={() => { setInvalid(false); setError(""); }} />
           </label>
-          <p role="alert">{error}</p>
+          <p role="alert" id={messageId}>{error}</p>
           <button className={s.primary} type="submit">
             {w(lang, "Save area", "حفظ المنطقة")}
           </button>
@@ -403,6 +410,7 @@ function Search({ lang, initialQuery }: { lang: Lang; initialQuery: string }) {
           id={id}
           name="q"
           type="search"
+          data-store-control="search-input"
           maxLength={80}
           autoComplete="off"
           placeholder={w(
@@ -626,6 +634,7 @@ export function Save({
             saved ? "إزالة من المحفوظات" : "حفظ المنتج",
           ) + (name ? " " + name : "")
         }
+        data-store-control="save"
         aria-pressed={saved}
         onClick={() => {
           try {
@@ -738,9 +747,10 @@ export function Purchase({
     <div
       className={detailed ? s.purchaseDetail : s.purchase}
       aria-busy={pending}
+      data-store-state={count > 0 ? "added" : pending ? "pending" : "idle"}
     >
       {detailed && count === 0 && product.stock > 0 && (
-        <div className={s.stepper}>
+        <div className={s.stepper} data-store-control="quantity" data-store-state={count > 0 ? "added" : "idle"}>
           <button
             aria-label={w(lang, "Decrease quantity", "تقليل الكمية")}
             disabled={qty <= 1}
@@ -759,7 +769,7 @@ export function Purchase({
         </div>
       )}
       {count > 0 ? (
-        <div className={s.stepper}>
+        <div className={s.stepper} data-store-control="quantity" data-store-state={count > 0 ? "added" : "idle"}>
           <button
             disabled={pending}
             aria-label={w(
@@ -787,6 +797,8 @@ export function Purchase({
       ) : (
         <button
           className={s.add}
+          data-store-control="purchase"
+          aria-busy={pending}
           disabled={pending || product.stock <= 0}
           aria-label={w(
             lang,

@@ -27,6 +27,7 @@
   --color-control-hover: #454c53;
   --color-control-disabled: #eceeed;
   --color-primary-foreground: var(--color-ink);
+  --ui-primary-foreground: var(--color-ink);
   --color-secondary-foreground: var(--color-ink);
   --radius-control: 16px;
   --radius-card: 18px;

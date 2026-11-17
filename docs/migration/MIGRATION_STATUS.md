@@ -1,3 +1,7 @@
+## 2026-11-17 — P2-02 cascade/control scope verified
+
+Fixed compiled foreground alias and legacy added/saved feedback ownership; established opt-in accepted control/variant/state boundary and actual invalid-field semantics. EN/AR computed portal/focus/client-navigation contracts pass. [Report and retained measurements](../../apps/web/docs/design/implementation-evidence/p2-02-cascade.md). Twenty-two proof tests, ten compiled checkout/admin/wholesale/root-404/feedback/responsive checks, six units/type/lint/build and live smoke pass. Shared palettes/domains remain independent; no pricing/inventory/auth implementation change, order submission, production access or deployment. Next P2-03 full component/state specimen and retained checkout visual map.
+
 ## 2026-11-17 — P1 direction gate closed; P2-01 token foundation verified
 
 Owner continued after the revised N03 mobile PDP. Established one scoped accepted storefront token source with primitive/semantic/component roles and actual proof consumers. Shared legacy customer/wholesale/root-404 values retained; additive font variables preserve existing class consumers. [Evidence/consumer/Tailwind migration contract](../../apps/web/docs/design/implementation-evidence/p2-01-system.md). Seventeen flow tests, eight checkout/admin/responsive/boundary checks, units/type/lint/build and runtime smoke pass; matched renders show no material visual drift. Next P2-02 cascade/scope; final guide authority is P2-05. No production theme/data/provider change, order submission or deployment.

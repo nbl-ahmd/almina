@@ -33,7 +33,7 @@
 /* shadcn semantic aliases resolve to the current surface's palette, including RTL. */
 @theme inline {
   --color-primary: var(--color-brand);
-  --color-primary-foreground: #ffffff;
+  --color-primary-foreground: var(--ui-primary-foreground, #ffffff);
   --color-background: var(--color-surface);
   --color-foreground: var(--color-ink);
   --color-muted-foreground: var(--color-muted);
@@ -42,9 +42,9 @@
   --color-destructive: var(--color-sale);
   --color-ring: var(--color-brand);
   --color-input: var(--color-control-border);
-  --color-control-border: #8792a4;
-  --color-control-hover: #64748b;
-  --color-control-disabled: #eef0f4;
+  --color-control-border: var(--ui-control-border, #8792a4);
+  --color-control-hover: var(--ui-control-hover, #64748b);
+  --color-control-disabled: var(--ui-control-disabled, #eef0f4);
 }
 
 /* Keep the verified component styles while migrating components to utilities.

@@ -46,21 +46,6 @@
 .root select {
   cursor: pointer;
 }
-.root button {
-  border: 0;
-  background: transparent;
-  min-height: var(--store-target-min);
-  border-radius: var(--store-control-radius);
-  padding: var(--store-space-8) var(--store-space-12);
-}
-.root button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-.root :is(a, button, input, select, summary):focus-visible {
-  outline: 3px solid var(--store-focus);
-  outline-offset: 3px;
-}
 .root svg {
   width: var(--store-icon-size);
   height: var(--store-icon-size);
@@ -353,7 +338,7 @@
   color: var(--store-text);
 }
 .primary:hover,
-.root .add:hover {
+.root .add:hover:not(:disabled) {
   background: var(--store-action-hover);
 }
 .courier {
@@ -507,10 +492,6 @@
   border: 1px solid var(--store-save-border);
   border-radius: var(--store-radius-round);
 }
-.root .save[aria-pressed="true"] {
-  color: var(--store-saved);
-  background: var(--store-saved-surface);
-}
 .cardBody {
   display: flex;
   flex-direction: column;
@@ -557,11 +538,6 @@
   background: var(--store-purchase-surface);
   color: var(--store-purchase-foreground);
   border-radius: var(--store-radius-10);
-}
-.root .add:disabled {
-  opacity: 1;
-  color: var(--store-disabled-text);
-  background: var(--store-disabled-surface);
 }
 .stepper {
   display: flex;

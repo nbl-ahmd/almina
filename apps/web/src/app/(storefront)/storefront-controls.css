@@ -35,6 +35,12 @@
 
 .storefront-shell .save-product-compact { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; min-height:44px; padding:11px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:50%; color:var(--color-muted); box-shadow:0 2px 4px rgb(36 39 43 / 6%); }
 .storefront-shell .save-product-compact svg { width:20px; height:20px; }
-.storefront-shell .save-product-compact[aria-pressed='true'] { color:var(--color-sale); background:var(--color-sale-surface); }
 
 .storefront-shell .save-product-compact:hover { background:var(--color-subtle); border-color:var(--color-control-hover); }
+.storefront-shell .save-product-compact[aria-pressed='true'] { color:var(--color-sale); background:var(--color-sale-surface); }
+
+/* Legacy compatibility state: the unlayered control owner must own added feedback too.
+   Do not reintroduce competing data-added colour utilities on AddToCart. */
+.storefront-shell [data-slot='button'].add-to-cart[data-added='true']:not(:disabled) {
+ background:var(--color-accent); border-color:var(--color-teal); color:var(--color-ink);
+}

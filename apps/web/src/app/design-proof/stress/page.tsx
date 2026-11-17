@@ -158,7 +158,7 @@ export default async function Stress({
                 </strong>
               </span>
               <div className={s.purchaseDetail}>
-                <button className={s.add} disabled>
+                <button className={s.add} data-store-control="purchase" disabled>
                   {words(lang, "Sample only", "عينة فقط")}
                 </button>
               </div>
@@ -219,7 +219,7 @@ export default async function Stress({
               }
               save={
                 <button
-                  className={s.save}
+                  className={s.save} data-store-control="save"
                   disabled
                   aria-label={words(
                     lang,
@@ -232,7 +232,7 @@ export default async function Stress({
               }
               action={
                 <button
-                  className={s.add}
+                  className={s.add} data-store-control="purchase"
                   disabled
                   aria-label={words(
                     lang,

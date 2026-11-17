@@ -1,0 +1,117 @@
+/* Opt-in compatibility aliases and control state ownership. Values live in tokens.module.css.
+   Unlayered by design: existing root utilities are layered. No root/admin/wholesale selector.
+   Layout modules own geometry; shared variants and final states are owned here. */
+.boundary {
+  --color-brand: var(--store-action);
+  --color-brand-hover: var(--store-action-hover);
+  --color-ink: var(--store-text);
+  --color-muted: var(--store-text-muted);
+  --color-surface: var(--store-surface);
+  --color-page: var(--store-canvas);
+  --color-subtle: var(--store-secondary-surface);
+  --color-accent: var(--store-selected-surface);
+  --color-border: var(--store-border);
+  --color-control-border: var(--store-border-control);
+  --color-control-hover: var(--store-focus);
+  --color-control-disabled: var(--store-disabled-surface);
+  --color-sale: var(--store-error);
+  --color-teal: var(--store-positive);
+  --color-ocean: var(--store-text-muted);
+  --shadow-raised: var(--store-elevation-overlay);
+  --color-focus: var(--store-focus);
+  --ui-primary-foreground: var(--store-purchase-foreground);
+  --ui-control-border: var(--store-border-control);
+  --ui-control-hover: var(--store-focus);
+  --ui-control-disabled: var(--store-disabled-surface);
+}
+.boundary :where(button:not([data-slot])) {
+  border: 0;
+  background: transparent;
+  min-height: var(--store-target-min);
+  border-radius: var(--store-control-radius);
+  padding: var(--store-space-8) var(--store-space-12);
+}
+.boundary :where(button:not([data-slot])):disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.boundary :is(a, button, input, select, summary):focus-visible:where(:not([data-store-control="search-input"])) {
+  outline: 3px solid var(--store-focus);
+  outline-offset: 3px;
+}
+.boundary [data-slot='button'] {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--store-text);
+}
+.boundary [data-slot='button']:is([data-variant='default'], [data-variant='accent']) {
+  background: var(--store-purchase-surface);
+  border-color: var(--store-purchase-surface);
+  color: var(--store-purchase-foreground);
+  opacity: 1;
+}
+.boundary [data-slot='button']:is([data-variant='default'], [data-variant='accent']):where(:hover:not(:disabled):not([aria-busy='true'])) {
+  background: var(--store-action-hover);
+  border-color: var(--store-action-hover);
+}
+.boundary [data-slot='button'][data-variant='outline'] {
+  background: var(--store-surface);
+  border-color: var(--store-border-control);
+}
+.boundary [data-slot='button'][data-variant='secondary'] {
+  background: var(--store-secondary-surface);
+}
+.boundary [data-slot='button']:is([data-variant='ghost'], [data-variant='link']) {
+  color: var(--store-text-muted);
+}
+.boundary [data-slot='button'][data-variant='destructive'] {
+  background: var(--store-error);
+  border-color: var(--store-error);
+  color: var(--store-surface);
+}
+/* Hover belongs to the same owner as its variant, not lower-layer colour utilities. */
+.boundary [data-slot='button'][data-variant='outline']:where(:hover:not(:disabled):not([aria-busy='true'])) {
+  background: var(--store-hover-surface);
+  border-color: var(--store-focus);
+}
+.boundary [data-slot='button'][data-variant='secondary']:where(:hover:not(:disabled):not([aria-busy='true'])) {
+  background: var(--store-selected-surface);
+}
+.boundary [data-slot='button'][data-variant='ghost']:where(:hover:not(:disabled):not([aria-busy='true'])) {
+  background: var(--store-hover-surface);
+  color: var(--store-text);
+}
+.boundary [data-slot='button'][data-variant='link']:where(:hover:not(:disabled):not([aria-busy='true'])) {
+  color: var(--store-text);
+}
+/* Meaning states follow variants at equal specificity; hover adds zero specificity. */
+.boundary [data-slot='button'][data-added='true'],
+.boundary [data-store-control='quantity'][data-store-state='added'] {
+  background: var(--store-positive-surface);
+  border-color: var(--store-positive);
+  color: var(--store-text);
+}
+.boundary [data-store-control='save'][aria-pressed='true'] {
+  color: var(--store-saved);
+  background: var(--store-saved-surface);
+}
+.boundary :is([data-slot='input'], [data-store-control='field'])[aria-invalid='true'] {
+  border-color: var(--store-error);
+  outline-color: var(--store-error);
+}
+.boundary [data-slot='button']:is(:disabled, [aria-disabled='true']),
+.boundary [data-store-control='purchase']:disabled {
+  color: var(--store-disabled-text);
+  background: var(--store-disabled-surface);
+  border-color: var(--store-border);
+  opacity: 1;
+  cursor: not-allowed;
+}
+.boundary [data-slot='button'][aria-busy='true'],
+.boundary [data-store-control='purchase'][aria-busy='true'] {
+  background: var(--store-purchase-surface);
+  color: var(--store-purchase-foreground);
+  border-color: var(--store-purchase-surface);
+  opacity: 1;
+  cursor: progress;
+}

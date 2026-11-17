@@ -1,0 +1,47 @@
+{
+  "startingCommit": "2d35c15",
+  "source": "P2-02 changes committed with evidence",
+  "conditions": "Chromium; synthetic loopback fixture; EN/AR; reduced motion. Only development diagnostics hidden for screenshots. Diagnostic is not a production screen/full component specimen.",
+  "captures": [
+    {
+      "file": "shared-states-en.png",
+      "lang": "en",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "Real shared controls in gated diagnostic, added/pending/disabled/invalid",
+      "sha256": "825cec9723cb0e35e3cea9a38a19cceba2d564d1ae4087681cb6f9a2b720dbad"
+    },
+    {
+      "file": "native-invalid-en.png",
+      "lang": "en",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "Actual location validation in native top-layer dialog",
+      "sha256": "838d8ca7d60f3288d7fb70e573564a35990a4752d0d23e315e29b75b70ca6ef8"
+    },
+    {
+      "file": "shared-states-ar.png",
+      "lang": "ar",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "state": "Real shared controls in gated diagnostic, added/pending/disabled/invalid",
+      "sha256": "414fe6d37e3fa65f20f3ef829d037acd67404b13e9afc56c06e7bd2a088e823d"
+    },
+    {
+      "file": "native-invalid-ar.png",
+      "lang": "ar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "Actual location validation in native top-layer dialog",
+      "sha256": "5b3e4937a3fe72ed2b0e5eb3173656a355a297956e24e4b3dbefeb393d8efd20"
+    }
+  ]
+}

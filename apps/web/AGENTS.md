@@ -265,3 +265,17 @@ independent. Ghost/link actions must use explicit variants, not inherit the lega
 native button fill. Keep native checkout quantity, auth, quote and payment logic
 unchanged during visual work. Cart estimates come from server-loaded catalogue
 prices and are never the final checkout quote.
+
+## Staged replacement control boundary
+
+During P2–P5 migration, `storefront-controls.css` owns incumbent `.storefront-shell`
+consumers. Opted-in replacement consumers use
+`src/components/storefront-system/boundary.module.css` for native base treatment,
+shared variants and final states; `tokens.module.css` remains their value source.
+Keep colour ownership for these migrated controls out of route layout modules
+and competing utilities. Remaining option/gallery selection styles migrate with
+the P2-03 component specimen.
+Compiled foreground/control aliases resolve through scoped `--ui-*` bridges;
+verify the actual scope/fallback rather than assuming a raw custom property wins.
+See `docs/design/implementation-evidence/p2-02-cascade.md` before changing shared
+aliases, state selectors or portal containers. P2-05 owns full guide reconciliation.
