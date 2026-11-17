@@ -1,6 +1,6 @@
 # Phase 0 evidence — baseline and ownership
 
-Started 17 November 2026. **Phase 0 remains in progress; P0-01 and P0-02 are verified in their separate checkpoints below.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
+Started 17 November 2026. **Phase 0 remains in progress; P0-01, P0-02 and P0-03 are verified in their separate checkpoints below.** Task definitions: [phases](../implementation-phases.md). Mutable status: [progress](../implementation-progress.md). Requirement mapping: [coverage](../implementation-coverage.md).
 
 ## P0-01 — Baseline reconciliation
 
@@ -98,6 +98,16 @@ Coverage contributions: C07–C18, C32, C41–C50 reference/media boundaries, C5
 
 Outcome: **P0-02 verified**, no blocker to P0-03. Next: actual route/state/test-harness map, including root error, wholesale and shared admin preview. Rollback is documentation-only; no data/runtime migration. No process was started/stopped; raw audit artifacts intentionally retained as local evidence.
 
+## P0-03 — Route/state/test mapping
+
+Owner's “do next” mapped to P0-03; starting source 944bf72, clean tree. [Detailed map](p0-03-routes-states-tests.md) and [route/boundary/test index](p0-03-route-index.json) enumerate 61 physical page/handler/robots entries and 15 layout/error/loading scopes. Read-only Next get_routes matched them plus the favicon file-convention route (62). Dynamic patterns do not enumerate all data-driven URLs or establish feature enablement.
+
+Mapped actual account subfeatures, managed Arabic paths, legacy product/admin/map redirects, query/SEO/index rules, server quote/auth/payment gates, S01–S14 states and H1–H4 isolated fixtures. Existing 32 E2E spec files/130 test declaration expressions are inventory, not executed/passing coverage. NEW-004 records the browser-back/query/scroll verification gap; NEW-005 records generic literal-English error copy. Future tasks assigned in coverage; no runtime fixes or production claims.
+
+Coverage contributions: C03–C06, C19–C23, C28–C40, C50–C59, C62–C63 and NEW-001–005. All spanning requirements remain open. Raw source audit and Next route response: `.verification-results/storefront-replacement/phase-0/p0-03-*`.
+
+Outcome: **P0-03 verified as inventory work**. No browser, build, functional test, database/provider operation or server lifecycle change. Documentation-only rollback. Next P0-04: establish correct fixture/commit/locale/viewport/state capture manifest, take fresh baseline screenshots and inventory content/media limitations. P0-05 synthesis follows.
+
 ## Remaining Phase 0 work
 
-P0-03 route/state/test map, P0-04 fresh captures/content inventory and P0-05 baseline synthesis are not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.
+P0-04 fresh captures/content inventory and P0-05 baseline synthesis are not started. Append their evidence without overwriting this checkpoint; use the progress ledger as the only status source.

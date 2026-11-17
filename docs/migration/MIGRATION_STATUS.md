@@ -1,3 +1,7 @@
+## 2026-11-17 — P0-03 storefront routes/states/tests mapped
+
+Reconciled physical routes/boundaries with local Next discovery; mapped query/locale/SEO/compatibility rules, gated customer/business/checkout states and existing tests to isolated fixtures. Added explicit continuity/error-localisation verification gaps. P0-03 verified as inventory only; no runtime change or test/deployment claim. Next P0-04 fresh captures/content inventory. See [route/state/harness map](../../apps/web/docs/design/implementation-evidence/p0-03-routes-states-tests.md) and [progress](../../apps/web/docs/design/implementation-progress.md).
+
 ## 2026-11-17 — P0-02 storefront styling consumers inventoried
 
 Recorded all customer token references, CSS/layer ownership, shared components/fonts/assets/portals and generator bindings. Confirmed emitted added-state precedence and discovered wholesale's direct dependency on storefront CSS/shell, plus root 404 and staff campaign preview consumers. No resources removed or restyled. P0-02 verified; Phase 0 continues with P0-03 route/state/test mapping. See [ownership matrix](../../apps/web/docs/design/implementation-evidence/p0-02-style-ownership.md) and [progress](../../apps/web/docs/design/implementation-progress.md).

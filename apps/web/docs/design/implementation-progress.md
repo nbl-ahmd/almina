@@ -4,21 +4,21 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** P0-01 baseline reconciliation and P0-02 consumer/cascade inventory verified; Phase 0 is in progress. No replacement UI implementation has started.
-- **Next eligible task:** **P0-03 — route/state/test map**. Inventory actual customer/error/wholesale/admin-preview routes, functional/feature-gated states, query/legacy SEO behaviour and appropriate isolated test harnesses. Use P0-02 ownership findings; do not start redesign or remove shared styling.
-- **Verified implementation tasks:** 2 of 34 (P0-01/P0-02, baseline and source/compiled-CSS inventory; no redesigned screens). These are equal checklist counts, not a weighted completion percentage.
+- **Current work:** P0-01 baseline, P0-02 styling consumers and P0-03 route/state/test map verified; Phase 0 is in progress. No replacement UI implementation has started.
+- **Next eligible task:** **P0-04 — fresh baseline captures and content/media inventory**. Establish the EN/AR phone/tablet/desktop route/state capture matrix and correct H1–H4 fixture for each view, then record source identity, screenshots, first merchandise/amount positions and content limitations. Do not start redesign.
+- **Verified implementation tasks:** 3 of 34 (P0-01/P0-02/P0-03 baseline inventories; no redesigned screens). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** source/import/layer/token/asset inventory plus two loopback emitted stylesheets inspected; added-state precedence confirmed. No browser interaction, computed-state matrix, app test suite, build or restart in P0-02. Earlier P0-01 HTTP/error checks remain separately dated evidence.
+- **Runtime/testing this checkpoint:** source route/boundary/gate/query/test inventory reconciled with read-only Next get_routes (62 patterns, including favicon). No functional tests, browser matrix, build, database reset, payment, login or restart in P0-03. Earlier checks remain separately dated evidence.
 - **No production data access or deployment. No final replacement visual approval inferred.**
 
 ## Phase status
 
 | Phase | Status | Entry / unresolved gate | Evidence |
 | --- | --- | --- | --- |
-| 0 Baseline/ownership | in_progress | P0-01/P0-02 verified; P0-03–P0-05 remain | [Phase evidence](implementation-evidence/phase-0.md) |
+| 0 Baseline/ownership | in_progress | P0-01/P0-02/P0-03 verified; P0-04/P0-05 remain | [Phase evidence](implementation-evidence/phase-0.md) |
 | 1 Direction proof | not_started | Needs verified Phase 0 and authorised prototype execution | — |
 | 2 Accepted system | not_started | Needs concrete Phase 1 screen decision | — |
 | 3 Shell/home | not_started | Needs Phase 2 system and state/consumer verification | — |
@@ -34,7 +34,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | --- | --- | --- |
 | P0-01 | verified | [Baseline reconciliation](implementation-evidence/phase-0.md#p0-01--baseline-reconciliation); starting HEAD 005ad88; read-only runtime smoke, no restart/visual acceptance |
 | P0-02 | verified | [Ownership matrix](implementation-evidence/p0-02-style-ownership.md), [consumer index](implementation-evidence/p0-02-style-consumers.json); source d6fd0f5, no runtime edits |
-| P0-03 | not_started | — |
+| P0-03 | verified | [Routes/states/harness map](implementation-evidence/p0-03-routes-states-tests.md), [route/test index](implementation-evidence/p0-03-route-index.json); source 944bf72, read-only Next route reconciliation |
 | P0-04 | not_started | — |
 | P0-05 | not_started | — |
 | P1-01 | not_started | — |
@@ -92,6 +92,7 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O05 | Old instructions/guide/runtime still describe incumbent visual candidate | Treat as existing implementation evidence; align authority after accepted P1 screens, no silent restoration of rejected look. | P0-01, P2-05 |
 | O06 | Search matching/Arabic quality and true back/scroll behaviour | Evaluate representative local data; track separately from new styling if outside scope. | P0-03, P4-05 |
 | O07 | NEW-001/002/003: wholesale shares customer CSS/shell; root 404 imports it; admin campaign preview shares artwork/Outfit | Isolation/compatibility and preview policy required before accepted customer system switch; see P0-02 matrix. No shared deletion yet. | P2-01–P2-03, P3-03–P3-04, P6-01 |
+| O08 | NEW-004: search/PDP browser back and query/scroll restoration lack explicit E2E assertions; NEW-005: generic error boundary copy is English literals | Verify actual continuity and localised failure states on correct fixtures; source gap is not observed browser failure. | P3-04, P4-05, P5-05, P6-02 |
 
 No implementation blocker has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
 
@@ -101,7 +102,7 @@ No implementation blocker has been demonstrated at this checkpoint. Future block
 - Reference originals: repository-root `docs/design/storefront/references/2026-11-17/manifest.json` (N01–N07, four families; private planning assets).
 - Historical independent review notes: `.verification-results/direction-review-2026-11-17/assessment-a.md` and `assessment-b.md`; ignored/raw evidence may not exist in another checkout. Durable synthesis is the tracked system review.
 - Historical critique snapshot: repository-root `.impeccable/critique/2026-11-17T03-50-30Z__apps-web-src-app-storefront-storefront-tokens-css.md`. 28/40 is the past usability review, not a current phase pass.
-- Phase evidence: [baseline checkpoints](implementation-evidence/phase-0.md), [P0-02 ownership matrix](implementation-evidence/p0-02-style-ownership.md), [complete consumer index](implementation-evidence/p0-02-style-consumers.json) and [preview runbook](implementation-evidence/preview-runbook.md). Raw smoke: `.verification-results/storefront-replacement/phase-0/p0-01-runtime.json`. Existing preview preserved; no restart tested. Future captures/logs are indexed by source commit, viewport/locale/state and conditions.
+- Phase evidence: [baseline checkpoints](implementation-evidence/phase-0.md), [P0-03 routes/states/harness map](implementation-evidence/p0-03-routes-states-tests.md), [route/test index](implementation-evidence/p0-03-route-index.json), [P0-02 ownership matrix](implementation-evidence/p0-02-style-ownership.md), [complete consumer index](implementation-evidence/p0-02-style-consumers.json) and [preview runbook](implementation-evidence/preview-runbook.md). Raw smoke: `.verification-results/storefront-replacement/phase-0/p0-01-runtime.json`. Existing preview preserved; no restart tested. Future captures/logs are indexed by source commit, viewport/locale/state and conditions.
 
 ## Source-plan fingerprints at preparation
 
@@ -145,6 +146,17 @@ These identify the reviewed inputs, not a runtime lock. If a source changes, rer
 - **Limits:** no browser/computed-state/auth/payment/route matrix, build or test suite; no code changes. Import reachability and emitted CSS are not runtime visibility, final style isolation or deletion proof.
 - **Next:** P0-03 route/state/test map, including root unknown URLs, wholesale shared wrapper and staff campaign preview paths. Select correct isolated fixture for each state; catalogue preview cannot exercise full commerce/auth.
 - **Cleanup:** existing preview left running, no new server/browser/session started. Ignored audit scripts/evidence intentionally retained. This checkpoint is in its own documentation commit.
+
+### 2026-11-17 — P0-03 verified
+
+- **Authorisation:** owner said “do next”; ledger identified P0-03. Starting HEAD 944bf72 on the existing branch, clean tree. No new aesthetics or scope expansion.
+- **Completed:** physical route/boundary inventory, customer/CMS/account/business/staff page-family map, API/resource/redirect/SEO/query/locale contracts, S01–S14 state checklist, H1–H4 harness/lifecycle selection and appropriate existing tests.
+- **Evidence:** [route/state/test map](implementation-evidence/p0-03-routes-states-tests.md), [full index](implementation-evidence/p0-03-route-index.json). Raw script/counts/Next response: `.verification-results/storefront-replacement/phase-0/p0-03-*`.
+- **Checks:** 36 pages + 24 handlers + robots = 61 source entries; 15 inherited boundaries. Local Next reports same entries plus favicon (62). 32 E2E files / 130 AST test expressions inventoried, not executed cases. Source fingerprints, paths/links/JSON/task assignments and diff checked.
+- **Findings:** NEW-004 catalogue browser-back/query/scroll verification gap; NEW-005 literal English generic error copy needs localised-state coverage. Existing NEW-001/002/003 carried into route/fixture mapping. No claims of observed browser failure or production enablement.
+- **Limits:** no test suite/build/new browser/server/transaction/database/provider operation. Local catalogue/reference preview cannot establish account/full commerce correctness; use disposable harness per report.
+- **Next:** P0-04; prepare a dated EN/AR phone/tablet/desktop route/state capture manifest, validate local fixture/source identity, then capture and measure content hierarchy and media limitations without changing screens.
+- **Cleanup/rollback:** existing preview retained, no processes started/stopped. Documentation-only checkpoint; no runtime rollback needed. Raw audit evidence retained intentionally.
 
 ## Checkpoint template — append; do not replace earlier history
 
