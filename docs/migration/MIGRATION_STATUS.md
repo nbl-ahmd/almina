@@ -1,3 +1,7 @@
+## 2026-11-17 — Replacement storefront implementation tracking prepared
+
+Read the system review, direction plan and per-image reference review. Created seven phased stages, 34 stable tasks, 63 coverage requirements and a progress/resume ledger with evidence, decision and handoff rules. No replacement implementation phase has started; final visual decisions and deployment remain separate. Resume at [implementation progress](../../apps/web/docs/design/implementation-progress.md), next task P0-01 (baseline reconciliation).
+
 ## 2026-11-16 — Storefront review repairs and styling ownership
 
 Fixed the verified review findings, consolidated customer control styling, restored mobile cart access and clarified server-derived catalogue estimates without changing checkout authority. Updated active guidance and added focused regressions. Type/lint/build, units, compiled commerce/UI tests, bilingual responsive/accessibility scans and local runtime diagnostics passed. Verified replacement catalogue photos/descriptions remain content inputs. No deployment. See [repair report](STOREFRONT_UI_REPAIRS_2026-11-16.md).
