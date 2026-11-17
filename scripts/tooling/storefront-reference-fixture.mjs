@@ -27,6 +27,11 @@ const server = createServer((req, res) => {
   const rules = Array.isArray(filter) ? filter[0] : filter;
   const offset = Number(url.searchParams.get('offset')) || 0;
   const selected = products.filter(row => (!query || row.name.toLowerCase().includes(query)) && (!rules.category || rules.category === category._id) && (!rules.sale || row.sale));
+  // Match the existing catalogue sort contract in isolated visual previews.
+  const sort = url.searchParams.get('sort');
+  if (sort === 'price-asc') selected.sort((a, b) => a.price - b.price);
+  if (sort === 'price-desc') selected.sort((a, b) => b.price - a.price);
+  if (sort === 'name') selected.sort((a, b) => a.name.localeCompare(b.name));
   res.end(JSON.stringify(selected.slice(offset, offset + 30))); return;
  }
  fallback(req, res);

@@ -1,3 +1,7 @@
+## 2026-11-17 — P1-02 isolated coded direction proof
+
+Created dev-only `/design-proof` home A/B, listing/PDP and labelled cart continuation using a clean loopback fixture/process/output and scoped provisional styles. Disabled/compiled-production gates return 404; 16 bilingual phone/desktop slots plus tablet retained; web types, root lint, fresh isolated build and 50 selected tests pass. Four independent visual-review corrections resolved. Existing public/admin/wholesale themes and commerce authority preserved; no final system approval, production data/provider access or deployment. Local 4870/4871 left running, temporary 4880 stopped. [Report/runbook/limits](../../apps/web/docs/design/implementation-evidence/p1-02-coded-proof.md); next [P1-03](../../apps/web/docs/design/implementation-progress.md).
+
 ## 2026-11-17 — P1-01 storefront prototype contract prepared
 
 Phase 1 started with the [prototype contract](../../apps/web/docs/design/prototype-contract.md): dev-only isolated Next proof, matched fixtures/home lead comparisons, shared phone/listing/PDP identity, bilingual states/reference interpretation and explicit review/cleanup gates. Mechanism is planned, not launched. No UI/final-token/runtime change or new visual approval. Next P1-02 validates isolation and builds working coded previews. See [progress](../../apps/web/docs/design/implementation-progress.md) and [phase evidence](../../apps/web/docs/design/implementation-evidence/phase-1.md).

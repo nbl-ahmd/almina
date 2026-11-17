@@ -4,14 +4,14 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **Phase 1 in progress; P1-01 prototype contract verified.** Phase 0 remains complete for baseline scope. No coded proof or final replacement visual approval yet.
-- **Next eligible task:** **P1-02 — build the isolated coded direction proof**. Read [prototype contract](prototype-contract.md), implement/prove dev-only gates and local fixture/style/output isolation, then comparable home A/B + shared listing/PDP views. Preserve shared/live consumers; P1-03/P1-04/P1-05 remain separate stress/interaction/screen-decision tasks.
-- **Verified implementation tasks:** 6 of 34 (all Phase 0 tasks plus P1-01 contract; no coded proof screens). These are equal checklist counts, not a weighted completion percentage.
+- **Current work:** **Phase 1 in progress; P1-01 contract and P1-02 coded proof verified.** Phase 0 remains complete for baseline scope. Working local previews exist; no final replacement visual approval yet.
+- **Next eligible task:** **P1-03 — exercise density/type/colour/shape and hard cases**. Read [P1-02 implementation/evidence/limits](implementation-evidence/p1-02-coded-proof.md), [prototype contract](prototype-contract.md) and the retained same-data captures. Improve complete first-view purchase access; compare four/five desktop columns and bilingual identities/prices/options/stock/media, contrast/44px targets and difficult viewports. Preserve isolation and shared/live consumers. P1-04 modes/continuity and P1-05 owner screen choice remain separate.
+- **Verified implementation tasks:** 7 of 34 (all Phase 0 tasks plus P1-01 contract and P1-02 coded proof). These are equal checklist counts, not a weighted completion percentage.
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P1-01 planning only; source/config/reference inputs, contract coverage, paths/provenance/fingerprints and diff checked. No prototype routes/flags/server launched, UI edit or browser/build/test run. P1-02 must verify the planned mechanism; prior capture/build evidence stays dated and NEW-006 unresolved.
+- **Runtime/testing this checkpoint:** P1-02: isolated working 4870/4871 proof, 16 bilingual phone/desktop view slots + Arabic tablet; production/disabled gates proven; type/lint/build and 50 selected tests passed. Bounded browser/accessibility/shared-route smoke and independent review correction recorded in the [coded-proof report](implementation-evidence/p1-02-coded-proof.md). Current preview left running; temporary 4880 stopped. Density, exhaustive modes/states/continuity and NEW-006 remain unresolved at their assigned scope.
 - **No production data access or deployment. No final replacement visual approval inferred.**
 
 ## Phase status
@@ -19,7 +19,7 @@ Last updated: 17 November 2026. This is the single mutable status ledger for [im
 | Phase | Status | Entry / unresolved gate | Evidence |
 | --- | --- | --- | --- |
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
-| 1 Direction proof | in_progress | P1-01 contract verified; P1-02–P1-05 remain, screen decision still required | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
+| 1 Direction proof | in_progress | P1-01/P1-02 verified; P1-03–P1-05 remain, screen decision still required | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | not_started | Needs concrete Phase 1 screen decision | — |
 | 3 Shell/home | not_started | Needs Phase 2 system and state/consumer verification | — |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
@@ -38,7 +38,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P0-04 | verified | [Fresh baseline/content report](implementation-evidence/p0-04-baseline.md), [94-case manifest](implementation-evidence/p0-04-capture-manifest.json), nine retained images; source 85bebc7, limitations/NEW-006 explicit |
 | P0-05 | verified | [Exit summary](implementation-evidence/phase-0-summary.md), [69-row reconciliation](implementation-evidence/p0-05-reconciliation.json), [Phase 1 packet](phase-1-input-packet.md); starting source f1a7d99, documentation only |
 | P1-01 | verified | [Contract PC01–PC08](prototype-contract.md), [checkpoint](implementation-evidence/phase-1.md); source 8f3f2fd, planning only, setup not launched |
-| P1-02 | not_started | — |
+| P1-02 | verified | [Coded proof/runbook/limits](implementation-evidence/p1-02-coded-proof.md), [16-view manifest](implementation-evidence/phase-1-proof/capture-manifest.json); starting 33f248e; no final visual approval |
 | P1-03 | not_started | — |
 | P1-04 | not_started | — |
 | P1-05 | not_started | — |
@@ -80,6 +80,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | D07 | Production deployment | Excluded by owner instructions | No phase may deploy. |
 | D08 | Phase 0 baseline exit | P0-05 reconciles all five baseline tasks and 69 requirement/finding assignments | Complete for baseline scope; not visual approval, product readiness or deployment. |
 | D09 | Prototype execution contract | P1-01 selects additive dev-only /design-proof outside customer group, separate 4870/4871 fixture/process/output, scoped proof styles and same-data desktop lead comparison | Planned code-led mechanism, not working infrastructure yet. P1-02 verifies it; supporting visuals remain candidates until P1-05. |
+| D10 | Working isolated coded proof | P1-02 verifies same-data A/B, shared phone/listing/PDP, EN/AR, gates and bounded helper/runtime checks | Provisional roles/fonts/density only. Local 4870/4871; no existing route/theme switch. Reviewer's four fixes resolved; P1-03/P1-04/P1-05 still required. |
 
 Append dated decisions/corrections with affected task/coverage IDs and source (owner message or verified repository evidence). Link durable visual decisions into decisions.md; do not erase previous decisions or mistake proposed values for approval.
 
