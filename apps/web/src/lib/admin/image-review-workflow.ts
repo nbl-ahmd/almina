@@ -24,6 +24,7 @@ export function reviewProductChanges(detail: ImageReviewDetail, edits: Partial<R
     const edit = edits[row.field];
     if (!key || edit?.target !== 'catalogue') continue;
     const value = edit.value.trim();
+    if (!value && !row.catalogueValue) continue;
     changes[key] = row.field === 'size' ? updateImageReviewNetContent(detail.product?.fields?.packLabel ?? '', value) : value;
   }
   return changes;

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from '../app-link';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ArrowTopRightOnSquareIcon, CheckIcon, MagnifyingGlassIcon, ForwardIcon, PauseIcon } from '@heroicons/react/24/outline';
-import { imageReviewNetContentPattern, type ImageIdentityField, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
+import { imageReviewNetContentPattern, isCoreImageIdentityField, type ImageIdentityField, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
 import { canApproveImage, canDiscardReviewField, editableProductField, imageReviewDecision, initialReviewChecks, inlineReviewCheck,
   isUnchangedMatch, previewImageReview, reviewFieldMatches, reviewHoldReasons, reviewProductChanges, type ReviewEdit } from '../../lib/admin/image-review-workflow';
 import { ImageReviewAssociation } from './image-review-association';
@@ -39,11 +39,17 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
   const visible = preview.comparison.filter(row =>
     row.required || !!edits[row.field] || (row.field === 'barcode' || row.field === 'gtin') && !!row.catalogueValue
   ).sort((a, b) => Number(priority.has(b.field)) - Number(priority.has(a.field)));
-  const checks = visible.filter(row => row.required || !!edits[row.field]).map(row => inlineReviewCheck(row, edits[row.field]));
+  const checks = visible.filter(row => {
+    const edit = edits[row.field];
+    const key = editableProductField(row.field);
+    return row.required || edit?.target === 'discard' || !!edit?.value.trim() || !!(key && productChanges[key] !== undefined);
+  }).map(row => inlineReviewCheck(row, edits[row.field]));
   function editError(field: ImageIdentityField) {
     const key = editableProductField(field);
     const edit = edits[field];
     if (!key || edit?.target !== 'catalogue') return '';
+    if (productChanges[key] === undefined) return '';
+    if (!edit.value.trim()) return 'Enter a value from the label or undo the change.';
     if (field === 'size' && !imageReviewNetContentPattern.test(edit.value.trim())) return 'Enter a weight or volume, such as 113 g or 200 ml.';
     return productFieldError(key, productChanges[key] ?? '');
   }
@@ -98,6 +104,7 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
     const discarded = edit?.target === 'discard';
     const canDiscard = !edit && needsAttention && canDiscardReviewField(preview, field);
     const value = edit && edit.target !== 'discard' ? edit.value : savedValue;
+    const optionalBlank = !row.required && !value && !discarded;
     const id = `review-field-${field}`;
     const label = imageMode ? `Image label · ${labels[field]}` : canEditProduct && key && field !== 'size' ? productFieldLabels[key] : labels[field];
 
@@ -106,21 +113,23 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
         {editable && !discarded ? <label htmlFor={id} className="!m-0 !text-sm !font-medium">{label}</label> : <span className="text-sm font-medium">{label}</span>}
         {needsAttention || fieldError ? <span className="rounded-md bg-[var(--admin-warning-soft)] px-2 py-1 text-xs font-medium text-[var(--admin-warning)]">
           {original.status === 'conflict' && !edit ? 'Conflict' : 'Check value'}</span>
-          : edit ? <span className="text-xs text-[var(--admin-muted)]">{discarded ? 'Extraction ignored' : imageMode ? 'Extraction correction' : 'Product change'}</span> : null}
+          : discarded ? <span className="text-xs text-[var(--admin-muted)]">Not applicable</span>
+          : optionalBlank ? <span className="text-xs text-[var(--admin-muted)]">Optional</span>
+          : edit ? <span className="text-xs text-[var(--admin-muted)]">{imageMode ? 'Extraction correction' : 'Product change'}</span> : null}
       </div>
-      {discarded ? null : editable ? <input id={id} aria-describedby={`${id}-context`} aria-invalid={!!fieldError || !!edit && needsAttention}
+      {discarded ? null : editable ? <input id={id} aria-describedby={optionalBlank ? undefined : `${id}-context`} aria-required={isCoreImageIdentityField(field)} aria-invalid={!!fieldError || !!edit && needsAttention}
         className="mt-1.5" value={value} disabled={controlsDisabled} maxLength={500}
-        placeholder={imageMode ? 'Read from the original label' : 'Enter a value from the label'}
+        placeholder={!isCoreImageIdentityField(field) && !row.required ? 'Leave blank if not applicable' : imageMode ? 'Read from the original label' : 'Enter a value from the label'}
         onChange={event => {
           const next = event.target.value;
           setEdit(field, !imageMode && next.trim() === savedValue ? undefined : { target: imageMode ? 'extraction' : 'catalogue', value: next });
         }} />
         : <p className="!mb-0 !mt-1 break-words text-sm">{row.catalogueValue || 'Missing from catalogue'}</p>}
-      <p id={`${id}-context`} className={`!mb-0 !mt-1.5 break-words text-xs text-[var(--admin-muted)] ${!needsAttention && !edit && row.imageValue === savedValue ? 'sr-only' : ''}`}>
+      {!optionalBlank ? <p id={`${id}-context`} className={`!mb-0 !mt-1.5 break-words text-xs text-[var(--admin-muted)] ${!needsAttention && !edit && row.imageValue === savedValue ? 'sr-only' : ''}`}>
         Extracted <strong>{original.imageValue || 'Unreadable'}</strong>
         {imageMode ? <> · Catalogue <strong>{row.catalogueValue || 'Missing'}</strong></>
           : edit?.target === 'catalogue' ? <> · Previously <strong>{savedValue || 'blank'}</strong></> : null}
-      </p>
+      </p> : null}
       {fieldError ? <p className="!my-1 text-xs text-[var(--admin-warning)]">{fieldError}</p>
         : imageMode && needsAttention ? <p className="!my-1 text-xs text-[var(--admin-warning)]">{row.catalogueValue ?
           'Enter what the original label shows. Choose another product if the values differ.' :
@@ -136,7 +145,7 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEdit(field, { target: 'extraction', value: row.catalogueValue })}>Label matches catalogue</Button> : null}
         {imageMode && row.catalogueValue && row.catalogueValue !== value ?
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEdit(field, { target: 'extraction', value: row.catalogueValue })}>Use catalogue value for label</Button> : null}
-        {canDiscard ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEdit(field, { target: 'discard' })}>Ignore incorrect extraction<span className="sr-only"> for {labels[field]}</span></Button> : null}
+        {canDiscard ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEdit(field, { target: 'discard' })}>Not applicable<span className="sr-only"> for {labels[field]}</span></Button> : null}
         {edit ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => setEdit(field)}>Undo<span className="sr-only"> {labels[field]} change</span></Button> : null}
       </div> : null}
     </div>;

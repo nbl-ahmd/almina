@@ -589,3 +589,51 @@ test('a single field edit creates an auditable approval and keeps unrelated pack
     assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 1);
   } finally { await db.dropDatabase(); await client.close(); }
 });
+
+test('approval permits blank optional strength and form while retaining core and populated variant checks', { skip: !uri }, async () => {
+  const client = new MongoClient(uri!), db = client.db('almina_image_review_optional_' + randomUUID().replaceAll('-', ''));
+  const admin = String(new ObjectId());
+  try {
+    await db.collection('users').insertOne({ _id: new ObjectId(admin), role: 'admin' });
+    const kit = imageIdentitySchema.parse({ name: 'Acme Travel Kit', brand: 'Acme' });
+    const tablets = imageIdentitySchema.parse({ name: 'Acme Tablets', brand: 'Acme', form: 'Tablet' });
+    const dustyExtraction = { ...tablets, strength: '250 mg' };
+    await db.collection('products').insertMany([
+      { product_id: 'PD_KIT', name: kit.name, brand: kit.brand },
+      { product_id: 'PD_TABS', name: tablets.name, brand: tablets.brand, productForm: tablets.form },
+      { product_id: 'PD_CONFLICT', name: tablets.name, brand: tablets.brand, productForm: tablets.form, strength: '500 mg' },
+    ]);
+    await stageImageReview(db, pack([
+      source('blank-form', 'PD_KIT', { identity: kit }),
+      source('blank-strength', 'PD_TABS', { identity: tablets }),
+      source('inapplicable-strength', 'PD_TABS', { identity: dustyExtraction }),
+      source('conflicting-strength', 'PD_CONFLICT', { identity: dustyExtraction }),
+    ]), admin, 'synthetic');
+    for (const item of (await listImageReviews(db, {}, admin)).items) {
+      const detail = await getImageReview(db, item.itemId, admin);
+      if (item.source.assetId === 'blank-form') {
+        assert.deepEqual(initialReviewChecks(detail).map(check => check.field), ['name', 'brand']);
+        const input = decision(detail);
+        await assert.rejects(decideImageReview(db, { ...input, checks: input.checks.filter(check => check.field !== 'brand') }, admin), { status: 409 });
+        assert.equal((await decideImageReview(db, input, admin)).status, 'approved');
+      } else if (item.source.assetId === 'blank-strength') {
+        assert.equal(initialReviewChecks(detail).some(check => check.field === 'strength'), false);
+        assert.equal((await decideImageReview(db, decision(detail), admin)).status, 'approved');
+      } else {
+        const checks = detail.comparison.filter(field => field.required).map(field =>
+          inlineReviewCheck(field, field.field === 'strength' ? { target: 'discard' } : undefined));
+        const canApprove = item.source.assetId === 'inapplicable-strength';
+        assert.equal(canApproveImage(detail, checks, true, false), canApprove);
+        if (canApprove) {
+          const input = imageReviewDecision(detail, checks, 'approved', true, false, '');
+          const result = await decideImageReview(db, { ...input, requestId: randomUUID() }, admin);
+          assert.equal(result.source.identity.strength, '250 mg');
+          assert.equal(result.status, 'approved');
+        } else {
+          await assert.rejects(decideImageReview(db, decision(detail, { checks: checks.map(check => ({ ...check, confirmed: true })) }), admin), { status: 409 });
+        }
+      }
+    }
+    assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 3);
+  } finally { await db.dropDatabase(); await client.close(); }
+});

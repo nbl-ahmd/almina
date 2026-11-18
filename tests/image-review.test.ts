@@ -5,7 +5,7 @@ import { compareImageIdentity, imageReviewProductIdentity, imageReviewProductRev
 import { accessPolicy, canVisit, upstreamQuery } from '../apps/web/src/lib/admin/policy';
 import { lookupPolicy } from '../apps/api/src/modules/auth/retained-policy';
 import { imagePublicationStartSchema, imagePublicationActionSchema, type ImageReviewDetail } from '@almina/contracts';
-import { initialReviewChecks, canApproveImage, imageReviewDecision, nextImageReviewId, reviewApprovalNote } from '../apps/web/src/lib/admin/image-review-workflow';
+import { initialReviewChecks, canApproveImage, imageReviewDecision, nextImageReviewId, reviewApprovalNote, reviewProductChanges } from '../apps/web/src/lib/admin/image-review-workflow';
 const identity = (patch: object = {}) => imageIdentitySchema.parse({ name: 'Acme Skin Cream', brand: 'Acme', form: 'Cream', size: '50 g', ...patch });
 test('image review separates staff decisions from administrator staging and catalogue import', () => {
   assert.equal(canVisit('user', 'image-review'), true);
@@ -120,4 +120,18 @@ test('queue navigation advances without resaving skipped images and wraps withou
   assert.equal(nextImageReviewId(rows, 'a'), 'b'); assert.equal(nextImageReviewId(rows, 'c'), 'a');
   assert.equal(nextImageReviewId(rows, 'missing'), 'a'); assert.equal(nextImageReviewId([rows[0]!], 'a'), null);
   assert.equal(nextImageReviewId([], 'a'), null);
+});
+
+
+test('blank optional product inputs do not write catalogue fields or require checks', () => {
+  const detail = workflowDetail();
+  const values = imageIdentitySchema.parse({ name: 'Acme Travel Kit', brand: 'Acme' });
+  detail.item.source.identity = values;
+  detail.product = { ...detail.product!, identity: values, fields: { packLabel: '20 count' } };
+  detail.comparison = compareImageIdentity(values, values);
+  assert.deepEqual(initialReviewChecks(detail).map(check => check.field), ['name', 'brand']);
+  assert.deepEqual(reviewProductChanges(detail, {
+    strength: { target: 'catalogue', value: '' }, size: { target: 'catalogue', value: '' },
+  }), {});
+  assert.equal(canApproveImage(detail, initialReviewChecks(detail), true, false), true);
 });

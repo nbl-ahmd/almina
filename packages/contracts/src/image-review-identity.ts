@@ -36,13 +36,16 @@ export function reviewGtin(value: string) {
   return (10 - sum % 10) % 10 === check ? value : null;
 }
 const words = (s: string) => norm(s).replace(/[^a-z0-9]+/g, ' ').split(' ').filter(w => w && !/^(?:ml|mg|mcg|g|count|tablet|tablets|capsule|capsules|cream|gel|lotion)$/.test(w) && !/^\d+$/.test(w)).sort().join(' ');
+export function isCoreImageIdentityField(field: ImageIdentityField) {
+  return field === 'name' || field === 'brand';
+}
+
 export function compareImageIdentity(image: ImageIdentity, catalogue: ImageIdentity): ImageReviewComparison[] {
-  const medicine = /tablet|capsule|softgel|caplet|injection|suppositor|pessar|ovule|penfill|kwikpen|flexpen|eye drop|ear drop/.test(form(image.form + ' ' + catalogue.form));
   return imageIdentityFields.map(field => {
     const a = image[field], b = catalogue[field];
-    let required = ['name', 'brand', 'form'].includes(field) || Boolean(a || b) || (field === 'strength' && medicine);
-    // A catalogue barcode is optional corroboration; a transcribed image barcode must be checked independently.
-    if (field === 'barcode' || field === 'gtin') required = Boolean(a);
+    // Optional fields still need comparison if either source supplies a value.
+    // An identifier recorded only in the catalogue remains optional corroboration.
+    const required = isCoreImageIdentityField(field) || Boolean(a || (field !== 'barcode' && field !== 'gtin' && b));
     let x: string | null = norm(a) || null, y: string | null = norm(b) || null;
     if (field === 'name') { x = words(a) || null; y = words(b) || null; }
     if (field === 'form') { x = a ? form(a) : null; y = b ? form(b) : null; }
@@ -57,11 +60,10 @@ export function compareImageIdentity(image: ImageIdentity, catalogue: ImageIdent
     return { field, imageValue: a, catalogueValue: b, required, status };
   });
 }
-/** Only discard an extracted value when neither the catalogue nor the product form requires it. */
+/** Leave an optional attribute blank when it has no catalogue value. */
 export function canDiscardImageExtraction(image: ImageIdentity, catalogue: ImageIdentity, field: ImageIdentityField) {
   if ((field === 'barcode' || field === 'gtin') && (catalogue.barcode || catalogue.gtin)) return false;
-  return !!image[field] && !catalogue[field] &&
-    !compareImageIdentity({ ...image, [field]: '' }, catalogue).find(row => row.field === field)?.required;
+  return !isCoreImageIdentityField(field) && !!image[field] && !catalogue[field];
 }
 
 export const imageReviewNetContentPattern = /^\d+(?:[.,]\d+)?\s*(?:kg|ml|g|l)$/i;

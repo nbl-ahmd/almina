@@ -1,3 +1,12 @@
+## 2026-11-18 — Optional image review fields may be blank
+
+Product name and brand are required for image approval. Strength, form and
+other attributes may be blank when absent from both the image and the selected
+catalogue record. Reviewers can mark an incorrect extraction as **Not
+applicable** when the catalogue has no corresponding value. A blank optional
+input never writes to the catalogue. Populated identity values still receive
+comparison checks. Release the API before the updated review interface.
+
 ## 2026-11-18 — Image review uses one input per field
 
 Administrators can edit the prefilled product field or correct the extraction
