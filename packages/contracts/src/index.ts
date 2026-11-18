@@ -71,3 +71,5 @@ export * from './branch-management';
 
 export * from './staff-access';
 export * from './staff-notifications';
+
+export * from './image-review-identity';

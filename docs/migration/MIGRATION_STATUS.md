@@ -1,3 +1,24 @@
+## 2026-11-18 — Admin image review supports catalogue edits and drafts
+
+The review workspace shows the original beside prefilled identity fields and
+puts conflicts first. Administrators can correct supported catalogue fields
+and approve in a single transaction. Staff can still correct extraction
+evidence and review associations. Search accepts product name, barcode or ID.
+Draft creation reuses catalogue ID allocation, category validation and the
+opening stock ledger. It selects the draft for review and leaves the image
+pending approval.
+
+Image review receipts retain the original extraction, field evidence and the
+prior product identity for catalogue edits. Existing publication checks still
+validate the approved identity revision. No backfill is needed. Deploy the
+updated API before exposing the updated review page so catalogue edits use
+the new server contract.
+
+Disposable catalogue tests and browser checks covered editing and approving a
+matched item, selecting a search result, and creating a draft. The production
+build runs on Next.js 16.4.6. [Foundation](FOUNDATION_2026-10-02.md) ·
+[Retained API](RETAINED_API_INVENTORY_2026-10-04.md)
+
 ## 2026-11-08 — Production alerts active; branch login collision fix (candidate)
 
 Verified the owner-deployed PR #90 merge in production. Enabled the existing Render notification worker with the supplied contact, preserved its keys, and verified one registered administrator receiving device. The real `almina` branch (`almina-admin` login) and all four pending orders remain unchanged. A new candidate adds early login availability/suggestions and race recovery without overwriting retained accounts or losing delivery drafts. See [activation evidence, fix and compatibility](BRANCH_LOGIN_AVAILABILITY_2026-11-08.md).

@@ -28,6 +28,7 @@ const handle = fn => async (req, res) => {
       req.app.locals.cloudinaryUploads?.cloudName ?? req.app.locals.recoveryCloudName, req.app.locals.mediaTransport));
 };
 router.post('/stage', handle('stageImageReview'));
+router.post('/draft', handle('createImageReviewDraft'));
 router.post('/decide', handle('decideImageReview'));
 router.post('/preview', handle('previewImageReviewImport'));
 router.post('/import', handle('importImageReviewApprovals'));
