@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P3-03 verified.** The public home uses the selected full-width campaign, category row and responsive product comparison. [Home evidence](implementation-evidence/p3-03-home.md).
-- **Next eligible task:** **P3-04 — shell and home verification across routes, states and devices.** Verify continuity and retire any remaining displaced customer bindings.
-- **Verified implementation tasks:** 18 of 34 (Phases 0–2 and P3-01–P3-03).
+- **Current work:** **P3-04 verified. Phase 3 is complete.** The public shell and home have bilingual responsive, route and recovery evidence. [Phase 3 exit](implementation-evidence/p3-04-shell-home.md).
+- **Next eligible task:** **P4-01 — listing and search toolbar, filters, count, pagination and recovery states.**
+- **Verified implementation tasks:** 19 of 34 (all Phase 0–3 tasks).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P3-03 isolated build, typecheck, lint, four focused home browser cases and 20 shell/compatibility regressions passed. Six English/Arabic captures record responsive product columns and shelf position.
+- **Runtime/testing this checkpoint:** P3-04 production build, typecheck, lint, 40 Chromium checks and 12 WebKit checks passed. Live viewport/zoom matrix and repeated home/category/Back/reload evidence recorded. Physical device, saved/account, provider and release checks remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -21,8 +21,8 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
-| 3 Shell/home | in_progress | P3-01–P3-03 verified. P3-04 follows. | [Home evidence](implementation-evidence/p3-03-home.md) |
-| 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
+| 3 Shell/home | verified | P3-01–P3-04 verified. P4-01 follows. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
+| 4 Catalogue/PDP | not_started | Phase 3 complete. Next P4-01. | — |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
@@ -50,7 +50,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P3-01 | verified | [Mobile public-route implementation and checks](implementation-evidence/p3-01-mobile-shell.md) |
 | P3-02 | verified | [Desktop/tablet and footer implementation](implementation-evidence/p3-02-chrome.md) |
 | P3-03 | verified | [Public home implementation and checks](implementation-evidence/p3-03-home.md) |
-| P3-04 | not_started | — |
+| P3-04 | verified | [Bilingual responsive and route checks](implementation-evidence/p3-04-shell-home.md), localized failures, WebKit focus restoration and compatibility scopes |
 | P4-01 | not_started | — |
 | P4-02 | not_started | — |
 | P4-03 | not_started | — |
@@ -102,8 +102,8 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O05 | Old instructions/guide/runtime still describe incumbent visual candidate | Treat as existing implementation evidence; align authority after accepted P1 screens, no silent restoration of rejected look. | P0-01, P2-05 |
 | O06 | Search matching/Arabic quality and true back/scroll behaviour | Evaluate representative local data; track separately from new styling if outside scope. | P0-03, P4-05 |
 | O07 | NEW-001/002/003: wholesale shares customer CSS/shell; root 404 imports it; admin campaign preview shares artwork/Outfit | Isolation/compatibility and preview policy required before accepted customer system switch; see P0-02 matrix. No shared deletion yet. | P2-01–P2-03, P3-03–P3-04, P6-01 |
-| O08 | NEW-004: search/PDP browser back and query/scroll restoration lack explicit E2E assertions; NEW-005: English saved/root-404 copy observed inside Arabic shell, generic error copy also English in source | Verify actual continuity and localised failure states on correct fixtures; source gap is not observed browser failure. | P3-04, P4-05, P5-05, P6-02 |
-| O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Bounded reproduction across isolated fixtures and actual browser/back/scroll checks owed; not fixed or generalised to production. | P3-04, P4-05, P6-02 |
+| O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route errors now localized, saved/account copy remains open. | P4 verifies the in-page PDP return link and richer filter continuity. P5 verifies saved/account UI. | P3-04, P4-05, P5-05, P6-02 |
+| O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Twelve bounded P3-04 fixture cycles resolved. Retain broader long-session verification in subsequent phases. | P3-04, P4-05, P6-02 |
 
 No blocker to starting P1-02 with the contract safeguards has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
 
@@ -310,3 +310,10 @@ When interrupted or handing off, update this file before yielding where possible
 
 - Migrated the public home campaign, category row, comparison grid, verified brand links and published content placements. Recorded fixture coverage for sparse stock, failed catalogue and managed campaign behavior.
 - Continue with P3-04 shell and home verification before starting catalogue and PDP migration.
+
+
+### 2026-11-18 — P3-04 verified and Phase 3 exited
+
+- Verified bilingual shell and home with responsive and zoom measurements, route and browser Back continuity, footer clearance and scoped portals. Localized route recovery and fixed WebKit delivery focus return.
+- Isolated accepted responsive bindings from the compatibility shell. Kept active shared styles for root 404, wholesale, public catalogue, PDP and checkout consumers.
+- 40 Chromium cases and 12 WebKit cases passed. Physical devices and broader release checks remain open. Continue with P4-01.

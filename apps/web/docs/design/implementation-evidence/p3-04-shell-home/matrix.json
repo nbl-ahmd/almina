@@ -1,0 +1,211 @@
+{
+  "origin": "http://127.0.0.1:4880",
+  "report": [
+    {
+      "engine": "chromium",
+      "locale": "en",
+      "cycles": 3,
+      "cases": [
+        {
+          "width": 320,
+          "height": 740,
+          "docWidth": 320,
+          "shelfTop": 563.21875
+        },
+        {
+          "width": 360,
+          "height": 800,
+          "docWidth": 360,
+          "shelfTop": 564.984375
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "docWidth": 390,
+          "shelfTop": 578.625
+        },
+        {
+          "width": 667,
+          "height": 375,
+          "docWidth": 667,
+          "shelfTop": 635.890625
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "docWidth": 768,
+          "shelfTop": 650.984375
+        },
+        {
+          "width": 1100,
+          "height": 900,
+          "docWidth": 1100,
+          "shelfTop": 635.796875
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "shelfTop": 580.5
+        }
+      ],
+      "errors": []
+    },
+    {
+      "engine": "chromium",
+      "locale": "ar",
+      "cycles": 3,
+      "cases": [
+        {
+          "width": 320,
+          "height": 740,
+          "docWidth": 320,
+          "shelfTop": 570.125
+        },
+        {
+          "width": 360,
+          "height": 800,
+          "docWidth": 360,
+          "shelfTop": 579.03125
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "docWidth": 390,
+          "shelfTop": 564.578125
+        },
+        {
+          "width": 667,
+          "height": 375,
+          "docWidth": 667,
+          "shelfTop": 621.84375
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "docWidth": 768,
+          "shelfTop": 656.4375
+        },
+        {
+          "width": 1100,
+          "height": 900,
+          "docWidth": 1100,
+          "shelfTop": 641.25
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "shelfTop": 583.25
+        }
+      ],
+      "errors": []
+    },
+    {
+      "engine": "webkit",
+      "locale": "en",
+      "cycles": 3,
+      "cases": [
+        {
+          "width": 320,
+          "height": 740,
+          "docWidth": 320,
+          "shelfTop": 563.21875
+        },
+        {
+          "width": 360,
+          "height": 800,
+          "docWidth": 360,
+          "shelfTop": 564.984375
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "docWidth": 390,
+          "shelfTop": 564.984375
+        },
+        {
+          "width": 667,
+          "height": 375,
+          "docWidth": 667,
+          "shelfTop": 635.890625
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "docWidth": 768,
+          "shelfTop": 650.375
+        },
+        {
+          "width": 1100,
+          "height": 900,
+          "docWidth": 1100,
+          "shelfTop": 635.1875
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "shelfTop": 580.5
+        }
+      ],
+      "errors": [
+        "/127.0.0.1:4880/api/customer/saved due to access control checks.",
+        "/127.0.0.1:4880/api/customer/saved due to access control checks."
+      ]
+    },
+    {
+      "engine": "webkit",
+      "locale": "ar",
+      "cycles": 3,
+      "cases": [
+        {
+          "width": 320,
+          "height": 740,
+          "docWidth": 320,
+          "shelfTop": 570.125
+        },
+        {
+          "width": 360,
+          "height": 800,
+          "docWidth": 360,
+          "shelfTop": 579.03125
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "docWidth": 390,
+          "shelfTop": 550.9375
+        },
+        {
+          "width": 667,
+          "height": 375,
+          "docWidth": 667,
+          "shelfTop": 621.84375
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "docWidth": 768,
+          "shelfTop": 656.4375
+        },
+        {
+          "width": 1100,
+          "height": 900,
+          "docWidth": 1100,
+          "shelfTop": 641.25
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "docWidth": 1440,
+          "shelfTop": 583.25
+        }
+      ],
+      "errors": [
+        "/127.0.0.1:4880/api/customer/saved due to access control checks.",
+        "/127.0.0.1:4880/api/customer/saved due to access control checks."
+      ]
+    }
+  ]
+}

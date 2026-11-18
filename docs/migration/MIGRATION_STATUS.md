@@ -1,3 +1,7 @@
+## 2026-11-18 — P3-04 verified and Phase 3 complete
+
+English and Arabic shell/home checks passed in Chromium and WebKit. Localized missing and failed-route recovery and fixed focus return after closing the delivery dialog. Scoped superseded responsive rules to their compatibility consumers. [Verification and remaining checks](../../apps/web/docs/design/implementation-evidence/p3-04-shell-home.md). Next P4-01 listing/search work. No deployment.
+
 ## P3-03 — public home merchandising verified
 
 The public home uses the selected full-width campaign, separate category row and five wide desktop columns. It keeps published placements and real product data, with compact sparse and unavailable states. [Implementation and bilingual captures](../../apps/web/docs/design/implementation-evidence/p3-03-home.md). P3-04 covers shell and home verification across routes. No deployment.

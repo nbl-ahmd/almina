@@ -18,8 +18,10 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
   await expect(page.locator('.quantity')).toHaveText('4');
   await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
   await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();
-  await expect(page.getByRole('link',{name:'Cart',exact:true}).and(page.locator('.mobile-tab'))).toBeVisible();
-  await expect(page.getByRole('navigation',{name:'Main navigation',exact:true}).getByRole('link',{name:'Cart',exact:true})).toBeVisible();
+  await expect(page.locator('.mobile-nav')).toBeHidden();
+  await page.locator('.mobile-cart-return').click();
+  await expect(page).toHaveURL(/\/products$/);
+  await expect(page.getByRole('navigation', { name: 'Main navigation', exact: true }).getByRole('link', { name: 'Cart', exact: true })).toBeVisible();
 });
 
 test('mobile catalog exposes filters on demand and preserves applied search', async ({ page }) => {

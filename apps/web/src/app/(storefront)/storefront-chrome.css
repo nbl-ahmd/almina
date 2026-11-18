@@ -71,6 +71,7 @@
 
 @media (max-width: 767px) {
   [data-storefront-chrome="footer"] .sf-footer-columns {
+    grid-template-columns: minmax(0, 1fr);
     gap: 0;
     padding-block: var(--store-space-16);
   }

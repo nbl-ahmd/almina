@@ -40,6 +40,7 @@
 
   [data-mobile-shell] .header-location-value {
     color: var(--store-text);
+    font-size: var(--store-type-12);
     font-weight: var(--store-weight-bold);
   }
 
@@ -48,6 +49,7 @@
   }
 
   [data-mobile-shell] .header-mobile-menu { grid-area: 1 / 3; }
+  [data-mobile-shell] .header-account { display: none; }
 
   .storefront-shell [data-mobile-shell] .header-content > .header-cart {
     grid-area: 1 / 4;
