@@ -11,7 +11,8 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 | GET | /api/image-review/uploads/:uploadId | admin | authoritative server upload checkpoint; resume across browsers or sessions |
 | GET | /api/image-review/:reviewId | staff | original extraction, live identity, bounded candidates and review history |
 | POST | /api/image-review/select | staff | read-only candidate selection against live identity; no product mutation |
-| POST | /api/image-review/decide | staff | revision-bound human decision with original inspection and field evidence; no product mutation |
+| POST | /api/image-review/decide | staff | Revision-bound human decision with field evidence. An administrator can save verified product identity changes in the same transaction. |
+| POST | /api/image-review/draft | admin | Creates and selects one unpublished product draft per review item. The receipt makes retries safe. |
 | POST | /api/image-review/stage | admin | bounded idempotent pipeline map staging, source versions and withdrawal barriers |
 | POST | /api/image-review/preview | admin | immutable import manifest for up to five currently verified approvals |
 | POST | /api/image-review/import | admin | original-byte verification and transactional additive gallery links, media history and replay receipts |

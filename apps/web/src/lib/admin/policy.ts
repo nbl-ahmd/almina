@@ -60,7 +60,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['GET', 'image-review/uploads/[a-f0-9]{64}', 'admin'],
   ['GET', 'image-review', 'staff'], ['GET', 'image-review/export', 'staff'], ['GET', 'image-review/[a-f0-9]{64}', 'staff'],
   ['POST', 'image-review/select', 'staff'], ['POST', 'image-review/decide', 'staff'],
-  ...['stage', 'preview', 'import', 'publish'].map(action => ['POST', `image-review/${action}`, 'admin'] as [string, string, 'admin']),
+  ...['stage', 'preview', 'import', 'publish', 'draft'].map(action => ['POST', `image-review/${action}`, 'admin'] as [string, string, 'admin']),
   ['GET', 'products/needs-action', 'admin'],
   ['GET', 'operations', 'admin'],
   ['POST','media/marketing','staff'],

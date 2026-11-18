@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { productContentFields } from './product-content';
 
 export const imageIdentityFields = ['name', 'brand', 'line', 'strength', 'form', 'size', 'quantity', 'multipack', 'flavour', 'shadeModel', 'variantSize', 'ageStage', 'barcode', 'gtin'] as const;
 export type ImageIdentityField = typeof imageIdentityFields[number];
@@ -43,12 +44,38 @@ export const imageReviewChecksSchema = z.array(z.object({
   field: z.enum(imageIdentityFields), confirmed: z.boolean(),
   imageValue: text, catalogueValue: text, evidence: z.string().trim().max(1000),
 }).strict()).max(imageIdentityFields.length);
+export const imageReviewProductChangesSchema = z.object({
+  name: text.min(1).optional(),
+  brand: productContentFields.brand,
+  productForm: productContentFields.productForm,
+  strength: productContentFields.strength,
+  packLabel: productContentFields.packLabel,
+  mpn: productContentFields.mpn,
+  barcode: text.optional(),
+  gtin: productContentFields.gtin,
+}).strict();
+export type ImageReviewProductChanges = z.infer<typeof imageReviewProductChangesSchema>;
+export const imageReviewEditableFields = {
+  name: 'name', brand: 'brand', strength: 'strength', form: 'productForm',
+  size: 'packLabel', shadeModel: 'mpn', barcode: 'barcode', gtin: 'gtin',
+} as const satisfies Partial<Record<ImageIdentityField, keyof ImageReviewProductChanges>>;
+export const imageReviewDraftSchema = z.object({
+  itemId: hash, expectedRevision: z.number().int().nonnegative(), requestId: z.uuid(),
+  product: imageReviewProductChangesSchema.extend({
+    name: text.min(1), category: z.string().regex(/^[a-f0-9]{24}$/i),
+    price: z.string().max(18).regex(/^\d+(?:\.\d{1,2})?$/),
+    stock: z.string().max(16).regex(/^\d+$/), vat: z.boolean(),
+    description: z.string().max(4000).optional(),
+  }).strict(),
+}).strict();
+export type ImageReviewDraftInput = z.infer<typeof imageReviewDraftSchema>;
 export const imageReviewDecisionSchema = z.object({
   itemId: hash, expectedRevision: z.number().int().nonnegative(), productId: businessId.nullable(),
   productRevision: hash.nullable(), decision: z.enum(['approved', 'held', 'rejected']),
   originalViewed: z.boolean(), checks: imageReviewChecksSchema, note: z.string().trim().min(5).max(2000),
   sharedIdentifierConfirmed: z.boolean().default(false),
   requestId: z.uuid(),
+  productChanges: imageReviewProductChangesSchema.optional(),
 }).strict();
 export type ImageReviewDecisionInput = z.infer<typeof imageReviewDecisionSchema>;
 export const imageReviewSelectionSchema = z.object({ itemId: hash, productId: businessId }).strict();
@@ -72,11 +99,13 @@ export type ImageReviewComparison = {
   field: ImageIdentityField; imageValue: string; catalogueValue: string;
   required: boolean; status: 'match' | 'unknown' | 'conflict';
 };
-export type ImageReviewProduct = { productId: string; id: string; name: string; revision: string; mediaRevision: number; images: string[]; identity: ImageIdentity };
+export const imageReviewProductFields = ['name', 'brand', 'productForm', 'strength', 'packLabel', 'mpn', 'barcode', 'gtin', 'variantSize', 'variantPackSize', 'variantFlavour'] as const;
+export type ImageReviewProduct = { productId: string; id: string; name: string; revision: string; mediaRevision: number; images: string[]; identity: ImageIdentity;
+  fields?: Partial<Record<typeof imageReviewProductFields[number], string>> };
 export type ImageReviewItem = {
   itemId: string; revision: number; status: 'pending' | 'held' | 'approved' | 'rejected' | 'imported';
   source: ImageReviewSource; selectedProductId: string | null; note: string; reviewer: string | null;
-  reviewedAt: string | null; approvalId: string | null;
+  reviewedAt: string | null; approvalId: string | null; draftProductId?: string | undefined;
 };
 export type ImageReviewDetail = {
   item: ImageReviewItem; product: ImageReviewProduct | null; candidates: ImageReviewProduct[];
@@ -90,9 +119,10 @@ export type ImageReviewList = {
 export type ImageReviewApprovedMapping = { approvalId: string; itemId: string; productId: string; id: string; name: string; imageUrl: string; publicId: string; sourceSha256: string; productRevision: string; mediaRevision: number; reviewer: string; reviewedAt: string; note: string };
 export type ImageReviewManifest = { schemaVersion: 'image-review-approved-v1'; manifestId: string; mappings: ImageReviewApprovedMapping[] };
 
-const productSchema = z.object({ productId: businessId, id: z.string().regex(/^[a-f0-9]{24}$/i), name: text, revision: hash, mediaRevision: z.number().int().nonnegative(), images: z.array(z.string().max(1000)).max(100), identity: imageIdentitySchema });
+const productSchema = z.object({ productId: businessId, id: z.string().regex(/^[a-f0-9]{24}$/i), name: text, revision: hash, mediaRevision: z.number().int().nonnegative(), images: z.array(z.string().max(1000)).max(100), identity: imageIdentitySchema,
+  fields: z.partialRecord(z.enum(imageReviewProductFields), text).optional() });
 const itemSchema = z.object({ itemId: hash, revision: z.number().int().nonnegative(), status: z.enum(['pending', 'held', 'approved', 'rejected', 'imported']), source: imageReviewSourceSchema,
-  selectedProductId: businessId.nullable(), note: z.string().max(2000), reviewer: z.string().nullable(), reviewedAt: z.string().nullable(), approvalId: hash.nullable() });
+  selectedProductId: businessId.nullable(), note: z.string().max(2000), reviewer: z.string().nullable(), reviewedAt: z.string().nullable(), approvalId: hash.nullable(), draftProductId: businessId.optional() });
 export const imageReviewListResponseSchema = z.object({ enabled: z.boolean(), items: z.array(itemSchema).max(25), nextAfter: hash.nullable(), counts: z.object({ pending: z.number(), held: z.number(), approved: z.number(), rejected: z.number(), imported: z.number() }) });
 export const imageReviewDetailResponseSchema = z.object({ item: itemSchema, product: productSchema.nullable(), candidates: z.array(productSchema).max(9), comparison: z.array(z.object({ field: z.enum(imageIdentityFields), imageValue: text, catalogueValue: text, required: z.boolean(), status: z.enum(['match', 'unknown', 'conflict']) })).max(14), withdrawalReason: z.string().nullable(), sharedIdentifiers: z.array(z.string()).max(2), history: z.array(z.object({ decision: z.string(), reviewer: z.string(), note: z.string(), reviewedAt: z.string() })).max(20) });
 const mappingSchema = z.object({ approvalId: hash, itemId: hash, productId: businessId, id: z.string(), name: text, imageUrl: z.string().max(1000), publicId: z.string(), sourceSha256: hash, productRevision: hash, mediaRevision: z.number(), reviewer: z.string(), reviewedAt: z.string(), note: z.string() });
@@ -101,7 +131,7 @@ export function projectImageReviewResponse(path: string, value: unknown): unknow
   if (/^image-review\/publication(?:\/(?:start|resume|pause))?$/.test(path)) return imagePublicationResponseSchema.parse(value);
   if (path === 'image-review') return imageReviewListResponseSchema.parse(value);
   if (path === 'image-review/select' || /^image-review\/[a-f0-9]{64}$/.test(path)) return imageReviewDetailResponseSchema.parse(value);
-  if (path === 'image-review/decide') return itemSchema.parse(value);
+  if (path === 'image-review/decide' || path === 'image-review/draft') return itemSchema.parse(value);
   if (path === 'image-review/stage') return z.object({ created: z.number(), replayed: z.number() }).parse(value);
   if (/^image-review\/uploads\/[a-f0-9]{64}$/.test(path)) return z.object({ processed: z.number().int().nonnegative(), total: z.number().int().nullable() }).parse(value);
   if (path === 'image-review/export') return z.object({ mappings: z.array(mappingSchema).max(100), staleItemIds: z.array(hash).max(100), nextAfter: hash.nullable() }).parse(value);

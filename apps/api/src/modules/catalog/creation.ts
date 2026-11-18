@@ -27,7 +27,7 @@ export async function assertRetainedBatchAllowed(db: Db, recoveryAllowed: boolea
     { _id: 'empty-database-v1' }, { projection: { _id: 1 }, maxTimeMS: 3000, timeoutMS: 4000 },
   )) throw new HttpError(409, 'RECOVERY_IMPORT_REQUIRED');
 }
-async function serializeCatalog(db: Db, session: ClientSession, batch: boolean) {
+export async function serializeCatalog(db: Db, session: ClientSession, batch: boolean) {
   if (batch && await db.collection<Document & { _id: string }>('recovery_bootstrap').findOne({ _id: 'empty-database-v1' }, { session })) throw new HttpError(409, 'RECOVERY_IMPORT_REQUIRED');
   const store = await db.collection('stores').findOne({}, { session });
   if (!store) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
@@ -50,10 +50,11 @@ export async function allocateCatalogIds(db: Db, count: number, floor: number, s
 export function catalogProductDocument(value: ProductInput, id: string, category: ObjectId, assets: Assets = { images: [], gdriveFileIds: [] }) {
   return { ...Object.fromEntries(Object.entries(value).filter(([,item])=>item!==undefined)), category, product_id: id, ...assets, _id: new ObjectId(), disabled: false, createdAt: new Date() };
 }
-export async function insertCatalogProduct(db: Db, value: ProductInput, id: string, actor: string, session: ClientSession, assets: Assets = { images: [], gdriveFileIds: [] }) {
-  const category = await db.collection('categories').findOne({ _id: new ObjectId(value.category), archivedAt: { $exists: false } }, { session });
+export async function insertCatalogProduct(db: Db, value: ProductInput, id: string, actor: string, session: ClientSession, assets: Assets = { images: [], gdriveFileIds: [] }, draft = false) {
+  const category = await db.collection('categories').findOne({ _id: new ObjectId(value.category), archivedAt: { $exists: false }, ...(draft ? { disabled: { $ne: true } } : {}) }, { session });
   if (!category) throw new HttpError(400, 'INVALID_REQUEST');
-  const product = catalogProductDocument(value, id, category._id, assets);
+  const product = { ...catalogProductDocument(value, id, category._id, assets),
+    ...(draft ? { catalogManaged: true, published: false, disabled: true } : {}) };
   await validateFamilyMembership(db, product, session);
       await validateAudience(db, product, session);
   await db.collection('products').insertOne(product, { session });

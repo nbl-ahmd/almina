@@ -4,7 +4,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { MongoClient, ObjectId, type Db } from 'mongodb';
 import { imageIdentitySchema, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
-import { stageImageReview, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
+import { stageImageReview, createImageReviewDraft, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
 import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker } from '../apps/api/src/modules/media/image-review-publication';
 import { initialReviewChecks, imageReviewDecision, canApproveImage } from '../apps/web/src/lib/admin/image-review-workflow';
 const require = createRequire(import.meta.url);
@@ -288,6 +288,9 @@ test('retained HTTP boundary authenticates review routes, prevents staff imports
     assert.equal((await request('')).status, 401);
     assert.equal((await request('/stage', 'user', pack([source('http-source')]))).status, 403);
     assert.equal((await request('/import', 'user', {})).status, 403);
+    assert.equal((await request('/draft', 'user', {})).status, 403);
+    assert.equal((await request('/draft', 'admin', {}, false)).status, 403);
+    assert.equal((await request('/draft', 'admin', {})).status, 400);
     assert.equal((await request('/publish', 'user', {})).status, 403);
     assert.equal((await request('/publication', 'user')).status, 403);
     assert.equal((await request('/publication/start', 'user', { requestId: randomUUID() })).status, 403);
@@ -468,5 +471,69 @@ test('the one-action review payload preserves server field checks, human provena
     await db.collection('products').updateOne({ product_id: 'PD_TEST' }, { $set: { packLabel: '100 g' } });
     await assert.rejects(decideImageReview(db, stale, String(staff)), { status: 409 });
     assert.equal((await getImageReview(db, rows[1]!.itemId, String(staff))).item.status, 'pending');
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('inline identity correction and image approval commit together with the corrected revision', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_review_edit_' + randomUUID().replaceAll('-', ''));
+  const admin = new ObjectId(), staff = new ObjectId(), id = new ObjectId();
+  try {
+    await db.collection('users').insertMany([{ _id: admin, role: 'admin' }, { _id: staff, role: 'user' }]);
+    await db.collection('products').insertOne({ _id: id, product_id: 'PD_TEST', name: 'Acme Skin Cream', brand: 'Acme',
+      productForm: 'Cream', packLabel: '100 g', stock: 9, price: 34, vat: true, cloudinaryImages: [], published: true, mediaRevision: 3 });
+    await stageImageReview(db, pack([source('inline-edit')]), String(admin), 'synthetic');
+    const row = (await listImageReviews(db, {}, String(admin))).items[0]!;
+    const detail = await getImageReview(db, row.itemId, String(admin));
+    assert.equal(detail.product?.fields?.packLabel, '100 g');
+    const input = decision(detail, { productChanges: { packLabel: '50 g' } });
+    const size = input.checks.find(check => check.field === 'size')!;
+    size.catalogueValue = '50 g';
+    await assert.rejects(decideImageReview(db, input, String(staff)), { status: 403 });
+    await assert.rejects(decideImageReview(db, input, String(admin)), { status: 409 });
+    size.evidence = 'I verified this value on the individual original label.';
+    await assert.rejects(decideImageReview(db, { ...input, checks: input.checks.filter(check => check.field !== 'brand') }, String(admin)), { status: 409 });
+    assert.equal((await db.collection('products').findOne({ _id: id }))?.packLabel, '100 g');
+    assert.equal((await getImageReview(db, row.itemId, String(admin))).item.status, 'pending');
+    await assert.rejects(decideImageReview(db, { ...input, productChanges: { price: 0 } }, String(admin)), { status: 400 });
+    await db.collection('products').updateOne({ _id: id }, { $set: { packLabel: '75 g' } });
+    await assert.rejects(decideImageReview(db, input, String(admin)), { status: 409 });
+    await db.collection('products').updateOne({ _id: id }, { $set: { packLabel: '100 g' } });
+    const approved = await decideImageReview(db, input, String(admin));
+    assert.deepEqual(await decideImageReview(db, input, String(admin)), approved);
+    const saved = (await db.collection('products').findOne({ _id: id }))!;
+    assert.deepEqual([saved.packLabel, saved.stock, saved.price, saved.vat, saved.published, saved.mediaRevision], ['50 g', 9, 34, true, true, 3]);
+    const exported = await exportImageReviewApprovals(db, {}, String(admin));
+    assert.equal(exported.mappings.length, 1);
+    assert.notEqual(exported.mappings[0]!.productRevision, detail.product?.revision);
+    assert.equal((await db.collection<{ _id: string; priorProduct: { fields: { packLabel: string } } }>('image_review_events').findOne({ _id: input.requestId }))?.priorProduct.fields.packLabel, '100 g');
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('unmatched image creates and selects one unpublished product using an idempotent receipt', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_review_create_' + randomUUID().replaceAll('-', ''));
+  const admin = new ObjectId(), staff = new ObjectId(), category = new ObjectId();
+  try {
+    await db.collection('users').insertMany([{ _id: admin, role: 'admin' }, { _id: staff, role: 'user' }]);
+    await db.collection('stores').insertOne({ name: 'Test' });
+    await db.collection('categories').insertOne({ _id: category, name: 'Skin care' });
+    await stageImageReview(db, pack([source('unmatched', 'PD_TEST', { candidateProductIds: [] })]), String(admin), 'synthetic');
+    const row = (await listImageReviews(db, {}, String(admin))).items[0]!;
+    const input = { itemId: row.itemId, expectedRevision: row.revision, requestId: randomUUID(), product: {
+      name: 'Acme Skin Cream', brand: 'Acme', productForm: 'Cream', packLabel: '50 g', category: String(category), price: '25.50', stock: '4', vat: true,
+    } };
+    await assert.rejects(createImageReviewDraft(db, input, String(staff)), { status: 403 });
+    await assert.rejects(createImageReviewDraft(db, { ...input, product: { ...input.product, category: String(new ObjectId()) } }, String(admin)), { status: 400 });
+    const [result, retry] = await Promise.all([createImageReviewDraft(db, input, String(admin)), createImageReviewDraft(db, input, String(admin))]);
+    assert.deepEqual(result, retry);
+    assert.equal(result.status, 'pending'); assert.ok(result.selectedProductId);
+    assert.equal(await db.collection('products').countDocuments(), 1);
+    assert.equal(await db.collection('inventory_adjustments').countDocuments(), 1);
+    const product = (await db.collection('products').findOne({ product_id: result.selectedProductId }))!;
+    assert.deepEqual([product.published, product.disabled, product.price, product.stock, product.images], [false, true, 25.5, 4, []]);
+    const detail = await getImageReview(db, row.itemId, String(admin));
+    assert.equal(detail.product?.productId, result.selectedProductId);
+    assert.equal(detail.history[0]?.decision, 'draft created');
+    await assert.rejects(createImageReviewDraft(db, { ...input, expectedRevision: result.revision, requestId: randomUUID() }, String(admin)), { status: 409 });
+    assert.equal((await exportImageReviewApprovals(db, {}, String(admin))).mappings.length, 0);
   } finally { await db.dropDatabase(); await client.close(); }
 });

@@ -3,12 +3,15 @@ import { MongoServerError, ObjectId, type Db, type Document, type ClientSession 
 import {
   cloudinaryImage, imageReviewStageSchema, imageReviewListQuerySchema, imageReviewDecisionSchema,
   imageReviewSelectionSchema, imageReviewImportSchema, imageReviewExportQuerySchema, imageReviewPublishSchema,
+  imageReviewDraftSchema, imageReviewProductFields, imageReviewEditableFields, storePublicationIssues,
   imageIdentitySchema, type ImageIdentity, type ImageReviewItem, type ImageReviewSource,
   type ImageReviewProduct, type ImageReviewDetail, type ImageReviewList, type ImageReviewManifest,
   type ImageReviewApprovedMapping, type ImageReviewDecisionInput,
 } from '@almina/contracts';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
+import { allocateCatalogIds, catalogCreationInput, insertCatalogProduct, serializeCatalog } from '../catalog/creation.js';
+import { validateFamilyMembership } from '../catalog/families.js';
 import { recordMediaHistory } from './retention.js';
 import { compareImageIdentity, imageReviewProductIdentity, imageReviewProductRevision, reviewDigest } from './image-review-identity.js';
 
@@ -16,7 +19,7 @@ const queryOptions = { maxTimeMS: 3000 };
 const sessionOptions = (session?: ClientSession) => session ? { ...queryOptions, session } : queryOptions;
 const idSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const projection = Object.fromEntries(['_id', 'name', 'product_id', 'brand', 'manufacturer', 'strength', 'productForm', 'packLabel', 'variantSize', 'variantPackSize', 'variantFlavour', 'mpn', 'barcode', 'gtin', 'images', 'cloudinaryImages', 'gdriveFileIds', 'mediaRevision', 'archivedAt'].map(key => [key, 1]));
-type StoredItem = Document & { _id: string; source: ImageReviewSource; sourceDigest: string; revision: number; status: ImageReviewItem['status']; selectedProductId: string | null; note: string; approvalId: string | null; reviewer: string | null; reviewedAt: Date | null };
+type StoredItem = Document & { _id: string; source: ImageReviewSource; sourceDigest: string; revision: number; status: ImageReviewItem['status']; draftProductId?: string; selectedProductId: string | null; note: string; approvalId: string | null; reviewer: string | null; reviewedAt: Date | null };
 const items = (db: Db) => db.collection<StoredItem>('image_review_items');
 const events = (db: Db) => db.collection<Document & { _id: string }>('image_review_events');
 const withdrawals = (db: Db) => db.collection<Document & { _id: string }>('image_review_withdrawals');
@@ -47,17 +50,18 @@ function sourceUrl(source: ImageReviewSource, cloudName?: string) {
 }
 function dto(row: StoredItem): ImageReviewItem {
   return { itemId: row._id, revision: row.revision, status: row.status, source: row.source, selectedProductId: row.selectedProductId,
-    note: row.note, approvalId: row.approvalId, reviewer: row.reviewer, reviewedAt: row.reviewedAt?.toISOString() ?? null };
+    ...(row.draftProductId ? { draftProductId: row.draftProductId } : {}), note: row.note, approvalId: row.approvalId, reviewer: row.reviewer, reviewedAt: row.reviewedAt?.toISOString() ?? null };
 }
 async function productByBusinessId(db: Db, productId: string, session?: ClientSession) {
   const matches = await db.collection('products').find({ product_id: productId }, { ...sessionOptions(session), projection }).limit(2).toArray();
   if (matches.length > 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
   const product = matches[0]; if (!product || product.archivedAt) throw new HttpError(404, 'NOT_FOUND'); return product;
 }
-function productDto(product: Document, image: ImageIdentity): ImageReviewProduct {
+function productDto(product: Document, image: ImageIdentity, includeFields = false): ImageReviewProduct {
   return { productId: String(product.product_id), id: String(product._id), name: String(product.name), revision: imageReviewProductRevision(product),
     mediaRevision: Number(product.mediaRevision ?? 0), images: Array.isArray(product.cloudinaryImages) ? product.cloudinaryImages.filter((v): v is string => typeof v === 'string') : [],
-    identity: imageReviewProductIdentity(product, image) };
+    identity: imageReviewProductIdentity(product, image),
+    ...(includeFields ? { fields: Object.fromEntries(imageReviewProductFields.filter(key => typeof product[key] === 'string').map(key => [key, product[key].trim().slice(0, 500)])) } : {}) };
 }
 async function sharedIdentifiers(db: Db, product: Document, session?: ClientSession): Promise<string[]> {
   const identifiers = [...new Set([product.barcode, product.gtin].filter((v): v is string => typeof v === 'string' && !!v))];
@@ -128,19 +132,24 @@ export async function getImageReview(db: Db, itemId: string, actor: string, prod
   await authorize(db, actor); parse(idSchema, itemId);
   if (productId !== undefined) parse(imageReviewSelectionSchema, { itemId, productId });
   const row = await items(db).findOne({ _id: itemId }, queryOptions); if (!row) throw new HttpError(404, 'NOT_FOUND');
-  const ids = [...new Set([...row.source.candidateProductIds, ...(productId ? [productId] : row.selectedProductId ? [row.selectedProductId] : [])])];
-  const candidates: ImageReviewProduct[] = [];
-  for (const id of ids) {
-    try { candidates.push(productDto(await productByBusinessId(db, id), row.source.identity)); }
-    catch (error) { if (!(error instanceof HttpError) || error.status !== 404) throw error; }
-  }
   const selected = productId ?? row.selectedProductId;
-  const product = candidates.find(p => p.productId === selected) ?? null;
-  const barrier = product ? await withdrawn(db, row, product.productId) : null;
-  const history = await events(db).find({ itemId: row._id }, { ...queryOptions, projection: { actor: 1, result: 1, createdAt: 1 } }).sort({ createdAt: -1 }).limit(20).toArray();
+  const ids = [...new Set([...row.source.candidateProductIds, ...(selected ? [selected] : [])])];
+  const candidates: ImageReviewProduct[] = [];
+  const records = await Promise.all(ids.map(async id => {
+    try { return await productByBusinessId(db, id); }
+    catch (error) { if (!(error instanceof HttpError) || error.status !== 404) throw error; return null; }
+  }));
+  for (const record of records) if (record) candidates.push(productDto(record, row.source.identity));
+  const selectedRecord = records.find(record => record?.product_id === selected);
+  const product = selectedRecord ? productDto(selectedRecord, row.source.identity, true) : null;
+  const [barrier, history, shared] = await Promise.all([
+    product ? withdrawn(db, row, product.productId) : null,
+    events(db).find({ itemId: row._id }, { ...queryOptions, projection: { actor: 1, result: 1, createdAt: 1, kind: 1 } }).sort({ createdAt: -1 }).limit(20).toArray(),
+    selectedRecord ? sharedIdentifiers(db, selectedRecord) : [],
+  ]);
   return { item: dto(row), product, candidates, comparison: product ? compareImageIdentity(row.source.identity, product.identity) : [],
-    withdrawalReason: barrier ? String(barrier.reason) : null, sharedIdentifiers: product ? await sharedIdentifiers(db, await productByBusinessId(db, product.productId)) : [],
-    history: history.map(event => ({ decision: String(event.result?.status ?? 'reviewed'), reviewer: String(event.actor), note: String(event.result?.note ?? ''), reviewedAt: (event.createdAt as Date).toISOString() })) };
+    withdrawalReason: barrier ? String(barrier.reason) : null, sharedIdentifiers: shared,
+    history: history.map(event => ({ decision: String(event.kind ?? event.result?.status ?? 'reviewed'), reviewer: String(event.actor), note: String(event.result?.note ?? ''), reviewedAt: (event.createdAt as Date).toISOString() })) };
 }
 function validateChecks(row: StoredItem, product: Document, value: ImageReviewDecisionInput) {
   if (!value.originalViewed || row.source.flags.length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
@@ -161,33 +170,86 @@ function validateChecks(row: StoredItem, product: Document, value: ImageReviewDe
 }
 export async function decideImageReview(db: Db, raw: unknown, actor: string) {
   await authorize(db, actor); const value = parse(imageReviewDecisionSchema, raw), digest = reviewDigest(value);
+  if (value.productChanges && value.decision !== 'approved') throw new HttpError(400, 'INVALID_REQUEST');
   const session = db.client.startSession(); let result: ImageReviewItem | undefined;
   try {
     await session.withTransaction(async () => {
+      if (value.productChanges && Object.keys(value.productChanges).length) await authorize(db, actor, true, session);
       const replay = await events(db).findOne({ _id: value.requestId }, { session });
       if (replay) { if (replay.digest !== digest || replay.actor !== actor) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT'); result = replay.result as ImageReviewItem; return; }
       const row = await items(db).findOne({ _id: value.itemId }, { session });
       if (!row || row.revision !== value.expectedRevision || row.status === 'imported') throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
       let product: Document | null = null;
+      let priorProduct: ImageReviewProduct | null = null;
       if (value.decision === 'approved') {
         if (!value.productId) throw new HttpError(400, 'INVALID_REQUEST');
         product = await productByBusinessId(db, value.productId, session);
         if (imageReviewProductRevision(product) !== value.productRevision || await withdrawn(db, row, value.productId, session)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+        if (value.productChanges && Object.keys(value.productChanges).length) {
+          for (const [field, key] of Object.entries(imageReviewEditableFields)) {
+            if (value.productChanges[key] === undefined) continue;
+            const check = value.checks.find(candidate => candidate.field === field);
+            if (!check?.confirmed || !check.imageValue || check.evidence.length < 10) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+          }
+          const current = await db.collection('products').findOne({ _id: product._id }, { session });
+          if (!current) throw new HttpError(404, 'NOT_FOUND');
+          priorProduct = productDto(current, row.source.identity, true);
+          const nextProduct = { ...current, ...value.productChanges };
+          if (current.catalogManaged === true && current.published !== false && !current.disabled && storePublicationIssues(nextProduct).length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+          await validateFamilyMembership(db, nextProduct, session);
+          await db.collection('products').updateOne({ _id: product._id }, { $set: value.productChanges }, { session });
+          product = nextProduct;
+        }
         validateChecks(row, product, value);
         if ((await sharedIdentifiers(db, product, session)).length && (!value.sharedIdentifierConfirmed || value.note.length < 10)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
       }
-      const now = new Date(), approvalId = value.decision === 'approved' ? reviewDigest([row._id, value.requestId, row.sourceDigest, value.productRevision]) : null;
+      const productRevision = product ? imageReviewProductRevision(product) : value.productRevision;
+      const now = new Date(), approvalId = value.decision === 'approved' ? reviewDigest([row._id, value.requestId, row.sourceDigest, productRevision]) : null;
       const next: StoredItem = { ...row, status: value.decision, selectedProductId: value.productId, revision: row.revision + 1,
         note: value.note, reviewer: actor, reviewedAt: now, approvalId };
       const saved = await items(db).updateOne({ _id: row._id, revision: row.revision }, { $set: { status: next.status, selectedProductId: next.selectedProductId,
-        revision: next.revision, note: next.note, reviewer: actor, reviewedAt: now, approvalId, productRevision: value.productRevision } }, { session });
+        revision: next.revision, note: next.note, reviewer: actor, reviewedAt: now, approvalId, productRevision } }, { session });
       if (saved.modifiedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
       result = dto(next);
       await events(db).insertOne({ _id: value.requestId, digest, actor, input: value, itemId: row._id, sourceDigest: row.sourceDigest,
-        approvalId, before: dto(row), result, product: product ? productDto(product, row.source.identity) : null, createdAt: now }, { session });
+        approvalId, before: dto(row), result, priorProduct, product: product ? productDto(product, row.source.identity) : null, createdAt: now }, { session });
     });
   } finally { await session.endSession(); }
   return result!;
+}
+export async function createImageReviewDraft(db: Db, raw: unknown, actor: string) {
+  await authorize(db, actor, true);
+  const value = parse(imageReviewDraftSchema, raw), digest = reviewDigest(value);
+  const input = catalogCreationInput({ ...value.product, barcode: value.product.barcode ?? '' });
+  const session = db.client.startSession();
+  try {
+    return await session.withTransaction(async () => {
+      await authorize(db, actor, true, session);
+      const replay = await events(db).findOne({ _id: value.requestId }, { session });
+      if (replay) {
+        if (replay.digest !== digest || replay.actor !== actor || replay.kind !== 'draft created') throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+        return replay.result as ImageReviewItem;
+      }
+      const row = await items(db).findOne({ _id: value.itemId }, { session });
+      if (!row || row.revision !== value.expectedRevision || !['pending', 'held'].includes(row.status) || row.draftProductId) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+      if (row.source.flags.length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      await serializeCatalog(db, session, false);
+      const [id] = await allocateCatalogIds(db, 1, 0, session);
+      const product = await insertCatalogProduct(db, input, id!, actor, session, undefined, true);
+      const now = new Date();
+      const next = { ...row, revision: row.revision + 1, selectedProductId: product.product_id, draftProductId: product.product_id,
+        reviewer: actor, reviewedAt: now, note: 'Draft product created from this image. Image approval is pending.' };
+      const saved = await items(db).updateOne({ _id: row._id, revision: row.revision }, { $set: {
+        revision: next.revision, selectedProductId: next.selectedProductId, draftProductId: next.selectedProductId,
+        reviewer: actor, reviewedAt: now, note: next.note,
+      } }, { session });
+      if (saved.matchedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+      const result = dto(next);
+      await events(db).insertOne({ _id: value.requestId, itemId: row._id, kind: 'draft created', actor, digest,
+        before: dto(row), result, product: productDto(product, row.source.identity, true), createdAt: now }, { session });
+      return result;
+    }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
+  } finally { await session.endSession(); }
 }
 async function approvedMapping(db: Db, row: StoredItem, session?: ClientSession): Promise<ImageReviewApprovedMapping> {
   if (row.status !== 'approved' || !row.approvalId || !row.selectedProductId) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');

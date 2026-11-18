@@ -9,7 +9,7 @@ import { initialReviewChecks, canApproveImage, imageReviewDecision, nextImageRev
 const identity = (patch: object = {}) => imageIdentitySchema.parse({ name: 'Acme Skin Cream', brand: 'Acme', form: 'Cream', size: '50 g', ...patch });
 test('image review separates staff decisions from administrator staging and catalogue import', () => {
   assert.equal(canVisit('user', 'image-review'), true);
-  for (const [method, endpoint, policy] of [['GET', '', 'staff'], ['GET', '/export', 'staff'], ['POST', '/decide', 'staff'], ['POST', '/stage', 'admin'], ['POST', '/preview', 'admin'], ['POST', '/import', 'admin'], ['POST', '/publish', 'admin']]) {
+  for (const [method, endpoint, policy] of [['GET', '', 'staff'], ['GET', '/export', 'staff'], ['POST', '/decide', 'staff'], ['POST', '/draft', 'admin'], ['POST', '/stage', 'admin'], ['POST', '/preview', 'admin'], ['POST', '/import', 'admin'], ['POST', '/publish', 'admin']]) {
     assert.equal(accessPolicy(method!, 'image-review' + endpoint), policy);
     assert.equal(lookupPolicy(method!, '/api/image-review' + endpoint)?.policy, policy);
   }

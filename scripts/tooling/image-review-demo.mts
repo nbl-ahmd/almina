@@ -35,9 +35,11 @@ await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun
 }] }, String(adminId), 'drvxmb0vq');
 // Optional queue for local UX checks; repeated reference photos are clearly demo-only.
 if (process.argv.includes('--review-speed')) {
+  await db.collection('stores').insertOne({ name: 'Disposable demo store' });
+  await db.collection('categories').insertOne({ name: 'Personal care', disabled: false });
   await db.collection('products').insertOne({ product_id: 'PD_DEMO_400', name: 'ACM Novophane Energizing Shampoo 400 ml', brand: 'ACM', productForm: 'Shampoo', packLabel: '400 ml', price: 0, stock: 0, published: false, disabled: true });
   const reference = (await listImageReviews(db, {}, String(adminId))).items[0]!.source;
-  await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun: 'disposable-speed-demo', catalogueChecksum: 'a'.repeat(64), withdrawals: [], items: Array.from({ length: 3 }, (_, index) => ({ ...reference, assetId: `speed-demo-${index}`, candidateProductIds: index === 2 ? ['PD_DEMO_400', 'PD0081'] : ['PD0081'], sourceNote: 'Disposable speed-review fixture. This queue entry reuses the sample original to test navigation; it is not a new recovered image.' })) }, String(adminId), 'drvxmb0vq');
+  await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun: 'disposable-speed-demo', catalogueChecksum: 'a'.repeat(64), withdrawals: [], items: Array.from({ length: 4 }, (_, index) => ({ ...reference, assetId: `speed-demo-${index}`, candidateProductIds: index === 3 ? [] : index === 2 ? ['PD_DEMO_400', 'PD0081'] : ['PD0081'], sourceNote: 'Disposable speed-review fixture. This queue entry reuses the sample original to test navigation; it is not a new recovered image.' })) }, String(adminId), 'drvxmb0vq');
 }
 const { createLegacyApp } = require('../../backend/app.js');
 const api = createLegacyApp({ development: true, origins: [origin], imageReviewEnabled: true, recoveryCloudName: 'drvxmb0vq', getCommerceDb: async () => db });
