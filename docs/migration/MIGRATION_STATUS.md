@@ -1,3 +1,7 @@
+## 2026-11-18 — P5-03 checkout and authentication regressions verified
+
+Disposable local fixtures covered quote changes, stock conflicts, idempotent retry, cash confirmation, simulated payments and customer and staff boundaries. [Verification and scope](../../apps/web/docs/design/implementation-evidence/p5-03-commerce.md). P5-04 covers remaining customer and public information surfaces. No deployment.
+
 ## 2026-11-18 — P5-02 checkout presentation verified
 
 Checkout details, review, disabled and payment result states use the accepted storefront system. One action adapts between the phone dock and the order summary, including software-keyboard and landscape presentation. [Local verification](../../apps/web/docs/design/implementation-evidence/p5-02-checkout.md). P5-03 covers broader transaction and authentication checks. No deployment.

@@ -1,12 +1,13 @@
 import { test, expect, nextCheckoutPage, reset, state, commerceOrigin, checkoutOrigin, productId } from './fixtures';
 test.beforeEach(async ({ request }) => { await reset(request); });
 test('Next imports legacy cart identifiers while discarding forged prices, names and stock', async ({ page, request }) => {
-  await page.goto(checkoutOrigin + '/cart');
-  await page.evaluate(id => {
-    localStorage.clear(); localStorage.setItem('cartItems', JSON.stringify([{ _id: id, quantity: 2, name: 'Forged', price: 1, salePrice: 1, stock: 999 }]));
+  await page.addInitScript(id => {
+    localStorage.setItem('cartItems', JSON.stringify([{ _id: id, quantity: 2, name: 'Forged', price: 1, salePrice: 1, stock: 999 }]));
   }, productId);
-  await page.reload();
-  await expect(page.locator('main')).toContainText('AED 20.00 per item');
+  await page.goto(checkoutOrigin + '/cart');
+  const unitPrice = page.locator('.cart-unit-price');
+  await expect(unitPrice.getByRole('img')).toHaveAccessibleName('AED 20.00');
+  await expect(unitPrice).toContainText('per item');
   await expect(page.locator('main')).not.toContainText('Forged');
   await page.getByRole('button', { name: 'Increase Synthetic care product quantity' }).click();
   await expect(page.getByRole('status', { name: 'Quantity for Synthetic care product: 3' })).toHaveText('3');

@@ -1,4 +1,4 @@
-import {test,expect,reset,commerceOrigin,checkoutOrigin,customer,login} from './fixtures';
+import {test,expect,reset,commerceOrigin,checkoutOrigin,customer,login,state} from './fixtures';
 test.beforeEach(async({request})=>{await reset(request);expect((await request.post(commerceOrigin+'/__fixture/families')).ok()).toBeTruthy();});
 for(const width of [360,390,768,1280]) {
   test(`family selection is responsive and each SKU is directly accessible at ${width}px`,async({page})=>{
@@ -42,17 +42,24 @@ test('selected SKU survives cart, server checkout and immutable staff order deta
   await page.goto(checkoutOrigin+'/cart');
   await expect(page.getByText('Size: Large · Flavour: Chocolate',{exact:true})).toBeVisible();
   await page.goto(checkoutOrigin+'/checkout');
-  for(const[name,value]of Object.entries(customer)) {
-    const field=page.locator(`[name="${name}"]`);
-    if(name==='emirate'||name==='payment') await field.selectOption(value);else await field.fill(value);
+  for (const [name, value] of Object.entries(customer)) {
+    if (name === 'payment') continue;
+    const field = page.locator(`[name="${name}"]`);
+    if (name === 'emirate') await field.selectOption(value);
+    else await field.fill(value);
   }
+  await expect(page.getByRole('radio', { name: /Cash on delivery/ })).toBeChecked();
   await page.getByRole('button',{name:'Review order',exact:true}).click();
-  await expect(page.getByText('Size: Large · Flavour: Chocolate',{exact:true})).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Order summary' })
+    .getByText('Size: Large · Flavour: Chocolate', { exact: true })).toBeVisible();
   await page.getByRole('button',{name:'Place order — AED 35.00',exact:true}).click();
   await expect(page.getByRole('heading',{name:/order.*confirmed|order.*received/i})).toBeVisible();
-  const state=await(await request.get(commerceOrigin+'/__fixture/state')).json();
+  const confirmed = await state(request);
+  expect(confirmed.orders).toHaveLength(1);
+  expect(confirmed.receipts).toBe(1);
+  expect(confirmed.orders[0]!.totals.totalMinor).toBe(3500);
   await login(page);
-  await page.goto('http://127.0.0.1:4720/admin/orders/'+state.orders[0]._id);
+  await page.goto('http://127.0.0.1:4720/admin/orders/' + confirmed.orders[0]!._id);
   await expect(page.getByRole('cell',{name:'Size: Large · Flavour: Chocolate',exact:true})).toBeVisible();
 });
 

@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P5-02 verified.** Checkout uses the accepted storefront system and one responsive action across details, review and payment. [Checkout evidence](implementation-evidence/p5-02-checkout.md).
-- **Next eligible task:** **P5-03 — checkout commerce, retry, provider and authentication regressions.**
-- **Verified implementation tasks:** 26 of 34 (Phases 0–4 and P5-01–P5-02).
+- **Current work:** **P5-03 verified.** Local checkout, payment and authentication regressions were exercised against disposable fixtures. [Commerce evidence](implementation-evidence/p5-03-commerce.md).
+- **Next eligible task:** **P5-04 — remaining customer and public information surfaces.**
+- **Verified implementation tasks:** 27 of 34 (Phases 0–4 and P5-01–P5-03).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P5-02 isolated build, typecheck, lint, 38 unit checks and checkout, cart and shared-route browser regressions. Bilingual captures and keyboard/resize cases are recorded. Native device and assistive-technology verification remain open.
+- **Runtime/testing this checkpoint:** P5-03 reused the verified P5-02 production build and ran 162 unit/security checks, 53 disposable database integration checks and cart, checkout, payment and authentication browser regressions. Live provider and native-device verification remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -23,7 +23,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
 | 4 Catalogue/PDP | verified | P4-01–P4-05 verified locally. | [Phase 4 exit](implementation-evidence/phase-4.md) |
-| 5 Cart/checkout/customer | in_progress | P5-01–P5-02 verified. P5-03 commerce and authentication verification follows. | [Cart](implementation-evidence/p5-01-cart.md), [checkout](implementation-evidence/p5-02-checkout.md) |
+| 5 Cart/checkout/customer | in_progress | P5-01–P5-03 verified. P5-04 remaining customer and information surfaces follows. | [Cart](implementation-evidence/p5-01-cart.md), [checkout](implementation-evidence/p5-02-checkout.md), [commerce](implementation-evidence/p5-03-commerce.md) |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
 ## Task ledger
@@ -58,7 +58,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P4-05 | verified | [Contextual return, bilingual checks and Phase 4 exit](implementation-evidence/phase-4.md) |
 | P5-01 | verified | [Cart states, estimates and responsive continuation](implementation-evidence/p5-01-cart.md) |
 | P5-02 | verified | [Checkout details, review, dock and results](implementation-evidence/p5-02-checkout.md) |
-| P5-03 | not_started | — |
+| P5-03 | verified | [Disposable checkout, transaction, payment and authentication regressions](implementation-evidence/p5-03-commerce.md) |
 | P5-04 | not_started | — |
 | P5-05 | not_started | — |
 | P6-01 | not_started | — |
@@ -364,3 +364,9 @@ When interrupted or handing off, update this file before yielding where possible
 
 - Migrated checkout details, review, disabled, completion and hosted payment return to the accepted system. The form and summary share one responsive continuation with measured dock clearance.
 - Verified local bilingual presentation, keyboard and resize behavior, and existing checkout gates and recovery. [Implementation evidence](implementation-evidence/p5-02-checkout.md). Continue with P5-03.
+
+
+### 2026-11-18 — P5-03 verified
+
+- Verified server quote and stock conflicts, idempotent retry, cash completion, simulated hosted payment return and cancellation, and guest/customer/staff boundaries.
+- Updated browser assertions for accessible dirham pricing, disabled sign-in behavior and the exact SKU through confirmation and staff order detail. [Implementation evidence](implementation-evidence/p5-03-commerce.md). Continue with P5-04.
