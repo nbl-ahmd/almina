@@ -25,6 +25,10 @@ import { CompactProductCard } from '../../../../components/product-card';
 import { CurrencyAmount } from '../../../../components/currency-amount';
 import { CartLink } from '../../../../components/cart-link';
 import { AddToCart } from '../../../../components/cart-controls';
+import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
+import styles from '../../../../components/product-detail.module.css';
+import boundary from '../../../../components/storefront-system/boundary.module.css';
+import system from '../../../../components/storefront-system/tokens.module.css';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
 export async function generateMetadata({ params, searchParams }: Props) {
   const product = await resolveProductRoute((await params).slug);
@@ -52,23 +56,78 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const structured=productData(origin, product, productImages(product),variants, Object.fromEntries(variants.map(member=>[member._id,productImages(member)])),shippingPolicy);
   const reviews_ = reviewListData(reviews);
   const productSchema={...structured,...(aggregateRatingData(reviews)??{}),...(reviews_.length?{review:reviews_}:{})};
-  return <><RecordProductView id={product._id} /><StructuredData data={productSchema} />
-    <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }, { name: product.name, path: productHref(product) }])} />
-    <div className="pdp-page pb-24 md:pb-0"><div className="pdp-mobile-toolbar"><Link className="pdp-back" href={categoryHref(product.category)} aria-label={locale==='ar'?'العودة إلى الفئة':'Back to category'}><Icon name="back" /></Link><Link href="/search" aria-label={u(locale,'Search products')}><Icon name="search" /></Link><SaveProduct locale={locale} id={product._id} name={product.name} compact /><CartLink locale={locale} /></div><Breadcrumb title={product.name} parents={[{ name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} />
-    <div className="product-detail mb-8 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
-      <div className="product-visual min-w-0 md:sticky md:top-6"><ProductGallery locale={locale} images={productImages(product)} name={product.name} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-
-        {productImages(product).some(image => !image.startsWith('/')) ? <PhotoCredit source={product.imageSource} /> : null}
-      </div>
-      <div className="product-information min-w-0"><h1>{product.name}</h1><div className="product-identity">{product.brand || product.familyBrand ? <Link href={`/search?q=${encodeURIComponent(product.brand || product.familyBrand || '')}`}>{product.brand || product.familyBrand}</Link> : null}<Link href={categoryHref(product.category)}>{u(locale,product.category.name)}</Link></div>
-        <div className="product-price-panel"><span>{u(locale,'Price')}</span><p className="price"><CurrencyAmount value={currentPrice} locale={locale} /></p>{saving ? <><del><CurrencyAmount value={product.price} locale={locale} /></del><span className="pdp-saving">{locale==='en'?`Save ${saving}%`:`وفّر ${saving}%`}</span></> : null}</div>
-        <ProductOptions product={product} variants={variants} />
-        <div className="pdp-stock-line"><StockState stock={product.stock} /></div>
-        <div className="pdp-purchase"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel=<CurrencyAmount value={currentPrice} locale={locale} /> /></div>
-
-        <div className="pdp-save-secondary"><SaveProduct locale={locale} id={product._id} name={product.name} /></div>
-        {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
-      </div>
+  const categoryPath = categoryHref(product.category);
+  const brand = product.brand || product.familyBrand;
+  const alternatives = related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4);
+  const photos = productImages(product).filter(image => image !== '/product-placeholder.svg');
+  const mobileControls = (
+    <div className={`pdp-mobile-toolbar ${styles.overlay}`}>
+      <Link className={styles.back} href={categoryPath} aria-label={locale === 'ar' ? 'العودة إلى الفئة' : 'Back to category'}>
+        <Icon name="back" />
+      </Link>
+      <SaveProduct locale={locale} id={product._id} name={product.name} compact card />
+      <CartLink locale={locale} />
     </div>
-    {related.length?<section className="related-products"><div className="sf-section-heading"><h2>{u(locale,'Similar products')}</h2><Link href={categoryHref(product.category)}>{u(locale,'View category')}<Icon name="arrow" /></Link></div><div className="related-product-list">{related.filter(item=>item._id!==product._id&&(!product.familyKey||item.familyKey!==product.familyKey)).slice(0,4).map(item=><CompactProductCard key={item._id} product={item} />)}</div></section>:null}<div className="pdp-secondary-info">{product.summary ? <p>{product.summary}</p> : null}<p>{u(locale,'Checkout confirms the delivery charge and final total before you place an order.')}</p><div><Link href="/shipping">{u(locale,'Delivery & shipping')}</Link><Link href="/returns">{u(locale,'Returns & refunds')}</Link><Link href="/contact">{u(locale,'Contact pharmacy')}</Link></div><span>{locale==='en'?'SKU: ':'رمز المنتج: '}{product.product_id}</span></div><ProductInformation product={product} /><ProductReviews locale={locale} productId={product._id} reviews={reviews} /></div><GrowthActivity kind="product"/></>;
+  );
+  return <><RecordProductView id={product._id} /><StructuredData data={productSchema} />
+    <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }, { name: product.name, path: productHref(product) }])} />
+    <div lang={locale} className={`pdp-page ${system.system} ${boundary.boundary} ${styles.detail}`}>
+      <div className={styles.container}>
+        <Breadcrumb title={product.name} parents={[{ name: u(locale, 'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }]} />
+        <div className={styles.lead}>
+          <div className={styles.visual}>
+            <ProductGallery key={product._id} locale={locale} images={photos} name={product.name}
+              controls={mobileControls} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
+            {photos.length ? <div className={styles.credit}><PhotoCredit source={product.imageSource} /></div> : null}
+          </div>
+          <div className={styles.buying}>
+            <h1><bdi>{product.name}</bdi></h1>
+            <div className={styles.identity}>
+              {brand ? <Link href={'/search?' + new URLSearchParams({ q: brand })}><bdi>{brand}</bdi></Link> : null}
+              <Link href={categoryPath}>{u(locale, product.category.name)}</Link>
+            </div>
+            <StockState stock={product.stock} />
+            <div className={styles.price}>
+              <span className="sr-only">{u(locale, 'Price')}</span>
+              <CurrencyAmount value={currentPrice} locale={locale} />
+              {product.price > currentPrice ? <del><CurrencyAmount value={product.price} locale={locale} /></del> : null}
+              {saving ? <span className={styles.saving}>{locale === 'en' ? `Save ${saving}%` : `وفّر ${saving}%`}</span> : null}
+            </div>
+            <ProductOptions product={product} variants={variants} />
+            <ProductPurchaseDock>
+              <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock}
+                quantityPicker priceLabel={<CurrencyAmount value={currentPrice} locale={locale} />} />
+            </ProductPurchaseDock>
+            <div className={styles.desktopSave}><SaveProduct locale={locale} id={product._id} name={product.name} card /></div>
+            {product.productType === 'general' && product.contentReviewed === true
+              ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
+          </div>
+        </div>
+        <div className={styles.secondary}>
+          {alternatives.length ? (
+            <section className="related-products">
+              <div className="sf-section-heading">
+                <h2>{u(locale, 'Similar products')}</h2>
+                <Link href={categoryPath}>{u(locale, 'View category')}<Icon name="arrow" /></Link>
+              </div>
+              <div className="related-product-list">
+                {alternatives.map(item => <CompactProductCard key={item._id} product={item} />)}
+              </div>
+            </section>
+          ) : null}
+          <div className="pdp-secondary-info">
+            {product.summary ? <p>{product.summary}</p> : null}
+            <p>{u(locale, 'Checkout confirms the delivery charge and final total before you place an order.')}</p>
+            <div>
+              <Link href="/shipping">{u(locale, 'Delivery & shipping')}</Link>
+              <Link href="/returns">{u(locale, 'Returns & refunds')}</Link>
+              <Link href="/contact">{u(locale, 'Contact pharmacy')}</Link>
+            </div>
+            <span>{locale === 'en' ? 'SKU: ' : 'رمز المنتج: '}<bdi>{product.product_id}</bdi></span>
+          </div>
+          <ProductInformation product={product} />
+          <ProductReviews locale={locale} productId={product._id} reviews={reviews} />
+        </div>
+      </div>
+    </div><GrowthActivity kind="product" /></>;
 }

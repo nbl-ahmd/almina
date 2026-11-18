@@ -72,19 +72,17 @@ test('Arabic missing routes retain the appropriate shell, localized recovery and
   }
 });
 
-test.describe('intentional Arabic catalogue outage', () => {
-  test.use({ expectedReactBoundaryFailure: true });
-  test('Arabic route error can retry after the fixture recovers', async ({ page, context, request }) => {
-    await context.addCookies([{ name: 'almina_lang', value: 'ar', url: origin }]);
-    const fixture = 'http://127.0.0.1:4711/__fixture/failure';
+test('Arabic catalogue recovery retries the same results page', async ({ page, context, request }) => {
+  await context.addCookies([{ name: 'almina_lang', value: 'ar', url: origin }]);
+  const fixture = 'http://127.0.0.1:4711/__fixture/failure';
+  expect((await request.get(fixture)).ok()).toBe(true);
+  try {
+    await page.goto('/products?page=2');
+    await expect(page.getByRole('heading', { name: 'تعذّر تحميل المنتجات', exact: true })).toBeVisible();
+  } finally {
     expect((await request.get(fixture)).ok()).toBe(true);
-    try {
-      await page.goto('/products?page=2');
-      await expect(page.getByRole('heading', { name: 'تعذّر تحميل هذه الصفحة' })).toBeVisible();
-    } finally {
-      expect((await request.get(fixture)).ok()).toBe(true);
-    }
-    await page.getByRole('button', { name: 'حاول مرة أخرى', exact: true }).press('Enter');
-    await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
-  });
+  }
+  await page.getByRole('link', { name: 'حاول مرة أخرى', exact: true }).press('Enter');
+  await expect(page).toHaveURL(/page=2/);
+  await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
 });

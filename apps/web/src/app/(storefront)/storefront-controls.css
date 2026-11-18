@@ -19,7 +19,6 @@
 .sf-search-submit { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; gap:6px; min-width:44px; min-height:44px; padding:10px 14px; border:0; border-radius:var(--radius-control); background:var(--color-brand); color:var(--color-ink); font:inherit; font-weight:600; transition:background-color 150ms; }
 .sf-search-label { font-size:13px; font-weight:600; }
 .header-cart-label { display:inline; }
-.storefront-shell .purchase-quantity { border:1px solid var(--color-border); background:var(--color-subtle); border-radius:999px; overflow:hidden; }
 .sf-search-submit:hover { background:var(--color-brand-hover); }
 .storefront-search-panel { position:absolute; inset-inline:0; top:calc(100% + 8px); z-index:50; max-height:min(65dvh,480px); overflow-y:auto; overscroll-behavior:contain; border:1px solid var(--color-border); border-radius:var(--radius-panel); background:var(--color-surface); box-shadow:var(--shadow-raised); }
 .storefront-shell .header-cart { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; min-width:44px; min-height:48px; padding:10px 14px; gap:8px; border:1px solid var(--color-border); border-radius:var(--radius-control); color:var(--color-ink); background:var(--color-surface); }

@@ -27,7 +27,9 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
   const products = includeRecovered ? [product, ...recoveredProducts] : [product];
   if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
     _id: (index + 100).toString(16).padStart(24, '0'), product_id: `SYNTHETIC_${index}`, name: `Synthetic paged product ${index}`,
-    stock: 0, sale: false, featured: false, price: 1 })));
+    stock: 0, sale: false, featured: false, price: 1,
+    ...(index === 0 ? { images: ['fixture.svg', 'fixture-back.svg'] } : {}),
+  })));
   let closed = false;
   let failed = false;
   let homeStock = "normal";
@@ -54,9 +56,10 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     }
     if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
     if (failed) { res.writeHead(503); res.end('Fixture unavailable'); return; }
-    if (url.pathname === '/api/products/images/fixture.svg') {
+    if (['/api/products/images/fixture.svg', '/api/products/images/fixture-back.svg'].includes(url.pathname)) {
       res.setHeader('Content-Type', 'image/svg+xml');
-      res.end('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" fill="#e6f6f3"/><text x="30" y="120">Daily Care</text></svg>'); return;
+      const back = url.pathname.endsWith('-back.svg');
+      res.end(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" fill="${back ? '#edf2fd' : '#e6f6f3'}"/><text x="30" y="120">${back ? 'Synthetic back photo' : 'Daily Care'}</text></svg>`); return;
     }
     res.setHeader('Content-Type', 'application/json');
     if (url.pathname === '/api/v1/search' || url.pathname === '/api/v1/search/suggest') {
@@ -108,7 +111,10 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     const byMongoId = products.find(value => url.pathname === `/api/products/${value._id}`);
     if (byMongoId) { res.end(JSON.stringify({ ...byMongoId, category: category._id })); return; }
     const byBusinessId = products.find(value => url.pathname === `/api/products/details/${value.product_id}`);
-    if (byBusinessId) { res.end(JSON.stringify({ product: byBusinessId, relatedProducts: [] })); return; }
+    if (byBusinessId) {
+      const relatedProducts = byBusinessId.product_id === 'SYNTHETIC_0' ? products.slice(2, 6) : [];
+      res.end(JSON.stringify({ product: byBusinessId, relatedProducts })); return;
+    }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
       const source = url.searchParams.get('inStock') !== 'true' || homeStock === 'normal'

@@ -1,3 +1,7 @@
+## 2026-11-18 — P4-03 gallery and purchase layout verified
+
+The public product detail uses the approved full-width mobile gallery, an adaptive purchase dock and the desktop gallery and buying column. Verified existing SKU links, gallery state, stock, quantity and cart behavior in the local fixture. [Bilingual captures and verification](../../apps/web/docs/design/implementation-evidence/p4-03-detail.md). P4-04 product information follows. No deployment.
+
 ## 2026-11-18 — P4-02 public cards and rails verified
 
 Standard and compact product cards use the accepted storefront system. Exact pack details, dirham amounts, availability, saved state and server-checked quick add were exercised on local fixtures. [Captures and verification](../../apps/web/docs/design/implementation-evidence/p4-02-cards.md). P4-03 gallery and purchase layout follows. No deployment.

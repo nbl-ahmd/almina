@@ -59,6 +59,8 @@ P4-01 uses one native filter disclosure on phones and opens it as a desktop rail
 
 P4-02 shows the exact price and availability of the displayed SKU on grouped cards. The card indicates price variation and links to the existing family options. Comparison photos stay static, and missing or failed images have a localized placeholder. [Implementation evidence](implementation-evidence/p4-02-cards.md).
 
+P4-03 applies the selected image-first composition to the public product detail. Mobile purchase controls show the unit price and reserve the dock’s measured height. Short landscape keeps those controls in flow. The public overlay keeps its category fallback until the P4-05 contextual return work. [Implementation evidence](implementation-evidence/p4-03-detail.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

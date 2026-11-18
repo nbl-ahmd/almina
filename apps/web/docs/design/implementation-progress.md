@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P4-02 verified.** Standard and compact cards use the accepted system with bilingual responsive and commerce-state evidence. [P4-02 report](implementation-evidence/p4-02-cards.md).
-- **Next eligible task:** **P4-03 — image-first phone product detail, contextual controls and purchase dock, with a desktop gallery and buying column.**
-- **Verified implementation tasks:** 21 of 34 (Phases 0–3 and P4-01–P4-02).
+- **Current work:** **P4-03 verified.** The public product page has the approved mobile gallery and purchase dock, with a desktop gallery and buying column. [P4-03 report](implementation-evidence/p4-03-detail.md).
+- **Next eligible task:** **P4-04 — verified summary, product facts, help and information before alternatives.**
+- **Verified implementation tasks:** 22 of 34 (Phases 0–3 and P4-01–P4-03).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P4-02 isolated build, typecheck, lint, 21 unit checks, 41 Chromium checks (including the focused admin recheck) and 24 WebKit checks passed. Two scoped axe scans and a 32-case bilingual resize matrix are recorded. Physical-device, search quality, customer-account, provider and release checks remain open.
+- **Runtime/testing this checkpoint:** P4-03 isolated build, typecheck, lint, 28 unit checks, 43 Chromium and 24 WebKit cases passed. Two scoped axe scans and the bilingual 32-case viewport matrix are recorded. Native keyboards, physical safe areas, search quality, provider and release checks remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -22,7 +22,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
-| 4 Catalogue/PDP | in_progress | P4-01 and P4-02 verified. P4-03 follows. | [Listing and search](implementation-evidence/p4-01-listing.md), [cards and rails](implementation-evidence/p4-02-cards.md) |
+| 4 Catalogue/PDP | in_progress | P4-01–P4-03 verified. P4-04 follows. | [Listing and search](implementation-evidence/p4-01-listing.md), [cards](implementation-evidence/p4-02-cards.md), [gallery and buying](implementation-evidence/p4-03-detail.md) |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
@@ -53,7 +53,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P3-04 | verified | [Bilingual responsive and route checks](implementation-evidence/p3-04-shell-home.md), localized failures, WebKit focus restoration and compatibility scopes |
 | P4-01 | verified | [Listing/search implementation, captures and checks](implementation-evidence/p4-01-listing.md) |
 | P4-02 | verified | [Cards/rails, bilingual captures and checks](implementation-evidence/p4-02-cards.md) |
-| P4-03 | not_started | — |
+| P4-03 | verified | [Bilingual gallery, purchase layout and responsive verification](implementation-evidence/p4-03-detail.md) |
 | P4-04 | not_started | — |
 | P4-05 | not_started | — |
 | P5-01 | not_started | — |
@@ -332,3 +332,10 @@ When interrupted or handing off, update this file before yielding where possible
 - Migrated public standard cards and compact related/history presentations to the accepted system. Removed card-specific legacy overrides and static-image zoom while keeping route-level grid counts.
 - Preserved exact identifiers, readable pack/strength details, real stock and saved state, and server-validated quick add. Grouped results show the price of the displayed SKU and link to real options. Local failed or missing images show explicit placeholders.
 - Recorded [screenshots and checks](implementation-evidence/p4-02-cards.md). The handheld image remains associated with PD0826. Continue with P4-03 gallery and buying composition.
+
+
+### 2026-11-18 — P4-03 verified
+
+- Implemented the full-width phone gallery with Back to category, Save and Cart over the image, plus a measured portrait purchase dock. Desktop retains normal storefront navigation and a side-by-side buying column. Short landscape uses the same controls in flow.
+- Verified real photo selection, missing-image recovery, exact SKU price/stock/options, integer quantity entry and the existing stock-checked purchase path. Confined related-card overflow to its own rail.
+- Continue with P4-04 product information and alternatives. P4-05 owns contextual overlay return, query/scroll/focus continuity and the Phase 4 exit.

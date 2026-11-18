@@ -29,7 +29,7 @@ for (const width of [360, 390, 768, 1280]) test(`recovery preview and commit pre
   await page.goto(adminOrigin + '/productdetails/RECOVERY--0001?utm_source=recovery');
   await expect(page).toHaveURL(adminOrigin + '/products/reviewed-care--RECOVERY--0001?utm_source=recovery');
   await expect(page.getByRole('heading', { name: 'Reviewed care', exact: true })).toBeVisible();
-  await expect(page.locator('.product-information .price')).toContainText('AED 0.00');
+  await expect(page.getByRole('img', { name: 'AED 0.00', exact: true }).first()).toBeVisible();
   await expect(page.getByText('Out of stock', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'Out of stock: Reviewed care', exact: true }).first()).toBeDisabled();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

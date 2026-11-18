@@ -47,7 +47,7 @@ test('product purchase controls fit phone portrait and short landscape viewports
     const geometry=await page.locator('.pdp-purchase').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,bottom:r.bottom,height:r.height,position:getComputedStyle(el).position};});
     expect(geometry.left).toBeGreaterThanOrEqual(0);
     expect(geometry.right).toBeLessThanOrEqual(width);
-    if(width<768){expect(geometry.position).toBe('fixed');expect(geometry.bottom).toBe(height);expect(geometry.height).toBeLessThan(height*.4);}
+    if(width<768 && height>500){expect(geometry.position).toBe('fixed');expect(geometry.bottom).toBe(height);expect(geometry.height).toBeLessThan(height*.4);}
     else expect(geometry.position).not.toBe('fixed');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   }

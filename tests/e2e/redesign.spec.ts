@@ -8,7 +8,7 @@ for(const width of [390,1280]) test(`legacy storefront surfaces stay responsive 
   if(name==='product'&&width<768){
    await expect(page.locator('.pdp-mobile-toolbar')).toBeVisible();
    await expect(page.locator('.pdp-mobile-toolbar').getByRole('link',{name:'Your cart',exact:true})).toBeVisible();
-   await expect(page.locator('.pdp-mobile-toolbar').getByRole('link',{name:'Search products',exact:true})).toBeVisible();
+   await expect(page.locator('.pdp-mobile-toolbar').getByRole('link',{name:'Back to category',exact:true})).toBeVisible();
   }else await expect(page.getByRole('banner').getByRole('link',{name:'Al Mina Pharmacy home',exact:true})).toBeVisible();
   const height=await page.evaluate(()=>document.documentElement.scrollHeight);
   for(let y=700;y<height;y+=700){await page.evaluate(top=>window.scrollTo(0,top),y);await page.waitForTimeout(60);}
