@@ -6,7 +6,7 @@ import { MongoClient, ObjectId, type Db } from 'mongodb';
 import { imageIdentitySchema, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
 import { stageImageReview, createImageReviewDraft, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
 import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker } from '../apps/api/src/modules/media/image-review-publication';
-import { initialReviewChecks, imageReviewDecision, canApproveImage } from '../apps/web/src/lib/admin/image-review-workflow';
+import { initialReviewChecks, imageReviewDecision, canApproveImage, inlineReviewCheck, previewImageReview, reviewProductChanges } from '../apps/web/src/lib/admin/image-review-workflow';
 const require = createRequire(import.meta.url);
 const { createLegacyApp } = require('../backend/app.js');
 const uri = process.env.COMMERCE_TEST_URI;
@@ -535,5 +535,57 @@ test('unmatched image creates and selects one unpublished product using an idemp
     assert.equal(detail.history[0]?.decision, 'draft created');
     await assert.rejects(createImageReviewDraft(db, { ...input, expectedRevision: result.revision, requestId: randomUUID() }, String(admin)), { status: 409 });
     assert.equal((await exportImageReviewApprovals(db, {}, String(admin))).mappings.length, 0);
+
+    await stageImageReview(db, pack([source('flagged-unmatched', 'PD_TEST', { candidateProductIds: [], flags: ['blurry'] })]), String(admin), 'synthetic');
+    const flagged = (await listImageReviews(db, {}, String(admin))).items.find(item => item.source.assetId === 'flagged-unmatched')!;
+    const flaggedDetail = await getImageReview(db, flagged.itemId, String(admin));
+    const rejected = await decideImageReview(db, decision(flaggedDetail, { decision: 'rejected', originalViewed: false }), String(admin));
+    const held = await createImageReviewDraft(db, { ...input, itemId: flagged.itemId, expectedRevision: rejected.revision, requestId: randomUUID() }, String(admin));
+    assert.equal(held.status, 'held');
+    assert.equal(held.approvalId, null);
+    assert.ok(held.selectedProductId);
+    const selected = await getImageReview(db, flagged.itemId, String(admin));
+    const blockedDraft = await db.collection('products').findOne({ product_id: held.selectedProductId });
+    assert.deepEqual([blockedDraft?.published, blockedDraft?.images], [false, []]);
+    await assert.rejects(decideImageReview(db, decision(selected), String(admin)), { status: 409 });
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('a single field edit creates an auditable approval and keeps unrelated pack information', { skip: !uri }, async () => {
+  const client = new MongoClient(uri!), db = client.db('almina_image_review_once_' + randomUUID().replaceAll('-', ''));
+  const admin = String(new ObjectId()), id = new ObjectId();
+  try {
+    await db.collection('users').insertOne({ _id: new ObjectId(admin), role: 'admin' });
+    const identity = imageIdentitySchema.parse({ name: 'Acme Tablets', brand: 'Acme', form: 'tablet',
+      strength: '1000 mg per tablet', quantity: '20 count', size: '1000 mg per tablet' });
+    await db.collection('products').insertOne({ _id: id, product_id: 'PD_TEST', name: 'Acme Tablets',
+      brand: 'Acme', productForm: 'tablet', strength: '1000 mg', packLabel: '20 count' });
+    await stageImageReview(db, pack([source('bad-net-content', 'PD_TEST', { identity })]), admin, 'synthetic');
+    const row = (await listImageReviews(db, {}, admin)).items[0]!;
+    const detail = await getImageReview(db, row.itemId, admin);
+    const discard = { target: 'discard' } as const;
+    const omitted = detail.comparison.filter(field => field.required)
+      .map(field => inlineReviewCheck(field, field.field === 'size' ? discard : undefined));
+    const approved = imageReviewDecision(detail, omitted, 'approved', true, false, '');
+    const fake = approved.checks.map(check => check.field === 'strength' ? { ...check, imageValue: '', catalogueValue: '', discardedExtraction: true as const,
+      evidence: 'Claimed on original label' } : check);
+    await assert.rejects(decideImageReview(db, { ...approved, checks: fake, requestId: randomUUID() }, admin), { status: 409 });
+    const saved = await decideImageReview(db, { ...approved, requestId: randomUUID() }, admin);
+    assert.equal(saved.source.identity.size, '1000 mg per tablet');
+    assert.equal((await db.collection('products').findOne({ _id: id }))?.packLabel, '20 count');
+    assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 1);
+
+    const updatedDetail = await getImageReview(db, row.itemId, admin);
+    const edit = { target: 'catalogue', value: '50 g' } as const;
+    const productChanges = reviewProductChanges(updatedDetail, { size: edit });
+    assert.deepEqual(productChanges, { packLabel: '20 count · 50 g' });
+    const preview = previewImageReview(updatedDetail, productChanges);
+    const checks = preview.comparison.filter(field => field.required).map(field => inlineReviewCheck(field, field.field === 'size' ? edit : undefined));
+    const input = imageReviewDecision(preview, checks, 'approved', true, false, '');
+    const edited = await decideImageReview(db, { ...input, productChanges, requestId: randomUUID() }, admin);
+    assert.equal(edited.status, 'approved');
+    assert.equal(edited.source.identity.size, '1000 mg per tablet');
+    assert.equal((await db.collection('products').findOne({ _id: id }))?.packLabel, '20 count · 50 g');
+    assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 1);
   } finally { await db.dropDatabase(); await client.close(); }
 });

@@ -1,3 +1,16 @@
+## 2026-11-18 — Image review uses one input per field
+
+Administrators can edit the prefilled product field or correct the extraction
+in the same row. The approval action records the reviewer’s confirmation
+without separate field attestations or typed evidence. An incorrect extraction
+can be ignored when the attribute is absent from the catalogue and optional
+for the product. Net content edits preserve other pack details, such as count.
+
+Flagged and rejected images can start an unpublished product draft. Flagged
+images remain held with their original evidence, and approval remains blocked.
+Older approval records still use their saved evidence. Release the API before
+the web interface so the server can accept dismissed extractions.
+
 ## 2026-11-18 — Admin image review supports catalogue edits and drafts
 
 The review workspace shows the original beside prefilled identity fields and

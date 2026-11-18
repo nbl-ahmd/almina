@@ -1,9 +1,11 @@
-import { compareImageIdentity, imageReviewEditableFields, imageReviewProductIdentity, type ImageIdentityField, type ImageReviewDecisionInput, type ImageReviewDetail, type ImageReviewItem, type ImageReviewProductChanges } from '@almina/contracts';
+import { canDiscardImageExtraction, compareImageIdentity, imageReviewEditableFields, imageReviewProductIdentity,
+  updateImageReviewNetContent, type ImageIdentityField, type ImageReviewDecisionInput, type ImageReviewDetail, type ImageReviewItem, type ImageReviewProductChanges } from '@almina/contracts';
 
 export type ReviewCheck = ImageReviewDecisionInput['checks'][number];
 export const reviewApprovalNote = 'I inspected this individual original and verified all required identity attributes against the selected catalogue product.';
 export const reviewHoldReasons = ['Needs another pharmacist check', 'Size or strength is unclear', 'Label is unreadable', 'No matching product found'] as const;
 export const reviewLabelEvidence = 'I verified this value on this individual original label.';
+export type ReviewEdit = { target: 'catalogue' | 'extraction'; value: string } | { target: 'discard' };
 
 export function editableProductField(field: ImageIdentityField) {
   return (imageReviewEditableFields as Partial<Record<ImageIdentityField, keyof ImageReviewProductChanges>>)[field];
@@ -13,6 +15,31 @@ export function previewImageReview(detail: ImageReviewDetail, changes: ImageRevi
   if (!detail.product?.fields || !Object.keys(changes).length) return detail;
   const identity = imageReviewProductIdentity({ ...detail.product.fields, ...changes }, detail.item.source.identity);
   return { ...detail, comparison: compareImageIdentity(detail.item.source.identity, identity) };
+}
+
+export function reviewProductChanges(detail: ImageReviewDetail, edits: Partial<Record<ImageIdentityField, ReviewEdit>>) {
+  const changes: ImageReviewProductChanges = {};
+  for (const row of detail.comparison) {
+    const key = editableProductField(row.field);
+    const edit = edits[row.field];
+    if (!key || edit?.target !== 'catalogue') continue;
+    const value = edit.value.trim();
+    changes[key] = row.field === 'size' ? updateImageReviewNetContent(detail.product?.fields?.packLabel ?? '', value) : value;
+  }
+  return changes;
+}
+
+export function canDiscardReviewField(detail: ImageReviewDetail, field: ImageIdentityField) {
+  const source = detail.item.source.identity;
+  const catalogue = Object.fromEntries(detail.comparison.map(row => [row.field, row.catalogueValue])) as typeof source;
+  return canDiscardImageExtraction(source, catalogue, field);
+}
+
+export function inlineReviewCheck(row: ImageReviewDetail['comparison'][number], edit?: ReviewEdit): ReviewCheck {
+  if (edit?.target === 'discard') return { field: row.field, imageValue: '', catalogueValue: '', confirmed: true,
+    evidence: 'I checked the original label and confirmed this extracted attribute does not apply.', discardedExtraction: true };
+  return { field: row.field, imageValue: edit?.value.trim() ?? row.imageValue, catalogueValue: row.catalogueValue, confirmed: !!edit,
+    evidence: edit ? reviewLabelEvidence : '' };
 }
 
 export function initialReviewChecks(detail: ImageReviewDetail): ReviewCheck[] {
@@ -37,7 +64,10 @@ export function canApproveImage(detail: ImageReviewDetail, checks: ReviewCheck[]
   if (new Set(checks.map(check => check.field)).size !== checks.length || detail.comparison.some(row => row.required && !checks.some(check => check.field === row.field))) return false;
   return checks.every(check => {
     const row = detail.comparison.find(value => value.field === check.field);
-    if (!row || !check.imageValue.trim() || !check.catalogueValue.trim()) return false;
+    if (!row) return false;
+    if (check.discardedExtraction) return check.confirmed && check.evidence.trim().length >= 10 &&
+      !check.imageValue && !check.catalogueValue && canDiscardReviewField(detail, check.field);
+    if (!check.imageValue.trim() || !check.catalogueValue.trim()) return false;
     if (isUnchangedMatch(detail, check)) return true;
     if (!check.confirmed || check.evidence.trim().length < 10 || (row.catalogueValue && row.catalogueValue !== check.catalogueValue)) return false;
     return reviewFieldMatches(detail, check);

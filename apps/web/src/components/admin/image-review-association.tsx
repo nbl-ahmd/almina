@@ -90,6 +90,7 @@ export function ImageReviewAssociation({ detail, admin, disabled, allowDraft, on
           {onClear ? <Button size="sm" variant="ghost" disabled={disabled || !!loading} onClick={onClear}>Clear match</Button> : null}
           {onClose ? <Button size="sm" variant="ghost" disabled={disabled || !!loading} onClick={onClose}>Back to product fields</Button> : null}
         </div>
+        {!admin && allowDraft ? <p className="!m-0 text-xs text-[var(--admin-muted)]">An administrator can create a product if there’s no match.</p> : null}
       </>}
   </div>;
 }

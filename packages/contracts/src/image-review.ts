@@ -43,6 +43,7 @@ export const imageReviewExportQuerySchema = z.object({ after: hash.optional(), l
 export const imageReviewChecksSchema = z.array(z.object({
   field: z.enum(imageIdentityFields), confirmed: z.boolean(),
   imageValue: text, catalogueValue: text, evidence: z.string().trim().max(1000),
+  discardedExtraction: z.literal(true).optional(),
 }).strict()).max(imageIdentityFields.length);
 export const imageReviewProductChangesSchema = z.object({
   name: text.min(1).optional(),

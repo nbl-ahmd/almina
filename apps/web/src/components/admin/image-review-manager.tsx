@@ -104,9 +104,14 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
       const fingerprint = JSON.stringify(input);
       if (draftRetry.current?.fingerprint !== fingerprint) draftRetry.current = { fingerprint, requestId: crypto.randomUUID() };
       await adminRequest('image-review/draft', 'POST', { ...input, requestId: draftRetry.current.requestId });
-      populate(await loadDetail(input.itemId));
+      const updated = await loadDetail(input.itemId);
+      populate(updated);
       draftRetry.current = null;
-      setMessage('Draft created and selected. Verify the image to continue.');
+      setMessage(updated.item.source.flags.length ? 'Draft created and selected. The flagged image is held.' : 'Draft created and selected. Verify the image to continue.');
+      if (updated.item.status !== detail.item.status) {
+        // The draft is already selected even if updating the queue count fails.
+        await refresh().catch(() => setError('Draft saved. Refresh the queue to update its counts.'));
+      }
     }, true);
   }
   const skip = () => { if (nextId) void task(async () => { populate(await loadDetail(nextId, true)); setMessage('Skipped for now. No decision was saved.'); }); };

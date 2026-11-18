@@ -57,6 +57,18 @@ export function compareImageIdentity(image: ImageIdentity, catalogue: ImageIdent
     return { field, imageValue: a, catalogueValue: b, required, status };
   });
 }
+/** Only discard an extracted value when neither the catalogue nor the product form requires it. */
+export function canDiscardImageExtraction(image: ImageIdentity, catalogue: ImageIdentity, field: ImageIdentityField) {
+  if ((field === 'barcode' || field === 'gtin') && (catalogue.barcode || catalogue.gtin)) return false;
+  return !!image[field] && !catalogue[field] &&
+    !compareImageIdentity({ ...image, [field]: '' }, catalogue).find(row => row.field === field)?.required;
+}
+
+export const imageReviewNetContentPattern = /^\d+(?:[.,]\d+)?\s*(?:kg|ml|g|l)$/i;
+export function updateImageReviewNetContent(packLabel: string, value: string) {
+  const existing = /\b\d+(?:[.,]\d+)?\s*(?:kg|ml|g|l)\b/i;
+  return existing.test(packLabel) ? packLabel.replace(existing, () => value) : [packLabel, value].filter(Boolean).join(' · ');
+}
 export function imageReviewProductIdentity(product: Record<string, unknown>, observed?: ImageIdentity): ImageIdentity {
   const name = text(product.name);
   const inferred = (field: ImageIdentityField) => {
