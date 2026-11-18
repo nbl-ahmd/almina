@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P3-02 verified.** The public desktop/tablet header, department navigation and responsive footer use the accepted roles. [Shell evidence](implementation-evidence/p3-02-chrome.md).
-- **Next eligible task:** **P3-03 — public home campaign, categories, product modules and sparse states.** Implement the selected full-width desktop lead and five-column wide home.
-- **Verified implementation tasks:** 17 of 34 (Phases 0–2 and P3-01–P3-02).
+- **Current work:** **P3-03 verified.** The public home uses the selected full-width campaign, category row and responsive product comparison. [Home evidence](implementation-evidence/p3-03-home.md).
+- **Next eligible task:** **P3-04 — shell and home verification across routes, states and devices.** Verify continuity and retire any remaining displaced customer bindings.
+- **Verified implementation tasks:** 18 of 34 (Phases 0–2 and P3-01–P3-03).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P3-02 isolated build, typecheck, lint and 20 browser checks passed. Eight EN/AR captures cover desktop header/footer, tablet categories and phone footer disclosures.
+- **Runtime/testing this checkpoint:** P3-03 isolated build, typecheck, lint, four focused home browser cases and 20 shell/compatibility regressions passed. Six English/Arabic captures record responsive product columns and shelf position.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -21,7 +21,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
-| 3 Shell/home | in_progress | P3-01–P3-02 verified. P3-03 follows. | [Shell evidence](implementation-evidence/p3-02-chrome.md) |
+| 3 Shell/home | in_progress | P3-01–P3-03 verified. P3-04 follows. | [Home evidence](implementation-evidence/p3-03-home.md) |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
@@ -49,7 +49,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P2-05 | verified | [Accepted authority/retirement/bindings report](implementation-evidence/p2-05-authority.md), archive hashes, rendered metadata; starting 078e9c5, documentation only |
 | P3-01 | verified | [Mobile public-route implementation and checks](implementation-evidence/p3-01-mobile-shell.md) |
 | P3-02 | verified | [Desktop/tablet and footer implementation](implementation-evidence/p3-02-chrome.md) |
-| P3-03 | not_started | — |
+| P3-03 | verified | [Public home implementation and checks](implementation-evidence/p3-03-home.md) |
 | P3-04 | not_started | — |
 | P4-01 | not_started | — |
 | P4-02 | not_started | — |
@@ -304,3 +304,9 @@ When interrupted or handing off, update this file before yielding where possible
 
 - Desktop and tablet header keep delivery, account and cart available while allocating a flexible search width. The footer wraps across widths and uses the same destinations in desktop and phone groups.
 - EN/AR captures and compiled regression evidence recorded. Continue with P3-03 public home merchandising.
+
+
+### P3-03 verified
+
+- Migrated the public home campaign, category row, comparison grid, verified brand links and published content placements. Recorded fixture coverage for sparse stock, failed catalogue and managed campaign behavior.
+- Continue with P3-04 shell and home verification before starting catalogue and PDP migration.

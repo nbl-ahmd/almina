@@ -23,6 +23,8 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     stock: 0, sale: false, featured: false, price: 1 })));
   let closed = false;
   let failed = false;
+  let homeStock = "normal";
+  let homeCampaigns = false;
   const requests = [];
   const factory = tls ? handler => createSecureServer(tls, handler) : createServer;
   const server = factory((req, res) => {
@@ -31,6 +33,18 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     if (url.pathname === '/__fixture/health') { res.end(fixtureHealth('almina-synthetic-catalog', process.env.AL_MINA_FIXTURE_RUN_ID)); return; }
     if (url.pathname === '/__fixture/closed') { closed = !closed; res.end('OK'); return; }
     if (url.pathname === '/__fixture/failure') { failed = !failed; res.end('OK'); return; }
+    if (url.pathname === '/__fixture/home-stock' && includePagination) {
+      const mode = url.searchParams.get('mode');
+      if (!['normal', 'empty', 'wide'].includes(mode)) { res.writeHead(400); res.end(); return; }
+      homeStock = mode;
+      res.end('OK');
+      return;
+    }
+    if (url.pathname === '/__fixture/home-campaigns' && includePagination) {
+      homeCampaigns = url.searchParams.get('enabled') === '1';
+      res.end('OK');
+      return;
+    }
     if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
     if (failed) { res.writeHead(503); res.end('Fixture unavailable'); return; }
     if (url.pathname === '/api/products/images/fixture.svg') {
@@ -57,6 +71,17 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       const visualCategories = includePagination ? ['Baby Care','Oral Care','Hair Care','First Aid'].map((name,index)=>({_id:(200+index).toString(16).padStart(24,'0'),name,disabled:false})) : [];
       res.end(JSON.stringify([category,...visualCategories])); return;
     }
+    if (url.pathname === '/api/v1/growth/campaigns' && homeCampaigns) {
+      const locale = url.searchParams.get('locale') === 'ar' ? 'ar' : 'en';
+      res.end(JSON.stringify({ data: ['hero', 'secondary'].map(homepagePlacement => ({
+        kind: 'campaign', slug: 'fixture-' + homepagePlacement, locale, homepagePlacement,
+        title: homepagePlacement === 'hero' ? 'Fixture campaign' : 'Fixture secondary campaign',
+        description: 'Synthetic campaign description.', body: 'Synthetic campaign copy.',
+        image: 'https://cdn.alminapharmacy.com/cdn/banners/synthetic-test-campaign.webp',
+        imageAlt: 'Synthetic campaign artwork', ctaLabel: 'See campaign', terms: 'Test fixture only.', published: true,
+      })) }));
+      return;
+    }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }
     if (url.pathname === '/api/store/status') { res.end(JSON.stringify({ status: closed ? 'closed' : 'open' })); return; }
     const byMongoId = products.find(value => url.pathname === `/api/products/${value._id}`);
@@ -65,7 +90,10 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     if (byBusinessId) { res.end(JSON.stringify({ product: byBusinessId, relatedProducts: [] })); return; }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
-      const matching = products.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
+      const source = url.searchParams.get('inStock') !== 'true' || homeStock === 'normal'
+        ? products
+        : homeStock === 'empty' ? [] : products.slice(0, 5).map(item => ({ ...item, stock: 4 }));
+      const matching = source.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
       const offset = Number(url.searchParams.get('offset')); const limit = Number(url.searchParams.get('limit') ?? '30');
       res.end(JSON.stringify(matching.slice(offset, offset + limit))); return;
     }

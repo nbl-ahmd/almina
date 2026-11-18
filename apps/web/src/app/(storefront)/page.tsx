@@ -3,9 +3,10 @@ import { getLocale } from '../../lib/server/i18n';
 import { shopText as u } from '../../lib/i18n-storefront';
 import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
-import { Suspense, cache } from "react";
+import { Suspense } from "react";
 import Link from '../../components/app-link';
-import { CatalogLoading } from "../../components/catalog-loading";
+import system from "../../components/storefront-system/tokens.module.css";
+import type { Locale } from "../../lib/i18n";
 import {
   HomeManagedCampaigns,
   HomeBrandStrip,
@@ -23,11 +24,10 @@ import {
 import { metadataFor } from "../../lib/server/seo";
 import type { Query } from "../../lib/seo";
 import {
-  homeCollections,
   catalogueBrands,
   uniqueProducts,
 } from "../../lib/catalog/merchandising";
-import { getCollectionProducts } from "../../lib/server/collections";
+import { displayPrice } from "../../lib/catalog/model";
 
 export async function generateMetadata({
   searchParams,
@@ -41,120 +41,106 @@ export async function generateMetadata({
     await searchParams,
   );
 }
-// Request-scoped sharing only: prices and inventory are never cached across visitors.
-const featuredProducts = cache(() => getProducts({ featured: true }));
-const homepageCampaigns = cache(async () => getHomepageCampaigns(await getLocale()).catch(() => []));
+async function homeCatalogue() {
+  const [featured, general] = await Promise.allSettled([
+    getProducts({ featured: true, inStock: true }),
+    getProducts({ inStock: true }),
+  ]);
+  const products = uniqueProducts([
+    ...(featured.status === "fulfilled" ? featured.value.products : []),
+    ...(general.status === "fulfilled" ? general.value.products : []),
+  ]).filter(product => product.stock > 0);
+  return {
+    products,
+    incomplete: featured.status === "rejected" || general.status === "rejected",
+  };
+}
 
-export default function HomePage() {
-  return <div className="home-page">
-    <Suspense fallback={<CatalogLoading />}><HomeLead /></Suspense>
-    <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent /></Suspense>
-  </div>;
-}
-async function HomeLead() {
-  const [banners, campaigns, categories, featured] = await Promise.allSettled([
-    getBanners(), homepageCampaigns(), getCategories(), featuredProducts(),
-  ]);
+export default async function HomePage() {
   const locale = await getLocale();
-  const products = featured.status === 'fulfilled' ? featured.value.products.filter(product => product.stock > 0) : [];
-  return <div className="home-lead"><h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
-    <HomeHero products={products} banners={banners.status === 'fulfilled' ? banners.value : []} campaigns={campaigns.status === 'fulfilled' ? campaigns.value : []} />
-    <HomeCategories categories={categories.status === 'fulfilled' ? [...categories.value].sort((a,b) => categoryRank(a.name)-categoryRank(b.name)) : []} products={products} />
-  </div>;
-}
-function categoryRank(name: string) {
-  const index = [
-    "skincare",
-    "vitamins",
-    "baby care",
-    "oral care",
-    "hair care",
-    "first aid",
-  ].findIndex((label) => name.toLowerCase().replace(/\s+/g, "").includes(label.replace(/\s+/g, "")));
-  return index < 0 ? 99 : index;
-}
-async function HomeContent() {
-  const locale = await getLocale();
-  const [catalogue, settledCollections, campaigns] = await Promise.all([
-    Promise.allSettled([
-      featuredProducts(),
-      getProducts(),
-      getProducts({ offers: true }),
-    ] as const),
-    Promise.allSettled(
-      homeCollections.map((collection) => getCollectionProducts(collection)),
-    ),
-    homepageCampaigns(),
-  ]);
-  const collectionResults = settledCollections.map((result) =>
-    result.status === "fulfilled" ? result.value : [],
+  const campaigns = getHomepageCampaigns(locale).catch(() => []);
+  const banners = getBanners().catch(() => []);
+  return (
+    <div className={`home-page ${system.system}`} lang={locale} data-storefront-home>
+      <div className="home-content">
+        <h1 className="sr-only">{u(locale, "Al Mina Pharmacy — health, beauty and everyday care")}</h1>
+        <div className="home-lead">
+          <Suspense fallback={<HomeHero locale={locale} />}>
+            <HomeCampaign locale={locale} banners={banners} campaigns={campaigns} />
+          </Suspense>
+          <Suspense fallback={null}><HomeCategoryLane /></Suspense>
+        </div>
+        <Suspense fallback={<p className="home-loading" role="status">{locale === "ar" ? "جارٍ تحميل المنتجات…" : "Loading products…"}</p>}>
+          <HomeProducts locale={locale} />
+        </Suspense>
+        <Suspense fallback={null}><HomeSupportingCampaigns campaigns={campaigns} /></Suspense>
+        <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
+      </div>
+    </div>
   );
-  const featured =
-    catalogue[0].status === "fulfilled" ? catalogue[0].value.products : [];
-  const general =
-    catalogue[1].status === "fulfilled" ? catalogue[1].value.products : [];
-  const offers =
-    catalogue[2].status === "fulfilled"
-      ? catalogue[2].value.products.filter((product) => product.stock > 0)
-      : [];
-  const all = uniqueProducts([
-    ...offers,
-    ...featured,
-    ...collectionResults.flat(),
-    ...general,
-  ]);
-  const available = all.filter((product) => product.stock > 0);
-  const photoReady = available.filter(
-    (product) => productImage(product) !== "/product-placeholder.svg",
-  );
-  // Prefer a varied first shelf, then fill it from photo-ready inventory.
+}
+
+type Campaigns = ReturnType<typeof getHomepageCampaigns>;
+async function HomeCampaign({ locale, banners, campaigns }: {
+  locale: Locale;
+  banners: ReturnType<typeof getBanners>;
+  campaigns: Campaigns;
+}) {
+  const [publishedBanners, publishedCampaigns] = await Promise.all([banners, campaigns]);
+  return <HomeHero locale={locale} banners={publishedBanners} campaigns={publishedCampaigns} />;
+}
+
+async function HomeCategoryLane() {
+  const categories = await getCategories().catch(() => []);
+  return <HomeCategories categories={categories.filter(category => !category.disabled)} />;
+}
+
+async function HomeProducts({ locale }: { locale: Locale }) {
+  const { products, incomplete } = await homeCatalogue();
+  if (!products.length) {
+    return (
+      <section className="home-empty" aria-labelledby="home-empty-heading">
+        <h2 id="home-empty-heading">{incomplete
+          ? u(locale, "The catalogue is taking a moment.")
+          : locale === "ar" ? "لا توجد منتجات متوفرة لعرضها الآن" : "No in-stock products to show right now"}</h2>
+        {incomplete ? <p>{u(locale, "You can try again or contact the pharmacy for product enquiries.")}</p> : null}
+        {incomplete
+          // eslint-disable-next-line @next/next/no-html-link-for-pages -- Retrying the current URL must make a fresh document request.
+          ? <a className="home-action" href="/">{u(locale, "Try again")}</a>
+          : <Link className="home-action" href="/products">{locale === "ar" ? "تصفح المنتجات" : "Browse products"}</Link>}
+      </section>
+    );
+  }
+
+  const withPhotos = products.filter(product => productImage(product) !== "/product-placeholder.svg");
   const represented = new Set<string>();
-  const varied = photoReady.filter((product) => {
-    const key =
-      product.brand || product.name.split(" ")[0] || product.category._id;
+  const varied = withPhotos.filter(product => {
+    const key = (product.brand || product.name.split(" ")[0] || product.category._id).toLowerCase();
     if (represented.has(key)) return false;
     represented.add(key);
     return true;
   });
-  const shelf = uniqueProducts([...varied, ...photoReady, ...available]).slice(
-    0,
-    4,
-  );
-  // Prefer new discoveries, but keep useful collections visible in a small catalogue.
-  const offerShelf = offers.filter(
-    (product) => !shelf.some((item) => item._id === product._id),
-  );
+  const shelf = uniqueProducts([...varied, ...withPhotos, ...products]).slice(0, 5);
+
   return (
-      <div className="contents">
-        <HomeShelf
-          title={u(locale,"Your everyday essentials")}
-          description={u(locale,"Small essentials. A little more care, every day.")}
-          products={shelf}
-          href="/collections/daily-care"
-        />
-        {!all.length ? (
-          <section className="rounded-2xl border border-border p-6">
-            <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
-            <p className="text-sm text-muted">
-              {u(locale,"You can try again or contact the pharmacy for product enquiries.")}
-            </p>
-            <Link className="button rounded-full text-sm" href="/">
-              {u(locale,"Try again")}
-            </Link>
-          </section>
-        ) : null}
-        {offerShelf.length >= 2 ? (
-          <HomeShelf
-            title={u(locale,"A little more value")}
-            description={u(locale,"Current offers, with the savings shown upfront.")}
-            products={offerShelf}
-            href="/offers"
-          />
-        ) : null}
-        <HomeEditorial />
-        <HomeBrandStrip brands={catalogueBrands(available)} />
-        <HomeManagedCampaigns campaigns={campaigns} />
-        <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-      </div>
+    <>
+      <HomeShelf title={u(locale, "Your everyday essentials")} products={shelf} href="/products" />
+      <Suspense fallback={null}><HomeOffers locale={locale} exclude={shelf.map(product => product._id)} /></Suspense>
+      <HomeBrandStrip brands={catalogueBrands(products.filter(product => product.brand?.trim() || product.familyBrand?.trim()))} />
+      <HomeEditorial />
+    </>
   );
+}
+
+async function HomeOffers({ locale, exclude }: { locale: Locale; exclude: string[] }) {
+  const result = await getProducts({ offers: true, inStock: true }).catch(() => null);
+  const offers = uniqueProducts((result?.products ?? []).filter(product =>
+    product.stock > 0 && product.sale && displayPrice(product) < product.price && !exclude.includes(product._id),
+  ));
+  if (!offers.length) return null;
+  return <HomeShelf title={u(locale, "A little more value")} products={offers} href="/offers" />;
+}
+
+async function HomeSupportingCampaigns({ campaigns }: { campaigns: Campaigns }) {
+  return <HomeManagedCampaigns campaigns={await campaigns} />;
 }

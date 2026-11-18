@@ -1,3 +1,7 @@
+## P3-03 — public home merchandising verified
+
+The public home uses the selected full-width campaign, separate category row and five wide desktop columns. It keeps published placements and real product data, with compact sparse and unavailable states. [Implementation and bilingual captures](../../apps/web/docs/design/implementation-evidence/p3-03-home.md). P3-04 covers shell and home verification across routes. No deployment.
+
 ## P3-02 — desktop and tablet storefront shell verified
 
 Desktop and tablet search, delivery, account, cart, department navigation and the responsive footer use the accepted storefront roles. English and Arabic live resize, footer destinations and category keyboard focus passed in the 20-case browser suite. [Implementation and captures](../../apps/web/docs/design/implementation-evidence/p3-02-chrome.md). P3-03 covers public home merchandising. No deployment.
