@@ -28,7 +28,14 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
   if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
     _id: (index + 100).toString(16).padStart(24, '0'), product_id: `SYNTHETIC_${index}`, name: `Synthetic paged product ${index}`,
     stock: 0, sale: false, featured: false, price: 1,
-    ...(index === 0 ? { images: ['fixture.svg', 'fixture-back.svg'] } : {}),
+    ...(index === 0 ? {
+      images: ['fixture.svg', 'fixture-back.svg'],
+      summary: 'Synthetic catalogue summary for layout verification.',
+      description: 'Synthetic product description.\n\nPack details\n- Synthetic outer packaging\n- Synthetic pack insert\n\nLiteral fixture text <em>sample</em>.',
+      brand: 'Synthetic Brand', packLabel: '64 ml', saleUnit: 'One synthetic pack', productForm: 'Synthetic form',
+      manufacturer: 'Synthetic manufacturer', usage: 'Synthetic directions field.', warnings: 'Synthetic warnings field.',
+      ingredients: 'Synthetic materials field.', storage: 'Synthetic storage field.',
+    } : index === 1 ? { description: '   ' } : {}),
   })));
   let closed = false;
   let failed = false;
@@ -84,6 +91,21 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
           : [{ id: category._id, name: category.name }], nextCursor: null,
       } })); return;
     }
+    if (includePagination && url.pathname === '/api/v1/growth/reviews') {
+      const id = url.searchParams.get('productId');
+      const complete = products.find(row => row.product_id === 'SYNTHETIC_0');
+      if (id === complete?._id) {
+        res.end(JSON.stringify({ data: { ratingCount: 1, average: 4, items: [{
+          rating: 4, verifiedPurchase: true, displayName: 'Synthetic reviewer',
+          title: 'Synthetic review title', body: 'Fixture copy for review layout.', createdAt: '2026-10-02T12:00:00.000Z',
+        }] } }));
+        return;
+      }
+      if (id === product._id) {
+        res.end(JSON.stringify({ data: { ratingCount: 0, average: null, items: [] } }));
+        return;
+      }
+    }
     if (url.pathname === '/api/v1/growth/shipping') {
       res.end(JSON.stringify({ requestId: '00000000-0000-4000-8000-000000000000', data: {
         active: true, version: 'synthetic-shipping-v1', currency: 'AED', vatMode: 'inclusive', vatRateBps: 500,
@@ -112,7 +134,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     if (byMongoId) { res.end(JSON.stringify({ ...byMongoId, category: category._id })); return; }
     const byBusinessId = products.find(value => url.pathname === `/api/products/details/${value.product_id}`);
     if (byBusinessId) {
-      const relatedProducts = byBusinessId.product_id === 'SYNTHETIC_0' ? products.slice(2, 6) : [];
+      const relatedProducts = ['SYNTHETIC_0', 'SYNTHETIC_1'].includes(byBusinessId.product_id) ? products.slice(3, 7) : [];
       res.end(JSON.stringify({ product: byBusinessId, relatedProducts })); return;
     }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {

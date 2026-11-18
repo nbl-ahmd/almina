@@ -104,6 +104,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
           </div>
         </div>
         <div className={styles.secondary}>
+          <ProductInformation product={product} locale={locale} />
+          <ProductReviews key={product._id} locale={locale} productId={product._id} reviews={reviews} />
           {alternatives.length ? (
             <section className="related-products">
               <div className="sf-section-heading">
@@ -115,18 +117,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </div>
             </section>
           ) : null}
-          <div className="pdp-secondary-info">
-            {product.summary ? <p>{product.summary}</p> : null}
-            <p>{u(locale, 'Checkout confirms the delivery charge and final total before you place an order.')}</p>
-            <div>
-              <Link href="/shipping">{u(locale, 'Delivery & shipping')}</Link>
-              <Link href="/returns">{u(locale, 'Returns & refunds')}</Link>
-              <Link href="/contact">{u(locale, 'Contact pharmacy')}</Link>
-            </div>
-            <span>{locale === 'en' ? 'SKU: ' : 'رمز المنتج: '}<bdi>{product.product_id}</bdi></span>
-          </div>
-          <ProductInformation product={product} />
-          <ProductReviews locale={locale} productId={product._id} reviews={reviews} />
         </div>
       </div>
     </div><GrowthActivity kind="product" /></>;

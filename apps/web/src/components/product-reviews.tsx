@@ -1,16 +1,134 @@
 'use client';
+
+import { useState, type FormEvent } from 'react';
+import Link from './app-link';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { NativeSelect } from './ui/native-select';
 import { Textarea } from './ui/textarea';
 import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
-
+import styles from './product-information.module.css';
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
-import Link from './app-link';
-import { useState,type FormEvent } from 'react';
-export type ReviewSummary={items:{rating:number;displayName:string;title:string;body:string;createdAt:string;verifiedPurchase:true}[];ratingCount:number;average:number|null};
-export function ProductReviews({productId,reviews,locale='en'}:{productId:string;reviews:ReviewSummary|null;locale?:Locale}){const [open,setOpen]=useState(false),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
- async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();const form=event.currentTarget,data=new FormData(form);setBusy(true);try{const response=await fetch('/api/customer/review',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Protection':'1'},body:JSON.stringify({productId,orderId:data.get('orderId'),rating:Number(data.get('rating')),displayName:data.get('displayName'),title:data.get('title'),body:data.get('body')})});if(!response.ok)throw new Error(response.status===401?u(locale,"Please sign in before writing a review."):response.status===403?u(locale,"Use the order number for your purchase of this product. Cancelled or refunded orders do not qualify."):u(locale,"Unable to submit the review. Please try again."));setMessage(u(locale,"Thank you. Your review is awaiting moderation before it appears here."));setOpen(false);form.reset();}catch(error){setMessage((error as Error).message);}finally{setBusy(false);}}
- return <section className="my-8 rounded-2xl border border-border bg-white p-5 md:p-7"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="mb-1 text-xl">{u(locale,"Customer reviews")}</h2><p className="m-0 text-sm text-muted">{reviews?.ratingCount?locale === "en" ? `${reviews.average} out of 5 · ${reviews.ratingCount} verified purchase reviews` : `${reviews.average} من 5 · ${reviews.ratingCount} تقييمات شراء موثقة`:reviews?u(locale,"Be the first to share your purchase experience."):(locale==='ar'?'تعذر تحميل التقييمات المنشورة.':'Published reviews could not be loaded.')}</p></div><p className="review-requirements text-sm text-muted">{locale==='ar'?'لتقديم تقييم، سجّل الدخول باستخدام البريد المرتبط بطلب مؤهل.':'To submit a review, sign in with the email on a qualifying order.'}</p><Button variant="outline" size="default" shape="rounded" type="button" aria-expanded={open} onClick={()=>setOpen(!open)}>{u(locale,"Write a review")}</Button></div>{message?<p className="mt-4 text-sm" role="status">{message}</p>:null}{open?<form onSubmit={submit} className="mt-5 max-w-2xl border-t border-border pt-5"><FieldGroup className="grid gap-4"><p className="m-0 text-sm text-muted"><Link className="font-medium text-teal" href="/account">{u(locale,"Sign in")}</Link>{u(locale," with the email used for your order. Reviews are checked before publication.")}</p><div className="grid gap-3 sm:grid-cols-2"><Field><FieldLabel htmlFor="product-reviews-field-1">{u(locale,"Order number")}</FieldLabel><Input id="product-reviews-field-1" name="orderId" pattern="OD[0-9]+" placeholder="OD5050" required /></Field><Field><FieldLabel htmlFor="product-reviews-field-2">{u(locale,"Rating")}</FieldLabel><NativeSelect id="product-reviews-field-2" name="rating" required defaultValue=""><option value="" disabled>{u(locale,"Select a rating")}</option>{[5,4,3,2,1].map(value=><option key={value} value={value}>{locale === "en" ? `${value} out of 5` : `${value} من 5`}</option>)}</NativeSelect></Field></div><Field><FieldLabel htmlFor="product-reviews-field-3">{u(locale,"Public display name")}</FieldLabel><Input id="product-reviews-field-3" name="displayName" minLength={2} maxLength={40} required autoComplete="nickname" /></Field><Field><FieldLabel htmlFor="product-reviews-field-4">{u(locale,"Review title (optional)")}</FieldLabel><Input id="product-reviews-field-4" name="title" maxLength={100} /></Field><Field><FieldLabel htmlFor="review-experience">{u(locale,"Your experience")}</FieldLabel><Textarea id="review-experience" aria-describedby="review-experience-help" name="body" minLength={10} maxLength={1800} required /><FieldDescription id="review-experience-help">{u(locale,"Please avoid personal medical information or contact details.")}</FieldDescription></Field><Button variant="default" size="default" shape="pill" type="submit" disabled={busy} className="w-fit">{busy?u(locale,"Sending…"):u(locale,"Submit for review")}</Button></FieldGroup></form>:null}{reviews?.items.length?<div className="mt-5 grid gap-5 md:grid-cols-2">{reviews.items.map((review,index)=><article className="border-t border-border pt-4" key={index}><p className="mb-2 text-sm font-medium">{review.rating}/5 · {review.displayName}</p>{review.title?<h3 className="mb-2 text-base">{review.title}</h3>:null}<p className="mb-2 text-sm leading-7 text-muted">{review.body}</p><p className="text-xs text-teal">{locale === 'en' ? 'Verified purchase · ' : 'شراء موثق · '}{new Date(review.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-AE' : 'en-AE')}</p></article>)}</div>:null}</section>;
+
+export type ReviewSummary = {
+  items: { rating: number; displayName: string; title: string; body: string; createdAt: string; verifiedPurchase: true }[];
+  ratingCount: number;
+  average: number | null;
+};
+
+export function ProductReviews({ productId, reviews, locale = 'en' }: {
+  productId: string; reviews: ReviewSummary | null; locale?: Locale;
+}) {
+  const [open, setOpen] = useState(false);
+  const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const t = (key: string) => u(locale, key);
+  const ar = locale === 'ar';
+  const number = new Intl.NumberFormat(ar ? 'ar-AE' : 'en-AE');
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setBusy(true);
+    setNotice(null);
+    try {
+      const response = await fetch('/api/customer/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
+        body: JSON.stringify({
+          productId, orderId: data.get('orderId'), rating: Number(data.get('rating')),
+          displayName: data.get('displayName'), title: data.get('title'), body: data.get('body'),
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(response.status === 401 ? t('Please sign in before writing a review.')
+          : response.status === 403 ? t('Use the order number for your purchase of this product. Cancelled or refunded orders do not qualify.')
+          : t('Unable to submit the review. Please try again.'));
+      }
+      setNotice({ text: t('Thank you. Your review is awaiting moderation before it appears here.'), error: false });
+      form.reset();
+      setOpen(false);
+    } catch (error) {
+      setNotice({ text: error instanceof Error ? error.message : t('Unable to submit the review. Please try again.'), error: true });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const reviewSummary = reviews?.ratingCount && reviews.average !== null
+    ? ar
+      ? `${number.format(reviews.average)} من 5 · ${number.format(reviews.ratingCount)} تقييمات شراء موثقة`
+      : `${number.format(reviews.average)} out of 5 · ${number.format(reviews.ratingCount)} verified purchase ${reviews.ratingCount === 1 ? 'review' : 'reviews'}`
+    : reviews
+      ? ar ? 'لا توجد تقييمات شراء موثقة منشورة حالياً.' : 'There are no published verified-purchase reviews yet.'
+      : ar ? 'تعذّر تحميل التقييمات المنشورة.' : 'Published reviews could not be loaded.';
+
+  return (
+    <section className={styles.reviews} aria-labelledby="product-reviews-title">
+      <div className={styles.reviewHeader}>
+        <div>
+          <h2 id="product-reviews-title">{t('Customer reviews')}</h2>
+          <p>{reviewSummary}</p>
+        </div>
+        <Button variant="outline" size="sm" type="button" aria-expanded={open}
+          aria-controls={open ? 'write-product-review' : undefined} onClick={() => setOpen(!open)}>
+          {open ? (ar ? 'إغلاق نموذج التقييم' : 'Close review form') : t('Write a review')}
+        </Button>
+      </div>
+      {notice ? <p className={styles.reviewMessage} data-error={notice.error || undefined} role="status">{notice.text}</p> : null}
+      {open ? (
+        <form id="write-product-review" onSubmit={submit} className={styles.reviewForm}>
+          <FieldGroup className="grid gap-4">
+            <p className="m-0 text-muted"><Link className={styles.link} href="/account">{t('Sign in')}</Link>
+              {t(' with the email used for your order. Reviews are checked before publication.')}
+            </p>
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+              <Field>
+                <FieldLabel htmlFor="product-reviews-field-1">{t('Order number')}</FieldLabel>
+                <Input id="product-reviews-field-1" name="orderId" dir="ltr" pattern="OD[0-9]+" placeholder="OD5050" required />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="product-reviews-field-2">{t('Rating')}</FieldLabel>
+                <NativeSelect id="product-reviews-field-2" name="rating" required defaultValue="">
+                  <option value="" disabled>{t('Select a rating')}</option>
+                  {[5, 4, 3, 2, 1].map(value => <option key={value} value={value}>{ar ? `${value} من 5` : `${value} out of 5`}</option>)}
+                </NativeSelect>
+              </Field>
+            </div>
+            <Field>
+              <FieldLabel htmlFor="product-reviews-field-3">{t('Public display name')}</FieldLabel>
+              <Input id="product-reviews-field-3" name="displayName" dir="auto" minLength={2} maxLength={40} required autoComplete="nickname" />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="product-reviews-field-4">{t('Review title (optional)')}</FieldLabel>
+              <Input id="product-reviews-field-4" name="title" dir="auto" maxLength={100} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="review-experience">{t('Your experience')}</FieldLabel>
+              <Textarea id="review-experience" aria-describedby="review-experience-help" name="body" dir="auto" minLength={10} maxLength={1800} required />
+              <FieldDescription id="review-experience-help">{t('Please avoid personal medical information or contact details.')}</FieldDescription>
+            </Field>
+            <Button type="submit" disabled={busy} className="w-fit">{busy ? t('Sending…') : t('Submit for review')}</Button>
+          </FieldGroup>
+        </form>
+      ) : null}
+      {reviews?.items.length ? (
+        <div className={styles.reviewItems}>
+          {reviews.items.map((review, index) => (
+            <article key={index}>
+              <p>{number.format(review.rating)}/5 · <bdi>{review.displayName}</bdi></p>
+              {review.title ? <h3 dir="auto">{review.title}</h3> : null}
+              <p dir="auto">{review.body}</p>
+              <p className={styles.reviewVerified}>
+                {ar ? 'شراء موثق · ' : 'Verified purchase · '}
+                {new Date(review.createdAt).toLocaleDateString(ar ? 'ar-AE' : 'en-AE')}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
 }

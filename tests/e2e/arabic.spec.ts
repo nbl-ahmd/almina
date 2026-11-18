@@ -43,11 +43,11 @@ test('Arabic catalogue and PDP localize controls while retaining product identit
   await expect(page).toHaveURL(/q=Daily/);
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.goto('/products/daily-care--PD0001');
-  await expect(page.getByRole('link', { name: 'استفسارات التوصيل', exact: true })).toBeVisible();
-  await expect(page.locator('main').getByRole('link', { name: 'Skin Care', exact: true }).first()).toBeVisible();
+  await expect(page.locator('main').getByRole('link', { name: 'التوصيل والشحن', exact: true })).toBeVisible();
+  await expect(page.locator('main').getByRole('link', { name: 'العناية بالبشرة', exact: true }).first()).toBeVisible();
   await expect(page.getByText('يتم تأكيد رسوم التوصيل والإجمالي النهائي عند الدفع قبل تقديم الطلب.', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'outputs/coral-redesign-2026-10-21/product-ar-390.png', fullPage: true });
-  await page.getByRole('heading', { name: 'التوصيل في رأس الخيمة', exact: true }).evaluate(el => el.scrollIntoView({ block: 'center' }));
+  await page.getByRole('heading', { name: 'التوصيل والإرجاع', exact: true }).evaluate(el => el.scrollIntoView({ block: 'center' }));
   await page.screenshot({ path: 'outputs/coral-redesign-2026-10-21/product-ar-delivery-390.png' });
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'زيادة كمية الشراء', exact: true }).click();

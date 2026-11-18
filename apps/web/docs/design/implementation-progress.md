@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P4-03 verified.** The public product page has the approved mobile gallery and purchase dock, with a desktop gallery and buying column. [P4-03 report](implementation-evidence/p4-03-detail.md).
-- **Next eligible task:** **P4-04 — verified summary, product facts, help and information before alternatives.**
-- **Verified implementation tasks:** 22 of 34 (Phases 0–3 and P4-01–P4-03).
+- **Current work:** **P4-04 verified.** Product facts, help, policy links and reviews lead the information area before alternatives. [P4-04 report](implementation-evidence/p4-04-information.md).
+- **Next eligible task:** **P4-05 — contextual PDP return, query/filter/scroll continuity and the Phase 4 exit.**
+- **Verified implementation tasks:** 23 of 34 (Phases 0–3 and P4-01–P4-04).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P4-03 isolated build, typecheck, lint, 28 unit checks, 43 Chromium and 24 WebKit cases passed. Two scoped axe scans and the bilingual 32-case viewport matrix are recorded. Native keyboards, physical safe areas, search quality, provider and release checks remain open.
+- **Runtime/testing this checkpoint:** P4-04 isolated build, typecheck, lint, 28 unit checks, 39 Chromium regressions plus an Arabic flow check, and 18 WebKit checks passed. The 40-case live viewport matrix and four scoped axe scans are recorded. Production catalogue completeness, native language/device checks and release remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -22,7 +22,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
-| 4 Catalogue/PDP | in_progress | P4-01–P4-03 verified. P4-04 follows. | [Listing and search](implementation-evidence/p4-01-listing.md), [cards](implementation-evidence/p4-02-cards.md), [gallery and buying](implementation-evidence/p4-03-detail.md) |
+| 4 Catalogue/PDP | in_progress | P4-01–P4-04 verified. P4-05 closes the phase. | [Listing/search](implementation-evidence/p4-01-listing.md), [cards](implementation-evidence/p4-02-cards.md), [gallery/buying](implementation-evidence/p4-03-detail.md), [product information](implementation-evidence/p4-04-information.md) |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
@@ -54,7 +54,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P4-01 | verified | [Listing/search implementation, captures and checks](implementation-evidence/p4-01-listing.md) |
 | P4-02 | verified | [Cards/rails, bilingual captures and checks](implementation-evidence/p4-02-cards.md) |
 | P4-03 | verified | [Bilingual gallery, purchase layout and responsive verification](implementation-evidence/p4-03-detail.md) |
-| P4-04 | not_started | — |
+| P4-04 | verified | [Product facts, reviews, sparse states and bilingual captures](implementation-evidence/p4-04-information.md) |
 | P4-05 | not_started | — |
 | P5-01 | not_started | — |
 | P5-02 | not_started | — |
@@ -96,7 +96,7 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | ID | Item | Disposition / next step | Owner task |
 | --- | --- | --- | --- |
 | O01 | Verified exact-pack photo quality varies; PD0826 reference fixture is handheld | Reviewed six local reference photos. No verified alternate for PD0826 in that set. Retained the original association. Production asset quality and rights remain open. | P0-04, P4-02, P6-04 |
-| O02 | Reference fixture deliberately lacks reviewed descriptions | Verify actual available content separately; honest fallback only. Do not claim production descriptions are missing. | P0-04, P4-04 |
+| O02 | Reference fixture deliberately lacks reviewed descriptions | Complete and sparse rendering verified separately in P4-04. Production catalogue completeness and native content review remain open. | P0-04, P4-04, P6-04 |
 | O03 | Campaign cadence/content, delivery coverage/promises, live payments/provider readiness and asset rights | Keep unverified; no invented banners/services/claims. Use labelled representative fixtures, retain actual gates. | P0-03–P0-04, P6-04 |
 | O04 | Added-state layer conflict confirmed in emitted CSS; primary-foreground remains dormant alias trap; checkout overrides inventoried | Resolve in P2; actual computed transition checks still owed. Not an observed failed order/add. | P2-02–P2-03 |
 | O05 | Old instructions/guide/runtime still describe incumbent visual candidate | Treat as existing implementation evidence; align authority after accepted P1 screens, no silent restoration of rejected look. | P0-01, P2-05 |
@@ -339,3 +339,10 @@ When interrupted or handing off, update this file before yielding where possible
 - Implemented the full-width phone gallery with Back to category, Save and Cart over the image, plus a measured portrait purchase dock. Desktop retains normal storefront navigation and a side-by-side buying column. Short landscape uses the same controls in flow.
 - Verified real photo selection, missing-image recovery, exact SKU price/stock/options, integer quantity entry and the existing stock-checked purchase path. Confined related-card overflow to its own rail.
 - Continue with P4-04 product information and alternatives. P4-05 owns contextual overlay return, query/scroll/focus continuity and the Phase 4 exit.
+
+
+### 2026-11-18 — P4-04 verified
+
+- Placed product copy, supplied warnings, specifications, contact, delivery and returns, and reviews before related products. Kept catalogue/verified review text and existing policy and commerce sources.
+- Reduced the sparse state to available facts and a missing-description message. Removed superseded product information rules and scoped section spacing.
+- Recorded [bilingual screenshots and checks](implementation-evidence/p4-04-information.md). Next is P4-05 contextual return, continuity and the Phase 4 exit.

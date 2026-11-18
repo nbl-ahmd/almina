@@ -61,6 +61,8 @@ P4-02 shows the exact price and availability of the displayed SKU on grouped car
 
 P4-03 applies the selected image-first composition to the public product detail. Mobile purchase controls show the unit price and reserve the dock’s measured height. Short landscape keeps those controls in flow. The public overlay keeps its category fallback until the P4-05 contextual return work. [Implementation evidence](implementation-evidence/p4-03-detail.md).
 
+P4-04 places catalogue copy, existing warnings, specifications, pharmacy help, policies and reviews before alternatives. Missing text remains explicit; absent facts leave no placeholder rows. Review aggregates come from the existing verified-purchase response. [Implementation evidence](implementation-evidence/p4-04-information.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

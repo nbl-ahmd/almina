@@ -7,7 +7,7 @@ import { SaveProduct } from './save-product';
 import styles from './product-card.module.css';
 import boundary from './storefront-system/boundary.module.css';
 import system from './storefront-system/tokens.module.css';
-import { categoryHref, displayPrice, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
+import { categoryHref, displayPrice, literalPackFromName, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
 import { productImage } from '../lib/server/catalog';
@@ -85,12 +85,9 @@ export async function ProductCard({ product, headingLevel = 3 }: {
   const name = product.name.trim();
   const withoutBrand = brand && name.toLowerCase().startsWith(brand.toLowerCase() + ' ')
     ? name.slice(brand.length).trim() : name;
-  // Repeat a literal terminal size as a chip only when it is separate from strength/dose notation.
-  const size = /[ (]+([0-9]+(?:[.,][0-9]+)?\s*(?:ml|kg|g|litres?|liters?))\)?$/i.exec(withoutBrand);
-  const beforeSize = size ? withoutBrand.slice(0, size.index).trimEnd() : '';
-  const literalPack = beforeSize && !/(?:\/|\bper)$/i.test(beforeSize) ? size?.[1] : undefined;
-  const pack = recordedPack || literalPack;
-  const cardName = literalPack && pack === literalPack ? beforeSize : withoutBrand;
+  const literalPack = literalPackFromName(withoutBrand);
+  const pack = recordedPack || literalPack?.label;
+  const cardName = literalPack && pack === literalPack.label ? literalPack.prefix : withoutBrand;
   const href = productHref(product);
 
   return (
