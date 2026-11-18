@@ -1,3 +1,7 @@
+## P3-02 — desktop and tablet storefront shell verified
+
+Desktop and tablet search, delivery, account, cart, department navigation and the responsive footer use the accepted storefront roles. English and Arabic live resize, footer destinations and category keyboard focus passed in the 20-case browser suite. [Implementation and captures](../../apps/web/docs/design/implementation-evidence/p3-02-chrome.md). P3-03 covers public home merchandising. No deployment.
+
 ## 2026-11-18 — P3-01 public mobile shell verified
 
 Public storefront routes now use the accepted mobile header, wide search and focused search/cart navigation. Existing delivery-area, cart, checkout and query paths remain intact. The isolated build and 18 browser cases passed. [Implementation and bilingual captures](../../apps/web/docs/design/implementation-evidence/p3-01-mobile-shell.md). P3-02 covers desktop/tablet shell and footer. No deployment.

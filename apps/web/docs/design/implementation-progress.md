@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P3-01 verified.** Public mobile shell, search, delivery and cart navigation are implemented on the storefront branch. [Mobile shell evidence](implementation-evidence/p3-01-mobile-shell.md).
-- **Next eligible task:** **P3-02 — desktop/tablet header, navigation and footer.** Carry forward the accepted shell roles and preserve existing destinations.
-- **Verified implementation tasks:** 16 of 34 (Phases 0–2 and P3-01).
+- **Current work:** **P3-02 verified.** The public desktop/tablet header, department navigation and responsive footer use the accepted roles. [Shell evidence](implementation-evidence/p3-02-chrome.md).
+- **Next eligible task:** **P3-03 — public home campaign, categories, product modules and sparse states.** Implement the selected full-width desktop lead and five-column wide home.
+- **Verified implementation tasks:** 17 of 34 (Phases 0–2 and P3-01–P3-02).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P3-01 isolated production build, typecheck, lint and 18 browser checks passed. Six EN/AR captures and enlarged-text measurements are recorded. Native keyboard/device and release checks remain open.
+- **Runtime/testing this checkpoint:** P3-02 isolated build, typecheck, lint and 20 browser checks passed. Eight EN/AR captures cover desktop header/footer, tablet categories and phone footer disclosures.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -21,7 +21,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
-| 3 Shell/home | in_progress | P3-01 verified; next P3-02 | [Mobile shell evidence](implementation-evidence/p3-01-mobile-shell.md) |
+| 3 Shell/home | in_progress | P3-01–P3-02 verified. P3-03 follows. | [Shell evidence](implementation-evidence/p3-02-chrome.md) |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
@@ -48,7 +48,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P2-04 | verified | [Refinements and measured contrast/type/shape/icon/motion](implementation-evidence/p2-04-refinement.md), nine captures; starting f83f29f, public/admin/shared consumers retained |
 | P2-05 | verified | [Accepted authority/retirement/bindings report](implementation-evidence/p2-05-authority.md), archive hashes, rendered metadata; starting 078e9c5, documentation only |
 | P3-01 | verified | [Mobile public-route implementation and checks](implementation-evidence/p3-01-mobile-shell.md) |
-| P3-02 | not_started | — |
+| P3-02 | verified | [Desktop/tablet and footer implementation](implementation-evidence/p3-02-chrome.md) |
 | P3-03 | not_started | — |
 | P3-04 | not_started | — |
 | P4-01 | not_started | — |
@@ -298,3 +298,9 @@ When interrupted or handing off, update this file before yielding where possible
 - Migrated the mobile public shell in a worktree on the storefront branch. Search retains its native query and suggestion paths, delivery area persists on the device, and cart/checkout have focused task navigation.
 - Saved bilingual captures and compiled storefront regression evidence. The existing public PDP toolbar remains assigned to P4-03.
 - Continue with P3-02 desktop/tablet shell and footer.
+
+
+### P3-02 verified
+
+- Desktop and tablet header keep delivery, account and cart available while allocating a flexible search width. The footer wraps across widths and uses the same destinations in desktop and phone groups.
+- EN/AR captures and compiled regression evidence recorded. Continue with P3-03 public home merchandising.

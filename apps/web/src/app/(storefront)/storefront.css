@@ -3,6 +3,7 @@
 @import './storefront-cart.css';
 @import './storefront-checkout.css';
 @import './storefront-mobile-shell.css';
+@import './storefront-chrome.css';
 
 /* Customer pharmacy-app language. Admin and wholesale keep their own systems. */
 @layer components {

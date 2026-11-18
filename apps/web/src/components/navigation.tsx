@@ -20,9 +20,9 @@ export async function Navigation({ locale = 'en', mobileShell = false }: { local
   const categories = (await getCategories().catch(() => [])).filter(category => !category.disabled).map(category => ({ name: u(locale, category.name), href: categoryHref(category) }));
   return <>
     <a className="skip-link fixed top-2 start-2 z-[100] -translate-y-[160%] rounded-xl bg-ink px-5 py-3 text-white focus:translate-y-0" href="#main-content">{t(locale, 'skipToContent')}</a>
-    <header className={mobileShell ? `storefront-header ${system.system}` : "storefront-header"} data-mobile-shell={mobileShell || undefined} lang={locale}>
+    <header className={mobileShell ? `storefront-header ${system.system}` : "storefront-header"} data-mobile-shell={mobileShell || undefined} data-storefront-chrome={mobileShell ? "header" : undefined} lang={locale}>
       <div className="header-content sf-container">
-        <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width:767px) 116px, 160px" className="h-auto w-full" /></Link>
+        <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes={mobileShell ? "(max-width: 767px) 86px, 124px" : "(max-width: 767px) 116px, 160px"} className="h-auto w-full" /></Link>
         <div className="header-mobile-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
         <div className="header-search"><SearchBox locale={locale} mobileShell={mobileShell} /></div>
         <DeliveryLocation locale={locale} />
@@ -30,7 +30,7 @@ export async function Navigation({ locale = 'en', mobileShell = false }: { local
         <CartLink locale={locale} />
         {mobileShell && <Link className="mobile-cart-return" href="/products">{t(locale, 'cartContinueShopping')}</Link>}
       </div>
-      <div className="storefront-departments"><div className="sf-container"><StorefrontMenu categories={categories} locale={locale} /><LanguageSwitcher locale={locale} label={t(locale, 'language')} /></div></div>
+      <div className="storefront-departments"><div className="sf-container"><StorefrontMenu categories={categories} locale={locale} acceptedChrome={mobileShell} /><LanguageSwitcher locale={locale} label={t(locale, 'language')} /></div></div>
       <NavigationLinks locale={locale} />
     </header>
   </>;
@@ -52,9 +52,9 @@ const accountLinks: [MessageKey, string][] = [
   ["linkCart", "/cart"],
 ];
 
-export function Footer({ telemetryEnabled = false, locale = 'en' }: { telemetryEnabled?: boolean; locale?: Locale }) {
+export function Footer({ telemetryEnabled = false, locale = 'en', acceptedChrome = false }: { telemetryEnabled?: boolean; locale?: Locale; acceptedChrome?: boolean }) {
  const groups: { title: MessageKey; aria: MessageKey; links: [MessageKey, string][] }[] = [{ title: 'footerShop', aria: 'footerShopAria', links: shopLinks }, { title: 'footerHelp', aria: 'footerHelpAria', links: helpLinks }, { title: 'footerAccount', aria: 'footerAccountAria', links: accountLinks }];
- return <footer className="storefront-footer"><div className="sf-container">
+ return <footer className={acceptedChrome ? `storefront-footer ${system.system}` : "storefront-footer"} data-storefront-chrome={acceptedChrome ? "footer" : undefined} lang={locale}><div className="sf-container">
    <div className="sf-footer-columns"><div className="sf-footer-brand"><Link href="/" aria-label={t(locale, 'homeAria')}><Image src="/logo.png" alt="" width={2789} height={910} sizes="148px" className="h-auto w-36" /></Link><p>{t(locale, 'footerTagline')}</p><a href="tel:+971504825007" dir="ltr"><PhoneIcon className="size-4" aria-hidden="true" />+971 50 482 5007</a><a href="mailto:info@alminapharmacy.com">info@alminapharmacy.com</a></div>{groups.map(group => <FooterGroup key={group.title} title={t(locale,group.title)}><nav aria-label={t(locale, group.aria)}>{group.links.map(([key, href]) => <Link key={key} href={href}>{t(locale, key)}</Link>)}</nav></FooterGroup>)}<FooterGroup title={t(locale,'footerVisit')}><p>{t(locale, 'footerLocation')}</p><Link href="/map">{t(locale, 'footerMap')}</Link><Link href="/ras-al-khaimah">{t(locale, 'linkLocal')}</Link></FooterGroup></div>
    <nav className="sf-footer-policies" aria-label={t(locale, 'footerPoliciesAria')}>{policyLinks.map(item => <Link key={item.path} href={item.path}>{t(locale, item.key)}</Link>)}</nav>
    {telemetryEnabled ? <UsagePreferences locale={locale} /> : null}

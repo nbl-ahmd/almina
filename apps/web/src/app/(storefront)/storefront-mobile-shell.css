@@ -62,14 +62,6 @@
     min-height: 50px;
     padding: var(--store-space-2) var(--store-space-3) var(--store-space-2) var(--store-space-10);
     gap: var(--store-space-4);
-    border-color: var(--store-border-control);
-    border-radius: var(--store-search-radius);
-    background: var(--store-search-surface);
-  }
-
-  [data-mobile-shell] .storefront-search-form:focus-within {
-    border-color: var(--store-focus);
-    outline-color: var(--store-focus);
   }
 
   [data-mobile-shell] [data-slot='header-search-input'] {
@@ -79,16 +71,6 @@
 
   [data-mobile-shell] [data-slot='header-search-input']::placeholder {
     color: var(--store-text-muted);
-  }
-
-  [data-mobile-shell] .sf-search-submit {
-    background: var(--store-action);
-    color: var(--store-purchase-foreground);
-    border-radius: var(--store-search-action-radius);
-  }
-
-  [data-mobile-shell] .sf-search-submit:is(:hover,:active) {
-    background: var(--store-action-hover);
   }
 
   /* The same search field stays mounted during focus, submission and resize. */
@@ -121,10 +103,6 @@
     border-color: var(--store-border);
     border-radius: var(--store-search-radius);
     background: var(--store-surface);
-  }
-
-  [data-mobile-shell] .storefront-search-panel [data-search-browse] {
-    background: var(--store-secondary-surface);
   }
 
   .storefront-shell [data-mobile-shell] .mobile-nav {
@@ -160,10 +138,6 @@
     font-size: var(--store-count-size);
   }
 
-  [data-mobile-shell] :is(a, button):focus-visible {
-    outline-color: var(--store-focus);
-  }
-
   [data-mobile-shell]:has([data-search-expanded='true']) .mobile-nav,
   .storefront-shell:has(.cart-page, .checkout-flow) [data-mobile-shell] .mobile-nav,
   .storefront-shell:has(.cart-page, .checkout-flow) [data-mobile-shell] :is(.header-search, .header-location, .header-mobile-menu),
@@ -190,8 +164,4 @@
     bottom: 0;
     padding-block-end: calc(12px + env(safe-area-inset-bottom));
   }
-}
-
-@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
-  [data-mobile-shell] :is(a, button, form) { transition: none; }
 }
