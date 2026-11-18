@@ -1,3 +1,7 @@
+## 2026-11-18 — P5-01 cart presentation verified
+
+Cart states, selected pack and unit/line amounts, quantity controls and the summary use the accepted storefront system. The responsive cart action and estimate copy were verified in English and Arabic alongside server-checked stock and reload behavior. [Local evidence](../../apps/web/docs/design/implementation-evidence/p5-01-cart.md). P5-02 covers checkout presentation. No deployment.
+
 ## 2026-11-18 — P4-05 contextual return verified and Phase 4 exited
 
 A product opened from tracked results can return to the same browse URL, filters, scroll position and focus. Variant navigation preserves browser history, and directly opened or reloaded product pages retain the category fallback. [Phase 4 verification and remaining work](../../apps/web/docs/design/implementation-evidence/phase-4.md). P5-01 cart follows. No deployment.

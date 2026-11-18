@@ -65,6 +65,8 @@ P4-04 places catalogue copy, existing warnings, specifications, pharmacy help, p
 
 P4-05 restores the previous browse URL, scroll and focus through same-tab history for tracked product links and consecutive product options. Direct and reloaded phone product pages link to the category. Product and canonical URLs stay unchanged. [Phase 4 verification](implementation-evidence/phase-4.md).
 
+P5-01 uses one continuation in the cart summary. It becomes a measured dock on portrait phones and stays in the summary on desktop and short landscape. The summary labels server-loaded catalogue amounts as estimates and keeps ordering information available when checkout is disabled. [Cart verification](implementation-evidence/p5-01-cart.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

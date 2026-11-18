@@ -17,7 +17,7 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
   await page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.pdp-mobile-toolbar .header-cart')).click();
   await expect(page.locator('.quantity')).toHaveText('4');
   await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
-  await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your cart is empty' })).toBeVisible();
   await expect(page.locator('.mobile-nav')).toBeHidden();
   await page.locator('.mobile-cart-return').click();
   await expect(page).toHaveURL(/\/products$/);

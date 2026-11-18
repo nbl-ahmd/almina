@@ -162,8 +162,4 @@
     text-decoration: underline;
   }
 
-  .storefront-shell:has([data-mobile-shell]) .cart-mobile-bar {
-    bottom: 0;
-    padding-block-end: calc(12px + env(safe-area-inset-bottom));
-  }
 }
