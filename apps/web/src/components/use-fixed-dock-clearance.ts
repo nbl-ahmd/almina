@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 /** Reserve the actual dock height, including wrapped controls and the safe area. */
-export function useFixedDockClearance(property: `--${string}`) {
+export function useFixedDockClearance(property: `--${string}`, fixedAllowed = true) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ export function useFixedDockClearance(property: `--${string}`) {
     if (!dock || !shell) return;
 
     const update = () => {
-      const height = getComputedStyle(dock).position === 'fixed' ? Math.ceil(dock.getBoundingClientRect().height) : 0;
+      const height = fixedAllowed && getComputedStyle(dock).position === 'fixed' ? Math.ceil(dock.getBoundingClientRect().height) : 0;
       shell.style.setProperty(property, `${height}px`);
     };
     const observer = new ResizeObserver(update);
@@ -25,7 +25,7 @@ export function useFixedDockClearance(property: `--${string}`) {
       window.removeEventListener('resize', update);
       shell.style.removeProperty(property);
     };
-  }, [property]);
+  }, [property, fixedAllowed]);
 
   return ref;
 }

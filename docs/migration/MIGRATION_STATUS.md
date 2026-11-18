@@ -1,3 +1,7 @@
+## 2026-11-18 — P5-02 checkout presentation verified
+
+Checkout details, review, disabled and payment result states use the accepted storefront system. One action adapts between the phone dock and the order summary, including software-keyboard and landscape presentation. [Local verification](../../apps/web/docs/design/implementation-evidence/p5-02-checkout.md). P5-03 covers broader transaction and authentication checks. No deployment.
+
 ## 2026-11-18 — P5-01 cart presentation verified
 
 Cart states, selected pack and unit/line amounts, quantity controls and the summary use the accepted storefront system. The responsive cart action and estimate copy were verified in English and Arabic alongside server-checked stock and reload behavior. [Local evidence](../../apps/web/docs/design/implementation-evidence/p5-01-cart.md). P5-02 covers checkout presentation. No deployment.

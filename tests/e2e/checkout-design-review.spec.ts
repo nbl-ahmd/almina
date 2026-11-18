@@ -1,6 +1,6 @@
 import {test,expect,reset,nextCheckoutPage} from './fixtures';
 import {mkdir} from 'node:fs/promises';
-const directory='apps/web/.impeccable/review/checkout-final';
+const directory='.verification-results/p5-02-review';
 test('final checkout evidence, responsive controls, RTL and reduced motion',async({page,request})=>{
  await reset(request);await mkdir(directory,{recursive:true});
  await page.setViewportSize({width:390,height:844});await nextCheckoutPage(page);
@@ -13,7 +13,8 @@ test('final checkout evidence, responsive controls, RTL and reduced motion',asyn
  await page.getByRole('button',{name:'Back',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Contact and delivery',exact:true})).toBeFocused();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>{window.scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()));})));await page.screenshot({path:`${directory}/mobile-details.png`,fullPage:true});
- await expect(page.locator('[name=address]')).toHaveCSS('height','60px');
+ await expect(page.locator('[name=address]')).toHaveCSS('min-height','48px');
+ await expect(page.locator('[name=address]')).toHaveCSS('border-radius','10px');
  expect(await page.locator('[name=address]').evaluate(el=>el.getBoundingClientRect().bottom+window.scrollY)).toBeLessThan(1000);
  await page.getByRole('combobox',{name:'Emirate',exact:true}).click();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
@@ -35,6 +36,5 @@ test('final checkout evidence, responsive controls, RTL and reduced motion',asyn
  await expect(page.locator('.checkout-success-mark')).toHaveCSS('animation-name','none');
  await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`${directory}/confirmation.png`,fullPage:true});
  await page.emulateMedia({reducedMotion:'no-preference'});
- await expect(page.locator('.checkout-success-mark')).toHaveCSS('animation-name','checkout-success-settle');
- await expect(page.locator('.checkout-success-mark')).toHaveCSS('animation-duration','0.28s');
+ await expect(page.locator('.checkout-success-mark')).toHaveCSS('animation-name','none');
 });

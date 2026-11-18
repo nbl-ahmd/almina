@@ -15,7 +15,7 @@ if (!["before", "after", "verify"].includes(pass))
   throw new Error("Unknown checkout style capture pass");
 for (const lang of ["en", "ar"] as const)
   for (const width of [390, 1280]) {
-    test(`${lang} ${width} retained checkout details/review visual contract without placing an order`, async ({
+    test(`${lang} ${width} checkout details/review visual contract without placing an order`, async ({
       page,
       context,
       request,
@@ -27,8 +27,7 @@ for (const lang of ["en", "ar"] as const)
       await context.addCookies([
         { name: "almina_lang", value: lang, url: checkoutOrigin },
       ]);
-      await page.goto(checkoutOrigin + "/checkout");
-      await page.evaluate(
+      await page.addInitScript(
         (id) =>
           localStorage.setItem(
             "almina.cart.v1",
@@ -36,7 +35,7 @@ for (const lang of ["en", "ar"] as const)
           ),
         productId,
       );
-      await page.reload();
+      await page.goto(checkoutOrigin + "/checkout");
       await expect(page.locator("[name=name]")).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
       async function capture() {

@@ -67,6 +67,8 @@ P4-05 restores the previous browse URL, scroll and focus through same-tab histor
 
 P5-01 uses one continuation in the cart summary. It becomes a measured dock on portrait phones and stays in the summary on desktop and short landscape. The summary labels server-loaded catalogue amounts as estimates and keeps ordering information available when checkout is disabled. [Cart verification](implementation-evidence/p5-01-cart.md).
 
+P5-02 uses one form-associated checkout action across device modes. The dock moves into flow in short landscape or with the software keyboard open. Visible native labels and manual address fields lead the optional map and voucher controls. The disabled and payment-return routes share the same accepted layout. [Checkout verification](implementation-evidence/p5-02-checkout.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

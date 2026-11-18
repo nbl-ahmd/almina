@@ -22,7 +22,7 @@ Desktop retains the global search/location/cart shell and gallery beside buying 
 
 Search has browsing/focused/task contexts. Location and menu interactions retain native labels/focus, optional user-triggered GPS/manual fallback and Arabic direction. Cart and checkout have one dominant continuation within their task mode. Browser cart data and server-loaded estimates remain distinct from final server quotes. Preserve auth, conditional payment availability, failed/pending/unavailable states and existing account features.
 
-The real retained checkout surface is mapped in [P2-03](implementation-evidence/p2-03-specimen.md); its public migration belongs to P5. Its current legacy blue/status geometry is not a replacement-system guide. Keep behavior unchanged while moving consumers, and verify admin/wholesale boundaries before deleting shared styling.
+The checkout uses the accepted canvas, readable labels above native fields, and one continuation in a measured phone dock or desktop review column. On short landscape screens and when the software keyboard opens, the action moves into the page. Enter and review the address before progressing on phones. Desktop keeps the form and order breakdown together. Payment options and result messages follow the existing checkout and provider state. [Checkout verification](implementation-evidence/p5-02-checkout.md).
 
 ## Responsive, RTL and content guardrails
 
