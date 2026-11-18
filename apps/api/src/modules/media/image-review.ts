@@ -3,7 +3,7 @@ import { MongoServerError, ObjectId, type Db, type Document, type ClientSession 
 import {
   cloudinaryImage, imageReviewStageSchema, imageReviewListQuerySchema, imageReviewDecisionSchema,
   imageReviewSelectionSchema, imageReviewImportSchema, imageReviewExportQuerySchema, imageReviewPublishSchema,
-  imageReviewDraftSchema, imageReviewProductFields, imageReviewEditableFields, storePublicationIssues,
+  imageReviewDraftSchema, imageReviewProductFields, imageReviewEditableFields, canDiscardImageExtraction, storePublicationIssues,
   imageIdentitySchema, type ImageIdentity, type ImageReviewItem, type ImageReviewSource,
   type ImageReviewProduct, type ImageReviewDetail, type ImageReviewList, type ImageReviewManifest,
   type ImageReviewApprovedMapping, type ImageReviewDecisionInput,
@@ -156,11 +156,16 @@ function validateChecks(row: StoredItem, product: Document, value: ImageReviewDe
   const base = row.source.identity, catalogue = imageReviewProductIdentity(product, base);
   const comparison = compareImageIdentity(base, catalogue);
   if (new Set(value.checks.map(c => c.field)).size !== value.checks.length) throw new HttpError(400, 'INVALID_REQUEST');
-  for (const field of comparison.filter(c => c.required || value.checks.some(check => check.field === c.field && (check.imageValue || check.catalogueValue)))) {
+  for (const field of comparison.filter(c => c.required || value.checks.some(check => check.field === c.field && (check.imageValue || check.catalogueValue || check.discardedExtraction)))) {
     const check = value.checks.find(c => c.field === field.field);
     if (!check?.confirmed) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-    // OCR corrections retain the original extraction and require a human receipt.
-    // A known catalogue value cannot be rewritten inside an image approval.
+    if (check.discardedExtraction) {
+      if (check.imageValue || check.catalogueValue || check.evidence.length < 10 ||
+        !canDiscardImageExtraction(base, catalogue, field.field)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      continue;
+    }
+    // Corrections retain the pipeline extraction and require a human receipt.
+    // The check must use the catalogue's actual identity after any approved update.
     const correctedOcr = check.imageValue !== field.imageValue;
     if ((field.catalogueValue && check.catalogueValue !== field.catalogueValue) || (correctedOcr && check.evidence.length < 10)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
     const resolved = compareImageIdentity(imageIdentitySchema.parse({ ...base, [field.field]: check.imageValue }), imageIdentitySchema.parse({ ...catalogue, [field.field]: check.catalogueValue })).find(c => c.field === field.field)!;
@@ -231,16 +236,18 @@ export async function createImageReviewDraft(db: Db, raw: unknown, actor: string
         return replay.result as ImageReviewItem;
       }
       const row = await items(db).findOne({ _id: value.itemId }, { session });
-      if (!row || row.revision !== value.expectedRevision || !['pending', 'held'].includes(row.status) || row.draftProductId) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
-      if (row.source.flags.length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      if (!row || row.revision !== value.expectedRevision || row.status === 'imported' || row.draftProductId) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
       await serializeCatalog(db, session, false);
       const [id] = await allocateCatalogIds(db, 1, 0, session);
       const product = await insertCatalogProduct(db, input, id!, actor, session, undefined, true);
       const now = new Date();
-      const next = { ...row, revision: row.revision + 1, selectedProductId: product.product_id, draftProductId: product.product_id,
-        reviewer: actor, reviewedAt: now, note: 'Draft product created from this image. Image approval is pending.' };
+      const status = row.source.flags.length || row.status === 'held' ? 'held' : 'pending';
+      const next: StoredItem = { ...row, revision: row.revision + 1, status, approvalId: null,
+        selectedProductId: product.product_id, draftProductId: product.product_id, reviewer: actor, reviewedAt: now,
+        note: 'Draft product created from this image. Image approval is pending.' };
       const saved = await items(db).updateOne({ _id: row._id, revision: row.revision }, { $set: {
-        revision: next.revision, selectedProductId: next.selectedProductId, draftProductId: next.selectedProductId,
+        revision: next.revision, status, approvalId: null, productRevision: null,
+        selectedProductId: product.product_id, draftProductId: product.product_id,
         reviewer: actor, reviewedAt: now, note: next.note,
       } }, { session });
       if (saved.matchedCount !== 1) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
