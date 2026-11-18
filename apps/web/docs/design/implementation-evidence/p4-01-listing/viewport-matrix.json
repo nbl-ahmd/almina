@@ -1,0 +1,360 @@
+[
+  {
+    "engine": "chromium",
+    "locale": "en",
+    "matrix": [
+      {
+        "width": 320,
+        "height": 740,
+        "scrollWidth": 320,
+        "gridTop": 378,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 360,
+        "height": 800,
+        "scrollWidth": 360,
+        "gridTop": 365,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "gridTop": 342,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 667,
+        "height": 375,
+        "scrollWidth": 667,
+        "gridTop": 342,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "scrollWidth": 768,
+        "gridTop": 398,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "scrollWidth": 1024,
+        "gridTop": 348,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 1280,
+        "height": 900,
+        "scrollWidth": 1280,
+        "gridTop": 293,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "scrollWidth": 1440,
+        "gridTop": 293,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, \"storefrontLatin Fallback\""
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "responses": [
+      [
+        404,
+        "/api/customer/saved"
+      ],
+      [
+        404,
+        "/api/customer/saved"
+      ]
+    ]
+  },
+  {
+    "engine": "chromium",
+    "locale": "ar",
+    "matrix": [
+      {
+        "width": 320,
+        "height": 740,
+        "scrollWidth": 320,
+        "gridTop": 386,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 360,
+        "height": 800,
+        "scrollWidth": 360,
+        "gridTop": 373,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "gridTop": 373,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 667,
+        "height": 375,
+        "scrollWidth": 667,
+        "gridTop": 349,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "scrollWidth": 768,
+        "gridTop": 408,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "scrollWidth": 1024,
+        "gridTop": 359,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 1280,
+        "height": 900,
+        "scrollWidth": 1280,
+        "gridTop": 301,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "scrollWidth": 1440,
+        "gridTop": 301,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, \"storefrontArabic Fallback\""
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "responses": [
+      [
+        404,
+        "/api/customer/saved"
+      ],
+      [
+        404,
+        "/api/customer/saved"
+      ]
+    ]
+  },
+  {
+    "engine": "webkit",
+    "locale": "en",
+    "matrix": [
+      {
+        "width": 320,
+        "height": 740,
+        "scrollWidth": 320,
+        "gridTop": 378,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 360,
+        "height": 800,
+        "scrollWidth": 360,
+        "gridTop": 365,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "gridTop": 342,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 667,
+        "height": 375,
+        "scrollWidth": 667,
+        "gridTop": 342,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "scrollWidth": 768,
+        "gridTop": 397,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "scrollWidth": 1024,
+        "gridTop": 347,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 1280,
+        "height": 900,
+        "scrollWidth": 1280,
+        "gridTop": 293,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "scrollWidth": 1440,
+        "gridTop": 293,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontLatin, storefrontLatin Fallback"
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "responses": [
+      [
+        404,
+        "/api/customer/saved"
+      ]
+    ]
+  },
+  {
+    "engine": "webkit",
+    "locale": "ar",
+    "matrix": [
+      {
+        "width": 320,
+        "height": 740,
+        "scrollWidth": 320,
+        "gridTop": 386,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 360,
+        "height": 800,
+        "scrollWidth": 360,
+        "gridTop": 373,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "gridTop": 373,
+        "columns": 2,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 667,
+        "height": 375,
+        "scrollWidth": 667,
+        "gridTop": 349,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "scrollWidth": 768,
+        "gridTop": 408,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "scrollWidth": 1024,
+        "gridTop": 359,
+        "columns": 3,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 1280,
+        "height": 900,
+        "scrollWidth": 1280,
+        "gridTop": 301,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "scrollWidth": 1440,
+        "gridTop": 301,
+        "columns": 4,
+        "sortRadius": "10px",
+        "headingFont": "storefrontArabic, storefrontArabic Fallback"
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "responses": [
+      [
+        404,
+        "/api/customer/saved"
+      ]
+    ]
+  }
+]

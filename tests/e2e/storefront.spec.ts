@@ -27,14 +27,14 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
 test('mobile catalog exposes filters on demand and preserves applied search', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 900 });
   await page.goto('/products');
-  const panel = page.locator('.catalog-filters');
+  const panel = page.locator('#catalog-filters');
   await expect(panel).not.toHaveAttribute('open');
   await panel.locator(':scope > summary').click();
   await panel.getByRole('searchbox', { name: 'Search products' }).fill('Daily');
   await panel.getByRole('button', { name: 'Apply filters', exact: true }).click();
   await expect(page).toHaveURL(/q=Daily/);
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
-  await expect(page.locator('.catalog-filters')).not.toHaveAttribute('open');
+  await expect(page.locator('#catalog-filters')).not.toHaveAttribute('open');
   await panel.locator(':scope > summary').click();
   await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
   await page.reload();
@@ -53,32 +53,30 @@ test('Next category preserves legacy IDs and provides keyboard pagination with r
   await page.reload(); await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Previous page', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
-  await page.goto('/search?q=No-synthetic-match'); await expect(page.getByRole('heading', { name: 'No products found.', exact: true })).toBeVisible();
+  await page.goto('/search?q=No-synthetic-match'); await expect(page.getByRole('heading', { name: 'No matching products', exact: true })).toBeVisible();
   await page.goto('/search?q=' + 'A'.repeat(100));
   await page.locator('#catalog-filters > summary').click();
   const filter = page.getByRole('search', { name: 'Filter products' });
   await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveAttribute('maxlength', '80');
   await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('A'.repeat(80));
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
-  await filter.getByRole('link', { name: 'Clear filters' }).focus(); await page.keyboard.press('Enter');
+  await filter.getByRole('link', { name: 'Clear search' }).focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.locator('#catalog-filters > summary').click();
   await expect(filter.getByRole('searchbox', { name: 'Search products' })).toHaveValue('');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test.describe('intentional server outage', () => {
-  test.use({ expectedReactBoundaryFailure: true });
-test('Next catalog outage renders its error boundary and keyboard retry recovers without empty success', async ({ page, request }) => {
+test('Next catalog outage shows a distinct recovery state and preserves the page on keyboard retry', async ({ page, request }) => {
   const fixture = 'http://127.0.0.1:4711';
   expect((await request.get(fixture + '/__fixture/failure')).status()).toBe(200);
   try {
     await page.goto('/products?page=2');
-    await expect(page.getByRole('heading', { name: 'Unable to load this page', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Unable to load products', exact: true })).toBeVisible();
   } finally { expect((await request.get(fixture + '/__fixture/failure')).status()).toBe(200); }
-  await page.getByRole('button', { name: 'Try again', exact: true }).focus(); await page.keyboard.press('Enter');
+  await page.getByRole('link', { name: 'Try again', exact: true }).focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Synthetic paged product 34', exact: true })).toBeVisible();
-});
+  await expect(page).toHaveURL(/page=2/);
 });
 
 for (const [path, content] of [['/', 'Your everyday essentials'], ['/search?q=Daily', 'Daily Care'],

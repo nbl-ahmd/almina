@@ -28,7 +28,8 @@ test('price range rejects reversed bounds and applying filters preserves query, 
  await expect.poll(()=>new URL(page.url()).searchParams.get('minPrice')).toBe('20');
  const query=new URL(page.url()).searchParams;for(const [key,value]of Object.entries({q:'Daily',sort:'price-asc',brand:'Care',literal:'true',form:'cream',maxPrice:'30'}))expect(query.get(key)).toBe(value);
  await page.reload();await expect(lower).toHaveValue('20');await expect(upper).toHaveValue('30');
- await form.getByRole('link',{name:'Clear filters',exact:true}).click();await expect.poll(()=>new URL(page.url()).searchParams.has('q')).toBe(false);
+ await form.getByRole('link',{name:'Clear filters',exact:true}).click();
+ await expect.poll(()=>Object.fromEntries(new URL(page.url()).searchParams)).toEqual({q:'Daily',literal:'true',sort:'price-asc'});
 });
 
 test('Arabic filters keep price labels, decimal entry and inline validation readable',async({page,context})=>{

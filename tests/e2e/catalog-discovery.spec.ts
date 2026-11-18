@@ -9,7 +9,7 @@ for(const width of [390,1280])test(`category-first discovery and sorting preserv
  const sort=page.getByRole('combobox',{name:'Sort by',exact:true});await expect(sort).toBeVisible();
  await sort.selectOption('price-asc');await expect(page).toHaveURL(/sort=price-asc/);
  const url=new URL(page.url());expect(url.searchParams.get('q')).toBe('Daily');expect(url.searchParams.get('inStock')).toBe('true');expect(url.searchParams.get('minPrice')).toBe('5');expect(url.searchParams.has('page')).toBe(false);
- const chips=page.getByRole('navigation',{name:'Applied filters'});await chips.getByRole('link',{name:'Remove From AED 5',exact:true}).click();
+ const chips=page.getByRole('navigation',{name:'Applied filters'});await chips.getByRole('link',{name:'Remove From AED 5.00',exact:true}).click();
  await expect.poll(()=>new URL(page.url()).searchParams.has('minPrice')).toBe(false);await expect(sort).toHaveValue('price-asc');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

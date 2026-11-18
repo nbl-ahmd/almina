@@ -1,3 +1,7 @@
+## 2026-11-18 — P4-01 listing and search verified
+
+Public catalogue, category, offers and search now use the accepted storefront system, with compact phone controls, a desktop filter rail and distinct loading, empty and outage recovery. Native GET filters, pagination, legacy category redirects and noindex policies were checked locally. [Bilingual captures and verification](../../apps/web/docs/design/implementation-evidence/p4-01-listing.md). P4-02 product cards follow. No deployment.
+
 ## 2026-11-18 — P3-04 verified and Phase 3 complete
 
 English and Arabic shell/home checks passed in Chromium and WebKit. Localized missing and failed-route recovery and fixed focus return after closing the delivery dialog. Scoped superseded responsive rules to their compatibility consumers. [Verification and remaining checks](../../apps/web/docs/design/implementation-evidence/p3-04-shell-home.md). Next P4-01 listing/search work. No deployment.

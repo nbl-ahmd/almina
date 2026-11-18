@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P3-04 verified. Phase 3 is complete.** The public shell and home have bilingual responsive, route and recovery evidence. [Phase 3 exit](implementation-evidence/p3-04-shell-home.md).
-- **Next eligible task:** **P4-01 — listing and search toolbar, filters, count, pagination and recovery states.**
-- **Verified implementation tasks:** 19 of 34 (all Phase 0–3 tasks).
+- **Current work:** **P4-01 verified.** Public listing and search use the accepted system with bilingual filter, pagination and recovery evidence. [P4-01 report](implementation-evidence/p4-01-listing.md).
+- **Next eligible task:** **P4-02 — product cards, grids and rails, factual stock, pack, price, purchase and saved states, and exact-pack imagery.**
+- **Verified implementation tasks:** 20 of 34 (Phases 0–3 and P4-01).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P3-04 production build, typecheck, lint, 40 Chromium checks and 12 WebKit checks passed. Live viewport/zoom matrix and repeated home/category/Back/reload evidence recorded. Physical device, saved/account, provider and release checks remain open.
+- **Runtime/testing this checkpoint:** P4-01 isolated build, typecheck, lint, 46 unit checks, 53 Chromium and 22 WebKit regressions passed. The bilingual 32-case resize matrix and four scoped axe scans are recorded. Physical device, search quality, customer account, provider and release checks remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -21,8 +21,8 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
-| 3 Shell/home | verified | P3-01–P3-04 verified. P4-01 follows. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
-| 4 Catalogue/PDP | not_started | Phase 3 complete. Next P4-01. | — |
+| 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
+| 4 Catalogue/PDP | in_progress | P4-01 verified. P4-02 follows. | [Listing and search](implementation-evidence/p4-01-listing.md) |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
@@ -51,7 +51,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P3-02 | verified | [Desktop/tablet and footer implementation](implementation-evidence/p3-02-chrome.md) |
 | P3-03 | verified | [Public home implementation and checks](implementation-evidence/p3-03-home.md) |
 | P3-04 | verified | [Bilingual responsive and route checks](implementation-evidence/p3-04-shell-home.md), localized failures, WebKit focus restoration and compatibility scopes |
-| P4-01 | not_started | — |
+| P4-01 | verified | [Listing/search implementation, captures and checks](implementation-evidence/p4-01-listing.md) |
 | P4-02 | not_started | — |
 | P4-03 | not_started | — |
 | P4-04 | not_started | — |
@@ -317,3 +317,11 @@ When interrupted or handing off, update this file before yielding where possible
 - Verified bilingual shell and home with responsive and zoom measurements, route and browser Back continuity, footer clearance and scoped portals. Localized route recovery and fixed WebKit delivery focus return.
 - Isolated accepted responsive bindings from the compatibility shell. Kept active shared styles for root 404, wholesale, public catalogue, PDP and checkout consumers.
 - 40 Chromium cases and 12 WebKit cases passed. Physical devices and broader release checks remain open. Continue with P4-01.
+
+
+### 2026-11-18 — P4-01 verified
+
+- Migrated catalogue, category, offers and search to the accepted surface and typography. Filter and Sort share the phone toolbar. Desktop uses the same native filter form in an open left rail, with applied filters beside sort.
+- Preserved known query values, search interpretation and literal mode, server pricing/stock, category redirects and indexing rules. Clear filters keeps the term and sort, with a separate Clear search action. Pagination appears when another page can be reached.
+- Verified localized loading, empty, partial identifier match and failed query recovery. Fixed filter focus on live resize and an early phone disclosure being closed during WebKit hydration.
+- See the [report and comparison captures](implementation-evidence/p4-01-listing.md). Card media/anatomy and further public grid/rail consumers carry into P4-02. Representative Arabic matching remains under O06.
