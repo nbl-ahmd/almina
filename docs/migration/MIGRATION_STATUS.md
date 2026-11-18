@@ -1,3 +1,7 @@
+## 2026-11-18 — P4-05 contextual return verified and Phase 4 exited
+
+A product opened from tracked results can return to the same browse URL, filters, scroll position and focus. Variant navigation preserves browser history, and directly opened or reloaded product pages retain the category fallback. [Phase 4 verification and remaining work](../../apps/web/docs/design/implementation-evidence/phase-4.md). P5-01 cart follows. No deployment.
+
 ## 2026-11-18 — P4-04 product information verified
 
 The product page brings supplied catalogue copy, specifications, pharmacy help, policies and reviews before alternatives. Complete and sparse records were verified in English and Arabic. [Captures and verification](../../apps/web/docs/design/implementation-evidence/p4-04-information.md). P4-05 covers contextual return and the Phase 4 exit. No deployment.

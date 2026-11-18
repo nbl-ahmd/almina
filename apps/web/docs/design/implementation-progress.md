@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P4-04 verified.** Product facts, help, policy links and reviews lead the information area before alternatives. [P4-04 report](implementation-evidence/p4-04-information.md).
-- **Next eligible task:** **P4-05 — contextual PDP return, query/filter/scroll continuity and the Phase 4 exit.**
-- **Verified implementation tasks:** 23 of 34 (Phases 0–3 and P4-01–P4-04).
+- **Current work:** **P4-05 verified. Phase 4 exited.** The product page returns to the original browse URL, scroll and focus. [Phase 4 verification](implementation-evidence/phase-4.md).
+- **Next eligible task:** **P5-01 — cart states, line items, summary and responsive purchase action.**
+- **Verified implementation tasks:** 24 of 34 (Phases 0–4).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P4-04 isolated build, typecheck, lint, 28 unit checks, 39 Chromium regressions plus an Arabic flow check, and 18 WebKit checks passed. The 40-case live viewport matrix and four scoped axe scans are recorded. Production catalogue completeness, native language/device checks and release remain open.
+- **Runtime/testing this checkpoint:** P4-05 isolated build, typecheck, lint, 49 unit checks and Chromium and WebKit regressions. Twelve local browser return cycles and 24 product viewport measurements are recorded. Production search relevance, catalogue completeness and native device checks remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -22,8 +22,8 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
-| 4 Catalogue/PDP | in_progress | P4-01–P4-04 verified. P4-05 closes the phase. | [Listing/search](implementation-evidence/p4-01-listing.md), [cards](implementation-evidence/p4-02-cards.md), [gallery/buying](implementation-evidence/p4-03-detail.md), [product information](implementation-evidence/p4-04-information.md) |
-| 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
+| 4 Catalogue/PDP | verified | P4-01–P4-05 verified locally. | [Phase 4 exit](implementation-evidence/phase-4.md) |
+| 5 Cart/checkout/customer | not_started | Eligible after Phase 4 exit | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
 ## Task ledger
@@ -55,7 +55,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P4-02 | verified | [Cards/rails, bilingual captures and checks](implementation-evidence/p4-02-cards.md) |
 | P4-03 | verified | [Bilingual gallery, purchase layout and responsive verification](implementation-evidence/p4-03-detail.md) |
 | P4-04 | verified | [Product facts, reviews, sparse states and bilingual captures](implementation-evidence/p4-04-information.md) |
-| P4-05 | not_started | — |
+| P4-05 | verified | [Contextual return, bilingual checks and Phase 4 exit](implementation-evidence/phase-4.md) |
 | P5-01 | not_started | — |
 | P5-02 | not_started | — |
 | P5-03 | not_started | — |
@@ -100,10 +100,10 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O03 | Campaign cadence/content, delivery coverage/promises, live payments/provider readiness and asset rights | Keep unverified; no invented banners/services/claims. Use labelled representative fixtures, retain actual gates. | P0-03–P0-04, P6-04 |
 | O04 | Added-state layer conflict confirmed in emitted CSS; primary-foreground remains dormant alias trap; checkout overrides inventoried | Resolve in P2; actual computed transition checks still owed. Not an observed failed order/add. | P2-02–P2-03 |
 | O05 | Old instructions/guide/runtime still describe incumbent visual candidate | Treat as existing implementation evidence; align authority after accepted P1 screens, no silent restoration of rejected look. | P0-01, P2-05 |
-| O06 | Search matching/Arabic quality and true back/scroll behaviour | Evaluate representative local data; track separately from new styling if outside scope. | P0-03, P4-05 |
+| O06 | Search matching/Arabic quality and true back/scroll behaviour | P4-05 verifies contextual return and an offline search benchmark. Representative catalogue relevance and Arabic matching remain open. | P0-03, P4-05 |
 | O07 | NEW-001/002/003: wholesale shares customer CSS/shell; root 404 imports it; admin campaign preview shares artwork/Outfit | Isolation/compatibility and preview policy required before accepted customer system switch; see P0-02 matrix. No shared deletion yet. | P2-01–P2-03, P3-03–P3-04, P6-01 |
-| O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route errors now localized, saved/account copy remains open. | P4 verifies the in-page PDP return link and richer filter continuity. P5 verifies saved/account UI. | P3-04, P4-05, P5-05, P6-02 |
-| O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Twelve bounded P3-04 fixture cycles resolved. Retain broader long-session verification in subsequent phases. | P3-04, P4-05, P6-02 |
+| O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route errors now localized, saved/account copy remains open. | P4-05 verifies in-page return with exact query, filters and focus. P5 verifies saved/account UI. | P3-04, P4-05, P5-05, P6-02 |
+| O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Twelve bounded P3-04 fixture cycles resolved and twelve P4-05 returns did not reproduce the stall. Broader long-session verification remains open. | P3-04, P4-05, P6-02 |
 
 No blocker to starting P1-02 with the contract safeguards has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
 
@@ -346,3 +346,9 @@ When interrupted or handing off, update this file before yielding where possible
 - Placed product copy, supplied warnings, specifications, contact, delivery and returns, and reviews before related products. Kept catalogue/verified review text and existing policy and commerce sources.
 - Reduced the sparse state to available facts and a missing-description message. Removed superseded product information rules and scoped section spacing.
 - Recorded [bilingual screenshots and checks](implementation-evidence/p4-04-information.md). Next is P4-05 contextual return, continuity and the Phase 4 exit.
+
+
+### 2026-11-18 — P4-05 verified and Phase 4 exited
+
+- Restored exact browse URLs, scroll and focused links from the product page. Verified ordinary variant history and category fallback for direct or reloaded product pages.
+- Verified the return-to-results journey through saving, adding a selected quantity and reloading the cart. The [Phase 4 evidence](implementation-evidence/phase-4.md) records bilingual responsive, regression and SEO checks, and remaining content and media work. Continue with P5-01.

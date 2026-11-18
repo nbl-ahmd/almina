@@ -25,6 +25,7 @@ import { CompactProductCard } from '../../../../components/product-card';
 import { CurrencyAmount } from '../../../../components/currency-amount';
 import { CartLink } from '../../../../components/cart-link';
 import { AddToCart } from '../../../../components/cart-controls';
+import { ProductReturnLink } from '../../../../components/product-return-link';
 import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
 import styles from '../../../../components/product-detail.module.css';
 import boundary from '../../../../components/storefront-system/boundary.module.css';
@@ -62,9 +63,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const photos = productImages(product).filter(image => image !== '/product-placeholder.svg');
   const mobileControls = (
     <div className={`pdp-mobile-toolbar ${styles.overlay}`}>
-      <Link className={styles.back} href={categoryPath} aria-label={locale === 'ar' ? 'العودة إلى الفئة' : 'Back to category'}>
-        <Icon name="back" />
-      </Link>
+      <ProductReturnLink className={styles.back} categoryHref={categoryPath} locale={locale} />
       <SaveProduct locale={locale} id={product._id} name={product.name} compact card />
       <CartLink locale={locale} />
     </div>
@@ -73,7 +72,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
     <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }, { name: product.name, path: productHref(product) }])} />
     <div lang={locale} className={`pdp-page ${system.system} ${boundary.boundary} ${styles.detail}`}>
       <div className={styles.container}>
-        <Breadcrumb title={product.name} parents={[{ name: u(locale, 'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }]} />
+        <div className={styles.trail}>
+          <Breadcrumb title={product.name} parents={[{ name: u(locale, 'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }]} />
+          <ProductReturnLink contextOnly className={styles.desktopBack} categoryHref={categoryPath} locale={locale} />
+        </div>
         <div className={styles.lead}>
           <div className={styles.visual}>
             <ProductGallery key={product._id} locale={locale} images={photos} name={product.name}

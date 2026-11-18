@@ -39,7 +39,7 @@ export function RecentlyViewed({ cloudName, locale = 'en' }: { cloudName?: strin
       </div>
       <div className={styles.recentRail}>
         {items.map(item => (
-          <Link key={item.id} href={item.href} className={`${styles.compact} ${styles.compactLink}`}>
+          <Link key={item.id} href={item.href} data-product-entry="recent" className={`${styles.compact} ${styles.compactLink}`}>
             <span className={styles.compactPhoto}>
               <ProductImage src={item.image} alt="" cloudName={cloudName} width={100} height={100} sizes="48px" className={styles.photo} />
             </span>

@@ -93,7 +93,7 @@ export async function ProductCard({ product, headingLevel = 3 }: {
   return (
     <article lang={locale} data-product-id={product._id} className={`product-card ${system.system} ${boundary.boundary} ${styles.card}`}>
       <div className={styles.visual}>
-        <Link href={href} aria-label={ar ? `عرض ${name}` : `View ${name}`} className={`product-media ${styles.media}`}>
+        <Link href={href} data-product-entry="image" aria-label={ar ? `عرض ${name}` : `View ${name}`} className={`product-media ${styles.media}`}>
           <ProductPhoto product={product} />
         </Link>
         <Stock product={product} locale={locale} grouped={options} />
@@ -105,7 +105,7 @@ export async function ProductCard({ product, headingLevel = 3 }: {
         </Link>
         {pack ? <bdi>{pack}</bdi> : null}
       </div>
-      <Heading className={`product-card-title ${styles.title}`}><Link href={href} aria-label={name}><bdi>{cardName || name}</bdi></Link></Heading>
+      <Heading className={`product-card-title ${styles.title}`}><Link href={href} data-product-entry="title" aria-label={name}><bdi>{cardName || name}</bdi></Link></Heading>
       {options ? <p className={styles.optionNote}>
         {product.familyPriceVaries
           ? (ar ? 'السعر يختلف حسب الخيار' : 'Price varies by option')
@@ -113,7 +113,7 @@ export async function ProductCard({ product, headingLevel = 3 }: {
       </p> : null}
       <div className={`product-card-bottom ${styles.buy}`}>
         <CardPrice product={product} locale={locale} />
-        {options ? <Link className={`product-option-link ${styles.choose}`} href={href}>
+        {options ? <Link className={`product-option-link ${styles.choose}`} href={href} data-product-entry="options">
           {u(locale, 'Choose options')}<ArrowRightIcon className="rtl:rotate-180" aria-hidden="true" />
         </Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={name} compact />}
       </div>
