@@ -2,6 +2,7 @@
 @import './storefront-controls.css';
 @import './storefront-cart.css';
 @import './storefront-checkout.css';
+@import './storefront-mobile-shell.css';
 
 /* Customer pharmacy-app language. Admin and wholesale keep their own systems. */
 @layer components {

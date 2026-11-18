@@ -14,19 +14,21 @@ import { UsagePreferences } from './usage-preferences';
 import { LanguageSwitcher } from './language-switcher';
 import { t, type Locale, type MessageKey } from '../lib/i18n';
 import { policyLinks } from '../lib/policies';
+import system from './storefront-system/tokens.module.css';
 
-export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
+export async function Navigation({ locale = 'en', mobileShell = false }: { locale?: Locale; mobileShell?: boolean }) {
   const categories = (await getCategories().catch(() => [])).filter(category => !category.disabled).map(category => ({ name: u(locale, category.name), href: categoryHref(category) }));
   return <>
     <a className="skip-link fixed top-2 start-2 z-[100] -translate-y-[160%] rounded-xl bg-ink px-5 py-3 text-white focus:translate-y-0" href="#main-content">{t(locale, 'skipToContent')}</a>
-    <header className="storefront-header">
+    <header className={mobileShell ? `storefront-header ${system.system}` : "storefront-header"} data-mobile-shell={mobileShell || undefined} lang={locale}>
       <div className="header-content sf-container">
         <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width:767px) 116px, 160px" className="h-auto w-full" /></Link>
         <div className="header-mobile-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
-        <div className="header-search"><SearchBox locale={locale} /></div>
+        <div className="header-search"><SearchBox locale={locale} mobileShell={mobileShell} /></div>
         <DeliveryLocation locale={locale} />
         <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account"><UserCircleIcon className="size-6" aria-hidden="true" /><span>{t(locale, 'navAccount')}</span></Link>
         <CartLink locale={locale} />
+        {mobileShell && <Link className="mobile-cart-return" href="/products">{t(locale, 'cartContinueShopping')}</Link>}
       </div>
       <div className="storefront-departments"><div className="sf-container"><StorefrontMenu categories={categories} locale={locale} /><LanguageSwitcher locale={locale} label={t(locale, 'language')} /></div></div>
       <NavigationLinks locale={locale} />

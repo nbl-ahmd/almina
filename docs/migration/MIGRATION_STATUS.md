@@ -1,3 +1,7 @@
+## 2026-11-18 — P3-01 public mobile shell verified
+
+Public storefront routes now use the accepted mobile header, wide search and focused search/cart navigation. Existing delivery-area, cart, checkout and query paths remain intact. The isolated build and 18 browser cases passed. [Implementation and bilingual captures](../../apps/web/docs/design/implementation-evidence/p3-01-mobile-shell.md). P3-02 covers desktop/tablet shell and footer. No deployment.
+
 ## 2026-11-18 — P2-05 authority aligned; Phase 2 complete
 
 Replaced stale storefront DESIGN.md/metadata/brief/directions and project styling instructions with checked projections of the accepted local system. Archived five superseded records and marked reference/review plans as historical proposals; retained all product capabilities, runtime/shared/admin/package sources and production safeguards. [Authority/remaining-consumer map](../../apps/web/docs/design/implementation-evidence/p2-05-authority.md). Nine focused tests, root/workspace typecheck/lint, metadata rendering and read-only local storefront/admin smoke pass. Prior P2-04 browser/build evidence remains distinct from this documentation task. Next P3-01 public mobile shell migration; no orders, production/provider access or deployment.

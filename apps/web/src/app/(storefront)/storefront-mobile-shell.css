@@ -1,0 +1,197 @@
+/* Accepted mobile shell. Desktop and the root fallback keep their existing owners. */
+.mobile-search-cancel,
+.mobile-cart-return {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .storefront-header[data-mobile-shell] {
+    background: var(--store-surface);
+    color: var(--store-text);
+    border-block-end: 1px solid var(--store-border);
+  }
+
+  [data-mobile-shell] .header-content {
+    grid-template-columns: 86px minmax(0, 1fr) var(--store-target-min) var(--store-target-min);
+    gap: var(--store-space-8);
+    padding: var(--store-space-8) var(--store-page-gutter) var(--store-space-10);
+  }
+
+  [data-mobile-shell] .brand-logo {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    min-height: var(--store-target-min);
+    width: 100%;
+  }
+
+  [data-mobile-shell] .header-location {
+    grid-area: 1 / 2;
+    justify-self: stretch;
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  [data-mobile-shell] .header-location-caption {
+    display: block;
+    color: var(--store-text-muted);
+    font-size: var(--store-type-11);
+  }
+
+  [data-mobile-shell] .header-location-value {
+    color: var(--store-text);
+    font-weight: var(--store-weight-bold);
+  }
+
+  [data-mobile-shell] [data-slot='delivery-selector'] svg {
+    color: var(--store-text-muted);
+  }
+
+  [data-mobile-shell] .header-mobile-menu { grid-area: 1 / 3; }
+
+  .storefront-shell [data-mobile-shell] .header-content > .header-cart {
+    grid-area: 1 / 4;
+    background: var(--store-surface);
+    color: var(--store-text);
+    border-color: var(--store-border);
+  }
+
+  [data-mobile-shell] .header-search { grid-area: 2 / 1 / auto / -1; }
+
+  [data-mobile-shell] .storefront-search-form {
+    min-height: 50px;
+    padding: var(--store-space-2) var(--store-space-3) var(--store-space-2) var(--store-space-10);
+    gap: var(--store-space-4);
+    border-color: var(--store-border-control);
+    border-radius: var(--store-search-radius);
+    background: var(--store-search-surface);
+  }
+
+  [data-mobile-shell] .storefront-search-form:focus-within {
+    border-color: var(--store-focus);
+    outline-color: var(--store-focus);
+  }
+
+  [data-mobile-shell] [data-slot='header-search-input'] {
+    color: var(--store-text);
+    scroll-margin-block: var(--store-space-16);
+  }
+
+  [data-mobile-shell] [data-slot='header-search-input']::placeholder {
+    color: var(--store-text-muted);
+  }
+
+  [data-mobile-shell] .sf-search-submit {
+    background: var(--store-action);
+    color: var(--store-purchase-foreground);
+    border-radius: var(--store-search-action-radius);
+  }
+
+  [data-mobile-shell] .sf-search-submit:is(:hover,:active) {
+    background: var(--store-action-hover);
+  }
+
+  /* The same search field stays mounted during focus, submission and resize. */
+  [data-mobile-shell] .sf-search[data-search-expanded='true'] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--store-space-8);
+    align-items: start;
+  }
+
+  [data-mobile-shell] .mobile-search-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--store-target-min);
+    min-height: 50px;
+    padding-inline: var(--store-space-6);
+    border: 0;
+    background: transparent;
+    color: var(--store-text);
+    font-size: var(--store-type-13);
+  }
+
+  [data-mobile-shell] .storefront-search-panel {
+    position: static;
+    grid-column: 1 / -1;
+    min-width: 0;
+    max-height: min(48dvh, 26rem);
+    box-shadow: none;
+    border-color: var(--store-border);
+    border-radius: var(--store-search-radius);
+    background: var(--store-surface);
+  }
+
+  [data-mobile-shell] .storefront-search-panel [data-search-browse] {
+    background: var(--store-secondary-surface);
+  }
+
+  .storefront-shell [data-mobile-shell] .mobile-nav {
+    background: var(--store-surface);
+    border-block-start: 1px solid var(--store-border);
+    box-shadow: none;
+    padding: var(--store-space-4) var(--store-space-8)
+      max(var(--store-space-4), env(safe-area-inset-bottom));
+  }
+
+  [data-mobile-shell] .mobile-tab {
+    min-height: 52px;
+    color: var(--store-text);
+    line-height: var(--store-leading-label);
+  }
+
+  [data-mobile-shell] .mobile-tab > span:last-child {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  [data-mobile-shell] .mobile-tab svg { stroke-width: var(--store-icon-stroke); }
+
+  .storefront-shell [data-mobile-shell] .mobile-tab[aria-current='page'],
+  .storefront-shell [data-mobile-shell] .mobile-tab[aria-current='page'] svg {
+    color: var(--store-stress-error);
+  }
+
+  [data-mobile-shell] [data-cart-count] {
+    background: var(--store-action);
+    color: var(--store-text);
+    font-size: var(--store-count-size);
+  }
+
+  [data-mobile-shell] :is(a, button):focus-visible {
+    outline-color: var(--store-focus);
+  }
+
+  [data-mobile-shell]:has([data-search-expanded='true']) .mobile-nav,
+  .storefront-shell:has(.cart-page, .checkout-flow) [data-mobile-shell] .mobile-nav,
+  .storefront-shell:has(.cart-page, .checkout-flow) [data-mobile-shell] :is(.header-search, .header-location, .header-mobile-menu),
+  .storefront-shell:has(.cart-page, .checkout-flow) [data-mobile-shell] .header-content > .header-cart {
+    display: none;
+  }
+
+  .storefront-shell:has(.cart-page, .checkout-flow) [data-mobile-shell] .header-content {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+
+  .storefront-shell:has(.cart-page) [data-mobile-shell] .mobile-cart-return {
+    display: inline-flex;
+    align-items: center;
+    justify-self: end;
+    min-height: var(--store-target-min);
+    padding-inline: var(--store-space-8);
+    border-radius: var(--store-control-radius);
+    font-size: var(--store-type-13);
+    text-decoration: underline;
+  }
+
+  .storefront-shell:has([data-mobile-shell]) .cart-mobile-bar {
+    bottom: 0;
+    padding-block-end: calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  [data-mobile-shell] :is(a, button, form) { transition: none; }
+}

@@ -15,7 +15,7 @@ function value(key:string,path:string[]=[]):string{assert.ok(!path.includes(key)
 test('active guide projections match the single accepted runtime source',()=>{
  assert.equal(bindings.source,'apps/web/src/components/storefront-system/tokens.module.css');
  for(const kind of ['colors','rounded','spacing'] as const){const actual=flat(kind);assert.deepEqual(Object.keys(actual).sort(),Object.keys(bindings[kind]).sort());for(const[key,role]of Object.entries(bindings[kind]))assert.equal(actual[key],value(role),`${kind}.${key}`);}
- for(const[role,fields]of Object.entries(bindings.typography)){const block=fm.match(new RegExp(`^  ${role}:\\n((?:    [^\\n]*\\n)*)`,'m'))?.[1];assert.ok(block,role);for(const[key,token]of Object.entries(fields)){const encoded=block.match(new RegExp(`^    ${key}: (.+)$`,'m'))?.[1];assert.ok(encoded,`${role}.${key}`);assert.equal(String(JSON.parse(encoded)),value(token),`${role}.${key}`);}}
+ for(const[role,fields]of Object.entries(bindings.typography)){const block=fm.match(new RegExp(`^  ${role}:\\n((?:    [^\\n]*\\n)*)`,'m'))?.[1];assert.ok(block,role);for(const[key,token]of Object.entries(fields)){const encoded: string | undefined = block.match(new RegExp(`^    ${key}: (.+)$`,'m'))?.[1];assert.ok(encoded,`${role}.${key}`);assert.equal(String(JSON.parse(encoded)),value(token),`${role}.${key}`);}}
  assert.equal(side.extensions.motion.find(m=>m.name==='feedback-duration')?.value,value('--store-motion-feedback'));
  assert.equal(side.extensions.motion.find(m=>m.name==='feedback-easing')?.value,value('--store-motion-easing'));
  assert.equal(side.extensions.shadows[0]?.value,value('--store-elevation-overlay'));

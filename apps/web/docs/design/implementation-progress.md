@@ -4,14 +4,14 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P2-05 verified; Phase 2 complete.** DESIGN.md/sidecar/brief/screen directions/instructions now match the selected scoped runtime. Former active authority is archived and excluded; product facts and all runtime/shared/admin implementation are preserved. [Authority/verification map](implementation-evidence/p2-05-authority.md).
-- **Next eligible task:** **P3-01 — mobile shell, prominent search/location/cart, focused-search and contextual navigation modes.** Begin staged public-consumer migration from the accepted proof/system; preserve GET/query/suggestion/back/focus/keyboard/safe-area behavior and independent shared/admin themes. P3-02/P3-03/P3-04 remain separate tasks.
-- **Verified implementation tasks:** 15 of 34 (all Phase 0/1/2 tasks). These are equal checklist counts, not a weighted completion percentage.
+- **Current work:** **P3-01 verified.** Public mobile shell, search, delivery and cart navigation are implemented on the storefront branch. [Mobile shell evidence](implementation-evidence/p3-01-mobile-shell.md).
+- **Next eligible task:** **P3-02 — desktop/tablet header, navigation and footer.** Carry forward the accepted shell roles and preserve existing destinations.
+- **Verified implementation tasks:** 16 of 34 (Phases 0–2 and P3-01).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P2-05 documentation scope: nine focused tests, repository/workspace typecheck and lint pass; ten metadata snippets render; live home/specimen/admin-login smoke and four EN/AR/viewport computed samples are clean. Accepted runtime/shared/admin source hashes unchanged. P2-04's 32 proof/14 compiled checks/build remain prior evidence, not rerun results. Previews retained, temporary browsers closed, no orders. Native/provider/release gates stay open.
+- **Runtime/testing this checkpoint:** P3-01 isolated production build, typecheck, lint and 18 browser checks passed. Six EN/AR captures and enlarged-text measurements are recorded. Native keyboard/device and release checks remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -21,7 +21,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 0 Baseline/ownership | verified | All five tasks complete for baseline scope; implementation requirements still open | [Exit summary](implementation-evidence/phase-0-summary.md) |
 | 1 Direction proof | verified | Owner A/five/support selections and N03 PDP continuation recorded; not release acceptance | [Contract](prototype-contract.md), [phase evidence](implementation-evidence/phase-1.md) |
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
-| 3 Shell/home | not_started | Phase 2 complete; next P3-01 | — |
+| 3 Shell/home | in_progress | P3-01 verified; next P3-02 | [Mobile shell evidence](implementation-evidence/p3-01-mobile-shell.md) |
 | 4 Catalogue/PDP | not_started | Needs Phase 3 shell/home verification | — |
 | 5 Cart/checkout/customer | not_started | Needs Phase 4 verification | — |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
@@ -47,7 +47,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P2-03 | verified | [Specimen/state coverage and checkout map](implementation-evidence/p2-03-specimen.md), captures/computed parity; source 33f8f65, no public theme switch or order submission |
 | P2-04 | verified | [Refinements and measured contrast/type/shape/icon/motion](implementation-evidence/p2-04-refinement.md), nine captures; starting f83f29f, public/admin/shared consumers retained |
 | P2-05 | verified | [Accepted authority/retirement/bindings report](implementation-evidence/p2-05-authority.md), archive hashes, rendered metadata; starting 078e9c5, documentation only |
-| P3-01 | not_started | — |
+| P3-01 | verified | [Mobile public-route implementation and checks](implementation-evidence/p3-01-mobile-shell.md) |
 | P3-02 | not_started | — |
 | P3-03 | not_started | — |
 | P3-04 | not_started | — |
@@ -291,3 +291,10 @@ When interrupted or handing off, update this file before yielding where possible
 - **Checks:** nine focused tests; repository/workspace typecheck and lint; ten isolated metadata renders, four bilingual/viewport computed samples, clean read-only home/specimen/admin-login/Next smoke. Accepted/runtime/shared/admin/package sources unchanged. P2-04 broader browser/build results are retained, not falsely rerun.
 - **Limits/cleanup:** no UI/CSS/API/commerce/provider/data change, dependency change, orders or deployment. No active project generator binding found; generic skills remain available but cannot overwrite the selected system. Existing previews kept; temporary browsers closed. Device/provider/Arabic/final-release gates and NEW findings remain open.
 - **Next:** P3-01 public mobile shell and search/location/cart/task modes. P3-02 desktop shell, P3-03 home and P3-04 regression/retirement remain staged. Count 15/34.
+
+
+### 2026-11-18 — P3-01 verified
+
+- Migrated the mobile public shell in a worktree on the storefront branch. Search retains its native query and suggestion paths, delivery area persists on the device, and cart/checkout have focused task navigation.
+- Saved bilingual captures and compiled storefront regression evidence. The existing public PDP toolbar remains assigned to P4-03.
+- Continue with P3-02 desktop/tablet shell and footer.
