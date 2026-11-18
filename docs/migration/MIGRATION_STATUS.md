@@ -1,3 +1,7 @@
+## 2026-11-18 — P2-05 authority aligned; Phase 2 complete
+
+Replaced stale storefront DESIGN.md/metadata/brief/directions and project styling instructions with checked projections of the accepted local system. Archived five superseded records and marked reference/review plans as historical proposals; retained all product capabilities, runtime/shared/admin/package sources and production safeguards. [Authority/remaining-consumer map](../../apps/web/docs/design/implementation-evidence/p2-05-authority.md). Nine focused tests, root/workspace typecheck/lint, metadata rendering and read-only local storefront/admin smoke pass. Prior P2-04 browser/build evidence remains distinct from this documentation task. Next P3-01 public mobile shell migration; no orders, production/provider access or deployment.
+
 ## 2026-11-17 — P2-04 accepted-system refinements verified
 
 Measured bilingual contrast, type/reflow, shapes, icons and reduced motion. Fixed scoped default-button geometry and enlarged-text overflow, separated offer/error meaning and consolidated accepted motion ownership. [Evidence and explicit badge/stock/hover decisions](../../apps/web/docs/design/implementation-evidence/p2-04-refinement.md). 32 proof tests, 14 compiled retained regressions, 17 units/type/lint/build and live checks pass. Public/admin/shared themes, domains and providers unchanged; no orders, production access or deployment. Next P2-05 final guide/sidecar/instruction reconciliation.

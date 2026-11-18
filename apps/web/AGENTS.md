@@ -129,34 +129,32 @@ Specify responsive sizing appropriately.
 
 # Styling
 
-The owner rejected the previous storefront candidate and explicitly requested
-complete visual replacement on 15 November 2026. Its guide, generated metadata,
-page composition, fonts and token values are not a baseline for new work.
-Historical material is excluded from current visual guidance. PRODUCT.md owns
-confirmed facts. The owner requested the current DESIGN.md as a forward
-specification and pinned the primary accent to #FF5A5F. Read its confirmed versus
-candidate labels, DESIGN-BRIEF.md, docs/design/screen-directions.md and the decision
-register. Do not extract a replacement guide from rejected runtime styling.
-The owner subsequently authorized implementation. DESIGN.md and the scoped
-metadata record the built local candidate; storefront-tokens.css owns its runtime
-values. Owner visual acceptance and production release are separate. Preserve
-exact primary #FF5A5F and do not restore retired care-colour families.
+Read PRODUCT.md for verified facts, DESIGN-BRIEF.md for scope, DESIGN.md for the
+accepted replacement system and docs/design/screen-directions.md for compositions.
+The decision register records precedence; implementation-progress.md owns status.
+P1 local direction is selected; P2 establishes the system; public migration is
+P3–P5 and legacy retirement P6. Local acceptance is not release approval.
 
-Keep the real logo/brand colour family and the supplied interaction references.
-The new direction must visibly replace header/navigation, first-screen structure,
-category browsing, cards, listing, gallery/purchase hierarchy and footer, together
-with a coherent token, type, spacing, shape, state and motion system. Renaming
-existing tokens or appending override styles does not constitute replacement.
-Retained runtime CSS is temporary implementation, not aesthetic authority.
+The accepted runtime value source is
+`src/components/storefront-system/tokens.module.css`. Its opted-in state/control
+owner is `boundary.module.css`. DESIGN.md and `.impeccable/design.json` are checked
+documentation projections, never inputs for regenerating CSS. Do not create a
+competing palette/token stack or restore rejected values from metadata, references,
+archives, generic skills or old public styling. Preserve exact #FF5A5F and the
+actual logo; only recorded owner revisions change the accepted direction.
 
-Keep customer styling scoped. Trace shared/admin/wholesale consumers before
-removing shared rules, fonts, component APIs or campaign preview dependencies.
-Migrate customer consumers to the replacement system before retiring their old
-bindings. Do not introduce a second active customer palette or styling stack.
-Preserve English/Arabic/RTL, keyboard use, semantics, visible focus, contrast,
-touch targets, reduced motion, loading/empty/error states, routes, query URLs,
-SEO and every server-authoritative commerce/auth/API contract. Local preview
-only; no production data access, commerce changes or deployment.
+Retained `src/app/(storefront)/storefront-tokens.css` and storefront-controls.css
+serve incumbent customer/shared/wholesale/root-404 consumers. They remain legacy
+compatibility implementation, not aesthetic authority. Route CSS owns layout;
+accepted controls use their single boundary owner. Do not add competing colour,
+size or radius utilities to migrated controls. Shared Button APIs/admin themes
+remain independent; native checkout/auth/payment logic stays unchanged.
+
+Trace consumers before removing shared rules, fonts, component APIs or media.
+Preserve EN/AR/RTL, keyboard/focus/semantics, contrast, targets, reduced motion,
+loading/empty/error states, query/legacy URLs, SEO and every server-authoritative
+commerce/auth/API contract. Use actual catalogue/media/content; never infer claims
+or services from screenshots. No production data/provider access or deployment.
 
 ---
 
@@ -251,34 +249,23 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Latest storefront reference precedence
+## Accepted storefront precedence and boundaries
 
-The owner rejected the category-first identity-overhaul candidate on 15 November 2026. Reference `docs/design/storefront/references/02-pharmacy-app.png` now leads home and PDP. Preserve search → photographic ad → circular categories → image-led home rail, and unframed product gallery → buying sequence → compact related rows. Retain exact primary #FF5A5F and persistent mobile buying access. Earlier 03-style categories, dark campaign asides and the rejected guide are not current authority. Read the current DESIGN.md/brief/decision register. Generated generic campaign/category illustrations may not replace factual product imagery or create claims. Owner visual acceptance remains pending; no deployment.
+Owner-selected A/full campaign and five wide-screen home columns supersede the
+split/four-column comparison. Figtree/Alexandria, near-white support and compact
+bordered cards are retained. Latest N03 image-first phone PDP supersedes the
+standalone toolbar. Follow current screen directions, not earlier reference-only
+rail/category geometry or pending-review statements in historical evidence.
 
-## Storefront control ownership
+The gated `/design-proof/components` specimen reuses working components. See
+`docs/design/implementation-evidence/p2-03-specimen.md` for real versus demo states
+and retained checkout consumers; `p2-04-refinement.md` records contrast, typography,
+shape, icon, badge, stock and motion decisions. Preserve default/explicit shape
+APIs, bounded label wrapping and portal theme/direction. Compiled foreground/control
+aliases resolve through scoped `--ui-*` bridges; verify emitted/computed CSS and
+fallbacks using `p2-02-cascade.md` before changing shared aliases.
 
-`src/app/(storefront)/storefront-controls.css` owns customer action/search/cart
-geometry, colour roles and states. Components use semantic variants/classes; do
-not add competing background/radius/size utilities to those controls. Route CSS
-owns layout only. Shared Button variants and admin/wholesale themes remain
-independent. Ghost/link actions must use explicit variants, not inherit the legacy
-native button fill. Keep native checkout quantity, auth, quote and payment logic
-unchanged during visual work. Cart estimates come from server-loaded catalogue
-prices and are never the final checkout quote.
-
-## Staged replacement control boundary
-
-During P2–P5 migration, `storefront-controls.css` owns incumbent `.storefront-shell`
-consumers. Opted-in replacement consumers use
-`src/components/storefront-system/boundary.module.css` for native base treatment,
-shared variants and final states; `tokens.module.css` remains their value source.
-Keep colour ownership for these migrated controls out of route layout modules
-and competing utilities. Option/gallery selection and notice meaning styles now
-share this owner.
-The gated `/design-proof/components` specimen reuses working components; see
-`docs/design/implementation-evidence/p2-03-specimen.md` for actual versus
-demonstration states and retained checkout consumers.
-Compiled foreground/control aliases resolve through scoped `--ui-*` bridges;
-verify the actual scope/fallback rather than assuming a raw custom property wins.
-See `docs/design/implementation-evidence/p2-02-cascade.md` before changing shared
-aliases, state selectors or portal containers. P2-05 owns full guide reconciliation.
+The pre-P2-05 archive and migration/review records are historical evidence only,
+excluded from new visual guidance and regeneration inputs. Do not use a general
+purpose design generator to overwrite the selected world. Admin retains its own
+scoped DESIGN.md/sidecar; no shared dependency removal before consumer migration.

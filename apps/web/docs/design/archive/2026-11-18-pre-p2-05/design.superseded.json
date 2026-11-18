@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-16T13:43:12.574655+00:00",
+  "title": "Design System: Al Mina Customer Storefront",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Brand"
+      },
+      "brand-hover": {
+        "role": "primary",
+        "displayName": "Brand Hover"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted"
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Page"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface"
+      },
+      "subtle": {
+        "role": "neutral",
+        "displayName": "Subtle"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border"
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Accent"
+      },
+      "teal": {
+        "role": "neutral",
+        "displayName": "Teal"
+      },
+      "ocean": {
+        "role": "neutral",
+        "displayName": "Ocean"
+      },
+      "sale": {
+        "role": "neutral",
+        "displayName": "Sale"
+      },
+      "sale-surface": {
+        "role": "neutral",
+        "displayName": "Sale Surface"
+      },
+      "warning": {
+        "role": "neutral",
+        "displayName": "Warning"
+      },
+      "warning-surface": {
+        "role": "neutral",
+        "displayName": "Warning Surface"
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Success"
+      },
+      "success-surface": {
+        "role": "neutral",
+        "displayName": "Success Surface"
+      },
+      "ad-surface": {
+        "role": "neutral",
+        "displayName": "Ad Surface"
+      },
+      "logo-aqua": {
+        "role": "neutral",
+        "displayName": "Logo Aqua"
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Focus"
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "Control Border"
+      },
+      "control-hover": {
+        "role": "neutral",
+        "displayName": "Control Hover"
+      },
+      "control-disabled": {
+        "role": "neutral",
+        "displayName": "Control Disabled"
+      }
+    },
+    "shadows": [
+      {
+        "name": "wishlist",
+        "value": "0 2px 4px rgb(36 39 43 / 6%)",
+        "purpose": "Small wishlist control separation."
+      },
+      {
+        "name": "raised",
+        "value": "0 10px 32px -12px rgb(36 39 43 / 25%)",
+        "purpose": "Temporary overlays."
+      }
+    ],
+    "motion": [
+      {
+        "name": "feedback",
+        "value": "150ms",
+        "purpose": "Existing control color/state feedback."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow-phone-max",
+        "value": "359px"
+      },
+      {
+        "name": "three-column-listing-min",
+        "value": "600px"
+      },
+      {
+        "name": "tablet-min",
+        "value": "768px"
+      },
+      {
+        "name": "desktop-min",
+        "value": "1024px"
+      },
+      {
+        "name": "compact-header-max",
+        "value": "1100px"
+      },
+      {
+        "name": "wide-listing-min",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Quick add",
+      "kind": "button",
+      "refersTo": "quick-add",
+      "description": "Single product add; actual cart count after adding.",
+      "html": "<button class=\"quick-add\" aria-label=\"Add to cart\">+</button>",
+      "css": ".quick-add{width:44px;height:44px;border:0;border-radius:13px;background:#ff5a5f;color:#24272b;font:600 24px sans-serif;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A pharmacy app, ready to shop.",
+    "overview": "Reference 02 composition, reference 05 product-card anatomy, exact owner coral and preserved commerce. Implemented local candidate pending owner visual acceptance.",
+    "keyCharacteristics": [
+      "Search before discovery",
+      "Photographic campaign and circular categories",
+      "Image-led compact cards",
+      "Unframed product gallery",
+      "Bilingual purchase continuity"
+    ],
+    "rules": [
+      {
+        "name": "Control ownership",
+        "body": "Customer control roles, geometry and states are owned by storefront-controls.css. Page CSS supplies layout. Shared/admin variants remain independent.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Preserve factual pack/product identity and server authority."
+    ],
+    "donts": [
+      "Do not invent ratings, discounts, services or delivery promises.",
+      "Do not deploy."
+    ]
+  }
+}

@@ -1,3 +1,5 @@
+> **Historical analysis / proposal record — reconciled 18 November 2026 (P2-05).** Visual proposals, candidate values and pending-decision statements below do not override current [DESIGN.md](../../DESIGN.md), [screen directions](screen-directions.md) or [decisions](decisions.md). Preserve unresolved functional/review requirements via [coverage](implementation-coverage.md) and [progress](implementation-progress.md). This source is evidence, not current token/composition authority or a regeneration input.
+
 # Replacement direction and delivery plan — 17 November 2026
 
 **Status: review proposal, not an approved replacement design system.** No runtime styling, screens, final tokens, PRODUCT.md or DESIGN.md changed in this review. This plan answers the owner's request for a new coherent direction using the newly supplied mobile/desktop references. Confirmed product facts and safety constraints remain authoritative; the incumbent aesthetic is evidence, not a requirement to preserve.

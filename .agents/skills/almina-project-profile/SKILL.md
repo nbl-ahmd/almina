@@ -1,37 +1,44 @@
 ---
 name: almina-project-profile
-description: Preserve Al Mina product, commerce, accessibility and production constraints during storefront work. Reference-led customer storefront redesign.
+description: Preserve Al Mina product, commerce, accessibility and production constraints during storefront work. Accepted reference-led replacement, staged consumer migration.
 ---
 
-Read root AGENTS.md, apps/web/AGENTS.md and apps/web/PRODUCT.md.
-The owner rejected the prior customer design candidate and requested a complete
-new visual identity through Impeccable init/new-work. That candidate's archived
-guide, metadata, tokens and composition have no current visual authority.
-Preserve the real logo colour family, owner reference interaction patterns and
-working coded preview workflow. Establish a replacement direction before UI
-implementation. The owner subsequently requested a forward DESIGN.md and fixed
-primary accent #FF5A5F. Read that guide, DESIGN-BRIEF.md and the decision/screen
-directions under apps/web/docs/design. Preserve their confirmed/candidate status;
-the latest owner request authorizes local implementation. Current DESIGN.md and
-scoped metadata record the built candidate; owner acceptance and release remain
-separate. Runtime tokens live in the customer-scoped storefront-tokens.css.
-General-purpose design skills remain available; do not restore project-specific
-bindings to the rejected theme. No reference screenshot claims are product facts.
+Read root AGENTS.md, apps/web/AGENTS.md and apps/web/PRODUCT.md. The owner rejected
+previous storefront candidates; archived guides, metadata and old runtime styles
+have no current visual authority. Preserve the real Al Mina identity and exact
+primary #FF5A5F. Read current DESIGN.md, DESIGN-BRIEF.md, screen directions,
+decision register and progress under apps/web/docs/design.
 
-Preserve real catalogue content, contacts, identifiers, URLs, metadata,
-structured data and indexing policy. Keep English/Arabic and RTL, keyboard
-operation, semantics, labels, visible focus, touch targets, contrast, responsive
-states and reduced motion. Never invent reviews, discounts or services.
+The selected local direction is A/full-width campaign, five wide-screen home
+columns, Figtree/Alexandria, near-white support, dark-on-coral actions and compact
+bordered cards. Latest N03 image-first phone PDP replaces the declined standalone
+toolbar, preserving overlay Back/Save/Cart and sticky buying. Local direction
+acceptance is not production release approval. P3–P5 migrate public consumers;
+P6 retires legacy only after verification.
 
-Keep current build tooling and shared component APIs working. Shared legacy
-styles remain implementation compatibility until their consumers migrate;
-never delete shared/admin dependencies because they look storefront-specific.
-Admin retains its own scoped specification. Keep Server Components by default,
-small client boundaries, optimized fonts/media and version-matched Next docs.
-Server pricing, stock, auth, permissions, order and provider contracts remain
-authoritative. Do not access production data, change commerce behavior or deploy
-as part of this redesign. Verify affected storefront and admin runtime paths.
+One accepted value source lives at
+apps/web/src/components/storefront-system/tokens.module.css; boundary.module.css
+owns opted-in controls/variants/states. DESIGN.md and its scoped sidecar document
+that runtime and are not token-generation inputs. Retained storefront-tokens.css,
+controls and checkout CSS are compatibility implementation for unmigrated/shared
+consumers. Never extract a replacement from their discarded look or restore it
+from historical metadata. Do not activate a competing visual generator or rerun
+palette/font selection. General-purpose skills remain available within this scope.
 
-## Latest storefront reference precedence
+Preserve real catalogue/media/content, contacts, identifiers, URLs, query/return
+behavior, metadata, structured data and indexing policy. Keep EN/AR/RTL, native
+semantics, keyboard labels/focus, usable targets, contrast, responsive behavior,
+reduced motion and honest loading/empty/error/status states. Never invent reviews,
+discounts, delivery promises, medical claims, availability, payment methods or
+services from reference images. Generic campaign/category art cannot represent
+saleable packs, actual staff or verified operational claims.
 
-The owner rejected the category-first identity-overhaul candidate on 15 November 2026. Reference `docs/design/storefront/references/02-pharmacy-app.png` now leads home and PDP. Preserve search → photographic ad → circular categories → image-led home rail, and unframed product gallery → buying sequence → compact related rows. Retain exact primary #FF5A5F and persistent mobile buying access. Earlier 03-style categories, dark campaign asides and the rejected guide are not current authority. Read the current DESIGN.md/brief/decision register. Generated generic campaign/category illustrations may not replace factual product imagery or create claims. Owner visual acceptance remains pending; no deployment.
+Keep tooling/shared component APIs working. Trace and migrate shared/admin/
+wholesale/root consumers before deleting rules, fonts, components or media.
+Admin retains its own scoped design authority. Preserve Server Components and
+small client boundaries, optimized media/fonts and version-matched Next guidance.
+Server pricing/tax/fees/stock/auth/RBAC/idempotent order/provider contracts remain
+authoritative. Do not access production data/providers, change commerce behavior
+or deploy in this redesign. Verify affected customer/admin runtime paths; source
+presence is not live provider enablement. Record evidence and next task in the
+progress ledger so staged work does not lose context.

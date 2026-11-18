@@ -1,21 +1,31 @@
-# Current screen directions — reference 02
+# Accepted storefront screen directions
 
-Updated 15 November 2026. This replaces the rejected category-first/packshot-campaign directions. Owner visual acceptance remains pending.
+Updated 18 November 2026, P2-05. These compositions describe the selected working system, not the old public implementation. [DESIGN.md](../../DESIGN.md) owns visual roles; [PRODUCT.md](../../PRODUCT.md) owns facts. P3–P5 perform public migration. See [decisions](decisions.md) and [progress](implementation-progress.md).
 
 ## Home
 
-Compact search, delivery-area context and cart → generated courier ad with live HTML copy/CTA → circular category photos and labels → image-led product rail. Mobile keeps 156–220px cards with continuation; tablet uses 240px cards. Desktop pairs the campaign with a circular category directory above four product columns, so real products appear earlier. Header/search and listing grids must adapt continuously while resizing, not only on initial navigation. Keep actual managed campaign slides and useful catalogue links. Coral #FF5A5F is fixed; do not restore the old care-colour theme or dark campaign aside.
+Use prominent search, delivery context and cart, then a full-width campaign, category discovery and compact product comparison. The owner selected A/full campaign and five wide-screen home columns. Near-white surfaces, contained photographs and compact buying controls remain. The current phone proof has two product columns; category links can overflow locally. Do not reinstate the earlier incumbent horizontal home rail or split campaign/category directory as the default composition. Four-column/split query flags in the proof remain comparisons, not current authority.
+
+The actual local campaign uses existing generic courier artwork, localized HTML copy and a real catalogue link. During migration, preserve managed banners/content and sparse-data behavior; no empty marketing panels or invented deals/ETAs. Existing reference composition is not a claim about delivery speed.
 
 ## Listing and search
 
-Retain real query URLs, count/filter/sort, suggestions and recovery paths. Use the same image-first white cards, factual stock/price and coral quick add. Mobile listing keeps comparison columns; the horizontal rail is a home treatment. Do not add reference ratings or unsupported badges.
+Preserve real query/count/filter/sort/pagination and suggestion fallback, with native disclosure/sheets and selected-state semantics. Use the shared compact card anatomy; two-column phone comparison and responsive intermediate/wide layouts retain their own constraints. Five home columns is not a blanket listing rule. Keep exact identity/pack/stock/current price, honest unknowns, real variant navigation and server-checked purchasing. No copied ratings or unsupported badges.
 
 ## Product detail
 
-Mobile: back/search/save/cart toolbar → unframed product gallery → exact name/brand/category → factual price → actual family options and stock → persistent quantity/purchase dock. Desktop: global search shell; gallery beside identity and buying controls. Compact similar-product rows follow, then secondary delivery/SKU, actual description/specifications and review states. No fake pack dropdown or image carousel indicators for a single image.
+Latest N03 `docs/design/storefront/references/2026-11-17/03-green-pharmacy-screens.jpg` supersedes the standalone phone toolbar. Phone: full-width gallery at top, overlay Back/Save/Cart, compact identity/price/stock/options, verified facts/description before useful alternatives and persistent quantity/purchase access. One real photo has no fake carousel dots. Sticky buying replaces global bottom navigation and measures clearance so final content remains reachable.
 
-## Shared behavior
+Desktop retains the global search/location/cart shell and gallery beside buying context. Real thumbnail/pack links select actual records and preserve price/stock relationships. Return to results preserves existing query/scroll/focus behavior. Keep actual descriptions/specifications/reviews/policies and honest missing states; reference screenshots do not fill catalogue gaps.
 
-English and Arabic/RTL have equivalent tasks. Preserve loading/empty/error/pending/unavailable states, keyboard behavior, focus, contrast, touch targets and safe areas. Test 360/390px, tablet and 1440px, plus intermediate navigation widths. Preview fixtures are visibly sample stock/prices, not production facts. No deployment.
+## Shell, cart, checkout and customer states
 
-Sources: ../../../../docs/design/storefront/references/02-pharmacy-app.png, PRODUCT.md, DESIGN-BRIEF.md, DESIGN.md and decisions.md. Screenshots are evidence of composition only; screenshot text/icons never create Al Mina capabilities.
+Search has browsing/focused/task contexts. Location and menu interactions retain native labels/focus, optional user-triggered GPS/manual fallback and Arabic direction. Cart and checkout have one dominant continuation within their task mode. Browser cart data and server-loaded estimates remain distinct from final server quotes. Preserve auth, conditional payment availability, failed/pending/unavailable states and existing account features.
+
+The real retained checkout surface is mapped in [P2-03](implementation-evidence/p2-03-specimen.md); its public migration belongs to P5. Its current legacy blue/status geometry is not a replacement-system guide. Keep behavior unchanged while moving consumers, and verify admin/wholesale boundaries before deleting shared styling.
+
+## Responsive, RTL and content guardrails
+
+Test the same loaded page through phone/tablet/desktop boundaries, short landscape, enlarged text and task-mode changes. Keep local overflow inside intentional rails and leave the page free of horizontal overflow. Verify focus/keyboard, state feedback, scroll return, safe areas and last content above actual fixed docks. Filled dirham and product/logo images are not mirrored. Product identities remain factual mixed-script text; Arabic native review remains open.
+
+No watermarks, device frames, competitor claims, fake features, generated packs, fabricated ratings or marketing promises. Reference assets/annotations remain inputs, never product facts. [P2-04](implementation-evidence/p2-04-refinement.md) records current contrast, shape, icon, badge, stock and reduced-motion decisions. Native/provider/release verification remains separate from local direction acceptance. No deployment.

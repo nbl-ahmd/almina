@@ -1,181 +1,322 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-16T13:43:12.574655+00:00",
-  "title": "Design System: Al Mina Customer Storefront",
+  "generatedAt": "2026-11-18T05:43:26.385633+00:00",
+  "title": "Design System: Al Mina accepted replacement storefront",
   "extensions": {
     "colorMeta": {
-      "brand": {
+      "action": {
         "role": "primary",
-        "displayName": "Brand"
+        "displayName": "Action"
       },
-      "brand-hover": {
+      "action-hover": {
         "role": "primary",
-        "displayName": "Brand Hover"
+        "displayName": "Action hover"
       },
-      "ink": {
+      "text": {
         "role": "neutral",
-        "displayName": "Ink"
+        "displayName": "Text"
       },
-      "muted": {
+      "text-muted": {
         "role": "neutral",
-        "displayName": "Muted"
+        "displayName": "Text muted"
       },
-      "page": {
+      "canvas": {
         "role": "neutral",
-        "displayName": "Page"
+        "displayName": "Canvas"
       },
       "surface": {
         "role": "neutral",
         "displayName": "Surface"
       },
-      "subtle": {
+      "input": {
         "role": "neutral",
-        "displayName": "Subtle"
+        "displayName": "Input"
       },
       "border": {
         "role": "neutral",
         "displayName": "Border"
       },
-      "accent": {
+      "control-border": {
         "role": "neutral",
-        "displayName": "Accent"
+        "displayName": "Control border"
       },
-      "teal": {
+      "secondary": {
         "role": "neutral",
-        "displayName": "Teal"
+        "displayName": "Secondary"
       },
-      "ocean": {
+      "hover": {
         "role": "neutral",
-        "displayName": "Ocean"
+        "displayName": "Hover"
       },
-      "sale": {
+      "campaign": {
         "role": "neutral",
-        "displayName": "Sale"
+        "displayName": "Campaign"
       },
-      "sale-surface": {
+      "selected": {
         "role": "neutral",
-        "displayName": "Sale Surface"
+        "displayName": "Selected"
       },
-      "warning": {
+      "positive": {
         "role": "neutral",
-        "displayName": "Warning"
+        "displayName": "Positive"
       },
-      "warning-surface": {
+      "positive-surface": {
         "role": "neutral",
-        "displayName": "Warning Surface"
+        "displayName": "Positive surface"
       },
-      "success": {
+      "unavailable": {
         "role": "neutral",
-        "displayName": "Success"
+        "displayName": "Unavailable"
       },
-      "success-surface": {
+      "unavailable-surface": {
         "role": "neutral",
-        "displayName": "Success Surface"
+        "displayName": "Unavailable surface"
       },
-      "ad-surface": {
+      "saved": {
         "role": "neutral",
-        "displayName": "Ad Surface"
+        "displayName": "Saved"
       },
-      "logo-aqua": {
+      "saved-surface": {
         "role": "neutral",
-        "displayName": "Logo Aqua"
+        "displayName": "Saved surface"
+      },
+      "error": {
+        "role": "neutral",
+        "displayName": "Error"
+      },
+      "disabled-text": {
+        "role": "neutral",
+        "displayName": "Disabled text"
+      },
+      "disabled-surface": {
+        "role": "neutral",
+        "displayName": "Disabled surface"
       },
       "focus": {
         "role": "neutral",
         "displayName": "Focus"
       },
-      "control-border": {
+      "offer-text": {
         "role": "neutral",
-        "displayName": "Control Border"
+        "displayName": "Offer text"
       },
-      "control-hover": {
+      "offer-surface": {
         "role": "neutral",
-        "displayName": "Control Hover"
+        "displayName": "Offer surface"
       },
-      "control-disabled": {
+      "notice": {
         "role": "neutral",
-        "displayName": "Control Disabled"
+        "displayName": "Notice"
+      },
+      "selection": {
+        "role": "neutral",
+        "displayName": "Selection"
+      },
+      "active-navigation": {
+        "role": "neutral",
+        "displayName": "Active navigation"
+      }
+    },
+    "typographyMeta": {
+      "campaign": {
+        "displayName": "Campaign",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "product-title": {
+        "displayName": "Product title",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "body-arabic": {
+        "displayName": "Body arabic",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "card-name": {
+        "displayName": "Card name",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "card-price": {
+        "displayName": "Card price",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "supporting": {
+        "displayName": "Supporting",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "stock": {
+        "displayName": "Stock",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
+      },
+      "count": {
+        "displayName": "Count",
+        "purpose": "Observed accepted storefront role; responsive/context notes are in DESIGN.md."
       }
     },
     "shadows": [
       {
-        "name": "wishlist",
-        "value": "0 2px 4px rgb(36 39 43 / 6%)",
-        "purpose": "Small wishlist control separation."
-      },
-      {
-        "name": "raised",
-        "value": "0 10px 32px -12px rgb(36 39 43 / 25%)",
-        "purpose": "Temporary overlays."
+        "name": "overlay",
+        "value": "0 8px 24px #202a301c",
+        "purpose": "Suggestions/dialog context; cards stay flat."
       }
     ],
     "motion": [
       {
-        "name": "feedback",
-        "value": "150ms",
-        "purpose": "Existing control color/state feedback."
+        "name": "feedback-duration",
+        "value": "120ms",
+        "purpose": "Background, border and text feedback."
+      },
+      {
+        "name": "feedback-easing",
+        "value": "cubic-bezier(0.2, 0.7, 0.2, 1)",
+        "purpose": "Existing scoped ease-out feedback; reduced motion uses immediate states."
       }
     ],
     "breakpoints": [
       {
-        "name": "narrow-phone-max",
-        "value": "359px"
-      },
-      {
-        "name": "three-column-listing-min",
+        "name": "narrow-order",
         "value": "600px"
       },
       {
-        "name": "tablet-min",
+        "name": "shared-menu",
         "value": "768px"
       },
       {
-        "name": "desktop-min",
-        "value": "1024px"
+        "name": "shell-task-mode",
+        "value": "900px"
       },
       {
-        "name": "compact-header-max",
-        "value": "1100px"
-      },
-      {
-        "name": "wide-listing-min",
-        "value": "1280px"
+        "name": "intermediate-grid",
+        "value": "1200px"
       }
     ]
   },
   "components": [
     {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "html": "<button type=\"button\" class=\"ds-button\">Primary action</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ff5a5f;color:#202a30;border-color:#ff5a5f;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled),.ds-button:active:not(:disabled){background:#fb565c;border-color:#fb565c;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button[aria-busy=true]{background:#ff5a5f;border-color:#ff5a5f;color:#202a30;cursor:progress;}"
+    },
+    {
+      "name": "Outline action",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "html": "<button type=\"button\" class=\"ds-button\">Outline action</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ffffff;color:#202a30;border-color:#7c898f;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#f0f3f4;color:#202a30;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){border-color:#125d87;}"
+    },
+    {
+      "name": "Ghost action",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "html": "<button type=\"button\" class=\"ds-button\">Ghost action</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#58636b;border-color:transparent;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#f0f3f4;color:#202a30;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+    },
+    {
+      "name": "Destructive action",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "html": "<button type=\"button\" class=\"ds-button\">Destructive action</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#a11d31;color:#ffffff;border-color:#a11d31;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){filter:brightness(.95);}"
+    },
+    {
+      "name": "Field in labelled specimen",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Observed label-hosted compact field; customer-form native text behavior is verified during migration.",
+      "html": "<label class=\"ds-label\">Field sample<input class=\"ds-field\" value=\"Synthetic value\" /></label>",
+      "css": ".ds-label{display:grid;gap:6px;font:700 14px/1.5 storefrontLatin,Figtree,sans-serif;color:#202a30;}.ds-field{box-sizing:border-box;min-height:48px;width:100%;min-width:0;padding:12px 16px;border:1px solid #7c898f;border-radius:12px;background:#f0f3f3;color:#202a30;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:3px solid #125d87;outline-offset:3px;background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
+    },
+    {
+      "name": "Compact navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Visual-only current-page treatment; links are local fragment examples.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Navigation sample\"><a href=\"#home\" aria-current=\"page\">Home</a><a href=\"#shop\">Shop</a><a href=\"#cart\">Cart</a></nav>",
+      "css": ".ds-nav{display:flex;justify-content:space-around;background:#ffffff;border-top:1px solid #dce1e3;font:400 10px/1.5 storefrontLatin,Figtree,sans-serif;}.ds-nav a{display:flex;align-items:center;justify-content:center;min-width:64px;min-height:48px;color:#202a30;text-decoration:none;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-nav a[aria-current]{color:#a52b38;font-weight:700;}.ds-nav a:focus-visible{outline:3px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+    },
+    {
+      "name": "Stock label",
+      "kind": "chip",
+      "refersTo": "stock",
+      "description": "Informational style sample, not a claim about an item.",
+      "html": "<span class=\"ds-stock\">In stock \u2014 style sample</span>",
+      "css": ".ds-stock{display:inline-flex;max-width:100%;padding:3px 8px;border-radius:4px;background:#eaf3ef;color:#26604d;font:600 11px/1.5 storefrontLatin,Figtree,sans-serif;overflow-wrap:anywhere;}"
+    },
+    {
+      "name": "Card frame \u2014 missing data",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Actual supported unknown-price/missing-photo anatomy, labelled noncommercial.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-photo\">Photo unavailable</div><div class=\"ds-card-body\"><h3>Layout sample \u2014 not for sale</h3><p>Price unavailable</p><button type=\"button\" disabled>Unavailable sample</button></div></article>",
+      "css": ".ds-card{max-width:240px;min-width:0;border:1px solid #dce1e3;border-radius:14px;background:#ffffff;color:#202a30;overflow:hidden;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;}.ds-photo{display:grid;place-items:center;min-height:128px;padding:8px;}.ds-card-body{padding:6px 10px 10px;}.ds-card h3{margin:4px 0 8px;font-size:15px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}.ds-card p{font-size:13px;}.ds-card button{min-height:44px;max-width:100%;border:1px solid #dce1e3;border-radius:10px;padding:8px 12px;white-space:normal;color:#6c757a;background:#e7ebed;font:inherit;}"
+    },
+    {
+      "name": "Family option",
+      "kind": "chip",
+      "refersTo": "option",
+      "description": "Native current-option link; labels are noncommercial samples, not fabricated pack availability.",
+      "html": "<a class=\"ds-option\" href=\"#pack\" aria-current=\"page\">Current pack sample</a>",
+      "css": ".ds-option{display:inline-flex;align-items:center;min-height:44px;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #202a30;border-radius:8px;background:#e6edef;color:#202a30;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;text-decoration:none;overflow-wrap:anywhere;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-option:focus-visible{outline:3px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+    },
+    {
       "name": "Quick add",
       "kind": "button",
       "refersTo": "quick-add",
-      "description": "Single product add; actual cart count after adding.",
-      "html": "<button class=\"quick-add\" aria-label=\"Add to cart\">+</button>",
-      "css": ".quick-add{width:44px;height:44px;border:0;border-radius:13px;background:#ff5a5f;color:#24272b;font:600 24px sans-serif;}"
+      "description": "Visual-only geometry of the real server-checked purchase control; no cart handler attached.",
+      "html": "<button class=\"ds-quick\" type=\"button\" aria-label=\"Add to cart sample\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"/></svg></button>",
+      "css": ".ds-quick{display:inline-flex;align-items:center;justify-content:center;width:44px;min-height:44px;padding:10px;border:0;border-radius:10px;background:#ff5a5f;color:#202a30;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick svg{width:22px;height:22px;}.ds-quick:hover,.ds-quick:active{background:#fb565c;}.ds-quick:focus-visible{outline:3px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-quick{transition:none}} .ds-quick:disabled{background:#e7ebed;color:#6c757a;cursor:not-allowed;}.ds-quick[aria-busy=true]{background:#ff5a5f;color:#202a30;cursor:progress;}"
     }
   ],
   "narrative": {
-    "northStar": "A pharmacy app, ready to shop.",
-    "overview": "Reference 02 composition, reference 05 product-card anatomy, exact owner coral and preserved commerce. Implemented local candidate pending owner visual acceptance.",
+    "northStar": "App-like on mobile, complete on desktop.",
+    "overview": "Status: accepted local direction, documented 18 November 2026 from the P1 screen decisions and P2-01\u2013P2-04 implementation. The owner selected the full campaign desktop lead and five wide-screen home columns, retained the shown near-white/Figtree/Alexandria system, then continued after the revised image-first N03 phone PDP. This closes the local direction gate; it does not establish production readiness or deployment approval.\n\nShopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.",
     "keyCharacteristics": [
-      "Search before discovery",
-      "Photographic campaign and circular categories",
-      "Image-led compact cards",
-      "Unframed product gallery",
-      "Bilingual purchase continuity"
+      "Search-led navigation with delivery context and useful discovery.",
+      "Quiet near-white ground, dark type and dark labels on coral.",
+      "Compact bordered cards and contained factual product photography.",
+      "Image-first phone PDP with contextual overlay controls and persistent buying.",
+      "Equivalent English/Arabic tasks and desktop/mobile continuity."
     ],
     "rules": [
       {
-        "name": "Control ownership",
-        "body": "Customer control roles, geometry and states are owned by storefront-controls.css. Page CSS supplies layout. Shared/admin variants remain independent.",
+        "name": "The action-foreground rule.",
+        "body": "Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.79:1 at rest and 4.59:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.",
+        "section": "colors"
+      },
+      {
+        "name": "The state-meaning rule.",
+        "body": "Selected options use their quiet neutral surface plus current/pressed semantics. Bottom navigation retains its observed active-navigation text with aria-current; it does not use the option surface. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 3.92:1 text pairing is an inactive-control exemption, not a normal-text pass.",
+        "section": "colors"
+      },
+      {
+        "name": "The feedback-motion rule.",
+        "body": "Background/border/text changes use the existing 120ms role and `cubic-bezier(0.2,0.7,0.2,1)`. Reduced motion removes scoped transitions/animations and preserves immediate final states, including portal links. Do not animate pack comparisons, add shopping delays or reset transforms needed for disclosure direction/portal placement. Stroked UI icons use the existing Heroicons family at 22px/1.5; filled dirham artwork is excluded.",
         "section": "components"
       }
     ],
     "dos": [
-      "Preserve factual pack/product identity and server authority."
+      "Do preserve the accepted direction, actual business content, English/Arabic tasks and server authority.",
+      "Do use the single scoped runtime token/state owners and verify emitted/computed CSS, portal ancestry and live resizing.",
+      "Do test names, missing content, unavailable/pending/failed states, focus, enlarged text and purchase clearance.",
+      "Do preserve shared/admin consumers until replacement is verified and distinguish local direction acceptance from release acceptance."
     ],
     "donts": [
-      "Do not invent ratings, discounts, services or delivery promises.",
-      "Do not deploy."
+      "Don't restore retired lavender/teal candidate values, split desktop lead or standalone phone PDP toolbar as default guidance.",
+      "Don't generate a competing palette/font/token system from skills, metadata snippets, references or the archive.",
+      "Don't copy unsupported ratings, delivery promises, medical claims, prices, discounts, services or payment availability.",
+      "Don't deploy, access production data or change commerce behavior as part of this design phase."
     ]
   }
 }

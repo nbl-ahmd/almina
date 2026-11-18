@@ -1,3 +1,5 @@
+> **Historical analysis / proposal record — reconciled 18 November 2026 (P2-05).** Visual proposals, candidate values and pending-decision statements below do not override current [DESIGN.md](../../DESIGN.md), [screen directions](screen-directions.md) or [decisions](decisions.md). Preserve unresolved functional/review requirements via [coverage](implementation-coverage.md) and [progress](implementation-progress.md). This source is evidence, not current token/composition authority or a regeneration input.
+
 # New review inputs — 17 November 2026
 
 The owner supplied seven additional mobile/desktop references and requested a full system review and plan. See the [per-image analysis](reference-review-2026-11-17.md), [system review](system-review-2026-11-17.md) and [proposed delivery plan](storefront-direction-plan-2026-11-17.md). Assets/provenance are in repository-root `docs/design/storefront/references/2026-11-17/`. This is a planning supplement: no replacement palette, fonts, tokens or screens have been approved or implemented through this review. Earlier implementation notes below describe the incumbent candidate, not an obligation to inherit its appearance.

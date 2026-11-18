@@ -1,3 +1,5 @@
+> **Historical analysis / proposal record — reconciled 18 November 2026 (P2-05).** Visual proposals, candidate values and pending-decision statements below do not override current [DESIGN.md](../../DESIGN.md), [screen directions](screen-directions.md) or [decisions](decisions.md). Preserve unresolved functional/review requirements via [coverage](implementation-coverage.md) and [progress](implementation-progress.md). This source is evidence, not current token/composition authority or a regeneration input.
+
 # Storefront system review — 17 November 2026
 
 Method: dual-agent (A: `/root/system_direction_review_a` · B: `/root/system_direction_review_b`). Independent assessments, then synthesis. Target: `src/app/(storefront)/storefront-tokens.css` and its customer consumers at commit 324a2ed. New supplied references are analysed in [reference review](reference-review-2026-11-17.md); implementation recommendations are in the [detailed direction plan](storefront-direction-plan-2026-11-17.md).

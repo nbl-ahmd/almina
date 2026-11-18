@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Status: product context for the local reference-02 rebuild, 15 November 2026. Confirmed owner requirements and
+Status: verified product context retained for the accepted staged replacement, 18 November 2026 (P2-05). Confirmed owner requirements and
 repository-verified capabilities are distinguished below. Source presence does
 not establish production enablement, live data quality or provider readiness.
 See [decisions and evidence](docs/design/decisions.md) for traceable sources.
@@ -93,7 +93,7 @@ optional visual polish.
 Keep the actual Al Mina name, logo, contact facts and logo colour family. The
 owner explicitly pinned the primary accent to `#FF5A5F` on 15 November 2026. The
 owner wants an app-like mobile experience and a deliberate desktop experience.
-The latest owner correction pins `02-pharmacy-app.png` as the principal composition reference for home and product detail. This supersedes the previous category-first composition and reference-03 category geometry. Search → photographic ad → circular category links → image-led product rail is the implemented home sequence. Product detail leads with an unframed gallery, identity, price, options/quantity and purchase. The fixed coral remains required. Supporting choices remain subject to owner screen review: [reference analysis](docs/design/references.md).
+Visual composition and implementation status belong in [DESIGN-BRIEF.md](DESIGN-BRIEF.md), [DESIGN.md](DESIGN.md) and [the decision register](docs/design/decisions.md). The latest local direction is selected and documented; P3–P5 still migrate public consumers. This product record does not turn a reference layout into a product capability.
 
 Use real catalogue/media/content for saleable products. Generic generated courier and category illustrations may support the interface; they must never be associated with a product ID, impersonate actual staff or establish availability. Keep their provenance under `docs/design/storefront/campaigns/`. Do not invent reviews, sales popularity,
 certifications, discounts, delivery promises, medical claims, payment methods
@@ -116,9 +116,4 @@ promotion cadence, audience segments, delivery coverage/fees/hours, live payment
 enablement, catalogue completeness and Arabic approval ownership remain unverified
 or undecided. Do not turn these unknowns into marketing promises.
 
-The primary accent is confirmed; the new palette, Figtree/Alexandria fonts and
-measurements are implemented as a local candidate, recorded in [DESIGN.md](DESIGN.md).
-Owner visual acceptance is still pending; implementation is not production approval. Required coverage
-belongs in [DESIGN-BRIEF.md](DESIGN-BRIEF.md). This product record does not define
-a token system or final layout. The rejected candidate's look and archived guides
-carry no active authority.
+The primary accent and local screen direction are confirmed within their recorded scope. [DESIGN.md](DESIGN.md) documents the accepted runtime system; release acceptance and production readiness remain separate. Required scope belongs in [DESIGN-BRIEF.md](DESIGN-BRIEF.md), and [progress](docs/design/implementation-progress.md) records implementation stages. This product record does not define tokens or layout. Rejected candidates and archived guides carry no active authority.

@@ -26,4 +26,13 @@ Starting 33f8f65. [Full component/state specimen and retained checkout map](p2-0
 
 Starting f83f29f. [Measured refinements](p2-04-refinement.md) preserve accepted identity/composition while resolving default-shape drift, enlarged-text button overflow, offer/error alias coupling and scoped feedback/reduced-motion ownership. Compact badge, stock inset, icon stroke and static-image decisions explicit. Actual EN/AR state contrast and before/after 16-case text sweeps retained. Nine captures, 32 proof tests, 14 compiled retained regressions, 17 units, type/lint/build and live Next/browser checks pass. No production switch, orders or deployment.
 
-**Next P2-05:** rewrite/align final DESIGN.md, sidecar, brief/screen directions/product context and styling authority. Phase 2 is still in progress; shared/legacy runtime retirement waits for consumer migration.
+**Historical next at P2-04:** rewrite/align final DESIGN.md, sidecar, brief/screen directions/product context and styling authority. Phase 2 is still in progress; shared/legacy runtime retirement waits for consumer migration.
+
+
+## P2-05 verified — 18 November 2026
+
+Starting 078e9c5. [Authority reconciliation](p2-05-authority.md) replaces stale guide/metadata/brief/directions/instruction bindings with the accepted scoped system and preserves superseded records with hashes/exclusion notices. Product fact table and all runtime/shared/admin code remain unchanged. Nine focused tests, root/workspace typecheck/lint, ten metadata renders, four computed contexts and clean home/specimen/admin/Next smoke pass. P2-04 browser/build evidence is retained, not rerun. No orders/deployment.
+
+## Phase 2 exit
+
+P2-01–P2-05 are verified for their bounded acceptance scopes. One accepted runtime value/state source and truthful checked guide/sidecar now support migration. Actual components/states, shared/portal/cascade consumers, contrast/type/shape/icon/motion and legacy checkout ownership have evidence. Accepted local direction is not release readiness. Existing public themes and shared/admin boundaries are preserved; public migration starts **P3-01**, with final retirement/release checks still later. Native/provider/Arabic/independent final review remains open. No deployment.

@@ -1,3 +1,5 @@
+> **Historical analysis / proposal record — reconciled 18 November 2026 (P2-05).** Visual proposals, candidate values and pending-decision statements below do not override current [DESIGN.md](../../DESIGN.md), [screen directions](screen-directions.md) or [decisions](decisions.md). Preserve unresolved functional/review requirements via [coverage](implementation-coverage.md) and [progress](implementation-progress.md). This source is evidence, not current token/composition authority or a regeneration input.
+
 # New reference review — 17 November 2026
 
 Planning evidence only. These images expand the reference set; they do not approve a new palette, font, token system, service or screen. The current runtime and DESIGN.md remain unchanged by this review. New proposals belong in the accompanying [direction plan](storefront-direction-plan-2026-11-17.md) until reviewed on screens.

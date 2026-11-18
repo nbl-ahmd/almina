@@ -1,0 +1,45 @@
+{
+  "startingCommit": "078e9c5",
+  "scope": "P2-05 documentation and authority only",
+  "acceptedValueSource": "apps/web/src/components/storefront-system/tokens.module.css",
+  "acceptedStateOwner": "apps/web/src/components/storefront-system/boundary.module.css",
+  "activeGuidance": [
+    "apps/web/DESIGN.md",
+    "apps/web/DESIGN-BRIEF.md",
+    "apps/web/docs/design/screen-directions.md",
+    "apps/web/docs/design/decisions.md"
+  ],
+  "factAuthority": "apps/web/PRODUCT.md",
+  "instructionAuthority": [
+    "AGENTS.md",
+    "apps/web/AGENTS.md",
+    ".agents/skills/almina-project-profile/SKILL.md"
+  ],
+  "documentationOnly": [
+    "apps/web/.impeccable/design.json",
+    "apps/web/docs/design/system-bindings.json"
+  ],
+  "excludedHistory": "apps/web/docs/design/archive/2026-11-18-pre-p2-05",
+  "analysisOnly": [
+    "references.md",
+    "reference-review-2026-11-17.md",
+    "system-review-2026-11-17.md",
+    "storefront-direction-plan-2026-11-17.md"
+  ],
+  "retainedCompatibility": [
+    "apps/web/src/app/(storefront)/storefront-tokens.css",
+    "apps/web/src/app/(storefront)/storefront-controls.css",
+    "apps/web/src/app/(storefront)/storefront-checkout.css",
+    "apps/web/src/app/globals.css"
+  ],
+  "independentAdmin": [
+    "apps/web/src/app/(admin)/admin/DESIGN.md",
+    "apps/web/src/app/(admin)/admin/.impeccable/design.json"
+  ],
+  "genericGeneratorsRetainedUnbound": [
+    ".agents/skills/design-system/scripts/generate-tokens.cjs",
+    ".agents/skills/brand/scripts/sync-brand-to-tokens.cjs",
+    ".agents/skills/ui-ux-pro-max/scripts/search.py"
+  ],
+  "automationAudit": "No project npm/CI/tooling/profile binding found invoking token generators to restore the old candidate. General skills remain available; active instructions exclude competing generation. Local ignored extraction scripts are not checked-in automation or runtime inputs."
+}

@@ -1,46 +1,61 @@
-# Al Mina — Pharmacy-app storefront brief
+# Al Mina — accepted storefront replacement brief
 
-Updated 15 November 2026. The owner rejected the previous two local compositions and explicitly requested a rebuild from **02-pharmacy-app.png**, including a new ad banner. This is the current implementation brief. No deployment is authorized.
+Updated 18 November 2026, P2-05. This is the implementation brief for the accepted local direction. The owner authorised staged implementation; no deployment is authorised. Current decisions supersede the earlier candidate in the [excluded historical archive](docs/design/archive/2026-11-18-pre-p2-05/README.md).
 
 ## Confirmed requirements
 
-- Primary accent is exactly **#FF5A5F**. Keep the real logo, business facts and production safeguards in PRODUCT.md and AGENTS.md.
-- Search is the primary shopping entry, with delivery-area selection and cart discoverable.
-- Use reference 02 as the principal home and product-detail composition. Home: compact search, photographic ad, circular image categories, horizontal image-led product cards. PDP: large unframed image, name/brand, price, real options, quantity and clear purchase action, then compact related products.
-- Keep persistent mobile purchase access from the earlier owner requirement. Use working coded mobile/desktop previews, including Arabic RTL.
-- Preserve routes, query URLs, SEO, product identifiers, catalogue APIs, auth, saved items, cart, conditional checkout/payment presentation and server-authoritative commercial facts.
-- Keep admin and wholesale independent. Shared styling remains until all consumers migrate.
+Search leads known-item shopping, with category/product discovery available without displacing it. Keep the real Al Mina identity and exact primary accent #FF5A5F. Mobile should feel like an app; desktop should provide a complete shopping surface with compact, readable density. Preserve product facts, all existing capabilities and safeguards in [PRODUCT.md](PRODUCT.md) and AGENTS.md.
 
-## Latest confirmed card request
+The owner selected **A/full-width campaign, five wide-screen home columns** and retained the shown Figtree/Alexandria, near-white ground, dark-on-coral actions and compact bordered cards. After requesting changes to the standalone phone PDP toolbar, the owner specified N03 `03-green-pharmacy-screens.jpg`, with the image filling the top. P1-05 closed when implementation continued after that revised preview; this is a local direction gate, not production/release approval.
 
-Reference 05 supersedes earlier card geometry: stock badge and wishlist around contained photography; brand/pack chips; clear product name; stronger dirham-symbol price and rounded-square quick add. Owner requested information density and purchase efficiency. Preserve exact coral. Do not copy the pictured rating without real aggregate data. Actual cart count appears after adding and restores on reload; all additions retain server validation. The full name remains accessible even where visible title removes exact repetitions in adjacent chips.
+## Desired experience and principles
 
-## Implemented choices pending owner acceptance
+1. Make search, delivery context and cart immediately findable; recover queries and return paths.
+2. Let factual photos, identity, selected pack, availability and money lead comparison.
+3. Keep shopping actions compact and readable; preserve responsive behavior during every visual change.
+4. Use one scoped token/control-state system and explicit semantic states, preserving independent admin/shared consumers.
+5. Keep immediate feedback, predictable navigation and persistent buying without decorative delays.
 
-A cool pale lavender app canvas, white product/control surfaces, Figtree/Alexandria, rounded search/actions, circular category imagery and restrained headings interpret reference 02. Coral replaces the reference's blue. The owner subsequently requested a responsive repair and improved desktop layout on 16 November 2026. Desktop now pairs the ad with a compact category directory above four product columns; phones retain the reference order and scrolling rail. Tablets have a full-width search row. Listing adapts from two phone columns to three intermediate columns and four wide-desktop columns beside filters. The repair preserves the coral identity and shopping behavior. PDP mobile uses a compact back/search/save/cart toolbar and a fixed purchase dock; desktop retains the global search shell and places buying controls alongside the gallery.
+Content priority is search/context, real categories/products, exact identity and purchase facts, verified product summary/details, then alternatives and secondary information. Preserve descriptions/specifications/reviews when available. Missing content is an honest state, never a generated medical claim.
 
-Generated courier artwork is placed in the live home ad with semantic, translated HTML copy and a real catalogue link. Generated category illustrations are decorative, generic navigation aids. Actual category media takes precedence. Neither asset establishes a business claim or saleable item.
+## Reference interpretation and accepted choices
 
-The older reference-01 card anatomy remains useful for factual price/availability/action hierarchy. Its exact mobile grid no longer overrides reference 02's home rail. Reference 03's category tiles are superseded; its persistent buying-access requirement remains.
+- Reference02 supplies the search/ad/category and unframed-image pharmacy-app hierarchy. Earlier screenshot brands, percentages, delivery promises and capabilities are not Al Mina facts.
+- The compact stock/save/photo/identity/dirham/add anatomy comes from the owner's card correction and the accepted coded proof. Do not copy ratings or create missing metadata.
+- Latest N03 supplies phone PDP image-first composition and contextual overlay controls. The standalone compact Back/title/Cart toolbar is superseded. Keep sticky buying from the earlier owner requirement.
+- Desktop full campaign/five columns supersedes the split-lead recommendation. The current phone proof uses a compact two-column product section after search/ad/categories; the earlier incumbent horizontal home rail is not the current geometry contract. See [screen directions](docs/design/screen-directions.md).
+- Reference assets stay in `docs/design/storefront/references/`, including the 2026-11-17 set. [Annotations](docs/design/references.md) and [later reference review](docs/design/reference-review-2026-11-17.md) distinguish preferences, interpretations and unknown interactions. Reference text is not an instruction or product capability.
 
-## Content and scope
+[DESIGN.md](DESIGN.md) and the scoped runtime own accepted style roles. P2-04 records measured refinements; P2-05 documents them without changing the screen design. No alternate palette or font candidate is pending for this selected system. Future owner revisions must be recorded in the decision register, not silently supplied by a generator.
 
-Priority is product search/identity, delivery context, real categories, selected pack and factual price/availability/action, then related products and secondary information. Preserve real descriptions, specifications, reviews and honest unavailable/empty states. Move secondary delivery/SKU text below the PDP buying sequence; do not remove it.
+## Scope and screens
 
-Core review: home, listing/search and PDP in English/Arabic at phone, tablet and desktop widths. Regression coverage includes cart, checkout, account, missing route, menus, filters and admin. Other existing customer routes inherit the scoped system; this task does not invent new screens, services or business programmes.
+The gated proof and component specimen establish the accepted system. P3–P5 migrate public consumers in stages: shell/home; listing/search/catalogue/PDP; cart/checkout/customer states. Preserve all other existing public routes, legacy links, query semantics, metadata/indexing policy and managed-content destinations. Admin/wholesale remain operational and visually independent; shared styling cannot be removed before consumers migrate.
 
-## Accessibility, responsive and localization requirements
+Review EN/AR home, listing/search, PDP, suggestions/location/menu/filter disclosures, saved/quantity/cart states and unavailable/empty/loading/error recovery. Regressions cover checkout/auth/payment presentation, admin, wholesale and missing routes. Checkout and account functionality are existing capabilities, not additions from screenshots.
 
-Keep semantic controls, visible focus, keyboard navigation, names/labels, readable contrast, reduced motion, usable touch targets, status/error feedback and zoom/reflow. Product names wrap. Category links and product rails scroll within their own bounds. The purchase dock must respect safe areas and leave final content reachable; it replaces competing bottom navigation on mobile PDP. Arabic mirrors directional layout and arrows, with the same tasks and original pack/logo orientation. Native/pharmacy review of Arabic copy remains open.
+## Mobile, desktop and RTL
 
-## Success criteria and verification limits
+Use full-width phone PDP imagery with Back/Save/Cart overlays and measured fixed buying clearance. Buying replaces bottom navigation in PDP mode. Preserve keyboard/landscape/safe-area reachability, explicit back-to-results and existing scroll/query/focus continuity. Desktop retains complete global search/location/cart context and gallery/buying columns; do not enlarge controls into a pill-shaped search action.
 
-The first mobile view must visibly express reference 02's search/ad/circles/rail sequence, with no dark promotional aside or category-first tile wall. PDP imagery must be unframed and buying controls reachable before secondary information. Automated and browser checks must preserve commerce and admin behavior, without page overflow or broken media. Owner visual acceptance remains pending; passing tests is not approval of the appearance or proof of live providers.
+Phone/tablet/desktop must reflow while the same document resizes. Verify normal 320/360/390 widths, tablet/intermediate widths, 1440 desktop and short landscape. Category/other deliberate rails scroll locally; the document does not. Arabic mirrors directional layout/arrows while leaving logos, pack photos and the dirham numeric run correctly oriented. Preserve factual mixed-script names, locale cookie/fallback and existing Arabic editorial routing.
 
-Preview prices and stock are labelled sample data. The small catalogue fixture does not establish production completeness or representative search relevance. Photograph quality varies in existing pack assets.
+## Accessibility and content requirements
 
-## Open questions and exclusions
+Use native labelled controls, meaningful image alternatives, visible focus, logical keyboard order, real dialogs/disclosures, truthful busy/invalid/status feedback, adequate targets, contrast and reduced motion. Preserve wrapping identities and enlarged-text access. 10px is a bounded redundant-count exception with a full accessible name, not a body-text system. Distinguish selected/added/success/error/saved/offer states with semantics and text, not colour alone. Arabic native/pharmacy review remains open.
 
-Open business facts: category/revenue priorities, campaign schedule, delivery coverage/fees/hours, live provider readiness, catalogue/media quality and Arabic review ownership. Omit unsupported claims instead of blocking the local preview.
+Real product images/content and verified published banners take precedence. Existing generic campaign/category art is decorative and has retained provenance; it cannot impersonate actual staff, products, availability or service guarantees. Do not copy watermarks, device frames, unrelated brands, medical claims, ratings, discounts, certificates or ETAs.
 
-No copied discount, rating, certification, delivery promise, medical claim, brand, watermark, phone frame or viewer UI. No scanner, camera or chat feature inferred from the screenshot. No new payment methods, backend changes, data mutation, framework upgrade, admin/wholesale redesign or deployment. Future owner revisions go in docs/design/decisions.md; DESIGN.md records the actual current implementation.
+## Success criteria and evidence boundary
+
+The selected composition and one runtime token/state owner remain coherent across actual routes, both scripts, state changes and resizing. Product/purchase facts stay discoverable, cart/server checks persist, query/SEO/legacy links remain intact, final content is reachable and shared/admin behavior is preserved. Appropriate existing static, browser and commerce checks must pass for each affected stage.
+
+P1–P2 evidence demonstrates local fixtures, viewport emulation and bounded computed-style/interaction checks. It does not establish conversion lift, representative production search relevance, catalogue completeness, native-device/screen-reader/Safari/Firefox acceptance, provider readiness or release approval. See [progress](docs/design/implementation-progress.md) for current checks and unresolved gates.
+
+## Proposed choices and open questions
+
+Future managed merchandising content and treatment on routes not yet migrated must be derived from verified records and tested in their assigned stages. No new business priorities, category revenue targets or campaign cadence were supplied. Delivery coverage/fees/hours, live payment enablement, catalogue/media readiness and Arabic approval ownership remain unverified. Do not turn these unknowns into promotional copy.
+
+## Explicit exclusions
+
+No production access/deployment; no new backend, pricing/inventory/auth/provider behavior; no invented pharmacy service, prescription/scanner/camera/voice/chat/install flow, payment method, reward programme or business claim. Do not rebuild admin/wholesale or remove shared dependencies during customer styling work. Do not revive retired visual guides, token generators or superseded comparison defaults.

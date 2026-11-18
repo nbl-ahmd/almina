@@ -1,183 +1,240 @@
 ---
-name: Al Mina Customer Storefront
-description: Reference-led pharmacy app storefront with compact purchase cards.
+name: Al Mina accepted replacement storefront
+description: App-like mobile shopping and a complete compact desktop storefront.
 colors:
-  brand: "#ff5a5f"
-  brand-hover: "#ff7478"
-  ink: "#24272b"
-  muted: "#5d6269"
-  page: "#f6f6fe"
+  action: "#ff5a5f"
+  action-hover: "#fb565c"
+  active-navigation: "#a52b38"
+  text: "#202a30"
+  text-muted: "#58636b"
+  canvas: "#fafbfb"
   surface: "#ffffff"
-  subtle: "#efeff8"
-  border: "#e2e3ec"
-  accent: "#ffe7e9"
-  teal: "#175b5a"
-  ocean: "#454c53"
-  sale: "#b4232d"
-  sale-surface: "#fff0f1"
-  warning: "#80530d"
-  warning-surface: "#fff4dc"
-  success: "#196443"
-  success-surface: "#edf5f0"
-  ad-surface: "#ffb9bc"
-  logo-aqua: "#66bfbf"
-  focus: "#24272b"
-  control-border: "#8b8f96"
-  control-hover: "#454c53"
-  control-disabled: "#eceeed"
+  input: "#f7f9f9"
+  border: "#dce1e3"
+  control-border: "#7c898f"
+  secondary: "#f0f3f3"
+  hover: "#f0f3f4"
+  campaign: "#ffe5e2"
+  selected: "#e6edef"
+  positive: "#26604d"
+  positive-surface: "#eaf3ef"
+  unavailable: "#685941"
+  unavailable-surface: "#f2eee6"
+  saved: "#a72d42"
+  saved-surface: "#fff2f3"
+  error: "#a11d31"
+  disabled-text: "#6c757a"
+  disabled-surface: "#e7ebed"
+  focus: "#125d87"
+  offer-text: "#202a30"
+  offer-surface: "#ffe5e2"
+  notice: "#e9edef"
+  selection: "#ffd2d2"
 typography:
-  display:
+  campaign:
     fontFamily: "Figtree, sans-serif"
-    fontSize: "clamp(28px,3.3vw,44px)"
-    fontWeight: 600
-    lineHeight: 1.15
-  headline:
-    fontSize: "clamp(24px,3vw,32px)"
-    fontWeight: 600
-    lineHeight: 1.3
-  title:
-    fontSize: "clamp(20px,2vw,24px)"
-    fontWeight: 600
-    lineHeight: 1.3
+    fontSize: "32px"
+    fontWeight: 700
+    lineHeight: 1.1
+    letterSpacing: "-0.025em"
+  page-title:
+    fontSize: "30px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "-0.025em"
   product-title:
-    fontSize: "15px"
-    fontWeight: 600
-    lineHeight: 1.35
+    fontSize: "28px"
+    fontWeight: 700
+    lineHeight: 1.2
   body:
     fontFamily: "Figtree, sans-serif"
-    fontSize: "16px"
+    fontSize: "15px"
     fontWeight: 400
     lineHeight: 1.5
   body-arabic:
     fontFamily: "Alexandria, sans-serif"
-    fontSize: "16px"
+    fontSize: "15px"
     fontWeight: 400
-    lineHeight: 1.75
-  supporting:
-    fontSize: "13px"
-    fontWeight: 500
     lineHeight: 1.5
-  label:
-    fontSize: "12px"
-    fontWeight: 500
+    letterSpacing: "normal"
+  card-name:
+    fontSize: "15px"
+    fontWeight: 600
     lineHeight: 1.4
-  price:
-    fontSize: "20px"
+  card-price:
+    fontSize: "21px"
     fontWeight: 700
-    lineHeight: 1.2
+    letterSpacing: "-0.03em"
+  supporting:
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.5
+  stock:
+    fontSize: "11px"
+    fontWeight: 600
+    lineHeight: 1.5
+  count:
+    fontSize: "10px"
 rounded:
-  label: "5px"
-  quick-add: "13px"
-  control: "16px"
-  card: "18px"
-  mobile-ad: "22px"
-  panel: "24px"
-  pill: "999px"
+  control: "10px"
+  card: "14px"
+  search: "12px"
+  search-action: "8px"
+  campaign: "18px"
+  status: "4px"
+  option: "8px"
+  field: "12px"
 spacing:
-  space-1: "4px"
-  space-2: "8px"
-  space-3: "12px"
-  space-4: "16px"
-  space-6: "24px"
-  space-8: "32px"
-  space-12: "48px"
+  2: "2px"
+  3: "3px"
+  4: "4px"
+  6: "6px"
+  8: "8px"
+  10: "10px"
+  12: "12px"
+  14: "14px"
+  16: "16px"
+  18: "18px"
+  20: "20px"
+  24: "24px"
+  32: "32px"
+  40: "40px"
+  64: "64px"
 components:
   button-primary:
-    backgroundColor: "{colors.brand}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.text}"
     rounded: "{rounded.control}"
+    padding: "12px 24px"
     height: "48px"
-    padding: "12px 20px"
-  quick-add:
-    backgroundColor: "{colors.brand}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.quick-add}"
-    width: "44px"
-    height: "44px"
-  product-card:
+  button-outline:
     backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.control}"
+    padding: "12px 24px"
+  button-ghost:
+    backgroundColor: "transparent"
+    textColor: "{colors.text-muted}"
+    rounded: "{rounded.control}"
+  button-destructive:
+    backgroundColor: "{colors.error}"
+    textColor: "{colors.surface}"
+    rounded: "{rounded.control}"
+  field:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.field}"
+    padding: "12px 16px"
+  navigation:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+  stock:
+    backgroundColor: "{colors.positive-surface}"
+    textColor: "{colors.positive}"
+    rounded: "{rounded.status}"
+    typography: "{typography.stock}"
+    padding: "3px 8px"
+  card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
     rounded: "{rounded.card}"
-    padding: "10px"
-  category-chip:
-    backgroundColor: "{colors.subtle}"
-    textColor: "{colors.ocean}"
-    rounded: "{rounded.label}"
-    padding: "2px 5px"
-  search:
+  option:
     backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.panel}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.option}"
+  quick-add:
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.control}"
+    size: "44px"
 ---
-# Design System: Al Mina Customer Storefront
+
+# Design System: Al Mina replacement storefront
 
 ## Overview
 
-**A pharmacy app, ready to shop.** Reference 02 establishes the home and product-detail composition; the owner's latest close-up product-card image establishes card anatomy. This records the implemented local candidate on 15 November 2026, replacing the rejected category-first/packshot-campaign guide. Owner visual acceptance remains pending. No deployment is authorized.
+**Creative North Star: "App-like on mobile, complete on desktop."**
 
-PRODUCT.md owns product truth. DESIGN-BRIEF.md and docs/design/decisions.md record precedence. Primary #FF5A5F is confirmed by the owner; supporting choices are implemented proposals. Admin and wholesale retain independent systems. The customer-scoped storefront-tokens.css is the runtime source; this guide and .impeccable/design.json describe it, rather than generating it from a retired palette.
+Status: accepted local direction, documented 18 November 2026 from the P1 screen decisions and P2-01–P2-04 implementation. The owner selected the full campaign desktop lead and five wide-screen home columns, retained the shown near-white/Figtree/Alexandria system, then continued after the revised image-first N03 phone PDP. This closes the local direction gate; it does not establish production readiness or deployment approval.
 
-Evidence: storefront.css, storefront-tokens.css, storefront-checkout.css, storefront-fonts.ts, homepage, navigation, category-tile, product-card, currency-amount, cart-controls and PDP source. Current images and checks are under repository-root .verification-results/pharmacy-app-reference and .verification-results/product-card-polish. Development preview prices/stock are visibly sample data.
+Shopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.
+
+**Key Characteristics:**
+
+- Search-led navigation with delivery context and useful discovery.
+- Quiet near-white ground, dark type and dark labels on coral.
+- Compact bordered cards and contained factual product photography.
+- Image-first phone PDP with contextual overlay controls and persistent buying.
+- Equivalent English/Arabic tasks and desktop/mobile continuity.
+
+**Authority and scope.** This guide and its frontmatter document the accepted opted-in system. Runtime values are owned by `src/components/storefront-system/tokens.module.css`; `boundary.module.css` owns shared/native control states and compatibility aliases. The frontmatter and `.impeccable/design.json` are checked documentation projections, never CSS regeneration inputs. [Bindings](docs/design/system-bindings.json) connect the records to source. Read [PRODUCT.md](PRODUCT.md) for facts and [screen directions](docs/design/screen-directions.md) for compositions.
+
+The working system is mounted in the gated `/design-proof` routes. Public storefront migration is P3–P5; retained `storefront-tokens.css`/controls/checkout styling remains compatibility implementation for current customer/shared consumers. Its old colours, fonts and composition are not guidance for new screens. Admin has an independent scoped guide; wholesale/root-404/shared consumers must be traced before removal. Superseded guides and comparisons are historical evidence, not fallback authority.
 
 ## Colors
 
-Cool pale lavender `page`, white `surface` and dark `ink` reproduce the reference's light app ground. `subtle` supports compact information chips and fields; `border` outlines cards and boundaries. The courier ad uses `ad-surface`, a pale coral field. Exact `brand` marks primary search/purchase; use ink labels for readable contrast. Do not replace the confirmed coral with the close-up reference's green.
+The primary action and restrained campaign tint sit within neutral shopping surfaces. Use the frontmatter's semantic names rather than extracting a new palette from reference images, screenshots, legacy CSS or generic generators.
 
-`teal` supports ordinary readable links; `logo-aqua` preserves the existing logo family. Sale, warning and success are semantic roles, accompanied by real words/data. Never infer popularity, discount, review, medical or delivery claims from color. Hover and disabled roles remain explicit. The customer palette is scoped to storefront shell/footer, not shared root defaults.
+**The action-foreground rule.** Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.79:1 at rest and 4.59:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.
+
+**The state-meaning rule.** Selected options use their quiet neutral surface plus current/pressed semantics. Bottom navigation retains its observed active-navigation text with aria-current; it does not use the option surface. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 3.92:1 text pairing is an inactive-control exemption, not a normal-text pass.
+
+Page canvas, product surfaces, input surfaces, selected surfaces and campaign surfaces have separate purposes. Keep actual logo artwork; its aqua is an identity asset, not another action theme. [Measured pairings and limits](docs/design/implementation-evidence/p2-04-refinement.md) cover the tested states, not all future pages/providers.
 
 ## Typography
 
-Self-hosted Figtree and Alexandria remain deliberate choices for a rounded, restrained sans hierarchy, with retained OFL files and next/font/local. Section headings are 600 weight; normal text is 400. Arabic has 1.75 body line height and normal tracking; script-specific headings retain their observed local rules.
+Self-hosted Figtree and Alexandria serve Latin and Arabic respectively; `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Product/brand strings remain factual mixed-script identities; use isolation and wrapping rather than invented translation.
 
-Product names are 15px/1.35, 600; mobile names are 14px with wrapping rather than truncation. Main card prices are 20px/1.2, 700; mobile prices are 18px. Compact related rows use smaller 14px amounts. Chips and stock labels are 12px; supporting search/navigation labels use the documented 13px role. Mobile PDP title is 23px/1.35, 500; campaign title 24px/1.15. Header/supporting metadata uses 10–14px according to role. These role sizes are observed implementation, not a universal modular scale.
+Frontmatter roles record wide-screen values. Phone page titles use 25px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Shared Buttons inherit body typography in this scope; native campaign calls to action are bold. The existing diagnostic field currently inherits 14px/bold from its label host; that is observed specimen context, not a universal rule for future customer forms. Verify actual form/browser text behavior during P3/P5 migration.
 
-Brand and trailing pack may be removed from the visible title only when they exactly repeat the adjacent factual chips. The full original name remains the product-link accessible name. Never shorten distinct variant/strength information or invent a replacement product title.
+Supporting metadata remains readable and subdued. Stock uses 11px with explicit status text. The 10px count exception is for redundant compact cart counts with a full accessible name; wide counts remain 12px. It is not a standalone target or a body-text rule. Preserve locale money formatting, the dirham SVG and the LTR numeric run; do not mirror currency or pack artwork. Long names wrap without losing accessible identity.
 
 ## Layout
 
-The customer shell uses a 1280px maximum. Desktop/tablet gutters are 32px, mobile 18px and narrow-phone gutters below 360px are 12px. Compact related groups use 8–16px gaps; major home passages use 24–28px. Search is visible in the global shell alongside logo, delivery context and cart. Desktop adds department/language navigation. At 768–1023px logo, area and cart occupy one row, with full-width search beneath; department links scroll within their own row when needed. Mobile places a compact menu/search/cart row below logo/area and retains bottom navigation outside PDP/checkout.
+The current container is 1240px with 24px wide and 16px phone gutters. The working proof changes major shell/task composition at 900px, intermediate grid behavior below 1200px and narrow ordering below 600px; a short-height adaptation applies at≤500px. Existing shared menu internals use their 768px breakpoint. These are distinct component responsibilities, not interchangeable global breakpoints. Test live resizing across their boundaries.
 
-Phone/tablet home order: search → photographic courier ad → circular category media and labels → image-led product discovery. Below 768px the home rail keeps cards between 156px and 220px, with continuation visible; at 768–1023px it uses 240px scrolling cards and a 240px minimum campaign height. From 1024px, campaign and a three-column circular category directory share a row, with four product columns underneath. Equal-height campaign/category panels bring products into the initial desktop view. A missing category directory lets the campaign use the full row. Listing uses two columns on phones, three from 600px, and four with a 240px filter sidebar from 1280px; 1024–1279px retains three result columns beside filters. Existing filters/GET URLs remain unchanged. Closed desktop filters retain a visible disclosure until the responsive effect opens them. Rails scroll locally; cards establish a positioning context so hidden labels cannot escape their scroll bounds.
+The selected home lead is full-width campaign followed by categories; wide home has five comparison columns. Phone proof uses compact two-column product comparison after the search/ad/category sequence. This describes the accepted working proof, not the earlier incumbent horizontal home rail. Category overflow stays local. Listings retain their own responsive columns/filter disclosure, not a universal five-column grid. Four-column/split query flags remain diagnostic comparisons only.
 
-Desktop/tablet PDP pairs a 320–430px unframed gallery with title/brand, price, real options, stock and quantity/purchase, separated by 32px. Related rows become a single column below 1024px. Mobile uses a back/search/save/cart toolbar and fixed bottom purchase dock, replacing competing global header/bottom navigation. Compact related rows follow the buying sequence, then actual summary, delivery/policy/SKU, description/specifications/reviews. Safe-area padding and footer clearance keep the last content reachable. Short landscape phones place quantity and purchase on one dock row to protect reading space. No fabricated options or carousel dots appear for missing options/single-image products.
+The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. Card padding/gap use 10/14px wide, with route-specific compact phone treatment. Stock inset is 3/8px wide and 2/6px phone. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
 
-RTL mirrors layout and directional navigation. Product photos/logo retain orientation; the decorative courier faces the campaign copy. Latin pack chips keep LTR text order. Currency symbol/number stay together in an LTR isolated run, with the symbol before the number in both locales.
+Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; desktop uses the global search shell and gallery/buying columns. The purchase dock measures its own content clearance, respects safe areas and replaces global bottom navigation in this task mode. The embedded specimen dock is explicitly static and does not claim viewport behavior. Preserve final-content reachability, short landscape, keyboard, focus and scroll return.
 
 ## Elevation & Depth
 
-Product cards use a fine border and white fill. Wishlist controls use a restrained 0 2px 4px black-at-6% shadow; product cards do not lift on hover. Search uses a faint shadow; floating overlays retain the scoped raised shadow. PDP photography has no gray mat or enclosing panel. Retained checkout-local shadows, payment colors and geometry are compatibility implementation, not new general-purpose tokens.
-
-Feedback uses short color/border transitions. Existing motion-safe image scaling and checkout-specific effects remain; reduced-motion support suppresses nonessential animation. Do not add entrance choreography or decorative effects that delay shopping.
+Product cards are flat, bordered surfaces. Use tonal grouping for everyday shopping. Reserve the existing offset overlay shadow for suggestions/dialog context: `0 8px 24px #202a301c`; scrim is `#17263066`. The buying dock uses its existing white alpha surface `#ffffffeb`. These are runtime roles recorded in the sidecar, not another palette. No decorative blur, stacked card shadows or motion-only depth is required.
 
 ## Shapes
 
-Cards use 18px corners and 10px padding. Media areas are capped at 156px on desktop and 120px on mobile, with contained photography. Chips use compact 2px 5px padding, and names have an 8px gap before the purchase row; full names may wrap beyond two lines. Quick add uses a 44px square with 13px corners. Search uses a 24px field frame with a 16px labelled action. Desktop cart uses a 16px labelled control; phone icon cart and wishlist controls are equal-sided circles. Category photographs remain circular. Category photos are 68px on mobile, 72px on tablet and 60px in the desktop category directory, with labels beneath. Chips use 5px corners, stock labels 4px. Ad uses 22px mobile/24px desktop corners. Radius tokens are not a mandate to give every element the same form.
+Default accepted shared/native actions use the control radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. The input example's 12px shape is distinct from default 10px actions.
+
+Visible control boundaries/focus use the control/focus roles; the quiet card border is not an interactive affordance on its own. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
 
 ## Components
 
-**Product card.** Stock label and wishlist sit around contained exact product media. Brand and pack chips precede a semibold name. Strong price and quick-add share the final row where space permits. Full names wrap, and long/missing information has an honest state. Pack chips prefer packLabel, then validated family options; a literal measurement may be copied from the existing product name without inventing pack metadata. Ratings are omitted because current catalogue cards carry no verified aggregates; do not fetch reviews per card or copy reference numbers.
+The [working specimen](http://127.0.0.1:4870/design-proof/components) reuses real components. Sidecar snippets are standalone visual examples of those patterns; they are not a React replacement, shopping implementation or token generator.
 
-**Price.** CurrencyAmount displays an inline monochrome dirham SVG with locale-formatted digits and an accessible full currency amount. It changes presentation only: calculation, server amounts, JSON-LD currency and internal money formatting remain untouched. The symbol follows UAE currency-symbol structure/guidance; source is documented with the implementation report. No mirrored mark, font-glyph fallback or decorative currency treatment.
+- **Header/search/location/navigation:** keep known-item search prominent, delivery context and cart reachable; preserve suggestions, Enter/Escape, manual/GPS fallback and query URLs. Expanded location and menus must retain names, focus return, portal scope and RTL. No scanning/voice/chat affordance without a real capability.
+- **Actions and fields:** `boundary.module.css` owns base/variant/meaning states. Default/accent is coral/text; secondary/outline/ghost/link/destructive have explicit meanings. Busy retains action treatment; unavailable is disabled. Invalid fields use error independently of the offer alias. Focus remains visible; shared component APIs continue outside this scope.
+- **Product cards:** contained original photo, stock and saved controls, factual brand/pack where available, wrapping identity, dirham price and quick add. Do not invent chips, ratings, discounts or data missing from the catalogue. Actual in-cart quantity and stock checks persist. Offer/unknown-price/unavailable/placeholder cases stay honest; a layout sample is not saleable stock.
+- **Gallery/options/quantity:** one-image products have no fake pagination; real thumbnails select real images. Only real family members get option links/current state. Preserve exact selected pack/price/availability, native quantity limits and server validation. Product comparison imagery stays static under hover; legacy 1.035 zoom remains only until its incumbent consumer migrates in P4.
+- **Campaign/categories:** use existing approved local art/provenance and semantic localized HTML copy, factual category links and real published content during migration. Generic art cannot impersonate staff, product packs or a delivery promise. Reference brands, device frames and watermarks are never assets.
+- **Disclosures/sheets/feedback:** preserve semantic summary, real dialogs/popovers and focus management. Loading/status/empty/error/success semantics carry meaning. Demo feedback says no request/order was created; demo offer styling advertises no promotion.
+- **Cart/checkout/customer:** preserve existing contracts and task modes. Device cart stores identifiers/quantities; server-loaded estimates are not final quotes. Checkout, auth, payments, idempotency, inventory and immutable order snapshots are not design concerns to rewrite. Retained checkout styling stays mapped as legacy until P5 verification.
 
-**Purchase.** An initial plus enables one-click add for a single product; products requiring variant selection link to their existing options. The same server check validates each addition. Compact controls show actual device-cart quantity plus a small plus after adding, restore on reload and synchronize through existing storage/cart events. Accessible description announces the count. Pending, unavailable and failed additions remain explicit; rejected additions never increment the visible quantity. This is not an authoritative stock indicator. Cart/PDP retain existing quantity/removal flows.
-
-**Campaign and category media.** Generated courier and six generic category illustrations are decorative owned assets, with exact prompts/provenance under docs/design/storefront/campaigns. Campaign text/CTA are live bilingual HTML. Actual category media wins; generated illustration never substitutes for saleable product photography or depicts actual staff.
-
-**Control ownership.** `storefront-controls.css` is the sole customer owner for primary action colours, radius, hover/disabled states and search/cart geometry. Shared Button APIs retain admin behavior. Customer default/accent actions are coral/ink, secondary actions outlined, ghost/link actions transparent. Page CSS supplies layout; do not recreate slot styling in page overrides. Labelled buttons use the control radius; a 50% radius is reserved for equal-sided icon controls. Search submit, clear and delivery controls retain44px hit areas. The phone suggestion panel spans the header shell rather than the narrow input wrapper.
-
-**Cart.** One mobile next-step bar sits above bottom navigation; desktop uses one summary action. Server-loaded unit prices supply integer-minor-unit line and merchandise estimates, explicitly separated from delivery/tax/final quote. Counts identify total items and distinct products. Unavailable ordering uses state-specific copy; no checkout enablement changes. Summary precedes recommendations; recommendations exclude already-saved cart product IDs. Repeated help and continuation sections are consolidated. Core currency presentation includes PDP/cart/checkout, saved/recent cards and hosted-payment return, with ISO currency retained internally.
-
-**Secondary navigation and empty states.** Phone footer groups and secondary menu groups collapse natively; desktop links remain expanded. Single-page pagination is omitted. Empty search has one main no-results explanation and localized surrounding labels for literal search terms. Review-list failures are distinguished from verified-purchase submission requirements. Real product summaries can fill an otherwise absent description; no medical content is invented.
-
-**Search, location and navigation.** Preserve existing suggestions, keyboard/Escape behavior, query fallback, manual/GPS area choice, errors, reload and route semantics. Do not infer scanner, camera or chat features from the reference.
-
-**Commerce continuity.** Existing checkout styling is still imported, scoped to customer context. Admin/shared/wholesale rules and component APIs remain independent. Preserve server pricing, tax, fees, stock, auth, idempotency and order behavior; new component appearance cannot alter those contracts.
+**The feedback-motion rule.** Background/border/text changes use the existing 120ms role and `cubic-bezier(0.2,0.7,0.2,1)`. Reduced motion removes scoped transitions/animations and preserves immediate final states, including portal links. Do not animate pack comparisons, add shopping delays or reset transforms needed for disclosure direction/portal placement. Stroked UI icons use the existing Heroicons family at 22px/1.5; filled dirham artwork is excluded.
 
 ## Do's and Don'ts
 
-- Use reference 02 for composition and reference 05 for compact product-card anatomy; preserve the owner's coral and actual logo.
-- Keep names, variant identity, real prices, actions, focus and truthful status visible in English and Arabic.
-- Preserve actual summaries/descriptions and existing route/query/SEO behavior while moving secondary information.
-- Keep generated illustrative media separate from factual product associations; retain asset prompts.
-- Do not restore the rejected category-first/dark-aside design, copy reference ratings/promises or invent neutral replacement tokens.
-- Do not turn sample fixtures, passing automated tests or a design review into owner acceptance or production approval. No deployment.
+### Do
+
+- Do preserve the accepted direction, actual business content, English/Arabic tasks and server authority.
+- Do use the single scoped runtime token/state owners and verify emitted/computed CSS, portal ancestry and live resizing.
+- Do test names, missing content, unavailable/pending/failed states, focus, enlarged text and purchase clearance.
+- Do preserve shared/admin consumers until replacement is verified and distinguish local direction acceptance from release acceptance.
+
+### Don't
+
+- Don't restore retired lavender/teal candidate values, split desktop lead or standalone phone PDP toolbar as default guidance.
+- Don't generate a competing palette/font/token system from skills, metadata snippets, references or the archive.
+- Don't copy unsupported ratings, delivery promises, medical claims, prices, discounts, services or payment availability.
+- Don't deploy, access production data or change commerce behavior as part of this design phase.
