@@ -1,3 +1,7 @@
+## 2026-11-18 — P4-02 public cards and rails verified
+
+Standard and compact product cards use the accepted storefront system. Exact pack details, dirham amounts, availability, saved state and server-checked quick add were exercised on local fixtures. [Captures and verification](../../apps/web/docs/design/implementation-evidence/p4-02-cards.md). P4-03 gallery and purchase layout follows. No deployment.
+
 ## 2026-11-18 — P4-01 listing and search verified
 
 Public catalogue, category, offers and search now use the accepted storefront system, with compact phone controls, a desktop filter rail and distinct loading, empty and outage recovery. Native GET filters, pagination, legacy category redirects and noindex policies were checked locally. [Bilingual captures and verification](../../apps/web/docs/design/implementation-evidence/p4-01-listing.md). P4-02 product cards follow. No deployment.

@@ -17,6 +17,12 @@ export const recoveredProducts = [
   { ...product, _id: 'dddddddddddddddddddddddd', product_id: product._id, name: 'Numeric Identity Example', price: 9.99, sale: false, salePrice: 1,
     stock: 0, images: [], description: 'Synthetic namespace fixture.' },
 ];
+const cardSamples = [
+  { ...product, _id: 'ccccccccccccccccccccccc5', product_id: 'PD9005', brand: 'Synthetic',
+    name: 'Synthetic Card sample تركيبة EXTRAORDINARILYLONGUNBROKENPACKNAME 500mg / 5 ml', price: 123456.78, salePrice: 0, images: [] },
+  { ...product, _id: 'ccccccccccccccccccccccc6', product_id: 'PD9006', brand: 'Synthetic',
+    name: 'Synthetic Card sample 64 ml', price: 987654.32, sale: false, images: ['fixture.svg'] },
+];
 export function createStorefrontFixture(tls, { includeRecovered = false, includePagination = false } = {}) {
   const products = includeRecovered ? [product, ...recoveredProducts] : [product];
   if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
@@ -55,7 +61,8 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     res.setHeader('Content-Type', 'application/json');
     if (url.pathname === '/api/v1/search' || url.pathname === '/api/v1/search/suggest') {
       const send = () => {
-        const fixture = searchFixtureResponse(url, products, category);
+        const sample = includePagination && url.pathname === '/api/v1/search' && url.searchParams.get('q') === 'Card sample';
+        const fixture = searchFixtureResponse(url, sample ? cardSamples : products, category);
         // Simulate the exact identifier fallback while the main search is unavailable.
         if (includePagination && url.pathname === '/api/v1/search' && url.searchParams.get('q') === 'PD0001') {
           fixture.data.unavailable = true;

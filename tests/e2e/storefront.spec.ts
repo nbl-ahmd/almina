@@ -82,10 +82,16 @@ test('Next catalog outage shows a distinct recovery state and preserves the page
 for (const [path, content] of [['/', 'Your everyday essentials'], ['/search?q=Daily', 'Daily Care'],
   ['/categories/skin-care--aaaaaaaaaaaaaaaaaaaaaaaa', 'Daily Care'], ['/products/daily-care--PD0001', 'Daily care product description.']]) {
   test(`storefront renders and reloads ${path}`, async ({ page }) => {
+    // Complete the expected guest saved-list request before rapid document navigation.
+    const waitForSaved = () => page.waitForResponse(response => new URL(response.url()).pathname === '/api/customer/saved');
+    const original = waitForSaved();
     await page.goto(path!);
     await expect(page.locator('main')).toContainText(content!);
+    await original;
+    const reloaded = waitForSaved();
     await page.reload();
     await expect(page.locator('main')).toContainText(content!);
+    await reloaded;
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   });
 }

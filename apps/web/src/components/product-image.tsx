@@ -1,13 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Image, { type ImageProps, type ImageLoaderProps } from "next/image";
 import { cloudinaryDelivery } from "../lib/catalog/image-delivery";
 
-type Props = Omit<ImageProps, "loader"> & { cloudName?: string | undefined };
+type Props = Omit<ImageProps, "loader"> & { cloudName?: string | undefined; fallback?: ReactNode };
 
-export function ProductImage({ cloudName, alt, ...props }: Props) {
+export function ProductImage({ cloudName, alt, fallback, ...props }: Props) {
   const [failed, setFailed] = useState<ImageProps["src"] | null>(null);
   const source = failed === props.src ? "/product-placeholder.svg" : props.src;
+  if (failed === props.src && fallback) return fallback;
   // Local fixture rasters are fetched by the browser during development, avoiding
   // a server-side private-IP optimizer exception. Production keeps its existing
   // trusted-host/optimizer policy; no global local-network access is enabled.

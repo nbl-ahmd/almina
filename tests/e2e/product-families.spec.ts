@@ -59,15 +59,16 @@ test('selected SKU survives cart, server checkout and immutable staff order deta
 test('staff can maintain a verified family option through the existing product form',async({page})=>{
   await login(page);
   await page.goto('http://127.0.0.1:4720/admin/products/ccccccccccccccccccccccc1');
+  const variants = page.getByRole('tab', { name: 'Variants', exact: true });
+  await variants.click();
   await expect(page.getByLabel(/^Product family key/)).toHaveValue('synthetic-options');
   await page.getByLabel('Variant size',{exact:true}).fill('Medium');
-  await page.getByLabel(/^Stock adjustment reason/).fill('Reviewed synthetic packaging');
   await page.getByRole('button',{name:'Save product',exact:true}).click();
   await expect(page.getByRole('status').filter({hasText:'Saved successfully.'})).toBeVisible();
   await page.reload();
+  await variants.click();
   await expect(page.getByLabel('Variant size',{exact:true})).toHaveValue('Medium');
   await page.getByLabel(/^Family strength identity/).fill('20mg');
-  await page.getByLabel(/^Stock adjustment reason/).fill('Synthetic conflicting family review');
   await page.getByRole('button',{name:'Save product',exact:true}).click();
   await expect(page.locator('form').getByRole('alert')).toContainText('Check the family name, brand, form, strength, category and option combinations.');
   await page.goto(checkoutOrigin+'/products/synthetic-family--PD8001');

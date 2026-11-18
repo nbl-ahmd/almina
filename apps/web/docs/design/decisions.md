@@ -57,6 +57,8 @@ P2-05 replaces the old active guide/sidecar/brief/direction records with checked
 
 P4-01 uses one native filter disclosure on phones and opens it as a desktop rail. Selected refinements are individually removable, and clearing filters retains the search query and sort. Clearing search is its own action. Result counts refer to the current page, and an exact identifier fallback remains visible during a partial search outage. [Implementation evidence](implementation-evidence/p4-01-listing.md).
 
+P4-02 shows the exact price and availability of the displayed SKU on grouped cards. The card indicates price variation and links to the existing family options. Comparison photos stay static, and missing or failed images have a localized placeholder. [Implementation evidence](implementation-evidence/p4-02-cards.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.
