@@ -4,7 +4,7 @@
   /* Primitive values from accepted screens. */
   --store-ref-color-coral: #ff5a5f;
   --store-ref-color-ink: #1c2925;
-  --store-ref-color-muted: #50635e;
+  --store-ref-color-muted: #435d56;
   --store-ref-color-line: #e2ebe7;
   --store-ref-color-control-line: #7c898f;
   --store-ref-color-canvas: #f7faf8;
@@ -72,6 +72,7 @@
   --store-ref-container: 1240px;
   --store-ref-target: 44px;
   --store-ref-feedback: 120ms;
+  --store-ref-entry: 180ms;
   --store-ref-easing-feedback: cubic-bezier(0.2, 0.7, 0.2, 1);
   --store-ref-icon-stroke: 1.5;
   --store-ref-circle: 50%;
@@ -179,6 +180,7 @@
   --store-icon-stroke: var(--store-ref-icon-stroke);
   --store-radius-round: var(--store-ref-circle);
   --store-motion-feedback: var(--store-ref-feedback);
+  --store-motion-enter: var(--store-ref-entry);
   --store-motion-easing: var(--store-ref-easing-feedback);
   --store-elevation-overlay: 0 var(--store-space-8) var(--store-space-24) var(--store-overlay-shadow-color);
   /* Component roles; layout-specific geometry remains in its owner. */

@@ -170,7 +170,12 @@
       {
         "name": "feedback-duration",
         "value": "120ms",
-        "purpose": "Background, border and text feedback."
+        "purpose": "Background, border, text and pointer press feedback."
+      },
+      {
+        "name": "entry-duration",
+        "value": "180ms",
+        "purpose": "Opacity entry on pointer-selected artwork and confirmed status."
       },
       {
         "name": "feedback-easing",
@@ -220,7 +225,7 @@
       "refersTo": "button-ghost",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Ghost action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:14px;font:500 15px/1.5 \"DM Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#50635e;border-color:transparent;}.ds-button:focus-visible{outline:2px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#e8f2ed;color:#1c2925;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#e2ebe7;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:14px;font:500 15px/1.5 \"DM Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#435d56;border-color:transparent;}.ds-button:focus-visible{outline:2px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#e8f2ed;color:#1c2925;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#e2ebe7;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Destructive action",
@@ -302,7 +307,7 @@
       },
       {
         "name": "The feedback-motion rule.",
-        "body": "Background/border/text changes use the existing 120ms role and `cubic-bezier(0.2,0.7,0.2,1)`. Reduced motion removes scoped transitions/animations and preserves immediate final states, including portal links. Do not animate pack comparisons, add shopping delays or reset transforms needed for disclosure direction/portal placement. Stroked UI icons use the existing Heroicons family at 22px/1.5; filled dirham artwork is excluded.",
+        "body": "Background, border and text changes and pointer press feedback use 120ms. Campaign changes initiated by pointer and confirmed status indicators can enter with a 180ms opacity transition. Both use `cubic-bezier(0.2,0.7,0.2,1)`. Keyboard carousel controls render the next slide immediately. Reduced motion preserves immediate final states. Pack comparison and navigation stay steady. Stroked UI icons use Heroicons at 22px/1.5, with separate filled dirham artwork.",
         "section": "components"
       }
     ],

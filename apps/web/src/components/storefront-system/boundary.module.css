@@ -46,7 +46,7 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
-.boundary :is(a, button, input, select, summary):focus-visible:where(:not([data-store-control="search-input"])) {
+.boundary :is(a, button, input, select, textarea, summary):focus-visible:where(:not([data-store-control="search-input"])) {
   outline: 2px solid var(--store-focus);
   outline-offset: 3px;
 }
@@ -119,14 +119,6 @@
 .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where([data-added='false'][aria-busy='false']:hover:not(:disabled)) {
   background: var(--store-selection-surface);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon'] {
-    transition-property: scale, background-color, border-color, color;
-  }
-  .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where(:active:not(:focus-visible):not(:disabled)) {
-    scale: .95;
-  }
-}
 /* Meaning states follow variants at equal specificity; hover adds zero specificity. */
 .boundary [data-slot='button'][data-added='true'] {
   background: var(--store-positive-surface);
@@ -137,8 +129,12 @@
   color: var(--store-saved);
   background: var(--store-saved-surface);
 }
-.boundary :is([data-slot='input'], [data-store-control='field'])[aria-invalid='true'] {
+.boundary :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea'], [data-store-control='field']):focus-visible {
+  background: var(--store-surface);
+}
+.boundary :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea'], [data-store-control='field'])[aria-invalid='true'] {
   border-color: var(--store-error);
+  background-color: var(--store-saved-surface);
   outline-color: var(--store-error);
 }
 .boundary [data-slot='button']:is(:disabled, [aria-disabled='true']),
@@ -193,16 +189,31 @@
   background: var(--store-text); color: var(--store-surface);
 }
 .boundary [data-store-notice='error'] { border-color: var(--store-error); }
-.boundary [data-store-notice='success'] { border-color: var(--store-positive); }
+.boundary [data-store-notice='success'] {
+  color: var(--store-positive);
+  background-color: var(--store-positive-surface);
+  border-color: var(--store-positive);
+}
 .boundary [data-store-notice='offer'] {
   color: var(--store-offer-text);
   background: var(--store-offer-surface);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .boundary :is(a, button, input, select, summary) {
+  .boundary :is(a, button, input, select, textarea, summary) {
     transition-property: background-color, border-color, color;
     transition-duration: var(--store-motion-feedback);
     transition-timing-function: var(--store-motion-easing);
+  }
+  .boundary :is([data-slot='button'], [data-store-control='save'], [data-slot='search-submit']) {
+    transition-property: scale, background-color, border-color, color;
+  }
+  .boundary :is([data-slot='button'], [data-store-control='save'], [data-slot='search-submit']):where(:active:not(:focus-visible):not(:disabled):not([aria-disabled='true']):not([aria-busy='true'])) {
+    scale: .97;
+  }
+  .boundary [data-store-feedback] {
+    opacity: 1;
+    transition: opacity var(--store-motion-enter) var(--store-motion-easing);
+    @starting-style { opacity: .65; }
   }
 }
 /* Covers shared portal/menu utilities as well as native proof controls. */

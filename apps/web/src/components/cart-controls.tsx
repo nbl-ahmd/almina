@@ -60,7 +60,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
           disabled={pending || stock <= 0} onClick={add}>
           {stock <= 0 ? <NoSymbolIcon aria-hidden="true" />
             : pending ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" />
-            : cartQuantity > 0 ? <span className="card-cart-count" aria-hidden="true">
+            : cartQuantity > 0 ? <span className="card-cart-count" data-store-feedback={added ? 'true' : undefined} aria-hidden="true">
                 {count}<Icon name="plus" />
               </span>
             : <Icon name={added ? 'check' : 'plus'} />}
@@ -77,7 +77,12 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
   const max = Math.min(stock, 999);
   const quantityId = `quantity-${id}`;
   const feedback = <>
-    <p role="status" data-added={added} className="status col-span-full text-xs text-teal empty:hidden" aria-atomic="true">{message}</p>
+    <p role="status" data-added={added} className="status col-span-full text-xs text-teal empty:hidden" aria-atomic="true">{message ? (
+      <span data-store-feedback={added ? 'true' : undefined}>
+        {added ? <Icon name="check" /> : null}
+        {message}
+      </span>
+    ) : null}</p>
     {added ? <Link className="view-cart-link text-teal" href="/cart">{u(locale, 'View cart')}<ChevronRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link> : null}
   </>;
   return (

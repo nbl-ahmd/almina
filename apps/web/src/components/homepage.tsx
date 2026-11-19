@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import Link from './app-link';
 import { ArrowRightIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import type { GrowthPage } from '@almina/contracts';
@@ -38,19 +38,19 @@ export function HomeHero({ locale, banners = [], campaigns = [] }: {
 }) {
   const ar = locale === 'ar';
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
+  const artwork = `/design/campaigns/everyday-care-${locale}`;
+  const mobile = getImageProps({
+    src: `${artwork}-phone.webp`, alt: '', width: 800, height: 300, sizes: 'calc(100vw - 32px)',
+  });
   const lead = (
     <div className="pharmacy-ad" key="almina-everyday">
-      <div className="pharmacy-ad-copy">
-        <h2>{ar ? 'عنايتك اليومية.\nفي مكان واحد.' : 'Everyday care.\nOne easy stop.'}</h2>
-        <p>{ar ? 'اكتشف منتجات العناية بالبشرة واحتياجاتك اليومية.' : 'Find your skincare and daily essentials.'}</p>
-        <Link href="/products" className="home-action">
-          {ar ? 'تسوق الأساسيات' : 'Shop essentials'}
-          <ArrowRightIcon className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
-        </Link>
-      </div>
-      <Image className="campaign-courier" src="/design/campaigns/almina-care-courier.png"
-        alt="" width={1280} height={1280} sizes="(max-width: 767px) 48vw, 360px"
-        loading="eager" fetchPriority="high" />
+      <Link href="/products" aria-label={ar ? 'عنايتك اليومية في مكان واحد. تسوق الأساسيات' : 'Everyday care. One easy stop. Shop essentials'}>
+        <picture>
+          <source media="(max-width: 767px)" srcSet={mobile.props.srcSet} sizes={mobile.props.sizes} />
+          <Image src={`${artwork}-wide.webp`} alt="" width={1440} height={416}
+            sizes="(min-width: 1240px) 1192px, calc(100vw - 48px)" loading="eager" fetchPriority="high" />
+        </picture>
+      </Link>
     </div>
   );
   if (!heroCampaigns.length && !banners.length) return <div className="home-campaigns">{lead}</div>;
@@ -108,13 +108,24 @@ export function HomeShelf({ products, title, href }: { products: Product[]; titl
 }
 
 export async function HomeEditorial() {
-  const ar = await getLocale() === 'ar';
+  const locale = await getLocale();
+  const ar = locale === 'ar';
+  const collections = [
+    { slug: 'skin-essentials', scene: 'skincare', label: ar ? 'أساسيات العناية بالبشرة' : 'Skincare essentials' },
+    { slug: 'baby-care', scene: 'family', label: ar ? 'العناية بالطفل والأسرة' : 'Baby and family care' },
+  ];
   return (
-    <nav className="home-collection-links" aria-label={ar ? 'مجموعات العناية' : 'Care collections'}>
-      <Link href="/collections/skin-essentials">{ar ? 'العناية بالبشرة' : 'Skincare essentials'}</Link>
-      <Link href="/collections/baby-care">{ar ? 'العناية بالطفل' : 'Baby and family care'}</Link>
-      <Link href="/collections/daily-care">{ar ? 'العناية اليومية' : 'Everyday personal care'}</Link>
-    </nav>
+    <section aria-label={ar ? 'مجموعات العناية' : 'Care collections'}>
+      <SectionHeading title={ar ? 'تسوق حسب احتياجاتك' : 'Shop by need'} href="/collections/daily-care" link={ar ? 'العناية اليومية' : 'Everyday care'} />
+      <div className="home-editorial-grid">
+        {collections.map(({ slug, scene, label }) => (
+          <Link key={slug} href={`/collections/${slug}`} className="home-editorial-banner" aria-label={`${label}. ${ar ? 'تسوق المجموعة' : 'Shop collection'}`}>
+            <Image src={`/design/campaigns/${scene}-${locale}.webp`} alt="" width={960} height={320}
+              sizes="(min-width: 1240px) 588px, (min-width: 768px) 47vw, calc(100vw - 32px)" />
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

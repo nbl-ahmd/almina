@@ -126,8 +126,8 @@ async function HomeProducts({ locale }: { locale: Locale }) {
     <>
       <HomeShelf title={u(locale, "Your everyday essentials")} products={shelf} href="/products" />
       <Suspense fallback={null}><HomeOffers locale={locale} exclude={shelf.map(product => product._id)} /></Suspense>
-      <HomeBrandStrip brands={catalogueBrands(products.filter(product => product.brand?.trim() || product.familyBrand?.trim()))} />
       <HomeEditorial />
+      <HomeBrandStrip brands={catalogueBrands(products.filter(product => product.brand?.trim() || product.familyBrand?.trim()))} />
     </>
   );
 }

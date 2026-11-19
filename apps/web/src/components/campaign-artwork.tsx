@@ -3,20 +3,53 @@ import Link from './app-link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { campaignImageUrl, growthPagePath, type GrowthPage } from '@almina/contracts';
 
-/** Used by the real homepage and the editor preview so artwork/copy don't drift. */
-export function CampaignArtwork({ page, preview, eager = false, cloudName }: { page: GrowthPage; preview?: 'mobile' | 'desktop'; eager?: boolean; cloudName?: string | undefined }) {
-  const desktop = campaignImageUrl(page.image,cloudName), mobile = campaignImageUrl(page.mobileImage,cloudName) ?? desktop;
-  const src = preview === 'mobile' ? mobile : preview === 'desktop' ? desktop : desktop ?? mobile;
-  const href = growthPagePath(page), arabic = page.locale === 'ar';
-  const image = src ? <picture className={preview ? 'block' : 'block aspect-[2/1] md:aspect-[8/3]'} style={preview ? {aspectRatio:preview==='mobile'?'2 / 1':'8 / 3'} : undefined}>
-    {!preview && mobile && mobile !== desktop ? <source media="(max-width: 767px)" srcSet={getImageProps({ src: mobile, alt: page.imageAlt, width: 800, height: 400, sizes: '100vw' }).props.srcSet} /> : null}
-    <Image src={src} alt={page.imageAlt} width={preview==='mobile'?800:1440} height={preview==='mobile'?400:540} sizes={preview === 'mobile' ? '390px' : '(max-width: 767px) 100vw, 75vw'} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : undefined} className="h-full w-full object-contain" />
-  </picture> : preview ? <div className="flex min-h-40 items-center justify-center bg-subtle px-5 text-sm text-muted">{arabic ? 'أضف صورة لعرض المعاينة' : 'Add campaign artwork to preview it here'}</div> : null;
-  return <article dir={arabic ? 'rtl' : 'ltr'} className="overflow-hidden rounded-2xl border border-border bg-white text-ink">
-    {preview ? image : image && <Link href={href}>{image}</Link>}
-    <div className={`flex gap-3 p-4 md:p-5 ${preview==='mobile'?'flex-col items-stretch':'flex-col items-stretch md:flex-row md:items-center md:justify-between'}`}>
-      <div className="min-w-0 flex-1"><h2 className="mb-1 text-lg font-semibold leading-tight md:text-xl">{page.title}</h2><p className="mb-0 max-w-prose text-sm leading-6 text-muted">{page.description}</p></div>
-      {preview ? <span className="inline-flex min-h-11 w-fit shrink-0 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-ink">{page.ctaLabel || (arabic ? 'استكشف العرض' : 'Explore campaign')}<ArrowRightIcon className="size-4 rtl:rotate-180" /></span> : <Link href={href} className="button min-h-11 w-fit shrink-0 rounded-full px-5 text-sm">{page.ctaLabel}<ArrowRightIcon className="size-4 rtl:rotate-180" /></Link>}
-    </div>
-  </article>;
+/** Match the editor preview and the storefront so a campaign can be reviewed at both sizes. */
+export function CampaignArtwork({ page, preview, cloudName }: {
+  page: GrowthPage;
+  preview?: 'mobile' | 'desktop';
+  cloudName?: string | undefined;
+}) {
+  const desktop = campaignImageUrl(page.image, cloudName);
+  const mobile = campaignImageUrl(page.mobileImage, cloudName) ?? desktop;
+  const src = preview === 'mobile' ? mobile : desktop ?? mobile;
+  const href = growthPagePath(page);
+  const arabic = page.locale === 'ar';
+  const lead = page.homepagePlacement === 'hero';
+  const width = preview === 'mobile' ? 800 : 1440;
+  const mediaRatio = lead ? 'aspect-[8/3] md:aspect-[24/7]' : 'aspect-[3/1]';
+  const action = page.ctaLabel || (arabic ? 'استكشف العرض' : 'Explore campaign');
+
+  if (!src) {
+    return (
+      <article dir={arabic ? 'rtl' : 'ltr'} className="rounded-2xl border border-border bg-white p-4 text-ink">
+        <h2 className="text-lg font-semibold">{page.title}</h2>
+        <p className="max-w-prose text-sm leading-6 text-muted">{page.description}</p>
+        {preview
+          ? <p className="text-sm text-muted">{arabic ? 'أضف صورة لعرض المعاينة' : 'Add campaign artwork to preview it here'}</p>
+          : <Link href={href} className="home-action">{action}<ArrowRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link>}
+      </article>
+    );
+  }
+
+  const mobileSource = !preview && mobile && mobile !== desktop
+    ? getImageProps({ src: mobile, alt: '', width: 800, height: 400, sizes: 'calc(100vw - 32px)' }).props
+    : undefined;
+  const image = (
+    <picture className={`block overflow-hidden rounded-2xl bg-subtle ${mediaRatio}`}
+      style={preview ? { aspectRatio: lead ? preview === 'mobile' ? '8 / 3' : '24 / 7' : '3 / 1' } : undefined}>
+      {mobileSource ? <source media="(max-width: 767px)" srcSet={mobileSource.srcSet} sizes={mobileSource.sizes} /> : null}
+      <Image src={src} alt={preview ? page.imageAlt : ''} width={width} height={preview === 'mobile' ? 400 : 540}
+        sizes={preview === 'mobile' ? '390px' : lead ? '(max-width: 767px) 100vw, 1200px' : '(max-width: 767px) 100vw, 600px'}
+        loading="lazy" className="h-full w-full object-contain" />
+    </picture>
+  );
+  return (
+    <article dir={arabic ? 'rtl' : 'ltr'}>
+      <h2 className="sr-only">{page.title}</h2>
+      {preview ? image : <Link href={href} className="campaign-art-link block rounded-2xl" aria-label={action} aria-describedby={`campaign-copy-${page.slug}`}>
+        {image}
+        <span className="sr-only" id={`campaign-copy-${page.slug}`}>{page.imageAlt}. {page.description}</span>
+      </Link>}
+    </article>
+  );
 }

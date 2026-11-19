@@ -131,7 +131,7 @@
   font-size: var(--store-type-14);
 }
 .field :is(input, select):hover { background-color: var(--store-hover-surface); }
-.field input:focus-visible { background-color: var(--store-surface); }
+.field :is(input, select):focus-visible { background-color: var(--store-surface); }
 .field input {
   padding-inline: var(--store-space-10);
   font-variant-numeric: tabular-nums;
@@ -368,4 +368,8 @@
 }
 @media (min-width: 1280px) {
   .results :global(.product-grid), .skeleton { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .field :is(input, select) { font-size: var(--store-type-16); }
 }

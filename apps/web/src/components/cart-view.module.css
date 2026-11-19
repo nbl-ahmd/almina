@@ -40,7 +40,7 @@
   margin: 0;
   font-size: var(--store-type-18);
   line-height: var(--store-leading-product);
-  font-weight: var(--store-weight-bold);
+  font-weight: var(--store-weight-semibold);
 }
 
 .count {

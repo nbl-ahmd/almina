@@ -332,7 +332,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       ? stripeTestMode?(ar?(attempt?'متابعة الدفع التجريبي':'المتابعة إلى الدفع التجريبي'):(attempt?'Resume test payment':'Continue to test payment'))
         : attempt?(ar?'متابعة الدفع الآمن':'Resume secure payment'):(ar?`ادفع ${formatted(total!.totalMinor)}`:`Pay ${formatted(total!.totalMinor)}`)
       : attempt?t(locale,'checkoutRetryPending'):tf(locale,'checkoutPlaceOrder',{total:formatted(total!.totalMinor)});
-    return <Button type={canPay?'button':'submit'} form="checkout-details" aria-label={canPay ? payLabel : undefined} className="w-full" disabled={working||locating||error===t(locale,'checkoutRecoverError')} onClick={canPay?()=>{void place();}:undefined}>
+    return <Button type={canPay?'button':'submit'} form="checkout-details" aria-label={canPay ? payLabel : undefined} aria-busy={working} className="w-full" disabled={working||locating||error===t(locale,'checkoutRecoverError')} onClick={canPay?()=>{void place();}:undefined}>
       {working?<><span className="checkout-loader" aria-hidden="true" />{attempt?t(locale,'checkoutConfirming'):t(locale,'checkoutChecking')}</>:canPay?(!attempt && (!stripeAttempt || !stripeTestMode) ? <>{ar ? (stripeAttempt ? 'ادفع' : 'تأكيد الطلب') : (stripeAttempt ? 'Pay' : 'Place order')} {amount(total!.totalMinor)}</> : payLabel):<>{t(locale, 'checkoutReview')}<Icon name="arrow" /></>}
     </Button>;
   }

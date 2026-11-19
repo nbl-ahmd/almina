@@ -35,6 +35,7 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
   const [city, setCity] = useState('');
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState('');
+  const [savedNotice, setSavedNotice] = useState('');
   useEffect(() => {
     const requestState = request;
     const sync = () => setArea(savedArea());
@@ -45,6 +46,7 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
       setEmirate(saved?.emirate ?? 'Ras al-Khaimah');
       setCity(saved?.city ?? '');
       setMessage('');
+      setSavedNotice('');
       dialog.current.showModal();
     };
     queueMicrotask(sync); window.addEventListener(areaEvent, sync); window.addEventListener('storage', sync); window.addEventListener(openEvent, open);
@@ -59,7 +61,11 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
   }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    try { saveArea({ emirate, city }); close(); } catch { setMessage(t(locale,'areaSaveError')); }
+    try {
+      saveArea({ emirate, city });
+      close();
+      setSavedNotice(locale === 'ar' ? `تم حفظ منطقة التوصيل: ${city.trim()}` : `Delivery area saved: ${city.trim()}`);
+    } catch { setMessage(t(locale,'areaSaveError')); }
   }
   async function locate() {
     if (working) return;
@@ -82,13 +88,16 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
       <MapPinIcon className="size-4 shrink-0 text-teal" aria-hidden="true" />
       <span className="min-w-0"><span className="header-location-caption">{t(locale,'areaDeliverTo')}</span><span className="header-location-value">{area ? area.city : t(locale,'areaChooseYours')}<span className="hidden xl:inline">{area ? `, ${emirateLabel(locale,area.emirate)}` : ''}</span></span></span>
       <ChevronDownIcon className="size-3 shrink-0 text-muted" aria-hidden="true" />
-    </button></div>
+    </button><span className="sr-only" role="status" aria-atomic="true">{savedNotice}</span></div>
     <dialog ref={dialog} aria-labelledby="delivery-area-heading" onCancel={event => { event.preventDefault(); close(); }} className="delivery-area-sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border-0 bg-white px-5 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))] text-ink shadow-raised backdrop:bg-ink/40 sm:inset-0 sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-32px)] sm:max-w-md sm:rounded-2xl sm:p-7">
       <div aria-hidden="true" className="mx-auto -mt-3 mb-4 h-1 w-9 rounded-full bg-ink/20 sm:hidden" />
       <div className="mb-3 flex items-center justify-between gap-3"><h2 id="delivery-area-heading" className="m-0 text-xl">{t(locale,'areaHeading')}</h2><Button variant="outline" size="icon" shape="pill" type="button" className="shrink-0" onClick={close} aria-label={t(locale,'areaClose')}><Icon name="close" /></Button></div>
       <p className="text-sm text-muted">{t(locale,'areaIntro')}</p>
       <Button variant="outline" size="default" type="button" className="mb-4 w-full" onClick={() => { void locate(); }} disabled={working}><Icon name="pin" />{working ? t(locale,'areaFindingButton') : t(locale,'areaUseLocation')}</Button>
-      {message ? <p role="status" className="text-sm text-ocean">{message}</p> : null}
+      {message ? <p role="status" data-store-notice={message === t(locale,'areaFound') ? 'success' : undefined}
+        className="flex items-start gap-2 rounded-lg bg-subtle p-3 text-sm text-ocean">
+        {message === t(locale,'areaFound') ? <Icon name="check" /> : null}{message}
+      </p> : null}
       <form onSubmit={submit}><FieldGroup className="grid gap-4"><Field><FieldLabel htmlFor="delivery-location-field-1">{t(locale,'areaEmirate')}</FieldLabel><NativeSelect id="delivery-location-field-1" value={emirate} onChange={event => setEmirate(event.target.value as DeliveryArea['emirate'])} autoComplete="address-level1" disabled={working}>{deliveryEmirates.map(value => <option key={value} value={value}>{emirateLabel(locale,value)}</option>)}</NativeSelect></Field><Field><FieldLabel htmlFor="delivery-location-field-2">{t(locale,'areaCity')}</FieldLabel><Input id="delivery-location-field-2" value={city} onChange={event => setCity(event.target.value)} maxLength={200} autoComplete="address-level2" required placeholder={t(locale,'areaExample')} disabled={working} /></Field><Button type="submit" disabled={working}>{t(locale,'areaSave')}</Button></FieldGroup></form>
       <p className="mt-4 mb-0 text-xs text-muted">{t(locale,'areaStored')}</p>
       <details className="mt-2 text-xs text-muted"><summary className="cursor-pointer py-2">{t(locale,'areaData')}</summary><p>{t(locale,'areaPrivacy')}<a className="text-ocean" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">{t(locale,'areaAttribution')}</a>.</p></details>

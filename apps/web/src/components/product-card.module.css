@@ -112,7 +112,7 @@
   overflow-wrap: anywhere;
 }
 .title a { display: flex; min-block-size: var(--store-target-min); align-items: start; }
-.title a:hover { color: var(--store-stress-error); }
+.title a:hover { color: var(--store-positive); }
 .optionNote {
   margin: 0;
   color: var(--store-text-muted);
@@ -241,6 +241,6 @@
 @media (min-width: 768px) {
   .media { block-size: 152px; }
   .stock { padding: var(--store-stock-inset-block) var(--store-stock-inset-inline); }
-  .title { font-size: var(--store-type-15); }
+  .title { font-size: var(--store-type-15); line-height: var(--store-leading-label); }
   .amount { font-size: var(--store-type-21); }
 }

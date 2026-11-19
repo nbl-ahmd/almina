@@ -77,7 +77,9 @@ export function ProductReviews({ productId, reviews, locale = 'en' }: {
           {open ? (ar ? 'إغلاق نموذج التقييم' : 'Close review form') : t('Write a review')}
         </Button>
       </div>
-      {notice ? <p className={styles.reviewMessage} data-error={notice.error || undefined} role="status">{notice.text}</p> : null}
+      {notice ? <p className={styles.reviewMessage} data-error={notice.error || undefined}
+        data-store-notice={notice.error ? 'error' : 'success'} data-store-feedback={!notice.error || undefined}
+        role={notice.error ? 'alert' : 'status'}>{notice.text}</p> : null}
       {open ? (
         <form id="write-product-review" onSubmit={submit} className={styles.reviewForm}>
           <FieldGroup className="grid gap-4">

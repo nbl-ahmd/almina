@@ -34,5 +34,5 @@ export function SecureCheckoutLabel({ locale }: { locale: Locale }) {
 }
 
 export function ConfirmationMark() {
-  return <span className="checkout-success-mark" aria-hidden="true"><CheckIcon className="size-9" strokeWidth={2} /></span>;
+  return <span className="checkout-success-mark" data-store-feedback aria-hidden="true"><CheckIcon className="size-9" strokeWidth={2} /></span>;
 }

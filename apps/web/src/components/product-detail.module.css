@@ -281,6 +281,17 @@
   font-size: var(--store-type-13);
 }
 .dock :global(.status[data-added='true']), .dock :global(.view-cart-link) { color: var(--store-positive); }
+.dock :global(.status[data-added='true'] > span) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--store-space-4);
+  font-weight: var(--store-weight-medium);
+}
+.dock :global(.status[data-added='true'] svg) {
+  flex: none;
+  inline-size: var(--store-space-14);
+  block-size: var(--store-space-14);
+}
 .dock :global(.view-cart-link) {
   display: inline-flex;
   min-block-size: var(--store-target-min);

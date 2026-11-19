@@ -14,13 +14,28 @@ for (const locale of ['en', 'ar'] as const) {
       await expect(grid.locator('article')).toHaveCount(5);
       const ids = await grid.locator('article').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-product-id')));
       expect(new Set(ids).size).toBe(5);
-      await expect(home.locator('.pharmacy-ad a')).toHaveAttribute('href', '/products');
+      const lead = home.locator('.pharmacy-ad a');
+      await expect(lead).toHaveAttribute('href', '/products');
+      await expect(lead).toHaveAccessibleName(locale === 'en' ? 'Everyday care. One easy stop. Shop essentials' : 'عنايتك اليومية في مكان واحد. تسوق الأساسيات');
+      const artwork = lead.locator('img');
+      await expect.poll(() => artwork.evaluate((image: HTMLImageElement, filename) =>
+        image.naturalWidth > 0 && image.currentSrc.includes(filename),
+        `everyday-care-${locale}-wide.webp`,
+      )).toBe(true);
+      const collections = home.locator('.home-editorial-grid');
+      await expect(collections.locator('a')).toHaveCount(2);
       await expect(home.locator('.home-category-lane a').first()).toBeVisible();
       for (const [width, columns] of [[1440, 5], [1100, 4], [768, 3], [390, 2], [320, 2]] as const) {
         await page.setViewportSize({ width, height: 844 });
         expect(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(columns);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        const collectionArt = await collections.locator('img').first().evaluate(image => image.getBoundingClientRect().toJSON());
+        expect(collectionArt.width / collectionArt.height).toBeCloseTo(3, 1);
       }
+      await expect.poll(() => artwork.evaluate((image: HTMLImageElement, filename) =>
+        image.naturalWidth > 0 && image.currentSrc.includes(filename),
+        `everyday-care-${locale}-phone.webp`,
+      )).toBe(true);
     } finally {
       expect((await request.get(fixture + '/home-stock?mode=normal')).ok()).toBe(true);
     }
@@ -65,8 +80,27 @@ test('published home campaigns preserve hero controls and a separate supporting 
     await page.keyboard.press('Enter');
     await expect(second).toHaveAttribute('aria-pressed', 'true');
     await expect(carousel.getByRole('heading', { name: 'Fixture campaign' })).toBeVisible();
+    await expect(carousel.locator('.campaign-frame:visible')).not.toHaveAttribute('data-pointer-entry');
+    await expect(carousel.locator('h2:visible')).toHaveClass('sr-only');
     await expect(carousel.getByRole('link', { name: 'See campaign' })).toHaveAttribute('href', '/offers/fixture-hero');
     await expect(page.locator('.home-managed-campaigns').getByRole('heading', { name: 'Fixture secondary campaign' })).toBeVisible();
+
+    const first = carousel.getByRole('button', { name: 'Show promotion 1', exact: true });
+    await first.click();
+    await expect(carousel.locator('.campaign-frame:visible')).toHaveAttribute('data-pointer-entry', 'true');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await second.click();
+    await expect(carousel.locator('.campaign-frame:visible')).toHaveCSS('transition-duration', '0s');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const slide = carousel.locator('.campaign-frame:visible');
+    await slide.evaluate(target => {
+      const start = new Touch({ identifier: 1, target, clientX: 100, clientY: 100 });
+      const end = new Touch({ identifier: 1, target, clientX: 220, clientY: 107 });
+      target.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [start] }));
+      target.dispatchEvent(new TouchEvent('touchend', { bubbles: true, changedTouches: [end] }));
+    });
+    await expect(first).toHaveAttribute('aria-pressed', 'true');
   } finally {
     expect((await request.get(fixture + '/home-campaigns?enabled=0')).ok()).toBe(true);
   }
