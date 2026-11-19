@@ -18,7 +18,7 @@ for (const locale of ['en', 'ar'] as const) {
 test('Arabic header labels and delivery dialog persist canonical area values across reload', async ({ page, context }) => {
   await context.addCookies([{ name: 'almina_lang', value: 'ar', url: 'http://127.0.0.1:4710' }]);
   await page.setViewportSize({ width: 390, height: 900 });
-  await page.goto('/cart');
+  await page.goto('/');
   await expect(page.getByRole('combobox', { name: 'ابحث عن المنتجات' })).toHaveAttribute('placeholder', 'ابحث عن منتجات أو علامات تجارية');
   await page.getByRole('button', { name: 'اختر منطقة التوصيل', exact: true }).click();
   await page.getByRole('combobox', { name: 'إمارة التوصيل' }).selectOption('Dubai');
@@ -59,13 +59,25 @@ test('Arabic catalogue and PDP localize controls while retaining product identit
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('Arabic homepage campaign controls keep navigation and product names intact', async ({ page, context }) => {
+test('Arabic homepage campaign controls keep navigation and product names intact', async ({ page, context, request }) => {
   await context.addCookies([{ name: 'almina_lang', value: 'ar', url: 'http://127.0.0.1:4710' }]);
-  await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'صيدلية الميناء — الصحة والجمال والعناية اليومية' })).toHaveCount(1);
-  const campaign = page.getByRole('region', { name: 'عروض الصيدلية', exact: true });
-  await campaign.getByRole('button', { name: 'عرض عرض 2', exact: true }).click();
-  await expect(campaign.getByRole('group', { name: '2 من 2', exact: true })).toBeVisible();
+  const fixture = 'http://127.0.0.1:4711/__fixture/home-campaigns';
+  expect((await request.get(fixture + '?enabled=1')).ok()).toBe(true);
+  try {
+    await page.route(url => url.pathname === '/_next/image' && Boolean(url.searchParams.get('url')?.includes('synthetic-test-campaign')), route =>
+      route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="250"><rect width="600" height="250" fill="#ffe5e5"/></svg>' }));
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'صيدلية الميناء — الصحة والجمال والعناية اليومية' })).toHaveCount(1);
+    const campaign = page.getByRole('region', { name: 'عروض الصيدلية', exact: true });
+    const control = campaign.getByRole('button', { name: 'عرض عرض 2', exact: true });
+    await control.press('Enter');
+    await expect(control).toHaveAttribute('aria-pressed', 'true');
+    await expect(campaign.getByRole('group', { name: '2 من 2', exact: true })).toBeVisible();
+    await expect(campaign.getByRole('link', { name: 'See campaign', exact: true })).toHaveAttribute('href', '/ar/offers/fixture-hero');
+    await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+  } finally {
+    expect((await request.get(fixture + '?enabled=0')).ok()).toBe(true);
+  }
 });
 
 test('Arabic server stock messages reject excessive additions without mutating the cart', async ({ page, context, request }) => {

@@ -1,0 +1,29 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--store-space-8);
+  min-inline-size: 0;
+  text-align: center;
+}
+.media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--store-ref-circle);
+  background: var(--store-surface);
+}
+.media > img:not(.illustration) { inline-size: 78%; block-size: 78%; }
+.illustration { position: absolute; display: block; inline-size: 300%; block-size: 200%; max-inline-size: none; }
+.fallback { inline-size: 40%; block-size: 40%; border-radius: var(--store-ref-circle); background: var(--store-selected-surface); }
+.label {
+  margin: 0;
+  font-size: var(--store-type-14);
+  font-weight: var(--store-weight-semibold);
+  line-height: var(--store-leading-product);
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}

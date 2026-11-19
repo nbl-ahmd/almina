@@ -94,3 +94,45 @@ test('published editorial details preserve authored locales and canonical routes
     expect((await request.get(fixture + '?enabled=0')).ok()).toBe(true);
   }
 });
+
+for (const locale of ['en', 'ar'] as const) {
+  test(`${locale} retail styling and navigation remain scoped when visiting wholesale and staff routes in one tab`, async ({ page, context }) => {
+    const ar = locale === 'ar';
+    const local = 'http://127.0.0.1:4720';
+    await context.addCookies([{ name: 'almina_lang', value: locale, url: local }]);
+    await page.route('**/api/customer/me', route => route.fulfill({ status: 401, json: {} }));
+    await page.route('**/api/customer/options', route => route.fulfill({ json: { data: { googleClientId: null, emailEnabled: true } } }));
+    await page.setViewportSize({ width: 390, height: 840 });
+
+    await page.goto(local + '/account');
+    const retail = page.locator('main [data-storefront-information]');
+    const email = page.locator('main input[type=email]');
+    await expect(retail).toHaveAttribute('dir', ar ? 'rtl' : 'ltr');
+    await email.focus();
+    await expect(email).toBeFocused();
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(email).toBeFocused();
+
+    await page.goto(local + '/wholesale');
+    await expect(retail).toHaveCount(0);
+    await expect(page.locator('main input[type=email]')).toBeVisible();
+    await expect(page.locator('main a[href="/checkout"]')).toHaveCount(0);
+    await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', /noindex/);
+    expect(await page.locator('main').evaluate(el => getComputedStyle(el).getPropertyValue('--store-canvas'))).toBe('');
+
+    const contact = page.getByRole('banner').getByRole('link', { name: ar ? 'تواصل مع الصيدلية' : 'Contact pharmacy' });
+    await contact.press('Enter');
+    await expect(page).toHaveURL(local + '/contact');
+    await expect(retail).toHaveAttribute('dir', ar ? 'rtl' : 'ltr');
+
+    await page.goto(local + '/admin/login');
+    await expect(retail).toHaveCount(0);
+    await expect(page.locator('input[name=username]')).toBeVisible();
+    await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', /noindex/);
+    await page.goBack();
+    await expect(retail).toHaveAttribute('dir', ar ? 'rtl' : 'ltr');
+    await page.reload();
+    await expect(retail.getByRole('heading', { level: 1 })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
+  });
+}

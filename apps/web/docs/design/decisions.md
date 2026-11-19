@@ -71,6 +71,8 @@ P5-02 uses one form-associated checkout action across device modes. The dock mov
 
 P5-04 uses one scoped information layout for retail account, saved items, directories, support and published content. Authored English policies keep their original language and an Arabic notice identifies them in the Arabic storefront. Explicit Arabic editorial routes retain their published content and existing alternates. [Route and state evidence](implementation-evidence/p5-04-information.md).
 
+P5-05 gives the category component ownership of media, fallback and labels. The homepage and information directories still control placement. The cart route keeps its own responsive layout. Shared recovery, wholesale and staff bindings remain in the consumer retirement review. [Phase 5 verification](implementation-evidence/phase-5.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

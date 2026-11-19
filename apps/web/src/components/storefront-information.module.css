@@ -89,7 +89,7 @@
 .directory a:hover { border-color: var(--store-border-control); background: var(--store-hover-surface); }
 .directory :global(.category-tile) { text-align: start; flex-direction: row; }
 .directory :global(.category-tile-media) { inline-size: var(--store-space-48); block-size: var(--store-space-48); background: var(--store-input-surface); }
-.directory :global(.category-tile h2) { margin: 0; text-align: start; }
+.directory :global(.category-tile h3) { margin: 0; text-align: start; }
 .account {
   display: grid;
   gap: var(--store-space-16);

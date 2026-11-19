@@ -1,3 +1,7 @@
+## 2026-11-19 — P5-05 verified and Phase 5 exited
+
+The retail customer journey and shared-route transitions passed local regression checks. Category presentation moved into its component and the obsolete cart padding override was removed. [Phase 5 verification and remaining work](../../apps/web/docs/design/implementation-evidence/phase-5.md). P6-01 covers wider compatibility retirement. No deployment.
+
 ## 2026-11-19 — P5-04 remaining storefront surfaces verified
 
 Account, saved items, support, policy and discovery information routes share the accepted storefront system. Published content, existing metadata and retail and wholesale identity boundaries were preserved. [Route disposition and local checks](../../apps/web/docs/design/implementation-evidence/p5-04-information.md). P5-05 covers full customer and shared-route verification. No deployment.
