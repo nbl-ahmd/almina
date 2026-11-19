@@ -143,9 +143,10 @@ competing palette/token stack or restore rejected values from metadata, referenc
 archives, generic skills or old public styling. Preserve exact #FF5A5F and the
 actual logo; only recorded owner revisions change the accepted direction.
 
-Retained `src/app/(storefront)/storefront-tokens.css` and storefront-controls.css
-serve incumbent customer/shared/wholesale/root-404 consumers. They remain legacy
-compatibility implementation, not aesthetic authority. Route CSS owns layout;
+The legacy palette in `src/app/(storefront)/storefront-tokens.css` serves
+wholesale and root missing-page recovery. Its shared shell geometry and the
+fallback controls in storefront-controls.css support the consumers recorded in
+`docs/design/implementation-evidence/p6-01-retirement.md`. Route CSS owns layout;
 accepted controls use their single boundary owner. Do not add competing colour,
 size or radius utilities to migrated controls. Shared Button APIs/admin themes
 remain independent; native checkout/auth/payment logic stays unchanged.
@@ -257,9 +258,9 @@ bordered cards are retained. Latest N03 image-first phone PDP supersedes the
 standalone toolbar. Follow current screen directions, not earlier reference-only
 rail/category geometry or pending-review statements in historical evidence.
 
-The gated `/design-proof/components` specimen reuses working components. See
-`docs/design/implementation-evidence/p2-03-specimen.md` for real versus demo states
-and retained checkout consumers; `p2-04-refinement.md` records contrast, typography,
+Use current retail routes to review working components. The former specimen is
+historical evidence. `docs/design/implementation-evidence/p2-04-refinement.md`
+records the decisions on contrast, typography,
 shape, icon, badge, stock and motion decisions. Preserve default/explicit shape
 APIs, bounded label wrapping and portal theme/direction. Compiled foreground/control
 aliases resolve through scoped `--ui-*` bridges; verify emitted/computed CSS and

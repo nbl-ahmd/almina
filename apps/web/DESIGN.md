@@ -169,7 +169,7 @@ Shopping controls stay compact and legible. Product photography, exact identity,
 
 **Authority and scope.** This guide and its frontmatter document the accepted opted-in system. Runtime values are owned by `src/components/storefront-system/tokens.module.css`; `boundary.module.css` owns shared/native control states and compatibility aliases. The frontmatter and `.impeccable/design.json` are checked documentation projections, never CSS regeneration inputs. [Bindings](docs/design/system-bindings.json) connect the records to source. Read [PRODUCT.md](PRODUCT.md) for facts and [screen directions](docs/design/screen-directions.md) for compositions.
 
-The working system is mounted in the gated `/design-proof` routes. Public storefront migration is P3–P5; retained `storefront-tokens.css`/controls/checkout styling remains compatibility implementation for current customer/shared consumers. Its old colours, fonts and composition are not guidance for new screens. Admin has an independent scoped guide; wholesale/root-404/shared consumers must be traced before removal. Superseded guides and comparisons are historical evidence, not fallback authority.
+The retail layout and its public routes use the accepted system. The compatibility palette in `storefront-tokens.css` serves wholesale and root missing-page recovery. Shared shell geometry and fallback controls still have live consumers. Admin has its own scoped guide. See the [retirement inventory](docs/design/implementation-evidence/p6-01-retirement.md) for current ownership and preserved historical evidence.
 
 ## Colors
 
@@ -185,7 +185,7 @@ Page canvas, product surfaces, input surfaces, selected surfaces and campaign su
 
 Self-hosted Figtree and Alexandria serve Latin and Arabic respectively; `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Product/brand strings remain factual mixed-script identities; use isolation and wrapping rather than invented translation.
 
-Frontmatter roles record wide-screen values. Phone page titles use 25px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Shared Buttons inherit body typography in this scope; native campaign calls to action are bold. The existing diagnostic field currently inherits 14px/bold from its label host; that is observed specimen context, not a universal rule for future customer forms. Verify actual form/browser text behavior during P3/P5 migration.
+Frontmatter roles record wide-screen values. Phone page titles use 25px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Shared Buttons inherit body typography in this scope; native campaign calls to action are bold. Verify label, input and error text on the actual form at each supported viewport.
 
 Supporting metadata remains readable and subdued. Stock uses 11px with explicit status text. The 10px count exception is for redundant compact cart counts with a full accessible name; wide counts remain 12px. It is not a standalone target or a body-text rule. Preserve locale money formatting, the dirham SVG and the LTR numeric run; do not mirror currency or pack artwork. Long names wrap without losing accessible identity.
 
@@ -197,7 +197,7 @@ The selected home lead is full-width campaign followed by categories; wide home 
 
 The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. Card padding/gap use 10/14px wide, with route-specific compact phone treatment. Stock inset is 3/8px wide and 2/6px phone. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
 
-Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; desktop uses the global search shell and gallery/buying columns. The purchase dock measures its own content clearance, respects safe areas and replaces global bottom navigation in this task mode. The embedded specimen dock is explicitly static and does not claim viewport behavior. Preserve final-content reachability, short landscape, keyboard, focus and scroll return.
+Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; desktop uses the global search shell and gallery/buying columns. The purchase dock measures its own content clearance, respects safe areas and replaces global bottom navigation in this task mode. Preserve final-content reachability, short landscape, keyboard, focus and scroll return.
 
 ## Elevation & Depth
 
@@ -211,7 +211,7 @@ Visible control boundaries/focus use the control/focus roles; the quiet card bor
 
 ## Components
 
-The [working specimen](http://127.0.0.1:4870/design-proof/components) reuses real components. Sidecar snippets are standalone visual examples of those patterns; they are not a React replacement, shopping implementation or token generator.
+Review the working patterns on the retail routes. The sidecar documents the shipped styles with standalone examples. The development comparison and component specimen were retired in P6-01.
 
 - **Header/search/location/navigation:** keep known-item search prominent, delivery context and cart reachable; preserve suggestions, Enter/Escape, manual/GPS fallback and query URLs. Expanded location and menus must retain names, focus return, portal scope and RTL. No scanning/voice/chat affordance without a real capability.
 - **Actions and fields:** `boundary.module.css` owns base/variant/meaning states. Default/accent is coral/text; secondary/outline/ghost/link/destructive have explicit meanings. Busy retains action treatment; unavailable is disabled. Invalid fields use error independently of the offer alias. Focus remains visible; shared component APIs continue outside this scope.

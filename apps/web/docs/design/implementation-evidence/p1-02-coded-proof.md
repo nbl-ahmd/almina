@@ -1,5 +1,7 @@
 # P1-02 — isolated coded storefront proof
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 Historical P1-02 capture checkpoint. [P1-03](p1-03-density.md) supersedes its provisional density/hover/control-boundary measurements; no final design acceptance inferred.
 
 17 November 2026. Starting source `33f248e`, branch `codex/storefront-pharmacy-app-reference`; clean tree at entry. Implements [PC01–PC08](../prototype-contract.md) for coded exploration only. **P1-02 verified; supporting visuals remain candidates.** P1-03 density/stress, P1-04 complete interaction/mode proof and P1-05 owner screen decision remain outstanding. No final DESIGN.md/token replacement, production data/provider access or deployment.

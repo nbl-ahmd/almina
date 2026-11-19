@@ -1,5 +1,7 @@
 # Phase 1 input packet — comparable coded direction proof
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](implementation-evidence/p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 Prepared 17 November 2026 by P0-05 from the completed baseline. **Handoff update:** P1-01 has since authored the [prototype contract](prototype-contract.md); follow progress for the current task rather than treating the original resume sequence below as mutable status. **This is a handoff, not the P1-01 prototype contract, a final design system, or approval of new screens.** Mutable state/next action: [progress](implementation-progress.md). Scope/tasks/gates: [phases](implementation-phases.md#phase-1--comparable-coded-direction-proof).
 
 ## Resume sequence

@@ -1,5 +1,7 @@
 # P1-03 — density, typography, colour, shape and hard cases
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 17 November 2026. Starting commit `44b12e3`, clean branch `codex/storefront-pharmacy-app-reference`. **Verified for P1-03 exploration, not final visual approval.** [PC01–PC08](../prototype-contract.md) and the [phase plan](../implementation-phases.md) remain the authority. No final DESIGN.md, production tokens/instructions, storefront/admin/wholesale theme, API, commerce calculation or deployment changed.
 
 ## Working comparisons

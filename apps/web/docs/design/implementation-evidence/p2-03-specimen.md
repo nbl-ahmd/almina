@@ -1,5 +1,7 @@
 # P2-03 — component/state specimen and retained checkout map
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 17 November 2026. Starting `33f8f65`, branch `codex/storefront-pharmacy-app-reference`. Verified for this bounded component/consolidation task. Accepted A/full-width campaign/five-column desktop, N03 mobile PDP and supporting system remain the direction. No public theme switch or deployment. P2-04 refinements and P2-05 guide reconciliation remain separate.
 
 ## Working review surface

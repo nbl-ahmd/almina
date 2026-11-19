@@ -1,5 +1,7 @@
 # Phase 1 prototype contract — Al Mina storefront
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](implementation-evidence/p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 P1-01, 17 November 2026; prepared from `8f3f2fd`. **Contract for local coded exploration, not final visual approval or an implemented prototype.** Status: [progress](implementation-progress.md). Inputs: [Phase 1 packet](phase-1-input-packet.md), [system review](system-review-2026-11-17.md), [direction plan](storefront-direction-plan-2026-11-17.md), [per-image analysis](reference-review-2026-11-17.md) and [baseline](implementation-evidence/phase-0-summary.md).
 
 ## PC01 — Job, audience and outcome

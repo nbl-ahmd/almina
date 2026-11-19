@@ -2,6 +2,8 @@
 
 # Storefront redesign — 2026-10-03
 
+The verification commands below are historical. [P6-01](../../apps/web/docs/design/implementation-evidence/p6-01-retirement.md) retired this fixture and its browser verifier.
+
 Implemented locally on `codex/storefront-design-system` in the additive Next.js storefront. The legacy production application, admin, APIs, database, media references, pricing rules and order submission behavior remain intact. No deployment or route cutover occurred.
 
 ## UI system

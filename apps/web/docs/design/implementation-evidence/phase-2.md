@@ -1,5 +1,7 @@
 # Phase 2 — accepted system and styling ownership
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 ## P2-01 verified — 17 November 2026
 
 Starting c5fd8e4. Owner continued after the latest N03 PDP revision; P1-05 closed with A/full campaign, wide-five home and supporting system selected. [Token foundation and migration map](p2-01-system.md) records the opt-in CSS value authority, actual consumers, frozen shared compatibility, Tailwind alias traps and remaining boundaries.

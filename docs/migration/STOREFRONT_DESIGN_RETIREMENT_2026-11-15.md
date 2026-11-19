@@ -109,8 +109,7 @@ removed shadcn config was an actionable generator binding. Generic design-skill
 scripts still know how to document/extract/design tokens; they are general-purpose
 capabilities, not deleted. The project profile/web instructions now prohibit
 reconstructing the retired system from current code or historical captures.
-`storefront-design-fixture.mjs` and `verify-storefront-design.mjs` are synthetic
-catalogue/browser QA, not token generators; retained. Synthetic fixture colours
+At this initial cleanup, `storefront-design-fixture.mjs` and `verify-storefront-design.mjs` were retained for synthetic browser QA. [P6-01](../../apps/web/docs/design/implementation-evidence/p6-01-retirement.md) later retired both scripts. Synthetic fixture colours
 represent sample packs, not a selected storefront palette.
 
 Old artwork, runtime CSS/classes/fonts, screenshots in `.impeccable/review` and

@@ -17,6 +17,7 @@
  .storefront-shell h3 { font-size:1rem; }
  .storefront-shell > main { width:100%; max-width:1280px; min-width:0; padding:20px 32px 40px; min-height:60vh; }
  .storefront-shell ::selection { background:var(--color-brand); color:var(--color-ink); }
+ [data-storefront-retail] ::selection { background:var(--store-selection-surface); }
  .storefront-shell input { caret-color:var(--color-ink); }
  .storefront-shell a { color:var(--color-ink); text-underline-offset:4px; }
  .storefront-shell a:hover { text-decoration:none; }

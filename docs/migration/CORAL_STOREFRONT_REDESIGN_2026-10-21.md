@@ -34,7 +34,7 @@ Existing GSAP dependencies power small editorial translations and readable opaci
 
 No API, database, pricing, inventory, checkout calculation, permission, URL or production integration changes are part of this redesign. The working tree already contained substantial unrelated migration work and was preserved. No commit, deployment or production write was performed. The existing Next.js 16.3.8 bundled documentation was consulted; Geist uses next/font/local. No additional UI or motion dependency was installed in this pass.
 
-The direction contract is in apps/web/.impeccable/surfaces/apps-web-src-components-homepage-tsx.md. Recorded launcher output is outputs/coral-redesign-2026-10-21/direction-roll.txt. Its installed version emits an eight-character roll key; a newer sixteen-character reference was not fabricated. User references are the critique bar for this code-led, grounded direction; no generated comp exists.
+The former [homepage surface direction](../../apps/web/docs/design/archive/superseded-reference02-homepage-surface.md) was superseded and removed from active design context in P6-01. Recorded launcher output is outputs/coral-redesign-2026-10-21/direction-roll.txt. Its installed version emits an eight-character roll key; a newer sixteen-character reference was not fabricated. User references are the critique bar for this code-led, grounded direction; no generated comp exists.
 
 ## Verification and review
 

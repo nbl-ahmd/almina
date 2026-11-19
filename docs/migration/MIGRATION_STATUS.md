@@ -1,3 +1,7 @@
+## 2026-11-19 — P6-01 storefront design retirement verified
+
+The development comparison and superseded storefront tooling were retired. Retail now inherits the accepted palette, and wholesale and root recovery keep their compatibility scope. [Retirement inventory and regressions](../../apps/web/docs/design/implementation-evidence/p6-01-retirement.md). P6-02 covers the final verification matrix. No deployment.
+
 ## 2026-11-19 — P5-05 verified and Phase 5 exited
 
 The retail customer journey and shared-route transitions passed local regression checks. Category presentation moved into its component and the obsolete cart padding override was removed. [Phase 5 verification and remaining work](../../apps/web/docs/design/implementation-evidence/phase-5.md). P6-01 covers wider compatibility retirement. No deployment.

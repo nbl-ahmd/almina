@@ -1,7 +1,7 @@
 /* Opt-in compatibility aliases and control state ownership. Values live in tokens.module.css.
    Unlayered by design: existing root utilities are layered. No root/admin/wholesale selector.
    Layout modules own geometry; shared variants and final states are owned here. */
-.boundary {
+.aliases {
   --color-brand: var(--store-action);
   --color-brand-hover: var(--store-action-hover);
   --color-ink: var(--store-text);
@@ -23,6 +23,17 @@
   --ui-control-border: var(--store-border-control);
   --ui-control-hover: var(--store-focus);
   --ui-control-disabled: var(--store-disabled-surface);
+}
+.boundary {
+  composes: aliases;
+}
+
+/* CSS utilities and shared shell content that still read generic role names. */
+.aliases[data-storefront-retail] {
+  --color-sale: var(--store-error);
+  --color-sale-surface: var(--store-saved-surface);
+  --color-warning: var(--store-unavailable);
+  --color-warning-surface: var(--store-unavailable-surface);
 }
 .boundary :where(button:not([data-slot])) {
   border: 0;

@@ -1,5 +1,7 @@
 # P1-04 — screen modes and interaction continuity
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 17 November 2026. Starting commit `82e202a`, clean branch `codex/storefront-pharmacy-app-reference`. **Verified for the bounded prototype task; no final visual approval or production readiness inferred.** [PC01–PC08](../prototype-contract.md) and the [phase plan](../implementation-phases.md) remain authoritative. No final DESIGN.md, production tokens, shared/admin/wholesale theme, commerce engine or deployment changed.
 
 ## Working modes and contracts

@@ -1,5 +1,7 @@
 # P1-05 — N03 image-first PDP correction
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 17 November 2026, starting `058d1d5`, clean focused branch. **Latest revision for owner review; supersedes the separate toolbar-bar preview.** Owner retained A/full-width desktop home, five wide-screen columns and the shown supporting system. No final DESIGN.md/token/shared-style switch or deployment.
 
 ## Owner request and interpretation

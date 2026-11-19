@@ -1,14 +1,14 @@
 /* Storefront control roles. Shared/admin Button variants remain unchanged. */
 .storefront-shell .button,
-.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *)) {
+.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *, [data-storefront-retail] .add-to-cart)) {
  background:var(--color-brand); color:var(--color-ink); border:1px solid var(--color-brand); border-radius:var(--radius-control);
 }
 .storefront-shell .button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:12px 20px; font-weight:600; }
 .storefront-shell .button:hover,
-.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *)):hover:not(:disabled) { background:var(--color-brand-hover); border-color:var(--color-brand-hover); }
+.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *, [data-storefront-retail] .add-to-cart)):hover:not(:disabled) { background:var(--color-brand-hover); border-color:var(--color-brand-hover); }
 .storefront-shell .button-secondary { color:var(--color-ink); background:var(--color-surface); border-color:var(--color-control-border); }
 .storefront-shell .button-secondary:hover { background:var(--color-subtle); border-color:var(--color-control-hover); }
-.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *)):disabled { color:var(--color-muted); background:var(--color-control-disabled); border-color:var(--color-border); }
+.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *, [data-storefront-retail] .add-to-cart)):disabled { color:var(--color-muted); background:var(--color-control-disabled); border-color:var(--color-border); }
 .sf-search { position:relative; z-index:45; min-width:0; }
 .storefront-search-form { display:flex; align-items:center; gap:8px; min-width:0; min-height:54px; padding:4px 4px 4px 16px; border:1px solid var(--color-control-border); border-radius:var(--radius-panel); background:var(--color-surface); transition:border-color 150ms; }
 [dir='rtl'] .storefront-search-form { padding-inline:16px 4px; }
@@ -29,16 +29,4 @@
  .sf-search-label,.header-cart-label { display:none; }
  .storefront-search-panel { inset-inline:12px; top:calc(100% + 4px); max-height:min(65dvh,480px); }
  .storefront-shell .header-cart { min-height:44px; width:44px; height:44px; padding:10px; border-radius:50%; }
-}
-
-.storefront-shell .save-product-compact { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; min-height:44px; padding:11px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:50%; color:var(--color-muted); box-shadow:0 2px 4px rgb(36 39 43 / 6%); }
-.storefront-shell .save-product-compact svg { width:20px; height:20px; }
-
-.storefront-shell .save-product-compact:hover { background:var(--color-subtle); border-color:var(--color-control-hover); }
-.storefront-shell .save-product-compact[aria-pressed='true'] { color:var(--color-sale); background:var(--color-sale-surface); }
-
-/* Legacy compatibility state: the unlayered control owner must own added feedback too.
-   Do not reintroduce competing data-added colour utilities on AddToCart. */
-.storefront-shell [data-slot='button'].add-to-cart[data-added='true']:not(:disabled) {
- background:var(--color-accent); border-color:var(--color-teal); color:var(--color-ink);
 }

@@ -28,6 +28,8 @@ test('active guide projections match the single accepted runtime source',()=>{
  for(const component of side.components){assert.ok(bindings.components.includes(component.refersTo),component.name);assert.match(component.html,/class="ds-/);assert.doesNotMatch(component.html,/<script|on(?:click|load)=|https?:\/\//i);for(const m of component.css.matchAll(/#[\da-f]{3,8}\b/gi))assert.ok(allowed.has(m[0].toLowerCase()),`Unapproved snippet colour ${component.name}: ${m[0]}`);}
 });
 test('former active guide and metadata are retained as explicitly excluded history',()=>{
+ assert.equal(existsSync('apps/web/.impeccable/surfaces/apps-web-src-components-homepage-tsx.md'),false);
+ assert.match(read('apps/web/docs/design/archive/superseded-reference02-homepage-surface.md'),/^> Superseded in P6-01/);
  const folder='apps/web/docs/design/archive/2026-11-18-pre-p2-05';const manifest=JSON.parse(read(folder+'/manifest.json')) as {status:string;records:{archive:string;sourceSha256:string}[]};assert.match(manifest.status,/superseded/);
  for(const entry of manifest.records){const content=read(folder+'/'+entry.archive);const original=entry.archive.endsWith('.md')?content.slice(content.indexOf('\n\n')+2):content;assert.equal(createHash('sha256').update(original).digest('hex'),entry.sourceSha256,entry.archive);if(entry.archive.endsWith('.md'))assert.match(content.split('\n')[0]!,/SUPERSEDED/);assert.notEqual(entry.archive,'DESIGN.md');assert.notEqual(entry.archive,'design.json');}
  for(const file of ['references.md','reference-review-2026-11-17.md','system-review-2026-11-17.md','storefront-direction-plan-2026-11-17.md'])assert.match(read('apps/web/docs/design/'+file).split('\n')[0]!,/Historical analysis/);

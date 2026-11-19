@@ -36,9 +36,10 @@ export async function state(request: APIRequestContext): Promise<{
 }> { return (await request.get(commerceOrigin + '/__fixture/state')).json(); }
 export const checkoutOrigin = 'http://127.0.0.1:4740';
 export async function nextCheckoutPage(page: Page) {
-  await page.goto(checkoutOrigin + '/checkout');
+  // Seed cart storage from a same-origin document before checkout starts fetching.
+  await page.goto(checkoutOrigin + '/robots.txt');
   await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
-  await page.reload();
+  await page.goto(checkoutOrigin + '/checkout');
   for (const [name, value] of Object.entries(customer)) {
     const field = page.locator(`[name="${name}"]`);
     if(name==='payment')continue;

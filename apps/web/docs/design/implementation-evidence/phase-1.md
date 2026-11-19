@@ -1,5 +1,7 @@
 # Phase 1 evidence — comparable coded direction proof
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 > **Phase 1 exit:** Owner said “continue next” after the revised N03 PDP was presented, closing the local direction gate. A/five/support choices and latest image-first PDP carry into [P2-01](p2-01-system.md). Earlier pending-review notes below are historical. No release approval.
 
 

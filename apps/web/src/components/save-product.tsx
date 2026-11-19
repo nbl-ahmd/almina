@@ -40,7 +40,7 @@ export function SaveProduct({ id, name, locale = 'en', compact = false, card = f
   return (
     <>
       <button type="button" data-store-control={card ? 'save' : undefined} aria-pressed={saved} aria-label={label}
-        onClick={() => void toggle()} className={card ? 'card-save' : compact ? 'save-product-compact'
+        onClick={() => void toggle()} className={card ? 'card-save'
           : 'flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm font-medium text-teal hover:bg-subtle hover:text-teal'}>
         <HeartIcon aria-hidden="true" className={`size-4 ${saved && !card ? 'fill-brand' : ''}`} />
         <span className={compact ? 'sr-only' : undefined}>{saved ? u(locale, 'Saved') : u(locale, 'Save for later')}</span>

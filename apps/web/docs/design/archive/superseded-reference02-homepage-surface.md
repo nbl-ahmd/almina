@@ -1,3 +1,5 @@
+> Superseded in P6-01. Historical homepage direction. The previous surface binding has been removed from active design context. See [current screen directions](../screen-directions.md).
+
 ---
 version: 1
 slug: "apps-web-src-components-homepage-tsx"

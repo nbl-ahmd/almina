@@ -73,6 +73,8 @@ P5-04 uses one scoped information layout for retail account, saved items, direct
 
 P5-05 gives the category component ownership of media, fallback and labels. The homepage and information directories still control placement. The cart route keeps its own responsive layout. Shared recovery, wholesale and staff bindings remain in the consumer retirement review. [Phase 5 verification](implementation-evidence/phase-5.md).
 
+P6-01 gives the retail layout the accepted palette and limits the prior palette to explicit wholesale and root recovery wrappers. The comparison routes and duplicate tooling were retired. Current retail routes provide working examples. [Retirement and remaining dependencies](implementation-evidence/p6-01-retirement.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

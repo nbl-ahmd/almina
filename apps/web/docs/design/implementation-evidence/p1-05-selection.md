@@ -1,5 +1,7 @@
 # P1-05 — screen selection for the replacement storefront
 
+> Historical comparison evidence. The live proof routes and launch commands were retired in [P6-01](p6-01-retirement.md). Captures and the recorded screen decisions remain available.
+
 > **Latest status:** Owner rejected the standalone toolbar; [N03 full-image PDP correction](p1-05-image.md) supersedes that preview. A/five and the shown supporting system remain selected. Read the latest correction for current review state.
 
 
