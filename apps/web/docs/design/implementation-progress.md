@@ -5,7 +5,7 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 ## Current checkpoint
 
 - **Current work:** **P6-03 and P6-04 verified. P6-05 awaiting owner review.** The finished local storefront, independent verdict and release inputs are available in the [review packet](implementation-evidence/phase-6.md).
-- **Next eligible task:** **P6-05 — record the owner’s decision on the finished local storefront.**
+- **Next eligible task:** **P6-05 — capture the requested visual fixes and verify the revised screens.**
 - **Verified implementation tasks:** 33 of 34 (Phases 0–5 and P6-01–P6-04).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
@@ -65,7 +65,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P6-02 | verified | [Three-engine matrix, interaction checks and captures](implementation-evidence/p6-02-verification.md). NEW-007 goes to P6-03. |
 | P6-03 | verified | [Independent verdict, fix regression and captures](implementation-evidence/phase-6.md#p6-03-independent-review). Finish code `b1756c7`. Five resolved, historical seed provenance partial. |
 | P6-04 | verified | [Design authority](implementation-evidence/phase-6.md#p6-04-design-authority) and [C01–C63/NEW reconciliation](implementation-evidence/p6-04-coverage.md). |
-| P6-05 | awaiting_review | [Review packet and release inputs](implementation-evidence/phase-6.md#review-the-storefront). Final owner decision pending. |
+| P6-05 | awaiting_review | [Review packet and release inputs](implementation-evidence/phase-6.md#review-the-storefront). Owner requested specific visual fixes. Details and acceptance are pending. |
 
 ## Decisions and approval state
 

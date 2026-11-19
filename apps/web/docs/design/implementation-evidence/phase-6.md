@@ -50,7 +50,7 @@ The documentation handoff was unavailable, so the guide and sidecar were refresh
 
 ### P6-05 visual acceptance
 
-Status **awaiting owner review**. The packet is ready for the owner's decision on the finished local storefront at `b1756c7`. Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
+Status **awaiting owner review**. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested changes are awaiting detail. Visual acceptance remains pending. Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
 
 ### Remaining release work
 
