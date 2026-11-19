@@ -1,6 +1,6 @@
-## 2026-11-19 — P6-03/P6-04 finished, storefront ready for visual review
+## 2026-11-19 — Phase 6 closed with local visual approval
 
-Mobile discovery density, Arabic directional cues and buying, and the account privacy link received the bounded finish fixes. The design authority and coverage register reflect the built storefront. [Final local evidence and release inputs](../../apps/web/docs/design/implementation-evidence/phase-6.md). P6-05 awaits the owner's visual decision. No deployment.
+Mobile discovery density, Arabic directional cues and buying, and the account privacy link received the bounded finish fixes. The design authority and coverage register reflect the built storefront. [Final local evidence and release inputs](../../apps/web/docs/design/implementation-evidence/phase-6.md). The owner approved the revised storefront at `c2fcd17`, closing P6-05 and completing all 34 local redesign tasks. The release inputs remain open. Nothing was deployed.
 
 ## 2026-11-19 — P6-02 storefront verification matrix recorded
 

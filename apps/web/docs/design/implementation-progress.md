@@ -4,9 +4,9 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P6-03 and P6-04 verified. P6-05 awaiting owner review.** The [revised controls and typography](implementation-evidence/p6-05-controls.md#follow-up-control-pass) are ready for review. The [phase packet](implementation-evidence/phase-6.md) keeps the prior verdict and release inputs.
-- **Next eligible task:** **P6-05 — review the revised catalogue filters and product-card Add controls and record the owner’s decision.**
-- **Verified implementation tasks:** 33 of 34 (Phases 0–5 and P6-01–P6-04).
+- **Current work:** **P6-05 verified and closed.** The owner approved the [revised storefront visuals](implementation-evidence/p6-05-controls.md#latest-screens) at `c2fcd17`. The [phase packet](implementation-evidence/phase-6.md#p6-05-visual-acceptance) records the decision and remaining release inputs.
+- **Next eligible task:** All planned local redesign work is complete. The [remaining release work](implementation-evidence/phase-6.md#remaining-release-work) is tracked separately.
+- **Verified implementation tasks:** 34 of 34 (Phases 0–6).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
@@ -24,7 +24,7 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
 | 4 Catalogue/PDP | verified | P4-01–P4-05 verified locally. | [Phase 4 exit](implementation-evidence/phase-4.md) |
 | 5 Cart/checkout/customer | verified | P5-01–P5-05 verified locally. | [Phase 5 exit](implementation-evidence/phase-5.md) |
-| 6 Retirement/final review | awaiting_review | P6-01–P6-04 complete. P6-05 requires an owner decision. | [Phase 6 review packet](implementation-evidence/phase-6.md) |
+| 6 Retirement/final review | verified | All five tasks complete. Local visual acceptance recorded. | [Phase 6 review packet](implementation-evidence/phase-6.md) |
 
 ## Task ledger
 
@@ -65,7 +65,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P6-02 | verified | [Three-engine matrix, interaction checks and captures](implementation-evidence/p6-02-verification.md). NEW-007 goes to P6-03. |
 | P6-03 | verified | [Independent verdict, fix regression and captures](implementation-evidence/phase-6.md#p6-03-independent-review). Finish code `b1756c7`. Five resolved, historical seed provenance partial. |
 | P6-04 | verified | [Design authority](implementation-evidence/phase-6.md#p6-04-design-authority) and [C01–C63/NEW reconciliation](implementation-evidence/p6-04-coverage.md). |
-| P6-05 | awaiting_review | [Review packet and release inputs](implementation-evidence/phase-6.md#review-the-storefront). Owner-requested control and typography changes are implemented. [Revised screens](implementation-evidence/p6-05-controls.md#latest-screens) await visual acceptance. |
+| P6-05 | verified | [Owner approved the final local visuals](implementation-evidence/phase-6.md#p6-05-visual-acceptance) at `c2fcd17` on 19 November 2026. |
 
 ## Decisions and approval state
 
@@ -415,4 +415,8 @@ When interrupted or handing off, update this file before yielding where possible
 
 - The owner requested another visual fix after reviewing the follow-up pass at `2c4dcb1`. The specific change is pending. The local preview still serves home, listing, offers, product detail and cart.
 
-- The latest P6-05 revision removes boxed filter styling across the catalogue, gives card Add a rounded square, and adds brief feedback with reduced-motion support. [Updated captures and checks](implementation-evidence/p6-05-controls.md#catalogue-filters-and-quick-add) await review.
+- The latest P6-05 revision removes boxed filter styling across the catalogue, gives card Add a rounded square, and adds brief feedback with reduced-motion support. [Updated captures and checks](implementation-evidence/p6-05-controls.md#catalogue-filters-and-quick-add) were presented for review.
+
+### 2026-11-19 — Phase 6 exit
+
+- The owner selected “Approve and close P6-05” for `c2fcd17`. All 34 local implementation tasks are verified. The local Offers, All products and cart routes returned HTTP 200 before acceptance. Release inputs remain in the [Phase 6 packet](implementation-evidence/phase-6.md#remaining-release-work).

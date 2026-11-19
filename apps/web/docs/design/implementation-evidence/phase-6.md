@@ -52,7 +52,7 @@ The owner retained the layout and requested lighter controls and clearer typogra
 
 ### P6-05 visual acceptance
 
-Status **awaiting owner review**. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested refinements are implemented in the [control and type revision](p6-05-controls.md). After the follow-up control pass at `2c4dcb1`, the owner requested another visual fix. The owner then identified boxed catalogue filters, overly round Add buttons and inconsistent controls. Those fixes are ready for review in the [latest catalogue captures](p6-05-controls.md#latest-screens). Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
+Status **verified and approved for local visual scope**. On 19 November 2026, the owner selected “Approve and close P6-05” for storefront revision `c2fcd17`, including the revised catalogue filters and product-card Add control. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested refinements are implemented in the [control and type revision](p6-05-controls.md). After the follow-up control pass at `2c4dcb1`, the owner requested another visual fix. The owner then identified boxed catalogue filters, overly round Add buttons and inconsistent controls. The approved revision is shown in the [latest catalogue captures](p6-05-controls.md#latest-screens). Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
 
 ### Remaining release work
 
@@ -63,4 +63,4 @@ Status **awaiting owner review**. The owner chose “Request specific visual fix
 | Search maintainer | Evaluate English and Arabic relevance on representative production queries and catalogue data. The isolated search and recovery fixtures cover behavior. |
 | Release QA | Verify physical iOS/Android, Safari, assistive technologies, hardware safe areas, longer sessions, software keyboards and device input. The automated accessibility report covers the tested views. Production performance remains unmeasured. |
 | Commerce and integrations | Confirm region coverage, fees, hours, payment enablement, account/contact integration readiness, operational messaging and release rollback against the actual deployment environment. |
-| Business owner | Record visual acceptance from this packet. Any production release requires its own authorization and operational evidence. |
+| Business owner | Local visual acceptance is recorded above. Any production release requires its own authorization and operational evidence. |
