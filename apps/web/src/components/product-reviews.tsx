@@ -127,7 +127,7 @@ export function ProductReviews({ productId, reviews, locale = 'en' }: {
               <FieldDescription id="review-experience-help">{t('Please avoid personal medical information or contact details.')}</FieldDescription>
             </Field>
             {notice?.error ? <p className={styles.reviewMessage} data-error role="alert">{notice.text}</p> : null}
-            <Button type="submit" disabled={busy} aria-busy={busy} className="w-fit">
+            <Button type="submit" disabled={busy} aria-busy={busy} className="w-full sm:w-fit">
               {busy ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" /> : null}
               {busy ? t('Sending…') : t('Submit for review')}
             </Button>

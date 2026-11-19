@@ -1,5 +1,6 @@
 "use client";
 import { shopText as u } from '../lib/i18n-storefront';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { Locale } from '../lib/i18n';
 import { useRef, useState, type ReactNode, type TouchEvent } from "react";
 export function CampaignSlider({
@@ -17,6 +18,13 @@ export function CampaignSlider({
   const origin = useRef<{ x: number; y: number } | null>(null);
   const lastSwipe = useRef(0);
 
+  function move(delta: number, animate: boolean) {
+    setSlide(current => {
+      const index = Math.max(0, Math.min(children.length - 1, current.index + delta));
+      return index === current.index ? current : { index, animate };
+    });
+  }
+
   function onTouchStart(event: TouchEvent) {
     lastSwipe.current = 0;
     const touch = event.touches.length === 1 ? event.touches[0] : undefined;
@@ -33,8 +41,7 @@ export function CampaignSlider({
     if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     lastSwipe.current = Date.now();
     const delta = (dx < 0 ? 1 : -1) * (locale === 'ar' ? -1 : 1);
-    const next = Math.max(0, Math.min(children.length - 1, active + delta));
-    if (next !== active) setSlide({ index: next, animate: true });
+    move(delta, true);
   }
 
   function slideLabel(index: number) {
@@ -70,8 +77,13 @@ export function CampaignSlider({
         </div>
       ))}
       {children.length > 1 ? (
-        <div className="campaign-pagination flex justify-center" role="group" aria-label={u(locale,"Choose highlight")}>
-          {children.map((_, index) => (
+        <div className="campaign-pagination" role="group" aria-label={u(locale,"Choose highlight")}>
+          <button type="button" data-slot="carousel-arrow" disabled={active === 0}
+            aria-label={locale === 'ar' ? 'الشريحة السابقة' : 'Previous slide'}
+            onClick={event => move(-1, event.detail > 0)}>
+            <ChevronLeftIcon className="size-5 rtl:rotate-180" aria-hidden="true" />
+          </button>
+          {children.length > 5 ? <span className="campaign-counter" aria-hidden="true">{slideLabel(active)}</span> : children.map((_, index) => (
             <button
               key={index}
               data-slot="carousel-indicator"
@@ -87,6 +99,11 @@ export function CampaignSlider({
               />
             </button>
           ))}
+          <button type="button" data-slot="carousel-arrow" disabled={active === children.length - 1}
+            aria-label={locale === 'ar' ? 'الشريحة التالية' : 'Next slide'}
+            onClick={event => move(1, event.detail > 0)}>
+            <ChevronRightIcon className="size-5 rtl:rotate-180" aria-hidden="true" />
+          </button>
         </div>
       ) : null}
       <p className="sr-only" role="status" aria-atomic="true">{slideLabel(active)}</p>

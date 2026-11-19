@@ -185,6 +185,8 @@
   --store-elevation-overlay: 0 var(--store-space-8) var(--store-space-24) var(--store-overlay-shadow-color);
   /* Component roles; layout-specific geometry remains in its owner. */
   --store-control-radius: var(--store-radius-14);
+  --store-action-radius: var(--store-radius-10);
+  --store-field-radius: var(--store-radius-10);
   --store-compact-radius: 999px;
   --store-soft-action: var(--store-saved-surface);
   --store-card-radius: var(--store-radius-14);

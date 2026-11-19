@@ -18,7 +18,7 @@ for (const locale of ['en', 'ar'] as const) {
         const lead=await page.locator('.home-lead').evaluate(el=>getComputedStyle(el).display);
         expect(lead).toBe('grid');
         expect(await page.locator('.home-lead').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(1);
-        expect(await page.locator('.home-product-grid').evaluate(el=>el.getBoundingClientRect().top)).toBeLessThan(700);
+        expect(await page.locator('.home-product-shelf .home-product-grid').first().evaluate(el=>el.getBoundingClientRect().top)).toBeLessThan(700);
       }
     }
   });

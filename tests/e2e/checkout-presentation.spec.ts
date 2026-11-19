@@ -13,14 +13,14 @@ for (const locale of ['en', 'ar'] as const) {
     const dock = page.locator('.checkout-mobile-action');
     const name = page.locator('[name=name]');
     await expect(action).toHaveCount(1);
-    await expect(action).toHaveCSS('border-radius', '14px');
+    await expect(action).toHaveCSS('border-radius', '10px');
     await expect(dock).toHaveCSS('position', 'fixed');
     await expect.poll(() => dock.evaluate(element => {
       const shell = element.closest('.storefront-shell')!;
       const clearance = parseInt(getComputedStyle(shell).getPropertyValue('--checkout-dock-clearance'));
       return clearance >= element.getBoundingClientRect().height;
     })).toBe(true);
-    await expect(name).toHaveCSS('border-radius', '14px');
+    await expect(name).toHaveCSS('border-radius', '10px');
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `.verification-results/p5-02-${locale}-details-${page.context().browser()?.browserType().name()}.png` });
     await action.click();

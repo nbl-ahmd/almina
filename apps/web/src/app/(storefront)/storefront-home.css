@@ -23,7 +23,7 @@
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--store-space-20);
+  gap: var(--store-space-8);
 }
 
 [data-storefront-home] section { margin-block: 0; }
@@ -39,10 +39,13 @@
 .pharmacy-ad picture img { height: 100%; object-fit: cover; }
 [data-storefront-home] :is(.pharmacy-ad, .home-editorial-banner) img { display: block; width: 100%; }
 .home-editorial-banner img { height: auto; }
-.home-editorial-grid {
+.home-collection-section {
   display: grid;
-  gap: var(--store-space-10);
+  gap: var(--store-space-12);
 }
+.home-hero-banner { display: block; border-radius: var(--store-campaign-radius); }
+.home-hero-banner img { object-fit: cover; object-position: left center; }
+.home-hero-banner:dir(rtl) img { object-position: right center; }
 @media (prefers-reduced-motion: no-preference) {
   [data-storefront-home] :is(.pharmacy-ad a, .home-editorial-banner) img {
     transition: opacity var(--store-motion-feedback) var(--store-motion-easing);
@@ -168,7 +171,16 @@
 
 @media (max-width: 767px) {
   [data-storefront-home] .home-content { gap: var(--store-space-16); }
-  .home-lead { gap: var(--store-space-12); }
+  .home-lead { gap: var(--store-space-8); }
+  .home-collection-section .home-product-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - var(--store-space-10)) / 2.08);
+    overflow-x: auto;
+    padding: var(--store-space-4);
+    scroll-snap-type: inline proximity;
+  }
+  .home-collection-section .home-product-grid > article { scroll-snap-align: start; }
   [data-storefront-home] .home-category-lane .category-tile { flex-basis: 82px; }
   .storefront-shell [data-storefront-home] .category-tile h3 { overflow-wrap: break-word; }
 }
@@ -179,8 +191,13 @@
 @media (min-width: 768px) {
   [data-storefront-home] .home-content { padding-inline: var(--store-page-gutter-wide); }
 
-  :is(.pharmacy-ad picture, .home-banner-image) { aspect-ratio: 24 / 7; }
-  .home-editorial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--store-space-16); }
+  :is(.pharmacy-ad picture, .home-banner-image) { aspect-ratio: 4 / 1; }
+  .pharmacy-ad picture img { object-position: center 22%; }
+  .home-collection-section { gap: var(--store-space-16); }
+  .home-editorial-banner img {
+    aspect-ratio: 4 / 1;
+    object-fit: cover;
+  }
   .storefront-shell [data-storefront-home] .sf-section-heading h2 {
     font-size: var(--store-type-23);
   }
@@ -194,7 +211,6 @@
   }
 
   .home-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .home-managed-campaigns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
@@ -206,7 +222,33 @@
 }
 
 .campaign-frame { touch-action: pan-y pinch-zoom; }
-.campaign-pagination { flex-wrap: wrap; }
+.campaign-placeholder { min-block-size: var(--store-target-min); }
+.campaign-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--store-space-4);
+}
+.campaign-pagination [data-slot='carousel-arrow'] {
+  display: grid;
+  place-items: center;
+  inline-size: var(--store-target-min);
+  min-block-size: var(--store-target-min);
+  border: 0;
+  border-radius: var(--store-radius-10);
+  background: transparent;
+  color: var(--store-positive);
+  cursor: pointer;
+}
+.campaign-pagination [data-slot='carousel-arrow']:disabled { color: var(--store-disabled-text); cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  .campaign-pagination [data-slot='carousel-arrow']:hover:enabled { background: var(--store-hover-surface); }
+}
+.campaign-pagination .campaign-counter {
+  padding-inline: var(--store-space-10);
+  font-size: var(--store-type-13);
+  color: var(--store-text-muted);
+}
 @media (prefers-reduced-motion: no-preference) {
   .campaign-frame[data-pointer-entry] {
     opacity: 1;

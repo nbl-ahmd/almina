@@ -31,10 +31,11 @@ async function SectionHeading({ title, href, link = 'View all' }: {
   );
 }
 
-export function HomeHero({ locale, banners = [], campaigns = [] }: {
+export function HomeHero({ locale, banners = [], campaigns = [], loading = false }: {
   locale: Locale;
   banners?: Banner[];
   campaigns?: GrowthPage[];
+  loading?: boolean;
 }) {
   const ar = locale === 'ar';
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
@@ -53,7 +54,12 @@ export function HomeHero({ locale, banners = [], campaigns = [] }: {
       </Link>
     </div>
   );
-  if (!heroCampaigns.length && !banners.length) return <div className="home-campaigns">{lead}</div>;
+  if (loading) return <div className="home-campaigns">{lead}<div className="campaign-placeholder" aria-hidden="true" /></div>;
+
+  const evergreen = [
+    { artwork: 'personal-care', href: '/collections/daily-care', label: ar ? 'العناية اليومية. تسوق المجموعة' : 'Everyday personal care. Shop collection' },
+    { artwork: 'shop-brands', href: '/brands', label: ar ? 'تسوق حسب العلامة التجارية. استكشف العلامات التجارية' : 'Shop by brand. Explore brands' },
+  ];
 
   const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
   return (
@@ -62,6 +68,12 @@ export function HomeHero({ locale, banners = [], campaigns = [] }: {
         {[
           lead,
           ...heroCampaigns.map(page => <CampaignArtwork cloudName={cloudName} key={page.slug} page={page} />),
+          ...evergreen.map(({ artwork, href, label }) => (
+            <Link key={artwork} href={href} className="home-hero-banner" aria-label={label}>
+              <Image src={`/design/campaigns/${artwork}-${locale}.webp`} alt="" width={1440} height={480}
+                sizes="(min-width: 1240px) 1192px, calc(100vw - 32px)" className="home-banner-image" />
+            </Link>
+          )),
           ...banners.slice(0, 8).map((banner, index) => {
             const photo = <Image src={banner.image} alt={banner.name} width={1440} height={540}
               sizes="(max-width: 767px) 100vw, 1200px" loading="lazy" className="home-banner-image" />;
@@ -107,24 +119,26 @@ export function HomeShelf({ products, title, href }: { products: Product[]; titl
   );
 }
 
-export async function HomeEditorial() {
-  const locale = await getLocale();
+export function HomeCollectionSection({ locale, collection, products }: {
+  locale: Locale;
+  collection: 'skin-essentials' | 'baby-care';
+  products: Product[];
+}) {
   const ar = locale === 'ar';
-  const collections = [
-    { slug: 'skin-essentials', scene: 'skincare', label: ar ? 'أساسيات العناية بالبشرة' : 'Skincare essentials' },
-    { slug: 'baby-care', scene: 'family', label: ar ? 'العناية بالطفل والأسرة' : 'Baby and family care' },
-  ];
+  const skin = collection === 'skin-essentials';
+  const title = skin ? (ar ? 'أساسيات العناية بالبشرة' : 'Skincare essentials') : (ar ? 'العناية بالطفل والأسرة' : 'Baby and family care');
+  const href = `/collections/${collection}`;
+
   return (
-    <section aria-label={ar ? 'مجموعات العناية' : 'Care collections'}>
-      <SectionHeading title={ar ? 'تسوق حسب احتياجاتك' : 'Shop by need'} href="/collections/daily-care" link={ar ? 'العناية اليومية' : 'Everyday care'} />
-      <div className="home-editorial-grid">
-        {collections.map(({ slug, scene, label }) => (
-          <Link key={slug} href={`/collections/${slug}`} className="home-editorial-banner" aria-label={`${label}. ${ar ? 'تسوق المجموعة' : 'Shop collection'}`}>
-            <Image src={`/design/campaigns/${scene}-${locale}.webp`} alt="" width={960} height={320}
-              sizes="(min-width: 1240px) 588px, (min-width: 768px) 47vw, calc(100vw - 32px)" />
-          </Link>
-        ))}
-      </div>
+    <section className="home-collection-section" aria-label={title}>
+      <h2 className="sr-only">{title}</h2>
+      <Link href={href} className="home-editorial-banner" aria-label={`${title}. ${ar ? 'تسوق المجموعة' : 'Shop collection'}`}>
+        <Image src={`/design/campaigns/${skin ? 'skincare' : 'family'}-${locale}.webp`}
+          alt="" width={960} height={320} sizes="(min-width: 1240px) 1192px, calc(100vw - 32px)" />
+      </Link>
+      {products.length ? <div className="home-product-grid" data-store-rail>
+        {products.slice(0, 5).map(product => <ProductCard key={product._id} product={product} />)}
+      </div> : null}
     </section>
   );
 }

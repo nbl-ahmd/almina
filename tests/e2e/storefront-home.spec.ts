@@ -22,20 +22,30 @@ for (const locale of ['en', 'ar'] as const) {
         image.naturalWidth > 0 && image.currentSrc.includes(filename),
         `everyday-care-${locale}-wide.webp`,
       )).toBe(true);
-      const collections = home.locator('.home-editorial-grid');
-      await expect(collections.locator('a')).toHaveCount(2);
+      const collections = home.locator('.home-collection-section');
+      await expect(collections).toHaveCount(2);
+      await expect(collections.nth(0).locator('a.home-editorial-banner')).toHaveAttribute('href', '/collections/skin-essentials');
+      await expect(collections.nth(1).locator('a.home-editorial-banner')).toHaveAttribute('href', '/collections/baby-care');
+      await expect(home.locator('[data-slot=carousel-indicator]')).toHaveCount(3);
       await expect(home.locator('.home-category-lane a').first()).toBeVisible();
       for (const [width, columns] of [[1440, 5], [1100, 4], [768, 3], [390, 2], [320, 2]] as const) {
         await page.setViewportSize({ width, height: 844 });
         expect(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(columns);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         const collectionArt = await collections.locator('img').first().evaluate(image => image.getBoundingClientRect().toJSON());
-        expect(collectionArt.width / collectionArt.height).toBeCloseTo(3, 1);
+        expect(collectionArt.width / collectionArt.height).toBeCloseTo(width >= 768 ? 4 : 3, 1);
       }
       await expect.poll(() => artwork.evaluate((image: HTMLImageElement, filename) =>
         image.naturalWidth > 0 && image.currentSrc.includes(filename),
         `everyday-care-${locale}-phone.webp`,
       )).toBe(true);
+      const carousel = home.locator('[aria-roledescription]').first();
+      await carousel.getByRole('button', { name: locale === 'ar' ? 'الشريحة التالية' : 'Next slide' }).click();
+      await expect(carousel.locator('.campaign-frame:visible a')).toHaveAttribute('href', '/collections/daily-care');
+      await carousel.getByRole('button', { name: locale === 'ar' ? 'الشريحة التالية' : 'Next slide' }).click();
+      await expect(carousel.locator('.campaign-frame:visible a')).toHaveAttribute('href', '/brands');
+      await expect(carousel.locator('.campaign-frame:visible img')).toHaveJSProperty('complete', true);
+      expect(await carousel.locator('.campaign-frame:visible img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
     } finally {
       expect((await request.get(fixture + '/home-stock?mode=normal')).ok()).toBe(true);
     }
@@ -49,7 +59,7 @@ test('home distinguishes empty stock from a failed catalogue and keeps the lead 
     await expect(page.getByRole('heading', { name: 'No in-stock products to show right now' })).toBeVisible();
     await expect(page.locator('.home-empty a')).toHaveAttribute('href', '/products');
     await expect(page.locator('.home-product-grid, .home-brands, .home-managed-campaigns')).toHaveCount(0);
-    await expect(page.locator('[data-slot=carousel-indicator]')).toHaveCount(0);
+    await expect(page.locator('[data-slot=carousel-indicator]')).toHaveCount(3);
   } finally {
     expect((await request.get(fixture + '/home-stock?mode=normal')).ok()).toBe(true);
   }

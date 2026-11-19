@@ -60,13 +60,14 @@
   overflow-wrap: anywhere;
 }
 .boundary [data-slot='button'][data-shape='default'] {
-  border-radius: var(--store-control-radius);
+  border-radius: var(--store-action-radius);
 }
 .boundary [data-slot='button'] { font-weight: var(--store-weight-medium); }
 .boundary [data-slot='button']:is([data-variant='default'], [data-variant='accent']) {
   background: var(--store-purchase-surface);
   border-color: var(--store-purchase-surface);
   color: var(--store-purchase-foreground);
+  font-weight: var(--store-weight-semibold);
   opacity: 1;
 }
 .boundary [data-slot='button']:is([data-variant='default'], [data-variant='accent']):where(:hover:not(:disabled):not([aria-busy='true'])) {
@@ -74,8 +75,9 @@
   border-color: var(--store-action-hover);
 }
 .boundary [data-slot='button'][data-variant='outline'] {
-  background: var(--store-secondary-surface);
-  border-color: transparent;
+  background: var(--store-surface);
+  border-color: var(--store-border-control);
+  color: var(--store-positive);
 }
 .boundary [data-slot='button'][data-variant='secondary'] {
   background: var(--store-secondary-surface);
@@ -91,7 +93,7 @@
 /* Hover belongs to the same owner as its variant, not lower-layer colour utilities. */
 .boundary [data-slot='button'][data-variant='outline']:where(:hover:not(:disabled):not([aria-busy='true'])) {
   background: var(--store-hover-surface);
-  border-color: transparent;
+  border-color: var(--store-positive);
 }
 .boundary [data-slot='button'][data-variant='secondary']:where(:hover:not(:disabled):not([aria-busy='true'])) {
   background: var(--store-selected-surface);
@@ -129,16 +131,19 @@
   color: var(--store-saved);
   background: var(--store-saved-surface);
 }
-/* Retail text entry uses a light well with a clear single edge.
-   Scope the treatment to retail and leave geometry to the route. */
+.aliases[data-storefront-retail] [data-slot='field-label'] {
+  color: var(--store-text);
+  font-weight: var(--store-weight-semibold);
+}
+/* Retail text entry and its states share a continuous, neutral field edge. */
 :where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])) {
-  border-color: var(--store-border);
-  border-block-end-color: var(--store-border-control);
+  border-color: var(--store-border-control);
+  border-radius: var(--store-field-radius);
   background-color: var(--store-surface);
 }
 :where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])):enabled:hover {
-  border-block-end-color: var(--store-positive);
-  background-color: var(--store-canvas);
+  border-color: var(--store-positive);
+  background-color: var(--store-surface);
 }
 :where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])):disabled {
   border-color: var(--store-border);

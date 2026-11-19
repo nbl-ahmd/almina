@@ -36,13 +36,14 @@
   },
   "rounded": {
     "control": "--store-control-radius",
+    "action": "--store-action-radius",
     "card": "--store-card-radius",
     "search": "--store-search-radius",
     "search-action": "--store-search-action-radius",
     "campaign": "--store-campaign-radius",
     "status": "--store-compact-radius",
     "option": "--store-compact-radius",
-    "field": "--store-control-radius",
+    "field": "--store-field-radius",
     "compact": "--store-compact-radius",
     "quick-action": "--store-radius-10"
   },

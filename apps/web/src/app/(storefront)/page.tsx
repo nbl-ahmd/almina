@@ -11,7 +11,7 @@ import {
   HomeManagedCampaigns,
   HomeBrandStrip,
   HomeCategories,
-  HomeEditorial,
+  HomeCollectionSection,
   HomeHero,
   HomeShelf,
 } from "../../components/homepage";
@@ -25,6 +25,9 @@ import { metadataFor } from "../../lib/server/seo";
 import type { Query } from "../../lib/seo";
 import {
   catalogueBrands,
+  collectionProducts,
+  homeCollections,
+  prioritizeShelf,
   uniqueProducts,
 } from "../../lib/catalog/merchandising";
 import { displayPrice } from "../../lib/catalog/model";
@@ -65,7 +68,7 @@ export default async function HomePage() {
       <div className="home-content">
         <h1 className="sr-only">{u(locale, "Al Mina Pharmacy — health, beauty and everyday care")}</h1>
         <div className="home-lead">
-          <Suspense fallback={<HomeHero locale={locale} />}>
+          <Suspense fallback={<HomeHero locale={locale} loading />}>
             <HomeCampaign locale={locale} banners={banners} campaigns={campaigns} />
           </Suspense>
           <Suspense fallback={null}><HomeCategoryLane /></Suspense>
@@ -126,8 +129,11 @@ async function HomeProducts({ locale }: { locale: Locale }) {
     <>
       <HomeShelf title={u(locale, "Your everyday essentials")} products={shelf} href="/products" />
       <Suspense fallback={null}><HomeOffers locale={locale} exclude={shelf.map(product => product._id)} /></Suspense>
-      <HomeEditorial />
+      <HomeCollectionSection locale={locale} collection="skin-essentials"
+        products={prioritizeShelf(collectionProducts(homeCollections[0], products), shelf)} />
       <HomeBrandStrip brands={catalogueBrands(products.filter(product => product.brand?.trim() || product.familyBrand?.trim()))} />
+      <HomeCollectionSection locale={locale} collection="baby-care"
+        products={prioritizeShelf(collectionProducts(homeCollections[1], products), shelf)} />
     </>
   );
 }

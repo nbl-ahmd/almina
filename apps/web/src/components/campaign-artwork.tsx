@@ -16,7 +16,7 @@ export function CampaignArtwork({ page, preview, cloudName }: {
   const arabic = page.locale === 'ar';
   const lead = page.homepagePlacement === 'hero';
   const width = preview === 'mobile' ? 800 : 1440;
-  const mediaRatio = lead ? 'aspect-[8/3] md:aspect-[24/7]' : 'aspect-[3/1]';
+  const mediaRatio = lead ? 'aspect-[8/3] md:aspect-[4/1]' : 'aspect-[3/1]';
   const action = page.ctaLabel || (arabic ? 'استكشف العرض' : 'Explore campaign');
 
   if (!src) {
@@ -36,7 +36,7 @@ export function CampaignArtwork({ page, preview, cloudName }: {
     : undefined;
   const image = (
     <picture className={`block overflow-hidden rounded-2xl bg-subtle ${mediaRatio}`}
-      style={preview ? { aspectRatio: lead ? preview === 'mobile' ? '8 / 3' : '24 / 7' : '3 / 1' } : undefined}>
+      style={preview ? { aspectRatio: lead ? preview === 'mobile' ? '8 / 3' : '4 / 1' : '3 / 1' } : undefined}>
       {mobileSource ? <source media="(max-width: 767px)" srcSet={mobileSource.srcSet} sizes={mobileSource.sizes} /> : null}
       <Image src={src} alt={preview ? page.imageAlt : ''} width={width} height={preview === 'mobile' ? 400 : 540}
         sizes={preview === 'mobile' ? '390px' : lead ? '(max-width: 767px) 100vw, 1200px' : '(max-width: 767px) 100vw, 600px'}
