@@ -4,14 +4,14 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P6-01 verified.** Retired the comparison runtime and isolated the prior palette to wholesale and root missing-page recovery. [Retirement inventory and checks](implementation-evidence/p6-01-retirement.md).
-- **Next eligible task:** **P6-02 — run the final route, device, locale, state and interaction verification matrix.**
-- **Verified implementation tasks:** 30 of 34 (Phases 0–5 and P6-01).
+- **Current work:** **P6-02 verified.** Completed the local route and interaction matrix and recorded the account privacy-link accessibility finding for finish review. [Verification and captures](implementation-evidence/p6-02-verification.md).
+- **Next eligible task:** **P6-03 — independent finish review and targeted fixes, including NEW-007.**
+- **Verified implementation tasks:** 31 of 34 (Phases 0–5 and P6-01–P6-02).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P6-01 passed the isolated build, web typecheck, lint, Chromium and WebKit regressions, 34 focused unit checks and 24 live viewport checks. P6-02 includes the baseline-reproduced checkout telemetry test mismatch. Native devices and provider verification remain open.
+- **Runtime/testing this checkpoint:** P6-02 passed build, workspace typecheck, lint, raw SEO smoke, 274 unit checks, 215 Chromium and 27 each WebKit/Firefox interaction cases, and 864 viewport checks. Consent and withdrawal were verified through the cart footer. The axe finding, native devices and provider verification remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -24,7 +24,7 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
 | 4 Catalogue/PDP | verified | P4-01–P4-05 verified locally. | [Phase 4 exit](implementation-evidence/phase-4.md) |
 | 5 Cart/checkout/customer | verified | P5-01–P5-05 verified locally. | [Phase 5 exit](implementation-evidence/phase-5.md) |
-| 6 Retirement/final review | in_progress | P6-01 verified. P6-02 covers the final matrix. | [Retirement inventory](implementation-evidence/p6-01-retirement.md) |
+| 6 Retirement/final review | in_progress | P6-01 and P6-02 verified. Independent finish review follows. | [Retirement](implementation-evidence/p6-01-retirement.md), [Local matrix](implementation-evidence/p6-02-verification.md) |
 
 ## Task ledger
 
@@ -62,7 +62,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P5-04 | verified | [Route dispositions, local captures and browser checks](implementation-evidence/p5-04-information.md) |
 | P5-05 | verified | [Customer, wholesale and admin regressions and Phase 5 exit](implementation-evidence/phase-5.md) |
 | P6-01 | verified | [Retirement audit, shared dependencies and regressions](implementation-evidence/p6-01-retirement.md) |
-| P6-02 | not_started | — |
+| P6-02 | verified | [Three-engine matrix, interaction checks and captures](implementation-evidence/p6-02-verification.md). NEW-007 goes to P6-03. |
 | P6-03 | not_started | — |
 | P6-04 | not_started | — |
 | P6-05 | not_started | — |
@@ -103,7 +103,8 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O06 | Search matching/Arabic quality and true back/scroll behaviour | P4-05 verifies contextual return and an offline search benchmark. Representative catalogue relevance and Arabic matching remain open. | P0-03, P4-05 |
 | O07 | NEW-001/002/003: wholesale shares customer CSS/shell; root 404 imports it; admin campaign preview shares artwork/Outfit | Isolation/compatibility and preview policy required before accepted customer system switch; see P0-02 matrix. No shared deletion yet. | P2-01–P2-03, P3-03–P3-04, P6-01 |
 | O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route recovery are localized. P5-04 localizes saved-product states and applies the account’s existing localized copy in the accepted layout. | P4-05 verifies in-page return with exact query, filters and focus. P5-05 verifies saved and account states and retail-to-shared transitions in both locales. | P3-04, P4-05, P5-05, P6-02 |
-| O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Twelve bounded P3-04 fixture cycles resolved and twelve P4-05 returns did not reproduce the stall. Broader long-session verification remains open. | P3-04, P4-05, P6-02 |
+| O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. P3-04, P4-05 and the bounded P6-02 sequences did not reproduce the stall. P6-02 documents separate request-cancellation messages on rapid WebKit development navigation. Longer native sessions remain open. | P3-04, P4-05, P6-02 |
+| O10 | NEW-007: the account’s inline privacy notice relies on color alone | Bilingual axe finding reproduced on the signed-out email sign-in surface. | P6-03 |
 
 No blocker to starting P1-02 with the contract safeguards has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
 
@@ -389,3 +390,10 @@ When interrupted or handing off, update this file before yielding where possible
 - Removed the runnable design comparison and obsolete visual QA tooling. Current retail routes use the accepted palette at the layout boundary. Wholesale and root recovery retain explicitly scoped compatibility.
 - Updated active instructions and marked the previous proof material historical. Preserved shared styling, fonts and media with active or unverified consumers.
 - Recorded [build and browser evidence](implementation-evidence/p6-01-retirement.md). Continue with P6-02.
+
+
+### 2026-11-19 — P6-02 verified
+
+- Reconciled checkout telemetry tests with the actual consent controls. Verified the compiled shopping and shared route boundaries in Chromium and selected interactions in WebKit and Firefox.
+- Recorded the [local matrix and reference captures](implementation-evidence/p6-02-verification.md), the bilingual axe finding and physical-device/provider limits.
+- Continue with P6-03. The next review owns material fixes and refreshed evidence.

@@ -1,3 +1,7 @@
+## 2026-11-19 — P6-02 storefront verification matrix recorded
+
+The compiled storefront passed bilingual route, viewport, purchase and account regressions on isolated fixtures. The matrix also records an inline privacy-link accessibility finding for P6-03. [Matrix results and reference captures](../../apps/web/docs/design/implementation-evidence/p6-02-verification.md). No deployment.
+
 ## 2026-11-19 — P6-01 storefront design retirement verified
 
 The development comparison and superseded storefront tooling were retired. Retail now inherits the accepted palette, and wholesale and root recovery keep their compatibility scope. [Retirement inventory and regressions](../../apps/web/docs/design/implementation-evidence/p6-01-retirement.md). P6-02 covers the final verification matrix. No deployment.

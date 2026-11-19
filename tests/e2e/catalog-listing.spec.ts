@@ -16,7 +16,10 @@ for (const locale of ['en', 'ar'] as const) {
     await expect(sort).toHaveValue('price-desc');
     const [disclosure, select] = await Promise.all([summary.boundingBox(), sort.boundingBox()]);
     expect(disclosure?.y).toBe(select?.y);
-    for (const box of [disclosure, select]) expect(box!.height).toBeGreaterThanOrEqual(44);
+    await expect(summary).toHaveCSS('min-block-size', '44px');
+    await expect(sort).toHaveCSS('min-block-size', '44px');
+    // Firefox can report subpixel bounding boxes just below the computed CSS minimum.
+    for (const box of [disclosure, select]) expect(box!.height).toBeGreaterThanOrEqual(44 - 1 / 64);
 
     await summary.focus();
     await page.keyboard.press('Space');
@@ -76,9 +79,10 @@ test('a partial search outage leaves the exact identifier fallback available', a
 
 test('a phone filter opened before the client loads stays open after hydration', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
-  const scripts = Promise.withResolvers<void>();
+  let releaseScripts!: () => void;
+  const scriptsReady = new Promise<void>(resolve => { releaseScripts = resolve; });
   await page.route('**/_next/static/**/*.js', async route => {
-    await scripts.promise;
+    await scriptsReady;
     await route.continue();
   });
   const panel = page.locator('#catalog-filters');
@@ -87,7 +91,7 @@ test('a phone filter opened before the client loads stays open after hydration',
     await panel.locator(':scope > summary').click();
     await expect(panel).toHaveAttribute('open', '');
   } finally {
-    scripts.resolve();
+    releaseScripts();
   }
   await page.waitForLoadState('load');
   await page.getByRole('button', { name: 'Choose delivery area', exact: true }).click();
