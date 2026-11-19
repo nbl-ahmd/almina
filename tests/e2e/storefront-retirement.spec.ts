@@ -43,8 +43,8 @@ for(const lang of ['en','ar'] as const) {
   await page.goto('/products/daily-care--PD0001');
   const shell=page.locator('[data-storefront-retail]');
   await expect(shell).toHaveAttribute('dir',lang==='ar'?'rtl':'ltr');
-  await expect(shell).toHaveCSS('background-color','rgb(250, 251, 251)');
-  await expect(shell).toHaveCSS('color','rgb(32, 42, 48)');
+  await expect(shell).toHaveCSS('background-color','rgb(247, 250, 248)');
+  await expect(shell).toHaveCSS('color','rgb(28, 41, 37)');
   const add=page.locator('.add-to-cart:visible').first();await add.click();await expect(add).toHaveAttribute('data-added','true');await add.hover();
   await expect(add).toHaveCSS('background-color','rgb(234, 243, 239)');await expect(add).toHaveCSS('border-color','rgb(38, 96, 77)');
   await page.goto('/products');const cardAdd=page.locator('.product-card .add-to-cart').first();await cardAdd.click();await expect(cardAdd).toHaveAttribute('data-added','true');await cardAdd.hover();await expect(cardAdd).toHaveCSS('background-color','rgb(234, 243, 239)');

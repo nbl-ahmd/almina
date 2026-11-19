@@ -8,6 +8,8 @@ Search leads known-item shopping, with category/product discovery available with
 
 The owner selected **A/full-width campaign, five wide-screen home columns** and retained the shown Figtree/Alexandria, near-white ground, dark-on-coral actions and compact bordered cards. After requesting changes to the standalone phone PDP toolbar, the owner specified N03 `03-green-pharmacy-screens.jpg`, with the image filling the top. P1-05 closed when implementation continued after that revised preview; this is a local direction gate, not production/release approval.
 
+The subsequent owner review kept these compositions and requested lighter shopping controls, quieter borders and a clearer type hierarchy. [The current review revision](docs/design/implementation-evidence/p6-05-controls.md) uses DM Sans and Noto Sans Arabic with soft mint and coral control surfaces.
+
 ## Desired experience and principles
 
 1. Make search, delivery context and cart immediately findable; recover queries and return paths.

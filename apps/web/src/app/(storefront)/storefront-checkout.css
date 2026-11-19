@@ -124,6 +124,7 @@
 .checkout-frame .checkout-form [data-slot='field-label'] {
   color: var(--store-text);
   font-size: var(--store-type-13);
+  font-weight: var(--store-weight-medium);
   line-height: var(--store-leading-product);
 }
 .checkout-frame :is([data-slot='input'], [data-slot='native-select']) {
@@ -158,9 +159,9 @@
   font-weight: 400;
   gap: var(--store-space-10);
   padding: var(--store-space-12);
-  border: 1px solid var(--store-border-control);
+  border: 1px solid var(--store-border);
   border-radius: var(--store-control-radius);
-  background: var(--store-surface);
+  background: var(--store-secondary-surface);
   cursor: pointer;
 }
 .checkout-frame .checkout-payment-choice input {
@@ -176,7 +177,7 @@
 .checkout-frame .checkout-payment-choice:has(:disabled) { cursor: not-allowed; }
 .checkout-frame .checkout-payment-choice[data-selected='true'] {
   background: var(--store-selected-surface);
-  border-color: var(--store-text);
+  border-color: var(--store-border);
 }
 .checkout-frame .checkout-payment-icon { color: var(--store-text-muted); flex: none; }
 .checkout-frame .checkout-radio-mark {

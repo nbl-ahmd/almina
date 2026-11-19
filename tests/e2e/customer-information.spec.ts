@@ -17,7 +17,7 @@ for (const locale of ['en', 'ar'] as const) {
       const surface = page.locator('main [data-storefront-information]');
       await expect(surface).toHaveAttribute('dir', ar ? 'rtl' : 'ltr');
       await expect(surface.getByRole('heading', { level: 1 })).toBeVisible();
-      await expect(surface).toHaveCSS('background-color', 'rgb(250, 251, 251)');
+      await expect(surface).toHaveCSS('background-color', 'rgb(247, 250, 248)');
       expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(390);
       if (ar && ['/shipping', '/returns', '/privacy', '/terms'].includes(path)) {
         await expect(surface.locator('article')).toHaveAttribute('lang', 'en');

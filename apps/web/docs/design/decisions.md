@@ -41,7 +41,7 @@ verification limits; historical test outcomes were not rerun for this task.
 | Real Al Mina identity and exact primary #FF5A5F | Owner-confirmed, preserved across requests | Retain logo/facts; do not copy reference greens/blues or invent claims. |
 | Search leads, discovery remains accessible | Latest owner search-priority instruction | Search/location/cart context stays prominent. Earlier balanced-task answer does not override that later priority. |
 | Full-width campaign A and five wide-screen home columns | Explicit P1-05 owner choice | Split-lead/four-column controls in the proof are historical comparisons, not defaults for new work. |
-| Figtree/Alexandria, near-white ground, dark-on-coral actions, compact bordered cards | Explicit P1-05 owner choice to retain shown system | Use the accepted token system; do not select a new palette/font pair from tools. |
+| Figtree/Alexandria, near-white ground, dark-on-coral actions, compact bordered cards | Historical P1-05 owner choice | P6-05 retains the selected composition. The current typography and control treatment are presented for owner review. |
 | Image-first phone PDP from N03 with overlay controls and sticky buying | Owner correction after declining the standalone toolbar, then continuation after revised preview | P1-05 local gate closed by the recorded continuation. Do not describe this as an explicit production sign-off or revive the standalone toolbar. |
 | Compact factual product-card anatomy and dirham icon | Earlier explicit card correction plus selected coded system | Preserve image/identity/availability/price/action hierarchy; no copied ratings, fabricated metadata or stock promises. Current card pack metadata is shown only where real. |
 | Preserve routes, SEO, EN/AR/RTL, accessibility and commerce/auth/integrations | Confirmed ongoing safeguards | Native controls, server authority and shared/admin boundaries survive every stage. |
@@ -76,6 +76,8 @@ P5-05 gives the category component ownership of media, fallback and labels. The 
 P6-01 gives the retail layout the accepted palette and limits the prior palette to explicit wholesale and root recovery wrappers. The comparison routes and duplicate tooling were retired. Current retail routes provide working examples. [Retirement and remaining dependencies](implementation-evidence/p6-01-retirement.md).
 
 P6-03 preserves the selected local system and completes the bounded visual fixes. P6-04 updates the design authority and [requirement reconciliation](implementation-evidence/p6-04-coverage.md). Final owner visual acceptance is recorded in the [Phase 6 packet](implementation-evidence/phase-6.md#p6-05-visual-acceptance).
+
+The owner requested a specific revision to P6-05 visuals. Keep the existing layouts and replace the dense control treatment with clearer typography, quieter surface and border roles, and compact buying interactions. [Implementation and revised captures](implementation-evidence/p6-05-controls.md).
 
 ## Proposed choices and open questions
 

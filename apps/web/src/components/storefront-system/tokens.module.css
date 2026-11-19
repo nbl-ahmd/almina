@@ -3,17 +3,17 @@
 .system {
   /* Primitive values from accepted screens. */
   --store-ref-color-coral: #ff5a5f;
-  --store-ref-color-ink: #202a30;
-  --store-ref-color-muted: #58636b;
-  --store-ref-color-line: #dce1e3;
+  --store-ref-color-ink: #1c2925;
+  --store-ref-color-muted: #50635e;
+  --store-ref-color-line: #e2ebe7;
   --store-ref-color-control-line: #7c898f;
-  --store-ref-color-canvas: #fafbfb;
+  --store-ref-color-canvas: #f7faf8;
   --store-ref-color-positive: #26604d;
   --store-ref-color-notice: #e9edef;
-  --store-ref-color-input: #f7f9f9;
-  --store-ref-color-overlay-shadow: #202a301c;
-  --store-ref-color-hover: #f0f3f4;
-  --store-ref-color-campaign: #ffe5e2;
+  --store-ref-color-input: #edf4f1;
+  --store-ref-color-overlay-shadow: #1c29251c;
+  --store-ref-color-hover: #e8f2ed;
+  --store-ref-color-campaign: #ffe4df;
   --store-ref-color-action-hover: #fb565c;
   --store-ref-color-positive-surface: #eaf3ef;
   --store-ref-color-unavailable: #685941;
@@ -23,9 +23,9 @@
   --store-ref-color-disabled-text: #6c757a;
   --store-ref-color-disabled-surface: #e7ebed;
   --store-ref-color-error: #a11d31;
-  --store-ref-color-selected-surface: #e6edef;
-  --store-ref-color-secondary-surface: #f0f3f3;
-  --store-ref-color-stress-error: #a52b38;
+  --store-ref-color-selected-surface: #e0eee8;
+  --store-ref-color-secondary-surface: #eef5f1;
+  --store-ref-color-stress-error: #9c2e3b;
   --store-ref-color-selection: #ffd2d2;
   --store-ref-color-focus: #125d87;
   --store-ref-color-surface: #ffffff;
@@ -78,8 +78,9 @@
   --store-ref-type-21: 21px;
   --store-ref-type-23: 23px;
   --store-ref-type-32: 32px;
+  --store-ref-weight-500: 500;
   --store-ref-weight-600: 600;
-  --store-ref-weight-700: 700;
+  --store-ref-weight-650: 650;
   --store-ref-leading-110: 1.1;
   --store-ref-leading-120: 1.2;
   --store-ref-leading-125: 1.25;
@@ -92,8 +93,9 @@
   --store-type-21: var(--store-ref-type-21);
   --store-type-23: var(--store-ref-type-23);
   --store-type-32: var(--store-ref-type-32);
+  --store-weight-medium: var(--store-ref-weight-500);
   --store-weight-semibold: var(--store-ref-weight-600);
-  --store-weight-bold: var(--store-ref-weight-700);
+  --store-weight-bold: var(--store-ref-weight-650);
   --store-leading-display: var(--store-ref-leading-110);
   --store-leading-title: var(--store-ref-leading-120);
   --store-leading-heading: var(--store-ref-leading-125);
@@ -180,7 +182,9 @@
   --store-motion-easing: var(--store-ref-easing-feedback);
   --store-elevation-overlay: 0 var(--store-space-8) var(--store-space-24) var(--store-overlay-shadow-color);
   /* Component roles; layout-specific geometry remains in its owner. */
-  --store-control-radius: var(--store-radius-10);
+  --store-control-radius: var(--store-radius-14);
+  --store-compact-radius: 999px;
+  --store-soft-action: var(--store-saved-surface);
   --store-card-radius: var(--store-radius-14);
   --store-card-padding: var(--store-space-10);
   /* Counts are redundant visual hints; status labels carry product information. */
@@ -190,16 +194,16 @@
   --store-stock-inset-inline: var(--store-space-8);
   --store-stock-inset-block-phone: var(--store-space-2);
   --store-stock-inset-inline-phone: var(--store-space-6);
-  --store-search-radius: var(--store-radius-12);
-  --store-search-action-radius: var(--store-radius-8);
+  --store-search-radius: var(--store-radius-18);
+  --store-search-action-radius: var(--store-radius-12);
   --store-search-surface: var(--store-input-surface);
   --store-purchase-surface: var(--store-action);
   --store-purchase-foreground: var(--store-text);
   --store-campaign-radius: var(--store-radius-18);
   --store-page-gutter: var(--store-space-16);
   --store-page-gutter-wide: var(--store-space-24);
-  --store-page-title-size: var(--store-type-30);
-  --store-page-title-size-phone: var(--store-type-25);
+  --store-page-title-size: var(--store-type-28);
+  --store-page-title-size-phone: var(--store-type-24);
   --store-product-title-size: var(--store-type-28);
   --store-product-title-size-phone: var(--store-type-22);
   --store-product-price-size: var(--store-type-30);
@@ -207,5 +211,5 @@
   font-family: var(--store-font-body);
 }
 .system[lang="ar"] {
-  --store-font-body: var(--font-storefront-arabic);
+  --store-font-body: var(--font-storefront-arabic), var(--font-storefront-latin), sans-serif;
 }

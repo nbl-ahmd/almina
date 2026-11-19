@@ -41,7 +41,7 @@
   [data-mobile-shell] .header-location-value {
     color: var(--store-text);
     font-size: var(--store-type-12);
-    font-weight: var(--store-weight-bold);
+    font-weight: var(--store-weight-medium);
   }
 
   [data-mobile-shell] [data-slot='delivery-selector'] svg {
@@ -53,9 +53,9 @@
 
   .storefront-shell [data-mobile-shell] .header-content > .header-cart {
     grid-area: 1 / 4;
-    background: var(--store-surface);
+    background: transparent;
     color: var(--store-text);
-    border-color: var(--store-border);
+    border-color: transparent;
   }
 
   [data-mobile-shell] .header-search { grid-area: 2 / 1 / auto / -1; }
@@ -128,6 +128,10 @@
   }
 
   [data-mobile-shell] .mobile-tab svg { stroke-width: var(--store-icon-stroke); }
+  [data-mobile-shell] .mobile-tab[aria-current="page"] .mobile-tab-icon {
+    border-radius: var(--store-compact-radius);
+    background: var(--store-soft-action);
+  }
 
   .storefront-shell [data-mobile-shell] .mobile-tab[aria-current='page'],
   .storefront-shell [data-mobile-shell] .mobile-tab[aria-current='page'] svg {

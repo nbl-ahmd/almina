@@ -162,7 +162,7 @@
     "shadows": [
       {
         "name": "overlay",
-        "value": "0 8px 24px #202a301c",
+        "value": "0 8px 24px #1c29251c",
         "purpose": "Suggestions/dialog context; cards stay flat."
       }
     ],
@@ -204,7 +204,7 @@
       "refersTo": "button-primary",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Primary action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ff5a5f;color:#202a30;border-color:#ff5a5f;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled),.ds-button:active:not(:disabled){background:#fb565c;border-color:#fb565c;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button[aria-busy=true]{background:#ff5a5f;border-color:#ff5a5f;color:#202a30;cursor:progress;}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:14px;font:500 15px/1.5 \"DM Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ff5a5f;color:#1c2925;border-color:#ff5a5f;}.ds-button:focus-visible{outline:2px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled),.ds-button:active:not(:disabled){background:#fb565c;border-color:#fb565c;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#e2ebe7;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button[aria-busy=true]{background:#ff5a5f;border-color:#ff5a5f;color:#1c2925;cursor:progress;}"
     },
     {
       "name": "Outline action",
@@ -212,7 +212,7 @@
       "refersTo": "button-outline",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Outline action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ffffff;color:#202a30;border-color:#7c898f;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#f0f3f4;color:#202a30;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){border-color:#125d87;}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:14px;font:500 15px/1.5 \"DM Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#eef5f1;color:#1c2925;border-color:transparent;}.ds-button:focus-visible{outline:2px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#e8f2ed;color:#1c2925;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#e2ebe7;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){border-color:transparent;}"
     },
     {
       "name": "Ghost action",
@@ -220,7 +220,7 @@
       "refersTo": "button-ghost",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Ghost action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#58636b;border-color:transparent;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#f0f3f4;color:#202a30;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:14px;font:500 15px/1.5 \"DM Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#50635e;border-color:transparent;}.ds-button:focus-visible{outline:2px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#e8f2ed;color:#1c2925;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#e2ebe7;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Destructive action",
@@ -228,7 +228,7 @@
       "refersTo": "button-destructive",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Destructive action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#a11d31;color:#ffffff;border-color:#a11d31;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){filter:brightness(.95);}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:14px;font:500 15px/1.5 \"DM Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#a11d31;color:#ffffff;border-color:#a11d31;}.ds-button:focus-visible{outline:2px solid #125d87;outline-offset:3px;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#e2ebe7;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){filter:brightness(.95);}"
     },
     {
       "name": "Labelled field",
@@ -236,7 +236,7 @@
       "refersTo": "field",
       "description": "Compact labelled field with visible focus and invalid states. Checkout and account layouts own their field geometry.",
       "html": "<label class=\"ds-label\">Field sample<input class=\"ds-field\" value=\"Synthetic value\" /></label>",
-      "css": ".ds-label{display:grid;gap:6px;font:700 14px/1.5 storefrontLatin,Figtree,sans-serif;color:#202a30;}.ds-field{box-sizing:border-box;min-height:48px;width:100%;min-width:0;padding:12px 16px;border:1px solid #7c898f;border-radius:12px;background:#f0f3f3;color:#202a30;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:3px solid #125d87;outline-offset:3px;background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
+      "css": ".ds-label{display:grid;gap:6px;font:700 14px/1.5 \"DM Sans\",sans-serif;color:#1c2925;}.ds-field{box-sizing:border-box;min-height:48px;width:100%;min-width:0;padding:12px 16px;border:1px solid #7c898f;border-radius:14px;background:#eef5f1;color:#1c2925;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:2px solid #125d87;outline-offset:3px;background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
     },
     {
       "name": "Compact navigation",
@@ -244,7 +244,7 @@
       "refersTo": "navigation",
       "description": "Visual-only current-page treatment; links are local fragment examples.",
       "html": "<nav class=\"ds-nav\" aria-label=\"Navigation sample\"><a href=\"#home\" aria-current=\"page\">Home</a><a href=\"#shop\">Shop</a><a href=\"#cart\">Cart</a></nav>",
-      "css": ".ds-nav{display:flex;justify-content:space-around;background:#ffffff;border-top:1px solid #dce1e3;font:400 10px/1.5 storefrontLatin,Figtree,sans-serif;}.ds-nav a{display:flex;align-items:center;justify-content:center;min-width:64px;min-height:48px;color:#202a30;text-decoration:none;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-nav a[aria-current]{color:#a52b38;font-weight:700;}.ds-nav a:focus-visible{outline:3px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-nav{display:flex;justify-content:space-around;background:#ffffff;border-top:1px solid #e2ebe7;font:400 10px/1.5 \"DM Sans\",sans-serif;}.ds-nav a{display:flex;align-items:center;justify-content:center;min-width:64px;min-height:48px;color:#1c2925;text-decoration:none;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-nav a[aria-current]{color:#9c2e3b;font-weight:700;}.ds-nav a:focus-visible{outline:2px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Stock label",
@@ -252,7 +252,7 @@
       "refersTo": "stock",
       "description": "Informational style sample, not a claim about an item.",
       "html": "<span class=\"ds-stock\">In stock \u2014 style sample</span>",
-      "css": ".ds-stock{display:inline-flex;max-width:100%;padding:3px 8px;border-radius:4px;background:#eaf3ef;color:#26604d;font:600 11px/1.5 storefrontLatin,Figtree,sans-serif;overflow-wrap:anywhere;}"
+      "css": ".ds-stock{display:inline-flex;max-width:100%;padding:3px 8px;border-radius:999px;background:#eaf3ef;color:#26604d;font:500 11px/1.5 \"DM Sans\",sans-serif;overflow-wrap:anywhere;}"
     },
     {
       "name": "Card frame \u2014 missing data",
@@ -260,7 +260,7 @@
       "refersTo": "card",
       "description": "Actual supported unknown-price/missing-photo anatomy, labelled noncommercial.",
       "html": "<article class=\"ds-card\"><div class=\"ds-photo\">Photo unavailable</div><div class=\"ds-card-body\"><h3>Layout sample \u2014 not for sale</h3><p>Price unavailable</p><button type=\"button\" disabled>Unavailable sample</button></div></article>",
-      "css": ".ds-card{max-width:240px;min-width:0;border:1px solid #dce1e3;border-radius:14px;background:#ffffff;color:#202a30;overflow:hidden;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;}.ds-photo{display:grid;place-items:center;min-height:128px;padding:8px;}.ds-card-body{padding:6px 10px 10px;}.ds-card h3{margin:4px 0 8px;font-size:15px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}.ds-card p{font-size:13px;}.ds-card button{min-height:44px;max-width:100%;border:1px solid #dce1e3;border-radius:10px;padding:8px 12px;white-space:normal;color:#6c757a;background:#e7ebed;font:inherit;}"
+      "css": ".ds-card{max-width:240px;min-width:0;border:1px solid transparent;border-radius:14px;background:#ffffff;color:#1c2925;overflow:hidden;font:400 15px/1.5 \"DM Sans\",sans-serif;}.ds-photo{display:grid;place-items:center;min-height:128px;padding:8px;}.ds-card-body{padding:6px 10px 10px;}.ds-card h3{margin:4px 0 8px;font-size:15px;font-weight:500;line-height:1.4;overflow-wrap:anywhere;}.ds-card p{font-size:13px;}.ds-card button{min-height:44px;max-width:100%;border:1px solid #e2ebe7;border-radius:10px;padding:8px 12px;white-space:normal;color:#6c757a;background:#e7ebed;font:inherit;}"
     },
     {
       "name": "Family option",
@@ -268,7 +268,7 @@
       "refersTo": "option",
       "description": "Native current-option link; labels are noncommercial samples, not fabricated pack availability.",
       "html": "<a class=\"ds-option\" href=\"#pack\" aria-current=\"page\">Current pack sample</a>",
-      "css": ".ds-option{display:inline-flex;align-items:center;min-height:44px;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #202a30;border-radius:8px;background:#e6edef;color:#202a30;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;text-decoration:none;overflow-wrap:anywhere;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-option:focus-visible{outline:3px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-option{display:inline-flex;align-items:center;min-height:44px;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #1c2925;border-radius:999px;background:#e0eee8;color:#1c2925;font:400 15px/1.5 \"DM Sans\",sans-serif;text-decoration:none;overflow-wrap:anywhere;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-option:focus-visible{outline:2px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Quick add",
@@ -276,23 +276,23 @@
       "refersTo": "quick-add",
       "description": "Visual-only geometry of the real server-checked purchase control; no cart handler attached.",
       "html": "<button class=\"ds-quick\" type=\"button\" aria-label=\"Add to cart sample\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"/></svg></button>",
-      "css": ".ds-quick{display:inline-flex;align-items:center;justify-content:center;width:44px;min-height:44px;padding:10px;border:0;border-radius:10px;background:#ff5a5f;color:#202a30;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick svg{width:22px;height:22px;}.ds-quick:hover,.ds-quick:active{background:#fb565c;}.ds-quick:focus-visible{outline:3px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-quick{transition:none}} .ds-quick:disabled{background:#e7ebed;color:#6c757a;cursor:not-allowed;}.ds-quick[aria-busy=true]{background:#ff5a5f;color:#202a30;cursor:progress;}"
+      "css": ".ds-quick{display:inline-flex;align-items:center;justify-content:center;width:44px;min-height:44px;padding:10px;border:0;border-radius:999px;background:#fff2f3;color:#a72d42;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick svg{width:22px;height:22px;}.ds-quick:hover,.ds-quick:active{background:#ffd2d2;}.ds-quick:focus-visible{outline:2px solid #125d87;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-quick{transition:none}} .ds-quick:disabled{background:#e7ebed;color:#6c757a;cursor:not-allowed;}.ds-quick[aria-busy=true]{background:#ff5a5f;color:#1c2925;cursor:progress;}"
     }
   ],
   "narrative": {
     "northStar": "App-like on mobile, complete on desktop.",
-    "overview": "This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, near-white surfaces, Figtree and Alexandria, and the image-first N03 phone product detail. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).\n\nShopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.",
+    "overview": "This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, and the image-first N03 phone product detail. The current review revision uses DM Sans and Noto Sans Arabic, pale mint control surfaces and a quieter type hierarchy. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).\n\nShopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.",
     "keyCharacteristics": [
       "Search-led navigation with delivery context and useful discovery.",
       "Quiet near-white ground, dark type and dark labels on coral.",
-      "Compact bordered cards and contained factual product photography.",
+      "Quiet product cards with contained factual photography and readable prices.",
       "Image-first phone PDP with contextual overlay controls and persistent buying.",
       "Equivalent English/Arabic tasks and desktop/mobile continuity."
     ],
     "rules": [
       {
         "name": "The action-foreground rule.",
-        "body": "Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.79:1 at rest and 4.59:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.",
+        "body": "Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.94:1 at rest and 4.73:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.",
         "section": "colors"
       },
       {

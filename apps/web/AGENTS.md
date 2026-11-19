@@ -253,14 +253,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Accepted storefront precedence and boundaries
 
 Owner-selected A/full campaign and five wide-screen home columns supersede the
-split/four-column comparison. Figtree/Alexandria, near-white support and compact
-bordered cards are retained. Latest N03 image-first phone PDP supersedes the
-standalone toolbar. Follow current screen directions, not earlier reference-only
-rail/category geometry or pending-review statements in historical evidence.
+split/four-column comparison. The owner kept those layouts and requested lighter
+controls and stronger type hierarchy. The current review revision uses DM Sans,
+Noto Sans Arabic, soft mint control surfaces and quiet coral quick add. Latest N03
+image-first phone product detail keeps the overlay controls and purchase dock.
 
 Use current retail routes to review working components. The former specimen is
 historical evidence. `docs/design/implementation-evidence/p2-04-refinement.md`
-records the contrast, typography, shape, icon, badge, stock and motion decisions. Preserve default/explicit shape
+records the baseline contrast and motion decisions. The [current control revision](docs/design/implementation-evidence/p6-05-controls.md) and DESIGN.md describe the current treatment. Preserve default/explicit shape
 APIs, bounded label wrapping and portal theme/direction. Compiled foreground/control
 aliases resolve through scoped `--ui-*` bridges; verify emitted/computed CSS and
 fallbacks using `p2-02-cascade.md` before changing shared aliases.

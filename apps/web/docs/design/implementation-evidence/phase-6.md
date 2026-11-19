@@ -39,6 +39,8 @@ The documentation handoff was unavailable, so the guide and sidecar were refresh
 
 ## Review the storefront
 
+The owner retained the layout and requested lighter controls and clearer typography. See the [latest mobile and desktop revision](p6-05-controls.md#latest-screens). The table below preserves the earlier finish-review checkpoint.
+
 **Local review data.** All captures show reviewed pack photographs and synthetic prices and stock from an isolated fixture. The account form uses simulated signed-out responses. The interactive [storefront preview](http://127.0.0.1:4880/) uses the local reference catalogue. Its ordering mode depends on local fixture configuration.
 
 | Surface | English mobile | English desktop | Arabic mobile | Arabic desktop |
@@ -50,7 +52,7 @@ The documentation handoff was unavailable, so the guide and sidecar were refresh
 
 ### P6-05 visual acceptance
 
-Status **awaiting owner review**. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested changes are awaiting detail. Visual acceptance remains pending. Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
+Status **awaiting owner review**. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested refinements are implemented in the [control and type revision](p6-05-controls.md). Visual acceptance of those revised screens remains pending. Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
 
 ### Remaining release work
 

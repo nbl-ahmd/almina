@@ -57,7 +57,7 @@
   block-size: var(--store-target-min);
   min-block-size: var(--store-target-min);
   padding: 0;
-  border: 1px solid var(--store-border-control);
+  border: 1px solid var(--store-border);
   border-radius: var(--store-radius-round);
   background: var(--store-surface);
   color: var(--store-text);
@@ -103,7 +103,7 @@
   flex: 0 0 var(--store-space-48);
   block-size: var(--store-space-48);
   padding: var(--store-space-4);
-  border: 1px solid var(--store-border-control);
+  border: 1px solid var(--store-border);
   border-radius: var(--store-control-radius);
   background: var(--store-surface);
 }
@@ -182,7 +182,7 @@
   min-block-size: var(--store-target-min);
   max-inline-size: 100%;
   padding: var(--store-space-4) var(--store-space-10);
-  border: 1px solid var(--store-border-control);
+  border: 1px solid var(--store-border);
   border-radius: var(--store-radius-8);
   background: var(--store-surface);
   color: var(--store-text);
@@ -203,7 +203,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--store-space-8);
-  border: 1px solid var(--store-border-control);
+  border: 1px solid var(--store-border);
   background: var(--store-surface);
   color: var(--store-text);
   font-size: var(--store-type-14);
@@ -224,8 +224,8 @@
   grid-template-columns: var(--store-target-min) minmax(var(--store-space-24), 4ch) var(--store-target-min);
   align-items: center;
   min-inline-size: 0;
-  border: 1px solid var(--store-border-control);
-  border-radius: var(--store-control-radius);
+  background: var(--store-secondary-surface);
+  border-radius: var(--store-compact-radius);
 }
 .dock :global(.purchase-quantity input) {
   min-block-size: var(--store-target-min);
@@ -244,6 +244,7 @@
 .dock :global(.purchase-quantity input)::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .dock :global(.add-to-cart) {
   flex: 1 1 118px;
+  border-radius: var(--store-compact-radius);
   min-block-size: var(--store-target-min);
   padding: var(--store-space-8) var(--store-space-10);
 }

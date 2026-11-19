@@ -10,9 +10,10 @@ primary #FF5A5F. Read current DESIGN.md, DESIGN-BRIEF.md, screen directions,
 decision register and progress under apps/web/docs/design.
 
 The selected local direction is A/full-width campaign, five wide-screen home
-columns, Figtree/Alexandria, near-white support, dark-on-coral actions and compact
-bordered cards. Latest N03 image-first phone PDP replaces the declined standalone
-toolbar, preserving overlay Back/Save/Cart and sticky buying. Local direction
+columns and the image-first phone product page. The latest review revision uses
+DM Sans, Noto Sans Arabic, mint support surfaces, dark-on-coral primary actions
+with quieter cards and compact controls. The phone product page keeps overlay
+Back, Save and Cart controls and a sticky buying dock. Local direction
 acceptance and production release approval are separate. The public
 consumers now use the accepted system. The progress ledger records finish-review
 evidence, owner acceptance and outstanding release needs.

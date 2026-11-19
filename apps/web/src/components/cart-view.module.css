@@ -119,8 +119,8 @@
 .quantity {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--store-border);
-  border-radius: var(--store-control-radius);
+  background: var(--store-secondary-surface);
+  border-radius: var(--store-compact-radius);
   background: var(--store-input-surface);
   font-variant-numeric: tabular-nums;
 }

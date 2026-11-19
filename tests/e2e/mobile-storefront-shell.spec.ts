@@ -5,7 +5,8 @@ for (const locale of ['en', 'ar'] as const) {
     await context.addCookies([{ name: 'almina_lang', value: locale, url: 'http://127.0.0.1:4710' }]);
     await page.setViewportSize({ width: 320, height: 700 });
     await page.route('**/api/search/suggest?*', route => route.fulfill({ status: 503 }));
-    await page.goto('/');
+    const savedRequest = () => page.waitForResponse(response => new URL(response.url()).pathname === '/api/customer/saved');
+    await Promise.all([savedRequest(), page.goto('/')]);
     const header = page.locator('[data-mobile-shell]');
     const search = header.getByRole('combobox');
     const nav = header.locator('.mobile-nav');
@@ -25,7 +26,7 @@ for (const locale of ['en', 'ar'] as const) {
     await expect(header.getByRole('search')).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(search).toBeFocused();
-    await search.press('Enter');
+    await Promise.all([savedRequest(), search.press('Enter')]);
     await expect(page).toHaveURL(/\/search\?q=Daily$/);
     await page.goBack();
     await expect(nav).toBeVisible();

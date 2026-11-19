@@ -77,11 +77,11 @@
   list-style: none;
   cursor: pointer;
   font-size: var(--store-type-14);
-  font-weight: var(--store-weight-semibold);
+  font-weight: var(--store-weight-medium);
   overflow-wrap: anywhere;
-  border: 1px solid var(--store-border-control);
-  border-radius: var(--store-control-radius);
-  background: var(--store-surface);
+  border: 1px solid transparent;
+  border-radius: var(--store-compact-radius);
+  background: var(--store-secondary-surface);
   min-block-size: var(--store-target-min);
 }
 .filterToggle::-webkit-details-marker { display: none; }
@@ -105,8 +105,7 @@
   margin-block-start: var(--store-space-8);
   padding: var(--store-space-14);
   border-radius: var(--store-card-radius);
-  border: 1px solid var(--store-border);
-  background: var(--store-surface);
+  border-block-start: 1px solid var(--store-border);
 }
 .filterHeading { display: none; }
 .form { display: grid; gap: var(--store-space-12); }
@@ -152,7 +151,7 @@
   min-block-size: var(--store-target-min);
   cursor: pointer;
   font-size: var(--store-type-14);
-  font-weight: var(--store-weight-semibold);
+  font-weight: var(--store-weight-medium);
 }
 .explore nav:not(.facet) { display: grid; }
 .facet { margin-block: var(--store-space-8); }
@@ -168,11 +167,12 @@
 .sort :is(select, button) { pointer-events: auto; }
 .sort select {
   min-block-size: var(--store-target-min);
-  border-radius: var(--store-control-radius);
-  background: var(--store-surface);
+  border-radius: var(--store-compact-radius);
+  border-color: transparent;
+  background: transparent;
   padding-inline: var(--store-space-10) var(--store-space-32);
   font-size: var(--store-type-14);
-  font-weight: var(--store-weight-semibold);
+  font-weight: var(--store-weight-medium);
   text-overflow: ellipsis;
 }
 .sort :global([data-slot="native-select-icon"]) { inset-inline-end: var(--store-space-10); }
@@ -189,18 +189,28 @@
   padding-inline: var(--store-space-10);
   color: var(--store-text);
   font-size: var(--store-type-13);
-  font-weight: var(--store-weight-semibold);
+  font-weight: var(--store-weight-medium);
   overflow-wrap: anywhere;
 }
 .chip, .option {
-  border-radius: var(--store-radius-8);
-  border: 1px solid var(--store-border-control);
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--store-compact-radius);
+  font-size: var(--store-type-12);
 }
-.chip { background: var(--store-selected-surface); }
-.chip svg { inline-size: var(--store-space-16); block-size: var(--store-space-16); }
-.option { background: var(--store-surface); }
-.option:hover, .chip:hover, .filterToggle:hover { background: var(--store-hover-surface); }
-.textLink { padding-inline: var(--store-space-4); text-decoration: underline; }
+.chip::before, .option::before {
+  content: "";
+  position: absolute;
+  inset: var(--store-space-6) 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--store-secondary-surface);
+}
+.chip::before { background: var(--store-selected-surface); }
+.chip svg { inline-size: var(--store-space-14); block-size: var(--store-space-14); }
+.option:hover::before, .chip:hover::before, .filterToggle:hover { background: var(--store-hover-surface); }
+.textLink { padding-inline: var(--store-space-4); color: var(--store-stress-error); }
+.textLink:hover { text-decoration: underline; }
 .queryNote { margin-block: 0 var(--store-space-8); color: var(--store-text-muted); font-size: var(--store-type-14); overflow-wrap: anywhere; }
 .queryNote a, .help a { text-decoration: underline; font-weight: var(--store-weight-semibold); }
 .state, .editorial {

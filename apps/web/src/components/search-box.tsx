@@ -23,7 +23,7 @@ export function SearchBox({ locale = 'en', mobileShell = false }: { locale?: Loc
  }, []);
 
  function closeSearch({ dismissKeyboard = false } = {}) {
-  // A tap on Cancel returns focus to the form and dismisses the software keyboard.
+  // Cancel moves focus to the form so it can dismiss the software keyboard.
   ref.current?.querySelector(dismissKeyboard ? 'form' : 'input')?.focus({ preventScroll: true });
   setOpen(false);
   setActive(-1);
@@ -56,7 +56,13 @@ export function SearchBox({ locale = 'en', mobileShell = false }: { locale?: Loc
    {query?<button data-slot="search-clear" type="button" className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent p-2 text-muted transition-colors hover:bg-subtle hover:text-ink" aria-label={ar?'مسح البحث':'Clear search'} onClick={()=>{setQuery('');setItems([]);setLoading(false);setActive(-1);ref.current?.querySelector('input')?.focus();}}><XMarkIcon className="size-4" /></button>:null}
    <button data-slot="search-submit" type="submit" className="sf-search-submit" aria-label={t(locale,'searchSubmit')}><span className="sf-search-label">{t(locale,'searchSubmit')}</span><ArrowRightIcon className="rtl:rotate-180 size-[18px]" aria-hidden="true" /></button>
   </form>
-  {mobileShell && open && <button type="button" className="mobile-search-cancel" onClick={() => closeSearch({ dismissKeyboard: true })}>{ar ? 'إلغاء' : 'Cancel'}</button>}
+  {/* Keep focus in search through mousedown so WebKit can deliver the Cancel click. */}
+  {mobileShell && open && <button
+   type="button"
+   className="mobile-search-cancel"
+   onMouseDown={event => event.preventDefault()}
+   onClick={() => closeSearch({ dismissKeyboard: true })}
+  >{ar ? 'إلغاء' : 'Cancel'}</button>}
   {open?<div data-slot="search-panel" className="storefront-search-panel">
    <div className="flex items-center justify-between gap-3 px-4 pt-3 pb-1"><span className={`text-xs font-semibold text-muted ${ar?'':'uppercase tracking-[0.08em]'}`}>{heading}</span>{showRecent?<button data-slot="recent-clear" type="button" className="min-h-11 rounded-lg border-0 bg-transparent px-2 text-xs font-medium text-ink transition-colors hover:bg-subtle" aria-label={t(locale,'searchClear')} onClick={()=>{try{localStorage.removeItem(recentKey);setRecent([]);}catch{/* Optional device history. */}}}>{t(locale,'searchClearShort')}</button>:null}</div>
    <ul id={id+'-results'} role="listbox" aria-label={t(locale,'searchSuggestions')} aria-busy={loading} className={`m-0 list-none ${showBrowse?'grid grid-cols-2 gap-2 px-3 pt-2 pb-3':showRecent||searching?'flex flex-col gap-0.5 p-2':'p-0'}`}>

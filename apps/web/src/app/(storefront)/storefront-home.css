@@ -75,7 +75,7 @@
   min-height: var(--store-target-min);
   max-width: 100%;
   padding: var(--store-space-6) var(--store-space-12);
-  border-radius: var(--store-control-radius);
+  border-radius: var(--store-compact-radius);
   background: var(--store-action);
   color: var(--store-purchase-foreground);
   font-size: var(--store-type-13);
@@ -115,9 +115,9 @@
 }
 
 [data-storefront-home] .sf-section-heading > a {
-  color: var(--store-text);
-  text-decoration: underline;
+  color: var(--store-stress-error);
   font-size: var(--store-type-13);
+  font-weight: var(--store-weight-medium);
 }
 
 .home-category-lane {

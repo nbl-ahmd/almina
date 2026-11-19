@@ -100,7 +100,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
               onClick={() => setQuantity(value => Math.min(max, value + 1))}><Icon name="plus" /></Button>
           </div>
         ) : null}
-        <Button variant="accent" className={`add-to-cart ${quantityPicker ? '' : 'min-w-11 w-full'}`} type="button"
+        <Button variant="accent" shape={quantityPicker ? "pill" : "default"} className={`add-to-cart ${quantityPicker ? '' : 'min-w-11 w-full'}`} type="button"
           aria-label={name ? (pending && locale === 'en' ? `${label} ${name}` : `${label}: ${name}`) : label} aria-busy={pending} data-added={added}
           disabled={pending || stock <= 0} onClick={add}>
           {stock <= 0 ? null : pending ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" />

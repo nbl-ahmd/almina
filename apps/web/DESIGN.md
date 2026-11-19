@@ -4,18 +4,18 @@ description: App-like mobile shopping and a complete compact desktop storefront.
 colors:
   action: "#ff5a5f"
   action-hover: "#fb565c"
-  active-navigation: "#a52b38"
-  text: "#202a30"
-  text-muted: "#58636b"
-  canvas: "#fafbfb"
+  active-navigation: "#9c2e3b"
+  text: "#1c2925"
+  text-muted: "#50635e"
+  canvas: "#f7faf8"
   surface: "#ffffff"
-  input: "#f7f9f9"
-  border: "#dce1e3"
+  input: "#edf4f1"
+  border: "#e2ebe7"
   control-border: "#7c898f"
-  secondary: "#f0f3f3"
-  hover: "#f0f3f4"
-  campaign: "#ffe5e2"
-  selected: "#e6edef"
+  secondary: "#eef5f1"
+  hover: "#e8f2ed"
+  campaign: "#ffe4df"
+  selected: "#e0eee8"
   positive: "#26604d"
   positive-surface: "#eaf3ef"
   unavailable: "#685941"
@@ -26,64 +26,65 @@ colors:
   disabled-text: "#6c757a"
   disabled-surface: "#e7ebed"
   focus: "#125d87"
-  offer-text: "#202a30"
-  offer-surface: "#ffe5e2"
+  offer-text: "#1c2925"
+  offer-surface: "#ffe4df"
   notice: "#e9edef"
   selection: "#ffd2d2"
 typography:
   campaign:
-    fontFamily: "Figtree, sans-serif"
+    fontFamily: "DM Sans, sans-serif"
     fontSize: "32px"
-    fontWeight: 700
-    lineHeight: 1.1
+    fontWeight: "650"
+    lineHeight: "1.1"
     letterSpacing: "-0.025em"
   page-title:
-    fontSize: "30px"
-    fontWeight: 700
-    lineHeight: 1.2
+    fontSize: "28px"
+    fontWeight: "650"
+    lineHeight: "1.2"
     letterSpacing: "-0.025em"
   product-title:
     fontSize: "28px"
-    fontWeight: 700
-    lineHeight: 1.2
+    fontWeight: "650"
+    lineHeight: "1.2"
   body:
-    fontFamily: "Figtree, sans-serif"
+    fontFamily: "DM Sans, sans-serif"
     fontSize: "15px"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: "1.5"
   body-arabic:
-    fontFamily: "Alexandria, sans-serif"
+    fontFamily: "Noto Sans Arabic, DM Sans, sans-serif"
     fontSize: "15px"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: "1.5"
     letterSpacing: "normal"
   card-name:
     fontSize: "15px"
-    fontWeight: 600
-    lineHeight: 1.4
+    fontWeight: "500"
+    lineHeight: "1.4"
   card-price:
     fontSize: "21px"
-    fontWeight: 700
+    fontWeight: "650"
     letterSpacing: "-0.03em"
   supporting:
     fontSize: "12px"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: "1.5"
   stock:
     fontSize: "11px"
-    fontWeight: 600
-    lineHeight: 1.5
+    fontWeight: "500"
+    lineHeight: "1.5"
   count:
     fontSize: "10px"
 rounded:
-  control: "10px"
+  control: "14px"
   card: "14px"
-  search: "12px"
-  search-action: "8px"
+  search: "18px"
+  search-action: "12px"
   campaign: "18px"
-  status: "4px"
-  option: "8px"
-  field: "12px"
+  status: "999px"
+  option: "999px"
+  compact: "999px"
+  field: "14px"
 spacing:
   2: "2px"
   3: "3px"
@@ -108,7 +109,7 @@ components:
     padding: "12px 24px"
     height: "48px"
   button-outline:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.secondary}"
     textColor: "{colors.text}"
     rounded: "{rounded.control}"
     padding: "12px 24px"
@@ -143,9 +144,9 @@ components:
     textColor: "{colors.text}"
     rounded: "{rounded.option}"
   quick-add:
-    backgroundColor: "{colors.action}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.control}"
+    backgroundColor: "{colors.saved-surface}"
+    textColor: "{colors.saved}"
+    rounded: "{rounded.compact}"
     size: "44px"
 ---
 
@@ -155,7 +156,7 @@ components:
 
 **Creative North Star: "App-like on mobile, complete on desktop."**
 
-This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, near-white surfaces, Figtree and Alexandria, and the image-first N03 phone product detail. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
+This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, and the image-first N03 phone product detail. The current review revision uses DM Sans and Noto Sans Arabic, pale mint control surfaces and a quieter type hierarchy. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
 
 Shopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.
 
@@ -163,7 +164,7 @@ Shopping controls stay compact and legible. Product photography, exact identity,
 
 - Search-led navigation with delivery context and useful discovery.
 - Quiet near-white ground, dark type and dark labels on coral.
-- Compact bordered cards and contained factual product photography.
+- Quiet product cards with contained factual photography and readable prices.
 - Image-first phone PDP with contextual overlay controls and persistent buying.
 - Equivalent English/Arabic tasks and desktop/mobile continuity.
 
@@ -175,7 +176,7 @@ The retail layout and its public routes use the accepted system. The compatibili
 
 The primary action and restrained campaign tint sit within neutral shopping surfaces. Use the frontmatter's semantic names rather than extracting a new palette from reference images, screenshots, legacy CSS or generic generators.
 
-**The action-foreground rule.** Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.79:1 at rest and 4.59:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.
+**The action-foreground rule.** Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.94:1 at rest and 4.73:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.
 
 **The state-meaning rule.** Selected options use their quiet neutral surface plus current/pressed semantics. Bottom navigation retains its observed active-navigation text with aria-current; it does not use the option surface. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 3.92:1 text pairing is an inactive-control exemption, not a normal-text pass.
 
@@ -183,9 +184,9 @@ Page canvas, product surfaces, input surfaces, selected surfaces and campaign su
 
 ## Typography
 
-Self-hosted Figtree and Alexandria serve Latin and Arabic respectively; `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Keep factual product and brand names intact. Use bidirectional isolation and keep number–unit pairs together in product titles.
+Self-hosted DM Sans serves Latin. Noto Sans Arabic serves Arabic, with DM Sans for mixed-script labels and identifiers. `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Keep factual product and brand names intact. Use bidirectional isolation and keep number–unit pairs together in product titles.
 
-Frontmatter roles record wide-screen values. Phone page titles use 25px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with 1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Shared Buttons inherit body typography in this scope; native campaign calls to action are bold. Verify label, input and error text on the actual form at each supported viewport.
+Frontmatter roles record wide-screen values. Phone page titles use 24px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with 1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Use 500 weight for controls and card names, 600 for emphasis and 650 for headings and prices. Verify label, input and error text on the actual form at each supported viewport.
 
 Supporting metadata remains readable and subdued. Stock uses 11px with explicit status text. The 10px count exception is for redundant compact cart counts with a full accessible name; wide counts remain 12px. It is not a standalone target or a body-text rule. Preserve locale money formatting, the dirham SVG and the LTR numeric run; do not mirror currency or pack artwork. Long names wrap without losing accessible identity.
 
@@ -195,19 +196,19 @@ The retail content container is 1240px, with 24px wide and 16px phone gutters. H
 
 Home places the full-width campaign below search and above categories and products. Home uses two columns on phones and moves to three, four and five columns at 768px, 1024px and 1280px as inventory allows. Phone category tiles scroll inside their own lane. Spacing at 390px leaves the first complete price and Add row above the navigation dock in both reviewed locales. The listing uses a separate grid and filter layout.
 
-The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. The card frame uses 10px internal padding. Each route controls its grid gap. Stock inset is 3/8px wide and 2/6px phone. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
+The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. The card frame uses 10px internal padding. Each route controls its grid gap. Stock inset is 3/8px wide and 2/6px on phones. Show brand and pack as quiet metadata instead of boxed tags. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
 
 Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; desktop uses the global search shell and gallery/buying columns. The purchase dock measures its own content clearance, respects safe areas and replaces global bottom navigation in this task mode. Preserve final-content reachability, short landscape, keyboard, focus and scroll return.
 
 ## Elevation & Depth
 
-Product cards are flat and bordered. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`0 8px 24px #202a301c`) for suggestions and overlays that use it. The product purchase dock uses the solid surface role and a separator.
+Product cards use a flat white surface. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`0 8px 24px #1c292520`) for suggestions and overlays that use it. The product purchase dock uses the solid surface role and a separator.
 
 ## Shapes
 
-Default accepted shared/native actions use the control radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. The input example's 12px shape is distinct from default 10px actions.
+Default accepted shared/native actions use the control radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. Fields and standard actions use a 14px radius. Chips and compact Add buttons use a capsule. Search has separate 18px outer and 12px submit corners.
 
-Visible control boundaries/focus use the control/focus roles; the quiet card border is not an interactive affordance on its own. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
+Reserve strong borders for fields that need a defined edge. Soft fills group search and filter controls. Keyboard focus uses a distinct outline. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
 
 ## Components
 
