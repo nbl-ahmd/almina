@@ -160,7 +160,7 @@
   gap: var(--store-space-4);
   min-block-size: var(--store-target-min);
   border: 1px solid transparent;
-  border-radius: var(--store-compact-radius);
+  border-radius: var(--store-radius-10);
   background: var(--store-secondary-surface);
   padding-inline: var(--store-space-8);
   font-size: var(--store-type-13);

@@ -98,3 +98,4 @@ The original annotated references and three November 17 review/plan documents re
 - P2-05, 18 November 2026: authority reconciliation and supersession checks. See E16 for source, validation, remaining influence and cleanup limits.
 - P6-03–P6-04, 19 November 2026. The independent finish verdict and measured fixes are recorded in the Phase 6 packet. The original direction seed could not be corroborated. The recorded coded approvals remain the source for the selected screens.
 - P6-05. The owner requested another visual fix after the follow-up control pass at `2c4dcb1`. Details and final visual acceptance are pending.
+- P6-05. Use the shared open filter rail and compact phone toolbar across catalogue routes. Use the rounded-square Add control on product cards. [Latest review captures](implementation-evidence/p6-05-controls.md#latest-screens) await acceptance.

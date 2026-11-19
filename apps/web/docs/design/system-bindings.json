@@ -43,7 +43,8 @@
     "status": "--store-compact-radius",
     "option": "--store-compact-radius",
     "field": "--store-control-radius",
-    "compact": "--store-compact-radius"
+    "compact": "--store-compact-radius",
+    "quick-action": "--store-radius-10"
   },
   "spacing": {
     "2": "--store-space-2",

@@ -84,6 +84,7 @@ rounded:
   status: "999px"
   option: "999px"
   compact: "999px"
+  quick-action: "10px"
   field: "14px"
 spacing:
   2: "2px"
@@ -146,7 +147,7 @@ components:
   quick-add:
     backgroundColor: "{colors.saved-surface}"
     textColor: "{colors.saved}"
-    rounded: "{rounded.compact}"
+    rounded: "{rounded.quick-action}"
     size: "44px"
 ---
 
@@ -206,9 +207,9 @@ Product cards use a flat white surface. Use tonal grouping for shopping surfaces
 
 ## Shapes
 
-Default accepted shared/native actions use the control radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. Fields and standard actions use a 14px radius. Chips and compact Add buttons use a capsule. Search has separate 18px outer and 12px submit corners.
+Default accepted shared/native actions use the control radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. Fields and standard actions use a 14px radius. Chips use a capsule. Catalogue Add uses a 10px rounded square with a 44px minimum target. Search has separate 18px outer and 12px submit corners.
 
-Reserve strong borders for fields that need a defined edge. Soft fills group search and filter controls. Keyboard focus uses a distinct outline. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
+Reserve strong borders for fields that need a defined edge. Soft fills identify filter inputs. Desktop filters sit on an open rail with one divider. On phones, Filter and Sort stay in one compact row with the filter count on the trigger. Keyboard focus uses a distinct outline. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
 
 ## Components
 

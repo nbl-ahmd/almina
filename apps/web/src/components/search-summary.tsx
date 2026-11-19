@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import Link from './app-link';
 import type { Locale } from '../lib/i18n';
 import type { SearchMetadata } from '../lib/server/search';
@@ -48,7 +49,7 @@ export function SearchFacets({ result, locale, query }: SummaryProps & { query: 
   if (!available.length) return null;
   return (
     <details className={styles.explore}>
-      <summary>{locale === 'ar' ? 'تصفية النتائج' : 'Narrow these results'}</summary>
+      <summary>{locale === 'ar' ? 'تصفية النتائج' : 'Narrow these results'}<ChevronDownIcon aria-hidden="true" /></summary>
       {available.map(([kind, param, en, ar]) => (
         <nav className={styles.facet} key={kind} aria-label={locale === 'ar' ? ar : en}>
           <p>{locale === 'ar' ? ar : en}</p>
@@ -56,7 +57,7 @@ export function SearchFacets({ result, locale, query }: SummaryProps & { query: 
             {result.facets[kind].slice(0, 6).map(item => {
               const next = new URLSearchParams(query);
               next.set(param, item.value);
-              return <Link className={styles.option} data-store-control="option" key={item.value} href={'?' + next}
+              return <Link className={styles.option} key={item.value} href={'?' + next}
                 aria-current={query.get(param) === item.value ? 'page' : undefined}>
                 <bdi>{item.value}</bdi><span className={styles.badge}>{item.count}</span>
               </Link>;

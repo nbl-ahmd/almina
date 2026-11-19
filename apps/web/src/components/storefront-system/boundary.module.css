@@ -109,7 +109,7 @@
 }
 /* Compact catalogue actions use a quiet surface until busy or confirmed. */
 .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon'] {
-  border-radius: var(--store-compact-radius);
+  border-radius: var(--store-radius-10);
 }
 .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where([data-added='false'][aria-busy='false']:not(:disabled)) {
   background: var(--store-soft-action);
@@ -118,6 +118,14 @@
 }
 .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where([data-added='false'][aria-busy='false']:hover:not(:disabled)) {
   background: var(--store-selection-surface);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon'] {
+    transition-property: scale, background-color, border-color, color;
+  }
+  .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where(:active:not(:focus-visible):not(:disabled)) {
+    scale: .95;
+  }
 }
 /* Meaning states follow variants at equal specificity; hover adds zero specificity. */
 .boundary [data-slot='button'][data-added='true'] {

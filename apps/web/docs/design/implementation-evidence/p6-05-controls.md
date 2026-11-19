@@ -13,13 +13,30 @@ The owner approved the page compositions and requested a softer design language 
 
 The full desktop composition and green and teal mobile references informed quiet surfaces, category discovery and tightly grouped shopping controls. Search prominence, accessible discovery and compact purchase patterns were cross-checked against the official services. [Desktop reference](../../../../../docs/design/storefront/references/2026-11-17/06-desktop-fullpage.webp), [green mobile reference](../../../../../docs/design/storefront/references/2026-11-17/03-green-pharmacy-screens.jpg), [teal mobile reference](../../../../../docs/design/storefront/references/2026-11-17/05-teal-mobile-search-discovery.jpg), [Blinkit](https://blinkit.com/brand/S%26B), [Instamart](https://www.swiggy.com/instamart/), [Tata 1mg](https://www.1mg.com/), [Apollo Pharmacy](https://www.apollopharmacy.in/).
 
+## Catalogue filters and quick add
+
+The owner identified boxed filters on Offers and other listings and an overly round Add control on product cards. Offers, All products, Search and category routes now use the same open filter rail on desktop and compact Filters and Sort row on phone. The input fill, lighter labels and one divider carry the grouping. Focus, range validation and native selection remain visible. Applied categories and search refinements share the same compact selected treatment.
+
+The product-card Add control uses the existing 10px radius and a 44px target in every state. Pointer presses use brief scale feedback. Filter and category chevrons signal disclosure changes. Keyboard use and reduced-motion mode keep the state change immediate. The skincare listing reference informed the compact filter trigger and rounded-square Add. The green pharmacy and desktop references informed the quieter surfaces and denser controls.
+
+### Latest screens
+
+Offers shows the true empty state in the reference catalogue. The product listing shows reviewed pack photos and sample price and stock.
+
+| Screen | English mobile | English desktop | Arabic mobile | Arabic desktop |
+| --- | --- | --- | --- | --- |
+| Offers with filters open | [390px](p6-05-catalog/en-offers-390.png) | [1440px](p6-05-catalog/en-offers-1440.png) | [390px](p6-05-catalog/ar-offers-390.png) | [1440px](p6-05-catalog/ar-offers-1440.png) |
+| Product listing and quick add | [390px](p6-05-catalog/en-listing-390.png) | [1440px](p6-05-catalog/en-listing-1440.png) | [390px](p6-05-catalog/ar-listing-390.png) | [1440px](p6-05-catalog/ar-listing-1440.png) |
+
+Playwright passed 42 Chromium and 20 WebKit cases for catalogue filters, responsive behavior, cards and linked flows. The reference preview passed 120 checks across four browse routes, five widths, both locales and Chromium, WebKit and Firefox. Pointer press feedback, filter chevrons and reduced motion passed. A populated Offers fixture and a selected search refinement passed in both languages. The production build and SEO smoke check passed, and Impeccable returned zero mechanical findings.
+
 ## Follow-up control pass
 
 The owner flagged the desktop product purchase panel, cart quantity control and extra underlines and scrollbars. The shared disabled button variant had added a filled tile and a border to each unavailable step. The product page and cart now use the same tinted, borderless quantity group with 44px step buttons. Disabled steps only change ink. Desktop purchase and save actions no longer have separate outline boxes. Add confirmation keeps its success tint, check and live message. View cart uses a directional chevron.
 
 Reviewed home, categories, listing, search, product details, cart, checkout, account, support and policy surfaces. Standalone shopping links use color, context or an icon. Inline policy and validation links retain their underlines. Category, thumbnail, related and recently viewed rows hide the native horizontal scrollbar and retain scrolling and focus access. Overflowing search panels, menus and dialogs retain native scrolling and its visual cues.
 
-### Latest screens
+### Product and cart screens
 
 | Screen | English mobile | English desktop | Arabic mobile | Arabic desktop |
 | --- | --- | --- | --- | --- |

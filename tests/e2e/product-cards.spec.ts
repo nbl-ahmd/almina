@@ -9,6 +9,7 @@ for (const locale of ['en', 'ar'] as const) {
     const card = page.locator('.product-card').filter({ has: page.getByRole('heading', { name: 'Daily Care', exact: true }) });
     const save = card.getByRole('button', { name: ar ? 'حفظ Daily Care' : 'Save Daily Care', exact: true });
     const add = card.getByRole('button', { name: ar ? 'أضف إلى السلة: Daily Care' : 'Add to cart: Daily Care', exact: true });
+    await expect(add).toHaveCSS('border-radius', '10px');
     await expect(card.locator('.product-stock')).toHaveText(ar ? 'متوفر' : 'In stock');
     await expect(card.locator('.currency-visual')).toHaveCount(2);
     await expect(card.locator('.currency-visual').first()).toHaveAttribute('dir', 'ltr');

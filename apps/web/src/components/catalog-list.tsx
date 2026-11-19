@@ -108,7 +108,7 @@ export async function CatalogList({
   const categoryLinks = categories?.length ? (
     <nav className={styles.categories} data-store-rail aria-label={t('Browse categories')}>
       {categories.slice(0, 8).map(cat => (
-        <Link className={styles.option} data-store-control="option" href={categoryHref(cat)} key={cat._id}
+        <Link className={styles.option} href={categoryHref(cat)} key={cat._id}
           aria-current={selected === cat._id ? 'page' : undefined}>{t(cat.name)}</Link>
       ))}
       <Link className={styles.textLink} href="/categories">{t('All categories')}</Link>
@@ -175,7 +175,10 @@ export async function CatalogList({
                 <CatalogFilterForm locale={locale} className={styles.form}>
                   <div className={styles.field}>
                     <label htmlFor="catalog-query">{t('Search products')}</label>
-                    <Input type="search" id="catalog-query" name="q" defaultValue={q} maxLength={80} dir="auto" />
+                    <div className={styles.filterSearch}>
+                      <Icon name="search" />
+                      <Input type="search" id="catalog-query" name="q" defaultValue={q} maxLength={80} dir="auto" />
+                    </div>
                   </div>
                   {category || !categories ? (
                     <>
@@ -223,7 +226,7 @@ export async function CatalogList({
                 </CatalogFilterForm>
                 {search ? <SearchFacets result={search} locale={locale} query={current} /> : null}
                 {categories?.length ? <details className={styles.explore}>
-                  <summary>{t('Explore categories')}</summary>
+                  <summary>{t('Explore categories')}<ChevronDownIcon aria-hidden="true" /></summary>
                   <nav aria-label={t('Explore categories')}>
                     {categories.map(cat => <Link className={styles.textLink} href={categoryHref(cat)} key={cat._id}
                       aria-current={selected === cat._id ? 'page' : undefined}>{t(cat.name)}</Link>)}
