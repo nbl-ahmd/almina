@@ -15,7 +15,18 @@ for(const width of [360,390,768,1440])test(`filter panel matches the storefront 
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await mkdir('outputs/catalog-filters-2026-10-27',{recursive:true});await panel.scrollIntoViewIfNeeded();
  await page.screenshot({path:`outputs/catalog-filters-2026-10-27/filters-${width}.png`});
- if(width<1024){await summary.focus();await page.keyboard.press('Space');await expect(form).toBeHidden();await page.keyboard.press('Space');await expect(form).toBeVisible();}
+ if(width<1024){
+   const sheet=page.getByRole('dialog',{name:'Filters',exact:true});
+   await expect(sheet).toBeVisible();
+   await expect(sheet).toHaveCSS('position','fixed');
+   await page.keyboard.press('Escape');
+   await expect(form).toBeHidden();
+   await expect(summary).toBeFocused();
+   await page.keyboard.press('Space');
+   await expect(form).toBeVisible();
+   await sheet.getByRole('button',{name:'Close filters'}).click();
+   await expect(summary).toBeFocused();
+ }
 });
 
 test('price range rejects reversed bounds and applying filters preserves query, sort and hidden refinements',async({page})=>{

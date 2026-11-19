@@ -194,12 +194,12 @@ a.name:hover { color: var(--store-positive); }
   font-size: var(--store-type-14);
 }
 .empty > svg { display: block; margin-block-end: var(--store-space-12); inline-size: var(--store-space-24); block-size: var(--store-space-24); }
-.placeholder {
-  block-size: var(--store-space-8);
-  inline-size: 65%;
-  background: var(--store-notice-surface);
-  border-radius: var(--store-radius-4);
-}
+.placeholder { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: var(--store-space-16); }
+.placeholder div { display: grid; gap: var(--store-space-8); }
+.placeholder span { display: block; block-size: 10px; background: var(--store-secondary-surface); border-radius: var(--store-radius-4); }
+.placeholder > span { aspect-ratio: 1; block-size: auto; }
+.placeholder div span:nth-child(2) { inline-size: 72%; }
+.placeholder div span:last-child { inline-size: 35%; }
 .error { border-color: var(--store-error); color: var(--store-error); }
 .feedback {
   margin: 0 0 var(--store-space-8);

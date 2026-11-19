@@ -90,6 +90,7 @@ test('the recently viewed rail uses the exact product and can be cleared', async
   await page.goto('/products/daily-care--PD0001');
   await page.waitForFunction(() => localStorage.getItem('almina.recent-products.v1')?.includes('bbbbbbbbbbbbbbbbbbbbbbbb'));
   await page.goto('/');
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   const heading = page.getByRole('heading', { name: 'Pick up where you left off', exact: true });
   await expect(heading).toBeVisible();
   await expect(page.getByRole('link', { name: /Daily Care In stock AED 20.00/ })).toHaveAttribute('href', '/products/daily-care--PD0001');

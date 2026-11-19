@@ -20,6 +20,7 @@ export const policyLinks = [
 export const businessContact = {
   name: 'Al Mina Pharmacy',
   telephone: '+971504825007',
+  whatsapp: 'https://wa.me/971504825007',
   email: 'info@alminapharmacy.com',
   addressLocality: 'Ras Al Khaimah',
   addressCountry: 'AE',

@@ -369,3 +369,52 @@
 @media (max-width: 767px) {
   .field :is(input, select) { font-size: var(--store-type-16); }
 }
+
+.filterDialog:not(:modal)[open] { display: contents; }
+.filterSheetHeader { display: none; }
+.filterDialog:modal {
+  box-sizing: border-box;
+  position: fixed;
+  inset: auto 0 0;
+  inline-size: 100%;
+  max-inline-size: none;
+  max-block-size: min(88dvh, 42rem);
+  margin: 0;
+  padding: 0 var(--store-space-16) max(var(--store-space-16), env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: var(--store-radius-18) var(--store-radius-18) 0 0;
+  background: var(--store-surface);
+  color: var(--store-text);
+}
+.filterDialog::backdrop { background: rgb(18 34 30 / 42%); }
+.filterDialog:modal .filterSheetHeader {
+  display: flex;
+  position: sticky;
+  z-index: 1;
+  inset-block-start: 0;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--store-surface);
+  border-block-end: 1px solid var(--store-border);
+  padding-block: var(--store-space-8);
+}
+.filterSheetHeader h2 { margin: 0; font-size: var(--store-type-18); }
+.filterSheetHeader button {
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--store-target-min);
+  min-block-size: var(--store-target-min);
+  border: 0;
+  border-radius: var(--store-control-radius);
+  background: var(--store-secondary-surface);
+  color: var(--store-text);
+}
+.filterDialog:modal .filterBody { margin: 0; border: 0; }
+.filterDialog:modal .filterHeading { display: none; }
+:global(html):has(.filterDialog:modal) { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .filterDialog:modal { transition: translate var(--store-motion-enter) var(--store-motion-easing); }
+  @starting-style { .filterDialog:modal { translate: 0 100%; } }
+}

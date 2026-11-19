@@ -250,3 +250,54 @@
 @media (prefers-reduced-motion: reduce) {
   [data-storefront-chrome] :is(a, button, form) { transition: none; }
 }
+
+.sf-footer-support {
+  display: flex;
+  align-items: center;
+  gap: var(--store-space-12);
+  flex-wrap: wrap;
+  padding: var(--store-space-16);
+  border-radius: var(--store-card-radius);
+  background: var(--store-secondary-surface);
+}
+.sf-footer-support > div { flex: 1 1 16rem; }
+.sf-footer-support h2 { margin: 0; font-size: var(--store-type-18); }
+.sf-footer-support p { margin: var(--store-space-4) 0 0; color: var(--store-text-muted); font-size: var(--store-type-14); }
+.sf-footer-support a, .storefront-shell .floating-contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--store-space-8);
+  min-block-size: var(--store-target-min);
+  min-inline-size: var(--store-target-min);
+  border-radius: var(--store-control-radius);
+  padding-inline: var(--store-space-12);
+  color: var(--store-positive);
+  background: var(--store-surface);
+  font-size: var(--store-type-14);
+  font-weight: var(--store-weight-medium);
+  text-decoration: none;
+}
+.sf-footer-support a:hover, .storefront-shell .floating-contact:hover { background: var(--store-positive-surface); }
+.sf-footer-support a svg, .storefront-shell .floating-contact svg {
+  flex: none;
+  inline-size: var(--store-space-20);
+  block-size: var(--store-space-20);
+}
+.storefront-shell .floating-contact {
+  position: fixed;
+  z-index: 20;
+  inset-inline-end: var(--store-page-gutter);
+  inset-block-end: var(--store-page-gutter);
+  background: var(--store-positive-surface);
+  box-shadow: var(--store-elevation-overlay);
+}
+.storefront-shell:has(.cart-page, .checkout-flow, [data-search-expanded='true']) .floating-contact { display: none; }
+@media (max-width: 767px) {
+  .storefront-shell .floating-contact {
+    inset-block-end: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding: 0;
+  }
+  .storefront-shell .floating-contact span,
+  .storefront-shell:has(.pdp-page) .floating-contact { display: none; }
+}

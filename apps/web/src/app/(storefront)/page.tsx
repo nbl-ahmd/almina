@@ -12,6 +12,7 @@ import {
   HomeBrandStrip,
   HomeCategories,
   HomeCollectionSection,
+  HomeDiscovery,
   HomeHero,
   HomeShelf,
 } from "../../components/homepage";
@@ -73,7 +74,13 @@ export default async function HomePage() {
           </Suspense>
           <Suspense fallback={null}><HomeCategoryLane /></Suspense>
         </div>
-        <Suspense fallback={<p className="home-loading" role="status">{locale === "ar" ? "جارٍ تحميل المنتجات…" : "Loading products…"}</p>}>
+        <Suspense fallback={<section className="home-shelf-skeleton">
+          <p className="sr-only" role="status">{locale === "ar" ? "جارٍ تحميل المنتجات…" : "Loading products…"}</p>
+          <div className="home-shelf-skeleton-heading" aria-hidden="true" />
+          <div className="home-product-grid" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map(index => <div className="home-skeleton-card" key={index}><span /><span /><span /></div>)}
+          </div>
+        </section>}>
           <HomeProducts locale={locale} />
         </Suspense>
         <Suspense fallback={null}><HomeSupportingCampaigns campaigns={campaigns} /></Suspense>
@@ -131,6 +138,7 @@ async function HomeProducts({ locale }: { locale: Locale }) {
       <Suspense fallback={null}><HomeOffers locale={locale} exclude={shelf.map(product => product._id)} /></Suspense>
       <HomeCollectionSection locale={locale} collection="skin-essentials"
         products={prioritizeShelf(collectionProducts(homeCollections[0], products), shelf)} />
+      <HomeDiscovery locale={locale} />
       <HomeBrandStrip brands={catalogueBrands(products.filter(product => product.brand?.trim() || product.familyBrand?.trim()))} />
       <HomeCollectionSection locale={locale} collection="baby-care"
         products={prioritizeShelf(collectionProducts(homeCollections[1], products), shelf)} />

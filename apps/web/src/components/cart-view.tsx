@@ -33,7 +33,8 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
   const [pending, setPending] = useState(false);
   const [retry, setRetry] = useState(0);
   const focusTarget = useRef<HTMLHeadingElement>(null);
-  const removedWithFocus = useRef<string>(null);
+  const removedWithFocus = useRef<{ id: string; neighbor?: string | undefined }>(null);
+  const removeButtons = useRef(new Map<string, HTMLButtonElement>());
   const mutation = useRef<'validating' | 'refreshing' | null>(null);
 
   useEffect(() => {
@@ -69,11 +70,15 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
   }, [retry, locale]);
 
   useEffect(() => {
-    const id = removedWithFocus.current;
-    if (!id || !snapshot || snapshot.items.some(item => item.id === id)) return;
+    const removed = removedWithFocus.current;
+    if (!removed || !snapshot || snapshot.items.some(item => item.id === removed.id)) return;
     removedWithFocus.current = null;
     // Avoid taking focus from another control if the shopper has already moved on.
-    if (document.activeElement === document.body) focusTarget.current?.focus();
+    if (document.activeElement !== document.body) return;
+    const neighbor = removed.neighbor ? removeButtons.current.get(removed.neighbor) : undefined;
+    const target = neighbor ?? focusTarget.current;
+    const visible = target && target.getBoundingClientRect().bottom > 0;
+    target?.focus({ preventScroll: Boolean(neighbor || visible) });
   }, [snapshot]);
 
   async function change(id: string, quantity: number, control: HTMLButtonElement) {
@@ -101,7 +106,10 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
         : latest.map(line => line.id === id ? { id, quantity } : line);
       saveCart(next);
       mutation.current = 'refreshing';
-      if (quantity === 0 && hadFocus) removedWithFocus.current = id;
+      if (quantity === 0 && hadFocus) {
+        const index = latest.findIndex(line => line.id === id);
+        removedWithFocus.current = { id, neighbor: (latest[index + 1] ?? latest[index - 1])?.id };
+      }
       recordCommerceEvent('cart_updated');
     } catch {
       setError(t(locale, 'cartSaveError'));
@@ -125,8 +133,8 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
 
   return <div className={checkout ? `${tokens.system} ${controls.boundary}` : undefined} lang={locale}>
     {!snapshot ? <section className={styles.state}>
-      <p role="status">{t(locale, 'cartLoading')}</p>
-      <div className={styles.placeholder} aria-hidden="true" />
+      <p role="status" className="sr-only">{t(locale, 'cartLoading')}</p>
+      <div className={styles.placeholder} aria-hidden="true"><span /><div><span /><span /><span /></div></div>
     </section> : snapshot.error ? <section className={`${styles.state} ${styles.error}`}>
       <h2 ref={focusTarget} tabIndex={-1} role="alert">{snapshot.error}</h2>
       <p>{t(locale, 'cartSavedNotRemoved')}</p>
@@ -166,6 +174,7 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
                 </p> : null}
               </div>
               {!checkout ? <Button type="button" variant="ghost" size="icon" className={styles.remove}
+                ref={node => { if (node) removeButtons.current.set(item.id, node); else removeButtons.current.delete(item.id); }}
                 aria-label={tf(locale, 'cartRemoveAria', { name: item.name })}
                 aria-disabled={pending || undefined} onClick={event => change(item.id, 0, event.currentTarget)}><Icon name="trash" /></Button> : null}
               <div className={styles.itemActions}>

@@ -118,3 +118,30 @@ test('cart preserves the selected SKU, option label and pack price without start
   await expect(line.locator('.cart-unit-price [role="img"]')).toHaveAccessibleName('AED 35.00');
   await expect(line.locator('.cart-line-total [role="img"]')).toHaveAccessibleName('AED 70.00');
 });
+
+test('removing a line keeps the cart visible during refresh and hands focus to its neighbor', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 720 });
+  await page.addInitScript(id => localStorage.setItem('almina.cart.v1', JSON.stringify([
+    { id, quantity: 1 },
+    { id: 'eeeeeeeeeeeeeeeeeeeeeeee', quantity: 1 },
+  ])), productId);
+  await page.goto('/cart');
+  const lines = page.locator('.cart-item');
+  await expect(lines).toHaveCount(2);
+
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/cart', async route => {
+    if (route.request().method() === 'POST') await gate;
+    await route.continue();
+  });
+  try {
+    await lines.first().getByRole('button', { name: 'Remove Daily Care from cart' }).press('Enter');
+    await expect(lines).toHaveCount(2);
+    await expect(page.getByRole('status').filter({ hasText: /updating/i })).toBeVisible();
+  } finally {
+    release();
+  }
+  await expect(lines).toHaveCount(1);
+  await expect(lines.getByRole('button', { name: /remove/i })).toBeFocused();
+});

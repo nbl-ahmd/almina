@@ -169,13 +169,13 @@ export async function CatalogList({
           </div>
         ) : (
           <div className={styles.layout}>
-            <CatalogFilterPanel id="catalog-filters" key={`filters:${current}`} className={styles.filters}>
-              <summary className={styles.filterToggle}>
+            <CatalogFilterPanel id="catalog-filters" key={`filters:${current}`} title={t('Filters')}
+              closeLabel={ar ? 'إغلاق الفلاتر' : 'Close filters'} toggle={<>
                 <Icon name="filter" />
                 <span>{t('Filters')}</span>
                 {chips.length ? <span className={styles.badge}>{number.format(chips.length)}</span> : null}
                 <ChevronDownIcon className={styles.chevron} aria-hidden="true" />
-              </summary>
+              </>}>
               <div className={styles.filterBody}>
                 <h2 className={styles.filterHeading}>{t('Filters')}</h2>
                 <CatalogFilterForm locale={locale} className={styles.form}>

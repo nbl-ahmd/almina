@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { CurrencyAmount } from './currency-amount';
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
-import { useEffect,useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from './app-link';
 import { ProductImage } from './product-image';
 import { readSaved } from '../lib/catalog/saved';
@@ -15,20 +15,36 @@ type Item={id:string;name:string;href:string;price:number;stock:number;image:str
 export function RecordProductView({id}:{id:string}){useEffect(()=>{try{const ids=readSaved(localStorage.getItem(key));localStorage.setItem(key,JSON.stringify([id,...ids.filter(value=>value!==id)].slice(0,12)));}catch{/* Optional on-device history. */}},[id]);return null;}
 export function RecentlyViewed({ cloudName, locale = 'en' }: { cloudName?: string | undefined; locale?: Locale }) {
   const [items, setItems] = useState<Item[]>([]);
+  const anchor = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const controller = new AbortController();
-    try {
-      const ids = readSaved(localStorage.getItem(key));
-      if (ids.length) void fetch('/api/saved-products', {
-        method: 'POST', signal: controller.signal,
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
-        body: JSON.stringify({ ids: ids.slice(0, 8) }),
-      }).then(response => response.ok ? response.json() : null)
-        .then(value => setItems(value?.items ?? [])).catch(() => {});
-    } catch { /* Optional on-device history. */ }
-    return () => controller.abort();
+    const marker = anchor.current;
+    const load = () => {
+      try {
+        const ids = readSaved(localStorage.getItem(key));
+        if (ids.length) void fetch('/api/saved-products', {
+          method: 'POST', signal: controller.signal,
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
+          body: JSON.stringify({ ids: ids.slice(0, 8) }),
+        }).then(response => response.ok ? response.json() : null)
+          .then(value => { if (!controller.signal.aborted) setItems(value?.items ?? []); }).catch(() => {});
+      } catch { /* Optional on-device history. */ }
+    };
+    const observer = marker && 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        observer?.disconnect();
+        load();
+      }
+    }, { rootMargin: '640px' }) : null;
+    if (observer && marker) observer.observe(marker);
+    else load();
+
+    return () => {
+      observer?.disconnect();
+      controller.abort();
+    };
   }, []);
-  if (!items.length) return null;
+  if (!items.length) return <div ref={anchor} data-recently-viewed-anchor aria-hidden="true" />;
   return (
     <section lang={locale} className={`${system.system} ${boundary.boundary}`}>
       <div className={styles.recentHead}>

@@ -9,6 +9,7 @@ import { getWebEnvironment } from '../lib/server/env';
 import type { Category, Product } from '../lib/catalog/model';
 import { CampaignArtwork } from './campaign-artwork';
 import { CampaignSlider } from './campaign-slider';
+import { Icon } from './icon';
 import { CategoryTile } from './category-tile';
 import { ProductCard } from './product-card';
 
@@ -141,6 +142,17 @@ export function HomeCollectionSection({ locale, collection, products }: {
       </div> : null}
     </section>
   );
+}
+
+export function HomeDiscovery({ locale }: { locale: Locale }) {
+  const ar = locale === 'ar';
+  return <section className="home-discovery" aria-labelledby="home-discovery-title">
+    <h2 id="home-discovery-title">{ar ? 'استكشف حسب احتياجاتك' : 'Find what fits your day'}</h2>
+    <div className="home-discovery-links">
+      <Link href="/collections/daily-care"><Icon name="leaf" /><span>{ar ? 'العناية الشخصية اليومية' : 'Everyday personal care'}</span><Icon name="arrow" /></Link>
+      <Link href="/collections/under-50"><Icon name="tag" /><span>{ar ? 'أساسيات بـ٥٠ درهماً أو أقل' : 'Essentials at AED 50 or less'}</span><Icon name="arrow" /></Link>
+    </div>
+  </section>;
 }
 
 export async function HomeBrandStrip({ brands }: { brands: string[] }) {

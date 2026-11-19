@@ -26,6 +26,25 @@ export function DeliveryAreaPrompt({ locale = 'en' }: { locale?: Locale }) {
   if (!show) return null;
   return <aside className="border-t border-border bg-subtle" aria-label={t(locale,'areaPromptAria')}><div className="mx-auto flex max-w-[1344px] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-xs text-ocean md:px-6 lg:px-8"><Icon name="pin" /><span>{t(locale,'areaPrompt')}</span><button type="button" className="min-h-9 rounded-full border-border bg-white px-3 py-1 text-xs text-teal hover:bg-accent hover:text-teal" onClick={event => requestDeliveryArea(event.currentTarget)}>{t(locale,'areaChoose')}</button><button type="button" className="ml-auto min-h-9 rounded-full border-transparent bg-transparent px-3 py-1 text-xs font-normal text-ocean hover:bg-subtle hover:text-ink" onClick={() => { try { localStorage.setItem(promptKey, 'dismissed'); } catch { /* Dismiss for this visit when storage is unavailable. */ } setShow(false); }}>{t(locale,'areaNotNow')}</button></div></aside>;
 }
+export function ProductDeliveryLocation({ locale }: { locale: Locale }) {
+  const [area, setArea] = useState<DeliveryArea | null>(null);
+  useEffect(() => {
+    const sync = () => setArea(savedArea());
+    queueMicrotask(sync);
+    window.addEventListener(areaEvent, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(areaEvent, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+  return <button type="button" className="pdp-delivery-area" onClick={event => requestDeliveryArea(event.currentTarget)}>
+    <Icon name="pin" />
+    <span>{t(locale, 'areaDeliverTo')} <bdi>{area?.city || t(locale, 'areaChooseYours')}</bdi></span>
+    <ChevronDownIcon className="size-4" aria-hidden="true" />
+  </button>;
+}
+
 export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLButtonElement | null>(null);

@@ -7,6 +7,8 @@ import { ProductReviews } from '../../../../components/product-reviews';
 import { SaveProduct } from '../../../../components/save-product';
 import { ProductInformation } from '../../../../components/product-information';
 import { ProductOptions } from '../../../../components/product-options';
+import { ProductShare } from '../../../../components/product-share';
+import { ProductDeliveryLocation } from '../../../../components/delivery-location';
 import { ProductGallery } from '../../../../components/product-gallery';
 import { PhotoCredit } from '../../../../components/photo-credit';
 import Link from '../../../../components/app-link';
@@ -61,10 +63,12 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const brand = product.brand || product.familyBrand;
   const alternatives = related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4);
   const photos = productImages(product).filter(image => image !== '/product-placeholder.svg');
+  const shareUrl = new URL(productHref(product), origin).href;
   const mobileControls = (
     <div className={`pdp-mobile-toolbar ${styles.overlay}`}>
       <ProductReturnLink className={styles.back} categoryHref={categoryPath} locale={locale} />
       <SaveProduct locale={locale} id={product._id} name={product.name} compact card />
+      <ProductShare title={product.name} url={shareUrl} locale={locale} />
       <CartLink locale={locale} />
     </div>
   );
@@ -101,12 +105,22 @@ export default async function ProductPage({ params, searchParams }: Props) {
               <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock}
                 quantityPicker priceLabel={<CurrencyAmount value={currentPrice} locale={locale} />} />
             </ProductPurchaseDock>
-            <div className={styles.desktopSave}><SaveProduct locale={locale} id={product._id} name={product.name} card /></div>
+            <div className={styles.desktopSave}>
+              <SaveProduct locale={locale} id={product._id} name={product.name} card />
+              <ProductShare title={product.name} url={shareUrl} locale={locale} />
+            </div>
+            <ProductDeliveryLocation locale={locale} />
             {product.productType === 'general' && product.contentReviewed === true
               ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
           </div>
         </div>
         <div className={styles.secondary}>
+          <nav className={styles.readingLinks} aria-label={locale === 'ar' ? 'أقسام المنتج' : 'On this product page'}>
+            <a href="#product-description">{u(locale, 'About this product')}</a>
+            <a href="#product-reviews-title">{u(locale, 'Customer reviews')}{reviews?.ratingCount
+              ? ` (${new Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE').format(reviews.ratingCount)})`
+              : ''}</a>
+          </nav>
           <ProductInformation product={product} locale={locale} />
           <ProductReviews key={product._id} locale={locale} productId={product._id} reviews={reviews} />
           {alternatives.length ? (

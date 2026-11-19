@@ -94,3 +94,35 @@ test('review form keeps native validation, errors and confirmed feedback', async
   await expect(reviews.getByRole('status')).toContainText('awaiting moderation');
   await expect(reviews.getByRole('button', { name: 'Write a review', exact: true })).toBeFocused();
 });
+
+for (const width of [390, 1440]) {
+  test(`product tools share the canonical URL and save a browsing area at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', { value: undefined });
+      Object.defineProperty(navigator, 'clipboard', { value: {
+        writeText: async (url: string) => { sessionStorage.setItem('test-shared-url', url); },
+      } });
+    });
+    await page.goto(complete + '?utm_source=fixture');
+    const share = page.getByRole('button', { name: 'Share product', exact: true });
+    await expect(share).toHaveCount(1);
+    await share.click();
+    await expect(page.getByText('Product link copied', { exact: true })).toBeVisible();
+    expect(new URL((await page.evaluate(() => sessionStorage.getItem('test-shared-url')))!).pathname).toBe(complete);
+    expect(new URL((await page.evaluate(() => sessionStorage.getItem('test-shared-url')))!).search).toBe('');
+
+    const picker = page.locator('.pdp-delivery-area');
+    await picker.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.locator('#delivery-location-field-2').fill('Al Hamra');
+    await dialog.locator('button[type=submit]').click();
+    await expect(dialog).toBeHidden();
+    await expect(picker).toBeFocused();
+    await expect(picker).toContainText('Al Hamra');
+    await expect(page.locator('.floating-contact')).toHaveAttribute('href', 'https://wa.me/971504825007');
+    if (width === 390) await expect(page.locator('.floating-contact')).toBeHidden();
+    else await expect(page.locator('.floating-contact')).toBeVisible();
+  });
+}

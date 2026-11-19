@@ -14,7 +14,7 @@
     inset-block-start: calc(-1 * (var(--store-target-min) + var(--store-space-8)));
   }
 
-  .storefront-header[data-mobile-shell]:has(.header-mobile-menu :focus-visible, .brand-logo:focus-visible, .header-location :focus-visible, .header-cart:focus-visible) {
+  .storefront-shell:not([data-input-modality='pointer']) .storefront-header[data-mobile-shell]:has(.header-mobile-menu :focus-visible, .brand-logo:focus-visible, .header-location :focus-visible, .header-cart:focus-visible) {
     inset-block-start: 0;
   }
 

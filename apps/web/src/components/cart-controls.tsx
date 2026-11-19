@@ -8,8 +8,10 @@ import Link from './app-link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
 import { attributeCart } from '../lib/search/attribution';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
+import { useRouter } from 'next/navigation';
 import { ArrowPathIcon, ChevronRightIcon, NoSymbolIcon } from '@heroicons/react/24/outline';
 export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel, locale = 'en', compact = false }: { id: string; stock: number; quantityPicker?: boolean; name?: string; priceLabel?: ReactNode; locale?: Locale; compact?: boolean }) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
@@ -72,18 +74,23 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
       </div>
     );
   }
-  const label = stock <= 0 ? u(locale, 'Out of stock') : pending ? u(locale, 'Checking…') : u(locale, 'Add to cart');
   const added = message === u(locale, 'Added to cart.');
+  const goToCart = quantityPicker && added;
+  const label = goToCart ? (locale === 'ar' ? 'اذهب إلى السلة' : 'Go to cart') : stock <= 0 ? u(locale, 'Out of stock') : pending ? u(locale, 'Checking…') : u(locale, 'Add to cart');
   const max = Math.min(stock, 999);
   const quantityId = `quantity-${id}`;
+  function updateQuantity(next: number) {
+    setQuantity(Math.max(1, Math.min(max, next)));
+    setMessage('');
+  }
   const feedback = <>
-    <p role="status" data-added={added} className="status col-span-full text-xs text-teal empty:hidden" aria-atomic="true">{message ? (
+    <p role="status" data-added={added} className={goToCart ? "sr-only" : "status col-span-full text-xs text-teal empty:hidden"} aria-atomic="true">{message ? (
       <span data-store-feedback={added ? 'true' : undefined}>
         {added ? <Icon name="check" /> : null}
         {message}
       </span>
     ) : null}</p>
-    {added ? <Link className="view-cart-link text-teal" href="/cart">{u(locale, 'View cart')}<ChevronRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link> : null}
+    {added && !goToCart ? <Link className="view-cart-link text-teal" href="/cart">{u(locale, 'View cart')}<ChevronRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link> : null}
   </>;
   return (
     <div className={`cart-controls ${quantityPicker ? 'purchase-controls' : ''}`}>
@@ -96,24 +103,24 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
             <label className="sr-only" htmlFor={quantityId}>{u(locale, 'Quantity')}</label>
             <Button variant="ghost" size="icon" type="button" className="quantity-step"
               aria-label={u(locale, 'Decrease purchase quantity')} disabled={pending || quantity <= 1}
-              onClick={() => setQuantity(value => Math.max(1, value - 1))}><Icon name="minus" /></Button>
+              onClick={() => updateQuantity(quantity - 1)}><Icon name="minus" /></Button>
             <input id={quantityId} type="number" inputMode="numeric" disabled={pending}
               min={1} max={max} value={quantity}
-              onChange={event => setQuantity(Math.max(1, Math.min(max, Math.trunc(Number(event.target.value)) || 1)))} />
+              onChange={event => updateQuantity(Math.trunc(Number(event.target.value)) || 1)} />
             <Button variant="ghost" size="icon" type="button" className="quantity-step"
               aria-label={u(locale, 'Increase purchase quantity')} disabled={pending || quantity >= max}
-              onClick={() => setQuantity(value => Math.min(max, value + 1))}><Icon name="plus" /></Button>
+              onClick={() => updateQuantity(quantity + 1)}><Icon name="plus" /></Button>
           </div>
         ) : null}
-        <Button variant="accent" shape={quantityPicker ? "pill" : "default"} className={`add-to-cart ${quantityPicker ? '' : 'min-w-11 w-full'}`} type="button"
+        <Button variant="accent" className={`add-to-cart ${quantityPicker ? '' : 'min-w-11 w-full'}`} type="button"
           aria-label={name ? (pending && locale === 'en' ? `${label} ${name}` : `${label}: ${name}`) : label} aria-busy={pending} data-added={added}
-          disabled={pending || stock <= 0} onClick={add}>
+          disabled={pending || stock <= 0} onClick={goToCart ? () => router.push('/cart') : add}>
           {stock <= 0 ? null : pending ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" />
             : added || quantityPicker ? <Icon name={added ? 'check' : 'plus'} /> : (
               <><span className="hidden md:inline-flex"><Icon name="bag" /></span>
                 <span className="inline-flex md:hidden"><Icon name="plus" /></span></>
             )}
-          <span className={quantityPicker ? 'add-label' : 'add-label sr-only md:not-sr-only'}>{label}</span>
+          <span key={label} data-store-feedback={goToCart ? 'true' : undefined} className={quantityPicker ? 'add-label' : 'add-label sr-only md:not-sr-only'}>{label}</span>
           {!quantityPicker && priceLabel ? <span className="ms-auto text-xs font-semibold">{priceLabel}</span> : null}
         </Button>
       </div>
