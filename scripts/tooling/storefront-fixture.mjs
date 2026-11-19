@@ -117,15 +117,24 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       const visualCategories = includePagination ? ['Baby Care','Oral Care','Hair Care','First Aid'].map((name,index)=>({_id:(200+index).toString(16).padStart(24,'0'),name,disabled:false})) : [];
       res.end(JSON.stringify([category,...visualCategories])); return;
     }
-    if (url.pathname === '/api/v1/growth/campaigns' && homeCampaigns) {
+    if (homeCampaigns && ['/api/v1/growth/campaigns', '/api/v1/growth/page'].includes(url.pathname)) {
       const locale = url.searchParams.get('locale') === 'ar' ? 'ar' : 'en';
-      res.end(JSON.stringify({ data: ['hero', 'secondary'].map(homepagePlacement => ({
+      const campaigns = ['hero', 'secondary'].map(homepagePlacement => ({
         kind: 'campaign', slug: 'fixture-' + homepagePlacement, locale, homepagePlacement,
         title: homepagePlacement === 'hero' ? 'Fixture campaign' : 'Fixture secondary campaign',
         description: 'Synthetic campaign description.', body: 'Synthetic campaign copy.',
         image: 'https://cdn.alminapharmacy.com/cdn/banners/synthetic-test-campaign.webp',
         imageAlt: 'Synthetic campaign artwork', ctaLabel: 'See campaign', terms: 'Test fixture only.', published: true,
-      })) }));
+      }));
+      if (url.pathname.endsWith('/campaigns')) res.end(JSON.stringify({ data: campaigns }));
+      else {
+        const page = campaigns.find(item => item.kind === url.searchParams.get('kind') && item.slug === url.searchParams.get('slug'));
+        if (!page) res.writeHead(404);
+        const detail = page && locale === 'ar'
+          ? { ...page, title: 'عرض تجريبي للصيدلية', body: 'محتوى تجريبي لهذا العرض.' }
+          : page;
+        res.end(JSON.stringify({ data: detail ?? null }));
+      }
       return;
     }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }

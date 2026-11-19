@@ -1,17 +1,17 @@
 # Storefront replacement — progress and resume record
 
-Last updated: 18 November 2026. This is the single mutable status ledger for [implementation phases](implementation-phases.md) and [requirement coverage](implementation-coverage.md).
+Last updated: 19 November 2026. This is the single mutable status ledger for [implementation phases](implementation-phases.md) and [requirement coverage](implementation-coverage.md).
 
 ## Current checkpoint
 
-- **Current work:** **P5-03 verified.** Local checkout, payment and authentication regressions were exercised against disposable fixtures. [Commerce evidence](implementation-evidence/p5-03-commerce.md).
-- **Next eligible task:** **P5-04 — remaining customer and public information surfaces.**
-- **Verified implementation tasks:** 27 of 34 (Phases 0–4 and P5-01–P5-03).
+- **Current work:** **P5-04 verified.** Remaining retail account and information routes use the accepted design system. [Route dispositions and verification](implementation-evidence/p5-04-information.md).
+- **Next eligible task:** **P5-05 — customer journey, shared-route verification and displaced CSS cleanup.**
+- **Verified implementation tasks:** 28 of 34 (Phases 0–4 and P5-01–P5-04).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P5-03 reused the verified P5-02 production build and ran 162 unit/security checks, 53 disposable database integration checks and cart, checkout, payment and authentication browser regressions. Live provider and native-device verification remain open.
+- **Runtime/testing this checkpoint:** P5-04 isolated build, typecheck, lint, 42 unit checks, bilingual route and account browser checks and 100 live viewport measurements. Historical broad-suite assertions are recorded for P5-05. Native-device and provider verification remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -23,7 +23,7 @@ Last updated: 18 November 2026. This is the single mutable status ledger for [im
 | 2 Accepted system | verified | All five tasks evidenced; public consumer migration remains P3–P5 | [Phase exit](implementation-evidence/phase-2.md#phase-2-exit) |
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
 | 4 Catalogue/PDP | verified | P4-01–P4-05 verified locally. | [Phase 4 exit](implementation-evidence/phase-4.md) |
-| 5 Cart/checkout/customer | in_progress | P5-01–P5-03 verified. P5-04 remaining customer and information surfaces follows. | [Cart](implementation-evidence/p5-01-cart.md), [checkout](implementation-evidence/p5-02-checkout.md), [commerce](implementation-evidence/p5-03-commerce.md) |
+| 5 Cart/checkout/customer | in_progress | P5-01–P5-04 verified. P5-05 verifies the full customer and shared journey. | [Cart](implementation-evidence/p5-01-cart.md), [checkout](implementation-evidence/p5-02-checkout.md), [commerce](implementation-evidence/p5-03-commerce.md), [information routes](implementation-evidence/p5-04-information.md) |
 | 6 Retirement/final review | not_started | Needs all preceding implementation, regressions and traceability | — |
 
 ## Task ledger
@@ -59,7 +59,7 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P5-01 | verified | [Cart states, estimates and responsive continuation](implementation-evidence/p5-01-cart.md) |
 | P5-02 | verified | [Checkout details, review, dock and results](implementation-evidence/p5-02-checkout.md) |
 | P5-03 | verified | [Disposable checkout, transaction, payment and authentication regressions](implementation-evidence/p5-03-commerce.md) |
-| P5-04 | not_started | — |
+| P5-04 | verified | [Route dispositions, local captures and browser checks](implementation-evidence/p5-04-information.md) |
 | P5-05 | not_started | — |
 | P6-01 | not_started | — |
 | P6-02 | not_started | — |
@@ -102,7 +102,7 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O05 | Old instructions/guide/runtime still describe incumbent visual candidate | Treat as existing implementation evidence; align authority after accepted P1 screens, no silent restoration of rejected look. | P0-01, P2-05 |
 | O06 | Search matching/Arabic quality and true back/scroll behaviour | P4-05 verifies contextual return and an offline search benchmark. Representative catalogue relevance and Arabic matching remain open. | P0-03, P4-05 |
 | O07 | NEW-001/002/003: wholesale shares customer CSS/shell; root 404 imports it; admin campaign preview shares artwork/Outfit | Isolation/compatibility and preview policy required before accepted customer system switch; see P0-02 matrix. No shared deletion yet. | P2-01–P2-03, P3-03–P3-04, P6-01 |
-| O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route errors now localized, saved/account copy remains open. | P4-05 verifies in-page return with exact query, filters and focus. P5 verifies saved/account UI. | P3-04, P4-05, P5-05, P6-02 |
+| O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route recovery are localized. P5-04 localizes saved-product states and applies the account’s existing localized copy in the accepted layout. | P4-05 verifies in-page return with exact query, filters and focus. P5 verifies saved/account UI. | P3-04, P4-05, P5-05, P6-02 |
 | O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. Twelve bounded P3-04 fixture cycles resolved and twelve P4-05 returns did not reproduce the stall. Broader long-session verification remains open. | P3-04, P4-05, P6-02 |
 
 No blocker to starting P1-02 with the contract safeguards has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
@@ -370,3 +370,9 @@ When interrupted or handing off, update this file before yielding where possible
 
 - Verified server quote and stock conflicts, idempotent retry, cash completion, simulated hosted payment return and cancellation, and guest/customer/staff boundaries.
 - Updated browser assertions for accessible dirham pricing, disabled sign-in behavior and the exact SKU through confirmation and staff order detail. [Implementation evidence](implementation-evidence/p5-03-commerce.md). Continue with P5-04.
+
+
+### 2026-11-19 — P5-04 verified
+
+- Migrated retail sign-in, account, saved products, public directories, authored details, policies and support routes onto accepted roles. Preserved account and editorial boundaries, route metadata and localised status feedback.
+- Recorded the R01–R18 disposition, bilingual captures and remaining verification in the [P5-04 report](implementation-evidence/p5-04-information.md). Continue with P5-05.

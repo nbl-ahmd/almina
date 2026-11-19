@@ -1,3 +1,7 @@
+## 2026-11-19 — P5-04 remaining storefront surfaces verified
+
+Account, saved items, support, policy and discovery information routes share the accepted storefront system. Published content, existing metadata and retail and wholesale identity boundaries were preserved. [Route disposition and local checks](../../apps/web/docs/design/implementation-evidence/p5-04-information.md). P5-05 covers full customer and shared-route verification. No deployment.
+
 ## 2026-11-18 — P5-03 checkout and authentication regressions verified
 
 Disposable local fixtures covered quote changes, stock conflicts, idempotent retry, cash confirmation, simulated payments and customer and staff boundaries. [Verification and scope](../../apps/web/docs/design/implementation-evidence/p5-03-commerce.md). P5-04 covers remaining customer and public information surfaces. No deployment.

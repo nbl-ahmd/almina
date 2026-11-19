@@ -69,6 +69,8 @@ P5-01 uses one continuation in the cart summary. It becomes a measured dock on p
 
 P5-02 uses one form-associated checkout action across device modes. The dock moves into flow in short landscape or with the software keyboard open. Visible native labels and manual address fields lead the optional map and voucher controls. The disabled and payment-return routes share the same accepted layout. [Checkout verification](implementation-evidence/p5-02-checkout.md).
 
+P5-04 uses one scoped information layout for retail account, saved items, directories, support and published content. Authored English policies keep their original language and an Arabic notice identifies them in the Arabic storefront. Explicit Arabic editorial routes retain their published content and existing alternates. [Route and state evidence](implementation-evidence/p5-04-information.md).
+
 ## Proposed choices and open questions
 
 No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.

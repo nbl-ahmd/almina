@@ -1,9 +1,128 @@
 'use client';
-import { CurrencyAmount } from './currency-amount';
+
+import { useEffect, useState } from 'react';
+import { currentSaved, loadSavedAccount, changeSaved } from '../lib/catalog/saved-account';
+import type { Locale } from '../lib/i18n';
+import { shopText } from '../lib/i18n-storefront';
 import Link from './app-link';
-import { useEffect,useState } from 'react';
-import { currentSaved,loadSavedAccount,changeSaved } from '../lib/catalog/saved-account';
+import { CurrencyAmount } from './currency-amount';
 import { AddToCart } from './cart-controls';
 import { ProductImage } from './product-image';
-type Item={id:string;name:string;href:string;price:number;stock:number;image:string};
-export function SavedProducts({cloudName}:{cloudName?:string|undefined}){const [items,setItems]=useState<Item[]>([]),[page,setPage]=useState(0),[ids,setIds]=useState<string[]>([]),[error,setError]=useState(''),[ready,setReady]=useState(false);useEffect(()=>{const update=()=>{try{const next=currentSaved();setIds(next);setPage(value=>Math.min(value,Math.max(0,Math.ceil(next.length/20)-1)));}catch{setError('Saved products are unavailable in this browser.');}setReady(true);};update();void loadSavedAccount().then(update);window.addEventListener('almina-saved-change',update);return()=>window.removeEventListener('almina-saved-change',update);},[]);useEffect(()=>{if(!ready)return;const controller=new AbortController();void fetch('/api/saved-products',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json','X-CSRF-Protection':'1'},body:JSON.stringify({ids:ids.slice(page*20,page*20+20)})}).then(response=>{if(!response.ok)throw new Error('Unable to load saved products.');return response.json();}).then((result:{items:Item[]})=>setItems(result.items)).catch(failure=>{if(!controller.signal.aborted)setError(failure.message);});return()=>controller.abort();},[ids,page,ready]);return <><div className="mb-6"><h1 className="mb-2 text-3xl">Saved for your next visit</h1><p className="text-sm text-muted">Sign in to keep an account list across devices. Guest favourites stay on this device. Current prices and availability apply.</p></div>{error?<p role="alert" className="rounded-xl bg-subtle p-4">{error}</p>:null}{!ready?<p role="status">Loading saved products…</p>:!ids.length?<div className="rounded-2xl bg-subtle p-6"><h2 className="text-xl">Keep your favourites close.</h2><p className="text-sm text-muted">Use Save for later on a product page to find it here.</p><Link className="button rounded-full text-sm" href="/products">Explore products</Link></div>:<><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{items.map(item=><article key={item.id} className="flex flex-col rounded-2xl border border-border bg-white p-3"><Link className="mb-3 block aspect-square" href={item.href}><ProductImage src={item.image} alt={item.name} cloudName={cloudName} width={300} height={300} sizes="(max-width:767px) 45vw, 300px" className="size-full object-contain" /></Link><h2 className="text-base"><Link href={item.href}>{item.name}</Link></h2><p className="mt-auto text-lg font-semibold"><CurrencyAmount value={item.price} /></p><AddToCart id={item.id} stock={item.stock} name={item.name} /><button className="mt-2 min-h-11 border-0 bg-transparent text-xs text-muted hover:bg-subtle hover:text-ink" onClick={()=>{void changeSaved(item.id,true).catch(()=>setError('Unable to remove this saved product. Please try again.'));}}>Remove from saved</button></article>)}</div>{items.length<ids.slice(page*20,page*20+20).length?<p className="mt-4 text-sm text-muted">Some saved products are no longer listed. Their details are hidden.</p>:null}<nav className="mt-5 flex gap-3" aria-label="Saved product pages">{page>0?<button className="button-secondary" onClick={()=>setPage(page-1)}>Previous</button>:null}{(page+1)*20<ids.length?<button className="button-secondary" onClick={()=>setPage(page+1)}>Next</button>:null}</nav></>}</>;}
+import { StorefrontIntro } from './storefront-intro';
+import { Button } from './ui/button';
+import { Icon } from './icon';
+import styles from './storefront-information.module.css';
+
+type Item = { id: string; name: string; href: string; price: number | null; stock: number; image: string };
+type Result = { key: string; items: Item[]; failed?: boolean };
+const pageSize = 20;
+
+export function SavedProducts({ cloudName, locale }: { cloudName?: string | undefined; locale: Locale }) {
+  const [ids, setIds] = useState<string[]>();
+  const [page, setPage] = useState(0);
+  const [result, setResult] = useState<Result>();
+  const [unavailable, setUnavailable] = useState(false);
+  const [removeFailed, setRemoveFailed] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const text = (en: string, ar: string) => locale === 'ar' ? ar : en;
+  const pageIds = ids?.slice(page * pageSize, (page + 1) * pageSize);
+  const pageKey = pageIds?.join(',') ?? '';
+
+  useEffect(() => {
+    function update() {
+      try {
+        const next = currentSaved();
+        setIds(previous => previous?.join(',') === next.join(',') ? previous : next);
+        setPage(value => Math.min(value, Math.max(0, Math.ceil(next.length / pageSize) - 1)));
+        setUnavailable(false);
+      } catch {
+        setUnavailable(true);
+      }
+    }
+
+    let active = true;
+    void loadSavedAccount().then(() => { if (active) update(); });
+    window.addEventListener('almina-saved-change', update);
+    return () => {
+      active = false;
+      window.removeEventListener('almina-saved-change', update);
+    };
+  }, [retry]);
+
+  useEffect(() => {
+    if (!pageKey) return;
+    const controller = new AbortController();
+    void fetch('/api/saved-products', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
+      body: JSON.stringify({ ids: pageKey.split(',') }),
+    }).then(response => {
+      if (!response.ok) throw new Error();
+      return response.json() as Promise<{ items: Item[] }>;
+    }).then(({ items }) => {
+      if (!controller.signal.aborted) setResult({ key: pageKey, items });
+    }).catch(() => {
+      if (!controller.signal.aborted) setResult({ key: pageKey, items: [], failed: true });
+    });
+
+    return () => controller.abort();
+  }, [pageKey, retry]);
+
+  const visible = result?.key === pageKey ? result : undefined;
+
+  return <>
+    <StorefrontIntro
+      title={text('Saved products', 'المنتجات المحفوظة')}
+      description={text('Sign in to access your saved products across devices. Guest favourites stay on this device.', 'سجّل الدخول للوصول إلى منتجاتك المحفوظة عبر أجهزتك. تبقى مفضلات الزائر على هذا الجهاز.')}
+    />
+    {removeFailed ? <p role="alert" className={`${styles.panel} ${styles.error}`}>{text('Unable to remove this saved product. Try again.', 'تعذّرت إزالة هذا المنتج المحفوظ. حاول مرة أخرى.')}</p> : null}
+    {unavailable || (pageKey && visible?.failed) ? <section className={`${styles.panel} ${styles.state}`}>
+      <h2 role="alert">{text('Saved products could not load', 'تعذّر تحميل المنتجات المحفوظة')}</h2>
+      <Button type="button" size="sm" variant="outline" onClick={() => {
+        setResult(undefined);
+        setRetry(value => value + 1);
+      }}>{text('Try again', 'حاول مرة أخرى')}</Button>
+    </section> : !ids || (pageKey && !visible) ? <p className={`${styles.panel} ${styles.state}`} role="status">
+      {text('Loading saved products…', 'جارٍ تحميل المنتجات المحفوظة…')}
+    </p> : !ids.length ? <section className={`${styles.panel} ${styles.state}`}>
+      <h2>{text('No saved products yet', 'لا توجد منتجات محفوظة بعد')}</h2>
+      <p>{text('Save a product to find it here later.', 'احفظ أي منتج لتجده هنا لاحقاً.')}</p>
+      <Button asChild size="sm"><Link href="/products">{text('Explore products', 'تصفّح المنتجات')}<Icon name="arrow" /></Link></Button>
+    </section> : <>
+      <div className={styles.savedGrid}>
+        {visible?.items.map(item => <article key={item.id} className={styles.savedCard}>
+          <Link className={styles.savedPhoto} href={item.href} aria-label={item.name}>
+            <ProductImage src={item.image} alt="" cloudName={cloudName} width={300} height={300}
+              sizes="(max-width: 767px) 45vw, (max-width: 1023px) 32vw, 300px" />
+          </Link>
+          <h2><Link href={item.href}><bdi>{item.name}</bdi></Link></h2>
+          <p className="m-0 text-xs text-muted">{shopText(locale, item.stock > 0 ? 'In stock' : 'Currently unavailable')}</p>
+          <div className={styles.savedPurchase}>
+            <p className={styles.savedPrice}>{item.price === null
+              ? text('Price unavailable', 'السعر غير متاح')
+              : <CurrencyAmount value={item.price} locale={locale} />}</p>
+            <AddToCart id={item.id} stock={item.stock} name={item.name} locale={locale} compact />
+          </div>
+          <Button type="button" variant="ghost" size="icon" className={styles.savedRemove} disabled={removing}
+            aria-label={text(`Remove ${item.name} from saved products`, `إزالة ${item.name} من المنتجات المحفوظة`)}
+            onClick={async () => {
+              setRemoving(true);
+              setRemoveFailed(false);
+              try { await changeSaved(item.id, true); }
+              catch { setRemoveFailed(true); }
+              finally { setRemoving(false); }
+            }}><Icon name="trash" /></Button>
+        </article>)}
+      </div>
+      {(visible?.items.length ?? 0) < (pageIds?.length ?? 0) ? <p className="mt-4 text-sm text-muted">
+        {text('Some saved products are no longer listed.', 'بعض المنتجات المحفوظة لم تعد مدرجة.')}
+      </p> : null}
+      {ids.length > pageSize ? <nav className="mt-5 flex flex-wrap gap-3" aria-label={text('Saved product pages', 'صفحات المنتجات المحفوظة')}>
+        {page > 0 ? <Button type="button" variant="outline" size="sm" onClick={() => setPage(page - 1)}>{text('Previous', 'السابق')}</Button> : null}
+        {(page + 1) * pageSize < ids.length ? <Button type="button" variant="outline" size="sm" onClick={() => setPage(page + 1)}>{text('Next', 'التالي')}</Button> : null}
+      </nav> : null}
+    </>}
+  </>;
+}
