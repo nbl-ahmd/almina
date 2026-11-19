@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
+import { ArrowPathIcon, ClipboardDocumentCheckIcon, StarIcon } from '@heroicons/react/24/outline';
 import Link from './app-link';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { NativeSelect } from './ui/native-select';
 import { Textarea } from './ui/textarea';
 import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 import styles from './product-information.module.css';
@@ -21,8 +21,10 @@ export function ProductReviews({ productId, reviews, locale = 'en' }: {
   productId: string; reviews: ReviewSummary | null; locale?: Locale;
 }) {
   const [open, setOpen] = useState(false);
+  const [pointerEntry, setPointerEntry] = useState(false);
   const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
+  const reviewTrigger = useRef<HTMLButtonElement>(null);
   const t = (key: string) => u(locale, key);
   const ar = locale === 'ar';
   const number = new Intl.NumberFormat(ar ? 'ar-AE' : 'en-AE');
@@ -50,6 +52,7 @@ export function ProductReviews({ productId, reviews, locale = 'en' }: {
       setNotice({ text: t('Thank you. Your review is awaiting moderation before it appears here.'), error: false });
       form.reset();
       setOpen(false);
+      reviewTrigger.current?.focus();
     } catch (error) {
       setNotice({ text: error instanceof Error ? error.message : t('Unable to submit the review. Please try again.'), error: true });
     } finally {
@@ -72,37 +75,48 @@ export function ProductReviews({ productId, reviews, locale = 'en' }: {
           <h2 id="product-reviews-title">{t('Customer reviews')}</h2>
           <p>{reviewSummary}</p>
         </div>
-        <Button variant="outline" size="sm" type="button" aria-expanded={open}
-          aria-controls={open ? 'write-product-review' : undefined} onClick={() => setOpen(!open)}>
+        <Button ref={reviewTrigger} variant="outline" size="sm" type="button" aria-expanded={open}
+          aria-controls={open ? 'write-product-review' : undefined} onClick={event => {
+            setPointerEntry(!open && event.detail > 0);
+            setOpen(!open);
+          }}>
           {open ? (ar ? 'إغلاق نموذج التقييم' : 'Close review form') : t('Write a review')}
         </Button>
       </div>
-      {notice ? <p className={styles.reviewMessage} data-error={notice.error || undefined}
-        data-store-notice={notice.error ? 'error' : 'success'} data-store-feedback={!notice.error || undefined}
-        role={notice.error ? 'alert' : 'status'}>{notice.text}</p> : null}
+      <div role="status" aria-atomic="true">
+        {notice && !notice.error ? <p className={styles.reviewMessage} data-store-notice="success" data-store-feedback>{notice.text}</p> : null}
+      </div>
       {open ? (
-        <form id="write-product-review" onSubmit={submit} className={styles.reviewForm}>
+        <form id="write-product-review" onSubmit={submit} aria-busy={busy} data-pointer-entry={pointerEntry || undefined} className={styles.reviewForm}>
           <FieldGroup className="grid gap-4">
-            <p className="m-0 text-muted"><Link className={styles.link} href="/account">{t('Sign in')}</Link>
-              {t(' with the email used for your order. Reviews are checked before publication.')}
+            <p className={styles.reviewVerification}>
+              <ClipboardDocumentCheckIcon aria-hidden="true" />
+              <span><Link href="/account">{t('Sign in')}</Link>
+                {t(' with the email used for your order. Reviews are checked before publication.')}
+              </span>
             </p>
-            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            <div className={styles.reviewIdentity}>
               <Field>
                 <FieldLabel htmlFor="product-reviews-field-1">{t('Order number')}</FieldLabel>
                 <Input id="product-reviews-field-1" name="orderId" dir="ltr" pattern="OD[0-9]+" placeholder="OD5050" required />
               </Field>
               <Field>
-                <FieldLabel htmlFor="product-reviews-field-2">{t('Rating')}</FieldLabel>
-                <NativeSelect id="product-reviews-field-2" name="rating" required defaultValue="">
-                  <option value="" disabled>{t('Select a rating')}</option>
-                  {[5, 4, 3, 2, 1].map(value => <option key={value} value={value}>{ar ? `${value} من 5` : `${value} out of 5`}</option>)}
-                </NativeSelect>
+                <FieldLabel htmlFor="product-reviews-field-3">{t('Public display name')}</FieldLabel>
+                <Input id="product-reviews-field-3" name="displayName" dir="auto" minLength={2} maxLength={40} required autoComplete="nickname" />
               </Field>
             </div>
-            <Field>
-              <FieldLabel htmlFor="product-reviews-field-3">{t('Public display name')}</FieldLabel>
-              <Input id="product-reviews-field-3" name="displayName" dir="auto" minLength={2} maxLength={40} required autoComplete="nickname" />
-            </Field>
+            <fieldset className={styles.reviewRating}>
+              <legend>{t('Rating')}</legend>
+              <div className={styles.reviewStars}>
+                {[1, 2, 3, 4, 5].map(value => (
+                  <label key={value}>
+                    <input type="radio" name="rating" value={value} required
+                      aria-label={ar ? `${number.format(value)} من ٥` : `${value} out of 5`} />
+                    <StarIcon aria-hidden="true" />
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <Field>
               <FieldLabel htmlFor="product-reviews-field-4">{t('Review title (optional)')}</FieldLabel>
               <Input id="product-reviews-field-4" name="title" dir="auto" maxLength={100} />
@@ -112,7 +126,11 @@ export function ProductReviews({ productId, reviews, locale = 'en' }: {
               <Textarea id="review-experience" aria-describedby="review-experience-help" name="body" dir="auto" minLength={10} maxLength={1800} required />
               <FieldDescription id="review-experience-help">{t('Please avoid personal medical information or contact details.')}</FieldDescription>
             </Field>
-            <Button type="submit" disabled={busy} className="w-fit">{busy ? t('Sending…') : t('Submit for review')}</Button>
+            {notice?.error ? <p className={styles.reviewMessage} data-error role="alert">{notice.text}</p> : null}
+            <Button type="submit" disabled={busy} aria-busy={busy} className="w-fit">
+              {busy ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" /> : null}
+              {busy ? t('Sending…') : t('Submit for review')}
+            </Button>
           </FieldGroup>
         </form>
       ) : null}

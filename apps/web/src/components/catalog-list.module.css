@@ -123,15 +123,11 @@
 .field > label, .price > legend, .stock { font-size: var(--store-type-13); font-weight: var(--store-weight-medium); }
 .field :is(input, select) {
   min-block-size: var(--store-target-min);
-  border-color: var(--store-border-control);
   border-radius: var(--store-radius-10);
   padding-block: var(--store-space-8);
-  background-color: var(--store-input-surface);
   color: var(--store-text);
   font-size: var(--store-type-14);
 }
-.field :is(input, select):hover { background-color: var(--store-hover-surface); }
-.field :is(input, select):focus-visible { background-color: var(--store-surface); }
 .field input {
   padding-inline: var(--store-space-10);
   font-variant-numeric: tabular-nums;

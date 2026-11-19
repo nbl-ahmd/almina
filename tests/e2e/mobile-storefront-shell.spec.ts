@@ -32,6 +32,47 @@ for (const locale of ['en', 'ar'] as const) {
     await expect(nav).toBeVisible();
   });
 
+  test(`${locale} phone header keeps only search at the top while scrolling`, async ({ page, context }) => {
+    await context.addCookies([{ name: 'almina_lang', value: locale, url: 'http://127.0.0.1:4710' }]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.locator('.home-product-grid .product-card').first().waitFor();
+    const header = page.locator('[data-mobile-shell]');
+    const search = header.getByRole('combobox');
+    const menu = header.locator('.header-mobile-menu button').first();
+    const logo = header.locator('.brand-logo');
+    const destination = header.locator('[data-slot=delivery-selector]');
+    const cart = header.locator('.header-cart');
+    const centers = await Promise.all([menu, logo, destination, cart].map(async control => {
+      const box = (await control.boundingBox())!;
+      return box.x + box.width / 2;
+    }));
+    expect(centers).toEqual([...centers].sort((a,b) => locale === 'ar' ? b-a : a-b));
+
+    await page.evaluate(() => scrollTo(0, 450));
+    await expect.poll(async () => (await menu.boundingBox())!.y + (await menu.boundingBox())!.height).toBeLessThanOrEqual(1);
+    await expect.poll(async () => (await search.boundingBox())!.y).toBeLessThan(20);
+    await search.click();
+    await expect(header.locator('[data-slot=search-panel]')).toBeInViewport();
+    await search.press('Escape');
+
+    await menu.focus();
+    await expect.poll(async () => (await menu.boundingBox())!.y).toBeGreaterThanOrEqual(0);
+    await menu.press('Enter');
+    await expect(header.locator('.storefront-menu-sheet')).toBeInViewport();
+    await expect(header.locator('.storefront-menu-sheet')).not.toHaveAttribute('data-pointer-entry');
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeFocused();
+
+    await page.evaluate(() => scrollTo(0, 0));
+    await menu.click();
+    const sheet = header.locator('.storefront-menu-sheet');
+    await expect(sheet).toHaveAttribute('data-pointer-entry', 'true');
+    await expect(sheet).toHaveCSS('transition-duration', '0.18s, 0.18s');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(sheet).toHaveCSS('transition-duration', '0s');
+  });
+
   test(`${locale} mobile delivery area persists and cart and checkout use task navigation`, async ({ page, context }) => {
     await context.addCookies([
       { name: 'almina_lang', value: locale, url: 'http://127.0.0.1:4710' },

@@ -241,7 +241,7 @@
       "refersTo": "field",
       "description": "Compact labelled field with visible focus and invalid states. Checkout and account layouts own their field geometry.",
       "html": "<label class=\"ds-label\">Field sample<input class=\"ds-field\" value=\"Synthetic value\" /></label>",
-      "css": ".ds-label{display:grid;gap:6px;font:700 14px/1.5 \"DM Sans\",sans-serif;color:#1c2925;}.ds-field{box-sizing:border-box;min-height:48px;width:100%;min-width:0;padding:12px 16px;border:1px solid #7c898f;border-radius:14px;background:#eef5f1;color:#1c2925;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:2px solid #125d87;outline-offset:3px;background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
+      "css": ".ds-label{display:grid;gap:6px;font:700 14px/1.5 \"DM Sans\",sans-serif;color:#1c2925;}.ds-field{box-sizing:border-box;min-height:48px;width:100%;min-width:0;padding:12px 16px;border:1px solid #e2ebe7;border-bottom-color:#7c898f;border-radius:14px;background:#ffffff;color:#1c2925;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:2px solid #125d87;outline-offset:3px;background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
     },
     {
       "name": "Compact navigation",
@@ -307,7 +307,7 @@
       },
       {
         "name": "The feedback-motion rule.",
-        "body": "Background, border and text changes and pointer press feedback use 120ms. Campaign changes initiated by pointer and confirmed status indicators can enter with a 180ms opacity transition. Both use `cubic-bezier(0.2,0.7,0.2,1)`. Keyboard carousel controls render the next slide immediately. Reduced motion preserves immediate final states. Pack comparison and navigation stay steady. Stroked UI icons use Heroicons at 22px/1.5, with separate filled dirham artwork.",
+        "body": "Background, border and text changes and pointer press feedback use 120ms. Pointer-initiated menu, review and campaign disclosures use the 180ms entry role. Confirmed status indicators can fade in on the same timing. Both use `cubic-bezier(0.2,0.7,0.2,1)`. Keyboard carousel controls render the next slide immediately. Reduced motion preserves immediate final states. Pack comparison and navigation stay steady. Stroked UI icons use Heroicons at 22px/1.5, with separate filled dirham artwork.",
         "section": "components"
       }
     ],

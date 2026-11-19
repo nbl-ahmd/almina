@@ -22,8 +22,8 @@ export async function Navigation({ locale = 'en', mobileShell = false }: { local
     <a className="skip-link fixed top-2 start-2 z-[100] -translate-y-[160%] rounded-xl bg-ink px-5 py-3 text-white focus:translate-y-0" href="#main-content">{t(locale, 'skipToContent')}</a>
     <header className={mobileShell ? `storefront-header ${system.system}` : "storefront-header"} data-mobile-shell={mobileShell || undefined} data-storefront-chrome={mobileShell ? "header" : undefined} lang={locale}>
       <div className="header-content sf-container">
-        <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes={mobileShell ? "(max-width: 767px) 86px, 124px" : "(max-width: 767px) 116px, 160px"} className="h-auto w-full" /></Link>
         <div className="header-mobile-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
+        <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes={mobileShell ? "(max-width: 767px) 86px, 124px" : "(max-width: 767px) 116px, 160px"} className="h-auto w-full" /></Link>
         <div className="header-search"><SearchBox locale={locale} mobileShell={mobileShell} /></div>
         <DeliveryLocation locale={locale} />
         <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account"><UserCircleIcon className="size-6" aria-hidden="true" /><span>{t(locale, 'navAccount')}</span></Link>

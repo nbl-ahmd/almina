@@ -129,14 +129,33 @@
   color: var(--store-saved);
   background: var(--store-saved-surface);
 }
-.boundary :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea'], [data-store-control='field']):focus-visible {
-  background: var(--store-surface);
+/* Retail text entry uses a light well with a clear single edge.
+   Scope the treatment to retail and leave geometry to the route. */
+:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])) {
+  border-color: var(--store-border);
+  border-block-end-color: var(--store-border-control);
+  background-color: var(--store-surface);
 }
-.boundary :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea'], [data-store-control='field'])[aria-invalid='true'] {
+:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])):enabled:hover {
+  border-block-end-color: var(--store-positive);
+  background-color: var(--store-canvas);
+}
+:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])):disabled {
+  border-color: var(--store-border);
+  background-color: var(--store-disabled-surface);
+}
+:where(.aliases[data-storefront-retail], .boundary) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea'], [data-store-control='field']):focus-visible {
+  border-color: var(--store-focus);
+  outline: 2px solid var(--store-focus);
+  outline-offset: 2px;
+  background-color: var(--store-surface);
+}
+:where(.aliases[data-storefront-retail], .boundary) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea'], [data-store-control='field'])[aria-invalid='true'] {
   border-color: var(--store-error);
-  background-color: var(--store-saved-surface);
   outline-color: var(--store-error);
+  background-color: var(--store-saved-surface);
 }
+
 .boundary [data-slot='button']:is(:disabled, [aria-disabled='true']),
 .boundary [data-store-control='purchase']:disabled {
   color: var(--store-disabled-text);

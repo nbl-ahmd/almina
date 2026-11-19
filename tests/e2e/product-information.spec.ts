@@ -58,7 +58,7 @@ for (const locale of ['en', 'ar'] as const) {
   });
 }
 
-test('review form keeps native validation and the sign-in response', async ({ page }) => {
+test('review form keeps native validation, errors and confirmed feedback', async ({ page }) => {
   await page.goto('/products/daily-care--PD0001');
   await expect(page.getByText('There are no published verified-purchase reviews yet.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Write a review', exact: true }).click();
@@ -67,7 +67,10 @@ test('review form keeps native validation and the sign-in response', async ({ pa
   await submit.click();
   await expect(form.getByRole('textbox', { name: 'Order number', exact: true })).toBeFocused();
   await form.getByRole('textbox', { name: 'Order number', exact: true }).fill('OD5050');
-  await form.getByRole('combobox', { name: 'Rating', exact: true }).selectOption('4');
+  const rating = form.getByRole('group', { name: 'Rating', exact: true });
+  await rating.getByRole('radio', { name: '3 out of 5', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(rating.getByRole('radio', { name: '4 out of 5', exact: true })).toBeChecked();
   await form.getByRole('textbox', { name: 'Public display name', exact: true }).fill('Synthetic shopper');
   await form.getByRole('textbox', { name: 'Your experience', exact: true }).fill('Synthetic review submission for browser verification.');
   // Intercept the fixture request before any review is submitted.
@@ -78,8 +81,14 @@ test('review form keeps native validation and the sign-in response', async ({ pa
   });
   await submit.click();
   const reviews = page.getByRole('region', { name: 'Customer reviews', exact: true });
-  await expect(reviews.getByRole('status')).toHaveText('Please sign in before writing a review.');
+  await expect(reviews.getByRole('alert')).toHaveText('Please sign in before writing a review.');
   await expect(form).toBeVisible();
-  await page.getByRole('button', { name: 'Close review form', exact: true }).click();
+  await expect(form.getByRole('textbox', { name: 'Order number', exact: true })).toHaveValue('OD5050');
+
+  await page.unroute('**/api/customer/review');
+  await page.route('**/api/customer/review', route => route.fulfill({ status: 201 }));
+  await submit.click();
   await expect(form).toHaveCount(0);
+  await expect(reviews.getByRole('status')).toContainText('awaiting moderation');
+  await expect(reviews.getByRole('button', { name: 'Write a review', exact: true })).toBeFocused();
 });
