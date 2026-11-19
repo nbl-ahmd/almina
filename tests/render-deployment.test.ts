@@ -5,11 +5,21 @@ import { promisify } from 'node:util';
 import { readFileSync } from 'node:fs';
 import { deploymentCandidate, requireSuccessfulCi, verifiedPullHead, requireMatchingTrees } from '../scripts/tooling/verify-vercel-candidate.mjs';
 import { needsRuntimeChecks } from '../scripts/tooling/ci-changes.mjs';
+import { productionApiOrigin, requireProductionVercelEnvironment } from '../scripts/tooling/production-vercel-config.mjs';
 
 const commit = 'a'.repeat(40), head = 'b'.repeat(40), tree = 'c'.repeat(40), repository = 'pharmacy/store';
 const run = promisify(execFile);
 const passed = { name: 'CI', run_number: 1, head_sha: head, event: 'pull_request', status: 'completed', conclusion: 'success' };
 const pull = { merged_at: '2026-10-23', merge_commit_sha: commit, base: { ref: 'master', repo: { full_name: repository } }, head: { sha: head } };
+
+test('production deployment requires both API settings to match the approved origin', () => {
+  const env = { APP_ENV: 'production', CHECKOUT_ENABLED: 'true', WEB_ORIGIN: 'https://alminapharmacy.com', API_ORIGIN: productionApiOrigin, LEGACY_API_ORIGIN: productionApiOrigin };
+  assert.doesNotThrow(() => requireProductionVercelEnvironment(env));
+  for (const key of Object.keys(env)) {
+    const value = 'synthetic-unexpected-value';
+    assert.throws(() => requireProductionVercelEnvironment({ ...env, [key]: value }), { message: `Frontend production configuration requires review: ${key}` });
+  }
+});
 
 test('deployment accepts same-repository master pushes, skips stale commits and validates manual SHAs', () => {
   const push = { ref: 'refs/heads/master', repository: { full_name: repository }, after: commit };

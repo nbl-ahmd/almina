@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { productionApiOrigin } from './production-vercel-config.mts';
 
 // Read-only public endpoints only. Never run checkout, sign-in or fixture writes here.
 const web = 'https://alminapharmacy.com';
@@ -19,7 +20,7 @@ await Promise.all(checks.map(async ([path, kind]) => {
   else assert.match(body, /User-Agent:/i);
   console.log(`Production GET ${path}: OK`);
 }));
-const response = await fetch('https://almina-of4b.onrender.com/health/ready', { signal: AbortSignal.timeout(60000) });
+const response = await fetch(new URL('/health/ready', productionApiOrigin), { signal: AbortSignal.timeout(60000), redirect: 'error' });
 assert.equal(response.status, 200, 'API readiness');
 assert.equal((await response.json()).status, 'ready', 'API readiness');
 console.log('Production API readiness: OK');
