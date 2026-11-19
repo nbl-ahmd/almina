@@ -41,11 +41,22 @@ The current package pointer is `outputs/image-review-module-2026-10-26/LATEST.js
 
 Deploy the normal API/domain build and Next.js admin changes, then set **`IMAGE_REVIEW_ENABLED=true` on the retained API service**. The configured `CLOUDINARY_CLOUD_NAME` must match the source account; upload credentials are not required. The server reuses its existing Cloudinary/recovery cloud-name configuration. The module defaults to disabled and shows its disabled state without exposing queue data. Do not expose the local pipeline server or give reviewers database/provider credentials.
 
-The additive index plan includes review queue/history, worker leases, product-group status and captured-entry cursors. The standard retained API startup starts/stops the worker only when the module is enabled. Review/apply the normal index migration before enabling at scale. Authentication, CSRF, exact route allowlists, strict schemas, response projection, request/body limits and no-store admin responses remain enforced.
+The additive index plan includes review queue/history, worker leases, product-group status and captured-entry cursors. Review/apply the normal index migration before enabling at scale. Authentication, CSRF, exact route allowlists, strict schemas, response projection, request/body limits and no-store admin responses remain enforced.
 
 New collections: `image_review_items`, `image_review_events`, `image_review_withdrawals`, `image_review_manifests`, `image_review_imports`, `image_review_uploads`, `image_review_upload_chunks`, `image_review_publish_requests`, `image_review_publications`, `image_review_publication_control`, `image_review_publication_requests`, `image_review_publication_groups`, `image_review_publication_entries`, `image_review_publication_actions`. Events, chunks, publication requests and manifests are inserted once; replay cannot overwrite old evidence. Existing `media_history` retains pre-import assets for a reviewed rollback. Automatic rollback is not exposed because later edits must be preserved. A completed import always replays as a no-op, including after a later manual media correction.
 
 Set `IMAGE_REVIEW_ENABLED=false` to disable the module while retaining evidence and applied links. Removing it later must preserve audit/history and galleries. The standalone pipeline has no automatic production connection.
+
+## Local bulk publication — 2026-11-19
+
+Prepare review packages on the pipeline computer as usual. The admin browser loads original images directly from Cloudinary. Signing in, recording pharmacist decisions, and queuing a bulk publication continue through the authenticated admin API. The bulk worker runs on demand from the operations computer by default. This moves the worker's Cloudinary checks and Atlas traffic off Render and eliminates its idle polling there. Publishing a selection of up to eight approved links remains available in admin.
+
+1. As an administrator, open the Approved queue and select **Publish all approved images**. Copy the saved run ID from the publication panel.
+2. On the operations computer, use your approved Atlas network access and a dedicated credential scoped to the review worker's database operations. Set `IMAGE_REVIEW_MONGODB_URI` to the Atlas SRV connection string, `IMAGE_REVIEW_MONGODB_DATABASE` to the exact database name, and `CLOUDINARY_CLOUD_NAME` to the review source account. Supply those through the local secret environment. Cloudinary upload credentials are unnecessary.
+3. Run `npm run media:review:publish -- --job RUN_ID --apply` from this checkout. The command drains only that saved run and rechecks the initiating administrator, approval revisions, original hashes and replay receipts through the shared publication code. Ctrl+C allows the current leased step to finish. Rerun the same command for unfinished work. For a paused run, use **Resume publication** in admin first. Expired leases recover on the next invocation.
+4. Select **Refresh** in admin to see progress. Local jobs and idle queues have no automatic status polling. If a hosted worker is required, deploy with `IMAGE_REVIEW_HOSTED_PUBLICATION=true` alongside `IMAGE_REVIEW_ENABLED=true`. The hosted and local runners share leases, and existing jobs, approvals and galleries carry forward through either mode.
+
+Release the API and admin updates together. A previous admin build can still register a job against the new API, but it cannot display the local handoff instructions. To keep the previous background execution during a staged rollout, use the hosted flag until the admin update is live. Remove the flag to return to local execution.
 
 ## Disposable preview
 

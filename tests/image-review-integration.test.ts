@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { MongoClient, ObjectId, type Db } from 'mongodb';
 import { imageIdentitySchema, type ImageReviewDecisionInput, type ImageReviewDetail } from '@almina/contracts';
 import { stageImageReview, createImageReviewDraft, listImageReviews, getImageReview, decideImageReview, previewImageReviewImport, importImageReviewApprovals, exportImageReviewApprovals, imageReviewUploadProgress, publishImageReviewApprovals } from '../apps/api/src/modules/media/image-review';
-import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker } from '../apps/api/src/modules/media/image-review-publication';
+import { startImagePublication, getImagePublication, changeImagePublication, processImagePublication, imagePublicationWorker, runImagePublicationLocally } from '../apps/api/src/modules/media/image-review-publication';
 import { initialReviewChecks, imageReviewDecision, canApproveImage, inlineReviewCheck, previewImageReview, reviewProductChanges } from '../apps/web/src/lib/admin/image-review-workflow';
 const require = createRequire(import.meta.url);
 const { createLegacyApp } = require('../backend/app.js');
@@ -276,7 +276,7 @@ test('retained HTTP boundary authenticates review routes, prevents staff imports
   const administrator = String(new ObjectId()), staff = String(new ObjectId());
   const tokens: Record<string, object> = { ['a'.repeat(43)]: { id: administrator, role: 'admin', name: 'Administrator', cities: [] }, ['b'.repeat(43)]: { id: staff, role: 'user', name: 'Staff', cities: [] } };
   await db.collection('users').insertMany([{ _id: new ObjectId(administrator), role: 'admin' }, { _id: new ObjectId(staff), role: 'user' }]);
-  const app = createLegacyApp({ development: true, origins: ['http://127.0.0.1:4999'], imageReviewEnabled: true, recoveryCloudName: 'synthetic', getCommerceDb: async () => db,
+  const app = createLegacyApp({ development: true, origins: ['http://127.0.0.1:4999'], imageReviewEnabled: true, imageReviewHostedPublication: false, recoveryCloudName: 'synthetic', getCommerceDb: async () => db,
     auth: { authenticate: async (token: string) => { if (!tokens[token]) throw Object.assign(new Error('unauthorized'), { status: 401 }); return tokens[token]; } } });
   const server = app.listen(0, '127.0.0.1'); await new Promise<void>(resolve => server.once('listening', resolve));
   const port = server.address().port;
@@ -297,7 +297,9 @@ test('retained HTTP boundary authenticates review routes, prevents staff imports
     assert.equal((await request('/publication/resume', 'user', { jobId: randomUUID() })).status, 403);
     assert.equal((await request('/publication/pause', 'admin', { jobId: randomUUID() }, false)).status, 403);
     assert.equal((await request('/publication?extra=1', 'admin')).status, 400);
-    assert.equal((await request('/publication', 'admin')).status, 200);
+    const publicationResponse = await request('/publication', 'admin');
+    assert.equal(publicationResponse.status, 200);
+    assert.deepEqual(await publicationResponse.json(), { publication: null, execution: 'local' });
     assert.equal((await request('/stage', 'admin', pack([source('http-source')]), false)).status, 403);
     assert.equal((await request('/stage', 'admin', pack([source('http-source')]))).status, 200);
     assert.equal((await request('', 'user')).status, 200);
@@ -428,6 +430,27 @@ test('background worker stops claiming work and waits for its active image read 
     release(); await stop;
     assert.equal(stopped, true);
     assert.equal((await getImagePublication(db, actor)).publication!.publishedImages, 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('local publication runs only the selected job and resumes without repeating an interrupted import', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_local_' + randomUUID().replaceAll('-', ''));
+  try {
+    const { actor } = await publicationFixture(db, [{ id: 'PD_TEST', images: 1 }]);
+    const jobId = randomUUID(), shutdown = new AbortController();
+    await startImagePublication(db, { requestId: jobId }, actor);
+    const verifyImage = async () => { shutdown.abort(); return new Response(bytes); };
+    assert.equal(await runImagePublicationLocally(db, randomUUID(), 'synthetic', shutdown.signal, verifyImage), 'missing');
+    assert.equal((await getImagePublication(db, actor)).publication!.phase, 'preparing');
+    assert.equal(await runImagePublicationLocally(db, jobId, 'synthetic', shutdown.signal, verifyImage), 'interrupted');
+    assert.equal((await getImagePublication(db, actor)).publication!.publishedImages, 1);
+
+    const ready = new AbortController().signal;
+    await changeImagePublication(db, { jobId }, actor, 'pause');
+    assert.equal(await runImagePublicationLocally(db, jobId, 'synthetic', ready), 'paused');
+    await changeImagePublication(db, { jobId }, actor, 'resume');
+    assert.equal(await runImagePublicationLocally(db, jobId, 'synthetic', ready, async () => assert.fail('already verified')), 'complete');
+    assert.equal(await db.collection('media_history').countDocuments(), 1);
   } finally { await db.dropDatabase(); await client.close(); }
 });
 test('automatic holds preserve a newer pharmacist decision and original immutable evidence', { skip: !uri }, async () => {

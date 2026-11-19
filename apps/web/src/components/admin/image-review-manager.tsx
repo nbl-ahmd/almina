@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDownTrayIcon, ArrowPathIcon, PlayIcon } from '@heroicons/react/24/outline';
-import { imageReviewPackageSchema, type ImageReviewList, type ImageReviewDetail, type ImageReviewDecisionInput, type ImageReviewDraftInput, type ImageReviewApprovedMapping, type ImageReviewManifest, type ImagePublication } from '@almina/contracts';
+import { imageReviewPackageSchema, type ImageReviewList, type ImageReviewDetail, type ImageReviewDecisionInput, type ImageReviewDraftInput, type ImageReviewApprovedMapping, type ImageReviewManifest, type ImagePublicationResponse } from '@almina/contracts';
 import { adminRequest, AdminRateLimitError } from './controls';
 import { Button, PageHeader } from './ui';
 import { ImageReviewWorkspace } from './image-review-workspace';
@@ -29,31 +29,43 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
   const retry = useRef<{ fingerprint: string; requestId: string } | null>(null);
   const draftRetry = useRef<{ fingerprint: string; requestId: string } | null>(null);
   const publishRetry = useRef<{ fingerprint: string; requestId: string } | null>(null);
-  const [publication, setPublication] = useState<ImagePublication | null>(null), [publicationError, setPublicationError] = useState('');
+  const [publicationStatus, setPublicationStatus] = useState<ImagePublicationResponse>({ publication: null });
+  const [publicationRefresh, setPublicationRefresh] = useState(0), [publicationError, setPublicationError] = useState('');
   const publicationRequest = useRef<string | null>(null), completedPublication = useRef<string | null>(null);
+  const publicationVersion = useRef(0);
+  const { publication, execution } = publicationStatus;
   const publishing = publication?.phase === 'preparing' || publication?.phase === 'publishing';
   useEffect(() => {
     if (!admin || !initial.enabled) return;
-    let cancelled = false, timer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false, polling = false, follow = false, timer: ReturnType<typeof setTimeout> | undefined;
     async function poll() {
-      let delay = 4000;
+      if (cancelled || polling || document.hidden) return;
+      polling = true;
+      const version = publicationVersion.current;
+      let delay = 10000;
       try {
-        const result = await adminRequest('image-review/publication') as { publication: ImagePublication | null };
-        if (cancelled) return;
-        setPublication(result.publication); setPublicationError('');
+        const result = await adminRequest('image-review/publication') as ImagePublicationResponse;
+        if (cancelled || version !== publicationVersion.current) return;
+        const run = result.publication;
+        follow = result.execution !== 'local' && (run?.phase === 'preparing' || run?.phase === 'publishing' || (run?.phase === 'paused' && !run.canResume));
+        setPublicationStatus(result); setPublicationError('');
         if (result.publication?.phase === 'complete' && completedPublication.current !== result.publication.jobId) {
           const page = await adminRequest('image-review?' + new URLSearchParams({ status: filter })) as ImageReviewList;
-          if (!cancelled) { completedPublication.current = result.publication.jobId; setList(page); setSelected([]); setPreview(null); }
+          if (!cancelled && version === publicationVersion.current) { completedPublication.current = result.publication.jobId; setList(page); setSelected([]); setPreview(null); }
         }
       } catch (failure) {
         if (failure instanceof AdminRateLimitError) delay = failure.retryAfterSeconds * 1000;
-        if (!cancelled) setPublicationError('Saved progress could not be refreshed. This page will retry.');
+        if (!cancelled) setPublicationError('Saved progress could not be refreshed. Select Refresh to check again.');
+      } finally {
+        polling = false;
+        if (!cancelled && follow && !document.hidden) timer = setTimeout(() => { void poll(); }, delay);
       }
-      if (!cancelled) timer = setTimeout(() => { void poll(); }, delay);
     }
+    function visibilityChanged() { clearTimeout(timer); if (!document.hidden) void poll(); }
     void poll();
-    return () => { cancelled = true; clearTimeout(timer); };
-  }, [admin, initial.enabled, filter]);
+    document.addEventListener('visibilitychange', visibilityChanged);
+    return () => { cancelled = true; clearTimeout(timer); document.removeEventListener('visibilitychange', visibilityChanged); };
+  }, [admin, initial.enabled, filter, publicationRefresh]);
   const nextId = detail ? nextImageReviewId(list.items, detail.item.itemId) : null;
   useEffect(() => {
     if (!detail || !nextId || !['pending', 'held'].includes(filter)) { nextCache.current.clear(); return; }
@@ -191,17 +203,21 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
     if (!admin || busy) return;
     await task(async () => {
       publicationRequest.current ??= crypto.randomUUID();
-      const value = await adminRequest('image-review/publication/start', 'POST', { requestId: publicationRequest.current }) as { publication: ImagePublication };
-      setPublication(value.publication); publicationRequest.current = null;
-      setMessage('Publication is saved on the server. You can close this page and return to check progress.');
+      const value = await adminRequest('image-review/publication/start', 'POST', { requestId: publicationRequest.current }) as ImagePublicationResponse;
+      publicationVersion.current++;
+      setPublicationStatus(value); setPublicationError(''); publicationRequest.current = null;
+      if (value.execution !== 'local') setPublicationRefresh(count => count + 1);
+      setMessage(value.execution === 'local' ? 'Publication queued for the local runner.' : 'Publication is saved. You can close this page and return to check progress.');
     });
   }
   async function publicationAction(action: 'resume' | 'pause') {
     if (!publication) return;
     await task(async () => {
-      const value = await adminRequest(`image-review/publication/${action}`, 'POST', { jobId: publication.jobId }) as { publication: ImagePublication };
-      setPublication(value.publication);
-      setMessage(action === 'pause' ? 'Publication paused. An image import already in progress may finish.' : 'Publication resumed on the server.');
+      const value = await adminRequest(`image-review/publication/${action}`, 'POST', { jobId: publication.jobId }) as ImagePublicationResponse;
+      publicationVersion.current++;
+      setPublicationStatus(value); setPublicationError('');
+      if (value.execution !== 'local') setPublicationRefresh(count => count + 1);
+      setMessage(action === 'pause' ? 'Publication paused. An image import already in progress may finish.' : value.execution === 'local' ? 'Publication is ready for the local runner.' : 'Publication resumed.');
     });
   }
   async function apply() {
@@ -217,7 +233,7 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
     {!list.enabled ? <section className="admin-card admin-stack"><h2>Image review is temporarily disabled</h2><p>Enable the temporary review module on the API service to load maps and review images. Saved review history is retained.</p></section> : <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--admin-border)] pb-3">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Review status">{tabs.map(status => <Button key={status} variant={filter === status ? 'primary' : 'ghost'} disabled={busy} aria-pressed={filter === status} onClick={() => task(async () => { await refresh(status); setFilter(status); setDetail(null); })}>{status === 'all' ? 'All images' : `${status[0]!.toUpperCase()}${status.slice(1)} ${counts[status]}`}</Button>)}</div>
-        <Button variant="ghost" disabled={busy} onClick={() => task(async () => { await refresh(); setDetail(null); })}><ArrowPathIcon className="size-4" aria-hidden="true" />Refresh</Button>
+        <Button variant="ghost" disabled={busy} onClick={() => task(async () => { await refresh(); setDetail(null); setPublicationRefresh(count => count + 1); })}><ArrowPathIcon className="size-4" aria-hidden="true" />Refresh</Button>
       </div>
       {admin ? <details open={!Object.values(counts).some(Boolean) ? true : undefined} className="admin-card"><summary className="cursor-pointer font-medium">Load saved pipeline maps</summary><div className="admin-stack pt-4"><p>The pipeline prepares images, label text and product candidates. Loading maps creates a persistent review queue; pharmacist approval is required.</p><label>Pipeline review package<input ref={file} type="file" accept=".json,application/json" disabled={busy} /></label><div><Button disabled={busy} onClick={upload}>Load image maps</Button></div></div></details> : null}
       {error ? <p role="alert" className="admin-note admin-note--danger">{error}</p> : null}
@@ -225,10 +241,10 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
       {admin && publication ? <details open={publishing || publication.phase === 'paused' ? true : undefined} className="admin-card" aria-labelledby="publication-title">
         <summary className="cursor-pointer font-medium" id="publication-title">Image publication · {publication.phase === 'preparing' ? 'Preparing' : publication.phase === 'publishing' ? 'In progress' : publication.phase === 'paused' ? 'Paused' : 'Complete'}</summary><div className="admin-stack pt-3">
         <p role="status" aria-live="polite">{publication.publishedImages} published · {publication.skippedImages} returned for review · {publication.preparedImages} included. Products processed: {publication.processedProducts} of {publication.totalProducts}.</p>
-        <p className="text-sm text-[var(--admin-muted)]">Progress is saved on the server. You can close this page and return from another browser.</p>
+        {execution === 'local' && publication.phase !== 'complete' ? <p className="text-sm text-[var(--admin-muted)]">Bulk publication runs on the operations computer. Give the operator run ID <code className="break-all">{publication.jobId}</code>. Select Refresh to check progress.</p> : <p className="text-sm text-[var(--admin-muted)]">Progress is saved. You can close this page and return from another browser.</p>}
         {publication.error ? <p role="alert">{publication.error === 'access' ? 'The administrator who started this run no longer has access. An active administrator can resume it.' : 'Publication paused after a service or image-provider failure. Retry when the service is available.'}</p> : null}
         {publication.phase === 'paused' && !publication.canResume ? <p>The current worker is finishing or recovering. Resume will become available when it releases this run.</p> : null}
-        <div className="admin-actions">{publishing ? <Button disabled={busy} onClick={() => publicationAction('pause')}>Pause publication</Button> : publication.phase === 'paused' ? <Button variant="primary" disabled={busy || !publication.canResume} onClick={() => publicationAction('resume')}>Resume publication</Button> : null}<Button disabled={busy} onClick={() => task(async () => { await refresh(); })}>Refresh image queue</Button></div>
+        <div className="admin-actions">{publishing ? <Button disabled={busy} onClick={() => publicationAction('pause')}>Pause publication</Button> : publication.phase === 'paused' ? <Button variant="primary" disabled={busy || !publication.canResume} onClick={() => publicationAction('resume')}>Resume publication</Button> : null}<Button disabled={busy} onClick={() => task(async () => { await refresh(); setPublicationRefresh(count => count + 1); })}>Refresh image queue</Button></div>
         {publication.issues.length ? <details><summary>Products needing another review</summary><ul>{publication.issues.map(issue => <li key={issue.productId}>{issue.productId} · {issue.images} {issue.images === 1 ? 'image' : 'images'} · {issue.reason}</li>)}</ul><p>Open the Held queue to check these associations. Newer pharmacist decisions are preserved.</p>{publication.moreIssues ? <p>More products require review. The Held queue contains the remaining associations.</p> : null}</details> : null}
       </div></details> : null}
       {admin && publicationError ? <p role="alert" className="admin-note admin-note--danger">{publicationError}</p> : null}

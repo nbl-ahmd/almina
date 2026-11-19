@@ -93,8 +93,9 @@ export const imagePublicationSchema = z.object({
   error: z.enum(['access', 'provider', 'service']).nullable(), updatedAt: z.string(), canResume: z.boolean(),
   issues: z.array(z.object({ productId: businessId, images: z.number().int().nonnegative(), reason: z.string().max(200) })).max(20), moreIssues: z.boolean(),
 });
-export const imagePublicationResponseSchema = z.object({ publication: imagePublicationSchema.nullable() });
+export const imagePublicationResponseSchema = z.object({ publication: imagePublicationSchema.nullable(), execution: z.enum(['hosted', 'local']).optional() });
 export type ImagePublication = z.infer<typeof imagePublicationSchema>;
+export type ImagePublicationResponse = z.infer<typeof imagePublicationResponseSchema>;
 
 export type ImageReviewComparison = {
   field: ImageIdentityField; imageValue: string; catalogueValue: string;

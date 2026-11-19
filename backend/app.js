@@ -89,6 +89,7 @@ function createLegacyApp(options) {
   } : undefined);
   app.locals.mediaTransport = options.mediaTransport;
   app.locals.imageReviewEnabled = options.imageReviewEnabled ?? process.env.IMAGE_REVIEW_ENABLED === 'true';
+  app.locals.imageReviewHostedPublication = options.imageReviewHostedPublication ?? process.env.IMAGE_REVIEW_HOSTED_PUBLICATION === 'true';
   app.locals.recoveryAllowed = options.recoveryAllowed ?? process.env.RECOVERY_CATALOG_ALLOWED === 'true';
   app.locals.recoveryCloudName = options.recoveryCloudName ?? process.env.CLOUDINARY_CLOUD_NAME;
   app.locals.getCommerceDb = getDb;

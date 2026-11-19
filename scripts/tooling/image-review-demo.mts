@@ -42,13 +42,14 @@ if (process.argv.includes('--review-speed')) {
   await stageImageReview(db, { schemaVersion: 'image-review-package-v1', sourceRun: 'disposable-speed-demo', catalogueChecksum: 'a'.repeat(64), withdrawals: [], items: Array.from({ length: 4 }, (_, index) => ({ ...reference, assetId: `speed-demo-${index}`, flags: index === 3 ? ['blurry'] : [], candidateProductIds: index === 3 ? [] : index === 2 ? ['PD_DEMO_400', 'PD0081'] : ['PD0081'], sourceNote: 'Disposable speed-review fixture. This queue entry reuses the sample original to test navigation; it is not a new recovered image.' })) }, String(adminId), 'drvxmb0vq');
 }
 const { createLegacyApp } = require('../../backend/app.js');
-const api = createLegacyApp({ development: true, origins: [origin], imageReviewEnabled: true, recoveryCloudName: 'drvxmb0vq', getCommerceDb: async () => db });
+const hostedPublication = !process.argv.includes('--local-publication');
+const api = createLegacyApp({ development: true, origins: [origin], imageReviewEnabled: true, imageReviewHostedPublication: hostedPublication, recoveryCloudName: 'drvxmb0vq', getCommerceDb: async () => db });
 const server = createServer(api) as Server; server.listen(4791, '127.0.0.1');
 let stopping = false;
-const publicationWorker = imagePublicationWorker(() => db, { cloudName: 'drvxmb0vq', enabled: () => !stopping });
+const publicationWorker = hostedPublication ? imagePublicationWorker(() => db, { cloudName: 'drvxmb0vq', enabled: () => !stopping }) : undefined;
 async function stop() {
   if (stopping) return; stopping = true;
-  await publicationWorker.stop();
+  await publicationWorker?.stop();
   if (web && web.exitCode === null) { const done = new Promise<void>(resolve => web!.once('exit', () => resolve())); web.kill('SIGTERM'); await done; }
   server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));
   await db.dropDatabase(); await client.close(); await replica.stop();

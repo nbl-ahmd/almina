@@ -42,14 +42,14 @@ function subscription(suffix = 'synthetic') {
   const curve = createECDH('prime256v1'); curve.generateKeys();
   return { endpoint: 'https://fcm.googleapis.com/' + suffix, keys: { p256dh: curve.getPublicKey().toString('base64url'), auth: randomBytes(16).toString('base64url') } };
 }
-async function fixture() {
+async function fixture(monitorCommands = false) {
   assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
   // Exercise the retained driver's separate BSON constructors, as production native getDb does.
   const require = createRequire(new URL('../backend/package.json', import.meta.url));
   const NativeClient = require('mongodb').MongoClient as typeof MongoClient;
-  const client = await new NativeClient(uri!).connect(), db = client.db('almina_push_' + randomUUID().replaceAll('-', ''));
+  const client = await new NativeClient(uri!, { monitorCommands }).connect(), db = client.db('almina_push_' + randomUUID().replaceAll('-', ''));
   const workers: Awaited<ReturnType<typeof staffPushOutbox>>[] = [];
-  return { db, workers, async close() { for (const worker of workers) await worker.stop(); await db.dropDatabase(); await client.close(); } };
+  return { client, db, workers, async close() { for (const worker of workers) await worker.stop(); await db.dropDatabase(); await client.close(); } };
 }
 async function seed(db: Db, id = 'confirmation:synthetic') {
   const orderId = new ObjectId();
@@ -235,6 +235,33 @@ test('stock background preferences and resolved alerts suppress obsolete deliver
 });
 
 import { notificationMaintenance } from '../apps/api/src/modules/notifications/alert-worker';
+
+test('idle order ticks only check the queue and active ticks still deliver order alerts before reconciliation', { skip: !uri }, async () => {
+  const f = await fixture(true), commands: string[] = [];
+  const admin = new ObjectId(), order = new ObjectId(), product = new ObjectId();
+  const outbox = f.db.collection<Document & { _id: string }>('order_outbox');
+  try {
+    await prepareStaffAlertStorage(f.db);
+    await f.db.collection('users').insertOne({ _id: admin, role: 'admin' });
+    await notificationMaintenance(f.db);
+    f.client.on('commandStarted', event => {
+      if (event.databaseName === f.db.databaseName) commands.push(`${event.commandName}:${event.command[event.commandName]}`);
+    });
+    await notificationMaintenance(f.db, false);
+    assert.deepEqual(commands, ['find:notification_controls', 'find:order_outbox']);
+
+    await f.db.collection('products').insertOne({ _id: product, stock: 2 });
+    await f.db.collection('orders').insertOne({ _id: order, orderId: 'OD-QUICK', status: 'pending', createdAt: new Date() });
+    await outbox.insertOne({ _id: 'confirmation:quick', orderId: order, state: 'sent', createdAt: new Date() });
+    await notificationMaintenance(f.db, false);
+    assert.equal((await outbox.findOne({ _id: 'confirmation:quick' }))!.inAppState, 'done');
+    assert.equal(await f.db.collection('staff_alerts').countDocuments({ kind: 'order' }), 1);
+    assert.equal(await f.db.collection('staff_stock_state').countDocuments(), 0);
+    await notificationMaintenance(f.db);
+    assert.equal(await f.db.collection('staff_stock_state').countDocuments(), 1);
+    assert.equal(await f.db.collection('staff_alerts').countDocuments({ kind: 'order' }), 1);
+  } finally { await f.close(); }
+});
 
 test('payment issues bootstrap quietly, notify new issues, resolve and stay administrator-only',{skip:!uri},async()=>{
  const f=await fixture(),admin=new ObjectId(),staff=new ObjectId(),oldOrder=new ObjectId(),newOrder=new ObjectId();

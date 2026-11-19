@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { ClientSession, Db, Document } from 'mongodb';
 import { imagePublicationStartSchema, imagePublicationActionSchema, type ImagePublication } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
@@ -136,8 +137,8 @@ function reviewFailure(error: unknown): string | null {
   return null;
 }
 /** One bounded, leased step. Multiple API instances may safely call this worker. */
-export async function processImagePublication(db: Db, cloudName?: string, transport: typeof fetch = fetch) {
-  const job = await jobs(db).findOneAndUpdate({ phase: { $in: ['preparing', 'publishing'] }, $or: [{ leaseUntil: { $exists: false } }, { leaseUntil: { $lte: new Date() } }] },
+export async function processImagePublication(db: Db, cloudName?: string, transport: typeof fetch = fetch, jobId?: string) {
+  const job = await jobs(db).findOneAndUpdate({ ...(jobId ? { _id: jobId } : {}), phase: { $in: ['preparing', 'publishing'] }, $or: [{ leaseUntil: { $exists: false } }, { leaseUntil: { $lte: new Date() } }] },
     { $set: { leaseToken: randomUUID(), leaseUntil: new Date(Date.now() + leaseMs) } }, { ...options, sort: { createdAt: 1 }, returnDocument: 'after' });
   if (!job) return false;
   try {
@@ -175,6 +176,20 @@ export async function processImagePublication(db: Db, cloudName?: string, transp
   }
   return true;
 }
+
+/** Drain a single administrator-queued run on demand. A shutdown lets the leased step finish. */
+export async function runImagePublicationLocally(db: Db, jobId: string, cloudName: string, signal: AbortSignal, transport: typeof fetch = fetch) {
+  while (!signal.aborted) {
+    if (!(await processImagePublication(db, cloudName, transport, jobId))) {
+      const job = await jobs(db).findOne({ _id: jobId }, { ...options, projection: { phase: 1 } });
+      if (job?.phase === 'complete' || job?.phase === 'paused') return job.phase;
+      return job ? 'leased' : 'missing';
+    }
+    await delay(500, undefined, { signal }).catch(error => { if (!signal.aborted) throw error; });
+  }
+  return 'interrupted';
+}
+
 export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configuration: { cloudName?: string; transport?: typeof fetch; enabled?: () => boolean; intervalMs?: number } = {}) {
   let stopped = false, running: Promise<unknown> | undefined;
   const tick = () => {
