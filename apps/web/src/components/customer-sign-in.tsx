@@ -6,6 +6,7 @@ import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 
 
 import Link from './app-link';
+import information from './storefront-information.module.css';
 import { accountErrorMessage } from '../lib/account/errors';
 import Script from 'next/script';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -113,7 +114,7 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
     });
   }
   return <div className="mx-auto w-full max-w-[440px] pb-3 sm:pt-2">
-    <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-teal"><ArrowLeftIcon className="size-4" />{a("Back to shopping")}</Link>
+    <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-teal"><ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden="true" />{a("Back to shopping")}</Link>
     <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl border border-border bg-white shadow-[0_12px_36px_-20px_rgba(25,33,59,0.2)]">
       <div className="px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
         <div className="mb-6 text-center">
@@ -132,14 +133,14 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
         {options?.emailEnabled ? <form onSubmit={submit} aria-label={a("Email sign-in")} aria-busy={busy}><FieldGroup className="grid gap-4">
           {challenge ? <Field data-invalid={!!error}><FieldLabel htmlFor="account-sign-in-code">{a("Six-digit code")}</FieldLabel><Input variant="code" id="account-sign-in-code" ref={codeInput} type="text" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} disabled={busy} aria-invalid={!!error} aria-describedby={error?'sign-in-error':'code-help'} onChange={event => { setCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }} placeholder="000000" /><FieldDescription id="code-help" className="text-center">{a("Your code expires in 10 minutes.")}</FieldDescription></Field> : <Field><FieldLabel htmlFor="customer-sign-in-field-1">{a("Email address")}</FieldLabel><Input id="customer-sign-in-field-1" ref={emailInput} type="email" autoComplete="email" placeholder={a("you@example.com")} maxLength={254} required value={email} disabled={busy} onChange={event => { setEmail(event.target.value); setError(''); }} /></Field>}
           {error ? <p id="sign-in-error" role="alert" className="m-0 rounded-xl bg-sale-surface p-3 text-sm leading-6 text-sale">{a(error)}</p> : null}
-          <Button type="submit" disabled={busy || (!!challenge && code.length !== 6)}><span>{busy ? a("Please wait…") : challenge ? a("Verify & sign in") : a("Continue with email")}</span>{busy ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" /> : <ArrowRightIcon className="size-4" />}</Button>
+          <Button type="submit" disabled={busy || (!!challenge && code.length !== 6)}><span>{busy ? a("Please wait…") : challenge ? a("Verify & sign in") : a("Continue with email")}</span>{busy ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" /> : <ArrowRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" />}</Button>
           {challenge ? <div className="flex flex-wrap items-center justify-center gap-x-1 text-xs"><span className="text-muted">{a("Didn’t receive it?")}</span><Button variant="outline" size="sm" type="button" disabled={busy || cooldown > 0} onClick={() => void perform(sendCode)}>{cooldown > 0 ? a(`Resend code in ${cooldown}s`) : a("Resend code")}</Button></div> : <p className="m-0 text-center text-xs leading-5 text-muted">{a("New here? We’ll create your account when you verify.")}</p>}
         </FieldGroup></form> : options && !(options.googleClientId && googleFailed) ? <p className="mt-4 rounded-xl border border-border bg-subtle p-4 text-sm leading-6 text-muted">{options.googleClientId ? purpose === 'wholesale' ? a("Continue with Google using your invited email. Business access requires pharmacy approval.") : a("Email sign-in is temporarily unavailable. Use Google, or continue as a guest.") : purpose === 'wholesale' ? a("Business sign-in is not available. Please contact the pharmacy; wholesale access requires verified sign-in.") : a("Account sign-in is not connected yet. You can still browse, save products on this device and check out as a guest.")}</p> : null}
         {!options?.emailEnabled && error ? <p role="alert" className="mb-0 mt-4 rounded-xl bg-sale-surface p-3 text-sm leading-6 text-sale">{a(error)}</p> : null}
         {notice ? <p role="status" className="mb-0 mt-3 flex items-start justify-center gap-1.5 text-xs leading-5 text-muted"><CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-teal" />{a(notice)}</p> : null}
-        {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">{a("Your email connects your account and purchases.")}<br />{a("Marketing is always optional. ")}<Link href="/privacy" aria-label={a("account privacy notice")} className="text-teal hover:text-teal">{a("Read our privacy notice")}</Link>.</p> : null}
+        {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">{a("Your email connects your account and purchases.")}<br />{a("Marketing is always optional. ")}<Link href="/privacy" aria-label={a("account privacy notice")} className={`${information.privacyLink} text-teal hover:text-teal`}>{a("Read our privacy notice")}</Link>.</p> : null}
       </div>
-      {purpose==='retail'?<div className="border-t border-border bg-page px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted transition-colors hover:bg-white hover:text-teal">{a("Continue as a guest")}<ArrowRightIcon className="size-4" /></Link></div>:null}
+      {purpose==='retail'?<div className="border-t border-border bg-page px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted transition-colors hover:bg-white hover:text-teal">{a("Continue as a guest")}<ArrowRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link></div>:null}
     </section>
   </div>;
 }

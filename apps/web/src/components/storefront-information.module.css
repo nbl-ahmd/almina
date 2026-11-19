@@ -115,6 +115,7 @@
 }
 .identity p { margin: 0; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--store-space-8); }
+.privacyLink { text-decoration-line: underline; text-underline-offset: var(--store-space-2, 2px); }
 .signIn :global(section[aria-labelledby='sign-in-heading']) {
   border-radius: var(--store-card-radius);
   box-shadow: none;

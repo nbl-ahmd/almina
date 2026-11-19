@@ -68,6 +68,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <CartLink locale={locale} />
     </div>
   );
+  const displayName = product.name.replace(/(\p{Nd})\s+(?=(?:mcg|µg|mg|g|kg|ml|cl|l|iu)\b)/giu, '$1\u00a0');
   return <><RecordProductView id={product._id} /><StructuredData data={productSchema} />
     <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }, { name: product.name, path: productHref(product) }])} />
     <div lang={locale} className={`pdp-page ${system.system} ${boundary.boundary} ${styles.detail}`}>
@@ -83,7 +84,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
             {photos.length ? <div className={styles.credit}><PhotoCredit source={product.imageSource} /></div> : null}
           </div>
           <div className={styles.buying}>
-            <h1><bdi>{product.name}</bdi></h1>
+            <h1><bdi>{displayName}</bdi></h1>
             <div className={styles.identity}>
               {brand ? <Link href={'/search?' + new URLSearchParams({ q: brand })}><bdi>{brand}</bdi></Link> : null}
               <Link href={categoryPath}>{u(locale, product.category.name)}</Link>

@@ -310,6 +310,7 @@
     padding-left: max(var(--store-page-gutter), env(safe-area-inset-left));
     padding-right: max(var(--store-page-gutter), env(safe-area-inset-right));
   }
+  .dock :global(.add-to-cart:lang(ar)[aria-busy='false'][data-added='false'] > svg) { display: none; }
 }
 @media (max-width: 767px) and (max-height: 500px) {
   .stage { block-size: min(240px, 55vh); }

@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import information from './storefront-information.module.css';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
@@ -28,5 +29,22 @@ export async function CategoryGrid({ categories }: { categories: Category[] }) {
 }
 export async function Breadcrumb({ title, parents = [] }: { title: string; parents?: { name: string; path: string }[] }) {
   const locale = await getLocale();
-  return <nav className="breadcrumb mb-3 hidden text-xs text-muted md:block" aria-label={u(locale,"Breadcrumb")}><ol className="m-0 flex list-none flex-wrap gap-2 p-0"><li><Link className="inline-flex min-h-7 items-center text-ocean" href="/">{u(locale,"Home")}</Link></li>{parents.map(item => <li className="wrap-anywhere before:mr-2 before:content-['›']" key={item.path}><Link className="inline-flex min-h-7 items-center text-ocean" href={item.path}>{u(locale,item.name)}</Link></li>)}<li className="inline-flex min-h-7 items-center wrap-anywhere before:mr-2 before:content-['›']" aria-current="page">{title}</li></ol></nav>;
+  const separator = <ChevronRightIcon className="size-3 shrink-0 rtl:rotate-180" aria-hidden="true" />;
+  return (
+    <nav className="breadcrumb mb-3 hidden text-xs text-muted md:block" aria-label={u(locale, 'Breadcrumb')}>
+      <ol className="m-0 flex list-none flex-wrap items-center gap-2 p-0">
+        <li><Link className="inline-flex min-h-7 items-center text-ocean" href="/">{u(locale, 'Home')}</Link></li>
+        {parents.map(item => (
+          <li className="inline-flex min-h-7 min-w-0 items-center gap-2 wrap-anywhere" key={item.path}>
+            {separator}
+            <Link className="inline-flex min-h-7 items-center text-ocean" href={item.path}><bdi>{u(locale, item.name)}</bdi></Link>
+          </li>
+        ))}
+        <li className="inline-flex min-h-7 min-w-0 items-center gap-2 wrap-anywhere" aria-current="page">
+          {separator}
+          <bdi>{title}</bdi>
+        </li>
+      </ol>
+    </nav>
+  );
 }

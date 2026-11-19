@@ -193,6 +193,13 @@
   gap: var(--store-space-16);
 }
 
+@media (max-width: 767px) {
+  [data-storefront-home] .home-content { gap: var(--store-space-16); }
+  .home-lead { gap: var(--store-space-12); }
+  .campaign-courier { max-block-size: 148px; }
+  [data-storefront-home] .home-category-lane .category-tile { flex-basis: 82px; }
+  .storefront-shell [data-storefront-home] .category-tile h3 { overflow-wrap: break-word; }
+}
 @media (max-width: 359px) {
   .storefront-shell [data-storefront-home] .pharmacy-ad h2 { font-size: var(--store-type-20); }
   [data-storefront-home] .home-content { padding-inline: var(--store-space-12); }
