@@ -95,8 +95,8 @@
 }
 .filterToggle > svg { inline-size: var(--store-space-16); block-size: var(--store-space-16); flex: none; }
 .filterToggle .chevron { inline-size: var(--store-space-12); block-size: var(--store-space-12); }
-.filters[open] .filterToggle, .filterToggle:has(.badge) { color: var(--store-surface); }
-.filters[open] .filterToggle::before, .filterToggle:has(.badge)::before { background: var(--store-text); }
+.filters[open] .filterToggle, .filterToggle:has(.badge) { color: var(--store-positive); }
+.filters[open] .filterToggle::before, .filterToggle:has(.badge)::before { background: var(--store-selected-surface); }
 .filters[open] .filterToggle .chevron, .explore[open] > summary svg { rotate: 180deg; }
 .badge {
   color: var(--store-text-muted);
@@ -123,7 +123,6 @@
 .field > label, .price > legend, .stock { font-size: var(--store-type-13); font-weight: var(--store-weight-medium); }
 .field :is(input, select) {
   min-block-size: var(--store-target-min);
-  border-radius: var(--store-radius-10);
   padding-block: var(--store-space-8);
   color: var(--store-text);
   font-size: var(--store-type-14);
@@ -177,7 +176,6 @@
 }
 .form .actions { justify-content: space-between; }
 .form .actions [data-slot='button'][data-shape='default'] {
-  border-radius: var(--store-radius-10);
   padding-inline: var(--store-space-16);
 }
 .explore {

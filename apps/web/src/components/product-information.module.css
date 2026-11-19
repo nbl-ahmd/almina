@@ -101,9 +101,7 @@
   align-items: flex-start;
   gap: var(--store-space-10);
   margin: 0;
-  padding: var(--store-space-12);
-  border-radius: var(--store-radius-10);
-  background: var(--store-positive-surface);
+  padding-block: var(--store-space-8);
   color: var(--store-text-muted);
   font-size: var(--store-type-14);
   line-height: var(--store-leading-body);
@@ -133,7 +131,7 @@
   block-size: var(--store-target-min);
   border-radius: var(--store-radius-10);
   background: var(--store-surface);
-  border: 1px solid var(--store-border);
+  border: 1px solid transparent;
   color: var(--store-text-muted);
   cursor: pointer;
 }

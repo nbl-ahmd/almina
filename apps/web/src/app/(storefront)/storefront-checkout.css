@@ -127,9 +127,6 @@
   font-weight: var(--store-weight-medium);
   line-height: var(--store-leading-product);
 }
-.checkout-frame :is([data-slot='input'], [data-slot='native-select']) {
-  border-radius: var(--store-radius-10);
-}
 .checkout-frame input:is([type='email'], [type='tel']) { direction: ltr; text-align: start; }
 .checkout-frame [data-slot='native-select'][aria-invalid='true'] { border-color: var(--store-error); outline-color: var(--store-error); }
 .checkout-frame .checkout-optional > summary {

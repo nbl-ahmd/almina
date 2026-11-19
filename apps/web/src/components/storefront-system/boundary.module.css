@@ -75,8 +75,8 @@
   border-color: var(--store-action-hover);
 }
 .boundary [data-slot='button'][data-variant='outline'] {
-  background: var(--store-surface);
-  border-color: var(--store-border-control);
+  background: transparent;
+  border-color: var(--store-border);
   color: var(--store-positive);
 }
 .boundary [data-slot='button'][data-variant='secondary'] {
@@ -114,12 +114,12 @@
   border-radius: var(--store-radius-10);
 }
 .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where([data-added='false'][aria-busy='false']:not(:disabled)) {
-  background: var(--store-soft-action);
+  background: var(--store-positive-surface);
   border-color: transparent;
-  color: var(--store-saved);
+  color: var(--store-positive);
 }
 .boundary [data-slot='button']:global(.add-to-cart)[data-size='icon']:where([data-added='false'][aria-busy='false']:hover:not(:disabled)) {
-  background: var(--store-selection-surface);
+  background: var(--store-selected-surface);
 }
 /* Meaning states follow variants at equal specificity; hover adds zero specificity. */
 .boundary [data-slot='button'][data-added='true'] {
@@ -133,19 +133,20 @@
 }
 .aliases[data-storefront-retail] [data-slot='field-label'] {
   color: var(--store-text);
-  font-weight: var(--store-weight-semibold);
+  font-weight: var(--store-weight-medium);
 }
-/* Retail text entry and its states share a continuous, neutral field edge. */
+/* A neutral fill groups text entry. The lower edge defines the control at rest. */
 :where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])) {
-  border-color: var(--store-border-control);
+  border-color: transparent;
+  border-block-end-color: var(--store-border-control);
   border-radius: var(--store-field-radius);
-  background-color: var(--store-surface);
+  background-color: var(--store-input-surface);
 }
-:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])):enabled:hover {
+:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code']):enabled:hover) {
   border-color: var(--store-positive);
   background-color: var(--store-surface);
 }
-:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code'])):disabled {
+:where(.aliases[data-storefront-retail]) :is([data-slot='input'], [data-slot='native-select'], [data-slot='textarea']):where(:not([data-variant='code']):disabled) {
   border-color: var(--store-border);
   background-color: var(--store-disabled-surface);
 }
@@ -180,8 +181,8 @@
 
 /* The group surface carries the stepper shape. Disabled steps mute only the icon. */
 .boundary [data-store-control='stepper'] {
-  border-radius: var(--store-compact-radius);
-  background: var(--store-input-surface);
+  border-radius: var(--store-field-radius);
+  background: var(--store-secondary-surface);
   font-variant-numeric: tabular-nums;
 }
 .boundary [data-store-control='stepper'] [data-slot='button'] {
@@ -189,7 +190,7 @@
   min-block-size: var(--store-target-min);
   padding: 0;
   border: 0;
-  border-radius: var(--store-radius-round);
+  border-radius: var(--store-field-radius);
   background: transparent;
 }
 .boundary [data-store-control='stepper'] [data-slot='button'] svg {

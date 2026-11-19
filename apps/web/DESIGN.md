@@ -7,13 +7,13 @@ colors:
   active-navigation: "#9c2e3b"
   text: "#1c2925"
   text-muted: "#435d56"
-  canvas: "#f7faf8"
+  canvas: "#fafbfc"
   surface: "#ffffff"
-  input: "#edf4f1"
-  border: "#e2ebe7"
+  input: "#f2f5f7"
+  border: "#e2e7eb"
   control-border: "#7c898f"
-  secondary: "#eef5f1"
-  hover: "#e8f2ed"
+  secondary: "#f1f4f6"
+  hover: "#e9f0f3"
   campaign: "#ffe4df"
   selected: "#e0eee8"
   positive: "#26604d"
@@ -70,17 +70,17 @@ typography:
     fontWeight: 400
     lineHeight: "1.5"
   stock:
-    fontSize: "11px"
+    fontSize: "12px"
     fontWeight: "500"
     lineHeight: "1.5"
   count:
     fontSize: "10px"
 rounded:
   control: "14px"
-  action: "10px"
+  action: "14px"
   card: "14px"
-  search: "18px"
-  search-action: "12px"
+  search: "12px"
+  search-action: "8px"
   campaign: "18px"
   status: "999px"
   option: "999px"
@@ -111,7 +111,7 @@ components:
     padding: "12px 24px"
     height: "48px"
   button-outline:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "transparent"
     textColor: "{colors.positive}"
     rounded: "{rounded.action}"
     padding: "12px 24px"
@@ -124,7 +124,7 @@ components:
     textColor: "{colors.surface}"
     rounded: "{rounded.action}"
   field:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.input}"
     textColor: "{colors.text}"
     rounded: "{rounded.field}"
     padding: "12px 16px"
@@ -146,8 +146,8 @@ components:
     textColor: "{colors.text}"
     rounded: "{rounded.option}"
   quick-add:
-    backgroundColor: "{colors.saved-surface}"
-    textColor: "{colors.saved}"
+    backgroundColor: "{colors.positive-surface}"
+    textColor: "{colors.positive}"
     rounded: "{rounded.quick-action}"
     size: "44px"
 ---
@@ -158,7 +158,7 @@ components:
 
 **Creative North Star: "App-like on mobile, complete on desktop."**
 
-This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, and the image-first N03 phone product detail. The current review revision uses DM Sans and Noto Sans Arabic, pale mint control surfaces and a quieter type hierarchy. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
+This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, and the image-first N03 phone product detail. The current review revision uses DM Sans and Noto Sans Arabic, cool neutral control surfaces and a quieter type hierarchy. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
 
 Shopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.
 
@@ -204,13 +204,13 @@ Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; de
 
 ## Elevation & Depth
 
-Product cards use a flat white surface. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`0 8px 24px #1c292520`) for suggestions and overlays that use it. The fixed phone purchase dock uses a solid surface and a single separator. The in-flow desktop purchase row sits directly on the page surface.
+Product cards use a flat white frame, a quiet photo surface and a thin divider-colored edge. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`0 8px 24px #1c292520`) for suggestions and overlays that use it. The fixed phone purchase dock uses a solid surface and a single separator. The in-flow desktop purchase row sits directly on the page surface.
 
 ## Shapes
 
 Default retail actions use the action radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. Retail actions and text fields use 10px corners. Chips use a capsule. Catalogue Add uses a 10px rounded square with a 44px minimum target. Search has separate 18px outer and 12px submit corners.
 
-Retail text fields use white surfaces and a continuous one-pixel neutral edge. Visible labels use semibold weight. Primary actions use coral, outlined secondary actions use white and teal ink. Focus draws a complete outline and validation uses an error tint and message. Desktop filters sit on an open rail with one divider. On phones, Filter and Sort stay in one compact row with the filter count on the trigger. Keyboard focus uses a distinct outline. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
+Retail text fields use a cool gray fill and a visible lower edge. Focus restores a white surface and a complete outline. Labels use medium weight. Primary actions use coral. Secondary actions use teal ink with a quiet edge, and catalogue quick add uses a soft green surface with a teal icon. Focus draws a complete outline and validation uses an error tint and message. Desktop filters sit on an open rail with one divider. On phones, Filter and Sort stay in one compact row with the filter count on the trigger. Keyboard focus uses a distinct outline. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
 
 ## Components
 
@@ -223,7 +223,7 @@ Review the working patterns on the retail routes. The sidecar documents the ship
 - **Campaign/categories:** use localized image-led artwork for the homepage campaign and collection placements. Use a phone composition and a wide composition for lead artwork, with text set in the image and an equivalent accessible link name or description. Retain semantic HTML copy on landing pages and in the no-artwork fallback. Illustrative photography represents the department and carries no product or delivery claim. The hero has three evergreen slides and can include published campaigns. The shopper controls movement through labeled arrows, pagination and directional touch gestures. Skincare and baby care each have a full-width section banner, followed by matching in-stock products when available, with brand discovery between the sections.
 - **Disclosures/sheets/feedback:** preserve semantic summary, real dialogs/popovers and focus management. Loading, status, empty, error and success semantics carry meaning. Use color, context and directional icons for standalone shopping links, with a visible keyboard focus outline. Keep the persistent underline for inline policy links and other links embedded in prose. Confirmed Add uses the success tint and check icon.
   - **Artwork handoff:** supply 4:1 wide and 8:3 phone compositions for the lead, and 3:1 source art for collection sections. Desktop uses shallow 4:1 frames. Keep copy clear of the frame edge and validate it at 360px. Upload language-specific artwork and provide a matching accessible description in the campaign editor. Existing managed artwork is fitted without cropping its lettering.
-  - **Local campaign art:** [Personal care](public/design/campaigns/personal-care-en.webp) uses a peach studio still life of soap, a pump and a towel. [Shop by brand](public/design/campaigns/shop-brands-en.webp) uses unbranded packaging on an olive and seafoam set. Both have localized ImageGen artwork. [Everyday Care](public/design/campaigns/everyday-care-en-wide.webp) uses a mint studio, illustrative courier with a kraft bag and a coral Shop essentials action. [Skincare](public/design/campaigns/skincare-en.webp) and [Baby and family care](public/design/campaigns/family-en.webp) use unbranded department still life on blush and pale blue. The ImageGen art direction kept English and Arabic lettering in the final image, with a mirrored composition in Arabic and no prices, promises, promotional claims or store staff identity.
+  - **Local campaign art:** The homepage leads with the [personal-care still life](public/design/campaigns/personal-care-en.webp), showing soap, a pump and a towel on peach with baked-in lettering in both languages. [Shop by brand](public/design/campaigns/shop-brands-en.webp) uses unbranded packaging on an olive and seafoam set. Both have localized ImageGen artwork. The former courier artwork remains in the campaign library. [Skincare](public/design/campaigns/skincare-en.webp) and [Baby and family care](public/design/campaigns/family-en.webp) use unbranded department still life on blush and pale blue. The ImageGen art direction kept English and Arabic lettering in the final image, with a mirrored composition in Arabic and no prices, promises, promotional claims or store staff identity.
 - **Cart/checkout/customer:** preserve existing contracts and task modes. Device cart stores identifiers/quantities; server-loaded estimates are not final quotes. Checkout, auth, payments, idempotency, inventory and immutable order snapshots are not design concerns to rewrite. The checkout keeps one responsive action, visible field labels, a server-quoted review and explicit payment recovery states. See the screen directions for dock and keyboard behavior.
 
 **The feedback-motion rule.** Background, border and text changes and pointer press feedback use 120ms. Pointer-initiated menu, review and campaign disclosures use the 180ms entry role. Confirmed status indicators can fade in on the same timing. Both use `cubic-bezier(0.2,0.7,0.2,1)`. Keyboard carousel controls render the next slide immediately. Reduced motion preserves immediate final states. Pack comparison and navigation stay steady. Stroked UI icons use Heroicons at 22px/1.5, with separate filled dirham artwork.

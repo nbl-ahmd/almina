@@ -194,8 +194,8 @@
   padding: var(--store-space-4) var(--store-space-10);
   border: 0;
   border-radius: var(--store-compact-radius);
-  background: var(--store-input-surface);
-  color: var(--store-text);
+  background: transparent;
+  color: var(--store-positive);
   font-size: var(--store-type-14);
   overflow-wrap: anywhere;
 }
@@ -250,7 +250,6 @@
 .dock :global(.purchase-quantity input)::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .dock :global(.add-to-cart) {
   flex: 1 1 118px;
-  border-radius: var(--store-compact-radius);
   min-block-size: var(--store-target-min);
   padding: var(--store-space-8) var(--store-space-10);
 }
@@ -398,6 +397,7 @@
   .buying h1 { font-size: var(--store-product-title-size); }
   .price { font-size: var(--store-product-price-size); }
   .dock :global(.pdp-unit-price) { display: none; }
+  .dock :global(.add-to-cart) { flex: 0 1 auto; min-inline-size: min(100%, 11rem); }
   .desktopSave { display: flex; align-items: center; gap: var(--store-space-8); }
 }
 
@@ -438,7 +438,9 @@
   border: 0;
   border-radius: var(--store-control-radius);
   color: var(--store-text);
-  background: var(--store-secondary-surface);
+  background: transparent;
+  border-block-start: 1px solid var(--store-border);
+  border-radius: 0;
   font-size: var(--store-type-14);
 }
 .detail :global(.pdp-delivery-area):hover { background: var(--store-hover-surface); }

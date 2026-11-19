@@ -1,4 +1,4 @@
-import Image, { getImageProps } from 'next/image';
+import Image from 'next/image';
 import Link from './app-link';
 import { ArrowRightIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import type { GrowthPage } from '@almina/contracts';
@@ -40,25 +40,17 @@ export function HomeHero({ locale, banners = [], campaigns = [], loading = false
 }) {
   const ar = locale === 'ar';
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
-  const artwork = `/design/campaigns/everyday-care-${locale}`;
-  const mobile = getImageProps({
-    src: `${artwork}-phone.webp`, alt: '', width: 800, height: 300, sizes: 'calc(100vw - 32px)',
-  });
   const lead = (
     <div className="pharmacy-ad" key="almina-everyday">
-      <Link href="/products" aria-label={ar ? 'عنايتك اليومية في مكان واحد. تسوق الأساسيات' : 'Everyday care. One easy stop. Shop essentials'}>
-        <picture>
-          <source media="(max-width: 767px)" srcSet={mobile.props.srcSet} sizes={mobile.props.sizes} />
-          <Image src={`${artwork}-wide.webp`} alt="" width={1440} height={416}
-            sizes="(min-width: 1240px) 1192px, calc(100vw - 48px)" loading="eager" fetchPriority="high" />
-        </picture>
+      <Link href="/collections/daily-care" aria-label={ar ? 'العناية الشخصية اليومية. تسوق المجموعة' : 'Everyday personal care. Shop collection'}>
+        <Image src={`/design/campaigns/personal-care-${locale}.webp`} alt="" width={1440} height={480}
+          sizes="(min-width: 1240px) 1192px, calc(100vw - 32px)" loading="eager" fetchPriority="high" />
       </Link>
     </div>
   );
   if (loading) return <div className="home-campaigns">{lead}<div className="campaign-placeholder" aria-hidden="true" /></div>;
 
   const evergreen = [
-    { artwork: 'personal-care', href: '/collections/daily-care', label: ar ? 'العناية اليومية. تسوق المجموعة' : 'Everyday personal care. Shop collection' },
     { artwork: 'shop-brands', href: '/brands', label: ar ? 'تسوق حسب العلامة التجارية. استكشف العلامات التجارية' : 'Shop by brand. Explore brands' },
   ];
 
@@ -147,7 +139,7 @@ export function HomeCollectionSection({ locale, collection, products }: {
 export function HomeDiscovery({ locale }: { locale: Locale }) {
   const ar = locale === 'ar';
   return <section className="home-discovery" aria-labelledby="home-discovery-title">
-    <h2 id="home-discovery-title">{ar ? 'استكشف حسب احتياجاتك' : 'Find what fits your day'}</h2>
+    <h2 id="home-discovery-title">{ar ? 'تسوق حسب احتياجاتك' : 'Shop by need'}</h2>
     <div className="home-discovery-links">
       <Link href="/collections/daily-care"><Icon name="leaf" /><span>{ar ? 'العناية الشخصية اليومية' : 'Everyday personal care'}</span><Icon name="arrow" /></Link>
       <Link href="/collections/under-50"><Icon name="tag" /><span>{ar ? 'أساسيات بـ٥٠ درهماً أو أقل' : 'Essentials at AED 50 or less'}</span><Icon name="arrow" /></Link>

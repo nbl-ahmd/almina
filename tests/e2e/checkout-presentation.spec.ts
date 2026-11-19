@@ -13,7 +13,7 @@ for (const locale of ['en', 'ar'] as const) {
     const dock = page.locator('.checkout-mobile-action');
     const name = page.locator('[name=name]');
     await expect(action).toHaveCount(1);
-    await expect(action).toHaveCSS('border-radius', '10px');
+    await expect(action).toHaveCSS('border-radius', '14px');
     await expect(dock).toHaveCSS('position', 'fixed');
     await expect.poll(() => dock.evaluate(element => {
       const shell = element.closest('.storefront-shell')!;

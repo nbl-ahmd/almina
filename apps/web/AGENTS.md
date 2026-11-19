@@ -255,7 +255,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Owner-selected A/full campaign and five wide-screen home columns supersede the
 split/four-column comparison. The owner kept those layouts and requested lighter
 controls and stronger type hierarchy. The current review revision uses DM Sans,
-Noto Sans Arabic, soft mint control surfaces and quiet coral quick add. Latest N03
+Noto Sans Arabic, cool neutral control surfaces and muted green quick add. Latest N03
 image-first phone product detail keeps the overlay controls and purchase dock.
 
 Use current retail routes to review working components. The former specimen is

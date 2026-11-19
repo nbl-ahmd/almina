@@ -1,7 +1,7 @@
 .card, .compact {
   color: var(--store-text);
   background: var(--store-surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   min-inline-size: 0;
 }
@@ -17,12 +17,14 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   column-gap: var(--store-space-4);
+  background: var(--store-secondary-surface);
+  border-radius: var(--store-radius-8);
 }
 .media {
   display: block;
   grid-area: 1 / 1 / 2 / -1;
   block-size: clamp(108px, 29vw, 148px);
-  padding: var(--store-space-20) var(--store-space-6) var(--store-space-4);
+  padding: var(--store-space-20) var(--store-space-8) var(--store-space-6);
 }
 .photo {
   display: block;
@@ -45,6 +47,7 @@
   overflow-wrap: anywhere;
 }
 .placeholder svg { inline-size: 20px; block-size: 20px; }
+.media .photo { mix-blend-mode: multiply; }
 .media .placeholder, .compactPhoto .placeholder { color: var(--store-text-muted); }
 .stock {
   display: inline-block;
@@ -75,7 +78,7 @@
   border: 0;
   border-radius: var(--store-radius-round);
   color: var(--store-text-muted);
-  background: var(--store-surface);
+  background: transparent;
 }
 .visual :global(.card-save):hover:not([aria-pressed="true"]) { background: var(--store-hover-surface); }
 .visual :global(.card-save)[aria-pressed='true'] svg { fill: currentColor; }

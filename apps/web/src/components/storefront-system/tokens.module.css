@@ -5,14 +5,14 @@
   --store-ref-color-coral: #ff5a5f;
   --store-ref-color-ink: #1c2925;
   --store-ref-color-muted: #435d56;
-  --store-ref-color-line: #e2ebe7;
+  --store-ref-color-line: #e2e7eb;
   --store-ref-color-control-line: #7c898f;
-  --store-ref-color-canvas: #f7faf8;
+  --store-ref-color-canvas: #fafbfc;
   --store-ref-color-positive: #26604d;
   --store-ref-color-notice: #e9edef;
-  --store-ref-color-input: #edf4f1;
+  --store-ref-color-input: #f2f5f7;
   --store-ref-color-overlay-shadow: #1c29251c;
-  --store-ref-color-hover: #e8f2ed;
+  --store-ref-color-hover: #e9f0f3;
   --store-ref-color-campaign: #ffe4df;
   --store-ref-color-action-hover: #fb565c;
   --store-ref-color-positive-surface: #eaf3ef;
@@ -24,7 +24,7 @@
   --store-ref-color-disabled-surface: #e7ebed;
   --store-ref-color-error: #a11d31;
   --store-ref-color-selected-surface: #e0eee8;
-  --store-ref-color-secondary-surface: #eef5f1;
+  --store-ref-color-secondary-surface: #f1f4f6;
   --store-ref-color-stress-error: #9c2e3b;
   --store-ref-color-selection: #ffd2d2;
   --store-ref-color-focus: #125d87;
@@ -185,7 +185,7 @@
   --store-elevation-overlay: 0 var(--store-space-8) var(--store-space-24) var(--store-overlay-shadow-color);
   /* Component roles; layout-specific geometry remains in its owner. */
   --store-control-radius: var(--store-radius-14);
-  --store-action-radius: var(--store-radius-10);
+  --store-action-radius: var(--store-radius-14);
   --store-field-radius: var(--store-radius-10);
   --store-compact-radius: 999px;
   --store-soft-action: var(--store-saved-surface);
@@ -193,13 +193,13 @@
   --store-card-padding: var(--store-space-10);
   /* Counts are redundant visual hints; status labels carry product information. */
   --store-count-size: var(--store-type-10);
-  --store-stock-size: var(--store-type-11);
+  --store-stock-size: var(--store-type-12);
   --store-stock-inset-block: var(--store-space-3);
   --store-stock-inset-inline: var(--store-space-8);
   --store-stock-inset-block-phone: var(--store-space-2);
   --store-stock-inset-inline-phone: var(--store-space-6);
-  --store-search-radius: var(--store-radius-18);
-  --store-search-action-radius: var(--store-radius-12);
+  --store-search-radius: var(--store-radius-12);
+  --store-search-action-radius: var(--store-radius-8);
   --store-search-surface: var(--store-input-surface);
   --store-purchase-surface: var(--store-action);
   --store-purchase-foreground: var(--store-text);

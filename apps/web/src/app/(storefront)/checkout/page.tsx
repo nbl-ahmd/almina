@@ -34,7 +34,7 @@ export default async function CheckoutPage() {
       <section className="checkout-status" aria-labelledby="checkout-availability">
         <h2 id="checkout-availability">{t(locale, 'checkoutUnavailableTitle')}</h2>
         <p role="status">{t(locale, 'checkoutUnavailableBody')}</p>
-        <Button asChild size="sm"><a href="tel:+971504825007"><Icon name="phone" />{t(locale, 'checkoutCallPharmacy')}</a></Button>
+        <Button asChild size="sm" variant="outline"><a href="tel:+971504825007"><Icon name="phone" />{t(locale, 'checkoutCallPharmacy')}</a></Button>
       </section>
       <CartView checkout orderingEnabled={false} locale={locale} />
     </div>
