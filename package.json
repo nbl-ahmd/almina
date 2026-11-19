@@ -28,6 +28,7 @@
     "start:api": "npm run start --workspace @almina/api",
     "docs:next": "node scripts/tooling/next-docs.mjs",
     "media:review:package": "tsx scripts/tooling/prepare-image-review.mts",
+    "media:review:publish": "tsx scripts/tooling/publish-image-review.mts",
     "dev:image-review": "npm run build:commerce && tsx scripts/tooling/image-review-demo.mts",
     "release:gate": "tsx scripts/migrations/release-gate.ts",
     "test:release": "tsx --test tests/release-gate.test.ts",

@@ -30,7 +30,7 @@ database.connect().then(async () => {
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || origins[0];
   if (process.env.GROWTH_EMAIL_ENABLED === 'true' && origins.includes(reminderOrigin)) reminderWorker = domain.retentionWorker(async () => database.getDb(), {origin: reminderOrigin, onFailure: () => console.error('Requested reminder processing failed')});
   if (process.env.MARKETING_EMAIL_ENABLED === 'true') campaignWorker = domain.marketingWorker(async () => database.getDb());
-  if (app.locals.imageReviewEnabled) imageReviewWorker = domain.imagePublicationWorker(() => database.getDb(), { cloudName: app.locals.cloudinaryUploads?.cloudName ?? app.locals.recoveryCloudName, enabled: () => app.locals.imageReviewEnabled && !app.locals.draining });
+  if (app.locals.imageReviewEnabled && app.locals.imageReviewHostedPublication) imageReviewWorker = domain.imagePublicationWorker(() => database.getDb(), { cloudName: app.locals.cloudinaryUploads?.cloudName ?? app.locals.recoveryCloudName, enabled: () => app.locals.imageReviewEnabled && !app.locals.draining });
   await domain.prepareStripeStorage(database.getDb(), app.locals.stripePayments.enabled);
   stripeWorker = domain.stripeReconciler(app.locals.stripePayments, () => console.error('Stripe test reconciliation failed'));
   searchWorker = domain.searchEmbeddingWorker(() => database.getDb());

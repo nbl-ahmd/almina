@@ -1,5 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
-import { ObjectId, type Db, type Document } from "mongodb";
+import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 import {
   recordAlert,
   recordOrderAlert,
@@ -8,35 +8,44 @@ import {
 } from "./center.js";
 type Row = Document & { _id: string };
 const query = { maxTimeMS: 3000 };
+const orderIntervalMs = 5000;
+const reconciliationIntervalMs = 60000;
+const maintenanceId = "staff-alert-maintenance";
+
+function pendingOrderJobs(enabledAt: Date): Filter<Row> {
+  return {
+    createdAt: { $gte: enabledAt },
+    inAppState: null,
+    kind: { $nin: ["stock-alert", "operational-alert", "test-notification"] },
+  };
+}
+
 /** Persistent-service reconciliation; never runs in Next.js or inside a commerce transaction. */
-export async function notificationMaintenance(db: Db) {
+export async function notificationMaintenance(db: Db, reconcile = true) {
   const controls = db.collection<Row>("notification_controls"),
+    outbox = db.collection<Row>("order_outbox"),
     token = randomUUID(),
     now = new Date();
-  await controls.updateOne(
-    { _id: "staff-alert-maintenance" },
-    { $setOnInsert: { leaseUntil: new Date(0), enabledAt: now } },
-    { ...query, upsert: true },
-  );
+  if (reconcile) {
+    await controls.updateOne(
+      { _id: maintenanceId },
+      { $setOnInsert: { leaseUntil: new Date(0), enabledAt: now } },
+      { ...query, upsert: true },
+    );
+  } else {
+    const control = await controls.findOne({ _id: maintenanceId }, { ...query, projection: { enabledAt: 1, leaseUntil: 1 } });
+    if (!control || control.leaseUntil > now) return;
+    if (!(await outbox.findOne(pendingOrderJobs(control.enabledAt), { ...query, projection: { _id: 1 } }))) return;
+  }
   const lease = await controls.findOneAndUpdate(
-    { _id: "staff-alert-maintenance", leaseUntil: { $lte: now } },
+    { _id: maintenanceId, leaseUntil: { $lte: now } },
     { $set: { leaseUntil: new Date(Date.now() + 60000), token } },
     { ...query, returnDocument: "after" },
   );
   if (!lease) return;
   try {
-    const jobs = await db
-      .collection<Row>("order_outbox")
-      .find(
-        {
-          createdAt: { $gte: lease.enabledAt },
-          inAppState: null,
-          kind: {
-            $nin: ["stock-alert", "operational-alert", "test-notification"],
-          },
-        },
-        query,
-      )
+    const jobs = await outbox
+      .find(pendingOrderJobs(lease.enabledAt), { ...query, projection: { orderId: 1 } })
       .sort({ createdAt: 1, _id: 1 })
       .limit(25)
       .toArray();
@@ -50,10 +59,9 @@ export async function notificationMaintenance(db: Db) {
           if (ObjectId.isValid(line.productId))
             await observeStock(db, new ObjectId(line.productId));
       }
-      await db
-        .collection<Row>("order_outbox")
-        .updateOne({ _id: job._id }, { $set: { inAppState: "done" } }, query);
+      await outbox.updateOne({ _id: job._id }, { $set: { inAppState: "done" } }, query);
     }
+    if (!reconcile) return;
     const payments = await db
       .collection("orders")
       .find(
@@ -146,7 +154,7 @@ export async function notificationMaintenance(db: Db) {
       .sort({ _id: 1 })
       .limit(100)
       .toArray();
-    const unresolved = await db
+    const unresolved = outstanding.length ? await db
       .collection("orders")
       .find(
         {
@@ -156,7 +164,7 @@ export async function notificationMaintenance(db: Db) {
         { ...query, projection: { _id: 1 } },
       )
       .limit(100)
-      .toArray();
+      .toArray() : [];
     const active = new Set(unresolved.map((row) => String(row._id)));
     const resolved = outstanding
       .filter((row) => !active.has(row.entityId))
@@ -196,15 +204,17 @@ export async function notificationMaintenance(db: Db) {
       .sort({ _id: 1 })
       .limit(100)
       .toArray();
-    const states = await db
+    if (products.length) {
+      const states = await db
         .collection<Row>("staff_stock_state")
         .find({ _id: { $in: products.map((row) => String(row._id)) } }, query)
         .limit(100)
-        .toArray(),
-      rules = await alertRules(db);
-    for (const product of products) {
-      const prior = states.find((row) => row._id === String(product._id)),
-        low =
+        .toArray();
+      const stateByProduct = new Map(states.map(state => [state._id, state]));
+      const rules = await alertRules(db);
+      for (const product of products) {
+        const prior = stateByProduct.get(String(product._id));
+        const low =
           Number.isSafeInteger(product.stock) &&
           product.stock >= 0 &&
           product.stock <= rules.lowStockThreshold &&
@@ -212,15 +222,16 @@ export async function notificationMaintenance(db: Db) {
           product.published !== false &&
           product.disabled !== true &&
           !product.archivedAt;
-      if (
-        !prior ||
-        prior.low !== low ||
-        prior.lastStock !== product.stock ||
-        prior.rulesRevision !== rules.revision ||
-        !prior.checkedAt ||
-        prior.checkedAt.getTime() < Date.now() - 86400000
-      )
-        await observeStock(db, product._id);
+        if (
+          !prior ||
+          prior.low !== low ||
+          prior.lastStock !== product.stock ||
+          prior.rulesRevision !== rules.revision ||
+          !prior.checkedAt ||
+          prior.checkedAt.getTime() < Date.now() - 86400000
+        )
+          await observeStock(db, product._id);
+      }
     }
     await controls.updateOne(
       { _id: lease._id, token },
@@ -233,7 +244,7 @@ export async function notificationMaintenance(db: Db) {
     );
   } finally {
     await controls.updateOne(
-      { _id: "staff-alert-maintenance", token },
+      { _id: maintenanceId, token },
       { $set: { leaseUntil: new Date(0) }, $unset: { token: "" } },
       query,
     );
@@ -244,12 +255,16 @@ export function staffAlertWorker(
   onFailure: () => void = () => {},
 ) {
   let stopped = false,
+    nextReconciliation = 0,
     running: Promise<void> | undefined;
   function tick() {
     if (stopped) return Promise.resolve();
     return (running ??= (async () => {
       try {
-        await notificationMaintenance(await getDb());
+        const now = Date.now();
+        const reconcile = now >= nextReconciliation;
+        await notificationMaintenance(await getDb(), reconcile);
+        if (reconcile) nextReconciliation = now + reconciliationIntervalMs;
       } catch {
         onFailure();
       }
@@ -257,7 +272,7 @@ export function staffAlertWorker(
       running = undefined;
     }));
   }
-  const timer = setInterval(() => void tick(), 5000);
+  const timer = setInterval(() => void tick(), orderIntervalMs);
   timer.unref();
   void tick();
   return {

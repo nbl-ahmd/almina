@@ -1,3 +1,11 @@
+## 2026-11-19 — Reduce Render background traffic
+
+The order-alert queue keeps its five-second check. Empty checks use two reads, and catalogue and payment reconciliation now run once per minute. Bulk image publication defaults to an on-demand operations computer command with the existing server-authorized job, progress and import checks. The image-review browser stops polling when idle or running in local mode. See [staff-alert timing](STAFF_ALERTS_2026-11-08.md#runtime-configuration-and-storage) and [local image publication](IMAGE_REVIEW_2026-10-26.md#local-bulk-publication--2026-11-19). Production deployment and bandwidth measurement are pending.
+
+## 2026-11-19 — Render outbound bandwidth suspension
+
+Render suspended the Hobby workspace after 6.9 GB against a 5 GB monthly allowance. The `almina` backend accounted for the displayed total, including 6.34 GB of service-initiated traffic. The Nov 14 staff-alert release is a likely contributor to the higher baseline. The larger Nov 18–19 spikes remain unattributed. See the [incident findings and optimization plan](RENDER_BANDWIDTH_2026-11-19.md).
+
 ## 2026-11-18 — Optional image review fields may be blank
 
 Product name and brand are required for image approval. Strength, form and
