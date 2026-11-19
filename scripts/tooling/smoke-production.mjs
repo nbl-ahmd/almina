@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { productionApiOrigin } from './production-vercel-config.mjs';
+import { productionApiOrigin } from './production-vercel-config.mts';
 
 // Read-only public endpoints only. Never run checkout, sign-in or fixture writes here.
 const web = 'https://alminapharmacy.com';

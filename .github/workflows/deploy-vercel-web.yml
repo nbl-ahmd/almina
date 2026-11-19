@@ -78,7 +78,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync } from 'node:fs';
           import { parseEnv } from 'node:util';
-          import { requireProductionVercelEnvironment } from './scripts/tooling/production-vercel-config.mjs';
+          import { requireProductionVercelEnvironment } from './scripts/tooling/production-vercel-config.mts';
           const project = JSON.parse(readFileSync('.vercel/project.json', 'utf8'));
           const env = parseEnv(readFileSync('.vercel/.env.production.local', 'utf8'));
           if (project.projectId !== process.env.VERCEL_PROJECT_ID || project.orgId !== process.env.VERCEL_ORG_ID) {
