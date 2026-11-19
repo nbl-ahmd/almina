@@ -78,15 +78,13 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync } from 'node:fs';
           import { parseEnv } from 'node:util';
+          import { requireProductionVercelEnvironment } from './scripts/tooling/production-vercel-config.mjs';
           const project = JSON.parse(readFileSync('.vercel/project.json', 'utf8'));
           const env = parseEnv(readFileSync('.vercel/.env.production.local', 'utf8'));
-          if (project.projectId !== process.env.VERCEL_PROJECT_ID || project.orgId !== process.env.VERCEL_ORG_ID
-            || env.APP_ENV !== 'production' || env.CHECKOUT_ENABLED !== 'true'
-            || env.WEB_ORIGIN !== 'https://alminapharmacy.com'
-            || env.API_ORIGIN !== 'https://almina-of4b.onrender.com'
-            || env.LEGACY_API_ORIGIN !== 'https://almina-of4b.onrender.com') {
-            throw new Error('Frontend production configuration requires review');
+          if (project.projectId !== process.env.VERCEL_PROJECT_ID || project.orgId !== process.env.VERCEL_ORG_ID) {
+            throw new Error('Vercel project identity mismatch');
           }
+          requireProductionVercelEnvironment(env);
           NODE
           vercel build --prod --token="$VERCEL_TOKEN"
       - name: Publish the verified frontend artifact
