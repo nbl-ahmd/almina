@@ -52,7 +52,7 @@ The owner retained the layout and requested lighter controls and clearer typogra
 
 ### P6-05 visual acceptance
 
-Status **awaiting owner review**. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested refinements are implemented in the [control and type revision](p6-05-controls.md). Visual acceptance of those revised screens remains pending. Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
+Status **awaiting owner review**. The owner chose “Request specific visual fixes” after reviewing the packet for `b1756c7`. The requested refinements are implemented in the [control and type revision](p6-05-controls.md). After the follow-up control pass at `2c4dcb1`, the owner requested another visual fix. The screen, control and requested change are pending. Earlier approval of the direction covers the selected concept. This gate records acceptance of the implemented screens. Release authorization is a separate decision. Deployment remains excluded.
 
 ### Remaining release work
 

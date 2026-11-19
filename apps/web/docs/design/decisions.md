@@ -97,3 +97,4 @@ The original annotated references and three November 17 review/plan documents re
 - P2-01–P2-04: scoped token/state/specimen/refinement checks recorded in E15. This is local implementation evidence, not release approval.
 - P2-05, 18 November 2026: authority reconciliation and supersession checks. See E16 for source, validation, remaining influence and cleanup limits.
 - P6-03–P6-04, 19 November 2026. The independent finish verdict and measured fixes are recorded in the Phase 6 packet. The original direction seed could not be corroborated. The recorded coded approvals remain the source for the selected screens.
+- P6-05. The owner requested another visual fix after the follow-up control pass at `2c4dcb1`. Details and final visual acceptance are pending.

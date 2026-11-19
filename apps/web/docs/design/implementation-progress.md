@@ -5,7 +5,7 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 ## Current checkpoint
 
 - **Current work:** **P6-03 and P6-04 verified. P6-05 awaiting owner review.** The [revised controls and typography](implementation-evidence/p6-05-controls.md#follow-up-control-pass) are ready for review. The [phase packet](implementation-evidence/phase-6.md) keeps the prior verdict and release inputs.
-- **Next eligible task:** **P6-05 — review the revised visual language and record the owner’s decision.**
+- **Next eligible task:** **P6-05 — apply the next owner-requested visual fix once its scope is supplied, then return the affected screens for review.**
 - **Verified implementation tasks:** 33 of 34 (Phases 0–5 and P6-01–P6-04).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
@@ -412,3 +412,5 @@ When interrupted or handing off, update this file before yielding where possible
 - [The revised screen packet](implementation-evidence/p6-05-controls.md) records Playwright, axe and SEO verification and the WebKit search focus fix. Owner acceptance remains open.
 
 - A [follow-up control pass](implementation-evidence/p6-05-controls.md#follow-up-control-pass) addresses the owner’s product page and cart screenshots, quiets standalone shopping links and removes decorative scrollbar tracks from swipeable rows. The review remains open.
+
+- The owner requested another visual fix after reviewing the follow-up pass at `2c4dcb1`. The specific change is pending. The local preview still serves home, listing, offers, product detail and cart.
