@@ -1,3 +1,7 @@
+## 2026-11-19 — P6-03/P6-04 finished, storefront ready for visual review
+
+Mobile discovery density, Arabic directional cues and buying, and the account privacy link received the bounded finish fixes. The design authority and coverage register reflect the built storefront. [Final local evidence and release inputs](../../apps/web/docs/design/implementation-evidence/phase-6.md). P6-05 awaits the owner's visual decision. No deployment.
+
 ## 2026-11-19 — P6-02 storefront verification matrix recorded
 
 The compiled storefront passed bilingual route, viewport, purchase and account regressions on isolated fixtures. The matrix also records an inline privacy-link accessibility finding for P6-03. [Matrix results and reference captures](../../apps/web/docs/design/implementation-evidence/p6-02-verification.md). No deployment.

@@ -1,12 +1,12 @@
 # Accepted storefront screen directions
 
-Updated 18 November 2026, P2-05. These compositions describe the selected working system, not the old public implementation. [DESIGN.md](../../DESIGN.md) owns visual roles; [PRODUCT.md](../../PRODUCT.md) owns facts. P3–P5 perform public migration. See [decisions](decisions.md) and [progress](implementation-progress.md).
+Updated 19 November 2026. These compositions describe the selected storefront as implemented. [DESIGN.md](../../DESIGN.md) owns visual roles and [PRODUCT.md](../../PRODUCT.md) owns facts. See [decisions](decisions.md) and [progress](implementation-progress.md).
 
 ## Home
 
-Use prominent search, delivery context and cart, then a full-width campaign, category discovery and compact product comparison. The owner selected A/full campaign and five wide-screen home columns. Near-white surfaces, contained photographs and compact buying controls remain. The current phone proof has two product columns; category links can overflow locally. Do not reinstate the earlier incumbent horizontal home rail or split campaign/category directory as the default composition. Four-column/split query flags in the proof remain comparisons, not current authority.
+Use prominent search, delivery context and cart, then a full-width campaign, category discovery and compact product comparison. The owner selected A/full campaign and five wide-screen home columns. Near-white surfaces, contained photographs and compact buying controls remain. The current phone home has two product columns and category links can overflow locally. Do not reinstate the earlier incumbent horizontal home rail or split campaign/category directory as the default composition. The four-column and split options are retained as historical comparisons.
 
-The actual local campaign uses existing generic courier artwork, localized HTML copy and a real catalogue link. During migration, preserve managed banners/content and sparse-data behavior; no empty marketing panels or invented deals/ETAs. Existing reference composition is not a claim about delivery speed.
+The actual local campaign uses existing generic courier artwork, localized HTML copy and a real catalogue link. Preserve managed banners, content and sparse-data behavior. Omit empty marketing panels or invented deals/ETAs. Existing reference composition is not a claim about delivery speed.
 
 ## Listing and search
 

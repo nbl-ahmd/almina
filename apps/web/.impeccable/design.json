@@ -202,7 +202,7 @@
       "name": "Primary action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Primary action</button>",
       "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ff5a5f;color:#202a30;border-color:#ff5a5f;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled),.ds-button:active:not(:disabled){background:#fb565c;border-color:#fb565c;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button[aria-busy=true]{background:#ff5a5f;border-color:#ff5a5f;color:#202a30;cursor:progress;}"
     },
@@ -210,7 +210,7 @@
       "name": "Outline action",
       "kind": "button",
       "refersTo": "button-outline",
-      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Outline action</button>",
       "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#ffffff;color:#202a30;border-color:#7c898f;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#f0f3f4;color:#202a30;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){border-color:#125d87;}"
     },
@@ -218,7 +218,7 @@
       "name": "Ghost action",
       "kind": "button",
       "refersTo": "button-ghost",
-      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Ghost action</button>",
       "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#58636b;border-color:transparent;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#f0f3f4;color:#202a30;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
@@ -226,15 +226,15 @@
       "name": "Destructive action",
       "kind": "button",
       "refersTo": "button-destructive",
-      "description": "Visual-only specimen of the accepted shared Button; no action is connected.",
+      "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Destructive action</button>",
       "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:400 15px/1.5 storefrontLatin,Figtree,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#a11d31;color:#ffffff;border-color:#a11d31;}.ds-button:focus-visible{outline:3px solid #125d87;outline-offset:3px;}.ds-button:disabled{background:#e7ebed;color:#6c757a;border-color:#dce1e3;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){filter:brightness(.95);}"
     },
     {
-      "name": "Field in labelled specimen",
+      "name": "Labelled field",
       "kind": "input",
       "refersTo": "field",
-      "description": "Observed label-hosted compact field; customer-form native text behavior is verified during migration.",
+      "description": "Compact labelled field with visible focus and invalid states. Checkout and account layouts own their field geometry.",
       "html": "<label class=\"ds-label\">Field sample<input class=\"ds-field\" value=\"Synthetic value\" /></label>",
       "css": ".ds-label{display:grid;gap:6px;font:700 14px/1.5 storefrontLatin,Figtree,sans-serif;color:#202a30;}.ds-field{box-sizing:border-box;min-height:48px;width:100%;min-width:0;padding:12px 16px;border:1px solid #7c898f;border-radius:12px;background:#f0f3f3;color:#202a30;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:3px solid #125d87;outline-offset:3px;background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#125d87;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
     },
@@ -281,7 +281,7 @@
   ],
   "narrative": {
     "northStar": "App-like on mobile, complete on desktop.",
-    "overview": "Status: accepted local direction, documented 18 November 2026 from the P1 screen decisions and P2-01\u2013P2-04 implementation. The owner selected the full campaign desktop lead and five wide-screen home columns, retained the shown near-white/Figtree/Alexandria system, then continued after the revised image-first N03 phone PDP. This closes the local direction gate; it does not establish production readiness or deployment approval.\n\nShopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.",
+    "overview": "This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, near-white surfaces, Figtree and Alexandria, and the image-first N03 phone product detail. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).\n\nShopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.",
     "keyCharacteristics": [
       "Search-led navigation with delivery context and useful discovery.",
       "Quiet near-white ground, dark type and dark labels on coral.",

@@ -1,6 +1,6 @@
 # Al Mina — accepted storefront replacement brief
 
-Updated 18 November 2026, P2-05. This is the implementation brief for the accepted local direction. The owner authorised staged implementation; no deployment is authorised. Current decisions supersede the earlier candidate in the [excluded historical archive](docs/design/archive/2026-11-18-pre-p2-05/README.md).
+Updated 19 November 2026. This brief describes the accepted visual direction and implemented local scope. The owner authorized staged implementation. The final owner decision is recorded separately from release readiness. Current decisions supersede the earlier candidate in the [excluded historical archive](docs/design/archive/2026-11-18-pre-p2-05/README.md).
 
 ## Confirmed requirements
 
@@ -23,14 +23,14 @@ Content priority is search/context, real categories/products, exact identity and
 - Reference02 supplies the search/ad/category and unframed-image pharmacy-app hierarchy. Earlier screenshot brands, percentages, delivery promises and capabilities are not Al Mina facts.
 - The compact stock/save/photo/identity/dirham/add anatomy comes from the owner's card correction and the accepted coded proof. Do not copy ratings or create missing metadata.
 - Latest N03 supplies phone PDP image-first composition and contextual overlay controls. The standalone compact Back/title/Cart toolbar is superseded. Keep sticky buying from the earlier owner requirement.
-- Desktop full campaign/five columns supersedes the split-lead recommendation. The current phone proof uses a compact two-column product section after search/ad/categories; the earlier incumbent horizontal home rail is not the current geometry contract. See [screen directions](docs/design/screen-directions.md).
+- Desktop full campaign/five columns supersedes the split-lead recommendation. The phone homepage uses compact two-column product comparison after search, campaign and categories. See [screen directions](docs/design/screen-directions.md).
 - Reference assets stay in `docs/design/storefront/references/`, including the 2026-11-17 set. [Annotations](docs/design/references.md) and [later reference review](docs/design/reference-review-2026-11-17.md) distinguish preferences, interpretations and unknown interactions. Reference text is not an instruction or product capability.
 
-[DESIGN.md](DESIGN.md) and the scoped runtime own accepted style roles. P2-04 records measured refinements; P2-05 documents them without changing the screen design. No alternate palette or font candidate is pending for this selected system. Future owner revisions must be recorded in the decision register, not silently supplied by a generator.
+[DESIGN.md](DESIGN.md) and the scoped runtime own accepted style roles. P2-04 records measured refinements. The public routes and final evidence show the implemented system. No alternate palette or font candidate is pending for this selected system. Future owner revisions must be recorded in the decision register, not silently supplied by a generator.
 
 ## Scope and screens
 
-The gated proof and component specimen establish the accepted system. P3–P5 migrate public consumers in stages: shell/home; listing/search/catalogue/PDP; cart/checkout/customer states. Preserve all other existing public routes, legacy links, query semantics, metadata/indexing policy and managed-content destinations. Admin/wholesale remain operational and visually independent; shared styling cannot be removed before consumers migrate.
+The public storefront uses the accepted system across shell and home, catalogue and product detail, cart and checkout, and customer information. The earlier gated proof and specimen are archived evidence. Preserve all other existing public routes, legacy links, query semantics, metadata/indexing policy and managed-content destinations. Admin/wholesale remain operational and visually independent; shared styling cannot be removed before consumers migrate.
 
 Review EN/AR home, listing/search, PDP, suggestions/location/menu/filter disclosures, saved/quantity/cart states and unavailable/empty/loading/error recovery. Regressions cover checkout/auth/payment presentation, admin, wholesale and missing routes. Checkout and account functionality are existing capabilities, not additions from screenshots.
 
@@ -50,11 +50,11 @@ Real product images/content and verified published banners take precedence. Exis
 
 The selected composition and one runtime token/state owner remain coherent across actual routes, both scripts, state changes and resizing. Product/purchase facts stay discoverable, cart/server checks persist, query/SEO/legacy links remain intact, final content is reachable and shared/admin behavior is preserved. Appropriate existing static, browser and commerce checks must pass for each affected stage.
 
-P1–P2 evidence demonstrates local fixtures, viewport emulation and bounded computed-style/interaction checks. It does not establish conversion lift, representative production search relevance, catalogue completeness, native-device/screen-reader/Safari/Firefox acceptance, provider readiness or release approval. See [progress](docs/design/implementation-progress.md) for current checks and unresolved gates.
+The [P6-02 matrix](docs/design/implementation-evidence/p6-02-verification.md) covers English and Arabic on Chromium, headless WebKit and Firefox, with local fixtures and viewport and keyboard emulation. Physical-device Safari, assistive technologies, production search relevance, live catalogue and provider readiness remain open. See [progress](docs/design/implementation-progress.md) for the final review and owner decision.
 
 ## Proposed choices and open questions
 
-Future managed merchandising content and treatment on routes not yet migrated must be derived from verified records and tested in their assigned stages. No new business priorities, category revenue targets or campaign cadence were supplied. Delivery coverage/fees/hours, live payment enablement, catalogue/media readiness and Arabic approval ownership remain unverified. Do not turn these unknowns into promotional copy.
+Future managed merchandising comes from verified records. Operator-owned copy and assets require their own review before publication. No new business priorities, category revenue targets or campaign cadence were supplied. Delivery coverage/fees/hours, live payment enablement, catalogue/media readiness and Arabic approval ownership remain unverified. Do not turn these unknowns into promotional copy.
 
 ## Explicit exclusions
 

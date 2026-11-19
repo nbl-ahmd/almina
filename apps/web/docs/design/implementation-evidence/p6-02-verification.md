@@ -33,13 +33,7 @@ The reference preview exercised 16 repeated browse and Back cycles with one sess
 
 ## Reviewed-photo captures
 
-Captured from the existing local preview with the reviewed product images. Prices and availability in these captures are sample data.
-
-| Surface | English mobile | English desktop | Arabic mobile | Arabic desktop |
-| --- | --- | --- | --- | --- |
-| Home | [390px](p6-02-matrix/en-home-390.png) | [1440px](p6-02-matrix/en-home-1440.png) | [390px](p6-02-matrix/ar-home-390.png) | [1440px](p6-02-matrix/ar-home-1440.png) |
-| Listing | [390px](p6-02-matrix/en-listing-390.png) | [1440px](p6-02-matrix/en-listing-1440.png) | [390px](p6-02-matrix/ar-listing-390.png) | [1440px](p6-02-matrix/ar-listing-1440.png) |
-| Product detail | [390px](p6-02-matrix/en-product-390.png) | [1440px](p6-02-matrix/en-product-1440.png) | [390px](p6-02-matrix/ar-product-390.png) | [1440px](p6-02-matrix/ar-product-1440.png) |
+The final review recaptured the storefront after the catalogue and photos had loaded. Use the [settled P6-03 captures](phase-6.md#review-the-storefront) for appearance. This report preserves the P6-02 route and interaction results.
 
 ## Commands and limits
 

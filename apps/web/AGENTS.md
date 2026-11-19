@@ -132,8 +132,8 @@ Specify responsive sizing appropriately.
 Read PRODUCT.md for verified facts, DESIGN-BRIEF.md for scope, DESIGN.md for the
 accepted replacement system and docs/design/screen-directions.md for compositions.
 The decision register records precedence; implementation-progress.md owns status.
-P1 local direction is selected; P2 establishes the system; public migration is
-P3–P5 and legacy retirement P6. Local acceptance is not release approval.
+The public routes use the accepted system. Check the [verification matrix](docs/design/implementation-evidence/p6-02-verification.md)
+and the progress ledger for local evidence, owner acceptance and release inputs.
 
 The accepted runtime value source is
 `src/components/storefront-system/tokens.module.css`. Its opted-in state/control
@@ -260,8 +260,7 @@ rail/category geometry or pending-review statements in historical evidence.
 
 Use current retail routes to review working components. The former specimen is
 historical evidence. `docs/design/implementation-evidence/p2-04-refinement.md`
-records the decisions on contrast, typography,
-shape, icon, badge, stock and motion decisions. Preserve default/explicit shape
+records the contrast, typography, shape, icon, badge, stock and motion decisions. Preserve default/explicit shape
 APIs, bounded label wrapping and portal theme/direction. Compiled foreground/control
 aliases resolve through scoped `--ui-*` bridges; verify emitted/computed CSS and
 fallbacks using `p2-02-cascade.md` before changing shared aliases.

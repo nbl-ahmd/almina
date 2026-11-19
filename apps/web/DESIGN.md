@@ -155,7 +155,7 @@ components:
 
 **Creative North Star: "App-like on mobile, complete on desktop."**
 
-Status: accepted local direction, documented 18 November 2026 from the P1 screen decisions and P2-01–P2-04 implementation. The owner selected the full campaign desktop lead and five wide-screen home columns, retained the shown near-white/Figtree/Alexandria system, then continued after the revised image-first N03 phone PDP. This closes the local direction gate; it does not establish production readiness or deployment approval.
+This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, near-white surfaces, Figtree and Alexandria, and the image-first N03 phone product detail. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
 
 Shopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.
 
@@ -183,25 +183,25 @@ Page canvas, product surfaces, input surfaces, selected surfaces and campaign su
 
 ## Typography
 
-Self-hosted Figtree and Alexandria serve Latin and Arabic respectively; `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Product/brand strings remain factual mixed-script identities; use isolation and wrapping rather than invented translation.
+Self-hosted Figtree and Alexandria serve Latin and Arabic respectively; `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Keep factual product and brand names intact. Use bidirectional isolation and keep number–unit pairs together in product titles.
 
-Frontmatter roles record wide-screen values. Phone page titles use 25px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Shared Buttons inherit body typography in this scope; native campaign calls to action are bold. Verify label, input and error text on the actual form at each supported viewport.
+Frontmatter roles record wide-screen values. Phone page titles use 25px; PDP titles 28→22px and prices 30→24px; campaign 32→23px. Card names 15→14px with 1.4 leading; card prices 21→19px. Section headings vary by context: page groups 22px, compact category 18px wide and section-head 19px phone. Do not replace these with one large display scale. Shared Buttons inherit body typography in this scope; native campaign calls to action are bold. Verify label, input and error text on the actual form at each supported viewport.
 
 Supporting metadata remains readable and subdued. Stock uses 11px with explicit status text. The 10px count exception is for redundant compact cart counts with a full accessible name; wide counts remain 12px. It is not a standalone target or a body-text rule. Preserve locale money formatting, the dirham SVG and the LTR numeric run; do not mirror currency or pack artwork. Long names wrap without losing accessible identity.
 
 ## Layout
 
-The current container is 1240px with 24px wide and 16px phone gutters. The working proof changes major shell/task composition at 900px, intermediate grid behavior below 1200px and narrow ordering below 600px; a short-height adaptation applies at≤500px. Existing shared menu internals use their 768px breakpoint. These are distinct component responsibilities, not interchangeable global breakpoints. Test live resizing across their boundaries.
+The retail content container is 1240px, with 24px wide and 16px phone gutters. Home narrows its gutter to 12px below 360px. The global shell and product detail change composition at 768px. The listing opens its desktop filter rail at 1024px. Short phone product and checkout views at 500px tall or less keep the purchase action in the page. Check each surface at its own transition.
 
-The selected home lead is full-width campaign followed by categories; wide home has five comparison columns. Phone proof uses compact two-column product comparison after the search/ad/category sequence. This describes the accepted working proof, not the earlier incumbent horizontal home rail. Category overflow stays local. Listings retain their own responsive columns/filter disclosure, not a universal five-column grid. Four-column/split query flags remain diagnostic comparisons only.
+Home places the full-width campaign below search and above categories and products. Home uses two columns on phones and moves to three, four and five columns at 768px, 1024px and 1280px as inventory allows. Phone category tiles scroll inside their own lane. Spacing at 390px leaves the first complete price and Add row above the navigation dock in both reviewed locales. The listing uses a separate grid and filter layout.
 
-The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. Card padding/gap use 10/14px wide, with route-specific compact phone treatment. Stock inset is 3/8px wide and 2/6px phone. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
+The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. The card frame uses 10px internal padding. Each route controls its grid gap. Stock inset is 3/8px wide and 2/6px phone. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
 
 Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; desktop uses the global search shell and gallery/buying columns. The purchase dock measures its own content clearance, respects safe areas and replaces global bottom navigation in this task mode. Preserve final-content reachability, short landscape, keyboard, focus and scroll return.
 
 ## Elevation & Depth
 
-Product cards are flat, bordered surfaces. Use tonal grouping for everyday shopping. Reserve the existing offset overlay shadow for suggestions/dialog context: `0 8px 24px #202a301c`; scrim is `#17263066`. The buying dock uses its existing white alpha surface `#ffffffeb`. These are runtime roles recorded in the sidecar, not another palette. No decorative blur, stacked card shadows or motion-only depth is required.
+Product cards are flat and bordered. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`0 8px 24px #202a301c`) for suggestions and overlays that use it. The product purchase dock uses the solid surface role and a separator.
 
 ## Shapes
 
@@ -213,12 +213,12 @@ Visible control boundaries/focus use the control/focus roles; the quiet card bor
 
 Review the working patterns on the retail routes. The sidecar documents the shipped styles with standalone examples. The development comparison and component specimen were retired in P6-01.
 
-- **Header/search/location/navigation:** keep known-item search prominent, delivery context and cart reachable; preserve suggestions, Enter/Escape, manual/GPS fallback and query URLs. Expanded location and menus must retain names, focus return, portal scope and RTL. No scanning/voice/chat affordance without a real capability.
+- **Header/search/location/navigation:** mirror directional arrows and breadcrumb chevrons in RTL. Keep known-item search prominent, delivery context and cart reachable. Preserve suggestions, Enter/Escape, manual/GPS fallback and query URLs. Expanded location and menus must retain names, focus return, portal scope and RTL. No scanning/voice/chat affordance without a real capability.
 - **Actions and fields:** `boundary.module.css` owns base/variant/meaning states. Default/accent is coral/text; secondary/outline/ghost/link/destructive have explicit meanings. Busy retains action treatment; unavailable is disabled. Invalid fields use error independently of the offer alias. Focus remains visible; shared component APIs continue outside this scope.
 - **Product cards:** contained original photo, stock and saved controls, factual brand/pack where available, wrapping identity, dirham price and quick add. Do not invent chips, ratings, discounts or data missing from the catalogue. Actual in-cart quantity and stock checks persist. Offer/unknown-price/unavailable/placeholder cases stay honest; a layout sample is not saleable stock.
 - **Gallery/options/quantity:** one-image products have no fake pagination; real thumbnails select real images. Only real family members get option links/current state. Preserve exact selected pack/price/availability, native quantity limits and server validation. Product comparison imagery stays static under hover. P4-02 retired the earlier card image zoom.
-- **Campaign/categories:** use existing approved local art/provenance and semantic localized HTML copy, factual category links and real published content during migration. Generic art cannot impersonate staff, product packs or a delivery promise. Reference brands, device frames and watermarks are never assets.
-- **Disclosures/sheets/feedback:** preserve semantic summary, real dialogs/popovers and focus management. Loading/status/empty/error/success semantics carry meaning. Demo feedback says no request/order was created; demo offer styling advertises no promotion.
+- **Campaign/categories:** use existing approved local art/provenance and semantic localized HTML copy, factual category links and published content from the catalogue. Generic art cannot impersonate staff, product packs or a delivery promise. Reference brands, device frames and watermarks are never assets.
+- **Disclosures/sheets/feedback:** preserve semantic summary, real dialogs/popovers and focus management. Loading, status, empty, error and success semantics carry meaning. Inline policy links use a persistent underline and a separate keyboard focus outline.
 - **Cart/checkout/customer:** preserve existing contracts and task modes. Device cart stores identifiers/quantities; server-loaded estimates are not final quotes. Checkout, auth, payments, idempotency, inventory and immutable order snapshots are not design concerns to rewrite. The checkout keeps one responsive action, visible field labels, a server-quoted review and explicit payment recovery states. See the screen directions for dock and keyboard behavior.
 
 **The feedback-motion rule.** Background/border/text changes use the existing 120ms role and `cubic-bezier(0.2,0.7,0.2,1)`. Reduced motion removes scoped transitions/animations and preserves immediate final states, including portal links. Do not animate pack comparisons, add shopping delays or reset transforms needed for disclosure direction/portal placement. Stroked UI icons use the existing Heroicons family at 22px/1.5; filled dirham artwork is excluded.

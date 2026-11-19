@@ -2,10 +2,10 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Status: verified product context retained for the accepted staged replacement, 18 November 2026 (P2-05). Confirmed owner requirements and
-repository-verified capabilities are distinguished below. Source presence does
-not establish production enablement, live data quality or provider readiness.
-See [decisions and evidence](docs/design/decisions.md) for traceable sources.
+Updated 19 November 2026. Owner requirements and existing capabilities are
+recorded below. The compiled storefront was exercised with isolated catalogue,
+customer and commerce fixtures. [Decisions and evidence](docs/design/decisions.md)
+records the implementation and open production inputs.
 
 ## Platform
 
@@ -42,7 +42,7 @@ recovery paths when content, location, authentication or checkout is unavailable
 | Area | Existing behaviour to preserve | Evidence / limit |
 | --- | --- | --- |
 | Catalogue and navigation | Server-rendered home, products, categories, offers, brands, collections and search; filter/query URLs and legacy product-link compatibility. | Catalogue routes, `catalog-list.tsx`, server catalogue/SEO modules. Preserve identifiers and existing destination/query semantics. |
-| Search | GET `/search?q=…`, asynchronous suggestions, keyboard navigation, recent-search storage/clear controls and suggestion-error fallback to normal search. | `search-box.tsx`, server search and suggestion route. Search quality, Arabic matching and coverage need representative-data evaluation. |
+| Search | GET `/search?q=…`, asynchronous suggestions, keyboard navigation, recent-search storage/clear controls and suggestion-error fallback to normal search. | `search-box.tsx`, server search and suggestion route. Local fixtures cover suggestions, recovery and query continuity. Representative English and Arabic search relevance remains open. |
 | Product detail | Gallery, exact product identity, price, stock, family options and related products; unavailable combinations are explicit. | Product route, `product-options.tsx`, gallery and information components. Not every catalogue entry has a complete gallery/description/family. |
 | Cart | Browser persistence, legacy cart adaptation, quantity changes and server checks; server-loaded catalogue prices provide clearly labelled line/merchandise estimates. Checkout independently revalidates prices, stock, delivery, tax and final totals. | Browser/server cart modules and existing storefront/checkout regression tests. Stored client values are not authoritative. |
 | Delivery context | Editable emirate/city, device-saved area, optional user-triggered GPS lookup, manual fallback and error feedback. | `delivery-location.tsx`, location modules. Header area is not a full address or confirmed fee/ETA; checkout confirms options. |
@@ -93,7 +93,7 @@ optional visual polish.
 Keep the actual Al Mina name, logo, contact facts and logo colour family. The
 owner explicitly pinned the primary accent to `#FF5A5F` on 15 November 2026. The
 owner wants an app-like mobile experience and a deliberate desktop experience.
-Visual composition and implementation status belong in [DESIGN-BRIEF.md](DESIGN-BRIEF.md), [DESIGN.md](DESIGN.md) and [the decision register](docs/design/decisions.md). The latest local direction is selected and documented; P3–P5 still migrate public consumers. This product record does not turn a reference layout into a product capability.
+Visual composition and implementation status belong in [DESIGN-BRIEF.md](DESIGN-BRIEF.md), [DESIGN.md](DESIGN.md) and [the decision register](docs/design/decisions.md). The public storefront implements the selected local direction. The [verification matrix](docs/design/implementation-evidence/p6-02-verification.md) records the routes and states checked. Product capabilities come from the actual application and its verified data.
 
 Use real catalogue/media/content for saleable products. Generic generated courier and category illustrations may support the interface; they must never be associated with a product ID, impersonate actual staff or establish availability. Keep their provenance under `docs/design/storefront/campaigns/`. Do not invent reviews, sales popularity,
 certifications, discounts, delivery promises, medical claims, payment methods

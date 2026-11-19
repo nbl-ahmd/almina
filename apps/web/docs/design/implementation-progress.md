@@ -4,14 +4,14 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 
 ## Current checkpoint
 
-- **Current work:** **P6-02 verified.** Completed the local route and interaction matrix and recorded the account privacy-link accessibility finding for finish review. [Verification and captures](implementation-evidence/p6-02-verification.md).
-- **Next eligible task:** **P6-03 — independent finish review and targeted fixes, including NEW-007.**
-- **Verified implementation tasks:** 31 of 34 (Phases 0–5 and P6-01–P6-02).
+- **Current work:** **P6-03 and P6-04 verified. P6-05 awaiting owner review.** The finished local storefront, independent verdict and release inputs are available in the [review packet](implementation-evidence/phase-6.md).
+- **Next eligible task:** **P6-05 — record the owner’s decision on the finished local storefront.**
+- **Verified implementation tasks:** 33 of 34 (Phases 0–5 and P6-01–P6-04).
 - **Completed preparation:** read all three source documents; created seven phases, stable tasks, source-to-task coverage and this resume protocol. The duplicated direction-plan path in the owner's message is one source, not extra scope.
 - **Branch at preparation:** `codex/storefront-pharmacy-app-reference`.
 - **Source-review baseline:** 324a2ed (incumbent UI repairs); 72312c9 (review/plan/reference archive). Later tracker commits are documentation, not visual implementation.
 - **Working tree at start of preparation:** clean. Reinspect on every continuation; this is historical evidence only.
-- **Runtime/testing this checkpoint:** P6-02 passed build, workspace typecheck, lint, raw SEO smoke, 274 unit checks, 215 Chromium and 27 each WebKit/Firefox interaction cases, and 864 viewport checks. Consent and withdrawal were verified through the cart footer. The axe finding, native devices and provider verification remain open.
+- **Runtime/testing this checkpoint:** P6-02 retained the broad compiled matrix. The P6-03 finish batch passed the isolated build, workspace typecheck, lint, SEO smoke, 67 Chromium cases, two privacy-link tests each in WebKit and Firefox, and four account axe scans. Original seed provenance, native devices and provider checks remain open.
 - **No production data access or deployment. Accepted local direction is distinct from completed system/release acceptance.**
 
 ## Phase status
@@ -24,7 +24,7 @@ Last updated: 19 November 2026. This is the single mutable status ledger for [im
 | 3 Shell/home | verified | P3-01–P3-04 verified. | [Phase 3 exit](implementation-evidence/p3-04-shell-home.md) |
 | 4 Catalogue/PDP | verified | P4-01–P4-05 verified locally. | [Phase 4 exit](implementation-evidence/phase-4.md) |
 | 5 Cart/checkout/customer | verified | P5-01–P5-05 verified locally. | [Phase 5 exit](implementation-evidence/phase-5.md) |
-| 6 Retirement/final review | in_progress | P6-01 and P6-02 verified. Independent finish review follows. | [Retirement](implementation-evidence/p6-01-retirement.md), [Local matrix](implementation-evidence/p6-02-verification.md) |
+| 6 Retirement/final review | awaiting_review | P6-01–P6-04 complete. P6-05 requires an owner decision. | [Phase 6 review packet](implementation-evidence/phase-6.md) |
 
 ## Task ledger
 
@@ -63,9 +63,9 @@ Definitions and acceptance live in implementation-phases.md. Update only status/
 | P5-05 | verified | [Customer, wholesale and admin regressions and Phase 5 exit](implementation-evidence/phase-5.md) |
 | P6-01 | verified | [Retirement audit, shared dependencies and regressions](implementation-evidence/p6-01-retirement.md) |
 | P6-02 | verified | [Three-engine matrix, interaction checks and captures](implementation-evidence/p6-02-verification.md). NEW-007 goes to P6-03. |
-| P6-03 | not_started | — |
-| P6-04 | not_started | — |
-| P6-05 | not_started | — |
+| P6-03 | verified | [Independent verdict, fix regression and captures](implementation-evidence/phase-6.md#p6-03-independent-review). Finish code `b1756c7`. Five resolved, historical seed provenance partial. |
+| P6-04 | verified | [Design authority](implementation-evidence/phase-6.md#p6-04-design-authority) and [C01–C63/NEW reconciliation](implementation-evidence/p6-04-coverage.md). |
+| P6-05 | awaiting_review | [Review packet and release inputs](implementation-evidence/phase-6.md#review-the-storefront). Final owner decision pending. |
 
 ## Decisions and approval state
 
@@ -104,7 +104,7 @@ Append dated decisions/corrections with affected task/coverage IDs and source (o
 | O07 | NEW-001/002/003: wholesale shares customer CSS/shell; root 404 imports it; admin campaign preview shares artwork/Outfit | Isolation/compatibility and preview policy required before accepted customer system switch; see P0-02 matrix. No shared deletion yet. | P2-01–P2-03, P3-03–P3-04, P6-01 |
 | O08 | NEW-004: browser Back restores search URL and scroll in Chromium/WebKit. NEW-005: Arabic root 404 and route recovery are localized. P5-04 localizes saved-product states and applies the account’s existing localized copy in the accepted layout. | P4-05 verifies in-page return with exact query, filters and focus. P5-05 verifies saved and account states and retail-to-shared transitions in both locales. | P3-04, P4-05, P5-05, P6-02 |
 | O09 | NEW-006: two longer supplemental H1 dev-browser sequences stayed on Arabic home loading shell; direct HTTP/fresh contexts resolved | Cause unassigned. P3-04, P4-05 and the bounded P6-02 sequences did not reproduce the stall. P6-02 documents separate request-cancellation messages on rapid WebKit development navigation. Longer native sessions remain open. | P3-04, P4-05, P6-02 |
-| O10 | NEW-007: the account’s inline privacy notice relies on color alone | Bilingual axe finding reproduced on the signed-out email sign-in surface. | P6-03 |
+| O10 | NEW-007: the account’s inline privacy notice relies on color alone | Persistent underline, keyboard outline and four clean bilingual axe scans verified in P6-03. | P6-03 |
 
 No blocker to starting P1-02 with the contract safeguards has been demonstrated at this checkpoint. Future blockers must name the actual dependency, affected tasks and independent work that can continue. Content/rights/release needs cannot silently disappear when code is done.
 
@@ -397,3 +397,10 @@ When interrupted or handing off, update this file before yielding where possible
 - Reconciled checkout telemetry tests with the actual consent controls. Verified the compiled shopping and shared route boundaries in Chromium and selected interactions in WebKit and Firefox.
 - Recorded the [local matrix and reference captures](implementation-evidence/p6-02-verification.md), the bilingual axe finding and physical-device/provider limits.
 - Continue with P6-03. The next review owns material fixes and refreshed evidence.
+
+
+### 2026-11-19 — P6-03–P6-05 checkpoint
+
+- Applied the bounded independent finish batch in `b1756c7`. The reviewer resolved five findings and recorded historical seed provenance as partial.
+- Refreshed the accepted design authority and reconciled all original requirements and numbered findings with explicit release limitations.
+- The [finished local screens](implementation-evidence/phase-6.md#review-the-storefront) are ready for the owner’s decision in P6-05.

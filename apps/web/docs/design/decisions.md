@@ -1,6 +1,6 @@
 # Storefront decisions and evidence
 
-Updated 18 November 2026, P2-05. This register distinguishes owner choices, verified implementation decisions and remaining questions. [DESIGN.md](../../DESIGN.md) owns the accepted visual specification, [PRODUCT.md](../../PRODUCT.md) owns facts, and [progress](implementation-progress.md) owns task status. This document does not authorise production release.
+Updated 19 November 2026. This register distinguishes owner choices, verified implementation decisions and remaining questions. [DESIGN.md](../../DESIGN.md) owns the accepted visual specification, [PRODUCT.md](../../PRODUCT.md) owns facts, and [progress](implementation-progress.md) owns task status. This document does not authorise production release.
 
 ## Reading the status labels
 
@@ -49,7 +49,7 @@ verification limits; historical test outcomes were not rerun for this task.
 
 ## Verified implementation decisions
 
-P2-01–P2-04 establish `src/components/storefront-system/tokens.module.css` as the single accepted value source and `boundary.module.css` as state/control owner. The current home proof has a compact two-column phone product section and five columns at wide desktop; the older public horizontal rail is not its current geometry. Latest N03 PDP and facts-before-alternatives are recorded in screen directions.
+P2-01–P2-04 establish `src/components/storefront-system/tokens.module.css` as the single accepted value source and `boundary.module.css` as state/control owner. The implemented home has a compact two-column phone product section and five columns at wide desktop. Latest N03 PDP and facts-before-alternatives are recorded in screen directions.
 
 Default shared buttons use 10px control radius through additive shape metadata; explicit shapes remain. Enlarged-text labels wrap. Count 10px is a redundant accessible-count exception, stock 11px uses wide 3/8 and phone 2/6 inset, stroked icons use 22px/1.5, accepted imagery stays static, and feedback uses 120ms/reduced-motion immediate states. Offer uses existing ink/campaign roles rather than error. These are measured implementation refinements, not new owner business requirements.
 
@@ -75,11 +75,13 @@ P5-05 gives the category component ownership of media, fallback and labels. The 
 
 P6-01 gives the retail layout the accepted palette and limits the prior palette to explicit wholesale and root recovery wrappers. The comparison routes and duplicate tooling were retired. Current retail routes provide working examples. [Retirement and remaining dependencies](implementation-evidence/p6-01-retirement.md).
 
+P6-03 preserves the selected local system and completes the bounded visual fixes. P6-04 updates the design authority and [requirement reconciliation](implementation-evidence/p6-04-coverage.md). Final owner visual acceptance is recorded in the [Phase 6 packet](implementation-evidence/phase-6.md#p6-05-visual-acceptance).
+
 ## Proposed choices and open questions
 
-No alternate palette/font/composition candidate remains pending for the selected local system. Future managed merchandising and unmigrated route composition must use verified content and the accepted roles, and be reviewed in their implementation stages.
+No alternate palette/font/composition candidate remains pending for the selected local system. Future merchandising uses verified content and the accepted roles.
 
-Open business facts: revenue/category priorities, promotion cadence, delivery coverage/fees/hours, production catalogue/media completeness, live provider/method enablement, programme terms and Arabic/native pharmacy approval ownership. Source feature presence is not live availability. Device, screen-reader, Safari/Firefox, provider and final independent/release checks remain open. Existing NEW-001–NEW-006 retain their tracked scope; documentation does not close them.
+Open business facts: revenue/category priorities, promotion cadence, delivery coverage/fees/hours, production catalogue/media completeness, live provider/method enablement, programme terms and Arabic/native pharmacy approval ownership. Source feature presence is not live availability. Physical-device, screen-reader, native Safari and live-provider checks remain open. The local matrix exercised Chromium, headless WebKit and Firefox. [Phase 6 evidence](implementation-evidence/phase-6.md) records the independent verdict, final owner decision and remaining release work.
 
 ## Superseded and deliberately unselected
 
@@ -92,3 +94,4 @@ The original annotated references and three November 17 review/plan documents re
 - P1-05: explicit A/five/support selection; toolbar declined; N03 correction requested; continued after revised preview.
 - P2-01–P2-04: scoped token/state/specimen/refinement checks recorded in E15. This is local implementation evidence, not release approval.
 - P2-05, 18 November 2026: authority reconciliation and supersession checks. See E16 for source, validation, remaining influence and cleanup limits.
+- P6-03–P6-04, 19 November 2026. The independent finish verdict and measured fixes are recorded in the Phase 6 packet. The original direction seed could not be corroborated. The recorded coded approvals remain the source for the selected screens.

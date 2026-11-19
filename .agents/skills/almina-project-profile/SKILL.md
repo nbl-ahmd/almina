@@ -13,16 +13,17 @@ The selected local direction is A/full-width campaign, five wide-screen home
 columns, Figtree/Alexandria, near-white support, dark-on-coral actions and compact
 bordered cards. Latest N03 image-first phone PDP replaces the declined standalone
 toolbar, preserving overlay Back/Save/Cart and sticky buying. Local direction
-acceptance is not production release approval. P3–P5 migrate public consumers;
-P6 retires legacy only after verification.
+acceptance and production release approval are separate. The public
+consumers now use the accepted system. The progress ledger records finish-review
+evidence, owner acceptance and outstanding release needs.
 
 One accepted value source lives at
 apps/web/src/components/storefront-system/tokens.module.css; boundary.module.css
 owns opted-in controls/variants/states. DESIGN.md and its scoped sidecar document
-that runtime and are not token-generation inputs. The retained storefront-tokens.css palette serves wholesale and root
-missing-page recovery. Shared shell geometry and fallback control consumers are
-listed in docs/design/implementation-evidence/p6-01-retirement.md. Never extract a replacement from their discarded look or restore it
-from historical metadata. Do not activate a competing visual generator or rerun
+that runtime. The retained storefront-tokens.css palette serves wholesale and
+root missing-page recovery. Shared shell geometry and fallback control consumers
+are listed in docs/design/implementation-evidence/p6-01-retirement.md. Historical
+metadata is excluded from current design authority. Do not activate a competing visual generator or rerun
 palette/font selection. General-purpose skills remain available within this scope.
 
 Preserve real catalogue/media/content, contacts, identifiers, URLs, query/return
