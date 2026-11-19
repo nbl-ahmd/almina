@@ -12,11 +12,11 @@ export async function StockState({ stock }: { stock: number }) {
   const locale = await getLocale();
   return <p className={`stock-state mb-3 flex items-center gap-1.5 text-xs leading-relaxed ${stock > 0 ? 'in-stock text-teal' : 'out-stock text-warning'}`}>{stock > 0 ? <><span className="stock-dot size-1.5 shrink-0 rounded-full bg-teal" />{u(locale,"In stock")}</> : u(locale,"Out of stock")}</p>;
 }
-export async function ProductGrid({ products, headingLevel = 2, variant: _variant = 'catalog' }: { products: Product[]; headingLevel?: 2 | 3; variant?: 'catalog' | 'home' }) {
+export async function ProductGrid({ products, headingLevel = 2, variant: _variant = 'catalog', eagerFirstPhoto = false }: { products: Product[]; headingLevel?: 2 | 3; variant?: 'catalog' | 'home'; eagerFirstPhoto?: boolean }) {
   const locale = await getLocale();
   void _variant;
   const Heading = headingLevel === 3 ? 'h3' : 'h2';
-  return products.length ? <div className="product-grid grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">{products.map(product=><ProductCard key={product._id} product={product} headingLevel={headingLevel} />)}</div> : <div className="empty-state rounded-2xl"><Icon name="search" /><Heading>{u(locale,"No products found.")}</Heading><p>{u(locale,"Try a different search or explore another category.")}</p><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
+  return products.length ? <div className="product-grid grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">{products.map((product, index) => <ProductCard key={product._id} product={product} headingLevel={headingLevel} eagerPhoto={eagerFirstPhoto && index === 0} />)}</div> : <div className="empty-state rounded-2xl"><Icon name="search" /><Heading>{u(locale,"No products found.")}</Heading><p>{u(locale,"Try a different search or explore another category.")}</p><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
 }
 export async function CategoryGrid({ categories }: { categories: Category[] }) {
   const locale = await getLocale();

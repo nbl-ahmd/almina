@@ -204,3 +204,8 @@
     @starting-style { translate: 10% 0; }
   }
 }
+
+@media (max-width: 350px) {
+  [data-mobile-shell] .header-content { column-gap: var(--store-space-6); }
+  [data-mobile-shell] [data-slot='delivery-selector'] > svg:first-child { display: none; }
+}

@@ -19,6 +19,8 @@ const config: NextConfig = {
   outputFileTracingRoot: workspaceRoot,
   poweredByHeader: false,
   reactStrictMode: true,
+  // Keep the fixture preview's phone navigation clear of the development badge.
+  ...(process.env.ALMINA_REFERENCE_PREVIEW === '1' ? { devIndicators: false as const } : {}),
   // Resolve metadata/404/redirect decisions before committing HTTP headers for every UA.
   htmlLimitedBots: /.*/,
   images: {

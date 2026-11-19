@@ -23,9 +23,10 @@ function photoFallback(locale: Locale) {
   );
 }
 
-export async function ProductPhoto({ product, sizes = '(max-width: 599px) 45vw, (max-width: 1023px) 30vw, 260px' }: {
+export async function ProductPhoto({ product, eager = false, sizes = '(max-width: 599px) 45vw, (max-width: 1023px) 30vw, 260px' }: {
   product: Product;
   sizes?: string;
+  eager?: boolean;
 }) {
   const locale = await getLocale();
   const src = productImage(product);
@@ -38,7 +39,7 @@ export async function ProductPhoto({ product, sizes = '(max-width: 599px) 45vw, 
       width={480}
       height={480}
       sizes={sizes}
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
       className={styles.photo}
       fallback={fallback}
     />
@@ -72,9 +73,10 @@ function Stock({ product, locale, grouped = false }: { product: Product; locale:
   </span>;
 }
 
-export async function ProductCard({ product, headingLevel = 3 }: {
+export async function ProductCard({ product, headingLevel = 3, eagerPhoto = false }: {
   product: Product;
   headingLevel?: 2 | 3;
+  eagerPhoto?: boolean;
 }) {
   const locale = await getLocale();
   const ar = locale === 'ar';
@@ -94,7 +96,7 @@ export async function ProductCard({ product, headingLevel = 3 }: {
     <article lang={locale} data-product-id={product._id} className={`product-card ${system.system} ${boundary.boundary} ${styles.card}`}>
       <div className={styles.visual}>
         <Link href={href} data-product-entry="image" aria-label={ar ? `عرض ${name}` : `View ${name}`} className={`product-media ${styles.media}`}>
-          <ProductPhoto product={product} />
+          <ProductPhoto product={product} eager={eagerPhoto} />
         </Link>
         <Stock product={product} locale={locale} grouped={options} />
         <SaveProduct locale={locale} id={product._id} name={name} compact card />

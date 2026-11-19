@@ -10,7 +10,7 @@ export function CatalogLoading({ title = 'Al Mina Pharmacy', showHeading = true 
 export async function PublicCatalogLoading({ title }: { title: string }) {
   const locale = await getLocale();
   return (
-    <section className={`${system.system} ${styles.catalog}`} lang={locale}>
+    <section data-storefront-catalog className={`${system.system} ${styles.catalog}`} lang={locale}>
       <div className={styles.content}>
         <div className={styles.heading}>
           <h1>{shopText(locale, title)}</h1>

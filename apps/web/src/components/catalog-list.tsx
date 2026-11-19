@@ -137,7 +137,7 @@ export async function CatalogList({
   const editorial = category ? categoryContent(title) : null;
 
   return (
-    <div className={`${system.system} ${boundary.boundary} ${styles.catalog}`} lang={locale}>
+    <div data-storefront-catalog className={`${system.system} ${boundary.boundary} ${styles.catalog}`} lang={locale}>
       <div className={styles.content}>
         {q && !unavailable ? <GrowthActivity key={`${q}:${page}`} kind="search" matched={products.length > 0} /> : null}
         <Breadcrumb title={t(title)} parents={parents} />
@@ -262,9 +262,9 @@ export async function CatalogList({
               {search ? <SearchDescription result={search} query={q} locale={locale} filters={current} matched={products.length > 0} /> : null}
               {search ? (
                 <SearchJourney key={search.searchId} searchId={search.searchId} query={q} locale={locale} page={page} products={products.map(p => p._id)}>
-                  {empty || <ProductGrid products={products} />}
+                  {empty || <ProductGrid products={products} eagerFirstPhoto={!q} />}
                 </SearchJourney>
-              ) : empty || <ProductGrid products={products} />}
+              ) : empty || <ProductGrid products={products} eagerFirstPhoto={!q} />}
               {page > 1 || hasNext ? (
                 <nav className={styles.pagination} aria-label={t('Product pages')}>
                   <span aria-current="page">{ar ? 'الصفحة' : 'Page'} {number.format(page)}</span>

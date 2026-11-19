@@ -299,5 +299,5 @@
     padding: 0;
   }
   .storefront-shell .floating-contact span,
-  .storefront-shell:has(.pdp-page) .floating-contact { display: none; }
+  .storefront-shell:has(.pdp-page, .product-grid, [data-storefront-home], [data-storefront-catalog]) .floating-contact { display: none; }
 }
