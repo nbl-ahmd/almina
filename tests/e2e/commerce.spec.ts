@@ -18,7 +18,7 @@ test('Next imports legacy cart identifiers while discarding forged prices, names
 test('Next browser validation blocks incomplete delivery details before quote or order writes', async ({ page, request }) => {
   await nextCheckoutPage(page); await page.getByRole('textbox', { name: 'Name', exact: true }).fill('');
   let writes = 0; page.on('request', req => { if (req.method() === 'POST' && new URL(req.url()).pathname.startsWith('/api/checkout')) writes++; });
-  await page.getByRole('button', { name: 'Review order', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
   expect(await page.getByRole('textbox', { name: 'Name', exact: true }).evaluate((node: HTMLInputElement) => node.validity.valueMissing)).toBe(true);
   expect(writes).toBe(0); const result = await state(request); expect(result.orders).toHaveLength(0); expect(result.stock).toBe(4);
 });

@@ -123,7 +123,7 @@
 .field > label, .price > legend, .stock { font-size: var(--store-type-13); font-weight: var(--store-weight-medium); }
 .field :is(input, select) {
   min-block-size: var(--store-target-min);
-  border-color: transparent;
+  border-color: var(--store-border-control);
   border-radius: var(--store-radius-10);
   padding-block: var(--store-space-8);
   background-color: var(--store-input-surface);

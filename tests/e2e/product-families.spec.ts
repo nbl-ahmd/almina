@@ -49,7 +49,7 @@ test('selected SKU survives cart, server checkout and immutable staff order deta
     else await field.fill(value);
   }
   await expect(page.getByRole('radio', { name: /Cash on delivery/ })).toBeChecked();
-  await page.getByRole('button',{name:'Review order',exact:true}).click();
+  await page.getByRole('button',{name:'Review order total',exact:true}).click();
   await expect(page.getByRole('complementary', { name: 'Order summary' })
     .getByText('Size: Large · Flavour: Chocolate', { exact: true })).toBeVisible();
   await page.getByRole('button',{name:'Place order — AED 35.00',exact:true}).click();

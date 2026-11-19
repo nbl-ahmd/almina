@@ -46,8 +46,7 @@ export async function nextCheckoutPage(page: Page) {
     if (name === 'emirate') await field.selectOption(value);
     else await field.fill(value);
   }
-  const review=page.getByRole('button',{name:'Review order',exact:true});
-  if(await review.isVisible())await review.click();else await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
+  await page.getByRole('button',{name:'Review order total',exact:true}).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 }
 export async function login(page: Page, username = 'synthetic-admin', landing:'dashboard'|'orders'='dashboard') {

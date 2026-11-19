@@ -333,7 +333,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
         : attempt?(ar?'متابعة الدفع الآمن':'Resume secure payment'):(ar?`ادفع ${formatted(total!.totalMinor)}`:`Pay ${formatted(total!.totalMinor)}`)
       : attempt?t(locale,'checkoutRetryPending'):tf(locale,'checkoutPlaceOrder',{total:formatted(total!.totalMinor)});
     return <Button type={canPay?'button':'submit'} form="checkout-details" aria-label={canPay ? payLabel : undefined} className="w-full" disabled={working||locating||error===t(locale,'checkoutRecoverError')} onClick={canPay?()=>{void place();}:undefined}>
-      {working?<><span className="checkout-loader" aria-hidden="true" />{attempt?t(locale,'checkoutConfirming'):t(locale,'checkoutChecking')}</>:canPay?(!attempt && (!stripeAttempt || !stripeTestMode) ? <>{ar ? (stripeAttempt ? 'ادفع' : 'تأكيد الطلب') : (stripeAttempt ? 'Pay' : 'Place order')} {amount(total!.totalMinor)}</> : payLabel):<><span className="lg:hidden">{stage==='details'?(ar?'المتابعة إلى الدفع':'Continue to payment'):(ar?'تحديث إجمالي الطلب':'Update order total')}</span><span className="hidden lg:inline">{t(locale,'checkoutReview')}</span><Icon name="arrow" /></>}
+      {working?<><span className="checkout-loader" aria-hidden="true" />{attempt?t(locale,'checkoutConfirming'):t(locale,'checkoutChecking')}</>:canPay?(!attempt && (!stripeAttempt || !stripeTestMode) ? <>{ar ? (stripeAttempt ? 'ادفع' : 'تأكيد الطلب') : (stripeAttempt ? 'Pay' : 'Place order')} {amount(total!.totalMinor)}</> : payLabel):<>{t(locale, 'checkoutReview')}<Icon name="arrow" /></>}
     </Button>;
   }
   function basketLines(){

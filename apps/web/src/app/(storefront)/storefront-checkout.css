@@ -275,8 +275,11 @@
   }
 }
 @media (min-width: 375px) {
-  .checkout-frame :is(.checkout-contact-grid, .checkout-address-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .checkout-frame .checkout-contact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .checkout-frame .checkout-wide-field { grid-column: 1 / -1; }
+}
+@media (min-width: 460px) {
+  .checkout-frame .checkout-address-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 768px) {
   .checkout-content { padding: var(--store-space-16) var(--store-page-gutter-wide) var(--store-space-40); }

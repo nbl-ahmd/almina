@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:net';
 import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, URLSearchParams } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createStorefrontFixture } from './storefront-fixture.mjs';
 const root = new URL('../../', import.meta.url);

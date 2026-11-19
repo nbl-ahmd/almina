@@ -2,7 +2,10 @@ import {test,expect,login,adminOrigin,reset} from './fixtures';
 test('search retains grouped autocomplete, keyboard, recents and category navigation',async({page})=>{
  await page.goto('/');const input=page.locator('[data-slot="header-search-input"]').first();await input.fill('daily');await expect(page.locator('[role="listbox"]')).toBeVisible();
  await expect(page.locator('[role="option"]').filter({hasText:'Daily Care'}).first()).toBeVisible();await expect(page.locator('[role="option"]').filter({hasText:'Synthetic Care'})).toBeVisible();
- await input.press('ArrowDown');await expect(input).toHaveAttribute('aria-activedescendant',/.+/);await input.press('Escape');await expect(page.locator('[role="listbox"]')).toHaveCount(0);
+ await input.press('ArrowDown');await expect(input).toHaveAttribute('aria-activedescendant',/.+/);
+ await expect(page.getByRole('option', { selected: true })).toHaveAttribute('tabindex', '-1');
+ await expect(page.getByRole('option', { selected: true }).getByRole('link')).toHaveCount(0);
+ await input.press('Escape');await expect(page.locator('[role="listbox"]')).toHaveCount(0);
  await input.fill('skin');await expect(page.locator('[role="option"]').filter({hasText:'Skin Care'})).toBeVisible();
  await input.fill('Daily Care');await input.press('Enter');await expect(page).toHaveURL(/\/search\?q=Daily\+Care/);await expect(page.locator('.product-card').first()).toContainText('Daily Care');
  await page.goto('/');await input.focus();await expect(page.locator('[role="option"]').filter({hasText:'Daily Care'}).first()).toBeVisible();

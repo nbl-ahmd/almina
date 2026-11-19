@@ -36,6 +36,7 @@ for (const locale of ['en', 'ar'] as const) {
         await expect(overlay).toBeHidden();
       }
       await expect(dock).toHaveCSS('position', width < 768 && height > 500 ? 'fixed' : 'static');
+      if (width < 768 && height > 500) await expect(dock).toHaveCSS('background-color', 'rgb(255, 255, 255)');
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     }
 

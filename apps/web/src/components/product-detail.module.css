@@ -319,6 +319,7 @@
     border: 0;
     border-block-start: 1px solid var(--store-border);
     border-radius: 0;
+    background: var(--store-surface);
     padding-block: var(--store-space-8) calc(var(--store-space-8) + env(safe-area-inset-bottom, 0px));
     padding-left: max(var(--store-page-gutter), env(safe-area-inset-left));
     padding-right: max(var(--store-page-gutter), env(safe-area-inset-right));

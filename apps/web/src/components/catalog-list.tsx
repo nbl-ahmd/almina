@@ -116,6 +116,7 @@ export async function CatalogList({
   ) : null;
 
   const noOffers = offers && !q && !chips.length && page === 1;
+  const emptyOffers = noOffers && !unavailable && !products.length;
   const empty = !products.length && (
     <section className={styles.state} aria-labelledby="catalog-empty">
       <h2 id="catalog-empty">{noOffers ? t('No current offers')
@@ -128,7 +129,7 @@ export async function CatalogList({
         : t('Try a different search or explore another category.')}</p>
       {page === 1 && (chips.length
         ? <Button asChild size="sm" variant="outline"><Link href={clearHref}>{t('Clear filters')}</Link></Button>
-        : <Button asChild size="sm" variant="outline"><Link href={noOffers ? '/products' : '/categories'}>
+        : <Button asChild size="sm" variant={emptyOffers ? "default" : "outline"}><Link href={noOffers ? '/products' : '/categories'}>
             {noOffers ? (ar ? 'تصفح المنتجات' : 'Browse products') : t('Browse categories')}
           </Link></Button>)}
     </section>
@@ -147,7 +148,7 @@ export async function CatalogList({
               : `${number.format(products.length)} ${products.length === 1 ? 'product' : 'products'} on this page`}</p>
           ) : null}
         </div>
-        {!q && !unavailable ? categoryLinks : null}
+        {!q && !unavailable && !emptyOffers ? categoryLinks : null}
         {unavailable ? (
           <section className={styles.state} data-store-notice="error" aria-labelledby="catalog-unavailable">
             <h2 id="catalog-unavailable">{q ? (ar ? 'البحث غير متاح مؤقتاً' : 'Search is temporarily unavailable')
@@ -161,6 +162,11 @@ export async function CatalogList({
               <Link className={styles.textLink} href="/categories">{t('Browse categories')}</Link>
             </div>
           </section>
+        ) : emptyOffers ? (
+          <div>
+            {empty}
+            <div className={styles.discovery}>{categoryLinks}</div>
+          </div>
         ) : (
           <div className={styles.layout}>
             <CatalogFilterPanel id="catalog-filters" key={`filters:${current}`} className={styles.filters}>

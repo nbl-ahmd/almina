@@ -110,7 +110,7 @@ test('Arabic checkout displays translated emirates while submitting canonical co
   }
   await expect(page.locator('select[name="emirate"] option:checked')).toHaveText('رأس الخيمة');
   await expect(page.locator('select[name="emirate"]')).toHaveValue('Ras al-Khaimah');
-  await page.getByRole('button', { name: 'مراجعة الطلب', exact: true }).click();
+  await page.getByRole('button', { name: 'مراجعة إجمالي الطلب', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'ملخص الطلب', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /تقديم الطلب —/ })).toBeVisible();
   await expect(page).toHaveTitle(/الدفع/);
