@@ -1,3 +1,7 @@
+## 2026-11-19 — Storefront local release checks and Next.js patch
+
+Updated Next.js and the matching lint packages to 16.4.6. The local dependency audit, build, storefront and SEO smoke, browser, unit and release-gate checks passed. [Patch scope and verification](FOUNDATION_2026-10-02.md#2026-11-19--nextjs-patch-and-local-storefront-release-checks). Staging and production evidence remain open. Nothing was deployed.
+
 ## 2026-11-19 — Phase 6 closed with local visual approval
 
 Mobile discovery density, Arabic directional cues and buying, and the account privacy link received the bounded finish fixes. The design authority and coverage register reflect the built storefront. [Final local evidence and release inputs](../../apps/web/docs/design/implementation-evidence/phase-6.md). The owner approved the revised storefront at `c2fcd17`, closing P6-05 and completing all 34 local redesign tasks. The release inputs remain open. Nothing was deployed.

@@ -64,3 +64,8 @@ Status **verified and approved for local visual scope**. On 19 November 2026, th
 | Release QA | Verify physical iOS/Android, Safari, assistive technologies, hardware safe areas, longer sessions, software keyboards and device input. The automated accessibility report covers the tested views. Production performance remains unmeasured. |
 | Commerce and integrations | Confirm region coverage, fees, hours, payment enablement, account/contact integration readiness, operational messaging and release rollback against the actual deployment environment. |
 | Business owner | Local visual acceptance is recorded above. Any production release requires its own authorization and operational evidence. |
+
+
+### Local release follow-up
+
+The Next.js patch and local verification are recorded in the [foundation patch entry](../../../../../docs/migration/FOUNDATION_2026-10-02.md#2026-11-19--nextjs-patch-and-local-storefront-release-checks). The local release-gate tests passed. The staging and production evidence listed above remains outstanding.

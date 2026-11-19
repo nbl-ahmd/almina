@@ -152,3 +152,12 @@ References: [16.4.2 release](https://github.com/vercel/next.js/releases/tag/v16.
 ### 2026-10-25 — Patched DevTools schema dependency
 
 Next.js stays at 16.4.2 and Next DevTools at 0.4.0. The latter's Zod dependency is scoped to 4.6.7. `scripts/tooling/patch-next-devtools.mjs` runs on installation to replace its incompatible Zod-3-internals converter with the public Zod 4 input-mode JSON Schema converter. Original/patched source hashes pin the reviewed bridge; unknown upstream source fails installation. A stdio/SSE protocol regression and real Next runtime route/compilation checks verify compatibility. The root/backend security audits pass without gate suppression. See `RELEASE_REVIEW_2026-10-25.md`.
+
+
+## 2026-11-19 — Next.js patch and local storefront release checks
+
+Updated the web workspace and its matching ESLint packages from Next.js 16.4.2 to 16.4.6. The npm stable tag and the installed documentation both reported 16.4.6. Node 24.21.0 and React 19.3.0 satisfy the package requirements. The selected patch includes the security fixes in 16.4.5. [16.4.5 security release](https://github.com/vercel/next.js/releases/tag/v16.4.5), [16.4.6 release](https://github.com/vercel/next.js/releases/tag/v16.4.6).
+
+The locked update retains the existing Next DevTools dependency and compatibility patch. The build, typecheck, lint, 274 unit tests, seven release-gate tests, compiled SEO and storefront smoke checks, 45 Chromium regressions, and 12 WebKit regressions passed. The dependency audit reported zero high or critical advisories in both the root and backend and no remaining Next.js advisories. The restarted loopback preview passed ten English and Arabic route checks, and its Turbopack diagnostics returned no compilation issues.
+
+The storefront smoke now uses a valid literal search containing a bracket and checks the current empty-result heading. Local checks used isolated fixtures. The owner-approved design revision and the remaining production evidence are recorded in the [Phase 6 packet](../../apps/web/docs/design/implementation-evidence/phase-6.md#remaining-release-work). Deployment remains excluded.
