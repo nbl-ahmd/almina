@@ -21,6 +21,14 @@ for (const locale of ['en', 'ar'] as const) {
     const itemList = page.getByRole('region', { name: ar ? 'منتجاتك' : 'Your items', exact: true });
     await expect(itemList.getByRole('status').first()).toHaveText(ar ? 'منتج · عنصران' : '1 product · 2 items');
 
+    const stepper = itemList.locator('[data-store-control="stepper"]');
+    const decrease = stepper.getByRole('button').first();
+    await decrease.click();
+    await expect(stepper.locator('output')).toHaveText((1).toLocaleString(ar ? 'ar-AE' : 'en-AE'));
+    await expect(decrease).toBeDisabled();
+    await expect(decrease).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(decrease).toHaveCSS('border-top-width', '0px');
+
     const bar = page.locator('.cart-mobile-bar');
     await expect(bar).toHaveCSS('position', 'fixed');
     await expect.poll(() => bar.evaluate(element => {

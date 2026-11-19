@@ -125,7 +125,6 @@
   gap: var(--store-space-8);
   padding: var(--store-space-4);
   overflow-x: auto;
-  scrollbar-width: thin;
 }
 
 [data-storefront-home] .home-category-lane .category-tile {
@@ -178,7 +177,8 @@
   padding-block-start: var(--store-space-8);
 }
 
-[data-storefront-home] .home-collection-links a { text-decoration: underline; }
+[data-storefront-home] .home-collection-links a { color: var(--store-positive); }
+[data-storefront-home] .home-collection-links a:hover { color: var(--store-text); }
 
 .home-empty {
   padding: var(--store-space-16);

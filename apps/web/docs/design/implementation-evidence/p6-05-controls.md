@@ -13,7 +13,22 @@ The owner approved the page compositions and requested a softer design language 
 
 The full desktop composition and green and teal mobile references informed quiet surfaces, category discovery and tightly grouped shopping controls. Search prominence, accessible discovery and compact purchase patterns were cross-checked against the official services. [Desktop reference](../../../../../docs/design/storefront/references/2026-11-17/06-desktop-fullpage.webp), [green mobile reference](../../../../../docs/design/storefront/references/2026-11-17/03-green-pharmacy-screens.jpg), [teal mobile reference](../../../../../docs/design/storefront/references/2026-11-17/05-teal-mobile-search-discovery.jpg), [Blinkit](https://blinkit.com/brand/S%26B), [Instamart](https://www.swiggy.com/instamart/), [Tata 1mg](https://www.1mg.com/), [Apollo Pharmacy](https://www.apollopharmacy.in/).
 
-## Latest screens
+## Follow-up control pass
+
+The owner flagged the desktop product purchase panel, cart quantity control and extra underlines and scrollbars. The shared disabled button variant had added a filled tile and a border to each unavailable step. The product page and cart now use the same tinted, borderless quantity group with 44px step buttons. Disabled steps only change ink. Desktop purchase and save actions no longer have separate outline boxes. Add confirmation keeps its success tint, check and live message. View cart uses a directional chevron.
+
+Reviewed home, categories, listing, search, product details, cart, checkout, account, support and policy surfaces. Standalone shopping links use color, context or an icon. Inline policy and validation links retain their underlines. Category, thumbnail, related and recently viewed rows hide the native horizontal scrollbar and retain scrolling and focus access. Overflowing search panels, menus and dialogs retain native scrolling and its visual cues.
+
+### Latest screens
+
+| Screen | English mobile | English desktop | Arabic mobile | Arabic desktop |
+| --- | --- | --- | --- | --- |
+| CeraVe product after adding | [390px](p6-05-polish/en-pdp-390.png) | [1440px](p6-05-polish/en-pdp-1440.png) | [390px](p6-05-polish/ar-pdp-390.png) | [1440px](p6-05-polish/ar-pdp-1440.png) |
+| Cart at quantity one | [390px](p6-05-polish/en-cart-390.png) | [1440px](p6-05-polish/en-cart-1440.png) | [390px](p6-05-polish/ar-cart-390.png) | [1440px](p6-05-polish/ar-cart-1440.png) |
+
+The local captures match the product in the owner’s screenshot and use the isolated reference catalogue. The isolated build, typecheck, lint and 63 Chromium tests passed. The automated cases cover Arabic and English, enabled and disabled quantity states, Add confirmation, keyboard focus scrolling an overflowed related section, checkout review, and admin and wholesale isolation. Seven focused cases passed in each of WebKit and Firefox. The local reference preview passed 120 route, browser, language and viewport checks. Axe reported no violations in 16 main-content scans. The raw production SEO smoke test passed.
+
+## Earlier screen set
 
 Local captures at 390×844 and 1440×900 use reviewed pack photos and synthetic prices and stock.
 

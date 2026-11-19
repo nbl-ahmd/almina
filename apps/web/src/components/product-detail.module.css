@@ -135,7 +135,16 @@
   color: var(--store-text-muted);
   font-size: var(--store-type-13);
 }
-.identity a { display: inline-flex; align-items: center; min-block-size: 24px; text-decoration: underline; overflow-wrap: anywhere; min-inline-size: 0; }
+.identity a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--store-target-min);
+  color: var(--store-positive);
+  font-weight: var(--store-weight-medium);
+  overflow-wrap: anywhere;
+  min-inline-size: 0;
+}
+.identity a:hover { color: var(--store-text); }
 .buying :global(.stock-state) {
   justify-self: start;
   margin: 0;
@@ -182,14 +191,14 @@
   min-block-size: var(--store-target-min);
   max-inline-size: 100%;
   padding: var(--store-space-4) var(--store-space-10);
-  border: 1px solid var(--store-border);
-  border-radius: var(--store-radius-8);
-  background: var(--store-surface);
+  border: 0;
+  border-radius: var(--store-compact-radius);
+  background: var(--store-input-surface);
   color: var(--store-text);
   font-size: var(--store-type-14);
   overflow-wrap: anywhere;
 }
-.choice[aria-disabled='true'] { color: var(--store-text-muted); background: var(--store-secondary-surface); border-color: var(--store-border); }
+.choice[aria-disabled='true'] { color: var(--store-text-muted); background: var(--store-disabled-surface); }
 .choice[aria-current='page'] { font-weight: var(--store-weight-semibold); }
 .choice:is(a):hover:not([aria-current]) { background: var(--store-hover-surface); }
 .disclosure { cursor: pointer; min-block-size: var(--store-target-min); padding-block: var(--store-space-10); font-size: var(--store-type-14); }
@@ -203,20 +212,18 @@
   display: inline-flex;
   align-items: center;
   gap: var(--store-space-8);
-  border: 1px solid var(--store-border);
-  background: var(--store-surface);
+  border: 0;
+  background: var(--store-input-surface);
   color: var(--store-text);
   font-size: var(--store-type-14);
+  font-weight: var(--store-weight-medium);
 }
 .desktopSave button:hover:not([aria-pressed='true']) { background: var(--store-hover-surface); }
 .desktopSave button[aria-pressed='true'] svg { fill: currentColor; }
 .desktopSave :global(.card-save-error) { color: var(--store-error); font-size: var(--store-type-13); }
 .dock {
   min-inline-size: 0;
-  padding: var(--store-space-8);
-  border: 1px solid var(--store-border);
-  border-radius: var(--store-card-radius);
-  background: var(--store-surface);
+  padding-block: var(--store-space-4);
 }
 .dock :global(.purchase-control-row) { gap: var(--store-space-6); }
 .dock :global(.purchase-quantity) {
@@ -224,8 +231,6 @@
   grid-template-columns: var(--store-target-min) minmax(var(--store-space-24), 4ch) var(--store-target-min);
   align-items: center;
   min-inline-size: 0;
-  background: var(--store-secondary-surface);
-  border-radius: var(--store-compact-radius);
 }
 .dock :global(.purchase-quantity input) {
   min-block-size: var(--store-target-min);
@@ -276,7 +281,14 @@
   font-size: var(--store-type-13);
 }
 .dock :global(.status[data-added='true']), .dock :global(.view-cart-link) { color: var(--store-positive); }
-.dock :global(.view-cart-link) { display: inline-flex; min-block-size: var(--store-target-min); align-items: center; text-decoration: underline; }
+.dock :global(.view-cart-link) {
+  display: inline-flex;
+  min-block-size: var(--store-target-min);
+  align-items: center;
+  gap: var(--store-space-4);
+  font-weight: var(--store-weight-medium);
+}
+.dock :global(.view-cart-link:hover) { color: var(--store-text); }
 
 @media (max-width: 767px) {
   :global(.storefront-shell):has(.detail) :global(.storefront-header),
@@ -338,9 +350,10 @@
     gap: var(--store-space-6);
     min-block-size: var(--store-target-min);
     font-size: var(--store-type-13);
-    text-decoration: underline;
+    color: var(--store-positive);
   }
   .desktopBack svg { inline-size: var(--store-space-16); block-size: var(--store-space-16); }
+  .desktopBack:hover { color: var(--store-text); }
   .lead {
     display: grid;
     grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
@@ -363,7 +376,6 @@
   .buying { padding-block: var(--store-space-12); }
   .buying h1 { font-size: var(--store-product-title-size); }
   .price { font-size: var(--store-product-price-size); }
-  .dock { padding: var(--store-space-12); }
   .dock :global(.pdp-unit-price) { display: none; }
   .desktopSave { display: block; }
 }

@@ -63,9 +63,15 @@ test('only actual photos get selectors and a failing gallery photo has a localiz
   const gallery = page.getByRole('group', { name: 'Product photos', exact: true });
   const images = gallery.getByRole('button');
   await expect(images).toHaveCount(2);
+  await expect(gallery).toHaveCSS('scrollbar-width', 'none');
   const related = page.locator('.related-product-list');
   await expect(related.locator('.related-product-row')).toHaveCount(4);
   expect(await related.evaluate(rail => rail.scrollWidth > rail.clientWidth)).toBe(true);
+  await expect(related).toHaveCSS('scrollbar-width', 'none');
+  const lastRelatedLink = related.getByRole('link').last();
+  await lastRelatedLink.focus();
+  await expect(lastRelatedLink).toBeFocused();
+  await expect.poll(() => related.evaluate(rail => rail.scrollLeft)).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await expect(images.first()).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Next product photo', exact: true }).click();

@@ -115,7 +115,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
                 <h2>{u(locale, 'Similar products')}</h2>
                 <Link href={categoryPath}>{u(locale, 'View category')}<Icon name="arrow" /></Link>
               </div>
-              <div className="related-product-list">
+              <div className="related-product-list" data-store-rail>
                 {alternatives.map(item => <CompactProductCard key={item._id} product={item} />)}
               </div>
             </section>

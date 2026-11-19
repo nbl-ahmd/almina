@@ -18,7 +18,7 @@ export default async function GuidesPage() {
       description={text('Practical buying guides from Al Mina Pharmacy.', 'أدلة شراء من صيدلية الميناء.')} />
     {items.length ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map(page => <article key={page.slug} className={styles.panel}>
-        <h2 lang={page.locale} dir="auto"><Link className="underline" href={growthPagePath(page)}>{page.title}</Link></h2>
+        <h2 lang={page.locale} dir="auto"><Link className="text-teal hover:text-ink" href={growthPagePath(page)}>{page.title}</Link></h2>
         <p className="m-0 text-sm text-muted" lang={page.locale} dir="auto">{page.description}</p>
       </article>)}
     </div> : <section className={`${styles.panel} ${styles.state}`}>

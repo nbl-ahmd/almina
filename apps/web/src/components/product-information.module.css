@@ -76,9 +76,10 @@
   align-items: center;
   gap: var(--store-space-6);
   min-block-size: var(--store-target-min);
-  text-decoration: underline;
-  font-weight: var(--store-weight-semibold);
+  color: var(--store-positive);
+  font-weight: var(--store-weight-medium);
 }
+.link:hover { color: var(--store-text); }
 .link svg { inline-size: var(--store-space-16); block-size: var(--store-space-16); }
 .reviewHeader {
   display: flex;

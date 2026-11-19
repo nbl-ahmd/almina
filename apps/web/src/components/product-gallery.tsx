@@ -36,7 +36,7 @@ export function ProductGallery({ images, name, cloudName, locale = 'en', control
         ) : null}
       </div>
       {multiple ? (
-        <div className={styles.thumbs} role="group" aria-label={locale === 'ar' ? 'صور المنتج' : 'Product photos'}>
+        <div className={styles.thumbs} data-store-rail role="group" aria-label={locale === 'ar' ? 'صور المنتج' : 'Product photos'}>
           {images.map((src, index) => (
             <button key={src} type="button" data-store-control="thumbnail" aria-pressed={selectedIndex === index}
               aria-label={locale === 'ar' ? `عرض صورة ${name} رقم ${index + 1}` : `View ${name} image ${index + 1}`}

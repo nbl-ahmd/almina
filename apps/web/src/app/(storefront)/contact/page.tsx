@@ -23,10 +23,10 @@ export default async function ContactPage() {
       <section className={styles.panel} aria-labelledby="contact-channels">
         <h2 id="contact-channels">{text('Call or email', 'اتصل بنا أو راسلنا')}</h2>
         <address className="mb-4 grid justify-items-start not-italic">
-          <a className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline" href="tel:+971504825007">
+          <a className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-teal hover:text-ink" href="tel:+971504825007">
             <Icon name="phone" /><bdi>+971 50 482 5007</bdi>
           </a>
-          <a className="inline-flex min-h-11 items-center text-sm font-semibold underline" href="mailto:info@alminapharmacy.com">
+          <a className="inline-flex min-h-11 items-center text-sm font-medium text-teal hover:text-ink" href="mailto:info@alminapharmacy.com">
             <bdi>info@alminapharmacy.com</bdi>
           </a>
           <span className="mt-2 text-sm text-muted">{text('Ras Al Khaimah, United Arab Emirates', 'رأس الخيمة، الإمارات العربية المتحدة')}</span>

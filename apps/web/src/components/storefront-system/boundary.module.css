@@ -120,10 +120,9 @@
   background: var(--store-selection-surface);
 }
 /* Meaning states follow variants at equal specificity; hover adds zero specificity. */
-.boundary [data-slot='button'][data-added='true'],
-.boundary [data-store-control='quantity'][data-store-state='added'] {
+.boundary [data-slot='button'][data-added='true'] {
   background: var(--store-positive-surface);
-  border-color: var(--store-positive);
+  border-color: transparent;
   color: var(--store-text);
 }
 .boundary [data-store-control='save'][aria-pressed='true'] {
@@ -149,6 +148,32 @@
   border-color: var(--store-purchase-surface);
   opacity: 1;
   cursor: progress;
+}
+
+/* The group surface carries the stepper shape. Disabled steps mute only the icon. */
+.boundary [data-store-control='stepper'] {
+  border-radius: var(--store-compact-radius);
+  background: var(--store-input-surface);
+  font-variant-numeric: tabular-nums;
+}
+.boundary [data-store-control='stepper'] [data-slot='button'] {
+  inline-size: var(--store-target-min);
+  min-block-size: var(--store-target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--store-radius-round);
+  background: transparent;
+}
+.boundary [data-store-control='stepper'] [data-slot='button'] svg {
+  inline-size: var(--store-space-16);
+  block-size: var(--store-space-16);
+}
+.boundary [data-store-control='stepper'] [data-slot='button']:where(:disabled, [aria-disabled='true']) {
+  color: var(--store-disabled-text);
+}
+.boundary [data-store-control='stepper'] [data-slot='button']:where(:hover:not(:disabled):not([aria-disabled='true'])) {
+  background: var(--store-hover-surface);
+  color: var(--store-text);
 }
 
 /* Options and real/synthetic gallery controls share selected semantics. */

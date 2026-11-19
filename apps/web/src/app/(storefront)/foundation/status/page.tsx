@@ -28,7 +28,7 @@ export default async function StatusPage() {
         ? ar ? 'واجهة الخدمة متاحة.' : 'API is available.'
         : ar ? 'واجهة الخدمة غير متاحة مؤقتاً.' : 'API is temporarily unavailable.'}</p>
       {status ? <p>{ar ? 'قاعدة البيانات' : 'Database'} · <bdi>{status.database}</bdi></p> : null}
-      <Link className="inline-flex min-h-11 items-center text-sm underline" href="/">{ar ? 'العودة إلى الرئيسية' : 'Return home'}</Link>
+      <Link className="inline-flex min-h-11 items-center text-sm font-medium text-teal hover:text-ink" href="/">{ar ? 'العودة إلى الرئيسية' : 'Return home'}</Link>
     </section>
   </StorefrontInformation>;
 }

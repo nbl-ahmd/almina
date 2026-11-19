@@ -4,7 +4,7 @@ for(const locale of ['en','ar'] as const)for(const width of[390,1440])test(`${lo
  await page.setViewportSize({width,height:900});await page.goto('/products');
  const submit=page.locator('[data-slot="search-submit"]');
  const geometry=await submit.evaluate(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return{width:r.width,height:r.height,radius:s.borderRadius};});
- expect(geometry.height).toBeGreaterThanOrEqual(44);expect(geometry.radius).toBe('8px');
+ expect(geometry.height).toBeGreaterThanOrEqual(44);expect(geometry.radius).toBe('12px');
  expect(await page.locator('[data-slot="delivery-selector"]').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
  await page.locator('[data-slot="header-search-input"]').fill('Daily');
  const panel=page.locator('[data-slot="search-panel"]');await expect(panel).toBeVisible();

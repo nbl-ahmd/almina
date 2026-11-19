@@ -99,7 +99,7 @@
   overflow-wrap: anywhere;
 }
 .tags > :first-child { color: var(--store-text); }
-.tags a:hover { text-decoration: underline; }
+.tags a:hover { color: var(--store-positive); }
 .tags bdi, .title bdi { min-inline-size: 0; overflow-wrap: anywhere; }
 .title {
   margin: 0;

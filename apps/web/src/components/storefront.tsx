@@ -24,7 +24,7 @@ export async function CategoryGrid({ categories }: { categories: Category[] }) {
     {categories.map(category => <CategoryTile key={category._id} category={category} />)}
   </div> : <div className={`${information.panel} ${information.state}`}>
     <h3>{u(locale, 'Categories are not available yet')}</h3>
-    <Link className="inline-flex min-h-11 items-center text-sm underline" href="/products">{u(locale, 'Browse products')}</Link>
+    <Link className="inline-flex min-h-11 items-center text-sm font-medium text-teal hover:text-ink" href="/products">{u(locale, 'Browse products')}</Link>
   </div>;
 }
 export async function Breadcrumb({ title, parents = [] }: { title: string; parents?: { name: string; path: string }[] }) {

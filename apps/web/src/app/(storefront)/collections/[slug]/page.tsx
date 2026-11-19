@@ -76,7 +76,7 @@ export default async function CollectionPage({ params }: Props) {
       ) : (
         <div className={`${styles.panel} ${styles.state}`}>
           <h2>{ar ? "يجري تحديث هذه المجموعة" : "This collection is being refreshed."}</h2>
-          <Link href="/products" className="inline-flex min-h-11 items-center text-sm underline">
+          <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-medium text-teal hover:text-ink">
             {ar ? "تصفّح جميع المنتجات" : "Explore all products"}
           </Link>
         </div>

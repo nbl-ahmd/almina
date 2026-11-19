@@ -163,7 +163,7 @@
     padding-inline: var(--store-space-8);
     border-radius: var(--store-control-radius);
     font-size: var(--store-type-13);
-    text-decoration: underline;
+    color: var(--store-positive);
   }
-
+  .storefront-shell:has(.cart-page) [data-mobile-shell] .mobile-cart-return:hover { color: var(--store-text); }
 }

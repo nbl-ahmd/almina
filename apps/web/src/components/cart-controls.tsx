@@ -8,7 +8,7 @@ import Link from './app-link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
 import { attributeCart } from '../lib/search/attribution';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
-import { ArrowPathIcon, NoSymbolIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ChevronRightIcon, NoSymbolIcon } from '@heroicons/react/24/outline';
 export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel, locale = 'en', compact = false }: { id: string; stock: number; quantityPicker?: boolean; name?: string; priceLabel?: ReactNode; locale?: Locale; compact?: boolean }) {
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
@@ -78,7 +78,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
   const quantityId = `quantity-${id}`;
   const feedback = <>
     <p role="status" data-added={added} className="status col-span-full text-xs text-teal empty:hidden" aria-atomic="true">{message}</p>
-    {added ? <Link className="view-cart-link text-teal" href="/cart">{u(locale, 'View cart')}</Link> : null}
+    {added ? <Link className="view-cart-link text-teal" href="/cart">{u(locale, 'View cart')}<ChevronRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link> : null}
   </>;
   return (
     <div className={`cart-controls ${quantityPicker ? 'purchase-controls' : ''}`}>
@@ -87,7 +87,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
           <span>{locale === 'ar' ? 'سعر الوحدة' : 'Unit price'}</span>{priceLabel}
         </span> : null}
         {quantityPicker && stock > 0 ? (
-          <div className="purchase-quantity">
+          <div className="purchase-quantity" data-store-control="stepper">
             <label className="sr-only" htmlFor={quantityId}>{u(locale, 'Quantity')}</label>
             <Button variant="ghost" size="icon" type="button" className="quantity-step"
               aria-label={u(locale, 'Decrease purchase quantity')} disabled={pending || quantity <= 1}

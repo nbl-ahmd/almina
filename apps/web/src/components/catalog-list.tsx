@@ -106,7 +106,7 @@ export async function CatalogList({
     ? <>{ar ? 'نتائج البحث عن ' : 'Results for '}<bdi>“{q}”</bdi></>
     : t(title);
   const categoryLinks = categories?.length ? (
-    <nav className={styles.categories} aria-label={t('Browse categories')}>
+    <nav className={styles.categories} data-store-rail aria-label={t('Browse categories')}>
       {categories.slice(0, 8).map(cat => (
         <Link className={styles.option} data-store-control="option" href={categoryHref(cat)} key={cat._id}
           aria-current={selected === cat._id ? 'page' : undefined}>{t(cat.name)}</Link>

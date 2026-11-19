@@ -45,8 +45,13 @@ for(const lang of ['en','ar'] as const) {
   await expect(shell).toHaveAttribute('dir',lang==='ar'?'rtl':'ltr');
   await expect(shell).toHaveCSS('background-color','rgb(247, 250, 248)');
   await expect(shell).toHaveCSS('color','rgb(28, 41, 37)');
+  const stepper=page.locator('.pdp-purchase [data-store-control="stepper"]');
+  await expect(stepper.getByRole('button').first()).toBeDisabled();
+  await expect(stepper.getByRole('button').first()).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+  await expect(stepper.getByRole('button').first()).toHaveCSS('border-top-width','0px');
   const add=page.locator('.add-to-cart:visible').first();await add.click();await expect(add).toHaveAttribute('data-added','true');await add.hover();
-  await expect(add).toHaveCSS('background-color','rgb(234, 243, 239)');await expect(add).toHaveCSS('border-color','rgb(38, 96, 77)');
+  await expect(add).toHaveCSS('background-color','rgb(234, 243, 239)');await expect(add).toHaveCSS('border-color','rgba(0, 0, 0, 0)');
+  await expect(page.locator('.pdp-purchase .view-cart-link')).toHaveCSS('text-decoration-line','none');
   await page.goto('/products');const cardAdd=page.locator('.product-card .add-to-cart').first();await cardAdd.click();await expect(cardAdd).toHaveAttribute('data-added','true');await cardAdd.hover();await expect(cardAdd).toHaveCSS('background-color','rgb(234, 243, 239)');
   const save=page.locator('.card-save').first();await save.click();await expect(save).toHaveAttribute('aria-pressed','true');await save.hover();
   await expect(save).toHaveCSS('background-color','rgb(255, 242, 243)');await expect(save).toHaveCSS('color','rgb(167, 45, 66)');

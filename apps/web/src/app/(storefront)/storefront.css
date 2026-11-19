@@ -27,7 +27,6 @@
  .storefront-shell :is(input,select):not([type='checkbox']):not([type='radio']):not([data-slot='header-search-input']) { min-height:48px; border-radius:12px; }
  .storefront-shell [data-slot='field'] { min-width:0; }
  .storefront-shell .eyebrow { display:none; }
- .storefront-shell .scrollbar-none { scrollbar-width:none; }
 }
 .sf-container { width:100%; max-width:1280px; margin-inline:auto; padding-inline:32px; }
 .storefront-header { position:relative; background:var(--color-page); z-index:40; }
@@ -48,6 +47,9 @@
 .storefront-shell .mobile-tab[aria-current='page'] svg { color:var(--color-sale); stroke-width:2; }
 .storefront-shell .mobile-tab[aria-current='page'] { color:var(--color-sale); }
 .sf-preview-notice { padding:3px 16px; font-size:11px; color:var(--color-muted); text-align:center; background:transparent; }
+
+/* Swipeable rows retain scrolling and item focus without a native scrollbar. */
+[data-storefront-retail] [data-store-rail] { scrollbar-width: none; }
 
 /* Section and product treatments still consumed by catalogue and PDP routes. */
 .sf-section-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; }

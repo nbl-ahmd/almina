@@ -210,7 +210,7 @@
 .chip svg { inline-size: var(--store-space-14); block-size: var(--store-space-14); }
 .option:hover::before, .chip:hover::before, .filterToggle:hover { background: var(--store-hover-surface); }
 .textLink { padding-inline: var(--store-space-4); color: var(--store-stress-error); }
-.textLink:hover { text-decoration: underline; }
+.textLink:hover { color: var(--store-text); }
 .queryNote { margin-block: 0 var(--store-space-8); color: var(--store-text-muted); font-size: var(--store-type-14); overflow-wrap: anywhere; }
 .queryNote a, .help a { text-decoration: underline; font-weight: var(--store-weight-semibold); }
 .state, .editorial {

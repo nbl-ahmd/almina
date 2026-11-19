@@ -40,7 +40,7 @@
   align-items: center;
   gap: var(--store-space-8);
   font-size: var(--store-type-13);
-  text-decoration: underline;
+  color: var(--store-positive);
 }
 .checkout-frame .checkout-progress {
   display: flex;
@@ -134,8 +134,7 @@
 .checkout-frame [data-slot='native-select'][aria-invalid='true'] { border-color: var(--store-error); outline-color: var(--store-error); }
 .checkout-frame .checkout-optional > summary {
   white-space: normal;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--store-positive);
 }
 .checkout-frame .checkout-error-summary {
   margin-block-end: var(--store-space-12);
@@ -196,7 +195,9 @@
   color: var(--store-surface);
 }
 .checkout-frame .checkout-order-panel { padding: var(--store-space-14); }
-.checkout-frame .checkout-order-panel a { text-decoration: underline; }
+.checkout-frame .checkout-order-panel a { color: var(--store-positive); }
+.checkout-frame :is(.checkout-back, .checkout-optional > summary, .checkout-order-panel a):hover { color: var(--store-text); }
+.checkout-frame .checkout-optional[open] > summary svg { rotate: 180deg; }
 .checkout-frame .checkout-order-panel .currency-visual,
 .checkout-frame .checkout-mobile-action .currency-visual,
 .checkout-frame .checkout-confirmation-panel .currency-visual {

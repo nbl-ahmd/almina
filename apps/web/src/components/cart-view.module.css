@@ -90,7 +90,7 @@
   font-weight: var(--store-weight-bold);
   overflow-wrap: anywhere;
 }
-.name:hover { text-decoration: underline; }
+a.name:hover { color: var(--store-positive); }
 .variant, .unitPrice {
   margin: var(--store-space-2) 0 0;
   color: var(--store-text-muted);
@@ -119,10 +119,6 @@
 .quantity {
   display: inline-flex;
   align-items: center;
-  background: var(--store-secondary-surface);
-  border-radius: var(--store-compact-radius);
-  background: var(--store-input-surface);
-  font-variant-numeric: tabular-nums;
 }
 .quantity output { min-inline-size: var(--store-space-28); padding-inline: var(--store-space-2); text-align: center; }
 .lineTotal {
@@ -178,7 +174,8 @@
   border-block-start: 1px solid var(--store-border);
   font-size: var(--store-type-13);
 }
-.summaryLinks a { display: flex; align-items: center; min-block-size: var(--store-target-min); text-decoration: underline; }
+.summaryLinks a:hover { color: var(--store-text); }
+.summaryLinks a { display: flex; align-items: center; min-block-size: var(--store-target-min); color: var(--store-positive); }
 
 .action [data-cart-next] { inline-size: 100%; }
 .dockAmount { display: none; }

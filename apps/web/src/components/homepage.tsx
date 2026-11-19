@@ -88,7 +88,7 @@ export async function HomeCategories({ categories }: { categories: Category[] })
   return (
     <section className="home-departments" aria-label={u(locale, 'Shop by care')}>
       <SectionHeading title={locale === 'ar' ? 'الفئات' : 'Categories'} href="/categories" link="All categories" />
-      <div className="home-category-lane">
+      <div className="home-category-lane" data-store-rail>
         {ordered.slice(0, 8).map(category => <CategoryTile key={category._id} category={category} />)}
       </div>
     </section>

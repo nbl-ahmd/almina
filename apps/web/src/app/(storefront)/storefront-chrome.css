@@ -85,7 +85,7 @@
   overflow-wrap: anywhere;
 }
 
-[data-storefront-chrome="footer"] a:hover { text-decoration: underline; }
+[data-storefront-chrome="footer"] a:hover { color: var(--store-positive); }
 [data-storefront-chrome="footer"] .sf-footer-brand svg { flex-shrink: 0; }
 [data-storefront-chrome="footer"] .sf-footer-bottom { padding-block-start: var(--store-space-8); }
 

@@ -169,7 +169,7 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
                 aria-label={tf(locale, 'cartRemoveAria', { name: item.name })}
                 aria-disabled={pending || undefined} onClick={event => change(item.id, 0, event.currentTarget)}><Icon name="trash" /></Button> : null}
               <div className={styles.itemActions}>
-                {checkout ? <p>{itemCountText(locale, item.quantity)}</p> : <div className={styles.quantity}>
+                {checkout ? <p>{itemCountText(locale, item.quantity)}</p> : <div className={styles.quantity} data-store-control="stepper">
                   <Button type="button" size="icon" variant="ghost" aria-label={tf(locale, 'cartDecreaseAria', { name: item.name })}
                     disabled={item.quantity <= 1} aria-disabled={pending || undefined} onClick={event => change(item.id, item.quantity - 1, event.currentTarget)}>
                     <Icon name="minus" />

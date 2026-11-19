@@ -37,7 +37,7 @@ export function RecentlyViewed({ cloudName, locale = 'en' }: { cloudName?: strin
           try { localStorage.removeItem(key); setItems([]); } catch { /* Retain list if storage is unavailable. */ }
         }}>{u(locale, 'Clear history')}</Button>
       </div>
-      <div className={styles.recentRail}>
+      <div className={styles.recentRail} data-store-rail>
         {items.map(item => (
           <Link key={item.id} href={item.href} data-product-entry="recent" className={`${styles.compact} ${styles.compactLink}`}>
             <span className={styles.compactPhoto}>
