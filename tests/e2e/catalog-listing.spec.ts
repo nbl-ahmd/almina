@@ -123,7 +123,9 @@ test('mobile listings keep purchase controls clear and retain WhatsApp in the sh
   await menu.getByText('Your local care team', { exact: true }).click();
   const contact = menu.getByRole('link', { name: 'Chat on WhatsApp', exact: true });
   await expect(contact).toBeVisible();
-  await expect(contact).toHaveAttribute('href', 'https://wa.me/971504825007');
+  const href = new URL((await contact.getAttribute('href'))!);
+  expect(href.searchParams.get('phone')).toBe('971504825007');
+  expect(href.searchParams.get('text')).toBe("Hi Al Mina Pharmacy! I'd like to make an inquiry about your products.");
 
   await page.keyboard.press('Escape');
   await page.setViewportSize({ width: 1440, height: 900 });

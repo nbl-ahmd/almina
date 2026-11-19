@@ -17,10 +17,16 @@ export const policyLinks = [
   { key: 'footerPrivacy', path: policyPaths.privacy },
 ] as const;
 
+const pharmacyPhone = '+971504825007';
+const whatsappMessage = "Hi Al Mina Pharmacy! I'd like to make an inquiry about your products.";
+
 export const businessContact = {
   name: 'Al Mina Pharmacy',
-  telephone: '+971504825007',
-  whatsapp: 'https://wa.me/971504825007',
+  telephone: pharmacyPhone,
+  whatsapp: 'https://api.whatsapp.com/send/?' + new URLSearchParams({
+    phone: pharmacyPhone.slice(1),
+    text: whatsappMessage,
+  }),
   email: 'info@alminapharmacy.com',
   addressLocality: 'Ras Al Khaimah',
   addressCountry: 'AE',

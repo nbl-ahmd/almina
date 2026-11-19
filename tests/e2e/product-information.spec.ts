@@ -121,7 +121,7 @@ for (const width of [390, 1440]) {
     await expect(dialog).toBeHidden();
     await expect(picker).toBeFocused();
     await expect(picker).toContainText('Al Hamra');
-    await expect(page.locator('.floating-contact')).toHaveAttribute('href', 'https://wa.me/971504825007');
+    await expect(page.locator('.floating-contact')).toHaveAttribute('href', /^https:\/\/api\.whatsapp\.com\/send\/\?phone=971504825007&text=/);
     if (width === 390) await expect(page.locator('.floating-contact')).toBeHidden();
     else await expect(page.locator('.floating-contact')).toBeVisible();
   });

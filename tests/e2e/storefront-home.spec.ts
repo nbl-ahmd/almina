@@ -115,3 +115,24 @@ test('published home campaigns preserve hero controls and a separate supporting 
     expect((await request.get(fixture + '/home-campaigns?enabled=0')).ok()).toBe(true);
   }
 });
+
+test('the floating WhatsApp button opens the prefilled pharmacy chat above phone navigation', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const button = page.getByRole('link', { name: 'Chat with the pharmacy on WhatsApp', exact: true });
+  await expect(button).toBeVisible();
+  await expect(button).toHaveCSS('position', 'fixed');
+  const [shortcut, nav] = await Promise.all([button.boundingBox(), page.locator('.mobile-nav').boundingBox()]);
+  expect(shortcut!.height).toBeGreaterThanOrEqual(44);
+  expect(shortcut!.y + shortcut!.height).toBeLessThan(nav!.y);
+
+  await context.route('https://api.whatsapp.com/**', route => route.fulfill({ body: 'WhatsApp link fixture' }));
+  const popupReady = page.waitForEvent('popup');
+  await button.click();
+  const popup = await popupReady;
+  await expect(popup.getByText('WhatsApp link fixture')).toBeVisible();
+  const url = new URL(popup.url());
+  expect(url.origin + url.pathname).toBe('https://api.whatsapp.com/send/');
+  expect(url.searchParams.get('phone')).toBe('971504825007');
+  expect(url.searchParams.get('text')).toBe("Hi Al Mina Pharmacy! I'd like to make an inquiry about your products.");
+});

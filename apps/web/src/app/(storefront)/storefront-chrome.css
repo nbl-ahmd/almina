@@ -263,7 +263,7 @@
 .sf-footer-support > div { flex: 1 1 16rem; }
 .sf-footer-support h2 { margin: 0; font-size: var(--store-type-18); }
 .sf-footer-support p { margin: var(--store-space-4) 0 0; color: var(--store-text-muted); font-size: var(--store-type-14); }
-.sf-footer-support a, .storefront-shell .floating-contact {
+.sf-footer-support a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -278,8 +278,8 @@
   font-weight: var(--store-weight-medium);
   text-decoration: none;
 }
-.sf-footer-support a:hover, .storefront-shell .floating-contact:hover { background: var(--store-positive-surface); }
-.sf-footer-support a svg, .storefront-shell .floating-contact svg {
+.sf-footer-support a:hover { background: var(--store-positive-surface); }
+.sf-footer-support a svg {
   flex: none;
   inline-size: var(--store-space-20);
   block-size: var(--store-space-20);
@@ -289,15 +289,26 @@
   z-index: 20;
   inset-inline-end: var(--store-page-gutter);
   inset-block-end: var(--store-page-gutter);
-  background: var(--store-positive-surface);
+  display: grid;
+  place-items: center;
+  inline-size: var(--store-space-56);
+  block-size: var(--store-space-56);
+  border-radius: var(--store-radius-round);
+  background: #1aa34c;
+  color: var(--store-surface);
   box-shadow: var(--store-elevation-overlay);
 }
+.storefront-shell .floating-contact:hover { background: #148b42; }
+.floating-contact svg { inline-size: var(--store-space-28); block-size: var(--store-space-28); }
 .storefront-shell:has(.cart-page, .checkout-flow, [data-search-expanded='true']) .floating-contact { display: none; }
 @media (max-width: 767px) {
   .storefront-shell .floating-contact {
     inset-block-end: calc(68px + env(safe-area-inset-bottom, 0px));
-    padding: 0;
+    inline-size: var(--store-space-48);
+    block-size: var(--store-space-48);
   }
-  .storefront-shell .floating-contact span,
-  .storefront-shell:has(.pdp-page, .product-grid, [data-storefront-home], [data-storefront-catalog]) .floating-contact { display: none; }
+  .floating-contact svg { inline-size: var(--store-space-24); block-size: var(--store-space-24); }
+  .storefront-shell:has(.pdp-page, .product-grid, [data-storefront-catalog]):not(:has([data-storefront-home])) .floating-contact {
+    display: none;
+  }
 }
