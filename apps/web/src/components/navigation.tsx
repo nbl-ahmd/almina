@@ -6,7 +6,6 @@ import { StorefrontMenu } from './storefront-menu';
 import { SearchBox } from './search-box';
 import Image from 'next/image';
 import Link from './app-link';
-import { PhoneIcon, UserCircleIcon, ArrowUpIcon, ChatBubbleOvalLeftEllipsisIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { NavigationLinks } from './navigation-links';
 import { CartLink } from './cart-link';
 import { DeliveryLocation } from './delivery-location';
@@ -26,7 +25,7 @@ export async function Navigation({ locale = 'en', mobileShell = false }: { local
         <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo"><Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes={mobileShell ? "(max-width: 767px) 86px, 124px" : "(max-width: 767px) 116px, 160px"} className="h-auto w-full" /></Link>
         <div className="header-search"><SearchBox locale={locale} mobileShell={mobileShell} /></div>
         <DeliveryLocation locale={locale} />
-        <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account"><UserCircleIcon className="size-6" aria-hidden="true" /><span>{t(locale, 'navAccount')}</span></Link>
+        <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account"><span>{t(locale, 'navAccount')}</span></Link>
         <CartLink locale={locale} />
         {mobileShell && <Link className="mobile-cart-return" href="/products">{t(locale, 'cartContinueShopping')}</Link>}
       </div>
@@ -67,12 +66,12 @@ export function Footer({ telemetryEnabled = false, locale = 'en', acceptedChrome
    {acceptedChrome ? <section className="sf-footer-support" aria-label={locale === 'ar' ? 'مساعدة الصيدلية' : 'Pharmacy support'}>
      <div><h2>{locale === 'ar' ? 'كيف يمكننا مساعدتك؟' : 'How can we help?'}</h2>
      <p>{locale === 'ar' ? 'تواصل مع الصيدلية أو اعثر على أقرب فرع.' : 'Talk to the pharmacy or find a branch near you.'}</p></div>
-     <a href={businessContact.whatsapp} target="_blank" rel="noopener noreferrer"><ChatBubbleOvalLeftEllipsisIcon aria-hidden="true" />WhatsApp</a>
-     <Link href="/map"><MapPinIcon aria-hidden="true" />{t(locale, 'footerMap')}</Link>
+     <a href={businessContact.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+     <Link href="/map">{t(locale, 'footerMap')}</Link>
    </section> : null}
-   <div className="sf-footer-columns"><div className="sf-footer-brand"><Link href="/" aria-label={t(locale, 'homeAria')}><Image src="/logo.png" alt="" width={2789} height={910} sizes="148px" className="h-auto w-36" /></Link><p>{t(locale, 'footerTagline')}</p><a href="tel:+971504825007" dir="ltr"><PhoneIcon className="size-4" aria-hidden="true" />+971 50 482 5007</a><a href="mailto:info@alminapharmacy.com">info@alminapharmacy.com</a></div>{groups.map(group => <FooterGroup key={group.title} title={t(locale,group.title)}><nav aria-label={t(locale, group.aria)}>{group.links.map(([key, href]) => <Link key={key} href={href}>{t(locale, key)}</Link>)}</nav></FooterGroup>)}<FooterGroup title={t(locale,'footerVisit')}><p>{t(locale, 'footerLocation')}</p>{!acceptedChrome ? <Link href="/map">{t(locale, 'footerMap')}</Link> : null}<Link href="/ras-al-khaimah">{t(locale, 'linkLocal')}</Link></FooterGroup></div>
+   <div className="sf-footer-columns"><div className="sf-footer-brand"><Link href="/" aria-label={t(locale, 'homeAria')}><Image src="/logo.png" alt="" width={2789} height={910} sizes="148px" className="h-auto w-36" /></Link><p>{t(locale, 'footerTagline')}</p><a href="tel:+971504825007" dir="ltr">+971 50 482 5007</a><a href="mailto:info@alminapharmacy.com">info@alminapharmacy.com</a></div>{groups.map(group => <FooterGroup key={group.title} title={t(locale,group.title)}><nav aria-label={t(locale, group.aria)}>{group.links.map(([key, href]) => <Link key={key} href={href}>{t(locale, key)}</Link>)}</nav></FooterGroup>)}<FooterGroup title={t(locale,'footerVisit')}><p>{t(locale, 'footerLocation')}</p>{!acceptedChrome ? <Link href="/map">{t(locale, 'footerMap')}</Link> : null}<Link href="/ras-al-khaimah">{t(locale, 'linkLocal')}</Link></FooterGroup></div>
    <nav className="sf-footer-policies" aria-label={t(locale, 'footerPoliciesAria')}>{policyLinks.map(item => <Link key={item.path} href={item.path}>{t(locale, item.key)}</Link>)}</nav>
    {telemetryEnabled ? <UsagePreferences locale={locale} /> : null}
-   <div className="sf-footer-bottom"><span>{t(locale, 'footerBottom')}</span><LanguageSwitcher locale={locale} label={t(locale, 'language')} size="default" /><a href="#top"><ArrowUpIcon className="size-4" aria-hidden="true" />{t(locale, 'backToTop')}</a></div>
+   <div className="sf-footer-bottom"><span>{t(locale, 'footerBottom')}</span><LanguageSwitcher locale={locale} label={t(locale, 'language')} size="default" /><a href="#top">{t(locale, 'backToTop')}</a></div>
  </div></footer>;
 }

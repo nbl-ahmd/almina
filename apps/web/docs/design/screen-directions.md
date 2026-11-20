@@ -6,7 +6,7 @@ Updated 19 November 2026. These compositions describe the selected storefront as
 
 Use prominent search, delivery context and cart, then a full-width campaign, category discovery and compact product comparison. The owner selected A/full campaign and five wide-screen home columns. Near-white surfaces, contained photographs and compact buying controls remain. The current phone home has two product columns and category links can overflow locally. Do not reinstate the earlier incumbent horizontal home rail or split campaign/category directory as the default composition. The four-column and split options are retained as historical comparisons.
 
-The actual local campaign uses existing generic courier artwork, localized HTML copy and a real catalogue link. Preserve managed banners, content and sparse-data behavior. Omit empty marketing panels or invented deals/ETAs. Existing reference composition is not a claim about delivery speed.
+The built-in carousel slides use live bilingual copy and link to existing catalogue destinations. Published banners keep the responsive artwork frames. The home category lane uses short text links. Skincare and baby care place a section heading and a collection link above the product shelves. Only published campaigns supply promotion-specific artwork and claims.
 
 ## Listing and search
 

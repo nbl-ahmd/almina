@@ -5,18 +5,19 @@ colors:
   action: "#086657"
   action-hover: "#064f44"
   active-navigation: "#086657"
-  text: "#17332f"
-  text-muted: "#52645f"
-  canvas: "#fafbf8"
+  text: "#232d29"
+  text-muted: "#4f5a54"
+  canvas: "#faf9f6"
   surface: "#ffffff"
-  input: "#f0f4ef"
-  border: "#dce4e0"
+  product-well: "#f4f4f1"
+  input: "#f1f1eb"
+  border: "#e0e1d9"
   control-border: "#c4d0cb"
   control-hover: "#8fa39b"
-  secondary: "#f0f4ef"
-  hover: "#e7f5ef"
-  campaign: "#f0f4ef"
-  selected: "#dcece4"
+  secondary: "#f1f1eb"
+  hover: "#e0eee6"
+  campaign: "#f1f1eb"
+  selected: "#e0eee6"
   positive: "#086657"
   positive-surface: "#e7f5ef"
   unavailable: "#8a4b14"
@@ -30,7 +31,7 @@ colors:
   offer-text: "#221214"
   offer-surface: "#e14d5a"
   notice: "#edf1ed"
-  selection: "#dcece4"
+  selection: "#e0eee6"
   coral: "#e14d5a"
 typography:
   campaign:
@@ -184,7 +185,7 @@ The primary action and restrained campaign tint sit within neutral shopping surf
 
 **The state-meaning rule.** Selected options use their quiet neutral surface plus current/pressed semantics. Bottom navigation retains its observed active-navigation text with aria-current; it does not use the option surface. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 3.92:1 text pairing is an inactive-control exemption, not a normal-text pass.
 
-Page canvas, product surfaces, input surfaces, selected surfaces and campaign surfaces have separate purposes. Keep actual logo artwork; its aqua is an identity asset, not another action theme. [Measured pairings and limits](docs/design/implementation-evidence/p2-04-refinement.md) cover the tested states, not all future pages/providers.
+The warm canvas and stone input fill balance the deep green actions. Primary text on the canvas measures 13.49:1. Muted text measures 6.82:1 on the canvas and 6.34:1 on the input fill. Keep actual logo artwork; its aqua is an identity asset, not another action theme. [Measured pairings and limits](docs/design/implementation-evidence/p2-04-refinement.md) cover the tested states, not all future pages/providers.
 
 ## Typography
 
@@ -198,7 +199,7 @@ Supporting metadata remains readable and subdued. Stock uses 11px with explicit 
 
 The retail content container is 1240px, with 24px wide and 16px phone gutters. Home narrows its gutter to 12px below 360px. The global shell and product detail change composition at 768px. The listing opens its desktop filter rail at 1024px. Short phone product and checkout views at 500px tall or less keep the purchase action in the page. Check each surface at its own transition.
 
-Home places the full-width campaign below search and above categories and products. Home uses two columns on phones and moves to three, four and five columns at 768px, 1024px and 1280px as inventory allows. Phone category tiles scroll inside their own lane. Spacing at 390px leaves the first complete price and Add row above the navigation dock in both reviewed locales. The listing uses a separate grid and filter layout.
+Home places the full-width campaign below search and above categories and products. Home uses two columns on phones and moves to three, four and five columns at 768px, 1024px and 1280px as inventory allows. Phone category links scroll inside their own lane. On wider screens the links wrap. Spacing at 390px leaves the first complete price and Add row above the navigation dock in both reviewed locales. The listing uses a separate grid and filter layout.
 
 The spacing scale groups each product's photo, identity and buying facts tightly; passage between shopping decisions is wider. The card frame uses 10px internal padding. Each route controls its grid gap. Stock inset is 3/8px wide and 2/6px on phones. Show brand and pack as quiet metadata instead of boxed tags. Do not increase global padding, make each section a raised panel or shrink touch areas to achieve density.
 
@@ -206,7 +207,7 @@ Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; de
 
 ## Elevation & Depth
 
-Product cards use a white frame, a square photo well and a thin mineral edge. Use `--shadow-product-card` at rest and `--shadow-product-card-hover` with a small lift for pointer hover. Reserve `--shadow-raised` for suggestions and overlays. The fixed phone purchase dock uses a solid surface and a single separator. The in-flow desktop purchase row sits directly on the page surface.
+Product cards use a white frame, a square photo well and a thin mineral edge. The product well uses `--color-product-well`. On pointer hover, strengthen the border. Reserve `--shadow-raised` for suggestions and overlays. The fixed phone purchase dock uses a solid surface and a single separator. The in-flow desktop purchase row sits directly on the page surface.
 
 ## Shapes
 
@@ -222,10 +223,8 @@ Review the working patterns on the retail routes. The sidecar documents the ship
 - **Actions and fields:** The primitives own default and accent (green with white text), soft (tinted green), and secondary, outline, ghost, link and destructive variants. The boundary owns storefront-specific confirmation and quantity feedback. Busy retains action treatment; unavailable is disabled. Invalid fields use error independently of the offer alias. The product review uses a native radio group with five star targets, a visible verification cue and grouped identity fields. Focus remains visible; shared component APIs continue outside this scope.
 - **Product cards:** contained original photo, stock and saved controls, factual brand and pack separated by a middle dot, a two-line product name, tabular dirham pricing and a green quick-add control. Stock and saved controls sit over the photo well, with a coral heart for saved items. Do not invent chips, ratings, discounts or data missing from the catalogue. Actual in-cart quantity and stock checks persist. Offer/unknown-price/unavailable/placeholder cases stay honest; a layout sample is not saleable stock.
 - **Gallery/options/quantity:** one-image products have no fake pagination; real thumbnails select real images. Only real family members get option links/current state. Preserve exact selected pack/price/availability, native quantity limits and server validation. Use the same borderless, tinted quantity group on the product page and in the cart. Disabled steps mute the icon without painting a separate tile. Category, thumbnail and product rails keep swipe and keyboard scrolling with hidden native rails. Product comparison imagery stays static under hover. P4-02 retired the earlier card image zoom.
-- **Campaign/categories:** use localized image-led artwork for the homepage campaign and collection placements. Use a phone composition and a wide composition for lead artwork, with text set in the image and an equivalent accessible link name or description. Retain semantic HTML copy on landing pages and in the no-artwork fallback. Illustrative photography represents the department and carries no product or delivery claim. The hero has three evergreen slides and can include published campaigns. The shopper controls movement through labeled arrows, pagination and directional touch gestures. Skincare and baby care each have a full-width section banner, followed by matching in-stock products when available, with brand discovery between the sections.
-- **Disclosures/sheets/feedback:** preserve semantic summary, real dialogs/popovers and focus management. Loading, status, empty, error and success semantics carry meaning. Use color, context and directional icons for standalone shopping links, with a visible keyboard focus outline. Keep the persistent underline for inline policy links and other links embedded in prose. Confirmed Add uses the success tint and check icon.
-  - **Artwork handoff:** supply 4:1 wide and 8:3 phone compositions for the lead, and 3:1 source art for collection sections. Desktop uses shallow 4:1 frames. Keep copy clear of the frame edge and validate it at 360px. Upload language-specific artwork and provide a matching accessible description in the campaign editor. Existing managed artwork is fitted without cropping its lettering.
-  - **Local campaign art:** The homepage leads with the [personal-care still life](public/design/campaigns/personal-care-en.webp), showing soap, a pump and a towel on peach with baked-in lettering in both languages. [Shop by brand](public/design/campaigns/shop-brands-en.webp) uses unbranded packaging on an olive and seafoam set. Both have localized ImageGen artwork. The former courier artwork remains in the campaign library. [Skincare](public/design/campaigns/skincare-en.webp) and [Baby and family care](public/design/campaigns/family-en.webp) use unbranded department still life on blush and pale blue. The ImageGen art direction kept English and Arabic lettering in the final image, with a mirrored composition in Arabic and no prices, promises, promotional claims or store staff identity.
+- **Campaign/categories:** published artwork uses the responsive carousel artboards and an equivalent accessible link name or description. The built-in slides use live English and Arabic text for Everyday personal care and Shop by brand. Category links use text labels. The directory can show actual catalogue photography when available. Skincare and baby care use a visible section heading, a collection link and matching products when available. Brand names and help links stand on their own.
+- **Disclosures/sheets/feedback:** preserve semantic summary, real dialogs/popovers and focus management. Loading, status, empty, error and success semantics carry meaning. Use a visible keyboard focus outline, with underlines for links embedded in prose. Confirmed Add uses the success tint and check icon.
 - **Cart/checkout/customer:** preserve existing contracts and task modes. Device cart stores identifiers/quantities; server-loaded estimates are not final quotes. Checkout, auth, payments, idempotency, inventory and immutable order snapshots are not design concerns to rewrite. The checkout keeps one responsive action, visible field labels, a server-quoted review and explicit payment recovery states. See the screen directions for dock and keyboard behavior.
 
 **The feedback-motion rule.** Background, border and text changes and pointer press feedback use 120ms. Pointer-initiated menu, review and campaign disclosures use the 180ms entry role. Confirmed status indicators can fade in on the same timing. Both use `cubic-bezier(0.2,0.7,0.2,1)`. Keyboard carousel controls render the next slide immediately. Reduced motion preserves immediate final states. Pack comparison and navigation stay steady. Stroked UI icons use Heroicons at 22px/1.5, with separate filled dirham artwork.

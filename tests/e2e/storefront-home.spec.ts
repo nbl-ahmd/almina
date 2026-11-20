@@ -14,36 +14,30 @@ for (const locale of ['en', 'ar'] as const) {
       await expect(grid.locator('article')).toHaveCount(5);
       const ids = await grid.locator('article').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-product-id')));
       expect(new Set(ids).size).toBe(5);
-      const lead = home.locator('.pharmacy-ad a');
+      const lead = home.locator('.home-hero-copy--lead');
       await expect(lead).toHaveAttribute('href', '/collections/daily-care');
       await expect(lead).toHaveAccessibleName(locale === 'en' ? 'Everyday personal care. Shop collection' : 'العناية الشخصية اليومية. تسوق المجموعة');
-      const artwork = lead.locator('img');
-      await expect.poll(() => artwork.evaluate((image: HTMLImageElement, filename) =>
-        image.naturalWidth > 0 && image.currentSrc.includes(filename),
-        `personal-care-${locale}.webp`,
-      )).toBe(true);
+      await expect(lead).toContainText(locale === 'en' ? 'Everyday personal care' : 'العناية الشخصية اليومية');
+      await expect(lead.locator('img')).toHaveCount(0);
       const collections = home.locator('.home-collection-section');
       await expect(collections).toHaveCount(2);
-      await expect(collections.nth(0).locator('a.home-editorial-banner')).toHaveAttribute('href', '/collections/skin-essentials');
-      await expect(collections.nth(1).locator('a.home-editorial-banner')).toHaveAttribute('href', '/collections/baby-care');
+      await expect(collections.nth(0).locator('a[href^="/collections/"]')).toHaveAttribute('href', '/collections/skin-essentials');
+      await expect(collections.nth(1).locator('a[href^="/collections/"]')).toHaveAttribute('href', '/collections/baby-care');
       await expect(home.locator('[data-slot=carousel-indicator]')).toHaveCount(2);
       await expect(home.locator('.home-category-lane a').first()).toBeVisible();
       for (const [width, columns] of [[1440, 5], [1100, 4], [768, 3], [390, 2], [320, 2]] as const) {
         await page.setViewportSize({ width, height: 844 });
         expect(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(columns);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        const collectionArt = await collections.locator('img').first().evaluate(image => image.getBoundingClientRect().toJSON());
-        expect(collectionArt.width / collectionArt.height).toBeCloseTo(width >= 768 ? 4 : 3, 1);
+        const frame = (await home.locator('.home-hero-viewport').boundingBox())!;
+        expect(frame.width / frame.height).toBeCloseTo(width >= 768 ? 4 : 3, 1);
+        const textFits = await lead.evaluate(el => el.scrollHeight <= el.clientHeight + 1);
+        expect(textFits).toBe(true);
       }
-      await expect.poll(() => artwork.evaluate((image: HTMLImageElement, filename) =>
-        image.naturalWidth > 0 && image.currentSrc.includes(filename),
-        `personal-care-${locale}.webp`,
-      )).toBe(true);
       const carousel = home.locator('[aria-roledescription]').first();
       await carousel.getByRole('button', { name: locale === 'ar' ? 'الشريحة التالية' : 'Next slide' }).click();
       await expect(carousel.locator('.campaign-frame:visible a')).toHaveAttribute('href', '/brands');
-      await expect(carousel.locator('.campaign-frame:visible img')).toHaveJSProperty('complete', true);
-      expect(await carousel.locator('.campaign-frame:visible img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+      await expect(carousel.locator('.campaign-frame:visible a')).toContainText(locale === 'en' ? 'Shop by brand' : 'تسوق حسب العلامة التجارية');
     } finally {
       expect((await request.get(fixture + '/home-stock?mode=normal')).ok()).toBe(true);
     }
@@ -66,7 +60,7 @@ test('home distinguishes empty stock from a failed catalogue and keeps the lead 
     await page.reload();
     await expect(page.getByRole('heading', { name: 'The catalogue is taking a moment.' })).toBeVisible();
     await expect(page.locator('.home-empty a')).toHaveAttribute('href', '/');
-    await expect(page.locator('.pharmacy-ad a')).toHaveAttribute('href', '/collections/daily-care');
+    await expect(page.locator('.home-hero-copy--lead')).toHaveAttribute('href', '/collections/daily-care');
   } finally {
     expect((await request.get(fixture + '/failure')).ok()).toBe(true);
   }

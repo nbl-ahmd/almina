@@ -43,8 +43,8 @@ for(const lang of ['en','ar'] as const) {
   await page.goto('/products/daily-care--PD0001');
   const shell=page.locator('[data-storefront-retail]');
   await expect(shell).toHaveAttribute('dir',lang==='ar'?'rtl':'ltr');
-  await expect(shell).toHaveCSS('background-color','rgb(250, 251, 248)');
-  await expect(shell).toHaveCSS('color','rgb(23, 51, 47)');
+  await expect(shell).toHaveCSS('background-color','rgb(250, 249, 246)');
+  await expect(shell).toHaveCSS('color','rgb(35, 45, 41)');
   const stepper=page.locator('.pdp-purchase [data-store-control="stepper"]');
   await expect(stepper.getByRole('button').first()).toBeDisabled();
   await expect(stepper.getByRole('button').first()).toHaveCSS('background-color','rgba(0, 0, 0, 0)');

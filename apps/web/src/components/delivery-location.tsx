@@ -107,7 +107,7 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
       <MapPinIcon className="size-4 shrink-0 text-teal" aria-hidden="true" />
       <span className="min-w-0"><span className="header-location-caption">{t(locale,'areaDeliverTo')}</span><span className="header-location-value" id="header-delivery-area-value">{area ? area.city : t(locale,'areaChoose')}<span className="hidden xl:inline">{area ? `, ${emirateLabel(locale,area.emirate)}` : ''}</span></span></span>
       <ChevronDownIcon className="size-3 shrink-0 text-muted" aria-hidden="true" />
-    </button><span className="sr-only" role="status" aria-atomic="true">{savedNotice}</span></div>
+    </button><span className="sr-only start-1" role="status" aria-atomic="true">{savedNotice}</span></div>
     <dialog ref={dialog} aria-labelledby="delivery-area-heading" onCancel={event => { event.preventDefault(); close(); }} className="delivery-area-sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border-0 bg-white px-5 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))] text-ink shadow-raised backdrop:bg-ink/40 sm:inset-0 sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-32px)] sm:max-w-md sm:rounded-2xl sm:p-7">
       <div aria-hidden="true" className="mx-auto -mt-3 mb-4 h-1 w-9 rounded-full bg-ink/20 sm:hidden" />
       <div className="mb-3 flex items-center justify-between gap-3"><h2 id="delivery-area-heading" className="m-0 text-xl">{t(locale,'areaHeading')}</h2><Button variant="outline" size="icon" shape="pill" type="button" className="shrink-0" onClick={close} aria-label={t(locale,'areaClose')}><Icon name="close" /></Button></div>

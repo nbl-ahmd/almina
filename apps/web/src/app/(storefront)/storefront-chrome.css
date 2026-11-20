@@ -134,7 +134,6 @@
 }
 
 [data-storefront-chrome="footer"] a:hover { color: var(--store-positive); }
-[data-storefront-chrome="footer"] .sf-footer-brand svg { flex-shrink: 0; }
 [data-storefront-chrome="footer"] .sf-footer-bottom { padding-block-start: var(--store-space-8); }
 
 @media (max-width: 767px) {
@@ -223,10 +222,6 @@
   }
 
   [data-storefront-chrome="header"] [data-department-links] > a::after { content: none; }
-  [data-storefront-chrome="header"] [data-department-links] > a > span[aria-hidden] {
-    display: none;
-  }
-
   [data-storefront-chrome="header"] [data-department-links] > a[aria-current="page"] {
     color: var(--color-brand);
     background: var(--store-soft-action);
@@ -317,11 +312,6 @@
   text-decoration: none;
 }
 .sf-footer-support a:hover { background: var(--store-positive-surface); }
-.sf-footer-support a svg {
-  flex: none;
-  inline-size: var(--store-space-20);
-  block-size: var(--store-space-20);
-}
 .storefront-shell .floating-contact {
   position: fixed;
   z-index: 20;

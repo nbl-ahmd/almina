@@ -28,44 +28,55 @@
 
 [data-storefront-home] section { margin-block: 0; }
 
-[data-storefront-home] .home-editorial-banner {
-  display: block;
-  overflow: hidden;
-  border-radius: var(--store-campaign-radius);
-  background: var(--store-secondary-surface);
-}
-.home-editorial-banner img { display: block; width: 100%; height: auto; }
 .home-hero-viewport {
   aspect-ratio: 3 / 1;
-  min-block-size: 0;
   overflow: hidden;
   border-radius: var(--store-campaign-radius);
   background: var(--store-campaign-surface);
 }
-.home-hero-viewport :is(.pharmacy-ad, .pharmacy-ad a, .campaign-frame > :is(a, div, article)) {
-  display: block;
-  block-size: 100%;
-}
-.home-hero-viewport :is(.campaign-art-link, picture) {
+.home-hero-viewport .campaign-frame > :is(a, div, article) { block-size: 100%; }
+.home-hero-viewport :is(.campaign-frame > a:not(.home-hero-copy), .campaign-art-link, picture) {
   display: block;
   block-size: 100%;
   aspect-ratio: auto;
 }
 .home-hero-viewport img { display: block; inline-size: 100%; block-size: 100%; object-fit: contain; }
-.home-hero-viewport :is(.pharmacy-ad, .home-hero-banner) img { object-fit: cover; }
 .home-hero-viewport a:focus-visible { outline-offset: -4px; }
 .home-hero-viewport .campaign-text-fallback { overflow: auto; }
+[data-storefront-home] .home-hero-copy {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: var(--store-space-6);
+  block-size: 100%;
+  padding-inline: clamp(16px, 5%, 60px);
+  background: var(--store-campaign-surface);
+  color: var(--store-text);
+}
+[data-storefront-home] .home-hero-copy--lead {
+  background: var(--store-action-hover);
+  color: var(--store-purchase-foreground);
+}
+[data-storefront-home] .home-hero-copy--lead:focus-visible { outline-color: currentColor; }
+.home-hero-title {
+  max-inline-size: 28ch;
+  font-size: clamp(1.2rem, 4.5vw, 2.75rem);
+  line-height: 1.12;
+  font-weight: var(--store-weight-semibold);
+  text-wrap: balance;
+}
+.home-hero-title:lang(ar) { line-height: 1.3; }
+.home-hero-action {
+  font-size: clamp(.8125rem, 2vw, 1rem);
+  font-weight: var(--store-weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .home-collection-section {
   display: grid;
-  gap: var(--store-space-12);
-}
-@media (prefers-reduced-motion: no-preference) {
-  [data-storefront-home] :is(.pharmacy-ad a, .home-editorial-banner) img {
-    transition: opacity var(--store-motion-feedback) var(--store-motion-easing);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    [data-storefront-home] :is(.pharmacy-ad a, .home-editorial-banner):hover img { opacity: .92; }
-  }
+  gap: var(--store-space-4);
+  padding-block-start: var(--store-space-8);
+  border-block-start: 1px solid var(--store-border);
 }
 
 [data-storefront-home] a.home-action {
@@ -85,7 +96,6 @@
 
 [data-storefront-home] a.home-action:hover { background: var(--store-action-hover); }
 [data-storefront-home] :is(a, button):focus-visible { outline-color: var(--store-focus); }
-
 
 [data-storefront-home] .sf-section-heading {
   min-width: 0;
@@ -114,23 +124,25 @@
   padding: var(--store-space-4);
   overflow-x: auto;
 }
-
-[data-storefront-home] .home-category-lane .category-tile {
-  flex: 0 0 66px;
-  gap: var(--store-space-6);
+[data-storefront-home] .home-category-lane a {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-block-size: var(--store-target-min);
+  padding-inline: var(--store-space-14);
+  border: 1px solid var(--store-border);
+  border-radius: var(--radius-pill);
+  background: var(--store-surface);
+  color: var(--store-text);
+  font-size: var(--store-type-13);
+  font-weight: var(--store-weight-medium);
+}
+[data-storefront-home] .home-category-lane a:hover {
+  border-color: var(--store-border-control);
+  color: var(--store-action);
 }
 
-[data-storefront-home] .home-category-lane .category-tile-media {
-  width: var(--store-space-56);
-  height: var(--store-space-56);
-  border-radius: var(--store-radius-14);
-  background: var(--store-secondary-surface);
-}
-
-.storefront-shell [data-storefront-home] .category-tile h3 {
-  font-size: var(--store-type-12);
-  overflow-wrap: anywhere;
-}
+[data-storefront-home] .home-category-lane a:focus-visible { outline-offset: -3px; }
 
 .home-product-grid {
   display: grid;
@@ -141,26 +153,20 @@
 [data-storefront-home] .brand-rail {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--store-space-8) var(--store-space-12);
+  column-gap: var(--store-space-24);
+  border-block-start: 1px solid var(--store-border);
 }
-
 [data-storefront-home] .brand-rail a {
-  min-height: var(--store-target-min);
   display: inline-flex;
   align-items: center;
-  gap: var(--store-space-8);
-  max-width: 100%;
+  min-block-size: var(--store-target-min);
+  max-inline-size: 100%;
   overflow-wrap: anywhere;
   color: var(--store-text);
-  font-size: var(--store-type-13);
+  font-size: var(--store-type-14);
+  font-weight: var(--store-weight-medium);
 }
-
-[data-storefront-home] .brand-rail a {
-  border: 1px solid var(--store-border);
-  border-radius: var(--store-control-radius);
-  background: var(--store-surface);
-  padding-inline: var(--store-space-12);
-}
+[data-storefront-home] .brand-rail a:hover { color: var(--store-action); }
 
 .home-empty {
   padding: var(--store-space-16);
@@ -191,8 +197,7 @@
     scroll-snap-type: inline proximity;
   }
   .home-collection-section .home-product-grid > article { scroll-snap-align: start; }
-  [data-storefront-home] .home-category-lane .category-tile { flex-basis: 82px; }
-  .storefront-shell [data-storefront-home] .category-tile h3 { overflow-wrap: break-word; }
+
 }
 @media (max-width: 359px) {
   [data-storefront-home] .home-content { padding-inline: var(--store-space-12); }
@@ -207,20 +212,11 @@
   .home-lead { gap: var(--store-space-4); }
 
   .home-hero-viewport { aspect-ratio: 4 / 1; }
-  .home-collection-section { gap: var(--store-space-16); }
-  .home-editorial-banner img {
-    aspect-ratio: 4 / 1;
-    object-fit: cover;
-  }
+  .home-hero-copy { gap: var(--store-space-16); }
+  .home-collection-section { padding-block-start: var(--store-space-16); }
+  .home-category-lane { flex-wrap: wrap; overflow: visible; }
   .storefront-shell [data-storefront-home] .sf-section-heading h2 {
     font-size: var(--store-type-23);
-  }
-
-  [data-storefront-home] .home-category-lane .category-tile {
-    flex: 1 0 112px;
-    text-align: center;
-    justify-content: flex-start;
-    gap: var(--store-space-8);
   }
 
   .home-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -294,10 +290,8 @@
 .home-discovery h2 { margin: 0 0 var(--store-space-8); }
 .home-discovery-links { display: grid; column-gap: var(--store-space-24); }
 .home-discovery-links a {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: var(--store-space-10);
   min-block-size: var(--store-target-min);
   padding-block: var(--store-space-8);
   border-block-end: 1px solid var(--store-border);
@@ -306,7 +300,6 @@
   text-decoration: none;
 }
 .home-discovery-links a:hover { color: var(--store-positive); border-block-end-color: var(--store-positive); }
-.home-discovery-links svg { color: var(--store-positive); }
 @media (min-width: 768px) {
   .home-discovery-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

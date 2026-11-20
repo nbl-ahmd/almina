@@ -86,7 +86,7 @@
   --store-positive: var(--color-stock-text);
   --store-notice-surface: var(--color-notice);
   --store-input-surface: var(--color-subtle);
-  --store-hover-surface: var(--color-stock-bg);
+  --store-hover-surface: var(--color-selected);
   --store-campaign-surface: var(--color-subtle);
   --store-action-hover: var(--color-brand-hover);
   --store-positive-surface: var(--color-stock-bg);

@@ -11,6 +11,7 @@
     "text-muted": "--store-text-muted",
     "canvas": "--store-canvas",
     "surface": "--store-surface",
+    "product-well": "--color-product-well",
     "input": "--store-input-surface",
     "border": "--store-border",
     "control-border": "--store-border-control",

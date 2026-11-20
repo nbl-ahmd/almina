@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import Link from './app-link';
 import { AddToCart } from './cart-controls';
 import { CurrencyAmount } from './currency-amount';
@@ -17,7 +17,6 @@ import { getLocale } from '../lib/server/i18n';
 function photoFallback(locale: Locale) {
   return (
     <span className={styles.placeholder}>
-      <ShoppingBagIcon aria-hidden="true" />
       <span>{u(locale, 'Photo coming soon')}</span>
     </span>
   );
