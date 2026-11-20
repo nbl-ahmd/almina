@@ -15,10 +15,10 @@ for (const locale of ['en', 'ar'] as const) {
       const ids = await grid.locator('article').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-product-id')));
       expect(new Set(ids).size).toBe(5);
       const lead = home.locator('.home-hero-copy--lead');
-      await expect(lead).toHaveAttribute('href', '/collections/daily-care');
-      await expect(lead).toHaveAccessibleName(locale === 'en' ? 'Everyday personal care. Shop collection' : 'العناية الشخصية اليومية. تسوق المجموعة');
-      await expect(lead).toContainText(locale === 'en' ? 'Everyday personal care' : 'العناية الشخصية اليومية');
-      await expect(lead.locator('img')).toHaveCount(0);
+      await expect(lead).toHaveAttribute('href', '/products');
+      await expect(lead).toHaveAccessibleName(locale === 'en' ? 'Everyday pharmacy essentials. Shop products' : 'احتياجاتك من الصيدلية. تصفح المنتجات');
+      await expect(lead).toContainText(locale === 'en' ? 'Everyday pharmacy essentials' : 'احتياجاتك من الصيدلية');
+      await expect(lead.locator('img[src*="/design/campaigns/"]')).toHaveCount(0);
       const collections = home.locator('.home-collection-section');
       await expect(collections).toHaveCount(2);
       await expect(collections.nth(0).locator('a[href^="/collections/"]')).toHaveAttribute('href', '/collections/skin-essentials');
@@ -60,7 +60,7 @@ test('home distinguishes empty stock from a failed catalogue and keeps the lead 
     await page.reload();
     await expect(page.getByRole('heading', { name: 'The catalogue is taking a moment.' })).toBeVisible();
     await expect(page.locator('.home-empty a')).toHaveAttribute('href', '/');
-    await expect(page.locator('.home-hero-copy--lead')).toHaveAttribute('href', '/collections/daily-care');
+    await expect(page.locator('.home-hero-copy--lead')).toHaveAttribute('href', '/products');
   } finally {
     expect((await request.get(fixture + '/failure')).ok()).toBe(true);
   }

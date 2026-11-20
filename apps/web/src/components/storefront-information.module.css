@@ -46,7 +46,6 @@
 .panel {
   min-inline-size: 0;
   background: var(--store-surface);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   padding: var(--store-space-16);
 }
@@ -80,7 +79,6 @@
   min-block-size: var(--store-space-56);
   min-inline-size: 0;
   padding: var(--store-space-12);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-control-radius);
   background: var(--store-surface);
   font-size: var(--store-type-14);
@@ -102,7 +100,6 @@
   margin: 0;
   padding: var(--store-space-16);
   background: var(--store-surface);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
 }
 .identity {
@@ -140,7 +137,6 @@
   align-items: stretch;
   gap: var(--store-space-6);
   background: var(--store-surface);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   padding: var(--store-card-padding);
 }

@@ -60,7 +60,7 @@ export default async function TermsPage() {
         <h2 className="mt-8 text-xl font-semibold">Changes and governing law</h2>
         <p className="mt-2 text-sm leading-7 text-muted">We may update these terms when our service or legal requirements change. The version published on this page applies from its last-updated date. These terms are governed by the laws of the United Arab Emirates, and disputes are subject to the courts of {businessContact.addressLocality}, without affecting any mandatory consumer protection rights.</p>
 
-        <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-6">
+        <div className="mt-8 flex flex-wrap gap-3 pt-6">
           <Link className="button text-sm" href="/contact">Contact the pharmacy</Link>
           <Link className="button button-secondary text-sm" href={policyPaths.privacy}>Privacy policy</Link>
         </div>

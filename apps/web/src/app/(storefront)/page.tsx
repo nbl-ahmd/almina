@@ -64,15 +64,16 @@ export default async function HomePage() {
   const locale = await getLocale();
   const campaigns = getHomepageCampaigns(locale).catch(() => []);
   const banners = getBanners().catch(() => []);
+  const catalogue = homeCatalogue();
   return (
     <div className={`home-page ${system.system}`} lang={locale} data-storefront-home>
       <div className="home-content">
         <h1 className="sr-only">{u(locale, "Al Mina Pharmacy — health, beauty and everyday care")}</h1>
         <div className="home-lead">
+          <Suspense fallback={null}><HomeCategoryLane catalogue={catalogue} /></Suspense>
           <Suspense fallback={<HomeHero locale={locale} loading />}>
-            <HomeCampaign locale={locale} banners={banners} campaigns={campaigns} />
+            <HomeCampaign locale={locale} banners={banners} campaigns={campaigns} catalogue={catalogue} />
           </Suspense>
-          <Suspense fallback={null}><HomeCategoryLane /></Suspense>
         </div>
         <Suspense fallback={<section className="home-shelf-skeleton">
           <p className="sr-only" role="status">{locale === "ar" ? "جارٍ تحميل المنتجات…" : "Loading products…"}</p>
@@ -81,7 +82,7 @@ export default async function HomePage() {
             {[0, 1, 2, 3, 4].map(index => <div className="home-skeleton-card" key={index}><span /><span /><span /></div>)}
           </div>
         </section>}>
-          <HomeProducts locale={locale} />
+          <HomeProducts locale={locale} catalogue={catalogue} />
         </Suspense>
         <Suspense fallback={null}><HomeSupportingCampaigns campaigns={campaigns} /></Suspense>
         <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
@@ -91,22 +92,26 @@ export default async function HomePage() {
 }
 
 type Campaigns = ReturnType<typeof getHomepageCampaigns>;
-async function HomeCampaign({ locale, banners, campaigns }: {
+type HomeCatalogue = ReturnType<typeof homeCatalogue>;
+async function HomeCampaign({ locale, banners, campaigns, catalogue }: {
   locale: Locale;
   banners: ReturnType<typeof getBanners>;
   campaigns: Campaigns;
+  catalogue: HomeCatalogue;
 }) {
   const [publishedBanners, publishedCampaigns] = await Promise.all([banners, campaigns]);
-  return <HomeHero locale={locale} banners={publishedBanners} campaigns={publishedCampaigns} />;
+  const featured = publishedBanners.length ? [] : (await catalogue).products
+    .filter(product => productImage(product) !== '/product-placeholder.svg').slice(0, 2);
+  return <HomeHero locale={locale} banners={publishedBanners} campaigns={publishedCampaigns} featured={featured} />;
 }
 
-async function HomeCategoryLane() {
-  const categories = await getCategories().catch(() => []);
-  return <HomeCategories categories={categories.filter(category => !category.disabled)} />;
+async function HomeCategoryLane({ catalogue }: { catalogue: HomeCatalogue }) {
+  const [categories, { products }] = await Promise.all([getCategories().catch(() => []), catalogue]);
+  return <HomeCategories categories={categories.filter(category => !category.disabled)} products={products} />;
 }
 
-async function HomeProducts({ locale }: { locale: Locale }) {
-  const { products, incomplete } = await homeCatalogue();
+async function HomeProducts({ locale, catalogue }: { locale: Locale; catalogue: HomeCatalogue }) {
+  const { products, incomplete } = await catalogue;
   if (!products.length) {
     return (
       <section className="home-empty" aria-labelledby="home-empty-heading">

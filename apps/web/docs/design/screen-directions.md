@@ -4,9 +4,9 @@ Updated 19 November 2026. These compositions describe the selected storefront as
 
 ## Home
 
-Use prominent search, delivery context and cart, then a full-width campaign, category discovery and compact product comparison. The owner selected A/full campaign and five wide-screen home columns. Near-white surfaces, contained photographs and compact buying controls remain. The current phone home has two product columns and category links can overflow locally. Do not reinstate the earlier incumbent horizontal home rail or split campaign/category directory as the default composition. The four-column and split options are retained as historical comparisons.
+Keep delivery context, search and cart prominent. Start catalogue discovery with visual category shortcuts, then the responsive campaign and shelves. On phones, category tiles scroll within their rail and product shelves start with two columns. Desktop puts shopping navigation below the wide search field and uses five columns for full-width shelves.
 
-The built-in carousel slides use live bilingual copy and link to existing catalogue destinations. Published banners keep the responsive artwork frames. The home category lane uses short text links. Skincare and baby care place a section heading and a collection link above the product shelves. Only published campaigns supply promotion-specific artwork and claims.
+The built-in carousel lead combines bilingual text with real catalogue photography and links to all products. Admin-published art uses the existing mobile and desktop artboards. Use spacing and surface changes for visual grouping. Keep headings and continuation links close to the products they describe.
 
 ## Listing and search
 

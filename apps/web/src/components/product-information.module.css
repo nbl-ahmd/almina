@@ -1,7 +1,6 @@
 .information, .reviews {
   margin-block: 0;
   padding-block: var(--store-space-20);
-  border-block-start: 1px solid var(--store-border);
   color: var(--store-text);
   font-size: var(--store-type-15);
   line-height: var(--store-leading-body);
@@ -36,7 +35,8 @@
   scroll-margin-block-start: var(--store-space-16);
 }
 .disclosures { margin-block-start: var(--store-space-16); }
-.disclosures details { border-block-start: 1px solid var(--store-border); }
+.disclosures details { padding-inline: var(--store-space-12); border-radius: var(--store-control-radius); background: var(--store-secondary-surface); }
+.disclosures details + details { margin-block-start: var(--store-space-6); }
 .disclosures summary {
   display: flex;
   align-items: center;
@@ -62,7 +62,6 @@
   align-items: baseline;
   gap: var(--store-space-12);
   padding-block: var(--store-space-6);
-  border-block-end: 1px solid var(--store-border);
 }
 .facts dt { color: var(--store-text-muted); }
 .facts dd { margin: 0; }
@@ -93,7 +92,6 @@
   max-inline-size: 620px;
   padding-block-start: var(--store-space-12);
   margin-block-start: var(--store-space-12);
-  border-block-start: 1px solid var(--store-border);
 }
 .reviewForm [data-slot='field'] { min-inline-size: 0; gap: var(--store-space-6); }
 .reviewVerification {
@@ -112,7 +110,7 @@
   block-size: var(--store-space-20);
   color: var(--store-positive);
 }
-.reviewVerification a { color: var(--store-positive); text-decoration: underline; text-underline-offset: .2em; }
+.reviewVerification a { color: var(--store-action); text-decoration: underline; text-underline-offset: .2em; }
 .reviewIdentity { display: grid; gap: var(--store-space-12); }
 .reviewRating { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
 .reviewRating legend {
@@ -159,7 +157,7 @@
   .reviewStars label:active:not(:has(:focus-visible)) { scale: .96; }
 }
 .reviewItems { display: grid; gap: var(--store-space-16); margin-block-start: var(--store-space-12); }
-.reviewItems article { border-block-start: 1px solid var(--store-border); padding-block-start: var(--store-space-12); min-inline-size: 0; }
+.reviewItems article { padding-block-start: var(--store-space-12); min-inline-size: 0; }
 .reviewItems p { margin: 0 0 var(--store-space-6); }
 .reviewItems h3 { margin-block: 0 var(--store-space-6); }
 .reviewVerified { color: var(--store-positive); font-size: var(--store-type-13); }

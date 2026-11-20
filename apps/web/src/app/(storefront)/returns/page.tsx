@@ -65,7 +65,7 @@ export default async function ReturnsPage() {
 
         <h2 className="mt-8 text-xl font-semibold">Questions</h2>
         <p className="mt-2 text-sm leading-7 text-muted">If anything about your order is unclear, contact the pharmacy before opening or using the product. Our team will help you find the right next step.</p>
-        <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-6">
+        <div className="mt-8 flex flex-wrap gap-3 pt-6">
           <Link className="button text-sm" href="/contact">Contact the pharmacy</Link>
           <Link className="button button-secondary text-sm" href={policyPaths.terms}>Read the terms of service</Link>
         </div>

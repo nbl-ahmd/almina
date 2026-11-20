@@ -69,7 +69,7 @@ export default async function ShippingPage() {
 
         <h2 className="mt-8 text-xl font-semibold">Questions</h2>
         <p className="mt-2 text-sm leading-7 text-muted">Call <a className="text-teal" href={`tel:${businessContact.telephone}`}>{businessContact.telephone}</a> or email <a className="text-teal" href={`mailto:${businessContact.email}`}>{businessContact.email}</a> for delivery help. Read our <Link className="text-teal underline underline-offset-4" href={policyPaths.returns}>returns and refunds policy</Link> for information about returning an item.</p>
-        <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-6">
+        <div className="mt-8 flex flex-wrap gap-3 pt-6">
           <Link className="button text-sm" href="/contact#delivery">Ask about delivery</Link>
           <Link className="button button-secondary text-sm" href="/products">Browse products</Link>
         </div>

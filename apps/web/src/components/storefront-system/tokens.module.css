@@ -41,7 +41,7 @@
   --store-ref-type-25: 25px;
   --store-ref-type-28: 28px;
   --store-ref-type-30: 30px;
-  --store-ref-container: 1240px;
+  --store-ref-container: 1280px;
   --store-ref-target: 44px;
   --store-ref-feedback: 120ms;
   --store-ref-entry: 180ms;
@@ -87,7 +87,7 @@
   --store-notice-surface: var(--color-notice);
   --store-input-surface: var(--color-subtle);
   --store-hover-surface: var(--color-selected);
-  --store-campaign-surface: var(--color-subtle);
+  --store-campaign-surface: var(--color-promo);
   --store-action-hover: var(--color-brand-hover);
   --store-positive-surface: var(--color-stock-bg);
   --store-unavailable: var(--color-unavail-text);
@@ -158,7 +158,7 @@
   --store-action-radius: var(--radius-control);
   --store-field-radius: var(--radius-control);
   --store-compact-radius: var(--radius-pill);
-  --store-soft-action: var(--color-stock-bg);
+  --store-soft-action: var(--color-selected);
   --store-card-radius: var(--radius-card);
   --store-card-padding: var(--store-space-10);
   /* Counts are redundant visual hints; status labels carry product information. */
@@ -169,7 +169,7 @@
   --store-stock-inset-block-phone: var(--store-space-2);
   --store-stock-inset-inline-phone: var(--store-space-6);
   --store-search-radius: var(--radius-control);
-  --store-search-action-radius: var(--store-radius-8);
+  --store-search-action-radius: var(--radius-pill);
   --store-search-surface: var(--store-input-surface);
   --store-purchase-surface: var(--store-action);
   --store-purchase-foreground: var(--color-primary-foreground);

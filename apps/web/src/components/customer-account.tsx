@@ -67,7 +67,7 @@ useEffect(()=>{let active=true;const current=++generation.current;void accountRe
       <h2 id="account-purchases">{a("Buy again")}</h2>
       {ordersFailed ? <p className="m-0 text-sm text-muted">{a("Your purchase history is temporarily unavailable. Your account is still signed in.")}</p>
         : orders.length ? <div className="grid gap-3 md:grid-cols-2">
-          {orders.map(order => <article className="min-w-0 rounded-xl border border-border p-4" key={order.orderId}>
+          {orders.map(order => <article className="min-w-0 rounded-xl bg-subtle p-4" key={order.orderId}>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h3 className="m-0 text-base"><bdi>{order.orderId}</bdi></h3>
               <span className="text-xs text-muted">{order.channel === 'wholesale' ? a("Wholesale · ") : ''}{a(order.status)}</span>

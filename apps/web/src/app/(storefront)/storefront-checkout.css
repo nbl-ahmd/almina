@@ -78,7 +78,6 @@
   flex: none;
   inline-size: var(--store-space-24);
   block-size: var(--store-space-24);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-ref-circle);
   background: var(--store-surface);
 }
@@ -99,7 +98,6 @@
 .checkout-frame .checkout-confirmation-panel,
 .checkout-frame .checkout-payment-result {
   min-inline-size: 0;
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   background: var(--store-surface);
 }
@@ -117,7 +115,6 @@
 .checkout-frame .checkout-form-section,
 .checkout-frame .checkout-payment-section {
   padding-block: var(--store-space-16);
-  border-block-start: 1px solid var(--store-border);
 }
 .checkout-frame :is(.checkout-form-section, .checkout-optional) .grid { gap: var(--store-space-12); }
 .checkout-frame .checkout-form [data-slot='field'] { gap: var(--store-space-4); }
@@ -155,7 +152,6 @@
   font-weight: 400;
   gap: var(--store-space-10);
   padding: var(--store-space-12);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-control-radius);
   background: var(--store-secondary-surface);
   cursor: pointer;
@@ -173,7 +169,6 @@
 .checkout-frame .checkout-payment-choice:has(:disabled) { cursor: not-allowed; }
 .checkout-frame .checkout-payment-choice[data-selected='true'] {
   background: var(--store-selected-surface);
-  border-color: var(--store-border);
 }
 .checkout-frame .checkout-payment-icon { color: var(--store-text-muted); flex: none; }
 .checkout-frame .checkout-radio-mark {
@@ -192,7 +187,7 @@
   color: var(--store-surface);
 }
 .checkout-frame .checkout-order-panel { padding: var(--store-space-14); }
-.checkout-frame .checkout-order-panel a { color: var(--store-positive); }
+.checkout-frame .checkout-order-panel a { color: var(--store-action); }
 .checkout-frame :is(.checkout-back, .checkout-optional > summary, .checkout-order-panel a):hover { color: var(--store-text); }
 .checkout-frame .checkout-optional[open] > summary svg { rotate: 180deg; }
 .checkout-frame .checkout-order-panel .currency-visual,
@@ -263,7 +258,7 @@
     padding-block: var(--store-space-8) calc(var(--store-space-8) + env(safe-area-inset-bottom, 0px));
     padding-left: max(var(--store-page-gutter), env(safe-area-inset-left));
     padding-right: max(var(--store-page-gutter), env(safe-area-inset-right));
-    border-block-start: 1px solid var(--store-border);
+    box-shadow: var(--shadow-store-dock);
     background: var(--store-surface);
   }
   .checkout-frame .checkout-flow[data-keyboard='false'] { padding-block-end: var(--checkout-dock-clearance, 0px); }

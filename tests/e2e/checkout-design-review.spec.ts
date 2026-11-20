@@ -14,7 +14,7 @@ test('final checkout evidence, responsive controls, RTL and reduced motion',asyn
  await expect(page.getByRole('heading',{name:'Contact and delivery',exact:true})).toBeFocused();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>{window.scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()));})));await page.screenshot({path:`${directory}/mobile-details.png`,fullPage:true});
  await expect(page.locator('[name=address]')).toHaveCSS('min-height','48px');
- await expect(page.locator('[name=address]')).toHaveCSS('border-radius','12px');
+ await expect(page.locator('[name=address]')).toHaveCSS('border-radius','10px');
  expect(await page.locator('[name=address]').evaluate(el=>el.getBoundingClientRect().bottom+window.scrollY)).toBeLessThan(1000);
  await page.getByRole('combobox',{name:'Emirate',exact:true}).click();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));

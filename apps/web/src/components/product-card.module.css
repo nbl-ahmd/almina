@@ -1,7 +1,6 @@
 .card, .compact {
   color: var(--store-text);
   background: var(--store-surface);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   min-inline-size: 0;
 }
@@ -10,13 +9,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--store-space-6);
-  padding: var(--store-space-14);
+  padding: var(--store-card-padding);
 }
 @media (hover: hover) and (pointer: fine) {
-  .card:hover { border-color: var(--store-border-control); }
+  .card:hover { box-shadow: var(--shadow-2xs); }
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .card { transition: border-color var(--store-motion-feedback); }
+  .card { transition: box-shadow var(--store-motion-feedback); }
 }
 .visual { position: relative; }
 .media {
@@ -96,7 +95,6 @@
   position: absolute;
   inset: var(--store-space-4);
   z-index: -1;
-  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
   border-radius: inherit;
   background: var(--color-surface);
 }
@@ -123,7 +121,7 @@
   overflow-wrap: anywhere;
 }
 .tags a { color: inherit; }
-.tags a:hover { color: var(--store-positive); }
+.tags a:hover { color: var(--store-action); }
 .tags bdi, .title bdi { min-inline-size: 0; overflow-wrap: anywhere; }
 .title {
   margin: 0;
@@ -142,7 +140,7 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
-.title a:hover { color: var(--store-positive); }
+.title a:hover { color: var(--store-action); }
 .optionNote {
   margin: 0;
   color: var(--store-text-muted);

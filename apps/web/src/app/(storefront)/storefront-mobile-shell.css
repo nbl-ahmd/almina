@@ -119,8 +119,8 @@
 
   .storefront-shell [data-mobile-shell] .mobile-nav {
     background: var(--store-surface);
-    border-block-start: 1px solid var(--store-border);
-    box-shadow: none;
+    border: 0;
+    box-shadow: var(--shadow-store-dock);
     padding: var(--store-space-4) var(--store-space-8)
       max(var(--store-space-4), env(safe-area-inset-bottom));
   }
@@ -179,7 +179,7 @@
     padding-inline: var(--store-space-8);
     border-radius: var(--store-control-radius);
     font-size: var(--store-type-13);
-    color: var(--store-positive);
+    color: var(--store-action);
   }
   .storefront-shell:has(.cart-page) [data-mobile-shell] .mobile-cart-return:hover { color: var(--store-text); }
 }

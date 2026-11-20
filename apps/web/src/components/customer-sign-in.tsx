@@ -115,7 +115,7 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
   }
   return <div className="mx-auto w-full max-w-[440px] pb-3 sm:pt-2">
     <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-teal"><ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden="true" />{a("Back to shopping")}</Link>
-    <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl border border-border bg-white shadow-[0_12px_36px_-20px_rgba(25,33,59,0.2)]">
+    <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl bg-white shadow-[0_12px_36px_-20px_rgba(25,33,59,0.2)]">
       <div className="px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
         <div className="mb-6 text-center">
           <h1 id="sign-in-heading" className="mb-2 text-[28px] font-semibold leading-tight tracking-[-0.025em]">{challenge ? a("Check your email") : purpose === 'wholesale' ? a("Business sign-in") : a("Welcome to Al Mina")}</h1>
@@ -128,7 +128,7 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
           <GoogleSignIn clientId={options.googleClientId} nonce={nonce} busy={busy} onUnavailable={() => setGoogleFailed(true)} onCredential={credential => { void perform(async () => { await accountRequest('google', { idToken: credential }); await onSignedIn(); }); }} />
           {googleFailed
             ? <p role="status" className="mt-4 rounded-xl border border-border bg-subtle p-4 text-sm leading-6 text-muted">{a("Google sign-in could not load. ")}{options.emailEnabled ? a("Continue with an email code below.") : a("Refresh this page to try again, or contact the pharmacy for help.")}</p>
-            : options.emailEnabled ? <div className="my-5 flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-border" />{a("or continue with email")}<span className="h-px flex-1 bg-border" /></div> : null}
+            : options.emailEnabled ? <div className="my-5 flex items-center gap-3 text-xs text-muted">{a("or continue with email")}</div> : null}
         </> : null}
         {options?.emailEnabled ? <form onSubmit={submit} aria-label={a("Email sign-in")} aria-busy={busy}><FieldGroup className="grid gap-4">
           {challenge ? <Field data-invalid={!!error}><FieldLabel htmlFor="account-sign-in-code">{a("Six-digit code")}</FieldLabel><Input variant="code" id="account-sign-in-code" ref={codeInput} type="text" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} disabled={busy} aria-invalid={!!error} aria-describedby={error ? 'sign-in-error code-help' : 'code-help'} onChange={event => { setCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }} placeholder="000000" /><FieldDescription id="code-help" className="text-center">{a("Your code expires in 10 minutes.")}</FieldDescription></Field> : <Field><FieldLabel htmlFor="customer-sign-in-field-1">{a("Email address")}</FieldLabel><Input id="customer-sign-in-field-1" ref={emailInput} type="email" aria-describedby={error ? 'sign-in-error' : undefined} autoComplete="email" placeholder={a("you@example.com")} maxLength={254} required value={email} disabled={busy} onChange={event => { setEmail(event.target.value); setError(''); }} /></Field>}
@@ -140,7 +140,7 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
         {notice ? <p role="status" data-store-notice="success" data-store-feedback className="mb-0 mt-3 flex items-start gap-2 rounded-xl px-3 py-2.5 text-sm leading-5 text-teal"><CheckCircleIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{a(notice)}</p> : null}
         {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">{a("Your email connects your account and purchases.")}<br />{a("Marketing is always optional. ")}<Link href="/privacy" aria-label={a("account privacy notice")} className={`${information.privacyLink} text-teal hover:text-teal`}>{a("Read our privacy notice")}</Link>.</p> : null}
       </div>
-      {purpose==='retail'?<div className="border-t border-border bg-page px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted transition-colors hover:bg-white hover:text-teal">{a("Continue as a guest")}<ArrowRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link></div>:null}
+      {purpose==='retail'?<div className="bg-subtle px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-muted transition-colors hover:bg-white hover:text-teal">{a("Continue as a guest")}<ArrowRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link></div>:null}
     </section>
   </div>;
 }

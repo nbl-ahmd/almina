@@ -79,7 +79,7 @@ export default async function PrivacyPage() {
         <h2 className="mt-8 text-xl font-semibold">Contact us</h2>
         <p className="mt-2 text-sm leading-7 text-muted">{businessContact.name}, {businessContact.addressLocality}, United Arab Emirates. Phone <a className="text-teal" href={`tel:${businessContact.telephone}`}>{businessContact.telephone}</a> or email <a className="text-teal" href={`mailto:${businessContact.email}`}>{businessContact.email}</a>. Please do not send passwords, sign-in codes or full card numbers.</p>
 
-        <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-6">
+        <div className="mt-8 flex flex-wrap gap-3 pt-6">
           <Link className="button text-sm" href="/contact">Contact the pharmacy</Link>
           <Link className="button button-secondary text-sm" href={policyPaths.returns}>Returns policy</Link>
           <Link className="button button-secondary text-sm" href="/account">Back to your account</Link>

@@ -53,13 +53,14 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--store-border);
-  border-radius: var(--store-card-radius);
-  background: var(--store-surface);
+  display: grid;
+  gap: var(--store-space-8);
 }
 
 .item {
   display: grid;
+  background: var(--store-surface);
+  border-radius: var(--store-card-radius);
   grid-template-columns: var(--store-space-64) minmax(0, 1fr) auto;
   align-items: start;
   column-gap: var(--store-space-10);
@@ -68,14 +69,14 @@
   padding: var(--store-space-12);
 }
 
-.item + .item { border-block-start: 1px solid var(--store-border); }
+
 .media {
   grid-column: 1;
   grid-row: 1;
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  border: 1px solid var(--store-border);
+  background: var(--color-product-well);
   border-radius: var(--store-radius-8);
   overflow: hidden;
 }
@@ -90,7 +91,7 @@
   font-weight: var(--store-weight-bold);
   overflow-wrap: anywhere;
 }
-a.name:hover { color: var(--store-positive); }
+a.name:hover { color: var(--store-action); }
 .variant, .unitPrice {
   margin: var(--store-space-2) 0 0;
   color: var(--store-text-muted);
@@ -140,7 +141,6 @@ a.name:hover { color: var(--store-positive); }
 
 .summary {
   padding: var(--store-space-16);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   background: var(--store-surface);
 }
@@ -171,11 +171,10 @@ a.name:hover { color: var(--store-positive); }
   flex-wrap: wrap;
   column-gap: var(--store-space-16);
   margin-block-start: var(--store-space-12);
-  border-block-start: 1px solid var(--store-border);
   font-size: var(--store-type-13);
 }
 .summaryLinks a:hover { color: var(--store-text); }
-.summaryLinks a { display: flex; align-items: center; min-block-size: var(--store-target-min); color: var(--store-positive); }
+.summaryLinks a { display: flex; align-items: center; min-block-size: var(--store-target-min); color: var(--store-action); }
 
 .action [data-cart-next] { inline-size: 100%; }
 .dockAmount { display: none; }
@@ -184,7 +183,6 @@ a.name:hover { color: var(--store-positive); }
   max-inline-size: 56ch;
   margin-inline: auto;
   padding: var(--store-space-20);
-  border: 1px solid var(--store-border);
   border-radius: var(--store-card-radius);
   background: var(--store-surface);
 }
@@ -259,7 +257,7 @@ a.name:hover { color: var(--store-positive); }
     padding-block: var(--store-space-8) calc(var(--store-space-8) + env(safe-area-inset-bottom, 0px));
     padding-left: max(var(--store-page-gutter), env(safe-area-inset-left));
     padding-right: max(var(--store-page-gutter), env(safe-area-inset-right));
-    border-block-start: 1px solid var(--store-border);
+    box-shadow: var(--shadow-store-dock);
     background: var(--store-surface);
   }
   .dockAmount { display: grid; min-inline-size: 0; overflow-wrap: anywhere; }

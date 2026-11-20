@@ -18,6 +18,8 @@
     "secondary": "--store-secondary-surface",
     "hover": "--store-hover-surface",
     "campaign": "--store-campaign-surface",
+    "campaign-alt": "--color-promo-alt",
+    "campaign-ink": "--color-promo-ink",
     "selected": "--store-selected-surface",
     "positive": "--store-positive",
     "positive-surface": "--store-positive-surface",

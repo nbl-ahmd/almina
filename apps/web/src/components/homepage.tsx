@@ -1,4 +1,5 @@
 import Image, { getImageProps } from 'next/image';
+import { BeakerIcon, FaceSmileIcon, ScissorsIcon, SparklesIcon, ShieldCheckIcon, UserGroupIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import Link from './app-link';
 import type { GrowthPage } from '@almina/contracts';
 import { bannerArtwork, bannerMobileMedia, bannerSizes } from '../lib/catalog/banner-artwork';
@@ -9,7 +10,8 @@ import { getWebEnvironment } from '../lib/server/env';
 import { categoryHref, type Category, type Product } from '../lib/catalog/model';
 import { CampaignArtwork } from './campaign-artwork';
 import { CampaignSlider } from './campaign-slider';
-import { ProductCard } from './product-card';
+import { ProductCard, ProductPhoto } from './product-card';
+import { productImage } from '../lib/server/catalog';
 
 type Banner = { image: string; mobileImage?: string; name: string; href: string | null };
 
@@ -45,21 +47,29 @@ async function SectionHeading({ title, href, link = 'View all' }: {
   );
 }
 
-export function HomeHero({ locale, banners = [], campaigns = [], loading = false }: {
+export function HomeHero({ locale, banners = [], campaigns = [], featured = [], loading = false }: {
   locale: Locale;
   banners?: Banner[];
   campaigns?: GrowthPage[];
+  featured?: Product[];
   loading?: boolean;
 }) {
   const ar = locale === 'ar';
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
-  const leadTitle = ar ? 'العناية الشخصية اليومية' : 'Everyday personal care';
-  const leadAction = ar ? 'تسوق المجموعة' : 'Shop collection';
+  const leadTitle = ar ? 'احتياجاتك من الصيدلية' : 'Everyday pharmacy essentials';
+  const leadAction = ar ? 'تصفح المنتجات' : 'Shop products';
   const lead = (
-    <Link key="almina-everyday" href="/collections/daily-care" className="home-hero-copy home-hero-copy--lead"
+    <Link key="almina-everyday" href="/products" className="home-hero-copy home-hero-copy--lead"
       aria-label={`${leadTitle}. ${leadAction}`}>
-      <span className="home-hero-title">{leadTitle}</span>
-      <span className="home-hero-action">{leadAction}</span>
+      <span className="home-hero-message">
+        <span className="home-hero-title">{leadTitle}</span>
+        <span className="home-hero-action">{leadAction}</span>
+      </span>
+      {featured.length > 0 && <span className="home-hero-art" aria-hidden="true">
+        {featured.map((product, index) => <span className="home-hero-product" key={product._id}>
+          <ProductPhoto product={product} eager={index === 0} sizes="(max-width: 767px) 32vw, 210px" />
+        </span>)}
+      </span>}
     </Link>
   );
   if (loading) return <div className="home-campaigns"><div className="home-hero-viewport">{lead}</div><div className="campaign-placeholder" aria-hidden="true" /></div>;
@@ -77,8 +87,10 @@ export function HomeHero({ locale, banners = [], campaigns = [], loading = false
           lead,
           ...heroCampaigns.map(page => <CampaignArtwork cloudName={cloudName} key={page.slug} page={page} />),
           <Link key="shop-brands" href="/brands" className="home-hero-copy">
-            <span className="home-hero-title">{ar ? 'تسوق حسب العلامة التجارية' : 'Shop by brand'}</span>
-            <span className="home-hero-action">{ar ? 'استكشف العلامات التجارية' : 'Explore brands'}</span>
+            <span className="home-hero-message">
+              <span className="home-hero-title">{ar ? 'تسوق حسب العلامة التجارية' : 'Shop by brand'}</span>
+              <span className="home-hero-action">{ar ? 'استكشف العلامات التجارية' : 'Explore brands'}</span>
+            </span>
           </Link>,
         ]}
       </CampaignSlider>
@@ -93,17 +105,32 @@ function categoryRank(name: string) {
   return index < 0 ? categoryOrder.length : index;
 }
 
-export async function HomeCategories({ categories }: { categories: Category[] }) {
+const departmentIcons = [SparklesIcon, BeakerIcon, UserGroupIcon, FaceSmileIcon, ScissorsIcon, ShieldCheckIcon];
+
+export async function HomeCategories({ categories, products }: { categories: Category[]; products: Product[] }) {
   if (!categories.length) return null;
   const locale = await getLocale();
   const ordered = [...categories].sort((a, b) => categoryRank(a.name) - categoryRank(b.name));
+  const categoryPhotos = new Map<string, Product>();
+  for (const product of products) {
+    if (!categoryPhotos.has(product.category._id) && productImage(product) !== '/product-placeholder.svg') {
+      categoryPhotos.set(product.category._id, product);
+    }
+  }
   return (
     <section className="home-departments" aria-label={u(locale, 'Shop by care')}>
       <SectionHeading title={locale === 'ar' ? 'الفئات' : 'Categories'} href="/categories" link="All categories" />
       <div className="home-category-lane" data-store-rail>
-        {ordered.slice(0, 8).map(category => (
-          <Link key={category._id} href={categoryHref(category)}>{u(locale, category.name)}</Link>
-        ))}
+        {ordered.slice(0, 8).map(category => {
+          const DepartmentIcon = departmentIcons[categoryRank(category.name)] ?? Squares2X2Icon;
+          const product = categoryPhotos.get(category._id);
+          return <Link key={category._id} href={categoryHref(category)}>
+            <span className="home-category-art" aria-hidden="true">
+              {product ? <ProductPhoto product={product} sizes="72px" /> : <DepartmentIcon />}
+            </span>
+            <span>{u(locale, category.name)}</span>
+          </Link>;
+        })}
       </div>
     </section>
   );

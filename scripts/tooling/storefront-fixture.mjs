@@ -128,9 +128,16 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       }));
       if (url.pathname.endsWith('/campaigns')) res.end(JSON.stringify({ data: campaigns }));
       else {
-        const page = campaigns.find(item => item.kind === url.searchParams.get('kind') && item.slug === url.searchParams.get('slug'));
+        const editorials = ['brand', 'category', 'guide', 'collection'].map(kind => ({
+          kind, slug: 'fixture-' + kind, locale, title: 'Fixture ' + kind,
+          description: 'Synthetic editorial description.', body: 'Synthetic editorial copy.', published: true,
+          categories: [{ label: 'Browse products', href: '/products' }],
+          faqs: [{ question: 'Where can I browse?', answer: 'See the catalogue for available items.' }],
+        }));
+        const page = [...campaigns, ...editorials].find(item =>
+          item.kind === url.searchParams.get('kind') && item.slug === url.searchParams.get('slug'));
         if (!page) res.writeHead(404);
-        const detail = page && locale === 'ar'
+        const detail = page?.kind === 'campaign' && locale === 'ar'
           ? { ...page, title: 'عرض تجريبي للصيدلية', body: 'محتوى تجريبي لهذا العرض.' }
           : page;
         res.end(JSON.stringify({ data: detail ?? null }));

@@ -17,8 +17,11 @@ for (const locale of ['en', 'ar'] as const) {
       const surface = page.locator('main [data-storefront-information]');
       await expect(surface).toHaveAttribute('dir', ar ? 'rtl' : 'ltr');
       await expect(surface.getByRole('heading', { level: 1 })).toBeVisible();
-      await expect(surface).toHaveCSS('background-color', 'rgb(250, 249, 246)');
-      expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(390);
+      await expect(surface).toHaveCSS('background-color', 'rgb(243, 246, 251)');
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 840 });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(width);
+      }
       if (ar && ['/shipping', '/returns', '/privacy', '/terms'].includes(path)) {
         await expect(surface.locator('article')).toHaveAttribute('lang', 'en');
         await expect(surface.getByText('النص المنشور لهذه السياسة باللغة الإنجليزية.')).toBeVisible();
@@ -70,6 +73,31 @@ for (const locale of ['en', 'ar'] as const) {
     await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', /noindex/);
   });
 }
+
+test('managed brand, department, guide and routine templates use the storefront system', async ({ page, request }) => {
+  const fixture = 'http://127.0.0.1:4711/__fixture/home-campaigns';
+  expect((await request.get(fixture + '?enabled=1')).ok()).toBe(true);
+  try {
+    for (const [path, heading] of [
+      ['/brands/fixture-brand', 'Fixture brand'],
+      ['/shop/fixture-category', 'Fixture category'],
+      ['/health-guides/fixture-guide', 'Fixture guide'],
+      ['/routines/fixture-collection', 'Fixture collection'],
+    ]) {
+      const response = await page.goto(path!);
+      expect(response?.status(), path).toBe(200);
+      await expect(page.getByRole('heading', { name: heading!, exact: true })).toBeVisible();
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 840 });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(width);
+      }
+      await page.getByText('Where can I browse?', { exact: true }).click();
+      await expect(page.getByText('See the catalogue for available items.', { exact: true })).toBeVisible();
+    }
+  } finally {
+    expect((await request.get(fixture + '?enabled=0')).ok()).toBe(true);
+  }
+});
 
 test('published editorial details preserve authored locales and canonical routes', async ({ page, request }) => {
   const fixture = 'http://127.0.0.1:4711/__fixture/home-campaigns';
