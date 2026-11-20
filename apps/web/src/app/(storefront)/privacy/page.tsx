@@ -39,7 +39,7 @@ export default async function PrivacyPage() {
         <p className="mt-2 text-sm leading-7 text-muted">Read <a className="text-teal underline" href="https://policies.google.com/privacy" rel="noopener noreferrer" target="_blank">Google’s privacy policy</a> and manage advertising preferences through <a className="text-teal underline" href="https://myadcenter.google.com/" rel="noopener noreferrer" target="_blank">Google My Ad Center</a>. Declining a survey does not affect your order, pharmacy support or access to the website.</p>
 
         <h2 className="mt-8 text-xl font-semibold">Information we collect</h2>
-        <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-7 text-muted">
+        <ul className="mt-2 list-disc space-y-2 ps-5 text-sm leading-7 text-muted">
           <li><strong>Order details:</strong> name, phone number, email address, delivery address, area, order contents and the payment method you choose. We do not collect or store full card numbers on this website. If online card payment is offered and you choose it, Stripe collects card details on its hosted checkout page. We retain payment references, amounts, statuses and refund updates.</li>
           <li><strong>Account details:</strong> your verified email address, Google account identifier if you choose Google sign-in, saved addresses, saved products, communication choices and rewards balance.</li>
           <li><strong>Prescription and pharmacy review information:</strong> where an order requires pharmacist review, the information you or your prescriber provide to verify and dispense it safely.</li>

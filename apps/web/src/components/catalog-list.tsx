@@ -179,7 +179,7 @@ export async function CatalogList({
               <div className={styles.filterBody}>
                 <h2 className={styles.filterHeading}>{t('Filters')}</h2>
                 <CatalogFilterForm locale={locale} className={styles.form}>
-                  <div className={styles.field}>
+                  <div className={`${styles.field} ${styles.filterSection}`}>
                     <label htmlFor="catalog-query">{t('Search products')}</label>
                     <div className={styles.filterSearch}>
                       <Icon name="search" />
@@ -194,7 +194,7 @@ export async function CatalogList({
                       </p> : null}
                     </>
                   ) : (
-                    <div className={styles.field}>
+                    <div className={`${styles.field} ${styles.filterSection}`}>
                       <label htmlFor="catalog-category">{t('Category')}</label>
                       <NativeSelect id="catalog-category" name="category" defaultValue={selected}>
                         <option value="">{t('All categories')}</option>
@@ -202,42 +202,55 @@ export async function CatalogList({
                       </NativeSelect>
                     </div>
                   )}
-                  <label className={styles.stock}>
-                    <input type="checkbox" name="inStock" value="true" defaultChecked={inStock} />
-                    {t('In stock')}
-                  </label>
-                  <fieldset className={styles.price}>
-                    <legend>{t('Price range (AED)')}</legend>
-                    <div className={styles.priceFields}>
-                      <div className={styles.field}>
-                        <label htmlFor="catalog-min">{t('From')}</label>
-                        <Input id="catalog-min" type="number" inputMode="decimal" placeholder={ar ? 'أدنى' : 'Min'}
-                          name="minPrice" min="0" max="999999" step="0.01" defaultValue={minPrice} />
+                  <div className={styles.filterSection}>
+                    <label className={styles.stock}>
+                      <input type="checkbox" name="inStock" value="true" defaultChecked={inStock} />
+                      {t('In stock')}
+                    </label>
+                  </div>
+                  <div className={styles.filterSection}>
+                    <fieldset className={styles.price}>
+                      <legend>{t('Price range (AED)')}</legend>
+                      <div className={styles.priceFields}>
+                        <div className={styles.field}>
+                          <label htmlFor="catalog-min">{t('From')}</label>
+                          <div className={styles.currencyField}>
+                            <span aria-hidden="true">AED</span>
+                            <Input id="catalog-min" type="number" inputMode="decimal" placeholder={ar ? 'أدنى' : 'Min'}
+                              name="minPrice" min="0" max="999999" step="0.01" defaultValue={minPrice} />
+                          </div>
+                        </div>
+                        <div className={styles.field}>
+                          <label htmlFor="catalog-max">{t('To')}</label>
+                          <div className={styles.currencyField}>
+                            <span aria-hidden="true">AED</span>
+                            <Input id="catalog-max" type="number" inputMode="decimal" placeholder={ar ? 'أقصى' : 'Max'}
+                              name="maxPrice" min="0" max="999999" step="0.01" defaultValue={maxPrice} />
+                          </div>
+                        </div>
                       </div>
-                      <div className={styles.field}>
-                        <label htmlFor="catalog-max">{t('To')}</label>
-                        <Input id="catalog-max" type="number" inputMode="decimal" placeholder={ar ? 'أقصى' : 'Max'}
-                          name="maxPrice" min="0" max="999999" step="0.01" defaultValue={maxPrice} />
-                      </div>
-                    </div>
-                  </fieldset>
+                    </fieldset>
+                  </div>
                   <input type="hidden" name="sort" value={sort} />
                   {Object.entries({ ...extraFilters, ...(brand ? { brand } : {}), ...(literal ? { literal: 'true' } : {}) })
                     .map(([key, value]) => <input key={key} type="hidden" name={key} value={value} />)}
+                  {search ? <SearchFacets result={search} locale={locale} query={current} /> : null}
+                  {categories?.length ? <details className={styles.explore}>
+                    <summary>{t('Explore categories')}<ChevronDownIcon aria-hidden="true" /></summary>
+                    <nav aria-label={t('Explore categories')}>
+                      {categories.map(cat => <Link className={styles.textLink} href={categoryHref(cat)} key={cat._id}
+                        aria-current={selected === cat._id ? 'page' : undefined}>{t(cat.name)}</Link>)}
+                    </nav>
+                  </details> : null}
                   <div className={styles.actions}>
-                    <Button type="submit" size="sm">{t('Apply filters')}</Button>
-                    {chips.length ? <Link className={styles.textLink} href={clearHref}>{t('Clear filters')}</Link> : null}
+                    {chips.length ? <Link className={styles.textLink} href={clearHref}>
+                      <span className={styles.desktopReset}>{t('Clear filters')}</span>
+                      <span className={styles.mobileReset}>{ar ? 'إعادة تعيين' : 'Reset'}</span>
+                    </Link> : <Button type="reset" size="xs" variant="ghost" className={styles.mobileReset}>{ar ? 'إعادة تعيين' : 'Reset'}</Button>}
                     {q ? <Link className={styles.textLink} href={clearSearchHref}>{ar ? 'مسح البحث' : 'Clear search'}</Link> : null}
+                    <Button type="submit" size="sm" variant="accent">{t('Apply filters')}</Button>
                   </div>
                 </CatalogFilterForm>
-                {search ? <SearchFacets result={search} locale={locale} query={current} /> : null}
-                {categories?.length ? <details className={styles.explore}>
-                  <summary>{t('Explore categories')}<ChevronDownIcon aria-hidden="true" /></summary>
-                  <nav aria-label={t('Explore categories')}>
-                    {categories.map(cat => <Link className={styles.textLink} href={categoryHref(cat)} key={cat._id}
-                      aria-current={selected === cat._id ? 'page' : undefined}>{t(cat.name)}</Link>)}
-                  </nav>
-                </details> : null}
               </div>
             </CatalogFilterPanel>
             <CatalogSort key={`sort:${current}`} className={styles.sort} sort={sort}

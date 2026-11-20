@@ -105,7 +105,7 @@ export async function ProductCard({ product, headingLevel = 3, eagerPhoto = fals
         <Link href={brand ? '/search?' + new URLSearchParams({ q: brand }) : categoryHref(product.category)}>
           <bdi>{brand || u(locale, product.category.name)}</bdi>
         </Link>
-        {pack ? <bdi>{pack}</bdi> : null}
+        {pack ? <><span aria-hidden="true">·</span><bdi>{pack}</bdi></> : null}
       </div>
       <Heading className={`product-card-title ${styles.title}`}><Link href={href} data-product-entry="title" aria-label={name}><bdi>{cardName || name}</bdi></Link></Heading>
       {options ? <p className={styles.optionNote}>

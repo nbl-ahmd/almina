@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
 import { changeSaved, currentSaved, loadSavedAccount } from '../lib/catalog/saved-account';
@@ -42,7 +43,7 @@ export function SaveProduct({ id, name, locale = 'en', compact = false, card = f
       <button type="button" data-store-control={card ? 'save' : undefined} aria-pressed={saved} aria-label={label}
         onClick={() => void toggle()} className={card ? 'card-save'
           : 'flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm font-medium text-teal hover:bg-subtle hover:text-teal'}>
-        <HeartIcon aria-hidden="true" className={`size-4 ${saved && !card ? 'fill-brand' : ''}`} />
+        {saved ? <HeartSolid aria-hidden="true" className="size-4 text-coral" /> : <HeartIcon aria-hidden="true" className="size-4" />}
         <span className={compact ? 'sr-only' : undefined}>{saved ? u(locale, 'Saved') : u(locale, 'Save for later')}</span>
       </button>
       {error ? <p role="status" className={card ? 'card-save-error' : 'text-xs text-muted'}>{error}</p> : null}

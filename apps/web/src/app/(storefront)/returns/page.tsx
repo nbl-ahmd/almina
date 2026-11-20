@@ -37,7 +37,7 @@ export default async function ReturnsPage() {
         <p className="mt-2 text-sm leading-7 text-muted">Unopened, non-medicine products in their original sealed packaging may be returned or exchanged within {merchantReturns.days} days of delivery when you have proof of purchase. The item must be unused, undamaged and resaleable. Delivery charges are not refunded for a change of mind, and the cost of returning the item to the pharmacy is your responsibility unless the return is caused by our error.</p>
 
         <h2 className="mt-8 text-xl font-semibold">What cannot be returned</h2>
-        <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-7 text-muted">
+        <ul className="mt-2 list-disc space-y-2 ps-5 text-sm leading-7 text-muted">
           <li>Medicines, prescription items and pharmacy-only products once dispensed or handed over.</li>
           <li>Opened or unsealed supplements, baby formula and food, cosmetics, skincare and personal-care products.</li>
           <li>Products that need temperature control, or items marked as final sale or non-returnable on the product page.</li>
@@ -52,7 +52,7 @@ export default async function ReturnsPage() {
         <p className="mt-2 text-sm leading-7 text-muted">You can ask us to cancel an order before it is dispatched. Contact the pharmacy as soon as possible. If the order has already left the pharmacy, please follow the return steps below. We may cancel and refund an order when an item is unavailable, a prescription cannot be verified, the delivery address is outside our service area, or a pricing or stock error is found before dispatch.</p>
 
         <h2 className="mt-8 text-xl font-semibold">How to start a return</h2>
-        <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-7 text-muted">
+        <ol className="mt-2 list-decimal space-y-2 ps-5 text-sm leading-7 text-muted">
           <li>Contact Al Mina Pharmacy on <a className="text-teal" href={`tel:${businessContact.telephone}`}>{businessContact.telephone}</a> or <a className="text-teal" href={`mailto:${businessContact.email}`}>{businessContact.email}</a>. Include your order number and the item you want to return.</li>
           <li>Wait for our team to confirm that the item is eligible. Please do not send medicines back without confirmation.</li>
           <li>Return the item to the agreed Al Mina branch in {businessContact.addressLocality}, or follow the collection arrangement our team confirms.</li>

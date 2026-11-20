@@ -20,8 +20,13 @@ export function CatalogFilterForm({ children, className, locale }: { children: R
       upper.reportValidity();
     }
   }
+  function clearValidation(event: FormEvent<HTMLFormElement>) {
+    const upper = upperBound(event.currentTarget);
+    upper?.setCustomValidity('');
+    upper?.removeAttribute('aria-invalid');
+  }
   return <form className={className} method="get" role="search" aria-label={shopText(locale, 'Filter products')}
-    onSubmit={validate} onInput={event => { const upper = upperBound(event.currentTarget); upper?.setCustomValidity(''); upper?.removeAttribute('aria-invalid'); }}>
+    onSubmit={validate} onInput={clearValidation} onReset={clearValidation}>
     {children}
   </form>;
 }

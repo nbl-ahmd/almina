@@ -1,7 +1,7 @@
 "use client";
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
-import { useEffect, useId, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Icon } from './icon';
 import { Button } from './ui/button';
 import Link from './app-link';
@@ -16,6 +16,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const cartStateId = useId();
+  const increase = useRef<HTMLButtonElement>(null);
   const [cartQuantity, setCartQuantity] = useState(0);
   useEffect(() => {
     if (!compact) return;
@@ -31,21 +32,32 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
     window.addEventListener('almina-cart-change', refresh);
     return () => { active = false; window.removeEventListener('storage', refresh); window.removeEventListener('almina-cart-change', refresh); };
   }, [compact, id]);
-  async function add() {
+  async function changeQuantity(delta: number) {
     setPending(true); setMessage('');
     try {
       // Storage parsing/validation is needed only after an explicit cart interaction.
       const { saveCart, storedCart } = await import('../lib/catalog/browser-cart');
       const lines = storedCart();
       const previous = lines.find(line => line.id === id)?.quantity ?? 0;
-      const error = await checkAddition(id, previous + quantity);
+      if (delta < 0 && previous === 0) return;
+      const next = previous + delta;
+      const error = next > 0 ? await checkAddition(id, next) : null;
       if (error) { setMessage(error); return; }
       // A different tab may have changed storage while the stock request was in flight.
       if (JSON.stringify(lines) !== JSON.stringify(storedCart())) { setMessage(u(locale,"Your cart changed. Please try again.")); return; }
-      saveCart([...lines.filter(line => line.id !== id), { id, quantity: previous + quantity }]);
+      if (next === 0) {
+        increase.current?.focus({ preventScroll: true });
+        saveCart(lines.filter(line => line.id !== id));
+      } else if (delta < 0) {
+        saveCart(lines.map(line => line.id === id ? { id, quantity: next } : line));
+      } else {
+        saveCart([...lines.filter(line => line.id !== id), { id, quantity: next }]);
+      }
       recordCommerceEvent('cart_updated');
-      attributeCart(id);
-      setMessage(u(locale,"Added to cart."));
+      if (delta > 0) {
+        attributeCart(id);
+        setMessage(u(locale, "Added to cart."));
+      }
     } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
     finally { setPending(false); }
   }
@@ -55,21 +67,22 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
     const count = new Intl.NumberFormat(locale === 'ar' ? 'ar-AE-u-nu-arab' : 'en-AE').format(cartQuantity);
     return (
       <div className="card-cart-controls">
-        <Button variant="soft" size="icon" className="add-to-cart" type="button"
-          aria-label={name ? `${u(locale, state)}: ${name}` : u(locale, state)}
-          aria-describedby={cartQuantity > 0 ? cartStateId : undefined} aria-busy={pending}
-          data-added={added} data-in-cart={cartQuantity > 0}
-          disabled={pending || stock <= 0} onClick={add}>
-          {stock <= 0 ? <NoSymbolIcon aria-hidden="true" />
-            : pending ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" />
-            : cartQuantity > 0 ? <span className="card-cart-count" data-store-feedback={added ? 'true' : undefined} aria-hidden="true">
-                {count}<Icon name="plus" />
-              </span>
-            : <Icon name={added ? 'check' : 'plus'} />}
-        </Button>
-        {cartQuantity > 0 ? <span id={cartStateId} className="sr-only">
-          {locale === 'ar' ? `في السلة: ${count}` : `In cart: ${count}`}
-        </span> : null}
+        <div className={cartQuantity > 0 ? 'card-cart-stepper' : 'contents'} role={cartQuantity > 0 ? 'group' : undefined}
+          aria-label={cartQuantity > 0 ? u(locale, 'Quantity') : undefined}>
+          {cartQuantity > 0 ? <Button variant="ghost" size="icon-sm" type="button"
+            aria-label={u(locale, 'Decrease purchase quantity')} aria-disabled={pending || undefined}
+            onClick={() => { if (!pending) void changeQuantity(-1); }}><Icon name="minus" /></Button> : null}
+          {cartQuantity > 0 ? <output id={cartStateId} className="card-cart-count">{count}</output> : null}
+          <Button ref={increase} variant={cartQuantity > 0 ? 'ghost' : 'accent'} size="icon-sm" className="add-to-cart shadow-2xs" type="button"
+            aria-label={name ? `${u(locale, state)}: ${name}` : u(locale, state)}
+            aria-describedby={cartQuantity > 0 ? cartStateId : undefined} aria-busy={pending}
+            data-in-cart={cartQuantity > 0} data-added={added} aria-disabled={pending || undefined}
+            disabled={stock <= 0} onClick={() => { if (!pending) void changeQuantity(1); }}>
+            {stock <= 0 ? <NoSymbolIcon aria-hidden="true" />
+              : pending ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" />
+              : <Icon name="plus" />}
+          </Button>
+        </div>
         <p role="status" data-added={added} className="card-cart-status" aria-atomic="true">{message}</p>
       </div>
     );
@@ -114,7 +127,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
         ) : null}
         <Button variant="accent" className={`add-to-cart ${quantityPicker ? '' : 'min-w-11 w-full'}`} type="button"
           aria-label={name ? (pending && locale === 'en' ? `${label} ${name}` : `${label}: ${name}`) : label} aria-busy={pending} data-added={added}
-          disabled={pending || stock <= 0} onClick={goToCart ? () => router.push('/cart') : add}>
+          disabled={pending || stock <= 0} onClick={goToCart ? () => router.push('/cart') : () => { void changeQuantity(quantity); }}>
           {stock <= 0 ? null : pending ? <ArrowPathIcon className="motion-safe:animate-spin" aria-hidden="true" />
             : added || quantityPicker ? <Icon name={added ? 'check' : 'plus'} /> : (
               <><span className="hidden md:inline-flex"><Icon name="bag" /></span>

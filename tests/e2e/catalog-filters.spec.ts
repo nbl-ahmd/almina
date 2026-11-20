@@ -50,8 +50,15 @@ test('Arabic filters keep price labels, decimal entry and inline validation read
  const lower=form.getByRole('spinbutton',{name:'من',exact:true}),upper=form.getByRole('spinbutton',{name:'إلى',exact:true});
  await expect(lower).toHaveAttribute('placeholder','أدنى');await expect(upper).toHaveAttribute('placeholder','أقصى');
  await expect(page.locator('.storefront-shell')).toHaveAttribute('dir','rtl');
+ const currency = lower.locator('..').getByText('AED', { exact: true });
+ const [field, label] = await Promise.all([lower.boundingBox(), currency.boundingBox()]);
+ expect(field!.x + field!.width - (label!.x + label!.width)).toBeLessThan(20);
  await lower.fill('20');await upper.fill('10');await form.getByRole('button',{name:'تطبيق الفلاتر',exact:true}).click();
  expect(await upper.evaluate((element:HTMLInputElement)=>element.validationMessage)).toContain('السعر');
+ await form.getByRole('button', { name: 'إعادة تعيين', exact: true }).click();
+ await expect(lower).toHaveValue('');
+ await expect(upper).toHaveValue('');
+ await expect(upper).not.toHaveAttribute('aria-invalid');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:'outputs/catalog-filters-2026-10-27/filters-ar-390.png'});
 });

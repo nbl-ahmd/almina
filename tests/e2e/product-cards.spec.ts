@@ -28,16 +28,23 @@ for (const locale of ['en', 'ar'] as const) {
         expect(box!.height).toBeGreaterThanOrEqual(44);
       }
     }
-    const before = await card.boundingBox();
     await save.click();
     const remove = card.getByRole('button', { name: ar ? 'إزالة Daily Care من المنتجات المحفوظة' : 'Remove Daily Care from saved products' });
     await expect(remove).toHaveAttribute('aria-pressed', 'true');
-    await expect(remove).toHaveCSS('background-color', 'rgb(231, 245, 239)');
+    await expect(remove.locator('svg')).toHaveCSS('color', 'rgb(225, 77, 90)');
     await add.click();
-    await expect(add.locator('.card-cart-count')).toHaveText(ar ? '١' : '1');
-    expect((await card.boundingBox())!.height).toBe(before!.height);
+    const count = card.locator('.card-cart-count');
+    const decrease = card.locator('.card-cart-stepper').getByRole('button').first();
+    await expect(count).toHaveText(ar ? '١' : '1');
+    await add.click();
+    await expect(count).toHaveText(ar ? '٢' : '2');
+    await decrease.click();
+    await expect(count).toHaveText(ar ? '١' : '1');
     await page.reload();
-    await expect(add.locator('.card-cart-count')).toHaveText(ar ? '١' : '1');
+    await expect(count).toHaveText(ar ? '١' : '1');
+    await decrease.click();
+    await expect(count).toHaveCount(0);
+    await expect(add).toBeFocused();
     await expect(remove).toHaveAttribute('aria-pressed', 'true');
     await remove.click();
     await expect(save).toHaveAttribute('aria-pressed', 'false');

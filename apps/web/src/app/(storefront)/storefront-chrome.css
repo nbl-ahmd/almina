@@ -3,29 +3,76 @@
   outline-color: var(--store-focus);
 }
 
-[data-storefront-chrome="header"] .storefront-search-form {
-  border-color: transparent;
-  border-radius: var(--store-search-radius);
-  background: var(--store-search-surface);
+.storefront-shell .storefront-header[data-storefront-chrome="header"] {
+  position: sticky;
+  background: transparent;
+  border-block-end: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  color: var(--color-ink);
 }
 
-[data-storefront-chrome="header"] .storefront-search-form:hover:not(:focus-within) { border-color: var(--store-border); }
+/* Keep the fixed mobile tab bar anchored to the viewport. */
+.storefront-shell .storefront-header[data-storefront-chrome="header"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+[data-storefront-chrome="header"] .storefront-search-form {
+  padding-block: 0;
+  padding-inline: var(--store-space-12) 0;
+  gap: var(--store-space-4);
+  min-height: 44px;
+  border-color: color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: var(--radius-pill);
+  background: var(--color-subtle);
+}
+
+[data-storefront-chrome="header"] .storefront-search-form:hover:not(:focus-within) {
+  border-color: var(--color-control-hover);
+}
 
 [data-storefront-chrome="header"] .storefront-search-form:focus-within {
-  border-color: var(--store-focus);
-  outline-color: var(--store-focus);
+  border-color: var(--color-brand);
+  background: var(--color-surface);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 15%, transparent);
 }
+
+[data-storefront-chrome="header"] .storefront-search-form [data-slot="header-search-input"] {
+  min-height: 42px;
+}
+
+[data-storefront-chrome="header"] [data-slot="search-clear"] { block-size: 42px; }
 
 [data-storefront-chrome="header"] .sf-search-submit {
+  position: relative;
+  isolation: isolate;
+  inline-size: 44px;
+  min-height: 42px;
+  block-size: 42px;
+  padding: 0;
+  border-radius: var(--radius-pill);
   background: transparent;
-  color: var(--store-positive);
-  border-radius: var(--store-search-action-radius);
-  font-weight: var(--store-weight-medium);
-  min-height: var(--store-target-min);
+  color: var(--color-primary-foreground);
 }
 
-[data-storefront-chrome="header"] .sf-search-submit:is(:hover, :active) {
-  background: var(--store-selected-surface);
+[data-storefront-chrome="header"] .sf-search-label { display: none; }
+
+[data-storefront-chrome="header"] .sf-search-submit::before {
+  content: "";
+  position: absolute;
+  inset: 5px 6px;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--color-brand);
+}
+
+[data-storefront-chrome="header"] .sf-search-submit:is(:hover, :active)::before {
+  background: var(--color-brand-hover);
 }
 
 [data-storefront-chrome="header"] [data-search-browse] {
@@ -107,11 +154,7 @@
 }
 
 @media (min-width: 768px) {
-  .storefront-header[data-storefront-chrome="header"] {
-    background: var(--store-surface);
-    border-block-end: 1px solid var(--store-border);
-    color: var(--store-text);
-  }
+  .storefront-shell .storefront-header[data-storefront-chrome="header"] { inset-block-start: 0; }
 
   [data-storefront-chrome="header"] .header-content,
   [data-storefront-chrome="header"] .storefront-departments > .sf-container,
@@ -151,11 +194,6 @@
   }
 
   [data-storefront-chrome="header"] [data-slot="header-search-input"] { font-size: var(--store-type-15); }
-
-  [data-storefront-chrome="header"] .storefront-search-form {
-    min-height: 50px;
-    padding: var(--store-space-2) var(--store-space-3) var(--store-space-2) var(--store-space-12);
-  }
 
   [data-storefront-chrome="header"] :is(.storefront-search-panel, .storefront-mega-panel) {
     background: var(--store-surface);
@@ -303,7 +341,9 @@
 .storefront-shell:has(.cart-page, .checkout-flow, [data-search-expanded='true']) .floating-contact { display: none; }
 @media (max-width: 767px) {
   .storefront-shell .floating-contact {
-    inset-block-end: calc(68px + env(safe-area-inset-bottom, 0px));
+    inset-block-end: calc(4.75rem + env(safe-area-inset-bottom, 0px) + 0.75rem);
+    inset-inline-end: var(--store-space-16);
+    z-index: 30;
     inline-size: var(--store-space-48);
     block-size: var(--store-space-48);
   }

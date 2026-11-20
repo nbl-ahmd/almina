@@ -28,7 +28,9 @@ for (const locale of ['en', 'ar'] as const) {
       });
       expect(layout).toMatchObject({ overlaps: false, documentFits: true });
       expect(layout.searchWidth).toBeGreaterThan(width <= 1100 ? width - 65 : 290);
-      await expect(header.locator('.sf-search-submit')).toHaveCSS('border-radius', '8px');
+      await expect(header.locator('.sf-search-submit')).toHaveCSS('border-radius', '9999px');
+      await expect(header.getByRole('search')).toHaveCSS('height', '44px');
+      await expect(header).toHaveCSS('position', 'sticky');
     }
 
     await categories.focus();

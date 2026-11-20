@@ -61,6 +61,6 @@ for(const lang of ['en','ar'] as const) {
   await expect(page).toHaveURL(/\/cart$/);
   await page.goto('/products');const cardAdd=page.locator('.product-card .add-to-cart').first();await cardAdd.click();await expect(cardAdd).toHaveAttribute('data-added','true');await cardAdd.hover();await expect(cardAdd).toHaveCSS('background-color','rgb(231, 245, 239)');
   const save=page.locator('.card-save').first();await save.click();await expect(save).toHaveAttribute('aria-pressed','true');await save.hover();
-  await expect(save).toHaveCSS('background-color','rgb(231, 245, 239)');await expect(save).toHaveCSS('color','rgb(8, 102, 87)');
+  await expect(save.locator('svg')).toHaveCSS('color','rgb(225, 77, 90)');
  });
 }
