@@ -5,7 +5,7 @@ import { useEffect,useId,useRef,useState,type KeyboardEvent } from 'react';
 import { MagnifyingGlassIcon,ArrowRightIcon,XMarkIcon,ClockIcon,ArrowUpRightIcon,Squares2X2Icon } from '@heroicons/react/24/outline';
 type Suggestion={name:string;href:string;kind?:'category'|'product'|'brand'|'collection'|'popular'|'related'};
 const recentKey='almina.recent-searches.v1';
-const browseTones=['bg-subtle','bg-accent','bg-sale-surface','bg-warning-surface'];
+const browseTones=['bg-subtle','bg-accent','bg-subtle','bg-accent'];
 export function SearchBox({ locale = 'en', mobileShell = false }: { locale?: Locale; mobileShell?: boolean }){
  const [query,setQuery]=useState(''),[open,setOpen]=useState(false),[items,setItems]=useState<Suggestion[]>([]),[recent,setRecent]=useState<string[]>([]),[active,setActive]=useState(-1),[loading,setLoading]=useState(false),[failed,setFailed]=useState(false);
  const ref=useRef<HTMLDivElement>(null),id=useId(),ar=locale==='ar',trimmed=query.trim(),searching=trimmed.length>=2;

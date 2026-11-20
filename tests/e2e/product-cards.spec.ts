@@ -9,7 +9,7 @@ for (const locale of ['en', 'ar'] as const) {
     const card = page.locator('.product-card').filter({ has: page.getByRole('heading', { name: 'Daily Care', exact: true }) });
     const save = card.getByRole('button', { name: ar ? 'حفظ Daily Care' : 'Save Daily Care', exact: true });
     const add = card.getByRole('button', { name: ar ? 'أضف إلى السلة: Daily Care' : 'Add to cart: Daily Care', exact: true });
-    await expect(add).toHaveCSS('border-radius', '10px');
+    await expect(add).toHaveCSS('border-radius', '12px');
     await expect(card.locator('.product-stock')).toHaveText(ar ? 'متوفر' : 'In stock');
     await expect(card.locator('.currency-visual')).toHaveCount(2);
     await expect(card.locator('.currency-visual').first()).toHaveAttribute('dir', 'ltr');
@@ -32,7 +32,7 @@ for (const locale of ['en', 'ar'] as const) {
     await save.click();
     const remove = card.getByRole('button', { name: ar ? 'إزالة Daily Care من المنتجات المحفوظة' : 'Remove Daily Care from saved products' });
     await expect(remove).toHaveAttribute('aria-pressed', 'true');
-    await expect(remove).toHaveCSS('background-color', 'rgb(255, 242, 243)');
+    await expect(remove).toHaveCSS('background-color', 'rgb(231, 245, 239)');
     await add.click();
     await expect(add.locator('.card-cart-count')).toHaveText(ar ? '١' : '1');
     expect((await card.boundingBox())!.height).toBe(before!.height);

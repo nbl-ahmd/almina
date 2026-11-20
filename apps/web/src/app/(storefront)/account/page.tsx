@@ -12,6 +12,6 @@ export default async function AccountPage() {
   const locale = await getLocale();
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   return <StorefrontInformation locale={locale}>
-    <AccountLanguage locale={locale}><CustomerAccount nonce={nonce} /></AccountLanguage>
+    <div data-storefront-customer><AccountLanguage locale={locale}><CustomerAccount nonce={nonce} /></AccountLanguage></div>
   </StorefrontInformation>;
 }

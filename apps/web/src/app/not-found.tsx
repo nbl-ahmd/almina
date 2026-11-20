@@ -1,3 +1,4 @@
+import './storefront-compatibility.css';
 import { Navigation, Footer } from '../components/navigation';
 import StorefrontNotFound from './(storefront)/not-found';
 import { getLocale } from '../lib/server/i18n';

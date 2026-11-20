@@ -166,7 +166,7 @@
   gap: var(--store-space-8);
   cursor: pointer;
 }
-.stock input { inline-size: var(--store-space-18); block-size: var(--store-space-18); accent-color: var(--store-text); }
+.stock input { inline-size: var(--store-space-18); block-size: var(--store-space-18); accent-color: var(--color-brand); }
 
 .actions, .chips {
   display: flex;
@@ -265,7 +265,7 @@
 .filters:not([open]) > .filterToggle:not(:has(.badge)):hover::before { background: var(--store-hover-surface); }
 .option[aria-current='page'] { color: var(--store-positive); font-weight: var(--store-weight-semibold); }
 .option[aria-current='page']::before { background: var(--store-selected-surface); }
-.textLink { padding-inline: var(--store-space-4); color: var(--store-stress-error); }
+.textLink { padding-inline: var(--store-space-4); color: var(--color-brand); }
 .textLink:hover { color: var(--store-text); }
 .queryNote { margin-block: 0 var(--store-space-8); color: var(--store-text-muted); font-size: var(--store-type-14); overflow-wrap: anywhere; }
 .queryNote a, .help a { text-decoration: underline; font-weight: var(--store-weight-semibold); }

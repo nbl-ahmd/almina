@@ -194,7 +194,12 @@
 }
 
 @media (min-width: 768px) {
-  [data-storefront-home] .home-content { padding-inline: var(--store-page-gutter-wide); }
+  [data-storefront-home] .home-content {
+    padding-inline: var(--store-page-gutter-wide);
+    padding-block-start: var(--store-space-8);
+    gap: var(--store-space-16);
+  }
+  .home-lead { gap: var(--store-space-4); }
 
   :is(.pharmacy-ad a, .home-banner-image) { aspect-ratio: 4 / 1; }
   .home-collection-section { gap: var(--store-space-16); }

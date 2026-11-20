@@ -1,21 +1,15 @@
-/* Storefront control roles. Shared/admin Button variants remain unchanged. */
-.storefront-shell .button,
-.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *, .pdp-page *, [data-storefront-retail] .add-to-cart)) {
- background:var(--color-brand); color:var(--color-ink); border:1px solid var(--color-brand); border-radius:var(--radius-control);
-}
-.storefront-shell .button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:12px 20px; font-weight:600; }
-.storefront-shell .button:hover,
-.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *, .pdp-page *, [data-storefront-retail] .add-to-cart)):hover:not(:disabled) { background:var(--color-brand-hover); border-color:var(--color-brand-hover); }
-.storefront-shell .button-secondary { color:var(--color-ink); background:var(--color-surface); border-color:var(--color-control-border); }
+/* Retained class-based controls; data-slot primitives own their states. */
+.storefront-shell .button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:12px 20px; font-weight:600; background:var(--color-brand); color:var(--color-primary-foreground); border:1px solid var(--color-brand); border-radius:var(--radius-control); }
+.storefront-shell .button:hover { background:var(--color-brand-hover); border-color:var(--color-brand-hover); }
+.storefront-shell .button-secondary { color:var(--color-brand); background:var(--color-surface); border-color:var(--color-control-border); }
 .storefront-shell .button-secondary:hover { background:var(--color-subtle); border-color:var(--color-control-hover); }
-.storefront-shell [data-slot='button']:is([data-variant='default'],[data-variant='accent']):where(:not([data-storefront-checkout] *, [data-storefront-information] *, .pdp-page *, [data-storefront-retail] .add-to-cart)):disabled { color:var(--color-muted); background:var(--color-control-disabled); border-color:var(--color-border); }
 .sf-search { position:relative; z-index:45; min-width:0; }
 .storefront-search-form { display:flex; align-items:center; gap:8px; min-width:0; min-height:54px; padding:4px 4px 4px 16px; border:1px solid var(--color-control-border); border-radius:var(--radius-panel); background:var(--color-surface); transition:border-color 150ms; }
 [dir='rtl'] .storefront-search-form { padding-inline:16px 4px; }
 .storefront-search-form:focus-within { border-color:var(--color-ink); outline:2px solid var(--color-focus); outline-offset:2px; }
 .storefront-search-form:hover { border-color:var(--color-control-hover); }
 .storefront-search-form [data-slot='header-search-input'] { font-size:16px; }
-.sf-search-submit { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; gap:6px; min-width:44px; min-height:44px; padding:10px 14px; border:0; border-radius:var(--radius-control); background:var(--color-brand); color:var(--color-ink); font:inherit; font-weight:600; transition:background-color 150ms; }
+.sf-search-submit { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; gap:6px; min-width:44px; min-height:44px; padding:10px 14px; border:0; border-radius:var(--radius-control); background:var(--color-brand); color:var(--color-primary-foreground); font:inherit; font-weight:600; transition:background-color 150ms; }
 .sf-search-label { font-size:13px; font-weight:600; }
 .header-cart-label { display:inline; }
 .sf-search-submit:hover { background:var(--color-brand-hover); }

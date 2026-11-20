@@ -1,10 +1,3 @@
-/* Compatibility geometry for existing shell and shared controls. */
-.storefront-shell {
-  --radius-control: 16px;
-  --radius-card: 18px;
-  --radius-panel: 24px;
-}
-
 /* Palette retained for wholesale and root missing-page recovery. */
 [data-storefront-compatibility] {
   --color-brand: #ff5a5f;

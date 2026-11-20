@@ -55,7 +55,7 @@ export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel,
     const count = new Intl.NumberFormat(locale === 'ar' ? 'ar-AE-u-nu-arab' : 'en-AE').format(cartQuantity);
     return (
       <div className="card-cart-controls">
-        <Button variant="accent" size="icon" className="add-to-cart" type="button"
+        <Button variant="soft" size="icon" className="add-to-cart" type="button"
           aria-label={name ? `${u(locale, state)}: ${name}` : u(locale, state)}
           aria-describedby={cartQuantity > 0 ? cartStateId : undefined} aria-busy={pending}
           data-added={added} data-in-cart={cartQuantity > 0}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "apps/web/src/components/storefront-system/tokens.module.css",
+  "source": "apps/web/src/app/globals.css",
   "guide": "apps/web/DESIGN.md",
   "sidecar": "apps/web/.impeccable/design.json",
   "status": "Documentation projections of accepted scoped runtime; never generator inputs for CSS",
@@ -32,7 +32,9 @@
     "offer-surface": "--store-offer-surface",
     "notice": "--store-notice-surface",
     "selection": "--store-selection-surface",
-    "active-navigation": "--store-stress-error"
+    "active-navigation": "--color-brand",
+    "control-hover": "--color-control-hover",
+    "coral": "--color-coral"
   },
   "rounded": {
     "control": "--store-control-radius",
@@ -45,7 +47,7 @@
     "option": "--store-compact-radius",
     "field": "--store-field-radius",
     "compact": "--store-compact-radius",
-    "quick-action": "--store-radius-10"
+    "quick-action": "--radius-control"
   },
   "spacing": {
     "2": "--store-space-2",

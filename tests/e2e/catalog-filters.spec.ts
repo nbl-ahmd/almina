@@ -10,7 +10,7 @@ for(const width of [360,390,768,1440])test(`filter panel matches the storefront 
  const form=page.getByRole('search',{name:'Filter products',exact:true});await expect(form).toBeVisible();
  const range=form.locator('fieldset');await expect(range).toHaveCSS('border-top-width','0px');await expect(range).toHaveCSS('padding','0px');
  const lower=form.getByRole('spinbutton',{name:'From',exact:true}),upper=form.getByRole('spinbutton',{name:'To',exact:true});
- await expect(lower).toHaveValue('5');await expect(upper).toHaveValue('25');await expect(lower).toHaveCSS('border-bottom-color','rgb(124, 137, 143)');
+ await expect(lower).toHaveValue('5');await expect(upper).toHaveValue('25');await expect(lower).toHaveCSS('border-bottom-color','rgb(196, 208, 203)');
  for(const field of [lower,upper]){const box=await field.boundingBox();expect(box!.height).toBeGreaterThanOrEqual(44);expect(box!.width).toBeGreaterThan(75);}
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await mkdir('outputs/catalog-filters-2026-10-27',{recursive:true});await panel.scrollIntoViewIfNeeded();

@@ -67,7 +67,7 @@
 .overlay .back { margin-inline-end: auto; }
 .overlay :global(.header-cart) { position: relative; }
 .overlay :global(.header-cart-label) { display: none; }
-.overlay [data-cart-count] { background: var(--store-action); color: var(--store-text); }
+.overlay [data-cart-count] { background: var(--color-coral); color: var(--color-coral-ink); }
 .overlay :global(.card-save)[aria-pressed='true'] svg { fill: currentColor; }
 .overlay svg, .photoArrows svg { inline-size: var(--store-space-20); block-size: var(--store-space-20); }
 .overlay :global(.card-save-error) {

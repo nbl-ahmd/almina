@@ -1,3 +1,4 @@
+import '../../storefront-compatibility.css';
 import { getLocale } from '../../../lib/server/i18n';
 import Link from '../../../components/app-link';
 import Image from 'next/image';

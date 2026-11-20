@@ -21,7 +21,7 @@ test('retired comparison routes return the public 404', async ({request}) => {
 test('preserves admin login and dashboard', async ({page}) => {
   await login(page);
   await expect(page.getByRole('heading', {name:'Dashboard', exact:true})).toBeVisible();
-  expect(await page.evaluate(()=>{const p=document.createElement('input');p.dataset.slot='input';p.className='border-control-border';document.body.append(p);const color=getComputedStyle(p).borderColor;p.remove();return color;})).toBe('rgb(135, 146, 164)');
+  expect(await page.evaluate(()=>{const p=document.createElement('input');p.dataset.slot='input';p.className='border-control-border';document.body.append(p);const color=getComputedStyle(p).borderColor;p.remove();return color;})).toBe('rgb(196, 208, 203)');
   expect(await page.evaluate(()=>{const p=document.createElement('span');p.className='text-primary-foreground';document.body.append(p);const color=getComputedStyle(p).color;p.remove();return color;})).toBe('rgb(255, 255, 255)');
 });
 
@@ -43,19 +43,24 @@ for(const lang of ['en','ar'] as const) {
   await page.goto('/products/daily-care--PD0001');
   const shell=page.locator('[data-storefront-retail]');
   await expect(shell).toHaveAttribute('dir',lang==='ar'?'rtl':'ltr');
-  await expect(shell).toHaveCSS('background-color','rgb(250, 251, 252)');
-  await expect(shell).toHaveCSS('color','rgb(28, 41, 37)');
+  await expect(shell).toHaveCSS('background-color','rgb(250, 251, 248)');
+  await expect(shell).toHaveCSS('color','rgb(23, 51, 47)');
   const stepper=page.locator('.pdp-purchase [data-store-control="stepper"]');
   await expect(stepper.getByRole('button').first()).toBeDisabled();
   await expect(stepper.getByRole('button').first()).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
   await expect(stepper.getByRole('button').first()).toHaveCSS('border-top-width','0px');
-  const add=page.locator('.add-to-cart:visible').first();await add.click();await expect(add).toHaveAttribute('data-added','true');await add.hover();
-  await expect(add).toHaveCSS('background-color','rgb(234, 243, 239)');await expect(add).toHaveCSS('border-color','rgba(0, 0, 0, 0)');
+  await expect(shell).toHaveCSS('font-variant-numeric', 'tabular-nums');
+  await expect(shell).toHaveCSS('font-family', lang === 'ar' ? /IBM.Plex.Sans.Arabic/i : /Plus.Jakarta.Sans/i);
+  const add=page.locator('.add-to-cart:visible').first();
+  await expect(add).toHaveCSS('background-color','rgb(8, 102, 87)');
+  await expect(add).toHaveCSS('color','rgb(255, 255, 255)');
+  await add.click();await expect(add).toHaveAttribute('data-added','true');await add.hover();
+  await expect(add).toHaveCSS('background-color','rgb(231, 245, 239)');await expect(add).toHaveCSS('border-color','rgba(0, 0, 0, 0)');
   await expect(add).toContainText(lang==='ar'?'اذهب إلى السلة':'Go to cart');
   await add.click();
   await expect(page).toHaveURL(/\/cart$/);
-  await page.goto('/products');const cardAdd=page.locator('.product-card .add-to-cart').first();await cardAdd.click();await expect(cardAdd).toHaveAttribute('data-added','true');await cardAdd.hover();await expect(cardAdd).toHaveCSS('background-color','rgb(234, 243, 239)');
+  await page.goto('/products');const cardAdd=page.locator('.product-card .add-to-cart').first();await cardAdd.click();await expect(cardAdd).toHaveAttribute('data-added','true');await cardAdd.hover();await expect(cardAdd).toHaveCSS('background-color','rgb(231, 245, 239)');
   const save=page.locator('.card-save').first();await save.click();await expect(save).toHaveAttribute('aria-pressed','true');await save.hover();
-  await expect(save).toHaveCSS('background-color','rgb(255, 242, 243)');await expect(save).toHaveCSS('color','rgb(167, 45, 66)');
+  await expect(save).toHaveCSS('background-color','rgb(231, 245, 239)');await expect(save).toHaveCSS('color','rgb(8, 102, 87)');
  });
 }

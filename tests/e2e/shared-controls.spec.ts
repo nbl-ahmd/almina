@@ -6,7 +6,7 @@ test('filter checkbox serializes its value through the native GET form', async (
   const stock=panel.getByRole('checkbox',{name:'In stock',exact:true});
   await stock.check();
   await expect(stock).toBeChecked();
-  await expect(stock).toHaveCSS('accent-color', 'rgb(28, 41, 37)');
+  await expect(stock).toHaveCSS('accent-color', 'rgb(8, 102, 87)');
   await page.screenshot({path:'outputs/coral-redesign-2026-10-21/checked-filter-390.png'});
   await panel.getByRole('button',{name:'Apply filters',exact:true}).click();
   await expect(page).toHaveURL(/inStock=true/);

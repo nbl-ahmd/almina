@@ -1,34 +1,6 @@
-/* Accepted P1 screen foundation. Single value source; scoped opt-in only.
-   No :root, storefront-shell or admin/wholesale selectors. P2-05 owns final guide alignment. */
+/* Public storefront geometry and semantic aliases. Shared palette and radii live in globals.css. */
 .system {
-  /* Primitive values from accepted screens. */
-  --store-ref-color-coral: #ff5a5f;
-  --store-ref-color-ink: #1c2925;
-  --store-ref-color-muted: #435d56;
-  --store-ref-color-line: #e2e7eb;
-  --store-ref-color-control-line: #7c898f;
-  --store-ref-color-canvas: #fafbfc;
-  --store-ref-color-positive: #26604d;
-  --store-ref-color-notice: #e9edef;
-  --store-ref-color-input: #f2f5f7;
-  --store-ref-color-overlay-shadow: #1c29251c;
-  --store-ref-color-hover: #e9f0f3;
-  --store-ref-color-campaign: #ffe4df;
-  --store-ref-color-action-hover: #fb565c;
-  --store-ref-color-positive-surface: #eaf3ef;
-  --store-ref-color-unavailable: #685941;
-  --store-ref-color-unavailable-surface: #f2eee6;
-  --store-ref-color-saved: #a72d42;
-  --store-ref-color-saved-surface: #fff2f3;
-  --store-ref-color-disabled-text: #6c757a;
-  --store-ref-color-disabled-surface: #e7ebed;
-  --store-ref-color-error: #a11d31;
-  --store-ref-color-selected-surface: #e0eee8;
-  --store-ref-color-secondary-surface: #f1f4f6;
-  --store-ref-color-stress-error: #9c2e3b;
-  --store-ref-color-selection: #ffd2d2;
-  --store-ref-color-focus: #125d87;
-  --store-ref-color-surface: #ffffff;
+  /* Local layout scale; palette and shared radii are defined in globals.css. */
   --store-ref-space-2: 2px;
   --store-ref-space-3: 3px;
   --store-ref-space-4: 4px;
@@ -81,7 +53,7 @@
   --store-ref-type-32: 32px;
   --store-ref-weight-500: 500;
   --store-ref-weight-600: 600;
-  --store-ref-weight-650: 650;
+  --store-ref-weight-700: 700;
   --store-ref-leading-110: 1.1;
   --store-ref-leading-120: 1.2;
   --store-ref-leading-125: 1.25;
@@ -96,7 +68,7 @@
   --store-type-32: var(--store-ref-type-32);
   --store-weight-medium: var(--store-ref-weight-500);
   --store-weight-semibold: var(--store-ref-weight-600);
-  --store-weight-bold: var(--store-ref-weight-650);
+  --store-weight-bold: var(--store-ref-weight-700);
   --store-leading-display: var(--store-ref-leading-110);
   --store-leading-title: var(--store-ref-leading-120);
   --store-leading-heading: var(--store-ref-leading-125);
@@ -105,35 +77,33 @@
   --store-leading-body: var(--store-ref-leading-150);
   --store-tracking-title: var(--store-ref-tracking-025);
   --store-tracking-price: var(--store-ref-tracking-030);
-  --store-action: var(--store-ref-color-coral);
-  --store-text: var(--store-ref-color-ink);
-  --store-text-muted: var(--store-ref-color-muted);
-  --store-border: var(--store-ref-color-line);
-  --store-border-control: var(--store-ref-color-control-line);
-  --store-canvas: var(--store-ref-color-canvas);
-  --store-positive: var(--store-ref-color-positive);
-  --store-notice-surface: var(--store-ref-color-notice);
-  --store-input-surface: var(--store-ref-color-input);
-  --store-overlay-shadow-color: var(--store-ref-color-overlay-shadow);
-  --store-hover-surface: var(--store-ref-color-hover);
-  --store-campaign-surface: var(--store-ref-color-campaign);
-  --store-action-hover: var(--store-ref-color-action-hover);
-  --store-positive-surface: var(--store-ref-color-positive-surface);
-  --store-unavailable: var(--store-ref-color-unavailable);
-  --store-unavailable-surface: var(--store-ref-color-unavailable-surface);
-  --store-saved: var(--store-ref-color-saved);
-  --store-saved-surface: var(--store-ref-color-saved-surface);
-  --store-disabled-text: var(--store-ref-color-disabled-text);
-  --store-disabled-surface: var(--store-ref-color-disabled-surface);
-  --store-error: var(--store-ref-color-error);
-  --store-offer-text: var(--store-text);
-  --store-offer-surface: var(--store-campaign-surface);
-  --store-selected-surface: var(--store-ref-color-selected-surface);
-  --store-secondary-surface: var(--store-ref-color-secondary-surface);
-  --store-stress-error: var(--store-ref-color-stress-error);
-  --store-selection-surface: var(--store-ref-color-selection);
-  --store-focus: var(--store-ref-color-focus);
-  --store-surface: var(--store-ref-color-surface);
+  --store-action: var(--color-brand);
+  --store-text: var(--color-ink);
+  --store-text-muted: var(--color-muted);
+  --store-border: var(--color-border);
+  --store-border-control: var(--color-control-border);
+  --store-canvas: var(--color-page);
+  --store-positive: var(--color-stock-text);
+  --store-notice-surface: var(--color-notice);
+  --store-input-surface: var(--color-subtle);
+  --store-hover-surface: var(--color-stock-bg);
+  --store-campaign-surface: var(--color-subtle);
+  --store-action-hover: var(--color-brand-hover);
+  --store-positive-surface: var(--color-stock-bg);
+  --store-unavailable: var(--color-unavail-text);
+  --store-unavailable-surface: var(--color-unavail-bg);
+  --store-saved: var(--color-brand);
+  --store-saved-surface: var(--color-stock-bg);
+  --store-disabled-text: var(--color-disabled-text);
+  --store-disabled-surface: var(--color-control-disabled);
+  --store-error: var(--color-sale);
+  --store-offer-text: var(--color-coral-ink);
+  --store-offer-surface: var(--color-coral);
+  --store-selected-surface: var(--color-selected);
+  --store-secondary-surface: var(--color-subtle);
+  --store-selection-surface: var(--color-selected);
+  --store-focus: var(--color-focus);
+  --store-surface: var(--color-surface);
   --store-space-2: var(--store-ref-space-2);
   --store-space-3: var(--store-ref-space-3);
   --store-space-4: var(--store-ref-space-4);
@@ -174,7 +144,7 @@
   --store-type-25: var(--store-ref-type-25);
   --store-type-28: var(--store-ref-type-28);
   --store-type-30: var(--store-ref-type-30);
-  --store-font-body: var(--font-storefront-latin);
+  --store-font-body: var(--font-sans);
   --store-layout-container: var(--store-ref-container);
   --store-target-min: var(--store-ref-target);
   --store-icon-stroke: var(--store-ref-icon-stroke);
@@ -182,14 +152,14 @@
   --store-motion-feedback: var(--store-ref-feedback);
   --store-motion-enter: var(--store-ref-entry);
   --store-motion-easing: var(--store-ref-easing-feedback);
-  --store-elevation-overlay: 0 var(--store-space-8) var(--store-space-24) var(--store-overlay-shadow-color);
+  --store-elevation-overlay: var(--shadow-raised);
   /* Component roles; layout-specific geometry remains in its owner. */
-  --store-control-radius: var(--store-radius-14);
-  --store-action-radius: var(--store-radius-14);
-  --store-field-radius: var(--store-radius-10);
-  --store-compact-radius: 999px;
-  --store-soft-action: var(--store-saved-surface);
-  --store-card-radius: var(--store-radius-14);
+  --store-control-radius: var(--radius-control);
+  --store-action-radius: var(--radius-control);
+  --store-field-radius: var(--radius-control);
+  --store-compact-radius: var(--radius-pill);
+  --store-soft-action: var(--color-stock-bg);
+  --store-card-radius: var(--radius-card);
   --store-card-padding: var(--store-space-10);
   /* Counts are redundant visual hints; status labels carry product information. */
   --store-count-size: var(--store-type-10);
@@ -198,12 +168,12 @@
   --store-stock-inset-inline: var(--store-space-8);
   --store-stock-inset-block-phone: var(--store-space-2);
   --store-stock-inset-inline-phone: var(--store-space-6);
-  --store-search-radius: var(--store-radius-12);
+  --store-search-radius: var(--radius-control);
   --store-search-action-radius: var(--store-radius-8);
   --store-search-surface: var(--store-input-surface);
   --store-purchase-surface: var(--store-action);
-  --store-purchase-foreground: var(--store-text);
-  --store-campaign-radius: var(--store-radius-18);
+  --store-purchase-foreground: var(--color-primary-foreground);
+  --store-campaign-radius: var(--radius-card);
   --store-page-gutter: var(--store-space-16);
   --store-page-gutter-wide: var(--store-space-24);
   --store-page-title-size: var(--store-type-28);
@@ -214,6 +184,6 @@
   --store-product-price-size-phone: var(--store-type-24);
   font-family: var(--store-font-body);
 }
-.system[lang="ar"] {
-  --store-font-body: var(--font-storefront-arabic), var(--font-storefront-latin), sans-serif;
+.system:is(:lang(ar), :dir(rtl)) {
+  --store-font-body: var(--font-arabic), var(--font-sans), sans-serif;
 }

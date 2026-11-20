@@ -10,7 +10,7 @@ import { Icon } from './icon';
 
 export async function StockState({ stock }: { stock: number }) {
   const locale = await getLocale();
-  return <p className={`stock-state mb-3 flex items-center gap-1.5 text-xs leading-relaxed ${stock > 0 ? 'in-stock text-teal' : 'out-stock text-warning'}`}>{stock > 0 ? <><span className="stock-dot size-1.5 shrink-0 rounded-full bg-teal" />{u(locale,"In stock")}</> : u(locale,"Out of stock")}</p>;
+  return <p className={`stock-state mb-3 inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-0.5 text-xs leading-relaxed ${stock > 0 ? 'in-stock bg-stock-bg text-stock-text' : 'out-stock bg-unavail-bg text-unavail-text'}`}>{stock > 0 ? <><span className="stock-dot size-1.5 shrink-0 rounded-full bg-stock-text" />{u(locale,"In stock")}</> : u(locale,"Out of stock")}</p>;
 }
 export async function ProductGrid({ products, headingLevel = 2, variant: _variant = 'catalog', eagerFirstPhoto = false }: { products: Product[]; headingLevel?: 2 | 3; variant?: 'catalog' | 'home'; eagerFirstPhoto?: boolean }) {
   const locale = await getLocale();

@@ -2,57 +2,59 @@
 name: Al Mina accepted replacement storefront
 description: App-like mobile shopping and a complete compact desktop storefront.
 colors:
-  action: "#ff5a5f"
-  action-hover: "#fb565c"
-  active-navigation: "#9c2e3b"
-  text: "#1c2925"
-  text-muted: "#435d56"
-  canvas: "#fafbfc"
+  action: "#086657"
+  action-hover: "#064f44"
+  active-navigation: "#086657"
+  text: "#17332f"
+  text-muted: "#52645f"
+  canvas: "#fafbf8"
   surface: "#ffffff"
-  input: "#f2f5f7"
-  border: "#e2e7eb"
-  control-border: "#7c898f"
-  secondary: "#f1f4f6"
-  hover: "#e9f0f3"
-  campaign: "#ffe4df"
-  selected: "#e0eee8"
-  positive: "#26604d"
-  positive-surface: "#eaf3ef"
-  unavailable: "#685941"
-  unavailable-surface: "#f2eee6"
-  saved: "#a72d42"
-  saved-surface: "#fff2f3"
+  input: "#f0f4ef"
+  border: "#dce4e0"
+  control-border: "#c4d0cb"
+  control-hover: "#8fa39b"
+  secondary: "#f0f4ef"
+  hover: "#e7f5ef"
+  campaign: "#f0f4ef"
+  selected: "#dcece4"
+  positive: "#086657"
+  positive-surface: "#e7f5ef"
+  unavailable: "#8a4b14"
+  unavailable-surface: "#fdf3e7"
+  saved: "#086657"
+  saved-surface: "#e7f5ef"
   error: "#a11d31"
-  disabled-text: "#6c757a"
-  disabled-surface: "#e7ebed"
-  focus: "#125d87"
-  offer-text: "#1c2925"
-  offer-surface: "#ffe4df"
-  notice: "#e9edef"
-  selection: "#ffd2d2"
+  disabled-text: "#66736d"
+  disabled-surface: "#edf1ec"
+  focus: "#086657"
+  offer-text: "#221214"
+  offer-surface: "#e14d5a"
+  notice: "#edf1ed"
+  selection: "#dcece4"
+  coral: "#e14d5a"
 typography:
   campaign:
-    fontFamily: "DM Sans, sans-serif"
+    fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "32px"
-    fontWeight: "650"
+    fontWeight: "700"
     lineHeight: "1.1"
     letterSpacing: "-0.025em"
   page-title:
     fontSize: "28px"
-    fontWeight: "650"
+    fontWeight: "700"
     lineHeight: "1.2"
     letterSpacing: "-0.025em"
   product-title:
     fontSize: "28px"
-    fontWeight: "650"
+    fontWeight: "700"
     lineHeight: "1.2"
   body:
-    fontFamily: "DM Sans, sans-serif"
+    fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "15px"
     fontWeight: 400
     lineHeight: "1.5"
   body-arabic:
-    fontFamily: "Noto Sans Arabic, DM Sans, sans-serif"
+    fontFamily: "IBM Plex Sans Arabic, Plus Jakarta Sans, sans-serif"
     fontSize: "15px"
     fontWeight: 400
     lineHeight: "1.5"
@@ -63,7 +65,7 @@ typography:
     lineHeight: "1.4"
   card-price:
     fontSize: "21px"
-    fontWeight: "650"
+    fontWeight: "700"
     letterSpacing: "-0.03em"
   supporting:
     fontSize: "12px"
@@ -76,17 +78,17 @@ typography:
   count:
     fontSize: "10px"
 rounded:
-  control: "14px"
-  action: "14px"
-  card: "14px"
+  control: "12px"
+  action: "12px"
+  card: "16px"
   search: "12px"
   search-action: "8px"
-  campaign: "18px"
-  status: "999px"
-  option: "999px"
-  compact: "999px"
-  quick-action: "10px"
-  field: "10px"
+  campaign: "16px"
+  status: "9999px"
+  option: "9999px"
+  compact: "9999px"
+  quick-action: "12px"
+  field: "12px"
 spacing:
   2: "2px"
   3: "3px"
@@ -106,12 +108,12 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.action}"
-    textColor: "{colors.text}"
+    textColor: "{colors.surface}"
     rounded: "{rounded.action}"
     padding: "12px 24px"
     height: "48px"
   button-outline:
-    backgroundColor: "transparent"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.positive}"
     rounded: "{rounded.action}"
     padding: "12px 24px"
@@ -158,27 +160,27 @@ components:
 
 **Creative North Star: "App-like on mobile, complete on desktop."**
 
-This guide documents the implemented Al Mina storefront as of 19 November 2026. The owner selected the full-width campaign, five wide home columns, and the image-first N03 phone product detail. The current review revision uses DM Sans and Noto Sans Arabic, cool neutral control surfaces and a quieter type hierarchy. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
+This guide documents the implemented Al Mina storefront as of 20 November 2026. The owner selected the full-width campaign, five wide home columns, and the image-first N03 phone product detail. The current review revision uses Plus Jakarta Sans and IBM Plex Sans Arabic, a warm mineral canvas and deep apothecary green actions and a quieter type hierarchy. The final local screens and release boundaries are recorded in the [Phase 6 review packet](docs/design/implementation-evidence/phase-6.md).
 
-Shopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Coral identifies action; quiet grounds and restrained borders keep comparison clear. The actual logo remains unchanged.
+Shopping controls stay compact and legible. Product photography, exact identity, stock, money and purchase actions carry the hierarchy. Apothecary green identifies primary actions. Coral is reserved for cart count badges, sale tags and urgent alerts. The actual logo remains unchanged.
 
 **Key Characteristics:**
 
 - Search-led navigation with delivery context and useful discovery.
-- Quiet near-white ground, dark type and dark labels on coral.
+- Quiet near-white ground, dark type and white labels on green actions and dark labels on coral badges.
 - Quiet product cards with contained factual photography and readable prices.
 - Image-first phone PDP with contextual overlay controls and persistent buying.
 - Equivalent English/Arabic tasks and desktop/mobile continuity.
 
-**Authority and scope.** This guide and its frontmatter document the accepted opted-in system. Runtime values are owned by `src/components/storefront-system/tokens.module.css`; `boundary.module.css` owns shared/native control states and compatibility aliases. The frontmatter and `.impeccable/design.json` are checked documentation projections, never CSS regeneration inputs. [Bindings](docs/design/system-bindings.json) connect the records to source. Read [PRODUCT.md](PRODUCT.md) for facts and [screen directions](docs/design/screen-directions.md) for compositions.
+**Authority and scope.** This guide and its frontmatter document the accepted opted-in system. The Tailwind v4 theme in `src/app/globals.css` owns palette and shared radii. The storefront module retains layout and semantic aliases. The primitives in `components/ui` own their default states and the storefront boundary handles shopping-specific feedback. The frontmatter and `.impeccable/design.json` are checked documentation projections, never CSS regeneration inputs. [Bindings](docs/design/system-bindings.json) connect the records to source. Read [PRODUCT.md](PRODUCT.md) for facts and [screen directions](docs/design/screen-directions.md) for compositions.
 
-The retail layout and its public routes use the accepted system. The compatibility palette in `storefront-tokens.css` serves wholesale and root missing-page recovery. Shared shell geometry and fallback controls still have live consumers. Admin has its own scoped guide. See the [retirement inventory](docs/design/implementation-evidence/p6-01-retirement.md) for current ownership and preserved historical evidence.
+The retail layout and its public routes use the accepted system. The compatibility palette in `src/app/storefront-compatibility.css` serves wholesale and root missing-page recovery. Shared shell geometry and fallback controls still have live consumers. Admin has its own scoped guide. See the [retirement inventory](docs/design/implementation-evidence/p6-01-retirement.md) for current ownership and preserved historical evidence.
 
 ## Colors
 
 The primary action and restrained campaign tint sit within neutral shopping surfaces. Use the frontmatter's semantic names rather than extracting a new palette from reference images, screenshots, legacy CSS or generic generators.
 
-**The action-foreground rule.** Normal labels use text on action, including hover/pressed and pending. Measured contrast is 4.94:1 at rest and 4.73:1 on hover/pressed. White on action is only 3.05:1 and is unsuitable for normal text. Focus uses a separated visible outline, not a low-contrast coral halo.
+**The action-foreground rule.** White text has 6.89:1 contrast on the primary green and 9.50:1 on hover. Use the dark coral-ink token on coral badges for 4.65:1 contrast. Keep checkmarks white on green. Focus uses the brand border and a soft ring.
 
 **The state-meaning rule.** Selected options use their quiet neutral surface plus current/pressed semantics. Bottom navigation retains its observed active-navigation text with aria-current; it does not use the option surface. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 3.92:1 text pairing is an inactive-control exemption, not a normal-text pass.
 
@@ -186,7 +188,7 @@ Page canvas, product surfaces, input surfaces, selected surfaces and campaign su
 
 ## Typography
 
-Self-hosted DM Sans serves Latin. Noto Sans Arabic serves Arabic, with DM Sans for mixed-script labels and identifiers. `src/lib/storefront-fonts.ts` supplies scoped font variables with retained licences. Body is 15px/1.5. Arabic retains its actual body scale and normal heading tracking, rather than a separate invented type system. Keep factual product and brand names intact. Use bidirectional isolation and keep number–unit pairs together in product titles.
+Next font loads Plus Jakarta Sans and IBM Plex Sans Arabic at weights 400, 500, 600 and 700 through the root layout. Arabic or RTL storefront content selects Plex first and Jakarta for mixed-script labels. Commerce numerals use tabular figures. Keep factual names and bidirectional isolation for pack information.
 
 Frontmatter roles record wide-screen values. Phone page titles use 24px; PDP titles 28→22px and prices 30→24px; campaign copy follows the artwork composition. Card names 15→14px with 1.35 wide and 1.4 phone leading; card prices 21→19px. Section headings vary by context. Homepage headings use 23px wide and 19px phone. Do not replace these with one large display scale. Use 500 weight for controls and card names, 600 for emphasis and 650 for headings and prices. Verify label, input and error text on the actual form at each supported viewport.
 
@@ -204,20 +206,20 @@ Phone PDP imagery occupies the full top gallery with Back/Save/Cart overlays; de
 
 ## Elevation & Depth
 
-Product cards use a flat white frame, a quiet photo surface and a thin divider-colored edge. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`0 8px 24px #1c292520`) for suggestions and overlays that use it. The fixed phone purchase dock uses a solid surface and a single separator. The in-flow desktop purchase row sits directly on the page surface.
+Product cards use a flat white frame, a quiet photo surface and a thin divider-colored edge. Use tonal grouping for shopping surfaces and reserve the offset overlay shadow (`--shadow-raised`) for suggestions and overlays that use it. The fixed phone purchase dock uses a solid surface and a single separator. The in-flow desktop purchase row sits directly on the page surface.
 
 ## Shapes
 
-Default retail actions use the action radius; explicit rounded/pill variants keep their existing API shapes. Equal-sided icon controls may be circular. Search outer and submit corners are separate roles, preventing an oval submit. Card, field, option/status and campaign radii have distinct frontmatter roles; do not override them with route utilities. Retail actions and text fields use 10px corners. Chips use a capsule. Catalogue Add uses a 10px rounded square with a 44px minimum target. Search has separate 18px outer and 12px submit corners.
+Use 12px for actions and fields, 16px for cards and campaign framing, and the pill radius for status and compact selections. Search keeps a quieter 8px integrated submit control. Catalogue quick add retains its 44px target.
 
-Retail text fields use a cool gray fill and a visible lower edge. Focus restores a white surface and a complete outline. Labels use medium weight. Primary actions use coral. Secondary actions use teal ink with a quiet edge, and catalogue quick add uses a soft green surface with a teal icon. Focus draws a complete outline and validation uses an error tint and message. Desktop filters sit on an open rail with one divider. On phones, Filter and Sort stay in one compact row with the filter count on the trigger. Keyboard focus uses a distinct outline. Minimum native action target is 44px; the standard shared Button example is 48px high with 12/24px padding. Bound long labels and allow wrapping instead of clipping or shrinking them.
+Text fields use a tinted mineral surface, a 12px radius and a mineral border. The minimum height is 44px for desktop controls and 48px on small or coarse-pointer screens. Keyboard focus uses the white surface, brand border and a three-pixel tinted ring. Invalid controls use the alert roles and accompanying text. Desktop filters remain a rail. On phones, Filter and Sort remain in the listing toolbar with filters in a sheet.
 
 ## Components
 
 Review the working patterns on the retail routes. The sidecar documents the shipped styles with standalone examples. The development comparison and component specimen were retired in P6-01.
 
 - **Header/search/location/navigation:** mirror directional arrows and breadcrumb chevrons in RTL. On phones, place menu and logo at the start, with delivery beside cart at the end. The utility row scrolls away and search stays available. Cart, checkout and the image-first product layout keep their task headers. Keep delivery context and cart reachable. Preserve suggestions, Enter/Escape, manual/GPS fallback and query URLs. Expanded location and menus must retain names, focus return, portal scope and RTL. No scanning/voice/chat affordance without a real capability.
-- **Actions and fields:** `boundary.module.css` owns base/variant/meaning states. Default/accent is coral/text; secondary/outline/ghost/link/destructive have explicit meanings. Busy retains action treatment; unavailable is disabled. Invalid fields use error independently of the offer alias. The product review uses a native radio group with five star targets, a visible verification cue and grouped identity fields. Focus remains visible; shared component APIs continue outside this scope.
+- **Actions and fields:** The primitives own default and accent (green with white text), soft (tinted green), and secondary, outline, ghost, link and destructive variants. The boundary owns storefront-specific confirmation and quantity feedback. Busy retains action treatment; unavailable is disabled. Invalid fields use error independently of the offer alias. The product review uses a native radio group with five star targets, a visible verification cue and grouped identity fields. Focus remains visible; shared component APIs continue outside this scope.
 - **Product cards:** contained original photo, stock and saved controls, factual brand/pack where available, wrapping identity, dirham price and quick add. Do not invent chips, ratings, discounts or data missing from the catalogue. Actual in-cart quantity and stock checks persist. Offer/unknown-price/unavailable/placeholder cases stay honest; a layout sample is not saleable stock.
 - **Gallery/options/quantity:** one-image products have no fake pagination; real thumbnails select real images. Only real family members get option links/current state. Preserve exact selected pack/price/availability, native quantity limits and server validation. Use the same borderless, tinted quantity group on the product page and in the cart. Disabled steps mute the icon without painting a separate tile. Category, thumbnail and product rails keep swipe and keyboard scrolling with hidden native rails. Product comparison imagery stays static under hover. P4-02 retired the earlier card image zoom.
 - **Campaign/categories:** use localized image-led artwork for the homepage campaign and collection placements. Use a phone composition and a wide composition for lead artwork, with text set in the image and an equivalent accessible link name or description. Retain semantic HTML copy on landing pages and in the no-artwork fallback. Illustrative photography represents the department and carries no product or delivery claim. The hero has three evergreen slides and can include published campaigns. The shopper controls movement through labeled arrows, pagination and directional touch gestures. Skincare and baby care each have a full-width section banner, followed by matching in-stock products when available, with brand discovery between the sections.

@@ -155,12 +155,12 @@
 
   .storefront-shell [data-mobile-shell] .mobile-tab[aria-current='page'],
   .storefront-shell [data-mobile-shell] .mobile-tab[aria-current='page'] svg {
-    color: var(--store-stress-error);
+    color: var(--color-brand);
   }
 
   [data-mobile-shell] [data-cart-count] {
-    background: var(--store-action);
-    color: var(--store-text);
+    background: var(--color-coral);
+    color: var(--color-coral-ink);
     font-size: var(--store-count-size);
   }
 

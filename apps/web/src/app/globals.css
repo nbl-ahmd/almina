@@ -1,11 +1,9 @@
-/* LEGACY IMPLEMENTATION ONLY (2026-11-15): retained for existing consumers.
-   Not design authority; see docs/migration/STOREFRONT_DESIGN_RETIREMENT_2026-11-15.md.
-   Shared/root dependencies must migrate before removal. */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 @source "../";
 
+/* Public palette and primitive roles. The admin and compatibility shells own their scoped overrides. */
 @theme static {
   --color-ink: #17332f;
   --color-muted: #52645f;
@@ -13,23 +11,47 @@
   --color-brand-hover: #064f44;
   --color-accent: #c6e5d6;
   --color-page: #fafbf8;
-  --color-surface: #fff;
+  --color-surface: #ffffff;
   --color-subtle: #f0f4ef;
-  --color-border: #c9d4cf;
-  --color-sale: #a13726;
-  --color-sale-surface: #fff0e9;
+  --color-border: #dce4e0;
+  --color-control-border: #c4d0cb;
+  --color-control-hover: #8fa39b;
+  --color-control-disabled: #edf1ec;
+  --color-coral: #e14d5a;
+  --color-coral-ink: #221214;
+  --color-stock-bg: #e7f5ef;
+  --color-stock-text: #086657;
+  --color-unavail-bg: #fdf3e7;
+  --color-unavail-text: #8a4b14;
+  --color-notice: #edf1ed;
+  --color-disabled-text: #66736d;
+  --color-selected: #dcece4;
+  --color-whatsapp: #1aa34c;
+  --color-whatsapp-hover: #148b42;
+  --color-map-pin: #2563eb;
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
+  --radius-xl: var(--radius-control);
+  --radius-2xl: var(--radius-card);
+  --radius-panel: 20px;
+  --text-control-label: 0.8125rem;
+  --text-control-large: 0.9375rem;
+  --color-sale: #a11d31;
+  --color-sale-surface: color-mix(in srgb, var(--color-coral) 9%, var(--color-surface));
   --color-warning: #744513;
   --color-warning-surface: #fff5e6;
-  --color-focus: #075dc7;
+  --color-focus: var(--color-brand);
   --color-ocean: #35646c;
-  --color-teal: #087775;
+  --color-teal: var(--color-brand);
+  --shadow-map-pin: 0 2px 6px rgb(0 0 0 / 33%);
   --shadow-raised: 0 10px 28px rgb(32 62 70 / 10%);
 }
 
 /* shadcn semantic aliases resolve to the current surface's palette, including RTL. */
 @theme inline {
   --color-primary: var(--color-brand);
-  --color-primary-foreground: var(--ui-primary-foreground, #ffffff);
+  --color-primary-foreground: var(--ui-primary-foreground, var(--color-white));
   --color-background: var(--color-surface);
   --color-foreground: var(--color-ink);
   --color-muted-foreground: var(--color-muted);
@@ -38,9 +60,6 @@
   --color-destructive: var(--color-sale);
   --color-ring: var(--color-brand);
   --color-input: var(--color-control-border);
-  --color-control-border: var(--ui-control-border, #8792a4);
-  --color-control-hover: var(--ui-control-hover, #64748b);
-  --color-control-disabled: var(--ui-control-disabled, #eef0f4);
 }
 
 /* Keep the verified component styles while migrating components to utilities.
@@ -49,7 +68,6 @@
   color-scheme: light;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
   --space-6: 24px; --space-8: 32px; --space-12: 48px;
-  --radius-control: 8px; --radius-card: 12px; --radius-panel: 20px;
   --content-width: 1280px;
   --gutter: var(--space-4);
   --text-small: .875rem; --text-base: 1rem;
@@ -169,3 +187,10 @@ label input:not([data-slot]),label select:not([data-slot]) { font-weight: 400; f
 }
 /* Google hides this duplicate accessible label; keep it out of sight if its CSS is blocked. */
 .google-signin .L6cTce { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+@media (forced-colors: active) {
+  :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

@@ -135,21 +135,17 @@ The decision register records precedence; implementation-progress.md owns status
 The public routes use the accepted system. Check the [verification matrix](docs/design/implementation-evidence/p6-02-verification.md)
 and the progress ledger for local evidence, owner acceptance and release inputs.
 
-The accepted runtime value source is
-`src/components/storefront-system/tokens.module.css`. Its opted-in state/control
-owner is `boundary.module.css`. DESIGN.md and `.impeccable/design.json` are checked
-documentation projections, never inputs for regenerating CSS. Do not create a
-competing palette/token stack or restore rejected values from metadata, references,
-archives, generic skills or old public styling. Preserve exact #FF5A5F and the
-actual logo; only recorded owner revisions change the accepted direction.
+The public palette and shared radii are owned by the Tailwind v4 theme in
+`src/app/globals.css`. The storefront token module aliases those values and owns
+local spacing and layout roles. Shared primitive styling lives in `components/ui`;
+`boundary.module.css` owns shopping-specific states. DESIGN.md and its sidecar are
+documentation projections. Keep primary actions deep apothecary green and coral
+reserved for cart counts, sale tags and urgent alerts.
 
-The legacy palette in `src/app/(storefront)/storefront-tokens.css` serves
-wholesale and root missing-page recovery. Its shared shell geometry and the
-fallback controls in storefront-controls.css support the consumers recorded in
-`docs/design/implementation-evidence/p6-01-retirement.md`. Route CSS owns layout;
-accepted controls use their single boundary owner. Do not add competing colour,
-size or radius utilities to migrated controls. Shared Button APIs/admin themes
-remain independent; native checkout/auth/payment logic stays unchanged.
+The separately imported `src/app/storefront-compatibility.css` retains the scoped
+palette for wholesale and the root missing-page surface. Admin has its own scope.
+Route CSS owns layout. Avoid restating primitive palette, radius or focus rules in
+route styles.
 
 Trace consumers before removing shared rules, fonts, component APIs or media.
 Preserve EN/AR/RTL, keyboard/focus/semantics, contrast, targets, reduced motion,
@@ -254,8 +250,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Owner-selected A/full campaign and five wide-screen home columns supersede the
 split/four-column comparison. The owner kept those layouts and requested lighter
-controls and stronger type hierarchy. The current review revision uses DM Sans,
-Noto Sans Arabic, cool neutral control surfaces and muted green quick add. Latest N03
+controls and stronger type hierarchy. The current storefront uses Plus Jakarta Sans and IBM Plex Sans Arabic, warm mineral control surfaces and muted green quick add. Latest N03
 image-first phone product detail keeps the overlay controls and purchase dock.
 
 Use current retail routes to review working components. The former specimen is

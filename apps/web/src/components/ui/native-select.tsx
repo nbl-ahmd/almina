@@ -17,7 +17,7 @@ function NativeSelect({
         data-slot="native-select"
         data-size={size}
         className={cn(
-          controlStyles, "appearance-none pe-10 data-[size=sm]:min-h-11 data-[size=sm]:py-2",
+          controlStyles, "appearance-none pe-10",
           className
         )}
         {...props}
