@@ -58,12 +58,19 @@
 }
 
 :where([data-storefront-retail]) {
+  --motion-feedback: 120ms;
+  --color-control-border: #7889a2;
+  --color-control-hover: #596f8e;
+  --leading-control: 1.4;
   --radius-control: 10px;
   --radius-card: 18px;
   --radius-panel: 24px;
   --radius-xl: var(--radius-control);
   --radius-2xl: var(--radius-card);
 }
+
+[data-storefront-retail]:is(:lang(ar), :dir(rtl)) { --leading-control: 1.55; }
+[data-storefront-retail] ::selection { color: var(--color-ink); background: var(--color-selected); }
 
 /* shadcn semantic aliases resolve to the current surface's palette, including RTL. */
 @theme inline {

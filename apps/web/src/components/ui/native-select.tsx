@@ -18,6 +18,7 @@ function NativeSelect({
         data-size={size}
         className={cn(
           controlStyles, "appearance-none pe-10",
+          size === "sm" && "ps-3 sm:pointer-fine:text-sm",
           className
         )}
         {...props}

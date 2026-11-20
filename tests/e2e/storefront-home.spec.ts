@@ -111,6 +111,7 @@ test('published home campaigns preserve hero controls and a separate supporting 
 test('the floating WhatsApp button opens the prefilled pharmacy chat above phone navigation', async ({ page, context }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.locator('.sf-footer-bottom').scrollIntoViewIfNeeded();
   const button = page.getByRole('link', { name: 'Chat with the pharmacy on WhatsApp', exact: true });
   await expect(button).toBeVisible();
   await expect(button).toHaveCSS('position', 'fixed');

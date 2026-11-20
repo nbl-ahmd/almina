@@ -65,7 +65,7 @@ test('review form keeps native validation, errors and confirmed feedback', async
   const form = page.locator('#write-product-review');
   const submit = form.getByRole('button', { name: 'Submit for review', exact: true });
   await expect(submit).toHaveCSS('border-radius', '10px');
-  await expect(form.getByRole('textbox', { name: 'Order number', exact: true })).toHaveCSS('border-bottom-color', 'rgb(165, 180, 203)');
+  await expect(form.getByRole('textbox', { name: 'Order number', exact: true })).toHaveCSS('border-bottom-color', 'rgb(120, 137, 162)');
   await submit.click();
   await expect(form.getByRole('textbox', { name: 'Order number', exact: true })).toBeFocused();
   await form.getByRole('textbox', { name: 'Order number', exact: true }).fill('OD5050');

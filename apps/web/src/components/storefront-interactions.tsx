@@ -47,7 +47,7 @@ export function StorefrontInteractions() {
         observer.unobserve(action);
       }
       shortcut.toggleAttribute('data-over-purchase-action', overlaps.size > 0);
-      for (const action of home.querySelectorAll('.home-product-grid :is(.add-to-cart, .card-cart-stepper, .product-option-link)')) {
+      for (const action of home.querySelectorAll('.home-product-grid :is(.product-card-title, .product-card-tags, .product-card-bottom, .add-to-cart, .card-cart-stepper, .product-option-link)')) {
         if (targets.has(action)) continue;
         targets.add(action);
         observer.observe(action);

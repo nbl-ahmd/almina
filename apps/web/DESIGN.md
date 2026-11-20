@@ -12,8 +12,8 @@ colors:
   product-well: "#f5f7fb"
   input: "#ebf1fa"
   border: "#dce4f1"
-  control-border: "#a5b4cb"
-  control-hover: "#7184a3"
+  control-border: "#7889a2"
+  control-hover: "#596f8e"
   secondary: "#ebf1fa"
   hover: "#dce9ff"
   campaign: "#dbe9ff"
@@ -193,7 +193,7 @@ Primary text measures 13.95:1 on the canvas. Muted text measures 5.79:1 on the c
 
 Next font loads Plus Jakarta Sans and IBM Plex Sans Arabic at weights 400, 500, 600 and 700 through the root layout. Arabic or RTL storefront content selects Plex first and Jakarta for mixed-script labels. Commerce numerals use tabular figures. Keep factual names and bidirectional isolation for pack information.
 
-Frontmatter roles record wide-screen values. Phone page titles use 24px; PDP titles 28→22px and prices 30→24px; campaign copy follows the artwork composition. Card names 15→14px with 1.35 wide and 1.4 phone leading; card prices 21→19px. Section headings vary by context. Homepage headings use 23px wide and 19px phone. Do not replace these with one large display scale. Use 500 weight for controls and card names, 600 for emphasis and 650 for headings and prices. Verify label, input and error text on the actual form at each supported viewport.
+Frontmatter sizes describe the default browser setting. The shared storefront type scale uses rem units so product names, prices and supporting text grow with the reader’s preferred size. Button and label line heights allow additional room for Arabic. Phone page titles use 24px; PDP titles 28→22px and prices 30→24px; campaign copy follows the artwork composition. Card names 15→14px with 1.35 wide and 1.4 phone leading; card prices 21→19px. Section headings vary by context. Homepage headings use 23px wide and 19px phone. Do not replace these with one large display scale. Use 500 weight for controls and card names, 600 for emphasis and 650 for headings and prices. Verify label, input and error text on the actual form at each supported viewport.
 
 Supporting metadata remains readable and subdued. Stock uses 11px with explicit status text. The 10px count exception is for redundant compact cart counts with a full accessible name; wide counts remain 12px. It is not a standalone target or a body-text rule. Preserve locale money formatting, the dirham SVG and the LTR numeric run; do not mirror currency or pack artwork. Long names wrap without losing accessible identity.
 

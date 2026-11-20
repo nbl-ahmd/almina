@@ -132,7 +132,6 @@
 .filterSection:lang(ar) > label, .price:lang(ar) > legend { letter-spacing: normal; }
 .stock { font-size: var(--store-type-13); font-weight: var(--store-weight-medium); }
 .field :is(input, select) {
-  min-block-size: var(--store-target-min);
   padding-block: var(--store-space-8);
   color: var(--store-text);
   font-size: var(--store-type-14);
@@ -239,7 +238,6 @@
 }
 .sort :is(select, button) { pointer-events: auto; }
 .sort select {
-  min-block-size: var(--store-target-min);
   border-radius: var(--store-compact-radius);
   border-color: transparent;
   background: transparent;
