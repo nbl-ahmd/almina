@@ -113,3 +113,19 @@ code-managed collection definitions becoming fully configurable where needed; ri
 catalogue attributes/routines/recommendations; operational SEO/ad account verification,
 provider activation, attribution and pharmacy-owned commercial policies. These remain
 separate from this completed campaign slice.
+
+## Homepage banner uploads and responsive artwork
+
+The admin Banners form publishes a desktop image and an optional mobile image
+through the existing signed Cloudinary upload configuration. The browser uses
+the same Cloudinary account configured for product artwork. The two renditions
+are saved with the banner and its media history only after both uploads succeed.
+Legacy single-image submissions can still use the Drive adapter when signed
+uploads are disabled. Existing banner references and archive behavior remain
+available. A provider timeout after accepting artwork can leave an unreferenced
+asset. Reconcile it against banner records and history before removing media.
+
+The storefront uses a fixed 4:1 frame on desktop and a 3:1 frame below 768 CSS
+px. Newly published Banners lead the carousel. Managed campaigns and the
+built-in slides remain available. Designer export dimensions and file limits
+are recorded in the [storefront design specification](../../apps/web/DESIGN.md#homepage-carousel-artwork).

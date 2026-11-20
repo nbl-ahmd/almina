@@ -1,6 +1,7 @@
 "use client";
 import { shopText as u } from '../lib/i18n-storefront';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { bannerMobileMedia } from '../lib/catalog/banner-artwork';
 import type { Locale } from '../lib/i18n';
 import { useRef, useState, type ReactNode, type TouchEvent } from "react";
 export function CampaignSlider({
@@ -27,6 +28,7 @@ export function CampaignSlider({
 
   function onTouchStart(event: TouchEvent) {
     lastSwipe.current = 0;
+    if (!window.matchMedia(bannerMobileMedia).matches) return;
     const touch = event.touches.length === 1 ? event.touches[0] : undefined;
     origin.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
   }
@@ -54,28 +56,30 @@ export function CampaignSlider({
       aria-roledescription={u(locale,"carousel")}
       aria-label={label}
     >
-      {children.map((child, index) => (
-        <div
-          key={index}
-          hidden={active !== index}
-          className="campaign-frame h-full"
-          data-pointer-entry={animate && active === index ? true : undefined}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-          onTouchCancel={() => { origin.current = null; }}
-          onClickCapture={event => {
-            if (event.detail > 0 && Date.now() - lastSwipe.current < 450) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-          }}
-          role="group"
-          aria-roledescription={u(locale,"slide")}
-          aria-label={slideLabel(index)}
-        >
-          {child}
-        </div>
-      ))}
+      <div className="home-hero-viewport">
+        {children.map((child, index) => (
+          <div
+            key={index}
+            hidden={active !== index}
+            className="campaign-frame h-full"
+            data-pointer-entry={animate && active === index ? true : undefined}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+            onTouchCancel={() => { origin.current = null; }}
+            onClickCapture={event => {
+              if (event.detail > 0 && Date.now() - lastSwipe.current < 450) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+            }}
+            role="group"
+            aria-roledescription={u(locale,"slide")}
+            aria-label={slideLabel(index)}
+          >
+            {child}
+          </div>
+        ))}
+      </div>
       {children.length > 1 ? (
         <div className="campaign-pagination" role="group" aria-label={u(locale,"Choose highlight")}>
           <button type="button" data-slot="carousel-arrow" disabled={active === 0}

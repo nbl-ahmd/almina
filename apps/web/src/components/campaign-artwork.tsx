@@ -1,5 +1,6 @@
 import Image, { getImageProps } from 'next/image';
 import Link from './app-link';
+import { bannerArtwork, bannerMobileMedia, bannerSizes } from '../lib/catalog/banner-artwork';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { campaignImageUrl, growthPagePath, type GrowthPage } from '@almina/contracts';
 
@@ -15,13 +16,13 @@ export function CampaignArtwork({ page, preview, cloudName }: {
   const href = growthPagePath(page);
   const arabic = page.locale === 'ar';
   const lead = page.homepagePlacement === 'hero';
-  const width = preview === 'mobile' ? 800 : 1440;
-  const mediaRatio = lead ? 'aspect-[8/3] md:aspect-[4/1]' : 'aspect-[3/1]';
+  const dimensions = bannerArtwork[preview ?? 'desktop'];
+  const mediaRatio = lead ? 'aspect-[3/1] md:aspect-[4/1]' : 'aspect-[3/1]';
   const action = page.ctaLabel || (arabic ? 'استكشف العرض' : 'Explore campaign');
 
   if (!src) {
     return (
-      <article dir={arabic ? 'rtl' : 'ltr'} className="rounded-2xl border border-border bg-white p-4 text-ink">
+      <article dir={arabic ? 'rtl' : 'ltr'} className="campaign-text-fallback rounded-2xl border border-border bg-white p-4 text-ink">
         <h2 className="text-lg font-semibold">{page.title}</h2>
         <p className="max-w-prose text-sm leading-6 text-muted">{page.description}</p>
         {preview
@@ -32,14 +33,14 @@ export function CampaignArtwork({ page, preview, cloudName }: {
   }
 
   const mobileSource = !preview && mobile && mobile !== desktop
-    ? getImageProps({ src: mobile, alt: '', width: 800, height: 400, sizes: 'calc(100vw - 32px)' }).props
+    ? getImageProps({ src: mobile, alt: '', ...bannerArtwork.mobile, sizes: bannerSizes }).props
     : undefined;
   const image = (
     <picture className={`block overflow-hidden rounded-2xl bg-subtle ${mediaRatio}`}
-      style={preview ? { aspectRatio: lead ? preview === 'mobile' ? '8 / 3' : '4 / 1' : '3 / 1' } : undefined}>
-      {mobileSource ? <source media="(max-width: 767px)" srcSet={mobileSource.srcSet} sizes={mobileSource.sizes} /> : null}
-      <Image src={src} alt={preview ? page.imageAlt : ''} width={width} height={preview === 'mobile' ? 400 : 540}
-        sizes={preview === 'mobile' ? '390px' : lead ? '(max-width: 767px) 100vw, 1200px' : '(max-width: 767px) 100vw, 600px'}
+      style={preview ? { aspectRatio: lead ? preview === 'mobile' ? '3 / 1' : '4 / 1' : '3 / 1' } : undefined}>
+      {mobileSource ? <source media={bannerMobileMedia} srcSet={mobileSource.srcSet} sizes={mobileSource.sizes} /> : null}
+      <Image src={src} alt={preview ? page.imageAlt : ''} {...(lead ? dimensions : { width: 1440, height: 480 })}
+        sizes={preview === 'mobile' ? '390px' : lead ? bannerSizes : '(max-width: 767px) 100vw, 600px'}
         loading="lazy" className="h-full w-full object-contain" />
     </picture>
   );

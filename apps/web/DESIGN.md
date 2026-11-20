@@ -245,3 +245,10 @@ Review the working patterns on the retail routes. The sidecar documents the ship
 - Don't generate a competing palette/font/token system from skills, metadata snippets, references or the archive.
 - Don't copy unsupported ratings, delivery promises, medical claims, prices, discounts, services or payment availability.
 - Don't deploy, access production data or change commerce behavior as part of this design phase.
+
+
+### Homepage carousel artwork
+
+Export **2400 × 600 px (4:1) for desktop** and **1200 × 400 px (3:1) for mobile**. The mobile frame and artwork apply below 768 CSS px. The frame scales with the page width and keeps its height when the slide changes. Put the campaign headline and any call to action in the artwork. Keep key elements clear of the rounded corners and check headline legibility at phone size.
+
+Upload both files in **Admin → Banners → Add banner**. Use WebP, JPEG or PNG and keep the files under 3 MB combined. Match the current promotion in the accessible banner name and set its destination. The desktop image also works on phones if no mobile version is supplied. Uploaded artwork is fitted without cropping. Phones support horizontal swipe and the controls remain available by touch and keyboard.

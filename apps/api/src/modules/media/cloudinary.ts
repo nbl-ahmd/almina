@@ -42,7 +42,7 @@ function verifyAsset(raw: unknown, publicId: string, config: CloudinaryConfig, s
 export async function signedRasterUpload(config: CloudinaryConfig, bytes: Uint8Array, publicId: string,
   signal: AbortSignal, transport: typeof fetch = fetch) {
   configured(config);
-  if (!/^almina\/products\/[a-f0-9-]{36}-[0-4]$/.test(publicId) || !bytes.byteLength || bytes.byteLength > 5 * 1024 * 1024) throw new HttpError(400, 'INVALID_REQUEST');
+  if (!/^almina\/(?:products\/[a-f0-9-]{36}-[0-4]|banners\/[a-f0-9-]{36}-(?:desktop|mobile))$/.test(publicId) || !bytes.byteLength || bytes.byteLength > 5 * 1024 * 1024) throw new HttpError(400, 'INVALID_REQUEST');
   const resource = `https://api.cloudinary.com/v1_1/${config.cloudName}/resources/image/upload/${encodeURIComponent(publicId)}`;
   const lookup = () => transport(resource, { headers: { authorization: 'Basic ' + Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64') }, signal, redirect: 'error' });
   // A prior lost response is reconciled through the provider's authenticated resource API.

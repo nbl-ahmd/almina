@@ -28,23 +28,37 @@
 
 [data-storefront-home] section { margin-block: 0; }
 
-[data-storefront-home] :is(.pharmacy-ad a, .home-editorial-banner) {
+[data-storefront-home] .home-editorial-banner {
   display: block;
   overflow: hidden;
   border-radius: var(--store-campaign-radius);
+  background: var(--store-secondary-surface);
 }
-.pharmacy-ad a { background: var(--store-campaign-surface); aspect-ratio: 3 / 1; }
-.home-editorial-banner { background: var(--store-secondary-surface); }
-.pharmacy-ad img { height: 100%; object-fit: cover; }
-[data-storefront-home] :is(.pharmacy-ad, .home-editorial-banner) img { display: block; width: 100%; }
-.home-editorial-banner img { height: auto; }
+.home-editorial-banner img { display: block; width: 100%; height: auto; }
+.home-hero-viewport {
+  aspect-ratio: 3 / 1;
+  min-block-size: 0;
+  overflow: hidden;
+  border-radius: var(--store-campaign-radius);
+  background: var(--store-campaign-surface);
+}
+.home-hero-viewport :is(.pharmacy-ad, .pharmacy-ad a, .campaign-frame > :is(a, div, article)) {
+  display: block;
+  block-size: 100%;
+}
+.home-hero-viewport :is(.campaign-art-link, picture) {
+  display: block;
+  block-size: 100%;
+  aspect-ratio: auto;
+}
+.home-hero-viewport img { display: block; inline-size: 100%; block-size: 100%; object-fit: contain; }
+.home-hero-viewport :is(.pharmacy-ad, .home-hero-banner) img { object-fit: cover; }
+.home-hero-viewport a:focus-visible { outline-offset: -4px; }
+.home-hero-viewport .campaign-text-fallback { overflow: auto; }
 .home-collection-section {
   display: grid;
   gap: var(--store-space-12);
 }
-.home-hero-banner { display: block; border-radius: var(--store-campaign-radius); }
-.home-hero-banner img { object-fit: cover; object-position: left center; }
-.home-hero-banner:dir(rtl) img { object-position: right center; }
 @media (prefers-reduced-motion: no-preference) {
   [data-storefront-home] :is(.pharmacy-ad a, .home-editorial-banner) img {
     transition: opacity var(--store-motion-feedback) var(--store-motion-easing);
@@ -72,15 +86,6 @@
 [data-storefront-home] a.home-action:hover { background: var(--store-action-hover); }
 [data-storefront-home] :is(a, button):focus-visible { outline-color: var(--store-focus); }
 
-.home-banner-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 3;
-  border-radius: var(--store-campaign-radius);
-  object-fit: contain;
-  background: var(--store-surface);
-}
 
 [data-storefront-home] .sf-section-heading {
   min-width: 0;
@@ -201,7 +206,7 @@
   }
   .home-lead { gap: var(--store-space-4); }
 
-  :is(.pharmacy-ad a, .home-banner-image) { aspect-ratio: 4 / 1; }
+  .home-hero-viewport { aspect-ratio: 4 / 1; }
   .home-collection-section { gap: var(--store-space-16); }
   .home-editorial-banner img {
     aspect-ratio: 4 / 1;

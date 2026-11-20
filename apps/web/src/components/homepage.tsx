@@ -1,7 +1,8 @@
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import Link from './app-link';
 import { ArrowRightIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import type { GrowthPage } from '@almina/contracts';
+import { bannerArtwork, bannerMobileMedia, bannerSizes } from '../lib/catalog/banner-artwork';
 import type { Locale } from '../lib/i18n';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
@@ -13,7 +14,23 @@ import { Icon } from './icon';
 import { CategoryTile } from './category-tile';
 import { ProductCard } from './product-card';
 
-type Banner = { image: string; name: string; href: string | null };
+type Banner = { image: string; mobileImage?: string; name: string; href: string | null };
+
+function HomeHeroImage({ image, mobileImage, alt, priority = false }: {
+  image: string;
+  mobileImage?: string;
+  alt: string;
+  priority?: boolean;
+}) {
+  const mobile = mobileImage ? getImageProps({
+    src: mobileImage, alt, ...bannerArtwork.mobile, sizes: bannerSizes,
+  }).props : undefined;
+  return <picture>
+    {mobile ? <source media={bannerMobileMedia} srcSet={mobile.srcSet} sizes={mobile.sizes} /> : null}
+    <Image src={image} alt={alt} {...bannerArtwork.desktop} sizes={bannerSizes}
+      loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : undefined} draggable={false} />
+  </picture>;
+}
 
 async function SectionHeading({ title, href, link = 'View all' }: {
   title: string;
@@ -43,12 +60,11 @@ export function HomeHero({ locale, banners = [], campaigns = [], loading = false
   const lead = (
     <div className="pharmacy-ad" key="almina-everyday">
       <Link href="/collections/daily-care" aria-label={ar ? 'العناية الشخصية اليومية. تسوق المجموعة' : 'Everyday personal care. Shop collection'}>
-        <Image src={`/design/campaigns/personal-care-${locale}.webp`} alt="" width={1440} height={480}
-          sizes="(min-width: 1240px) 1192px, calc(100vw - 32px)" loading="eager" fetchPriority="high" />
+        <HomeHeroImage image={`/design/campaigns/personal-care-${locale}.webp`} alt="" priority={loading || !banners.length} />
       </Link>
     </div>
   );
-  if (loading) return <div className="home-campaigns">{lead}<div className="campaign-placeholder" aria-hidden="true" /></div>;
+  if (loading) return <div className="home-campaigns"><div className="home-hero-viewport">{lead}</div><div className="campaign-placeholder" aria-hidden="true" /></div>;
 
   const evergreen = [
     { artwork: 'shop-brands', href: '/brands', label: ar ? 'تسوق حسب العلامة التجارية. استكشف العلامات التجارية' : 'Shop by brand. Explore brands' },
@@ -59,20 +75,18 @@ export function HomeHero({ locale, banners = [], campaigns = [], loading = false
     <section className="home-campaigns" aria-label={u(locale, 'Discover Al Mina')}>
       <CampaignSlider locale={locale} label={u(locale, 'Pharmacy promotions')} controlLabel={u(locale, 'promotion')}>
         {[
+          ...banners.slice(0, 8).map((banner, index) => {
+            const photo = <HomeHeroImage {...banner} alt={banner.name} priority={index === 0} />;
+            const key = `${banner.image}-${index}`;
+            return banner.href ? <Link key={key} href={banner.href}>{photo}</Link> : <div key={key}>{photo}</div>;
+          }),
           lead,
           ...heroCampaigns.map(page => <CampaignArtwork cloudName={cloudName} key={page.slug} page={page} />),
           ...evergreen.map(({ artwork, href, label }) => (
             <Link key={artwork} href={href} className="home-hero-banner" aria-label={label}>
-              <Image src={`/design/campaigns/${artwork}-${locale}.webp`} alt="" width={1440} height={480}
-                sizes="(min-width: 1240px) 1192px, calc(100vw - 32px)" className="home-banner-image" />
+              <HomeHeroImage image={`/design/campaigns/${artwork}-${locale}.webp`} alt="" />
             </Link>
           )),
-          ...banners.slice(0, 8).map((banner, index) => {
-            const photo = <Image src={banner.image} alt={banner.name} width={1440} height={540}
-              sizes="(max-width: 767px) 100vw, 1200px" loading="lazy" className="home-banner-image" />;
-            const key = `${banner.image}-${index}`;
-            return banner.href ? <Link key={key} href={banner.href}>{photo}</Link> : <div key={key}>{photo}</div>;
-          }),
         ]}
       </CampaignSlider>
     </section>

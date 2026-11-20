@@ -42,7 +42,7 @@ export async function upstream(path: string, init: RequestInit = {}) {
       ...init,
       cache: "no-store",
       redirect: "manual",
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(path === "banners" && init.method === "POST" ? 22000 : 12000),
       headers: {
         cookie: await sessionHeader(),
         origin: env.WEB_ORIGIN,

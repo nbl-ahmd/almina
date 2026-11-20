@@ -1,3 +1,4 @@
+import { cloudinaryImage } from '@almina/contracts';
 import { z } from 'zod';
 import { ObjectId, type Db } from 'mongodb';
 import { HttpError } from '../../errors.js';
@@ -33,6 +34,14 @@ export function retainedBannerQuery(raw: unknown) {
 }
 export async function retainedBannerList(db: Db, raw: unknown) {
   const page = retainedBannerQuery(raw);
-  return db.collection('banners').find({ archivedAt: { $exists: false } }, { ...queryOptions, projection: { _id: 1, name: 1, image: 1, link: 1, gdriveFileId: 1 } })
+  return db.collection('banners').find({ archivedAt: { $exists: false } }, { ...queryOptions, projection: { _id: 1, name: 1, image: 1, link: 1, gdriveFileId: 1, cloudinaryImages: 1 } })
     .sort({ _id: -1 }).skip(page.offset).limit(page.limit).toArray();
+}
+
+export async function retainedBannerArtwork(db: Db, filename: string, query: unknown, cloudName: string | undefined) {
+  if (!z.object({}).strict().safeParse(query).success) throw new HttpError(400, 'INVALID_REQUEST');
+  if (!/^banner-[a-f0-9-]{36}\.webp$/.test(filename)) return null;
+  const current = await db.collection('banners').findOne({ image: filename },
+    { ...queryOptions, projection: { cloudinaryImages: 1 } });
+  return cloudinaryImage(current?.cloudinaryImages?.[0], cloudName);
 }

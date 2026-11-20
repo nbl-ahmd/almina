@@ -72,9 +72,9 @@ test('Arabic homepage campaign controls keep navigation and product names intact
     const control = campaign.getByRole('button', { name: 'عرض عرض 2', exact: true });
     await control.press('Enter');
     await expect(control).toHaveAttribute('aria-pressed', 'true');
-    await expect(campaign.getByRole('group', { name: '2 من 2', exact: true })).toBeVisible();
+    await expect(campaign.getByRole('group', { name: '2 من 3', exact: true })).toBeVisible();
     await expect(campaign.getByRole('link', { name: 'See campaign', exact: true })).toHaveAttribute('href', '/ar/offers/fixture-hero');
-    await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
+    await expect(page.locator('.home-product-grid').first().getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   } finally {
     expect((await request.get(fixture + '?enabled=0')).ok()).toBe(true);
   }
