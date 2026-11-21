@@ -1,3 +1,4 @@
+import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
 import { GrowthActivity } from '../../../../components/growth-activity';
 import { getLocale } from '../../../../lib/server/i18n';
 import { shopText as u } from '../../../../lib/i18n-storefront';
@@ -20,7 +21,7 @@ import { aggregateRatingData, breadcrumbData, productData, reviewListData, type 
 import { StructuredData } from '../../../../components/structured-data';
 import { categoryHref, productOptionLabel, productHref, money, displayPrice } from '../../../../lib/catalog/model';
 import { ProductGrid, Breadcrumb, StockState } from '../../../../components/storefront';
-import { Icon } from '../../../../components/icon';
+import { Icon } from '../../../../components/storefront-icon';
 import { AddToCart } from '../../../../components/cart-controls';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
 export async function generateMetadata({ params, searchParams }: Props) {
@@ -62,7 +63,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <ProductOptions product={product} variants={variants} />
         <div className="product-price-panel mb-5 flex flex-wrap items-baseline gap-3 rounded-2xl p-4 md:p-5"><div className="w-full text-xs font-semibold md:w-auto">{u(locale,"Price")}</div><p className="price m-0 text-3xl font-semibold tabular-nums md:text-3xl">{money(currentPrice,locale)}</p>{saving ? <><del className="text-sm">{money(product.price,locale)}</del><span className="rounded-full px-3 py-1 text-xs font-semibold">{locale === "en" ? `Save ${saving}%` : `وفّر ${saving}%`}</span></> : null}</div>
         <div className="mb-5 flex items-start gap-3 border-y py-4"><span className="rounded-lg p-2"><Icon name="pin" /></span><div><h2 className="mb-1 text-base font-bold">{u(locale,"Delivery in Ras Al Khaimah")}</h2><p className="m-0 text-sm leading-relaxed">{u(locale,"Checkout confirms the delivery charge and final total before you place an order.")}</p><div className="flex flex-wrap gap-x-4"><Link className="inline-flex min-h-9 items-center text-xs" href="/shipping">{u(locale,"Delivery & shipping")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs" href="/returns">{u(locale,"Returns & refunds")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs" href="/contact#delivery">{u(locale,"Delivery enquiries")} <Icon name="arrow" /></Link></div></div></div>
-        <div className="pdp-purchase mobile-action-bar md:mb-4"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice,locale)} /></div>
+        <ProductPurchaseDock><div className="pdp-purchase md:mb-4"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice,locale)} /></div></ProductPurchaseDock>
         <div className="mb-4"><SaveProduct locale={locale} id={product._id} name={product.name} /></div>
         {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
         <div className="mb-4 grid grid-cols-2 gap-2"><Link className="product-contact flex min-h-11 items-center justify-center gap-2 rounded-full border bg-white px-3 text-xs font-semibold transition-colors" href="/cart"><Icon name="bag" />{u(locale,"View your cart")}</Link><Link className="flex min-h-11 items-center justify-center gap-2 rounded-full border bg-white px-3 text-xs font-semibold transition-colors" href="/contact"><Icon name="phone" />{u(locale,"Contact pharmacy")}</Link></div>
