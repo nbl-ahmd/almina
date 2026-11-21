@@ -30,8 +30,3 @@ outputs/
 
 # Named verification builds must not collide with active local previews.
 .next-verification-*/
-
-# Downloaded design engine and disposable root-level review captures.
-.agents/skills/impeccable/scripts/bin/
-/g11-*.png
-/ghost*.png

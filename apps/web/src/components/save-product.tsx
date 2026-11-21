@@ -1,52 +1,7 @@
 'use client';
-
-import { useEffect, useState } from 'react';
-import { HeartIcon } from '@heroicons/react/24/outline';
-import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
-import { changeSaved, currentSaved, loadSavedAccount } from '../lib/catalog/saved-account';
-
-export function SaveProduct({ id, name, locale = 'en', compact = false, card = false }: {
-  id: string; name: string; locale?: Locale; compact?: boolean; card?: boolean;
-}) {
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
-  useEffect(() => {
-    const update = () => {
-      try { setSaved(currentSaved().includes(id)); } catch { /* Optional storage. */ }
-    };
-    update();
-    void loadSavedAccount().then(update);
-    window.addEventListener('almina-saved-change', update);
-    window.addEventListener('storage', update);
-    return () => {
-      window.removeEventListener('almina-saved-change', update);
-      window.removeEventListener('storage', update);
-    };
-  }, [id]);
-
-  const label = locale === 'ar'
-    ? `${saved ? 'إزالة' : 'حفظ'} ${name}${saved ? ' من المنتجات المحفوظة' : ''}`
-    : `${saved ? 'Remove' : 'Save'} ${name}${saved ? ' from saved products' : ''}`;
-  async function toggle() {
-    try {
-      await changeSaved(id, saved);
-      setError('');
-    } catch {
-      setError(u(locale, 'Unable to update your saved list. Please try again.'));
-    }
-  }
-
-  return (
-    <>
-      <button type="button" data-store-control={card ? 'save' : undefined} aria-pressed={saved} aria-label={label}
-        onClick={() => void toggle()} className={card ? 'card-save'
-          : 'flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-sm font-medium text-teal hover:bg-subtle hover:text-teal'}>
-        {saved ? <HeartSolid aria-hidden="true" className="size-4 text-coral" /> : <HeartIcon aria-hidden="true" className="size-4" />}
-        <span className={compact ? 'sr-only' : undefined}>{saved ? u(locale, 'Saved') : u(locale, 'Save for later')}</span>
-      </button>
-      {error ? <p role="status" className={card ? 'card-save-error' : 'text-xs text-muted'}>{error}</p> : null}
-    </>
-  );
-}
+import { useEffect,useState } from 'react';
+import { HeartIcon } from '@heroicons/react/24/outline';
+import { currentSaved,loadSavedAccount,changeSaved } from '../lib/catalog/saved-account';
+export function SaveProduct({id,name,locale='en'}:{id:string;name:string;locale?:Locale}){const [saved,setState]=useState(false),[error,setError]=useState('');useEffect(()=>{const update=()=>{try{setState(currentSaved().includes(id));}catch{/* Optional storage. */}};update();void loadSavedAccount().then(update);window.addEventListener('almina-saved-change',update);window.addEventListener('storage',update);return()=>{window.removeEventListener('almina-saved-change',update);window.removeEventListener('storage',update);};},[id]);async function toggle(){try{await changeSaved(id,saved);setError('');}catch{setError(u(locale,"Unable to update your saved list. Please try again."));}}return <><button type="button" aria-pressed={saved} aria-label={locale === 'ar' ? `${saved?'إزالة':'حفظ'} ${name}${saved?' من المنتجات المحفوظة':''}` : `${saved?'Remove':'Save'} ${name}${saved?' from saved products':''}`} onClick={()=>void toggle()} className="flex min-h-11 items-center justify-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm font-medium"><HeartIcon className="size-4" />{saved?u(locale,"Saved"):u(locale,"Save for later")}</button>{error?<p role="status" className="text-xs">{error}</p>:null}</>;}

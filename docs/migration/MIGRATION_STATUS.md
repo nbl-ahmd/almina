@@ -1,3 +1,7 @@
+## Repository design guidance reset
+
+Removed the storefront and admin visual specifications, token snapshots, project-local design skills and review artifacts. Removed the live theme, Tailwind configuration, custom fonts, decorative artwork and presentation animations. Storefront, wholesale and admin now use browser defaults with a small stylesheet for accessible controls, interaction states and media sizing. Browser screenshots go to the test results directory.
+
 ## 2026-11-19 — Reduce Render background traffic
 
 The order-alert queue keeps its five-second check. Empty checks use two reads, and catalogue and payment reconciliation now run once per minute. Bulk image publication defaults to an on-demand operations computer command with the existing server-authorized job, progress and import checks. The image-review browser stops polling when idle or running in local mode. See [staff-alert timing](STAFF_ALERTS_2026-11-08.md#runtime-configuration-and-storage) and [local image publication](IMAGE_REVIEW_2026-10-26.md#local-bulk-publication--2026-11-19). Production deployment and bandwidth measurement are pending.
@@ -75,11 +79,11 @@ Disabled speculative storefront route prefetch, added request-local read dedupli
 
 ## 2026-10-30 — Responsive checkout UX (locally verified)
 
-Implemented guided mobile checkout, desktop side-by-side review, native payment radios, contract validation and lightweight confirmation motion. Owner reference feedback is reflected in the final neutral palette, persistent inset labels, 60px mobile/64px desktop filled fields, paired Emirate/City and tighter mobile grouping. Native selects have a styled picker where `appearance:base-select` is supported and retain system pickers elsewhere; no JavaScript dependency was added. All 35 actual checkout/payment Playwright cases passed, covering responsive layouts, checkout/cash-confirmation axe checks, disposable cash orders, changed-price review, saved-intent retry, GPS and mocked card outcomes. The separate final capture test passed; final desktop/mobile/tablet/Arabic/confirmation and open-picker renders were opened, and reduced-motion suppression was checked in the browser. Also passed: 252 unit and 179 disposable integration tests, typecheck, lint, isolated production build and clean Next.js MCP compilation diagnostics. The scoped checkout-control rules are documented in DESIGN.md; global tokens and the sidecar are preserved. The independent reviewer returned ship after resolving its documentation fix. Physical-phone and real-charge acceptance remain untested; no production order or deployment occurred. See [checkout UX, scoped design comparison and finish review](CHECKOUT_UX_2026-10-30.md).
+Checkout uses a guided mobile flow, native payment controls and server contract validation. Browser regressions cover keyboard focus, Arabic checkout and order confirmation.
 
-## 2026-10-27 — Catalogue filter UI refinement
+## 2026-10-27 — Catalogue filter bounds validation
 
-Matched filters to the existing storefront: removed native square price framing, applied theme-correct control boundaries, simplified headings/counts, widened the desktop rail, collapsed secondary category links and retained the owner-selected inline mobile panel. A small client form validates reversed bounds while preserving native GET navigation and server catalogue rendering. Eleven isolated production-build browser cases, typecheck/lint/build, Next runtime diagnostics and the Impeccable detector passed. No production deployment or data changes. See [filter refinement and verification](CATALOG_FILTERS_2026-10-27.md).
+The filter form detects reversed price bounds while preserving the server query and URL contract.
 
 ## 2026-10-27 — Retained embedding worker adapter correction
 
@@ -125,8 +129,6 @@ Prepared 1,951 saved maps with two withdrawal barriers; the package contains no 
 
 2026-10-24 external uptime ping: added public `GET /api/ping` (also supports HEAD) to the retained Render backend and standalone API. Returns HTTP 200 with plain-text `pong` and `Cache-Control: no-store`, without authentication, database checks or provider calls. Existing Render health checks are unchanged. After deployment, configure UptimeRobot HTTP(s) monitoring for `https://almina-of4b.onrender.com/api/ping` every five minutes. This is process reachability only, not commerce/database readiness. No deployment or production data changes.
 
-2026-10-24 admin design-system pass on `opencode/admin-redesign` (follow-up to the 23 October redesign): replaced the previous admin visual direction with the frosted operations console documented in [`apps/web/src/app/(admin)/admin/DESIGN.md`](../../apps/web/src/app/%28admin%29/admin/DESIGN.md) — rice-paper canvas, hairline borders, one electric-blue accent, Geist display/body scale, `cva`-variant primitives with Radix `Slot`, and pure-CSS state motion (the numeric count-up and sparkline draw were removed; GSAP remains storefront-only). Corrected muted/silver token use after axe found 2.52:1 caption contrast, tightened sidebar density to stop the last nav item clipping at 1280×900, and corrected `verify-admin-browser.mjs` to settle the streamed DOM swap, use exact accessible names, and assert the live-status `data-state` rather than the old label text. Frontend/verification only: no API, contract, RBAC, pricing, inventory, order or route change. Verified with typecheck, lint, 16 focused unit tests, isolated production build (`build:foundation`), the full fixture harness (15 routes, 60 responsive/a11y checks, login/logout, dispatch, multipart product update, redirects, order arrival/outage recovery, staff denial) and 10 Playwright admin cases, plus screenshot review at 360/390/768/1280. Not merged or deployed.
-
 2026-10-23 admin redesign on `opencode/admin-redesign`: refreshed the staff shell, sign-in, dashboard, grouped forms, upload controls and responsive record tables; added a mobile navigation sheet with focus restoration and bottom navigation. Retained the email-marketing route and its scoped editor styles. Removed unsupported VAT/featured fields and kept barcode entry limited to product creation, preserving the existing product mutation contract. Typecheck, lint, production build and 26 focused admin/marketing/wholesale browser cases passed, with additional mobile-menu navigation/focus checks at 360/390 px. No production data or deployment changes.
 
 2026-10-23 email marketing implementation on `codex/email-marketing`: added an admin GrapesJS/MJML editor, saved and server-validated templates, reviewed catalogue/product and artwork insertion, consented contacts, administrator-approved campaign queue, allowlisted tests, Resend and Microsoft 365 Graph sender adapters, mandatory unsubscribe, conservative shared attempt budgets and no-retry uncertain state. Sending remains off until Render provider/consent settings and a real test are verified. See [design, activation, safety and limits](EMAIL_MARKETING_DESIGNER_2026-10-23.md).
@@ -135,16 +137,6 @@ Prepared 1,951 saved maps with two withdrawal barriers; the package contains no 
 
 2026-10-21 DNS/media audit: retained Vercel DNS/direct storefront delivery and existing direct Cloudinary product-image optimization. Restored twelve missing email/service-verification DNS records in the pharmacy Vercel account and verified authoritative responses. Legacy `cdn` hostname remains disconnected; added and locally verified a bounded raster-only compatibility handler, pending release/domain attachment. Its upstream temporarily remains the personal-account Worker; source export/asset mapping and full reference inventory are required before retirement. No old Worker/zone/assets were deleted. See [Cloudflare retirement and remaining cutover](CLOUDFLARE_RETIREMENT_2026-10-21.md).
 
-2026-10-21 navigation refinement: desktop category mega menu, two-column tablet disclosure, mobile shopping drawer, real category links and richer debounced search dropdown. Corrected mobile logo/location crowding, duplicate search-clear controls, Escape reopening, desktop focus handling and hero companion contrast. Isolated build/typecheck/lint and all16 focused navigation/search/Arabic browser cases pass, with open-state axe checks at four widths. See [navigation refinement](NAVIGATION_REFINEMENT_2026-10-21.md). No production writes or deployment.
-
-2026-10-21 homepage follow-up: retained budget/personal-care sections despite overlap in a small catalogue; non-empty brands remain visible. Reduced coral to explicit campaign/PDP emphasis, with neutral utility and product-card actions. Merchandising regression, four responsive/control browser tests, build/typecheck/lint pass; real-catalogue inspection confirms all three sections.
-
-2026-10-21 logo-coral storefront redesign supersedes the warm-neutral visual entry below: white/blue/mint care surfaces, self-hosted Geist, coral actions with dark labels, customized shared controls, compact navigation/footer, editorial campaign carousel, responsive category bento/rail and collection disclosures. Catalogue, PDP, cart, checkout/account and information routes use the same system. Admin styling and commerce logic are unchanged. Verification: 168 unit tests, 113 full browser tests, isolated build/typecheck/lint and 9 post-review Arabic/responsive tests passed, plus one supplemental Arabic capture check and two shared-control cases after the final checked-state contrast correction. Finish reviewer resolved all visual fixes; a seed-reference tooling-format mismatch remains formally disclosed. No generated images, production writes, commit or deployment. See [coral storefront redesign audit](CORAL_STOREFRONT_REDESIGN_2026-10-21.md).
-
-2026-10-21 storefront visual redesign: replaced the pale-blue bordered theme with a warm neutral system — ink actions, deep-green identity, hairline borders, pastel bento tiles, soft filled inputs and fully rounded buttons. Rebuilt the homepage hero as a campaign/help/product bento, regrouped discovery modules, redesigned header, footer, product/category cards, catalogue filters, PDP, cart, checkout and account panels, and updated the mobile footer/bottom-navigation clearance. Real catalogue data, URLs, SEO metadata, server-authoritative pricing/stock and all commerce behavior are unchanged; no production data, provider or deployment operation occurred. Tokens and component rules are recorded in [`apps/web/DESIGN.md`](../../apps/web/DESIGN.md). Verification: web typecheck and repository lint clean; full `npm test` 295 passed/47 database-gated skips; browser checks at 360/390/1440 px across public routes show zero horizontal overflow and no page errors beyond expected signed-out 401s. The synthetic demo catalogue lacks most product photography and several merchandising modules, so those shelves remain omitted rather than populated with invented content.
-
-2026-10-20 customer sign-in UI refinement: replaced the large split account introduction with a focused 440 px sign-in/create-account card, dedicated verification step, editable email destination, clearer control states and keyboard focus restoration. Uses Emil Kowalski/Impeccable guidance and Shop’s public ecommerce sign-in reference. Existing authentication/provider setup and guest checkout are unchanged. See [design review and verification](CUSTOMER_SIGN_IN_DESIGN_2026-10-20.md). Local code only.
-
 2026-10-20 customer accounts: completed the Google/email sign-in interface and header account entry, single-use email code/resend/change-address UX, script failure/remount handling, session loading/logout and account privacy notice. Hardened disabled-account handling and Google subject binding; planned the additive unique Google identity index. Google OAuth is not configured (owner confirmed); live provider setup and acceptance remain pending. No production account/data/index or deployment changed. See [customer account setup and verification](CUSTOMER_ACCOUNT_2026-10-20.md).
 
 2026-10-20 campaign merchandising: implemented staff-managed desktop/mobile campaign artwork, preview, ordered product pins, homepage placements/priorities and readiness checks. Public delivery filters locale, schedule and selected-product availability; old clients retain their response shape and old admin saves preserve new settings. Corrected the historical serviceability boundary note and legacy error serialization, with regression tests. No production data/index, offer, stock/price or deployment changes. See [campaign checkpoint](CAMPAIGN_MERCHANDISING_2026-10-20.md).
@@ -152,8 +144,6 @@ Prepared 1,951 saved maps with two withdrawal barriers; the package contains no 
 2026-10-20 Phase 4 Arabic continuation: completed the four documented code slices, preserving the existing English dictionary and canonical commerce values. Added Arabic cart-adjacent panels, delivery/search/cart chrome, catalogue/PDP/homepage controls, server cart/stock messages, emirate display labels and cart/checkout titles; corrected Arabic hero text/artwork overlap and directional controls. Native/pharmacy review, Arabic grammar/plural approval and staff content translation remain. Verification and the surface-by-surface build/browser results are recorded in [Arabic continuation audit](ARABIC_PHASE_FOUR_2026-10-20.md). No production data, provider, publication or deployment changes.
 
 20 October repository cleanup: local release history is synchronized with GitHub and only `master` plus the active PR #54 development branch remain. Obsolete branches were verified and backed up; the unique local documentation checkpoint has a remote archive tag. Automatic merged-branch deletion is enabled. See [branch workflow and recovery record](BRANCH_WORKFLOW_2026-10-20.md). No release merge or production data change occurred.
-
-2026-10-19 admin craft pass: a presentation-only craft pass over the entire Next.js administration surface (`app/(admin)/admin`, `components/admin`) keeps the green pharmacy brand and changes no API, contract, database, policy, route or commerce behaviour. Motion is split: pure-CSS transform entrances, plus two JavaScript-only effects (dashboard count-up and sparkline draw) owned by pinned `gsap@3.15.0` / `@gsap/react@2.1.2` in `@almina/web`. A latent hydration mismatch (the count effect ran before the streamed page hydrated) was fixed by moving each effect onto the exact node it animates; the mobile topbar now holds one row at 360–390 px. Verification: web typecheck/eslint clean, isolated production Turbopack build, 13/13 focused unit tests, the admin browser harness (15 routes, 60 responsive/accessibility checks, functional login/dispatch/upload/redirect/recovery/staff-denial) and all 10 admin Playwright cases pass with zero page errors. No deployment, production data or provider operation occurred. See [admin console redesign and its 19 October craft pass](ADMIN_CONSOLE_2026-10-18.md).
 
 2026-10-18 owner-merge deployment: GitHub confirms `alminadev` authored PR #49's merge `f5f4994c6ca8b8567a4b4bb60953414a8999f80b`; all foundation checks passed and the manually triggered Vercel deployment succeeded (run 39108416558). The live alias and linked product-photo attribution were verified in the browser. Automatic deployment after successful same-repository master push verification is prepared in a separate PR, retaining exact-SHA, ancestry and verification gates, rejecting fork/PR events and skipping stale automatic candidates. It is not active until merged. See `VERCEL_SINGLE_REPOSITORY_2026-10-18.md`.
 
@@ -165,15 +155,7 @@ Prepared 1,951 saved maps with two withdrawal barriers; the package contains no 
 
 Product family follow-up: [SKU options and variant SEO](PRODUCT_FAMILIES_2026-10-16.md) adds verified size/flavour/pack families while keeping medicine strengths separate. Existing SKU IDs, URLs, price/stock authority and old orders are preserved. Public lists group before pagination; server-rendered option links, selected metadata, ProductGroup relationships and immutable option snapshots cover cards, PDP, cart, checkout and staff order views. Admin create/edit accepts reviewed family profiles and returns scoped family conflict guidance. Typecheck/lint/build, 132 unit regressions plus final focused checks, 22 disposable database cases, 37 broad browser passes and the final eight-case family/admin regression run pass; the linked note records scope and evidence precisely. The additive family index is planned, not applied to production. ERP files/catalog data remain unimported; reviewed family mapping, missing barcode/VAT handling and an idempotent pilot/full import workflow remain separate gates. No production data change or deployment occurred.
 
-Annotated storefront refinement: [navigation, image treatment, location selection and checkout UX](STOREFRONT_REFINEMENT_2026-10-15.md) resolves the nine supplied browser comments. Desktop navigation gets its own link row; photo frames preserve non-transparent images; filler copy and hover underlines are removed; checkout fields, address location action and confirmation are reorganized. A first-visit area invitation supports manual/GPS selection, local city/emirate persistence and checkout prefill, without changing ETA, inventory visibility or authoritative checkout totals. Build/typecheck/lint, 21 unit regressions, browser commerce/location scenarios and four-width visual/accessibility checks pass; evidence and the revised permissions-policy expectation are recorded in the linked note. No production operation or deployment occurred.
-
-Screenshot fidelity follow-up: [supplied desktop/mobile reference implementation](SCREENSHOT_FIDELITY_2026-10-14.md) rebuilds the compact navigation, home sections, catalog sidebar/cards, PDP gallery/purchase/information panels and cart rows/summary/mobile actions around the eight supplied PNGs. The Tailwind/Heroicons/optimized-font foundation remains, with real application content and commerce behavior preserved. Build, focused lint/typecheck, 21 unit regressions, all 29 storefront/checkout browser cases and 54 six-width route/accessibility checks pass; final cart recommendations also receive a focused six-width audit. No production data change or deployment occurred.
-
-Storefront foundation follow-up: [Tailwind and Impeccable implementation](TAILWIND_UI_FOUNDATION_2026-10-14.md) adds project-local Impeccable, official shadcn guidance and the Al Mina profile, unifies interface icons with Heroicons 2.2.0, migrates component presentation to Tailwind (395 to 31 storefront CSS lines), and eliminates the unused PT Sans storefront preload. One Jakarta font transfer is measured at about 27 KB; admin retains its font. Build/typecheck/lint, 21 unit regressions, 29 storefront/checkout browser tests, the repeated nine storefront cases and all 54 responsive/accessibility combinations plus 200% text/keyboard/recovery checks pass. Application content, SEO and server commerce behavior remain intact; no deployment or production data changes.
-
 Last updated: 2026-10-14.
-
-Storefront design follow-up: [full Figma desktop/mobile redesign](FIGMA_STOREFRONT_2026-10-14.md) supersedes the initial styling pass. Rebuilt header/footer, separate desktop hero/mobile quick actions, compact product cards, category rails, responsive filter disclosure/sidebar, product gallery/purchase/information layout and cart rows/summary from all eight Figma frames. Only supported app content/features are retained. Isolated build, typecheck/lint, 21 unit regressions, 54 responsive/accessibility combinations and all 29 storefront/checkout Playwright regressions pass. Catalog and commercial policies remain authoritative; no production data, provider, Figma mutation or deployment operation occurred.
 
 Checkout location follow-up: [complete OpenStreetMap address autofill](CHECKOUT_LOCATION_2026-10-14.md) supersedes the pin-only follow-up. GPS lookup now prefills address, canonical UAE emirate and city/area together with the delivery link; all fields persist in the order snapshot. A same-origin private gateway calls the Render API; distributed MongoDB leases, cache expiry, daily budgets and provider backoff control upstream use. Manual edits invalidate review and clear stale pins; failures preserve manual checkout and uncertain submission retries. Unit/API/contract checks, real-Mongo integration checks, compiled checkout/commerce browser regressions, lint/typecheck/build and a real public-landmark geocoder smoke passed. Public Nominatim has no SLA and a strict application-wide one-request/second limit; larger traffic needs a managed/self-hosted endpoint. Additive geocoding TTL indexes are in the API migration plan; no production deployment/index/data changes occurred.
 
@@ -191,17 +173,9 @@ The owner now explicitly requests repository integration into protected master, 
 
 Local completion scope: the owner will handle hosting and requested local verification only. The remaining consent-aware telemetry is implemented on `codex/consented-commerce-telemetry`, default off with bounded anonymous events, withdrawal/privacy controls and partial operational coverage. [Implementation and evidence](CONSENTED_TELEMETRY_2026-10-05.md), [local setup and verification](LOCAL_VERIFICATION_2026-10-05.md). Lint/typecheck/build, 109 unit, 110 API/security, 52 real disposable MongoDB, seven release-gate, all 58 full compiled browser cases (including eight telemetry cases), raw SEO/foundation/storefront smoke, budgets and both zero-high/critical lockfile audits pass. Parent #41's original CI failure was the unstyled-h1 smoke assertion; `767c7fc` preserves semantic raw-HTML checks and required verify now passes in `37268703183` / `37268707490`. Functional candidate #42 at `1737833` passed required verify in `37269338774` / `37269362509`; Vercel/Cloudflare preview checks fail and belong to the owner hosting handoff. No repository implementation gap remains in the ordered local scope; production/operator acceptance and observed contraction remain separate, unverified gates. No master merge/deployment occurred.
 
-Catalog layout follow-up on `codex/pharmacy-catalog-layouts` adopts homepage, filter/pagination/breadcrumb and product layout/price utilities, preserving identity/URL/SEO/stock/money logic and intentionally maintained semantic CSS primitives. [Runtime, query parity, full regressions and fresh production observations](PHARMACY_CATALOG_LAYOUTS_2026-10-05.md). Local lint/typecheck/build, 103 unit, seven release-gate, all 50 compiled Chromium cases and both audits pass. Parent #40 at `f3b703a` passed verify in `37267005587` / `37267048641`. Remaining repository gap: consent-aware analytics/client-error reporting. Production remains the old frontend; readiness probe returned 500/no SHA. All hosted acceptance remains incomplete.
-
-Admin form follow-up on `codex/pharmacy-admin-forms` adopts shared static Tailwind layout and pharmacy colour tokens with keyboard main focus, retaining all mutation/RBAC/retry logic. [Live browser and full four-width accessibility/functional validation](PHARMACY_ADMIN_FORMS_2026-10-05.md). Local lint/typecheck/build, 103 unit, seven release-gate, all 50 compiled Chromium cases and both audits pass. Parent #39 at `5fdae8c` passed verify in `37266534869` / `37266564017`; catalog component adoption, consent telemetry and hosted acceptance remain incomplete.
-
 Batch recovery guard follow-up on `codex/retained-batch-recovery-guard` moves the last retained-router database lookup into bounded maintained catalog ownership while retaining both pre-upload and transaction recovery checks. [Scope and meaningful regressions](RETAINED_BATCH_GUARD_2026-10-05.md). Local lint/typecheck, 103 unit, 108 API/security, 52 mandatory database/load, seven release-gate tests and both audits pass. Parent #38 at `64cde47` passed required verify in `37261602953` / `37261617312`. Cutover notes now distinguish the held modern candidate from historical baseline; hosted/configuration/backup/rotation/provider/SEO/security/traffic/reconciliation evidence remains incomplete.
 
 Staff subscription follow-up on `codex/staff-push-subscriptions` moves the remaining push preference writes into maintained TypeScript with current active staff atomic ownership, bounded inputs and repeat-safe self-only updates. [Parity, revocation regression and operator gates](STAFF_PUSH_SUBSCRIPTIONS_2026-10-05.md). Local lint/typecheck, 102 unit, 108 API/security, 52 mandatory database/load, seven release-gate tests and both audits pass. Parent #37 at `39ef022` passed required verify in `37252719609` / `37252732911`, including all 50 compiled browser cases. Component/consent telemetry and all hosted acceptance remain incomplete.
-
-Checkout presentation follow-up on `codex/pharmacy-checkout-presentation` adds shared surface/type/spacing tokens, accessible fieldset/summary, mobile review controls and aligned AED totals without changing commerce or exact retry intent. [Real runtime, four-width accessibility/keyboard regression and validation](PHARMACY_CHECKOUT_2026-10-05.md). Local lint/typecheck/build, 100 unit, seven release-gate, all 50 compiled Chromium cases and both audits pass. Parent #36 at `69353ec` passed required verify in `37252295255` / `37252320815`; remaining admin/component adoption, consent telemetry and hosted acceptance remain incomplete.
-
-Cart/footer follow-up on `codex/pharmacy-cart-footer` adopts the shared Tailwind tokens, responsive rows and server-rendered contact/navigation footer while preserving cart quantity/storage/checkout contracts. [Visual findings, exact evidence and deployment hold](PHARMACY_CART_FOOTER_2026-10-05.md). Local lint/typecheck/build, 100 unit, seven release-gate, all 50 compiled Chromium cases and both audits pass. Parent #35 at `b57d45f` passed required verify in `37222534270` / `37222537992`; #33 second run `37221757025` passed. Checkout/admin utility adoption, consent telemetry and all hosted acceptance remain incomplete.
 
 Current continuation: staff push is implemented as a disabled-by-default held candidate on `codex/staff-push-delivery`, deriving durable generic notifications from committed jobs with scoped subscribers, conditional expiry and uncertain-response quarantine. [Contracts, exact test evidence and operator gates](STAFF_PUSH_DELIVERY_2026-10-04.md). Persistent API PR #24 passed required verify in `37215975924` / `37215995553`; Vercel/Cloudflare previews fail. Remaining bounded retained readers/adapters, component adoption, consent telemetry and all hosted acceptance remain incomplete.
 
@@ -216,8 +190,6 @@ Native database follow-up on `codex/native-persistent-database` removes the reta
 Session follow-up on `codex/session-ownership` moves cookie-v2 auth, current-user validation, revocation, distributed quotas and browser-cookie/CSRF policy into maintained TypeScript with a retained import adapter. [Compatibility and validation](SESSION_OWNERSHIP_2026-10-04.md). Local lint/typecheck, 91 unit, 108 API/security, 50 mandatory database/load, seven release-gate and 46 compiled Chromium cases, build and both audits pass. Native-pool PR #29 at `0491a88` passed verify in `37220066652` / `37220069763`; adapter/design/consent telemetry and all hosted acceptance remain incomplete.
 
 Retained authorization follow-up on `codex/retained-auth-boundary` gives maintained TypeScript ownership to the default-deny route allowlist and administrator-only realtime facade; current authorization, exact URLs, per-recipient revocation and bus contracts remain. [Scope and parity](RETAINED_AUTH_BOUNDARY_2026-10-04.md). Local lint/typecheck, 93 unit, 108 API/security, 50 mandatory database/load, seven release-gate and 46 compiled Chromium cases, build and both audits pass. Session PR #30 at `31383de` passed verify in `37220407828` / `37220412536`; design/consent telemetry and hosted acceptance remain incomplete.
-
-Pharmacy navigation follow-up on `codex/pharmacy-navigation-tailwind` adopts header/search/mobile/desktop navigation utilities, one small client navigation island, keyboard skip focus and correct Tailwind cascade ordering. [Design, real development browser and complete compiled evidence](PHARMACY_NAVIGATION_2026-10-04.md). Local lint/typecheck, 93 unit, seven release-gate tests, build, 50 compiled Chromium cases and both audits pass. Parent #31 at `8545e0a` passed required verify in `37220696988` / `37220700694`. Other component/consent telemetry work and hosted acceptance remain incomplete.
 
 Browser verification ownership follow-up on `codex/browser-fixture-ownership` rejects occupied loopback ports before children/database creation, binds synthetic health to this run and fails verification on unexpected owned-child exit. [Agent lifecycle correction, safeguards and regression evidence](BROWSER_FIXTURE_OWNERSHIP_2026-10-04.md). Navigation #32 at `0f292c3` passed verify in `37221288222` / `37221291755`; hosting previews still fail. Local lint/typecheck, 97 unit, seven release-gate, all 50 compiled Chromium cases and both audits pass; other component/consent telemetry/hosted gates remain incomplete.
 
@@ -238,8 +210,6 @@ Third focused inventory change on `codex/admin-inventory-ledger` adds transactio
 Retained lifecycle follow-up on `codex/retained-api-lifecycle` adds transaction-capable readiness, bounded drain and maintained notification leases/retry/deadline behavior. [Operational contract and evidence](RETAINED_LIFECYCLE_2026-10-04.md). Inventory PR #5 hosted runs `37179300779` and `37179264768` passed `verify`. Signed media/references, remaining retained writers and hosted provider/drain acceptance remain gates.
 
 Media follow-up on `codex/media-retention-cloudinary` adds signed raster uploads with provider reconciliation, reference history, revision-bound replacement and archive instead of destructive product/category/banner/poster removal. [Scope/evidence and live-provider gates](MEDIA_RETENTION_2026-10-04.md). Lifecycle PR #6 runs `37179603482` and `37179568676` and media PR #7 runs `37180455355` and `37180493841` passed hosted `verify`; production acceptance remains incomplete.
-
-Pharmacy component follow-up on `codex/pharmacy-tailwind-components` ports catalog cards, compact category tiles, stock labels, gallery and loading grid to palette-backed Tailwind utilities. [Scope and browser evidence](PHARMACY_TAILWIND_2026-10-04.md): 54 compiled route/viewport checks including all four requested widths, keyboard/empty/error/loading checks and clean running Turbopack diagnostics. Navigation/admin/checkout styling remains incremental; recovered-product and hosted acceptance remain gates.
 
 Catalog creation follow-up on `codex/catalog-creation-ownership` moves single creation and the retained non-recovery batch writer into a maintained transaction: concurrency-safe compatible IDs, whole-input validation, category/product/counter/initial-stock ledger atomicity and recovery blocking. [Scope, driver compatibility, retry limitations and rollback](CATALOG_CREATION_2026-10-04.md). All 29 real disposable-database/load, 59 unit, 99 API/security and 7 release-gate tests passed with lint/typecheck. Pharmacy PR #8 runs `37181025216` and `37181044215` passed required hosted `verify`. No hosted cutover or legacy contraction occurred.
 
@@ -292,12 +262,6 @@ Local verification: 43 unit, 95 API, 59 overlapping focused security, 20 real da
 
 GitHub `master` now requires up-to-date GitHub Actions `verify`, including administrators, with force pushes/deletion disabled; readback confirmed the rule. Code has not been pushed, so the expanded workflow is pending merge. Provider-side direct production deployment controls and new hosted preview/staging deployments remain pending confirmed provider/project access, sanitized staging configuration and successful audits. Next customer checkout remains disabled; the current legacy checkout owner is covered by real browser/database tests.
 
-
-## Storefront design system and redesign
-
-Implemented locally on `codex/storefront-design-system`, 2026-10-03, using ui-ux-pro-max: one CSS token system, self-hosted typography, shared stroke icons, mobile/desktop navigation, editorial homepage/category discovery, product cards/grids, labelled search/filters, details/gallery, cart and the gated checkout review, footer and loading/error/empty states. Existing catalog/pricing/stock/cart/URL behavior remains; order placement was not activated. No production application, DB, API, media reference or deployment changed.
-
-Verification: workspace typecheck/lint, 17 focused regression tests, isolated Turbopack foundation build, compiled storefront smoke (including real 404s/308s and no production MCP), existing cart/stock/closed-store browser regression and 45 compiled visual/axe checks across nine views at 360/390/768/1024/1440px. Final views have zero overflow, broken product images, axe violations or incomplete audit items. Keyboard/focus, 200% mobile text, reduced motion, search/filter reset, gallery, loading, errors/retry and empty states passed. An ancestor loading boundary was avoided to preserve real missing-product/category status codes. See [the UI system](design-system/STOREFRONT.md) and [scope, verification, reproduction and activation gates](STOREFRONT_REDESIGN_2026-10-03.md). Real media/staging acceptance and the separate checkout migration remain activation gates.
 
 ## Measured performance work
 
@@ -423,44 +387,20 @@ Added an admin-only preview/resume/report/rollback importer with stable source m
 - Incomplete ERP identity markers, unconfirmed medicine classifications and prescription products remain held as drafts. Publication checks reject obvious incomplete names; no Rx classification is guessed and no dispensing workflow is introduced.
 - Read-only production check: 7,123 drafts, eight incomplete-name markers, zero unsafe live listings. No catalogue data, prices or inventory changed in this release. See `CATALOGUE_CONTENT_2026-10-18.md` for the enrichment checkpoint and limits.
 
-18 October follow-up, prepared release: split store publication checks from image/brand merchandising and advertising-feed checks; add published/draft/all missing-photo admin filters, explicit placeholders and responsive Cloudinary CDN product delivery. A reviewed 665-record non-medicine publication manifest passed a read-only preflight; application is tracked separately, not claimed complete here. The operator helper has atomic, replay and stale-edit integration coverage and full before-state receipts. See `CATALOGUE_PUBLICATION_MEDIA_2026-10-18.md`. Life Pharmacy comparison and scoped priorities are in `STOREFRONT_REVIEW_2026-10-18.md`.
+18 October follow-up, prepared release: split store publication checks from image/brand merchandising and advertising-feed checks; add published/draft/all missing-photo admin filters, explicit placeholders and responsive Cloudinary CDN product delivery. A reviewed 665-record non-medicine publication manifest passed a read-only preflight; application is tracked separately, not claimed complete here. The operator helper has atomic, replay and stale-edit integration coverage and full before-state receipts. See `CATALOGUE_PUBLICATION_MEDIA_2026-10-18.md`.
 
 18 October hosting: the Render frontend production/check-out settings deployment reached Live. Created the pharmacy's empty Vercel storefront project and prepared an exact-verified-commit GitHub Actions/official CLI route from the original repository, avoiding a fork. No Vercel deployment or canonical cutover has occurred; private deployment-token setup remains a human credential handoff. See `VERCEL_SINGLE_REPOSITORY_2026-10-18.md` for prerequisites and Free/Hobby hosting constraints.
 
 18 October follow-up: PR #47 is merged as `aa936532a242544727ed1b6cf228543f12faece0`; both Render services are Live with the missing-photo queue and CDN image delivery. The reviewed retail batch has not written data: this computer's network address changed, and the newly required temporary Atlas rule is awaiting owner approval. The first Vercel workflow authenticated successfully but found omitted build dependencies under production installs; explicit dev-tool installation is prepared. A further twelve GTIN lookups produced five photo candidates; inspected exact 200 ml cleanser photos have a provider-specific attribution UI prepared. See `LICENSED_PRODUCT_PHOTOS_2026-10-18.md`; neither candidate discovery nor a prepared credit component is recorded as image upload.
 
 
-## Redesign tooling and instruction setup — 2026-10-18
-
-Installed project-local gpt-taste and eleven web-focused Emil Kowalski skills; retained Impeccable. Replaced the old visual-authority mandate with the owner-requested competitor-based redesign brief and explicit skill boundaries. Verified Figma plugin authentication/file metadata. Browser verification uses the existing desktop browser tool; no duplicate MCP, runtime dependency, catalogue, production or deployment changes. The deterministic Impeccable scan remains unavailable after its earlier permission failure. See [setup, workflow, provenance and limits](REDESIGN_SETUP_2026-10-18.md).
-
-## Administration console redesign — 2026-10-18
-
-Owner-requested redesign of the admin dashboard, console and remaining admin screens. Frontend-only: no API, contract, policy, route, database or commerce change, and no new dependency. Added a scoped `.admin-app` design system, a sidebar/topbar shell with a mobile drawer, shared presentational primitives, a dashboard with KPI tiles and dependency-free charts, and consistent page headers, tables, badges, filters and empty states across every section. Every dashboard figure is a real existing authorised read (recent orders page, exact needs-action total, per-process operations snapshot) and is labelled as the sample it is; nothing is invented or cached. Fixed heading-order and inline-link accessibility failures surfaced by the browser audit, and corrected a pre-existing gap in `verify-admin-browser.mjs` that skipped a required field. Verified with typecheck, lint, admin unit tests, the full fixture-driven browser verification (15 routes, 60 responsive/a11y checks, login/order/product/redirect/outage/staff flows) and visual review of 14 screens at desktop, tablet and mobile widths. See [what changed, verification, limits and the harness correction](ADMIN_CONSOLE_2026-10-18.md).
-
-## Homepage product-led redesign — 2026-10-18
-
-Implemented locally: real product-led hero, category shortcuts, photo-led product shelves, conditional offers and local pharmacy support. Homepage-scoped replacement palette; other routes retain current design. No catalogue mutations/deployment. Validation and remaining campaign API work: [homepage audit](HOMEPAGE_REDESIGN_2026-10-18.md).
-
-## Storefront homepage replacement — 2026-10-19
-
-Replaced the rejected sage direction with a blue product campaign homepage, Outfit, shared navigation/footer and restrained motion. See [V2 audit](HOMEPAGE_REDESIGN_V2_2026-10-19.md) for exact verification, image provenance and campaign API gaps. Local-only; production data unchanged.
-
 ## Dense homepage and commerce discovery — 2026-10-19
 
 Compact inline location + floating contact, denser merchandising, budget/brand/routine modules, safe saved banner destinations and server-rendered collection pages implemented locally. Full plan coverage/dependencies: [implementation checklist](COMMERCE_PLAN_IMPLEMENTATION_2026-10-19.md). No production data/deployment changes.
 
-## Image-led merchandising — 2026-10-19
-
-Added uploaded-banner hero priority with generated editorial fallbacks, photographic two-row category tiles, shared product-card variants and restrained scroll reveals. Final isolated build, focused lint/typecheck, twenty tests and responsive browser checks passed. Local only; no production data change or deployment. See [visual merchandising audit](VISUAL_MERCHANDISING_2026-10-19.md) for asset provenance and verification limits.
-
-## Storefront design extension — 2026-10-19
-
-Extended the approved homepage design across category/catalogue/collection, PDP, cart, checkout, offers and informational pages. Restored independent product carousel, added brand/category/section imagery and hid optional horizontal scrollbar tracks. Thirty focused tests plus build/typecheck/lint and responsive browser checks passed. Local only; no production writes. See [scope, assets and verification](STOREFRONT_EXTENSION_2026-10-19.md).
-
 ## 2026-10-19 — customer/growth and points-voucher foundation (local)
 
-Added staff-managed editorial/local SEO content, indexed search suggestions, separate customer identity, owned order history/reorder, saved/recent products, moderated purchase reviews, configurable delivery thresholds and admin-controlled points/referral vouchers. Voucher redemption/checkout/reversal preserves server authority and transaction boundaries. No production activation or data backfill performed. New provider credentials/index application/approved rules remain activation requirements; broader retention/Arabic/analytics work is still open. Implementation/rollback details: `GROWTH_FOUNDATION_2026-10-19.md`; visual review scope: `GROWTH_UI_REVIEW_2026-10-19.md`.
+Added staff-managed editorial/local SEO content, indexed search suggestions, separate customer identity, owned order history/reorder, saved/recent products, moderated purchase reviews, configurable delivery thresholds and admin-controlled points/referral vouchers. Voucher redemption/checkout/reversal preserves server authority and transaction boundaries. No production activation or data backfill performed. New provider credentials/index application/approved rules remain activation requirements; broader retention/Arabic/analytics work is still open. Implementation/rollback details: `GROWTH_FOUNDATION_2026-10-19.md`.
 
 ### Growth-plan completion work — 2026-10-19
 
@@ -477,14 +417,6 @@ PR verification now runs once per update with quality/security, API, browser and
 ### Growth programme completion pass — 2026-10-19
 
 Closed three of the five remaining growth-foundation items and started the fourth. Requested reminders (abandoned-cart recovery, restock/price-drop/buy-again) are now covered by a disposable-replica integration suite proving owner scoping, consent, the active limit, one-shot delivery and that an ambiguous send is never auto-resent. Added staff-curated complementary bundles (editorial CMS collection kind gains a bundle marker and rationale; the API validates live visible products across two or more categories; the storefront offers add-all with no invented discount). Added a verified admin branch directory and an inactive-by-default serviceability rule enforced by the API in the single quote/checkout funnel (`ADDRESS_NOT_SERVICEABLE`); existing emirate delivery is unchanged while inactive, and `/ras-al-khaimah` keeps the existing branch fallback until the directory is verified. Started Arabic shopping/checkout: a locale cookie, RTL storefront shell, `t()`/`tf()` dictionary and header/footer language switcher cover the navigation chrome; follow-up slices localized the cart surface and the full checkout form (labels, GPS/validation messages, confirmation, locale-aware currency) plus the checkout page shell. Catalogue/PDP copy, delivery-progress/reminder panels, the first-visit delivery-area prompt and a few header labels remain English. No production data, index or deployment was touched and no new collection was needed. Local verification: typecheck, lint, 162 unit tests, 87 disposable-replica integration tests, 7 release tests, dependency audit (0 high/critical), foundation build, three compiled smokes and 91 browser tests pass. Arabic cart/checkout was also checked live end to end (`lang="ar"`, `dir="rtl"`, Arabic cart, review and confirmation, zero page errors). Full continuation notes and the remaining checklist: `GROWTH_COMPLETION_2026-10-19.md`.
-
-### Shared storefront controls — 2026-10-20 (local)
-
-Standardized customer-facing forms with editable shadcn/Radix controls, the existing Heroicons family and a clearer cobalt/neutral state theme. Covers account sign-in/code, addresses/preferences, delivery location, checkout, filters, reviews, rewards and reminders. Native picker and form payloads are preserved; legacy/admin styling remains isolated. No production data, credentials or deployment changed. Emil/Impeccable review and verification details: `STOREFRONT_CONTROLS_2026-10-20.md`.
-
-## Storefront footer refinement — 2026-10-21
-
-Replaced the first footer attempt — a deep-pine slab with a white logo plate and a flat ruled ledger — after owner review rejected the dark ground, the plated logo and the flat composition. The footer is now a pale-blue band holding one white panel, with the logo bare, a mint "Let's talk care" help card carrying phone, email and both 48px actions, four balanced link groups and a bottom strip with the 44px language switch and a back-to-top control. No links, routes, commerce behaviour, production data or deployment changed. Typecheck, focused lint, 15 focused tests, the isolated production build and 1440/1280/1024/768/390/360 plus Arabic/RTL visual checks pass. See [direction, contrast measurements and limits](FOOTER_REFINEMENT_2026-10-21.md).
 
 ## Private wholesale commerce — 2026-10-21 (local)
 
@@ -523,44 +455,6 @@ Implemented unified product photo preparation/editing, Arabic account and wholes
 
 Reintroduced the branded responsive image handler and product metadata/feed URLs on the current release base. See `BRANDED_MEDIA_2026-10-21.md`; deployment cache-hit verification is still required.
 
-## Administration console redesign — 24 October 2026 (local)
-
-Replaced the admin visual direction with **"Counter daylight"** after the owner
-supplied three reference screens (Wiik overview, Nexadash dashboard, Dub
-payouts) and chose a whole-console restyle with the dashboard recomposed. The
-previous Dub-inspired frosted rice-paper system (commit `314124b`) is now the
-explicit anti-reference. The shared token layer, shell, sidebar, top bar, cards,
-stat tiles, tables, badges, buttons, inputs, notes, sign-in surface and mobile
-tab bar were restyled; every other admin screen inherits through the same class
-vocabulary without markup changes.
-
-Dashboard composition: four KPI sheets with state chips instead of invented
-trends, a new **dispatch rail** (four order stages, each a link with its count
-and its share of the sample), a two-thirds chart and one-third attention rail,
-a full-width system-health signal strip, and recent orders. Order timestamps now
-render store-local (`Asia/Dubai`, e.g. `3 Oct, 04:00`) instead of raw ISO. The
-queue's in-progress row counts confirmed + packed, so its label, count and
-destination were aligned to that meaning.
-
-No route, RBAC decision, price, stock value, order state, integration or
-production data changed. Routes, tests and the browser verifier still pin
-`h1` "Dashboard", `.admin-status[data-state]`, the `1002` fixture order and the
-`Delete product` control; all remain.
-
-Verification: web typecheck and focused lint clean; `tests/admin-migration.test.ts`
-and `tests/operations.test.ts` pass (14 tests); `verify-admin-browser.mjs` passes
-all 15 routes, 60 responsive checks, accessibility audits, auth/CSRF checks,
-order arrival and outage recovery; rendered screenshots reviewed at 1440×1000,
-768×1024 and 390×844 for the dashboard, orders and products, plus the sign-in
-surface.
-
-Operational note for future verification runs: the synthetic fixture deletes
-its session token on logout and does not re-add it on login, so after the
-verifier finishes, `POST http://127.0.0.1:4600/__fixture/reset` is required
-before a manual sign-in in a browser session. The design record is
-`apps/web/src/app/(admin)/admin/DESIGN.md`; source material is
-`apps/web/src/app/(admin)/admin/DESIGN.reference.md`.
-
 ### 24 October 2026 — Nexadash / Dub admin redesign
 
 Replaced the admin's warm-paper presentation with a scoped neutral system:
@@ -581,8 +475,6 @@ editor, orders and operations, and a tablet editor capture. Focused browser
 regressions pass for inventory search/filter persistence, row-menu Escape/focus,
 unsaved product-section navigation at 390/768/1440px, session/RBAC behavior,
 stock conflict/receipt handling, and photo replacement/archive stock preservation.
-Design detector reports zero primary findings; its documentation advisories are
-addressed by the scoped admin design record. Screenshots use local synthetic data.
 
 ### 24 October 2026 — Admin composition and editor hierarchy follow-up
 
@@ -649,10 +541,6 @@ Applied 318 image links to 315 products with before-state, revision checks and t
 ### 2026-10-25 — Image-linked draft publication reviewed
 Reviewed293 records; published75 retail products with descriptions, categories, pack details and SEO.218 held with per-SKU reasons. All75 public API checks passed,293 DB records verified, price/stock/VAT unchanged. Withdrew two image links for pack/style uncertainty; temporary Atlas access removed. See `REVIEWED_RETAIL_PUBLICATION_2026-10-25.md`.
 
-## 2026-10-25 — Compact mobile storefront shell (local)
-
-Implemented compact delivery selection, phone delivery bottom sheet, persistent mobile search/header and safe-area bottom tabs; hid the mobile hamburger entry and duplicate top cart. Desktop navigation is preserved. See [MOBILE_APP_SHELL_2026-10-25.md](MOBILE_APP_SHELL_2026-10-25.md) for scope and verification. Not deployed by this task.
-
 ## 2026-10-25 — Category-first discovery and deterministic listing ranking (local)
 
 Promoted categories/collections rather than the undifferentiated catalogue, retained /products as a secondary route, exposed sorting and removable filters, and replaced public stock-quantity sorting with intent/availability/merchandising ordering. No commerce calculations or production data changed. Isolated web build, API TypeScript, seven catalogue integration tests and ten browser tests passed. See [CATALOG_DISCOVERY_2026-10-25.md](CATALOG_DISCOVERY_2026-10-25.md) for audit, sources, ranking order and limitations. Not deployed.
@@ -708,17 +596,6 @@ public website. Full photo audit: 88 of the 90 initial close candidates pass the
 500px check; the two Bioderma candidates need larger originals. Other products were
 not approved automatically. Final external Google approval remains pending.
 
-### 29 October 2026 — storefront utility bar refinement
-
-Language preferences now use transparent text controls with an active underline,
-44px targets and visible keyboard focus, avoiding inherited commerce-button
-chrome. The desktop/tablet utility bar has explicit vertical padding, consistent
-contact spacing and wrapping announcement copy. Language cookies, reviewed copy,
-RTL behavior and the existing mobile header remain intact. Verified against the
-isolated synthetic catalogue at 1440, 768, 390 and 360px, including Arabic,
-keyboard switching and reload. Web typecheck, scoped ESLint, i18n/stylesheet tests
-and the Impeccable scan passed; no production configuration or data changed.
-
 ### 29 October 2026 — shopping interaction refinement
 
 Added input-aware storefront motion, larger campaign controls, native shelf
@@ -734,8 +611,6 @@ cart count/quantity persistence, keyboard sheets/carousels, changed-price reject
 (no order, stock unchanged), and a successful synthetic checkout (one order,
 expected stock deduction and receipt). Next runtime/compilation diagnostics were
 empty. Added focus regression assertions to the existing checkout browser suite.
-The Impeccable scan reported five pre-existing palette/type advisories; no new
-motion finding. Evidence is under ignored outputs/shopping-interactions-2026-10-29.
 No production data or hosting configuration was changed.
 
 ### 29 October 2026 — Merchant reviews and discovery integration
@@ -816,3 +691,22 @@ Verified the decoded destination text on desktop and mobile after reload, no
 horizontal overflow, no browser errors, and no Turbopack compilation issues.
 Component lint passes. Follow-up PR review/merge remains pending; no deployment
 or WhatsApp message was sent by verification.
+
+## 2026-11-21 — Design branches consolidated into master
+
+Merged `codex/storefront-pharmacy-app-reference` and
+`codex/vercel-production-backend-cutover`. The newer design reset and root
+`DESIGN.md` with `docs/design/` govern the final baseline. Conflicting older
+storefront components, styles, fonts, active instructions and appearance-specific
+tests were superseded by the reset. Both branches remain in Git history.
+Compatible media/banner fixes, catalogue/cart helpers and functional tests were
+retained. Historical design records are reference material only.
+
+Merge validation passed workspace typecheck, lint, 281 standard unit tests,
+two cart-display tests and two disposable-database media integration tests.
+
+The merged foundation build passed with isolated local configuration. All 28
+selected compiled Playwright search, commerce and customer-account checks passed,
+including 360/390/768/1280px search and Arabic account coverage. A checkout-label
+conflict was reconciled to the reset locale copy before the successful rerun.
+Eight locale tests also passed after reconciliation. Local merge only.

@@ -44,7 +44,7 @@ test('Next checkout refuses changed prices and requires a fresh review', async (
   await expect(page.locator('main [role="alert"]')).toBeFocused();
   expect((await state(request)).orders).toHaveLength(0);
   expect((await state(request)).stock).toBe(4);
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 38.00', exact: true })).toBeVisible();
 });
 test('Next checkout reload retries the saved intent after the server has committed', async ({ page, request }) => {
@@ -82,7 +82,7 @@ test('checkout adds an opt-in GPS pin, invalidates review and saves the pin with
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Synthetic area');
   await expect(page.getByRole('combobox', { name: 'Emirate', exact: true })).toHaveValue('Ras al-Khaimah');
   await page.screenshot({ path: '.verification-results/checkout-autofill.jpg', fullPage: true });
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   const submitted = page.waitForRequest(req => req.method() === 'POST' && new URL(req.url()).pathname === '/api/checkout');
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
   expect((await submitted).postDataJSON().customer.maplink).toBe('https://www.google.com/maps/search/?api=1&query=25.789%2C55.943');
@@ -102,7 +102,7 @@ test('removing the delivery pin requires a new review', async ({ page, context }
   await prepare(page);
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByText('GPS accuracy is low', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Remove delivery pin', exact: true }).click();
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
@@ -118,7 +118,7 @@ for (const code of [1, 2, 3]) test(`GPS failure ${code} leaves manual checkout a
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByText(code === 1 ? 'Location permission was denied.' : code === 3 ? 'Location timed out.' : 'Unable to find your location.', { exact: false })).toBeVisible();
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 });
 test('GPS permission prompt timeout ignores late results and lets the customer review manually', async ({ page }) => {
@@ -132,10 +132,10 @@ test('GPS permission prompt timeout ignores late results and lets the customer r
   await prepare(page);
   await page.clock.install();
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Review order total', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Review order', exact: true })).toBeDisabled();
   await page.clock.runFor(21000);
   await expect(page.getByText('Location timed out.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
   await page.evaluate(() => (window as unknown as { lateGps: () => void }).lateGps());
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
@@ -150,7 +150,7 @@ test('checkout works without browser geolocation support', async ({ page, reques
   await prepare(page);
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByText('Location is unavailable in this browser.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 });
 test('editing a detected delivery address clears its pin and requires review', async ({ page, context }) => {
@@ -159,7 +159,7 @@ test('editing a detected delivery address clears its pin and requires review', a
   await prepare(page);
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Synthetic area');
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
   await page.getByLabel('Street address', { exact: true }).fill('Corrected delivery street');
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
@@ -175,7 +175,7 @@ for (const [status, code] of [[422, 'LOCATION_OUTSIDE_UAE'], [503, 'SERVICE_UNAV
   await expect(page.getByLabel('Street address', { exact: true })).toHaveValue(customer.address);
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue(customer.city);
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
-  await page.getByRole('button', { name: 'Review order total', exact: true }).click();
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 });
 test('location gateway rejects cross-origin, GET and invalid coordinates', async ({ request }) => {
@@ -238,7 +238,7 @@ test('mobile checkout preserves delivery details when going back and payment cho
  await page.setViewportSize({width:390,height:844});await prepare(page);
  await page.getByRole('button',{name:'Back',exact:true}).click();
  await expect(page.getByLabel('Name',{exact:true})).toHaveValue(customer.name);
- await page.getByRole('button',{name:'Review order total',exact:true}).click();
+ await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
  const cash=page.getByRole('radio',{name:/Cash on delivery/});await cash.focus();await page.keyboard.press('ArrowDown');
  await expect(page.getByRole('radio',{name:/Credit or debit card/})).toBeChecked();
  await expect(page.getByRole('button',{name:'Continue to test payment'})).toBeVisible();

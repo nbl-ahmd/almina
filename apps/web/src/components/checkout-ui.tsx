@@ -5,7 +5,7 @@ import { t, type Locale } from '../lib/i18n';
 export function CheckoutProgress({ stage, locale }: { stage: 'details' | 'payment' | 'complete'; locale: Locale }) {
   const active = ['details', 'payment', 'complete'].indexOf(stage);
   const labels = locale === 'ar' ? ['تفاصيل التوصيل', 'المراجعة والدفع', 'اكتمل الطلب'] : ['Delivery details', 'Review & payment', 'Complete'];
-  return <ol role="list" className="checkout-progress" aria-label={locale === 'ar' ? 'مراحل إتمام الطلب' : 'Checkout progress'}>{labels.map((label, index) => <li key={label} aria-current={index === active ? 'step' : undefined} data-complete={index < active}>
+  return <ol className="checkout-progress" aria-label={locale === 'ar' ? 'مراحل إتمام الطلب' : 'Checkout progress'}>{labels.map((label, index) => <li key={label} aria-current={index === active ? 'step' : undefined} data-complete={index < active}>
     <span className="checkout-step-number" aria-hidden="true">{index < active ? <CheckIcon className="size-4" /> : index + 1}</span><span>{label}</span>
   </li>)}</ol>;
 }
@@ -23,16 +23,16 @@ export function PaymentChoices({ locale, value, online, testMode, legacyCard, on
     const Glyph = choice.icon;
     return <label key={choice.value} className="checkout-payment-choice" data-selected={value === choice.value}>
       <input type="radio" name="payment" value={choice.value} checked={value === choice.value} onChange={() => onChange(choice.value)} />
-      <Glyph className="checkout-payment-icon size-6" aria-hidden="true" /><span className="min-w-0"><span className="block text-sm font-semibold leading-5">{choice.title}</span><span className="mt-1 block text-xs leading-5 text-ocean">{choice.description}</span></span>
+      <Glyph className="checkout-payment-icon size-6" aria-hidden="true" /><span className="min-w-0"><span className="block text-sm font-semibold leading-5">{choice.title}</span><span className="mt-1 block text-xs leading-5">{choice.description}</span></span>
       <span className="checkout-radio-mark" aria-hidden="true">{value === choice.value ? <CheckIcon className="size-3.5" /> : null}</span>
     </label>;
   })}</div></fieldset>;
 }
 
 export function SecureCheckoutLabel({ locale }: { locale: Locale }) {
-  return <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ocean"><LockClosedIcon className="size-4" aria-hidden="true" />{locale === 'ar' ? 'إتمام الطلب بأمان' : 'Secure checkout'}</span>;
+  return <span className="inline-flex items-center gap-1.5 text-xs font-medium"><LockClosedIcon className="size-4" aria-hidden="true" />{locale === 'ar' ? 'إتمام الطلب بأمان' : 'Secure checkout'}</span>;
 }
 
 export function ConfirmationMark() {
-  return <span className="checkout-success-mark" data-store-feedback aria-hidden="true"><CheckIcon className="size-9" strokeWidth={2} /></span>;
+  return <span aria-hidden="true"><CheckIcon strokeWidth={2} /></span>;
 }

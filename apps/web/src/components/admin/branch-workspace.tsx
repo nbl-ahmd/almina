@@ -8,7 +8,7 @@ import { Card } from './ui';
 import { DeliveryZoneManagement } from './delivery-management';
 import { BranchesEditor } from './branches-editor';
 import { DeliveryPolicyEditor } from './delivery-policy-editor';
-const Map=dynamic(()=>import('../delivery-map'),{ssr:false,loading:()=> <div className="h-72 rounded-xl bg-subtle" aria-hidden="true" />});
+const Map=dynamic(()=>import('../delivery-map'),{ssr:false,loading:()=> <div className="h-72 rounded-xl" aria-hidden="true" />});
 type Branch=OrderRouting['branches'][number];
 const messageOf=(error:unknown)=>error instanceof Error?error.message:'Could not save. Please try again.';
 export function BranchWorkspaceView({initial}:{initial:BranchWorkspace}){

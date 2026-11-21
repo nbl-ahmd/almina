@@ -7,8 +7,6 @@ import { ProductReviews } from '../../../../components/product-reviews';
 import { SaveProduct } from '../../../../components/save-product';
 import { ProductInformation } from '../../../../components/product-information';
 import { ProductOptions } from '../../../../components/product-options';
-import { ProductShare } from '../../../../components/product-share';
-import { ProductDeliveryLocation } from '../../../../components/delivery-location';
 import { ProductGallery } from '../../../../components/product-gallery';
 import { PhotoCredit } from '../../../../components/photo-credit';
 import Link from '../../../../components/app-link';
@@ -20,18 +18,10 @@ import { metadataFor } from '../../../../lib/server/seo';
 import { getWebEnvironment } from '../../../../lib/server/env';
 import { aggregateRatingData, breadcrumbData, productData, reviewListData, type Query } from '../../../../lib/seo';
 import { StructuredData } from '../../../../components/structured-data';
-import { categoryHref, productOptionLabel, productHref, displayPrice } from '../../../../lib/catalog/model';
-import { Breadcrumb, StockState } from '../../../../components/storefront';
+import { categoryHref, productOptionLabel, productHref, money, displayPrice } from '../../../../lib/catalog/model';
+import { ProductGrid, Breadcrumb, StockState } from '../../../../components/storefront';
 import { Icon } from '../../../../components/icon';
-import { CompactProductCard } from '../../../../components/product-card';
-import { CurrencyAmount } from '../../../../components/currency-amount';
-import { CartLink } from '../../../../components/cart-link';
 import { AddToCart } from '../../../../components/cart-controls';
-import { ProductReturnLink } from '../../../../components/product-return-link';
-import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
-import styles from '../../../../components/product-detail.module.css';
-import boundary from '../../../../components/storefront-system/boundary.module.css';
-import system from '../../../../components/storefront-system/tokens.module.css';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
 export async function generateMetadata({ params, searchParams }: Props) {
   const product = await resolveProductRoute((await params).slug);
@@ -59,82 +49,26 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const structured=productData(origin, product, productImages(product),variants, Object.fromEntries(variants.map(member=>[member._id,productImages(member)])),shippingPolicy);
   const reviews_ = reviewListData(reviews);
   const productSchema={...structured,...(aggregateRatingData(reviews)??{}),...(reviews_.length?{review:reviews_}:{})};
-  const categoryPath = categoryHref(product.category);
-  const brand = product.brand || product.familyBrand;
-  const alternatives = related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4);
-  const photos = productImages(product).filter(image => image !== '/product-placeholder.svg');
-  const shareUrl = new URL(productHref(product), origin).href;
-  const mobileControls = (
-    <div className={`pdp-mobile-toolbar ${styles.overlay}`}>
-      <ProductReturnLink className={styles.back} categoryHref={categoryPath} locale={locale} />
-      <SaveProduct locale={locale} id={product._id} name={product.name} compact card />
-      <ProductShare title={product.name} url={shareUrl} locale={locale} />
-      <CartLink locale={locale} />
-    </div>
-  );
-  const displayName = product.name.replace(/(\p{Nd})\s+(?=(?:mcg|µg|mg|g|kg|ml|cl|l|iu)\b)/giu, '$1\u00a0');
   return <><RecordProductView id={product._id} /><StructuredData data={productSchema} />
-    <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }, { name: product.name, path: productHref(product) }])} />
-    <div lang={locale} className={`pdp-page ${system.system} ${boundary.boundary} ${styles.detail}`}>
-      <div className={styles.container}>
-        <div className={styles.trail}>
-          <Breadcrumb title={product.name} parents={[{ name: u(locale, 'Categories'), path: '/categories' }, { name: product.category.name, path: categoryPath }]} />
-          <ProductReturnLink contextOnly className={styles.desktopBack} categoryHref={categoryPath} locale={locale} />
-        </div>
-        <div className={styles.lead}>
-          <div className={styles.visual}>
-            <ProductGallery key={product._id} locale={locale} images={photos} name={product.name}
-              controls={mobileControls} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-            {photos.length ? <div className={styles.credit}><PhotoCredit source={product.imageSource} /></div> : null}
-          </div>
-          <div className={styles.buying}>
-            <h1><bdi>{displayName}</bdi></h1>
-            <div className={styles.identity}>
-              {brand ? <Link href={'/search?' + new URLSearchParams({ q: brand })}><bdi>{brand}</bdi></Link> : null}
-              <Link href={categoryPath}>{u(locale, product.category.name)}</Link>
-            </div>
-            <StockState stock={product.stock} />
-            <div className={styles.price}>
-              <span className="sr-only">{u(locale, 'Price')}</span>
-              <CurrencyAmount value={currentPrice} locale={locale} />
-              {product.price > currentPrice ? <del><CurrencyAmount value={product.price} locale={locale} /></del> : null}
-              {saving ? <span className={styles.saving}>{locale === 'en' ? `Save ${saving}%` : `وفّر ${saving}%`}</span> : null}
-            </div>
-            <ProductOptions product={product} variants={variants} />
-            <ProductDeliveryLocation locale={locale} />
-            <ProductPurchaseDock>
-              <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock}
-                quantityPicker priceLabel={<CurrencyAmount value={currentPrice} locale={locale} />} />
-            </ProductPurchaseDock>
-            <div className={styles.desktopSave}>
-              <SaveProduct locale={locale} id={product._id} name={product.name} card />
-              <ProductShare title={product.name} url={shareUrl} locale={locale} />
-            </div>
-            {product.productType === 'general' && product.contentReviewed === true
-              ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
-          </div>
-        </div>
-        <div className={styles.secondary}>
-          <nav className={styles.readingLinks} aria-label={locale === 'ar' ? 'أقسام المنتج' : 'On this product page'}>
-            <a href="#product-description">{u(locale, 'About this product')}</a>
-            <a href="#product-reviews-title">{u(locale, 'Customer reviews')}{reviews?.ratingCount
-              ? ` (${new Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE').format(reviews.ratingCount)})`
-              : ''}</a>
-          </nav>
-          <ProductInformation product={product} locale={locale} />
-          <ProductReviews key={product._id} locale={locale} productId={product._id} reviews={reviews} />
-          {alternatives.length ? (
-            <section className="related-products">
-              <div className="sf-section-heading">
-                <h2>{u(locale, 'Similar products')}</h2>
-                <Link href={categoryPath}>{u(locale, 'View category')}<Icon name="arrow" /></Link>
-              </div>
-              <div className="related-product-list" data-store-rail>
-                {alternatives.map(item => <CompactProductCard key={item._id} product={item} />)}
-              </div>
-            </section>
-          ) : null}
-        </div>
+    <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }, { name: product.name, path: productHref(product) }])} />
+    <div className="pdp-page pb-24 md:pb-0"><Breadcrumb title={product.name} parents={[{ name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} />
+    <div className="product-detail mb-8 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
+      <div className="product-visual min-w-0 md:sticky md:top-6"><ProductGallery locale={locale} images={productImages(product)} name={product.name} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
+
+        {productImages(product).some(image => !image.startsWith('/')) ? <PhotoCredit source={product.imageSource} /> : null}
       </div>
-    </div><GrowthActivity kind="product" /></>;
+      <div className="product-information min-w-0 rounded-2xl border bg-white p-4 md:p-7"><h1 className="mb-3 text-[26px] leading-[1.12] font-semibold tracking-[-0.035em] wrap-anywhere md:text-[34px]">{product.name}</h1><div className="product-identity mb-4 flex flex-wrap items-center gap-2 text-xs"><Link className="rounded-full px-3 py-1.5 font-medium" href={categoryHref(product.category)}>{product.category.name}</Link>{product.brand || product.familyBrand ? <Link className="inline-flex min-h-9 items-center px-1" href={`/search?q=${encodeURIComponent(product.brand || product.familyBrand || '')}`}>{product.brand || product.familyBrand}</Link> : null}</div>{product.summary || product.description ? <p className="mb-4 line-clamp-3 text-sm leading-relaxed">{product.summary || product.description?.split('\n')[0]}</p> : null}
+        <div className="mb-4 flex items-center justify-between gap-3 border-b pb-3 [&_.stock-state]:mb-0"><StockState stock={product.stock} /><span className="text-xs">{locale === "en" ? "SKU: " : "رمز المنتج: "}{product.product_id}</span></div>
+        <ProductOptions product={product} variants={variants} />
+        <div className="product-price-panel mb-5 flex flex-wrap items-baseline gap-3 rounded-2xl p-4 md:p-5"><div className="w-full text-xs font-semibold md:w-auto">{u(locale,"Price")}</div><p className="price m-0 text-3xl font-semibold tabular-nums md:text-3xl">{money(currentPrice,locale)}</p>{saving ? <><del className="text-sm">{money(product.price,locale)}</del><span className="rounded-full px-3 py-1 text-xs font-semibold">{locale === "en" ? `Save ${saving}%` : `وفّر ${saving}%`}</span></> : null}</div>
+        <div className="mb-5 flex items-start gap-3 border-y py-4"><span className="rounded-lg p-2"><Icon name="pin" /></span><div><h2 className="mb-1 text-base font-bold">{u(locale,"Delivery in Ras Al Khaimah")}</h2><p className="m-0 text-sm leading-relaxed">{u(locale,"Checkout confirms the delivery charge and final total before you place an order.")}</p><div className="flex flex-wrap gap-x-4"><Link className="inline-flex min-h-9 items-center text-xs" href="/shipping">{u(locale,"Delivery & shipping")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs" href="/returns">{u(locale,"Returns & refunds")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs" href="/contact#delivery">{u(locale,"Delivery enquiries")} <Icon name="arrow" /></Link></div></div></div>
+        <div className="pdp-purchase mobile-action-bar md:mb-4"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice,locale)} /></div>
+        <div className="mb-4"><SaveProduct locale={locale} id={product._id} name={product.name} /></div>
+        {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
+        <div className="mb-4 grid grid-cols-2 gap-2"><Link className="product-contact flex min-h-11 items-center justify-center gap-2 rounded-full border bg-white px-3 text-xs font-semibold transition-colors" href="/cart"><Icon name="bag" />{u(locale,"View your cart")}</Link><Link className="flex min-h-11 items-center justify-center gap-2 rounded-full border bg-white px-3 text-xs font-semibold transition-colors" href="/contact"><Icon name="phone" />{u(locale,"Contact pharmacy")}</Link></div>
+
+      </div>
+    </div>
+    <ProductInformation product={product} /><ProductReviews locale={locale} productId={product._id} reviews={reviews} />
+    {related.length?<section><div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="mb-1 text-xl font-semibold tracking-[-0.02em]">{u(locale,"Similar products")}</h2><p className="mb-0 text-xs">{locale === "en" ? `Explore more in ${product.category.name}.` : `استكشف المزيد في ${product.category.name}.`}</p></div><Link className="inline-flex min-h-11 items-center gap-1 text-xs" href={categoryHref(product.category)}>{u(locale,"View category")} <Icon name="arrow" /></Link></div><ProductGrid headingLevel={3} products={related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4)} /></section>:null}</div><GrowthActivity kind="product"/></>;
 }

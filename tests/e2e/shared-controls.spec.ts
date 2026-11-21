@@ -2,14 +2,17 @@ import { test, expect } from './fixtures';
 
 test('filter checkbox serializes its value through the native GET form', async ({page}) => {
   await page.setViewportSize({width:390,height:900});await page.goto('/products');
-  const panel=page.locator('#catalog-filters');await panel.locator(':scope > summary').click();
+  const panel=page.locator('.catalog-filters');await panel.locator(':scope > summary').click();
   const stock=panel.getByRole('checkbox',{name:'In stock',exact:true});
   await stock.check();
-  await expect(stock).toBeChecked();
-  await expect(stock).toHaveCSS('accent-color', 'rgb(24, 85, 186)');
-  await page.screenshot({path:'outputs/coral-redesign-2026-10-21/checked-filter-390.png'});
+  await expect.poll(()=>stock.evaluate(el=>{
+    const style=getComputedStyle(el);
+    const luminance=(color:string)=>{const channels=(color.match(/[\d.]+/g)||[]).slice(0,3).map(Number).map(v=>{v/=255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;});return (channels[0]??0)*0.2126+(channels[1]??0)*0.7152+(channels[2]??0)*0.0722;};
+    const a=luminance(style.color),b=luminance(style.backgroundColor);return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+  })).toBeGreaterThanOrEqual(4.5);
+  await page.screenshot({path:test.info().outputPath('checked-filter-390.png')});
   await panel.getByRole('button',{name:'Apply filters',exact:true}).click();
-  await expect(page).toHaveURL(/inStock=true/);
+  expect(new URL(page.url()).searchParams.get('inStock')).toBe('true');
   await expect(panel).not.toHaveAttribute('open');
   await panel.locator(':scope > summary').click();
   await expect(page.getByRole('checkbox',{name:'In stock',exact:true})).toBeChecked();

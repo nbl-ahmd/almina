@@ -26,7 +26,7 @@ Use `catalog_publication_changes` receipts and `catalog_audit` to identify exact
 
 Fourteen exact photos existed before this pass; most catalogue rows lack one. A first Open Beauty Facts GTIN search checked 35 candidates with no image hits and stopped after repeated provider failures. It is not an exhaustive search of the catalogue. Further manufacturer/GTIN research must confirm exact pack, strength, size and model and usable image rights before association. Retailer search results alone are insufficient evidence. No Cloudinary assets were deleted: historical references have not been fully recovered.
 
-Configured Cloudinary product photos now use width-specific CDN delivery through a small Next Image wrapper. Local/legacy images keep their prior policy. See [storefront comparison and measured tradeoffs](STOREFRONT_REVIEW_2026-10-18.md). Four real public photo records were copied into an isolated local preview for browser checks; no customer/order data was copied.
+Configured Cloudinary product photos now use width-specific CDN delivery through a small Next Image wrapper. Local/legacy images keep their prior policy. Four real public photo records were copied into an isolated local preview for browser checks; no customer/order data was copied.
 
 ## Verification
 

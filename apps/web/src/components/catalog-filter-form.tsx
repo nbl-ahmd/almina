@@ -5,7 +5,7 @@ import type { Locale } from '../lib/i18n';
 import { shopText } from '../lib/i18n-storefront';
 
 /** Native GET navigation; this island only validates the relationship between bounds. */
-export function CatalogFilterForm({ children, className, locale }: { children: ReactNode; className?: string | undefined; locale: Locale }) {
+export function CatalogFilterForm({ children, className, locale }: { children: ReactNode; className: string; locale: Locale }) {
   function upperBound(form: HTMLFormElement) {
     const field = form.elements.namedItem('maxPrice');
     return field instanceof HTMLInputElement ? field : null;
@@ -20,13 +20,8 @@ export function CatalogFilterForm({ children, className, locale }: { children: R
       upper.reportValidity();
     }
   }
-  function clearValidation(event: FormEvent<HTMLFormElement>) {
-    const upper = upperBound(event.currentTarget);
-    upper?.setCustomValidity('');
-    upper?.removeAttribute('aria-invalid');
-  }
   return <form className={className} method="get" role="search" aria-label={shopText(locale, 'Filter products')}
-    onSubmit={validate} onInput={clearValidation} onReset={clearValidation}>
+    onSubmit={validate} onInput={event => { const upper = upperBound(event.currentTarget); upper?.setCustomValidity(''); upper?.removeAttribute('aria-invalid'); }}>
     {children}
   </form>;
 }

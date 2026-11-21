@@ -33,5 +33,5 @@ export function BundleAdd({ items }: { items: { id: string; name: string; stock:
     } catch { setResult({ message: 'Unable to save your cart in this browser.', added: 0 }); }
     finally { setPending(false); }
   }
-  return <div className="flex flex-wrap items-center gap-3"><button type="button" className="min-h-11 rounded-lg bg-brand px-5 text-sm font-semibold text-primary-foreground disabled:opacity-60 md:rounded-full" disabled={pending || !items.length} onClick={addAll}>{pending ? 'Adding…' : 'Add these to cart'}</button>{result ? <>{result.added ? <Link className="text-sm font-semibold text-teal" href="/cart">View cart</Link> : null}<p role="status" className="mb-0 text-sm text-muted">{result.message}</p></> : null}</div>;
+  return <div className="flex flex-wrap items-center gap-3"><button type="button" className="min-h-11 rounded-lg px-5 text-sm font-semibold disabled:opacity-60 md:rounded-full" disabled={pending || !items.length} onClick={addAll}>{pending ? 'Adding…' : 'Add these to cart'}</button>{result ? <>{result.added ? <Link className="text-sm font-semibold" href="/cart">View cart</Link> : null}<p role="status" className="mb-0 text-sm">{result.message}</p></> : null}</div>;
 }

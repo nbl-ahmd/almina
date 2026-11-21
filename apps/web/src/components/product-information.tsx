@@ -1,108 +1,74 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import Link from './app-link';
-import { Icon } from './icon';
-import styles from './product-information.module.css';
-import { categoryHref, literalPackFromName, type Product } from '../lib/catalog/model';
+import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
-import type { Locale } from '../lib/i18n';
-import { businessContact, policyPaths } from '../lib/policies';
+import Link from './app-link';
+import type { Product } from '../lib/catalog/model';
+import { categoryHref } from '../lib/catalog/model';
+import { Icon } from './icon';
 
 const sectionTitles = new Set(['Key benefits', 'Suitable for', 'Pack details']);
 
-/** Render catalogue text as text, including older imports that contain markup. */
+/** Plain text only: preserve older descriptions and never interpret imported HTML. */
 function Description({ text }: { text: string }) {
-  return (
-    <div className={styles.description}>
-      {text.split(/\n\s*\n/).filter(block => block.trim()).map((block, index) => {
-        const lines = block.trim().split('\n');
-        const heading = sectionTitles.has(lines[0]?.trim() ?? '') ? lines.shift() : undefined;
-        const bullets = lines.length > 0 && lines.every(line => /^[•*-]\s+/.test(line.trim()));
-        return (
-          <div key={index}>
-            {heading ? <h3 dir="auto">{heading}</h3> : null}
-            {bullets ? (
-              <ul>{lines.map((line, item) => <li dir="auto" key={item}>{line.trim().replace(/^[•*-]\s+/, '')}</li>)}</ul>
-            ) : lines.length ? <p dir="auto">{lines.join('\n')}</p> : null}
-          </div>
-        );
-      })}
-    </div>
-  );
+  return <div className="space-y-5 text-sm leading-7 wrap-anywhere">
+    {text.split(/\n\s*\n/).filter(block => block.trim()).map((block, index) => {
+      const lines = block.trim().split('\n');
+      const heading = sectionTitles.has(lines[0] ?? '') ? lines.shift() : undefined;
+      const bullets = lines.length > 0 && lines.every(line => /^[•*-]\s+/.test(line));
+      return <div key={index}>
+        {heading ? <h3 className="mb-2 text-base font-bold">{heading}</h3> : null}
+        {bullets ? <ul className="m-0 list-disc space-y-1 pl-5">{lines.map((line, item) => <li key={item}>{line.replace(/^[•*-]\s+/, '')}</li>)}</ul>
+          : <p className="m-0 whitespace-pre-wrap">{lines.join('\n')}</p>}
+      </div>;
+    })}
+  </div>;
 }
 
-export function ProductInformation({ product, locale }: { product: Product; locale: Locale }) {
-  const t = (key: string) => u(locale, key);
-  const summary = product.summary?.trim();
-  const description = product.description?.trim();
+export async function ProductInformation({ product }: { product: Product }) {
+  const locale = await getLocale();
   const sections = [
-    ['product-warnings', 'Warnings & precautions', product.warnings],
     ['product-usage', 'How to use', product.usage],
     ['product-ingredients', 'Ingredients / materials', product.ingredients],
+    ['product-warnings', 'Warnings & precautions', product.warnings],
     ['product-storage', 'Storage', product.storage],
   ].filter((section): section is [string, string, string] => Boolean(section[2]?.trim()));
-  const sparse = !summary && !description && !sections.length;
   const facts = [
-    ['Brand', product.brand || product.familyBrand],
-    ['Pack size', product.packLabel || product.variantPackSize || product.variantSize || literalPackFromName(product.name)?.label],
-    ['Sold as', product.saleUnit],
-    ['Form', product.productForm],
-    ['Strength', product.strength],
-    ['Manufacturer', product.manufacturer],
-    ['GTIN', product.gtin],
-    ['Product ID', product.product_id],
-  ].filter((fact): fact is [string, string] => Boolean(fact[1]?.trim()));
-
-  return (
-    <section className={styles.information} data-sparse={sparse || undefined} aria-labelledby="product-about-title">
-      <div className={styles.overview}>
-        <div id="product-description" className={styles.about}>
-          <h2 id="product-about-title">{t('About this product')}</h2>
-          {summary ? <p className={styles.summary} dir="auto">{summary}</p> : null}
-          {description && description !== summary ? <Description text={description} /> : null}
-          {!summary && !description ? <p className={styles.missing}>
-            {locale === 'ar' ? 'لا يتوفر وصف لهذا المنتج حالياً.' : 'A description for this product is currently unavailable.'}
-          </p> : null}
+    ['Brand', product.brand || product.familyBrand], ['Pack size', product.packLabel],
+    ['Sold as', product.saleUnit], ['Form', product.productForm], ['Strength', product.strength],
+    ['Manufacturer', product.manufacturer], ['GTIN', product.gtin], ['Product ID', product.product_id],
+  ].filter((fact): fact is [string, string] => Boolean(fact[1]));
+  return <section className="product-info-panel rounded-2xl border p-5 md:p-7" aria-label={u(locale,"Product details")}>
+    <nav className="mb-7 flex gap-5 scrollbar-none overflow-x-auto border-b text-sm font-semibold whitespace-nowrap" aria-label={u(locale,"Product information sections")}>
+      <a className="inline-flex min-h-11 items-center border-b-2" href="#product-description">{u(locale,"Overview")}</a>
+      {product.usage ? <a className="inline-flex min-h-11 items-center" href="#product-usage">{u(locale,"How to use")}</a> : null}
+      <a className="inline-flex min-h-11 items-center" href="#product-facts">{u(locale,"Specifications")}</a>
+    </nav>
+    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(240px,1fr)] lg:gap-12">
+      <div className="min-w-0 max-w-prose">
+        <div id="product-description" className="scroll-mt-6 pb-6">
+          <h2 className="mb-4 text-xl font-bold">{u(locale,"About this product")}</h2>
+          <Description text={product.description || u(locale,'Contact the pharmacy for more information about this product.')} />
         </div>
-        {sections.length ? (
-          <div className={styles.disclosures}>
-            {sections.map(([id, title, value]) => (
-              <details key={id} id={id} open={id === 'product-warnings'}>
-                <summary>{t(title)}<ChevronDownIcon aria-hidden="true" /></summary>
-                <Description text={value} />
-              </details>
-            ))}
-          </div>
-        ) : null}
+        {sections.map(([id, title, value]) => <details key={id} id={id} className="group scroll-mt-6 border-t">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-semibold [&::-webkit-details-marker]:hidden">
+            {u(locale,title)}<span className="group-open:hidden"><Icon name="plus" /></span><span className="hidden group-open:block"><Icon name="minus" /></span>
+          </summary>
+          <div className="pb-5"><Description text={value} /></div>
+        </details>)}
       </div>
-      <div className={styles.factsAndHelp}>
-        <section id="product-facts" aria-labelledby="product-specifications-title">
-          <h2 id="product-specifications-title">{t('Product specifications')}</h2>
-          <dl className={styles.facts}>
-            <div><dt>{t('Category')}</dt><dd>
-              <Link className={styles.link} href={categoryHref(product.category)}>{t(product.category.name)}</Link>
-            </dd></div>
-            {facts.map(([label, value]) => (
-              <div key={label}><dt>{t(label)}</dt><dd><bdi>{value}</bdi></dd></div>
-            ))}
+      <aside className="min-w-0 space-y-7 rounded-2xl p-5">
+        <div id="product-facts" className="scroll-mt-6" aria-labelledby="product-specifications-title">
+          <h2 id="product-specifications-title" className="mb-4 text-lg font-bold">{u(locale,"Product specifications")}</h2>
+          <dl className="m-0 divide-y border-y text-sm">
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 py-3"><dt>{u(locale,"Category")}</dt><dd className="m-0 wrap-anywhere"><Link href={categoryHref(product.category)}>{product.category.name}</Link></dd></div>
+            {facts.map(([label, value]) => <div key={label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 py-3"><dt>{u(locale,label)}</dt><dd className="m-0 font-medium wrap-anywhere">{value}</dd></div>)}
           </dl>
-        </section>
-        <section id="product-support" className={styles.help}>
-          <h2>{t('Need help choosing?')}</h2>
-          <p>{t('Ask Al Mina Pharmacy about product details or use before you order.')}</p>
-          <div className={styles.actions}>
-            <a className={styles.link} href={`tel:${businessContact.telephone}`}><Icon name="phone" />{t('Call the pharmacy')}</a>
-            <Link className={styles.link} href="/contact">{t('Contact pharmacy')}</Link>
-          </div>
-        </section>
-        <section className={styles.help}>
-          <h2>{locale === 'ar' ? 'التوصيل والإرجاع' : 'Delivery and returns'}</h2>
-          <p>{t('Checkout confirms the delivery charge and final total before you place an order.')}</p>
-          <div className={styles.actions}>
-            <Link className={styles.link} href={policyPaths.shipping}>{t('Delivery & shipping')}</Link>
-            <Link className={styles.link} href={policyPaths.returns}>{t('Returns & refunds')}</Link>
-          </div>
-        </section>
-      </div>
-    </section>
-  );
+        </div>
+        <div id="product-support" className="border-t pt-5">
+          <h2 className="mb-2 text-base font-bold">{u(locale,"Need help choosing?")}</h2>
+          <p className="mb-3 text-sm leading-6">{u(locale,"Ask Al Mina Pharmacy about product details or use before you order.")}</p>
+          <a className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold" href="tel:+971504825007"><Icon name="phone" />{u(locale,"Call the pharmacy")}</a>
+        </div>
+      </aside>
+    </div>
+  </section>;
 }

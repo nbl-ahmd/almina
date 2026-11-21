@@ -39,7 +39,6 @@ Modernize the application incrementally into a scalable production architecture 
 - server-authoritative commerce logic
 - safe inventory handling
 - optimized SEO and performance
-- modern responsive UI
 - backward compatibility with existing production data and URLs
 
 Do not perform a one-shot rewrite.
@@ -427,13 +426,6 @@ Do not rewrite unrelated history.
 ---
 
 # Documentation
-
-For the replacement storefront, resume from
-`apps/web/docs/design/implementation-progress.md`, then read
-`implementation-phases.md` and `implementation-coverage.md` in the same directory.
-Update the task/evidence/decision/next-action checkpoint after each work batch.
-These tracking files preserve review scope; their creation is not final visual
-approval and does not authorise deployment.
 
 Migration discoveries should be preserved under:
 

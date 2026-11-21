@@ -7,30 +7,23 @@ for (const width of [360, 390, 768, 1280]) test(`optional usage at ${width}px re
   page.on('request', req => { if (new URL(req.url()).pathname === '/api/commerce-events') reports.push(req.postDataJSON()); });
   await nextCheckoutPage(page);
   expect(reports).toEqual([]);
-  await page.getByRole('link', { name: 'Back to cart', exact: true }).click();
   const allow = page.getByRole('button', { name: 'Allow optional reports', exact: true });
   await allow.focus(); await page.keyboard.press('Enter');
   await expect(page.getByText('Optional usage reports: on.', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
-  await nextCheckoutPage(page);
-  const received = page.waitForResponse(res => new URL(res.url()).pathname === '/api/commerce-events'
-    && res.request().postDataJSON()?.event === 'checkout_confirmed' && res.status() === 204);
+  const received = page.waitForResponse(res => new URL(res.url()).pathname === '/api/commerce-events' && res.status() === 204);
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Order received' })).toBeVisible();
   await received;
-  expect(reports.filter(report => (report as { event?: string }).event === 'checkout_confirmed'))
-    .toEqual([{ event: 'checkout_confirmed', consent: true }]);
+  expect(reports).toEqual([{ event: 'checkout_confirmed', consent: true }]);
   expect((await state(request)).orders).toHaveLength(1);
-  await page.goto(checkoutOrigin + '/cart');
   await page.getByRole('button', { name: 'Usage preferences', exact: true }).click();
   await page.getByRole('button', { name: 'Decline optional reports', exact: true }).click();
-  await expect(page.getByText('Optional usage reports: off.', { exact: true })).toBeVisible();
-  const beforeWithdrawal = reports.length;
   await page.evaluate(() => window.dispatchEvent(new Event('error')));
   await page.reload(); await expect(page.getByText('Optional usage reports: off.', { exact: true })).toBeVisible();
   expect(await page.evaluate(storageKey => localStorage.getItem(storageKey), key)).toBe('declined');
   await page.evaluate(() => window.dispatchEvent(new Event('error')));
-  expect(reports).toHaveLength(beforeWithdrawal);
+  expect(reports).toHaveLength(1);
 });
 test('browser privacy signal overrides stored opt-in and blocks collection', async ({ page }) => {
   await page.addInitScript(storageKey => { localStorage.setItem(storageKey, 'allowed'); Object.defineProperty(navigator, 'globalPrivacyControl', { value: true }); }, key);
@@ -59,10 +52,10 @@ test('default-off storefront provides no analytics controls and rejects collecto
 });
 test('consented cart, quote and checkout failure events never replace authoritative order state', async ({ page, request }) => {
   await nextCheckoutPage(page);
-  await page.getByRole('link', { name: 'Back to cart', exact: true }).click();
   await page.getByRole('button', { name: 'Allow optional reports', exact: true }).click();
   const reports: unknown[] = [];
   page.on('request', req => { if (new URL(req.url()).pathname === '/api/commerce-events') reports.push(req.postDataJSON()); });
+  await page.goto(checkoutOrigin + '/cart');
   const cart = page.waitForResponse(res => new URL(res.url()).pathname === '/api/commerce-events' && res.request().postDataJSON().event === 'cart_updated');
   await page.getByRole('button', { name: 'Decrease Synthetic care product quantity', exact: true }).click();
   expect((await cart).status()).toBe(204);
@@ -70,7 +63,7 @@ test('consented cart, quote and checkout failure events never replace authoritat
   expect((await request.post(commerceOrigin + '/__fixture/price')).status()).toBe(204);
   const failure = page.waitForResponse(res => new URL(res.url()).pathname === '/api/commerce-events' && res.request().postDataJSON().event === 'checkout_failed');
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
-  await expect(page.locator('main').getByRole('alert')).toContainText('Prices or delivery have changed');
+  await expect(page.locator('p[role="alert"]')).toContainText('Prices or delivery have changed');
   expect((await failure).status()).toBe(204);
   // Consented navigation may also report page_viewed; retain strict commerce sequencing
   // without depending on the hydration timer winning the reporter's consent setup.

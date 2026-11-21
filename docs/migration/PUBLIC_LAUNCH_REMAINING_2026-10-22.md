@@ -85,14 +85,11 @@ Otherwise keep wholesale unconfigured/private while retail launches.
 
 ## Source precedence
 
-- `outputs/commerce-direction-2026-10-18/RAK_COMPETITOR_GROWTH_PLAN.md`: proposal,
-  assortment priorities, measurement and phased acquisition programme.
 - `GROWTH_FOUNDATION_2026-10-19.md`, `GROWTH_COMPLETION_2026-10-19.md`,
   `ARABIC_PHASE_FOUR_2026-10-20.md`: implemented features versus activation/review.
 - `GOOGLE_AUTH_ACTIVATION_2026-10-22.md`, `RESEND_EMAIL_2026-10-22.md`,
   `WHOLESALE_COMPLETION_2026-10-22.md`: newest provider/feature checkpoints.
-- `outputs/storefront-review-2026-10-18/final-catalogue-counts.json` and
-  `retail-publication-verification.json`: later applied catalogue evidence.
+- `CATALOGUE_PUBLICATION_MEDIA_2026-10-18.md` and `MIGRATION_STATUS.md`: catalogue publication and verification.
 - `CLOUDFLARE_RETIREMENT_2026-10-21.md`: media hostname and ownership gaps.
 - `PRODUCTION_CUTOVER_2026-10-03.md`: acceptance/evidence procedure; older hosted
   state descriptions in that file must not override newer deployment reports.

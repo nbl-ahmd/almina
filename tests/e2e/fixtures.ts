@@ -36,17 +36,17 @@ export async function state(request: APIRequestContext): Promise<{
 }> { return (await request.get(commerceOrigin + '/__fixture/state')).json(); }
 export const checkoutOrigin = 'http://127.0.0.1:4740';
 export async function nextCheckoutPage(page: Page) {
-  // Seed cart storage from a same-origin document before checkout starts fetching.
-  await page.goto(checkoutOrigin + '/robots.txt');
-  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
   await page.goto(checkoutOrigin + '/checkout');
+  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
+  await page.reload();
   for (const [name, value] of Object.entries(customer)) {
     const field = page.locator(`[name="${name}"]`);
     if(name==='payment')continue;
     if (name === 'emirate') await field.selectOption(value);
     else await field.fill(value);
   }
-  await page.getByRole('button',{name:'Review order total',exact:true}).click();
+  const review=page.getByRole('button',{name:'Review order',exact:true});
+  if(await review.isVisible())await review.click();else await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 }
 export async function login(page: Page, username = 'synthetic-admin', landing:'dashboard'|'orders'='dashboard') {

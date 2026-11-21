@@ -1,143 +1,194 @@
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import Link from './app-link';
-import { AddToCart } from './cart-controls';
-import { CurrencyAmount } from './currency-amount';
-import { ProductImage } from './product-image';
-import { SaveProduct } from './save-product';
-import styles from './product-card.module.css';
-import boundary from './storefront-system/boundary.module.css';
-import system from './storefront-system/tokens.module.css';
-import { categoryHref, displayPrice, literalPackFromName, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
-import { shopText as u } from '../lib/i18n-storefront';
-import type { Locale } from '../lib/i18n';
-import { productImage } from '../lib/server/catalog';
-import { getWebEnvironment } from '../lib/server/env';
 import { getLocale } from '../lib/server/i18n';
+import { shopText as u } from '../lib/i18n-storefront';
+import Link from './app-link';
+import { ArrowRightIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
+import { ProductImage } from "./product-image";
+import { AddToCart } from "./cart-controls";
+import { productImage } from "../lib/server/catalog";
+import { getWebEnvironment } from "../lib/server/env";
+import {
+  categoryHref,
+  displayPrice,
+  money,
+  productHref,
+  productOptionLabel,
+  type Product,
+} from "../lib/catalog/model";
 
-function photoFallback(locale: Locale) {
-  return (
-    <span className={styles.placeholder}>
-      <span>{u(locale, 'Photo coming soon')}</span>
-    </span>
-  );
-}
-
-export async function ProductPhoto({ product, eager = false, sizes = '(max-width: 599px) 45vw, (max-width: 1023px) 30vw, 260px' }: {
+export async function ProductPhoto({
+  product,
+  eager = false,
+}: {
   product: Product;
-  sizes?: string;
   eager?: boolean;
 }) {
   const locale = await getLocale();
   const src = productImage(product);
-  const fallback = photoFallback(locale);
-  return src === '/product-placeholder.svg' ? fallback : (
+  return src === "/product-placeholder.svg" ? (
+    <div className="flex h-full flex-col items-center justify-center gap-2 px-2 text-center text-xs">
+      <ShoppingBagIcon className="size-6" />
+      <span>{u(locale,"Photo coming soon")}</span>
+    </div>
+  ) : (
     <ProductImage
       cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME}
       src={src}
       alt={product.name}
       width={480}
       height={480}
-      sizes={sizes}
+      sizes={
+        eager
+          ? "(max-width: 767px) 45vw, 360px"
+          : "(max-width: 767px) 43vw, 260px"
+      }
       loading={eager ? "eager" : "lazy"}
-      className={styles.photo}
-      fallback={fallback}
+      className="h-full w-full object-contain transition-transform duration-300 motion-safe:group-hover:scale-[1.035]"
     />
   );
 }
-
-function CardPrice({ product, locale }: { product: Product; locale: Locale }) {
-  const price = displayPrice(product);
-  const ar = locale === 'ar';
+export async function ProductPrice({ product }: { product: Product }) {
+  const locale = await getLocale();
   return (
-    <div className={styles.price}>
-      <span className={styles.amount}>
-        <span className="sr-only">{ar ? 'السعر الحالي: ' : 'Current price: '}</span>
-        <CurrencyAmount value={price} locale={locale} />
+    <p className="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1 font-semibold tabular-nums">
+      <span>
+        {product.familyPriceVaries ? u(locale,"From ") : ""}
+        {money(displayPrice(product),locale)}
       </span>
-      {product.sale && price < product.price ? (
-        <span className={styles.previous}>
-          <span className="sr-only">{ar ? 'السعر السابق: ' : 'Previous price: '}</span>
-          <del><CurrencyAmount value={product.price} locale={locale} /></del>
-        </span>
+      {product.sale && displayPrice(product) < product.price ? (
+        <del className="text-xs font-normal">
+          {money(product.price,locale)}
+        </del>
       ) : null}
-    </div>
+    </p>
   );
 }
-
-function Stock({ product, locale, grouped = false }: { product: Product; locale: Locale; grouped?: boolean }) {
-  const available = product.stock > 0;
-  const label = available ? u(locale, 'In stock') : u(locale, 'Out of stock');
-  return <span className={`product-stock ${styles.stock}`} data-grouped={grouped || undefined} data-stock={available ? 'available' : 'unavailable'}>
-    {grouped ? (locale === 'ar' ? 'العبوة المعروضة: ' : 'Shown pack: ') : null}{label}
-  </span>;
-}
-
-export async function ProductCard({ product, headingLevel = 3, eagerPhoto = false }: {
+export async function ProductCard({
+  product,
+  headingLevel = 3,
+}: {
   product: Product;
   headingLevel?: 2 | 3;
-  eagerPhoto?: boolean;
 }) {
   const locale = await getLocale();
-  const ar = locale === 'ar';
-  const Heading = headingLevel === 2 ? 'h2' : 'h3';
-  const options = Boolean(product.familyKey && (product.familyOptionCount ?? 0) > 1);
-  const recordedPack = product.packLabel || (product.familyKey ? productOptionLabel(product) : '');
+  const Heading = headingLevel === 2 ? "h2" : "h3";
+  const options = !!product.familyKey && (product.familyOptionCount ?? 0) > 1;
+  const optionLabel = product.familyKey ? productOptionLabel(product) : "";
+  const saving = product.sale
+    ? Math.max(0, product.price - displayPrice(product))
+    : 0;
   const brand = product.brand || product.familyBrand;
-  const name = product.name.trim();
-  const withoutBrand = brand && name.toLowerCase().startsWith(brand.toLowerCase() + ' ')
-    ? name.slice(brand.length).trim() : name;
-  const literalPack = literalPackFromName(withoutBrand);
-  const pack = recordedPack || literalPack?.label;
-  const cardName = literalPack && pack === literalPack.label ? literalPack.prefix : withoutBrand;
-  const href = productHref(product);
-
   return (
-    <article lang={locale} data-product-id={product._id} className={`product-card ${system.system} ${boundary.boundary} ${styles.card}`}>
-      <div className={styles.visual}>
-        <Link href={href} data-product-entry="image" aria-label={ar ? `عرض ${name}` : `View ${name}`} className={`product-media ${styles.media}`}>
-          <ProductPhoto product={product} eager={eagerPhoto} />
+    <article data-product-id={product._id} className="product-card group flex min-w-0 flex-col rounded-2xl border bg-white p-3 transition-[border-color,box-shadow] duration-200 hover:shadow-[0_18px_40px_-32px_rgba(21,23,26,0.35)] md:p-3">
+      <Link
+        href={productHref(product)}
+        aria-label={locale === "en" ? `View ${product.name}` : `عرض ${product.name}`}
+        className="product-media relative mb-3 block aspect-square overflow-hidden rounded-xl p-4"
+      >
+        <ProductPhoto product={product} />
+        {saving > 0 ? (
+          <span className="absolute top-2 left-2 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm">
+            {locale === "en" ? `Save ${money(saving,locale)}` : `وفّر ${money(saving,locale)}`}
+          </span>
+        ) : null}
+      </Link>
+      <Link
+        href={brand ? `/search?q=${encodeURIComponent(brand)}` : categoryHref(product.category)}
+        className="mb-1.5 text-xs leading-4 font-medium"
+      >
+        {brand || product.category.name}
+      </Link>
+      <Heading className="mb-2 text-[14px] leading-5 font-medium tracking-[-0.015em] md:text-base md:leading-6">
+        <Link href={productHref(product)}>
+          {product.familyName || product.name}
         </Link>
-        <Stock product={product} locale={locale} grouped={options} />
-        <SaveProduct locale={locale} id={product._id} name={name} compact card />
-      </div>
-      <div className={`product-card-tags ${styles.tags}`}>
-        <Link href={brand ? '/search?' + new URLSearchParams({ q: brand }) : categoryHref(product.category)}>
-          <bdi>{brand || u(locale, product.category.name)}</bdi>
-        </Link>
-        {pack ? <><span aria-hidden="true">·</span><bdi>{pack}</bdi></> : null}
-      </div>
-      <Heading className={`product-card-title ${styles.title}`}><Link href={href} data-product-entry="title" aria-label={name}><bdi>{cardName || name}</bdi></Link></Heading>
-      {options ? <p className={styles.optionNote}>
-        {product.familyPriceVaries
-          ? (ar ? 'السعر يختلف حسب الخيار' : 'Price varies by option')
-          : (ar ? 'خيارات أخرى متاحة' : 'Other options available')}
-      </p> : null}
-      <div className={`product-card-bottom ${styles.buy}`}>
-        <CardPrice product={product} locale={locale} />
-        {options ? <Link className={`product-option-link ${styles.choose}`} href={href} data-product-entry="options">
-          {u(locale, 'Choose options')}<ArrowRightIcon className="rtl:rotate-180" aria-hidden="true" />
-        </Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={name} compact />}
+      </Heading>
+      {optionLabel ? (
+        <p className="mb-2 text-xs leading-5">{optionLabel}</p>
+      ) : null}
+      {options ? (
+        <p className="mb-2 text-xs font-medium">
+          {locale === "en" ? `${locale === "en" ? `${product.familyOptionCount} options` : `${product.familyOptionCount} خيارات`} available` : `${product.familyOptionCount} خيارات متاحة`}
+        </p>
+      ) : null}
+      <div className="mt-auto">
+        <p
+          className="mb-2 flex items-center gap-1.5 text-xs"
+        >
+          <span
+            className="size-1.5 rounded-full"
+            aria-hidden="true"
+          />
+          {product.stock > 0 ? u(locale,"In stock") : u(locale,"Currently unavailable")}
+        </p>
+        <div className="mb-3 text-base md:text-lg">
+          <ProductPrice product={product} />
+        </div>
+        {options ? (
+          <Link
+            className="button min-h-11 w-full rounded-xl px-2 text-sm"
+            href={productHref(product)}
+          >{u(locale,"Choose options")}</Link>
+        ) : (
+          <div className="[&_.purchase-control-row]:block [&_.add-label]:not-sr-only [&_.add-mobile]:hidden [&_.add-desktop]:hidden">
+            <AddToCart
+              locale={locale}
+              id={product._id}
+              stock={product.stock}
+              name={product.name}
+            />
+          </div>
+        )}
       </div>
     </article>
   );
 }
-
 export async function CompactProductCard({ product }: { product: Product }) {
   const locale = await getLocale();
-  const pack = product.packLabel || (product.familyKey ? productOptionLabel(product) : '');
   return (
-    <article lang={locale} className={`related-product-row ${system.system} ${boundary.boundary} ${styles.compact}`}>
-      <Link href={productHref(product)} className={styles.compactLink}>
-        <span className={styles.compactPhoto}><ProductPhoto product={product} sizes="72px" /></span>
-        <div className={styles.compactText}>
-          <h3 className={styles.title}><bdi>{product.name}</bdi></h3>
-          {product.brand || product.familyBrand ? <bdi className={styles.optionNote}>{product.brand || product.familyBrand}</bdi> : null}
-          {pack ? <bdi className={styles.optionNote}>{pack}</bdi> : null}
-          <Stock product={product} locale={locale} />
-          <CardPrice product={product} locale={locale} />
+    <article className="flex w-[272px] shrink-0 snap-start flex-col rounded-2xl border bg-white p-3 md:w-auto">
+      <div className="mb-3 grid grid-cols-[64px_1fr] items-start gap-3">
+        <Link
+          href={productHref(product)}
+          aria-label={locale === "en" ? `View ${product.name}` : `عرض ${product.name}`}
+          className="flex size-16 items-center justify-center rounded-[14px] p-1.5"
+        >
+          {productImage(product) === "/product-placeholder.svg" ? (
+            <ShoppingBagIcon className="size-5" />
+          ) : (
+            <ProductPhoto product={product} />
+          )}
+        </Link>
+        <div className="min-w-0">
+          <p className="mb-1 text-xs font-medium tracking-[0.05em] uppercase">
+            {product.brand || product.familyBrand || product.category.name}
+          </p>
+          <h3 className="mb-0 text-sm leading-5 font-medium">
+            <Link
+
+              href={productHref(product)}
+            >
+              {product.familyName || product.name}
+            </Link>
+          </h3>
+          {product.familyKey && (product.familyOptionCount ?? 0) > 1 ? (
+            <p className="mt-1 mb-0 text-xs">
+              {locale === "en" ? `${product.familyOptionCount} options` : `${product.familyOptionCount} خيارات`}
+            </p>
+          ) : null}
         </div>
-        <ArrowRightIcon className={`${styles.compactArrow} rtl:rotate-180`} aria-hidden="true" />
-      </Link>
+      </div>
+      <div className="mt-auto flex items-center justify-between gap-2">
+        <div className="text-base">
+          <ProductPrice product={product} />
+        </div>
+        <Link
+          href={productHref(product)}
+          aria-label={locale === "en" ? `View ${product.name}` : `عرض ${product.name}`}
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border bg-white transition-colors hover:text-white"
+        >
+          <ArrowRightIcon className="rtl:rotate-180 size-4" />
+        </Link>
+      </div>
     </article>
   );
 }

@@ -127,34 +127,6 @@ Specify responsive sizing appropriately.
 
 ---
 
-# Styling
-
-Read PRODUCT.md for verified facts, DESIGN-BRIEF.md for scope, DESIGN.md for the
-accepted replacement system and docs/design/screen-directions.md for compositions.
-The decision register records precedence; implementation-progress.md owns status.
-The public routes use the accepted system. Check the [verification matrix](docs/design/implementation-evidence/p6-02-verification.md)
-and the progress ledger for local evidence, owner acceptance and release inputs.
-
-The public palette and shared radii are owned by the Tailwind v4 theme in
-`src/app/globals.css`. The storefront token module aliases those values and owns
-local spacing and layout roles. Shared primitive styling lives in `components/ui`;
-`boundary.module.css` owns shopping-specific states. DESIGN.md and its sidecar are
-documentation projections. Keep primary actions deep apothecary green and coral
-reserved for cart counts, sale tags and urgent alerts.
-
-The separately imported `src/app/storefront-compatibility.css` retains the scoped
-palette for wholesale and the root missing-page surface. Admin has its own scope.
-Route CSS owns layout. Avoid restating primitive palette, radius or focus rules in
-route styles.
-
-Trace consumers before removing shared rules, fonts, component APIs or media.
-Preserve EN/AR/RTL, keyboard/focus/semantics, contrast, targets, reduced motion,
-loading/empty/error states, query/legacy URLs, SEO and every server-authoritative
-commerce/auth/API contract. Use actual catalogue/media/content; never infer claims
-or services from screenshots. No production data/provider access or deployment.
-
----
-
 # Accessibility
 
 Interactive elements must support:
@@ -228,14 +200,6 @@ Check:
 
 For substantial UI changes use browser automation/visual inspection instead of assuming CSS is correct.
 
-For design-language or layout changes, preserve responsive behavior as a release
-requirement. Test live resizing of the same loaded page across phone/tablet/desktop
-breakpoints, not only fresh navigation at fixed sizes. Check header collisions,
-filter disclosure state, grid/card widths, local rails, RTL, and portrait/short
-landscape purchase-bar clearance. Keep `tests/e2e/responsive-layout.spec.ts`
-passing alongside relevant existing shopping/admin regressions.
-
-
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
@@ -245,22 +209,3 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
-
-## Accepted storefront precedence and boundaries
-
-Owner-selected A/full campaign and five wide-screen home columns supersede the
-split/four-column comparison. The owner kept those layouts and requested lighter
-controls and stronger type hierarchy. The current storefront uses Plus Jakarta Sans and IBM Plex Sans Arabic, warm mineral control surfaces and muted green quick add. Latest N03
-image-first phone product detail keeps the overlay controls and purchase dock.
-
-Use current retail routes to review working components. The former specimen is
-historical evidence. `docs/design/implementation-evidence/p2-04-refinement.md`
-records the baseline contrast and motion decisions. The [current control revision](docs/design/implementation-evidence/p6-05-controls.md) and DESIGN.md describe the current treatment. Preserve default/explicit shape
-APIs, bounded label wrapping and portal theme/direction. Compiled foreground/control
-aliases resolve through scoped `--ui-*` bridges; verify emitted/computed CSS and
-fallbacks using `p2-02-cascade.md` before changing shared aliases.
-
-The pre-P2-05 archive and migration/review records are historical evidence only,
-excluded from new visual guidance and regeneration inputs. Do not use a general
-purpose design generator to overwrite the selected world. Admin retains its own
-scoped DESIGN.md/sidecar; no shared dependency removal before consumer migration.

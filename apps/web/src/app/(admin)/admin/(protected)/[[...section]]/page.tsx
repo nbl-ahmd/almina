@@ -1,4 +1,3 @@
-import { bannerArtwork } from '../../../../../lib/catalog/banner-artwork';
 import { NotificationCenter } from '../../../../../components/admin/notification-center';
 import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
 import type { BranchWorkspace } from '@almina/contracts';
@@ -451,14 +450,12 @@ export default async function AdminPage({
       <>
         <PageHeader
           title="Banners"
-          description="Upload homepage carousel artwork. The newest published banner leads the carousel."
+          description="Upload event, offer and campaign artwork for the homepage carousel. Newest banners appear first."
         />
         <details className="admin-create-panel"><summary>Add banner</summary>
         <Card title="Add banner">
           <AdminForm
             path="banners"
-            label="Publish banner"
-            footerNote="Use WebP, JPEG or PNG. Keep the two files under 3 MB combined, with important content away from the rounded corners."
             multipart
             fields={[
               {
@@ -466,7 +463,7 @@ export default async function AdminPage({
                 label: "Banner name",
                 required: true,
                 section: "Banner",
-                sectionDescription: "Describe the promotion. This also identifies the artwork for shoppers using assistive technology.",
+                sectionDescription: "Internal name used to find this artwork later.",
               },
               {
                 name: "link",
@@ -478,17 +475,10 @@ export default async function AdminPage({
               },
               {
                 name: "image",
-                label: "Desktop artwork",
+                label: "Banner image",
                 type: "file",
-                hint: `${bannerArtwork.desktop.width} × ${bannerArtwork.desktop.height} px (4:1). Place the headline and CTA in the image.`,
+                hint: "Use wide artwork, for example 1600 × 600 pixels. Keep text readable on mobile. The full image is shown without cropping; the newest eight banners appear in the homepage carousel.",
                 required: true,
-                section: "Artwork",
-              },
-              {
-                name: "mobileImage",
-                label: "Mobile artwork (optional)",
-                type: "file",
-                hint: `${bannerArtwork.mobile.width} × ${bannerArtwork.mobile.height} px (3:1). Used below 768 px. Leave blank to fit the desktop artwork without cropping.`,
                 section: "Artwork",
               },
             ]}

@@ -49,10 +49,6 @@ the latest wholesale/email/security/CI changes. No legacy asset is deleted.
 The earlier removal description is superseded: both old and new image paths
 remain available until a separately verified migration permits retirement.
 
-The combined replacement PR also commits the pending Impeccable 0.1.16 text
-updates, agent definitions, portable hook settings, historical design review
-captures and web agent-heading cleanup. Existing licence/attribution files are
-retained. Downloaded engine binaries, temporary root captures and generated
-Next type paths are excluded. Local verification: 186 unit tests, lint/types,
+Local verification: 186 unit tests, lint/types,
 production build and the corrected SEO smoke pass; real WebP delivery and the
 storefront render in the browser, with no Next compilation/runtime errors.

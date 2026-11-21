@@ -41,9 +41,7 @@ for (const width of [390, 1280]) test(`staff can preview, review and place a cam
   expect(rows.status()).toBe(200);
   const body = await rows.json(); expect(body.data[0].productIds).toEqual([productId]); expect(body.data[0].priority).toBe(75);
   await page.goto(adminOrigin + '/');
-  const promotions = page.getByRole('region', { name: 'Pharmacy promotions', exact: true });
-  await promotions.getByRole('button', { name: 'Show promotion 2', exact: true }).click();
-  await expect(promotions.getByRole('heading', { name: 'Synthetic care campaign', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Synthetic care campaign', exact: true })).toBeVisible();
   await page.screenshot({path:`outputs/campaign-merchandising-2026-10-20/home-${width}.png`});
   await page.getByRole('link', { name: 'Explore synthetic care', exact: true }).click();
   await expect(page).toHaveURL(adminOrigin + '/offers/synthetic-care');

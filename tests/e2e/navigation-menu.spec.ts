@@ -11,7 +11,7 @@ for(const width of [768,1280])test(`shopping menu and search dropdown work at ${
  const content=mobile?page.getByRole('dialog',{name:'Explore Al Mina'}):page.getByRole('navigation',{name:'Shop navigation',exact:true});
  await expect(content.getByRole('link',{name:'AED 50 & under',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:`outputs/navigation-2026-10-21/menu-${width}.png`});
+ await page.screenshot({path:test.info().outputPath(`menu-${width}.png`)});
  await page.evaluate(axe);
  const violations=await page.evaluate(async()=>{const audit=(window as unknown as {axe:{run:(node:Element)=>Promise<{violations:{id:string;nodes:{target:string[];failureSummary:string}[]}[]}>}}).axe;return(await audit.run(document.body)).violations.map(item=>({id:item.id,nodes:item.nodes}));});
  expect(violations).toEqual([]);
@@ -21,7 +21,7 @@ for(const width of [768,1280])test(`shopping menu and search dropdown work at ${
  await input.focus();await expect(page.getByRole('listbox')).toBeVisible();
  await expect(page.getByRole('option',{name:'AED 50 & under'})).toBeVisible();
  await input.fill('Daily');await expect(page.getByRole('option',{name:'Daily Care Products',exact:true})).toBeVisible();
- await page.screenshot({path:`outputs/navigation-2026-10-21/search-${width}.png`});
+ await page.screenshot({path:test.info().outputPath(`search-${width}.png`)});
  await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');await expect(page).toHaveURL(/daily-care--PD0001$/);
  await input.focus();await input.fill('Missing');
  await page.route('**/api/search/suggest?*',route=>route.fulfill({json:{categories:[],products:[]}}));
@@ -31,9 +31,7 @@ for(const width of [768,1280])test(`shopping menu and search dropdown work at ${
 test('Arabic mobile tabs retain RTL and the compact delivery picker',async({page,context})=>{
  await context.addCookies([{name:'almina_lang',value:'ar',url:'http://127.0.0.1:4710'}]);
  await page.setViewportSize({width:390,height:900});await page.goto('/');
- const menu=page.getByRole('button',{name:'افتح قائمة التسوق'});
- await menu.click();await expect(page.getByRole('dialog',{name:'تسوق من صيدلية الميناء'})).toBeVisible();
- await page.keyboard.press('Escape');await expect(menu).toBeFocused();
+ await expect(page.getByRole('button',{name:'افتح قائمة التسوق'})).toHaveCount(0);
  await page.locator('[data-slot="delivery-selector"]').click();
  const dialog=page.locator('.delivery-area-sheet');await expect(dialog).toBeVisible();
  expect(await dialog.evaluate(el=>getComputedStyle(el).direction)).toBe('rtl');
@@ -45,7 +43,7 @@ test('mobile delivery sheet saves an area and retains it after reload',async({pa
  await page.setViewportSize({width:390,height:844});await page.goto('/');
  const selector=page.locator('[data-slot="delivery-selector"]');await selector.click();
  const dialog=page.locator('.delivery-area-sheet');await expect(dialog).toBeVisible();
- const box=await dialog.boundingBox();expect(box).not.toBeNull();expect(Math.round(box!.y+box!.height)).toBe(844);
+ const box=await dialog.boundingBox();expect(box).not.toBeNull();expect(box!.y).toBeGreaterThanOrEqual(0);expect(box!.y+box!.height).toBeLessThanOrEqual(844);
  await dialog.locator('input[autocomplete="address-level2"]').fill('Al Nakheel');
  await dialog.locator('button[type="submit"]').click();await expect(dialog).not.toBeVisible();
  await expect(selector).toContainText('Al Nakheel');await page.reload();await expect(selector).toContainText('Al Nakheel');

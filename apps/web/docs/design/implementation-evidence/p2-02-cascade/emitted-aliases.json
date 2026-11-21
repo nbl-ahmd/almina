@@ -1,6 +1,0 @@
-{
-  "foreground": ".text-primary-foreground {\n    color: var(--ui-primary-foreground, #fff);\n  }",
-  "border": ".border-control-border {\n    border-color: var(--ui-control-border, #8792a4);\n  }",
-  "disabled": "  .disabled\\:bg-control-disabled:disabled {\n    background-color: var(--ui-control-disabled, #eef0f4);\n  }",
-  "hover": "    .hover\\:enabled\\:border-control-hover:hover:enabled {\n      border-color: var(--ui-control-hover, #64748b);\n    }"
-}

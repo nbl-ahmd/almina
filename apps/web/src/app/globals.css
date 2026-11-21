@@ -1,183 +1,61 @@
-@layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
-@source "../";
+/* Browser defaults with the minimum rules needed for usable controls. */
+*, *::before, *::after { box-sizing: border-box; }
+body { overflow-wrap: anywhere; }
+img, video, iframe, input, select, textarea, fieldset { max-inline-size: 100%; }
+img, video { block-size: auto; }
+svg:not([width]):not([height]) { inline-size: 1.25em; block-size: 1.25em; vertical-align: middle; }
+button, input, select, textarea { font: inherit; }
+button:has(svg), button[aria-label] { min-block-size: 24px; }
+button[aria-pressed="true"], [data-slot="checkbox"][aria-checked="true"] { outline: 1px solid currentColor; }
+:is(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+[data-slot="checkbox"] { min-inline-size: 1.5em; color: ButtonText; background: ButtonFace; }
+[data-slot="field"][data-orientation="vertical"] { display: grid; justify-items: start; }
+[data-slot="carousel-indicator"] { min-inline-size: 2rem; }
+[data-slot="carousel-indicator"]::before { content: "○" / ""; }
+[data-slot="carousel-indicator"][aria-pressed="true"]::before { content: "●" / ""; }
+[role="alert"] { font-weight: bold; }
 
-/* Public palette and primitive roles. The admin and compatibility shells own their scoped overrides. */
-@theme static {
-  --color-ink: #14261f;
-  --color-muted: #56685f;
-  --color-brand: #0e5b48;
-  --color-brand-hover: #0a4738;
-  --color-brand-soft: #e3f2ea;
-  --color-accent: #dff0e6;
-  --color-page: #f4f7f5;
-  --color-surface: #ffffff;
-  --color-subtle: #eaf2ed;
-  --color-product-well: #f1f6f3;
-  --color-border: #dde8e2;
-  --color-control-border: #84988f;
-  --color-control-hover: #5f756c;
-  --color-control-disabled: #edf2ef;
-  --color-coral: #ff5a5f;
-  --color-coral-ink: #221214;
-  --color-stock-bg: #e0f3e9;
-  --color-stock-text: #07634f;
-  --color-unavail-bg: #fdf1e4;
-  --color-unavail-text: #85460f;
-  --color-notice: #e8f4ee;
-  --color-disabled-text: #5b6b63;
-  --color-selected: #d8eee4;
-  --color-whatsapp: #149a4c;
-  --color-whatsapp-hover: #0f803e;
-  --color-map-pin: #0e5b48;
-  --color-promo: #e0f1e8;
-  --color-promo-alt: #fdebea;
-  --color-promo-ink: #0b3a2f;
-  --color-department-mint: #ddf3ec;
-  --color-department-peach: #ffe8e1;
-  --color-department-lilac: #eee7fb;
-  --color-department-sky: #e0effa;
-  --color-department-butter: #fff2d4;
-  --radius-control: 12px;
-  --radius-card: 20px;
-  --radius-pill: 9999px;
-  --radius-xl: var(--radius-control);
-  --radius-2xl: var(--radius-card);
-  --radius-panel: 28px;
-  --text-control-label: 0.8125rem;
-  --text-control-large: 0.9375rem;
-  --color-sale: #a11d31;
-  --color-sale-surface: color-mix(in srgb, var(--color-coral) 9%, var(--color-surface));
-  --color-warning: #744513;
-  --color-warning-surface: #fff5e6;
-  --color-focus: var(--color-brand);
-  --color-ocean: #35646c;
-  --color-teal: var(--color-brand);
-  --shadow-map-pin: 0 2px 6px rgb(0 0 0 / 33%);
-  --shadow-store-dock: 0 -6px 24px rgb(16 51 40 / 9%);
-  --shadow-raised: 0 16px 40px rgb(16 51 40 / 12%);
+.sr-only, :is(.skip-link, .admin-skip):not(:focus) {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
+:is(.skip-link, .admin-skip):focus { position: fixed; z-index: 100; background: Canvas; }
+.hidden { display: none; }
+[hidden] { display: none !important; }
+.overflow-x-auto, .admin-table-wrap, .thumbnails { overflow-x: auto; }
+.overflow-y-auto { overflow-y: auto; }
 
-:where([data-storefront-retail]) {
-  --motion-feedback: 120ms;
-  --color-control-border: #84988f;
-  --color-control-hover: #5f756c;
-  --leading-control: 1.4;
-  --radius-control: 12px;
-  --radius-card: 20px;
-  --radius-panel: 28px;
-  --radius-xl: var(--radius-control);
-  --radius-2xl: var(--radius-card);
-}
-
-[data-storefront-retail]:is(:lang(ar), :dir(rtl)) { --leading-control: 1.55; }
-[data-storefront-retail] ::selection { color: var(--color-ink); background: var(--color-selected); }
-
-/* shadcn semantic aliases resolve to the current surface's palette, including RTL. */
-@theme inline {
-  --color-primary: var(--color-brand);
-  --color-primary-foreground: var(--ui-primary-foreground, var(--color-white));
-  --color-background: var(--color-surface);
-  --color-foreground: var(--color-ink);
-  --color-muted-foreground: var(--color-muted);
-  --color-secondary: var(--color-accent);
-  --color-secondary-foreground: var(--color-ink);
-  --color-destructive: var(--color-sale);
-  --color-ring: var(--color-brand);
-  --color-input: var(--color-control-border);
-}
-
-/* Keep the verified component styles while migrating components to utilities.
-   Preflight is deliberately omitted to preserve existing form/admin rendering. */
-:root {
-  color-scheme: light;
-  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
-  --space-6: 24px; --space-8: 32px; --space-12: 48px;
-  --content-width: 1280px;
-  --gutter: var(--space-4);
-  --text-small: .875rem; --text-base: 1rem;
-  --motion-feedback: 150ms;
-}
-@layer base {
-* { box-sizing: border-box; }
-html { scroll-padding-block: var(--space-6) 100px; }
-body { margin: 0; color: var(--color-ink); background: var(--color-page); font-size: var(--text-base); line-height: 1.6; padding-bottom: calc(4.75rem + env(safe-area-inset-bottom)); }
-main { max-width: var(--content-width); margin-inline: auto; padding: var(--space-6) var(--gutter) var(--space-12); min-height: 60vh; }
-h1,h2,h3,p { margin-top: 0; }
-h1,h2,h3 { line-height: 1.18; font-weight: 700; text-wrap: balance; }
-h1 { font-size: 2rem; letter-spacing: -.025em; margin-bottom: var(--space-4); }
-h2 { font-size: 1.5rem; letter-spacing: -.015em; }
-a { color: var(--color-brand); text-decoration: none; }
-a:hover { text-decoration: underline; text-underline-offset: 4px; }
-a,button,input:not([data-slot]),select:not([data-slot]) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-button:not([data-slot]),.button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 48px; padding: var(--space-3) var(--space-6); border: 1px solid var(--color-brand); border-radius: var(--radius-control); background: var(--color-brand); color: var(--color-surface); font: inherit; font-weight: 700; line-height: 1.3; text-align: center; cursor: pointer; transition: background-color var(--motion-feedback), border-color var(--motion-feedback); }
-button:not([data-slot]):hover:not(:disabled),.button:hover { background: var(--color-brand-hover); border-color: var(--color-brand-hover); text-decoration: none; }
-button:not([data-slot]):active:not(:disabled),.button:active { background: var(--color-ink); }
-button:not([data-slot]):disabled { background: var(--color-subtle); border-color: var(--color-border); color: var(--color-muted); cursor: not-allowed; }
-.button-secondary { background: var(--color-surface); border-color: var(--color-border); color: var(--color-brand); }
-.button-secondary:hover { background: var(--color-subtle); color: var(--color-brand); }
-input:not([data-slot]),select:not([data-slot]) { min-height: 48px; width: 100%; min-width: 0; max-width: 100%; padding: var(--space-3); color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-muted); border-radius: var(--radius-control); font: inherit; }
-input:not([data-slot])::placeholder { color: var(--color-muted); opacity: 1; }
-[data-slot="input"], [data-slot="textarea"], [data-slot="native-select"], [data-slot="button"] { font-family: inherit; }
-label { display: flex; flex-direction: column; gap: var(--space-2); font-weight: 700; font-size: var(--text-small); }
-label input:not([data-slot]),label select:not([data-slot]) { font-weight: 400; font-size: var(--text-base); }
-:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
-}
-@layer base { .icon { flex: none; width: 22px; height: 22px; vertical-align: middle; } }
-@layer base { section { margin-bottom: var(--space-12); } }
-/* Utilities must be able to override reusable component defaults. */
-@layer components {
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
-.eyebrow { color: var(--color-brand); font-size: .75rem; font-weight: 700; letter-spacing: .12em; margin-bottom: var(--space-3); }
-.section-heading { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-6); }
-.section-heading .eyebrow { margin-bottom: var(--space-2); }
-.section-heading h2 { margin-bottom: 0; }
-.section-heading>a { display: inline-flex; gap: var(--space-2); align-items: center; min-height: 44px; font-size: var(--text-small); font-weight: 700; }
-.cart-controls button { width: 100%; padding-inline: var(--space-2); font-size: var(--text-small); }
-.cart-controls button .icon { width: 18px; height: 18px; }
-.status { min-height: 1.5em; font-size: .75rem; margin: var(--space-2) 0 0; color: var(--color-brand); }
-.view-cart-link { display: inline-flex; min-height: 44px; align-items: center; font-weight: 700; font-size: var(--text-small); }
-.page-heading { margin-bottom: var(--space-8); }
-.page-heading p:last-child { color: var(--color-muted); max-width: 60ch; margin-bottom: 0; }
-.quantity-control { display: flex; border: 1px solid var(--color-border); border-radius: var(--radius-control); align-items: center; }
-.quantity-control button { padding: var(--space-2); min-width: 44px; border: 0; border-radius: 0; background: var(--color-subtle); color: var(--color-ink); font-size: 1.25rem; }
-.quantity-control button:first-child { border-radius: calc(var(--radius-control) - 1px) 0 0 calc(var(--radius-control) - 1px); }
-.quantity-control button:last-child { border-radius: 0 calc(var(--radius-control) - 1px) calc(var(--radius-control) - 1px) 0; }
-.quantity-control .icon { width: 18px; height: 18px; }
-.quantity-control button:hover:not(:disabled) { background: var(--color-accent); }
-.quantity-control button:disabled { color: var(--color-muted); }
-.quantity { min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
-.remove-button { background: transparent; border-color: transparent; color: var(--color-muted); font-weight: 400; text-decoration: underline; font-size: var(--text-small); padding-inline: var(--space-3); }
-.remove-button:hover:not(:disabled) { background: var(--color-subtle); color: var(--color-ink); border-color: transparent; }
-.notice { padding: var(--space-4) var(--space-6); margin-bottom: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-warning-surface); color: var(--color-warning); }
-.notice h2 { font-size: 1.25rem; margin-bottom: var(--space-2); }
-.notice p { margin-bottom: 0; }
-.notice>.button { margin-top: var(--space-4); }
-.error-notice { color: var(--color-sale); background: var(--color-sale-surface); }
-.error-notice button { margin-top: var(--space-3); }
-.empty-state { padding: var(--space-12) var(--space-6); border: 1px dashed var(--color-border); background: var(--color-surface); border-radius: var(--radius-card); text-align: center; }
-.empty-state>.icon { width: 36px; height: 36px; color: var(--color-brand); margin-bottom: var(--space-4); }
-.empty-state h1,.empty-state h2 { margin-bottom: var(--space-4); }
-.empty-state p { color: var(--color-muted); }
-.skeleton { background: var(--color-subtle); border-radius: var(--radius-control); }
-.skeleton-card { min-height: 300px; border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: var(--space-4); background: var(--color-surface); }
-.skeleton-image { aspect-ratio: 1; margin-bottom: var(--space-4); }
-.skeleton-line { height: 20px; margin-bottom: var(--space-3); }
-.skeleton-line:last-child { width: 60%; }
+@media (min-width: 640px) {
+  .sm\:hidden { display: none; }
+  .sm\:block { display: block; }
+  .sm\:inline { display: inline; }
+  .sm\:flex { display: flex; }
+  .sm\:grid { display: grid; }
 }
 @media (min-width: 768px) {
-  :root { --gutter: var(--space-6); }
-  body { padding-bottom: 0; }
-  main { padding-top: var(--space-8); }
-  @layer base { h1 { font-size: 2.5rem; } h2 { font-size: 2rem; } }
+  .md\:hidden { display: none; }
+  .md\:block { display: block; }
+  .md\:inline { display: inline; }
+  .md\:inline-flex { display: inline-flex; }
+  .md\:flex { display: flex; }
+  .md\:grid { display: grid; }
 }
 @media (min-width: 1024px) {
-  :root { --gutter: var(--space-8); }
+  .lg\:hidden { display: none; }
+  .lg\:block { display: block; }
+  .lg\:inline { display: inline; }
+  .lg\:flex { display: flex; }
+  .lg\:grid { display: grid; }
 }
-@media (min-width: 1440px) {
+@media (min-width: 1280px) {
+  .xl\:inline { display: inline; }
+  .xl\:flex { display: flex; }
+  .xl\:grid { display: grid; }
 }
-@media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 
 /* Google Identity Services renders its own markup and injects unlayered styles
    at runtime. These rules stay unlayered as well so they outrank that injection
@@ -188,19 +66,18 @@ label input:not([data-slot]),label select:not([data-slot]) { font-weight: 400; f
 .google-signin > div { width: 100%; }
 .google-signin div[role="button"] {
   box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
-  width: 100%; min-height: 3rem; padding: 0 var(--space-4); overflow: hidden;
-  gap: var(--space-2); border: 1px solid var(--color-border); border-radius: 12px;
-  background: var(--color-surface); color: var(--color-ink); cursor: pointer;
-  transition: background-color var(--motion-feedback), border-color var(--motion-feedback);
+  width: 100%; min-height: 3rem; padding: 0 .5rem; overflow: hidden;
+  gap: .5rem; border: 1px solid ButtonBorder;
+  background: Canvas; color: CanvasText; cursor: pointer;
 }
-.google-signin div[role="button"]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.google-signin div[role="button"]:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
 @media (hover: hover) and (pointer: fine) {
-  .google-signin div[role="button"]:hover { background: var(--color-subtle); border-color: var(--color-control-hover); }
+  .google-signin div[role="button"]:hover { background: ButtonFace; border-color: ButtonBorder; }
 }
-.google-signin div[role="button"]:active { background: var(--color-accent); }
+.google-signin div[role="button"]:active { background: ButtonFace; }
 /* Content row: Google's own layout rule is replaced by ours. */
 .google-signin div[role="button"] > div:not(.nsm7Bb-HzV7m-LgbsSe-MJoBVe) {
-  display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
   width: 100%; height: 100%; min-height: 0;
 }
 /* The logo must never scale with the container, even before Google's styles arrive. */
@@ -208,15 +85,7 @@ label input:not([data-slot]),label select:not([data-slot]) { font-weight: 400; f
 /* Google's own hover/active tint is replaced by the frame states above. */
 .google-signin .nsm7Bb-HzV7m-LgbsSe-MJoBVe { display: none; }
 .google-signin div[role="button"] span {
-  font-size: .875rem; font-weight: 500; line-height: 1.25; letter-spacing: .1px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit;
 }
 /* Google hides this duplicate accessible label; keep it out of sight if its CSS is blocked. */
 .google-signin .L6cTce { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
-
-@media (forced-colors: active) {
-  :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: 2px;
-  }
-}

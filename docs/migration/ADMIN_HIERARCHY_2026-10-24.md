@@ -61,6 +61,5 @@ concurrency rules are unchanged.
 - Product and growth tab changes are immediate, including keyboard navigation;
   existing restrained switch/press feedback and reduced-motion handling remain.
 
-Screenshots in `.impeccable/review/product-channels-*.png` use the isolated
-synthetic browser fixture. The local preview uses the dedicated persistent demo
+The local preview uses the dedicated persistent demo
 runtime. No production database changes or deployment were performed.
