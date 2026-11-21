@@ -1,5 +1,6 @@
 import styles from './category-tile.module.css';
 import Image from 'next/image';
+import { CategorySymbol } from './category-symbol';
 import { ProductPhoto } from './product-card';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
@@ -11,10 +12,10 @@ export async function CategoryTile({ category, headingLevel = 3, product }: { ca
  const Heading = headingLevel === 2 ? 'h2' : 'h3';
  const photo = category.image
    ? <Image src={categoryImage(category.image)} alt="" width={100} height={100} sizes="80px" />
-   : product ? <ProductPhoto product={product} sizes="80px" /> : null;
+   : product ? <ProductPhoto product={product} sizes="80px" /> : <CategorySymbol name={category.name} />;
  return (
    <Link href={categoryHref(category)} className={`category-tile ${styles.tile}`}>
-     {photo && <span className={`category-tile-media ${styles.media}`}>{photo}</span>}
+     <span className={`category-tile-media ${styles.media}`} data-placeholder={!category.image && !product || undefined}>{photo}</span>
      <Heading className={styles.label}>{u(locale, category.name)}</Heading>
    </Link>
  );

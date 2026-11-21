@@ -22,7 +22,7 @@ type Order={channel?:'wholesale';orderId:string;status:string;createdAt:string;t
 function BuyAgain({order}:{order:Order}){
  const {a}=useAccountCopy();
 const [busy,setBusy]=useState(false),[message,setMessage]=useState('');async function add(){setBusy(true);try{const before=storedCart(),available:{id:string;quantity:number}[]=[];for(const item of order.totals.lines.slice(0,30)){const current=before.find(line=>line.id===item.productId)?.quantity??0;if(!await checkAddition(item.productId,current+item.quantity))available.push({id:item.productId,quantity:current+item.quantity});}if(JSON.stringify(before)!==JSON.stringify(storedCart()))throw new Error('Your cart changed. Please try again.');saveCart([...before.filter(line=>!available.some(item=>item.id===line.id)),...available]);setMessage(`${available.length} available items added. Unavailable products were skipped. Current prices apply at checkout.`);}catch{setMessage('Unable to add these items. Please try again.');}finally{setBusy(false);}}return <><Button variant="outline" size="default" type="button" className="mt-3" disabled={busy} onClick={()=>void add()}>{busy?a("Checking stock…"):a("Buy available items again")}</Button><p role="status" className="mt-2 mb-0 text-xs text-muted">{a(message)}</p></>;}
-export function CustomerAccount({nonce}:{nonce?:string|undefined}){
+export function CustomerAccount({ nonce, orderingEnabled = true }: { nonce?: string | undefined; orderingEnabled?: boolean }){
  const {a, locale}=useAccountCopy();
 
 const [user,setUser]=useState<Customer|null>(null),[orders,setOrders]=useState<Order[]>([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[loadFailed,setLoadFailed]=useState(false),[ordersFailed,setOrdersFailed]=useState(false);
@@ -39,7 +39,7 @@ useEffect(()=>{let active=true;const current=++generation.current;void accountRe
     <StorefrontIntro title={a("We could not load your account")} description={a("Your connection may have been interrupted. Please try again.")} />
     <div className={styles.actions}>
       <Button variant="outline" size="sm" type="button" onClick={() => window.location.reload()}>{a("Try again")}</Button>
-      <Button asChild variant="ghost" size="sm"><Link href="/checkout">{a("Guest checkout")}</Link></Button>
+      <Button asChild variant="ghost" size="sm"><Link href={orderingEnabled ? "/checkout" : "/products"}>{orderingEnabled ? a("Guest checkout") : (locale === "ar" ? "تصفح المنتجات" : "Browse products")}</Link></Button>
     </div>
   </section>;
   if (!user) return <div className={styles.signIn}><CustomerSignIn nonce={nonce} onSignedIn={refresh} /></div>;

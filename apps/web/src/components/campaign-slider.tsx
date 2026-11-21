@@ -99,7 +99,7 @@ export function CampaignSlider({
             >
               <span
                 aria-hidden="true"
-                className={`h-[3px] w-7 rounded-full transition-[background-color,transform] duration-150 motion-reduce:transition-none ${active === index ? "scale-x-100 bg-ink" : "scale-x-75 bg-ink/25 group-hover:bg-ink/50"}`}
+                className={`h-2 rounded-full transition-[background-color,width] duration-200 ease-out motion-reduce:transition-none ${active === index ? "w-6 bg-brand" : "w-2 bg-ink/20 group-hover:bg-ink/40"}`}
               />
             </button>
           ))}

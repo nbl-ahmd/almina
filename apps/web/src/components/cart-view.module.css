@@ -63,10 +63,11 @@
   border-radius: var(--store-card-radius);
   grid-template-columns: var(--store-space-64) minmax(0, 1fr) auto;
   align-items: start;
-  column-gap: var(--store-space-10);
+  column-gap: var(--store-space-12);
   row-gap: var(--store-space-8);
   min-inline-size: 0;
   padding: var(--store-space-12);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 4%, transparent);
 }
 
 
@@ -143,6 +144,15 @@ a.name:hover { color: var(--store-action); }
   padding: var(--store-space-16);
   border-radius: var(--store-card-radius);
   background: var(--store-surface);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 4%, transparent);
+}
+.summary::before {
+  content: "";
+  display: block;
+  block-size: 4px;
+  margin: calc(-1 * var(--store-space-16)) calc(-1 * var(--store-space-16)) var(--store-space-12);
+  border-radius: var(--store-card-radius) var(--store-card-radius) 0 0;
+  background: linear-gradient(90deg, var(--color-brand) 0%, color-mix(in srgb, var(--color-brand) 45%, var(--color-department-mint)) 100%);
 }
 .summary dl {
   display: grid;
@@ -185,13 +195,25 @@ a.name:hover { color: var(--store-action); }
   padding: var(--store-space-20);
   border-radius: var(--store-card-radius);
   background: var(--store-surface);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 4%, transparent);
 }
 .state p {
   margin: var(--store-space-4) 0 var(--store-space-16);
   color: var(--store-text-muted);
   font-size: var(--store-type-14);
 }
-.empty > svg { display: block; margin-block-end: var(--store-space-12); inline-size: var(--store-space-24); block-size: var(--store-space-24); }
+.empty { padding: var(--store-space-24); }
+.empty > svg {
+  display: block;
+  inline-size: var(--store-space-32);
+  block-size: var(--store-space-32);
+  margin-block-end: var(--store-space-12);
+  padding: var(--store-space-8);
+  box-sizing: content-box;
+  border-radius: var(--store-radius-round);
+  background: var(--color-brand-soft);
+  color: var(--store-action);
+}
 .placeholder { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: var(--store-space-16); }
 .placeholder div { display: grid; gap: var(--store-space-8); }
 .placeholder span { display: block; block-size: 10px; background: var(--store-secondary-surface); border-radius: var(--store-radius-4); }
@@ -207,12 +229,10 @@ a.name:hover { color: var(--store-action); }
   font-size: var(--store-type-14);
 }
 .recommendations { margin-block-start: var(--store-space-28); }
-.empty + .recommendations { max-inline-size: 56ch; margin-inline: auto; }
 .recommendationGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--store-space-10);
-  max-inline-size: 32rem;
+  gap: var(--store-space-12);
   margin-block-start: var(--store-space-12);
 }
 .recommendationGrid :global(.product-card) { block-size: 100%; }
@@ -235,6 +255,7 @@ a.name:hover { color: var(--store-action); }
   .layout { grid-template-columns: minmax(0, 1fr) minmax(16rem, 30%); gap: var(--store-space-24); }
   .summary { position: sticky; inset-block-start: var(--store-space-16); padding: var(--store-space-20); }
   .item { grid-template-columns: 80px minmax(0, 1fr) auto; padding: var(--store-space-14); column-gap: var(--store-space-12); }
+  .recommendationGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (min-width: 960px) {
   .item {

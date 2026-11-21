@@ -101,6 +101,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               {saving ? <span className={styles.saving}>{locale === 'en' ? `Save ${saving}%` : `وفّر ${saving}%`}</span> : null}
             </div>
             <ProductOptions product={product} variants={variants} />
+            <ProductDeliveryLocation locale={locale} />
             <ProductPurchaseDock>
               <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock}
                 quantityPicker priceLabel={<CurrencyAmount value={currentPrice} locale={locale} />} />
@@ -109,7 +110,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
               <SaveProduct locale={locale} id={product._id} name={product.name} card />
               <ProductShare title={product.name} url={shareUrl} locale={locale} />
             </div>
-            <ProductDeliveryLocation locale={locale} />
             {product.productType === 'general' && product.contentReviewed === true
               ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
           </div>

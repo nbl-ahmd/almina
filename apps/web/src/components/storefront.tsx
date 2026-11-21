@@ -18,10 +18,14 @@ export async function ProductGrid({ products, headingLevel = 2, variant: _varian
   const Heading = headingLevel === 3 ? 'h3' : 'h2';
   return products.length ? <div className="product-grid grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">{products.map((product, index) => <ProductCard key={product._id} product={product} headingLevel={headingLevel} eagerPhoto={eagerFirstPhoto && index === 0} />)}</div> : <div className="empty-state rounded-2xl"><Icon name="search" /><Heading>{u(locale,"No products found.")}</Heading><p>{u(locale,"Try a different search or explore another category.")}</p><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
 }
-export async function CategoryGrid({ categories }: { categories: Category[] }) {
+export async function CategoryGrid({ categories, products = [] }: { categories: Category[]; products?: Product[] }) {
   const locale = await getLocale();
-  return categories.length ? <div className={information.directory}>
-    {categories.map(category => <CategoryTile key={category._id} category={category} />)}
+  const photos = new Map<string, Product>();
+  for (const product of products) {
+    if (!photos.has(product.category._id)) photos.set(product.category._id, product);
+  }
+  return categories.length ? <div className={information.categoryGrid}>
+    {categories.map(category => <CategoryTile key={category._id} category={category} product={photos.get(category._id)} />)}
   </div> : <div className={`${information.panel} ${information.state}`}>
     <h3>{u(locale, 'Categories are not available yet')}</h3>
     <Link className="inline-flex min-h-11 items-center text-sm font-medium text-teal hover:text-ink" href="/products">{u(locale, 'Browse products')}</Link>

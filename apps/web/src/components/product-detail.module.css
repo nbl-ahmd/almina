@@ -15,7 +15,9 @@
   display: grid;
   place-items: center;
   block-size: clamp(260px, 88vw, 420px);
-  background: var(--store-surface);
+  background:
+    radial-gradient(80% 70% at 50% 34%, color-mix(in srgb, var(--color-brand-soft) 70%, var(--store-surface)) 0%, transparent 72%),
+    var(--store-surface);
 }
 .stage[data-gallery-swipe] { touch-action: pan-y pinch-zoom; }
 .stage[data-no-photo] { block-size: clamp(164px, 56vw, 250px); }
@@ -58,10 +60,12 @@
   block-size: var(--store-target-min);
   min-block-size: var(--store-target-min);
   padding: 0;
-  border: 1px solid var(--store-border);
+  border: 1px solid color-mix(in srgb, var(--store-border) 70%, transparent);
   border-radius: var(--store-radius-round);
-  background: var(--store-surface);
+  background: color-mix(in srgb, var(--store-surface) 94%, transparent);
   color: var(--store-text);
+  box-shadow: 0 4px 14px rgb(16 51 40 / 12%);
+  backdrop-filter: blur(8px);
 }
 .overlay :is(a, button):hover:not([aria-pressed='true']), .photoArrows button:hover { background: var(--store-hover-surface); }
 .overlay .back { margin-inline-end: auto; }
@@ -150,7 +154,7 @@
   justify-self: start;
   margin: 0;
   padding: var(--store-stock-inset-block) var(--store-stock-inset-inline);
-  border-radius: var(--store-radius-4);
+  border-radius: var(--radius-pill);
   background: var(--store-positive-surface);
   color: var(--store-positive);
   font-size: var(--store-stock-size);
@@ -191,16 +195,19 @@
   gap: var(--store-space-4) var(--store-space-8);
   min-block-size: var(--store-target-min);
   max-inline-size: 100%;
-  padding: var(--store-space-4) var(--store-space-10);
-  border: 0;
+  padding: var(--store-space-4) var(--store-space-12);
+  border: 1px solid var(--store-border);
   border-radius: var(--store-compact-radius);
-  background: transparent;
-  color: var(--store-positive);
+  background: var(--store-surface);
+  color: var(--store-text);
   font-size: var(--store-type-14);
   overflow-wrap: anywhere;
 }
 .choice[aria-disabled='true'] { color: var(--store-text-muted); background: var(--store-disabled-surface); }
-.choice[aria-current='page'] { font-weight: var(--store-weight-semibold); }
+.choice[aria-current='page'] {
+  color: var(--store-action);
+  font-weight: var(--store-weight-semibold);
+}
 .choice:is(a):hover:not([aria-current]) { background: var(--store-hover-surface); }
 .disclosure { cursor: pointer; min-block-size: var(--store-target-min); padding-block: var(--store-space-10); font-size: var(--store-type-14); }
 .combinationList { list-style: none; display: grid; gap: var(--store-space-6); margin: 0; padding: 0; }
@@ -376,14 +383,15 @@
   .desktopBack:hover { color: var(--store-text); }
   .lead {
     display: grid;
-    grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
-    gap: var(--store-space-24);
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+    gap: var(--store-space-32);
     align-items: start;
   }
   .visual { min-inline-size: 0; position: sticky; inset-block-start: var(--store-space-16); }
   .stage {
-    block-size: clamp(330px, 39vw, 466px);
+    block-size: clamp(330px, 39vw, 500px);
     border-radius: var(--store-card-radius);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 4%, transparent);
   }
   .stage[data-no-photo] { block-size: 250px; }
   .heroImage { padding: var(--store-space-24); }
@@ -392,7 +400,13 @@
   .thumbs { padding-inline: var(--store-space-4); background: transparent; }
   .thumbs button { flex-basis: var(--store-space-64); block-size: var(--store-space-64); }
   .buying, .secondary, .credit { padding-inline: 0; }
-  .buying { padding-block: var(--store-space-12); }
+  .buying {
+    align-self: start;
+    padding: var(--store-space-24);
+    border-radius: var(--store-card-radius);
+    background: var(--store-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 4%, transparent);
+  }
   .buying h1 { font-size: var(--store-product-title-size); }
   .price { font-size: var(--store-product-price-size); }
   .dock :global(.pdp-unit-price) { display: none; }

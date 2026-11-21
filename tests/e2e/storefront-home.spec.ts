@@ -16,13 +16,12 @@ for (const locale of ['en', 'ar'] as const) {
       expect(new Set(ids).size).toBe(5);
       const lead = home.locator('.home-hero-copy--lead');
       await expect(lead).toHaveAttribute('href', '/products');
-      await expect(lead).toHaveAccessibleName(locale === 'en' ? 'Everyday pharmacy essentials. Shop products' : 'احتياجاتك من الصيدلية. تصفح المنتجات');
+      await expect(lead).toHaveAccessibleName(locale === 'en' ? /^Everyday pharmacy essentials\..+Shop products$/ : /^احتياجاتك من الصيدلية\..+تصفح المنتجات$/);
       await expect(lead).toContainText(locale === 'en' ? 'Everyday pharmacy essentials' : 'احتياجاتك من الصيدلية');
       await expect(lead.locator('img[src*="/design/campaigns/"]')).toHaveCount(0);
       const collections = home.locator('.home-collection-section');
-      await expect(collections).toHaveCount(2);
-      await expect(collections.nth(0).locator('a[href^="/collections/"]')).toHaveAttribute('href', '/collections/skin-essentials');
-      await expect(collections.nth(1).locator('a[href^="/collections/"]')).toHaveAttribute('href', '/collections/baby-care');
+      await expect(collections.locator('a[href="/collections/skin-essentials"]')).toBeVisible();
+      await expect(collections).toHaveCount(1); // This fixture has no products in the baby-care collection.
       await expect(home.locator('[data-slot=carousel-indicator]')).toHaveCount(2);
       await expect(home.locator('.home-category-lane a').first()).toBeVisible();
       for (const [width, columns] of [[1440, 5], [1100, 4], [768, 3], [390, 2], [320, 2]] as const) {
@@ -30,8 +29,12 @@ for (const locale of ['en', 'ar'] as const) {
         expect(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(columns);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         const frame = (await home.locator('.home-hero-viewport').boundingBox())!;
-        expect(frame.width / frame.height).toBeCloseTo(width >= 768 ? 4 : 3, 1);
-        const textFits = await lead.evaluate(el => el.scrollHeight <= el.clientHeight + 1);
+        expect(frame.width / frame.height).toBeCloseTo(width >= 768 ? 5.5 : 2.5, 1);
+        const textFits = await lead.evaluate(el => {
+          const bounds = el.getBoundingClientRect();
+          const text = el.querySelector('.home-hero-message')!.getBoundingClientRect();
+          return text.top >= bounds.top - 1 && text.bottom <= bounds.bottom + 1;
+        });
         expect(textFits).toBe(true);
       }
       const carousel = home.locator('[aria-roledescription]').first();

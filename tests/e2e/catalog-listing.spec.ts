@@ -17,7 +17,7 @@ for (const locale of ['en', 'ar'] as const) {
     const [disclosure, select] = await Promise.all([summary.boundingBox(), sort.boundingBox()]);
     expect(disclosure?.y).toBe(select?.y);
     await expect(summary).toHaveCSS('min-block-size', '44px');
-    await expect(sort).toHaveCSS('min-block-size', '44px');
+    await expect(sort).toHaveCSS('min-block-size', '48px');
     // Firefox can report subpixel bounding boxes just below the computed CSS minimum.
     for (const box of [disclosure, select]) expect(box!.height).toBeGreaterThanOrEqual(44 - 1 / 64);
 

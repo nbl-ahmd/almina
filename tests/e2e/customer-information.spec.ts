@@ -17,7 +17,7 @@ for (const locale of ['en', 'ar'] as const) {
       const surface = page.locator('main [data-storefront-information]');
       await expect(surface).toHaveAttribute('dir', ar ? 'rtl' : 'ltr');
       await expect(surface.getByRole('heading', { level: 1 })).toBeVisible();
-      await expect(surface).toHaveCSS('background-color', 'rgb(243, 246, 251)');
+      await expect(surface).toHaveCSS('background-color', 'rgb(244, 247, 245)');
       for (const width of [390, 1440]) {
         await page.setViewportSize({ width, height: 840 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(width);

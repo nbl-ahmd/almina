@@ -16,9 +16,14 @@ export async function generateMetadata() {
 export default async function CartPage() {
   const locale = await getLocale();
   const env = getWebEnvironment();
-  const products = await getProducts({ featured: true })
-    .then(result => result.products.filter(product => product.stock > 0).slice(0, 6))
+  const featured = await getProducts({ featured: true })
+    .then(result => result.products.filter(product => product.stock > 0))
     .catch(() => []);
+  // Sparse or uncurated catalogues should still give the empty cart something to browse.
+  const fallback = featured.length < 4
+    ? await getProducts({ inStock: true }).then(result => result.products).catch(() => [])
+    : [];
+  const products = [...featured, ...fallback.filter(product => !featured.some(item => item._id === product._id))].slice(0, 6);
 
   return <div className={`cart-page ${styles.page} ${tokens.system} ${controls.boundary}`} lang={locale}>
     <div className={styles.content}>

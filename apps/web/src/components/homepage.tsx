@@ -1,5 +1,6 @@
 import Image, { getImageProps } from 'next/image';
-import { BeakerIcon, FaceSmileIcon, ScissorsIcon, SparklesIcon, ShieldCheckIcon, UserGroupIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { categoryRank, CategorySymbol } from './category-symbol';
+import { categoryImage, productImage } from '../lib/server/catalog';
 import Link from './app-link';
 import type { GrowthPage } from '@almina/contracts';
 import { bannerArtwork, bannerMobileMedia, bannerSizes } from '../lib/catalog/banner-artwork';
@@ -10,8 +11,8 @@ import { getWebEnvironment } from '../lib/server/env';
 import { categoryHref, type Category, type Product } from '../lib/catalog/model';
 import { CampaignArtwork } from './campaign-artwork';
 import { CampaignSlider } from './campaign-slider';
+import { ScrollReveal } from './scroll-reveal';
 import { ProductCard, ProductPhoto } from './product-card';
-import { productImage } from '../lib/server/catalog';
 
 type Banner = { image: string; mobileImage?: string; name: string; href: string | null };
 
@@ -57,12 +58,16 @@ export function HomeHero({ locale, banners = [], campaigns = [], featured = [], 
   const ar = locale === 'ar';
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
   const leadTitle = ar ? 'احتياجاتك من الصيدلية' : 'Everyday pharmacy essentials';
+  const leadSupport = ar
+    ? 'صحة وجمال وعناية يومية من صيدلية الميناء في رأس الخيمة.'
+    : 'Health, beauty and everyday care from our Ras Al Khaimah pharmacy.';
   const leadAction = ar ? 'تصفح المنتجات' : 'Shop products';
   const lead = (
     <Link key="almina-everyday" href="/products" className="home-hero-copy home-hero-copy--lead"
-      aria-label={`${leadTitle}. ${leadAction}`}>
+      aria-label={`${leadTitle}. ${leadSupport} ${leadAction}`}>
       <span className="home-hero-message">
         <span className="home-hero-title">{leadTitle}</span>
+        <span className="home-hero-support">{leadSupport}</span>
         <span className="home-hero-action">{leadAction}</span>
       </span>
       {featured.length > 0 && <span className="home-hero-art" aria-hidden="true">
@@ -72,11 +77,11 @@ export function HomeHero({ locale, banners = [], campaigns = [], featured = [], 
       </span>}
     </Link>
   );
-  if (loading) return <div className="home-campaigns"><div className="home-hero-viewport">{lead}</div><div className="campaign-placeholder" aria-hidden="true" /></div>;
+  if (loading) return <div className="home-campaigns" data-compact={!banners.length && !heroCampaigns.length || undefined}><div className="home-hero-viewport">{lead}</div><div className="campaign-placeholder" aria-hidden="true" /></div>;
 
   const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
   return (
-    <section className="home-campaigns" aria-label={u(locale, 'Discover Al Mina')}>
+    <section className="home-campaigns" data-compact={!banners.length && !heroCampaigns.length || undefined} aria-label={u(locale, 'Discover Al Mina')}>
       <CampaignSlider locale={locale} label={u(locale, 'Pharmacy promotions')} controlLabel={u(locale, 'promotion')}>
         {[
           ...banners.slice(0, 8).map((banner, index) => {
@@ -98,15 +103,6 @@ export function HomeHero({ locale, banners = [], campaigns = [], featured = [], 
   );
 }
 
-const categoryOrder = ['skincare', 'vitamins', 'babycare', 'oralcare', 'haircare', 'firstaid'];
-
-function categoryRank(name: string) {
-  const index = categoryOrder.findIndex(label => name.toLowerCase().replace(/\s+/g, '').includes(label));
-  return index < 0 ? categoryOrder.length : index;
-}
-
-const departmentIcons = [SparklesIcon, BeakerIcon, UserGroupIcon, FaceSmileIcon, ScissorsIcon, ShieldCheckIcon];
-
 export async function HomeCategories({ categories, products }: { categories: Category[]; products: Product[] }) {
   if (!categories.length) return null;
   const locale = await getLocale();
@@ -122,11 +118,11 @@ export async function HomeCategories({ categories, products }: { categories: Cat
       <SectionHeading title={locale === 'ar' ? 'الفئات' : 'Categories'} href="/categories" link="All categories" />
       <div className="home-category-lane" data-store-rail>
         {ordered.slice(0, 8).map(category => {
-          const DepartmentIcon = departmentIcons[categoryRank(category.name)] ?? Squares2X2Icon;
           const product = categoryPhotos.get(category._id);
           return <Link key={category._id} href={categoryHref(category)}>
             <span className="home-category-art" aria-hidden="true">
-              {product ? <ProductPhoto product={product} sizes="72px" /> : <DepartmentIcon />}
+              {category.image ? <Image src={categoryImage(category.image)} alt="" width={76} height={76} sizes="76px" />
+                : product ? <ProductPhoto product={product} sizes="72px" /> : <CategorySymbol name={category.name} />}
             </span>
             <span>{u(locale, category.name)}</span>
           </Link>;
@@ -153,6 +149,7 @@ export function HomeCollectionSection({ locale, collection, products }: {
   collection: 'skin-essentials' | 'baby-care';
   products: Product[];
 }) {
+  if (!products.length) return null;
   const ar = locale === 'ar';
   const skin = collection === 'skin-essentials';
   const title = skin ? (ar ? 'أساسيات العناية بالبشرة' : 'Skincare essentials') : (ar ? 'العناية بالطفل والأسرة' : 'Baby and family care');
@@ -161,22 +158,38 @@ export function HomeCollectionSection({ locale, collection, products }: {
   return (
     <section className="home-collection-section" aria-label={title}>
       <SectionHeading title={title} href={href} link={ar ? 'تسوق المجموعة' : 'Shop collection'} />
-      {products.length ? <div className="home-product-grid" data-store-rail>
+      <div className="home-product-grid" data-store-rail>
         {products.slice(0, 5).map(product => <ProductCard key={product._id} product={product} />)}
-      </div> : null}
+      </div>
     </section>
   );
 }
 
+const discoveryCollections = [
+  { slug: 'daily-care', image: 'skincare-campaign', en: 'Everyday personal care', ar: 'العناية الشخصية اليومية' },
+  { slug: 'baby-care', image: 'family-campaign', en: 'Baby and family care', ar: 'العناية بالطفل والأسرة' },
+  { slug: 'under-50', image: 'wellness-editorial', en: 'Essentials at AED 50 or less', ar: 'أساسيات بـ٥٠ درهماً أو أقل' },
+] as const;
+
 export function HomeDiscovery({ locale }: { locale: Locale }) {
-  const ar = locale === 'ar';
-  return <section className="home-discovery" aria-labelledby="home-discovery-title">
-    <h2 id="home-discovery-title">{ar ? 'تسوق حسب احتياجاتك' : 'Shop by need'}</h2>
-    <div className="home-discovery-links">
-      <Link href="/collections/daily-care"><span>{ar ? 'العناية الشخصية اليومية' : 'Everyday personal care'}</span></Link>
-      <Link href="/collections/under-50"><span>{ar ? 'أساسيات بـ٥٠ درهماً أو أقل' : 'Essentials at AED 50 or less'}</span></Link>
-    </div>
-  </section>;
+  return (
+    <ScrollReveal>
+      <section className="home-discovery" aria-labelledby="home-discovery-title">
+        <h2 id="home-discovery-title" data-reveal-text>{locale === 'ar' ? 'تسوق حسب احتياجاتك' : 'Shop by need'}</h2>
+        <div className="home-discovery-links">
+          {discoveryCollections.map(collection => (
+            <Link key={collection.slug} href={`/collections/${collection.slug}`} data-editorial-stack>
+              <span className="home-discovery-photo">
+                <Image src={`/design/home/${collection.image}.webp`} alt="" width={420} height={280}
+                  sizes="(max-width: 767px) 128px, (max-width: 1280px) 32vw, 390px" loading="lazy" />
+              </span>
+              <span className="home-discovery-label">{collection[locale]}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </ScrollReveal>
+  );
 }
 
 export async function HomeBrandStrip({ brands }: { brands: string[] }) {

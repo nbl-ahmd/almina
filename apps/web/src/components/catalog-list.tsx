@@ -106,7 +106,7 @@ export async function CatalogList({
     ? <>{ar ? 'نتائج البحث عن ' : 'Results for '}<bdi>“{q}”</bdi></>
     : t(title);
   const categoryLinks = categories?.length ? (
-    <nav className={styles.categories} data-store-rail aria-label={t('Browse categories')}>
+    <nav className={styles.categories} data-store-rail aria-label={q ? (ar ? 'اقتراحات ذات صلة' : 'Related suggestions') : t('Browse categories')}>
       {categories.slice(0, 8).map(cat => (
         <Link className={styles.option} href={categoryHref(cat)} key={cat._id}
           aria-current={selected === cat._id ? 'page' : undefined}>{t(cat.name)}</Link>
@@ -117,6 +117,8 @@ export async function CatalogList({
 
   const noOffers = offers && !q && !chips.length && page === 1;
   const emptyOffers = noOffers && !unavailable && !products.length;
+  // An unfiltered zero-result search is a recovery moment, not a refinement moment.
+  const emptySearch = Boolean(q) && !products.length && !chips.length && page === 1 && !unavailable;
   const empty = !products.length && (
     <section className={styles.state} aria-labelledby="catalog-empty">
       <h2 id="catalog-empty">{noOffers ? t('No current offers')
@@ -132,6 +134,7 @@ export async function CatalogList({
         : <Button asChild size="sm" variant={emptyOffers ? "default" : "outline"}><Link href={noOffers ? '/products' : '/categories'}>
             {noOffers ? (ar ? 'تصفح المنتجات' : 'Browse products') : t('Browse categories')}
           </Link></Button>)}
+      {(emptyOffers || emptySearch) && categoryLinks && <div className={styles.discovery}>{categoryLinks}</div>}
     </section>
   );
   const editorial = category ? categoryContent(title) : null;
@@ -162,11 +165,8 @@ export async function CatalogList({
               <Link className={styles.textLink} href="/categories">{t('Browse categories')}</Link>
             </div>
           </section>
-        ) : emptyOffers ? (
-          <div>
-            {empty}
-            <div className={styles.discovery}>{categoryLinks}</div>
-          </div>
+        ) : emptyOffers || emptySearch ? (
+          empty
         ) : (
           <div className={styles.layout}>
             <CatalogFilterPanel id="catalog-filters" key={`filters:${current}`} title={t('Filters')}

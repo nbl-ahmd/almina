@@ -33,6 +33,7 @@
   --store-ref-type-14: 0.875rem;
   --store-ref-type-15: 0.9375rem;
   --store-ref-type-16: 1rem;
+  --store-ref-type-17: 1.0625rem;
   --store-ref-type-18: 1.125rem;
   --store-ref-type-19: 1.1875rem;
   --store-ref-type-20: 1.25rem;
@@ -136,6 +137,7 @@
   --store-type-14: var(--store-ref-type-14);
   --store-type-15: var(--store-ref-type-15);
   --store-type-16: var(--store-ref-type-16);
+  --store-type-17: var(--store-ref-type-17);
   --store-type-18: var(--store-ref-type-18);
   --store-type-19: var(--store-ref-type-19);
   --store-type-20: var(--store-ref-type-20);

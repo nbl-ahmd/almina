@@ -127,7 +127,8 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
   }
 
   const recommendationsForCart = snapshot && !snapshot.error
-    ? recommendations.filter(product => !snapshot.lines.some(line => line.id === product.id)).slice(0, 2)
+    ? recommendations.filter(product => !snapshot.lines.some(line => line.id === product.id))
+      .slice(0, snapshot.items.length ? 2 : 4)
     : [];
   const canOrder = orderingEnabled && !checkout;
 
@@ -210,13 +211,11 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
             <dt>{t(locale, 'cartDeliveryRow')}</dt><dd>{t(locale, canOrder ? 'cartAtCheckout' : 'cartDeliveryNotQuoted')}</dd>
           </dl>
           <p className={styles.summaryNote}>{t(locale, canOrder ? 'cartEstimateScope' : 'cartEstimateUnavailableScope')}</p>
-          {!canOrder ? <p className={styles.orderingStatus}>{t(locale, 'cartOrderingUnavailable')}</p> : null}
-          {checkout ? <Button asChild size="sm" variant="outline"><Link href="/cart">{t(locale, 'cartEditCart')}</Link></Button>
-            : <CartAction locale={locale} canOrder={canOrder} subtotalMinor={snapshot.subtotalMinor} />}
-          <div className={styles.summaryLinks}>
-            <Link href="/products">{t(locale, 'cartContinueShopping')}</Link>
+          {!canOrder && !checkout ? <p className={styles.orderingStatus}>{t(locale, 'cartOrderingUnavailable')}</p> : null}
+          {canOrder ? <CartAction locale={locale} subtotalMinor={snapshot.subtotalMinor} /> : null}
+          {!checkout && <Button asChild size="sm" variant={canOrder ? 'ghost' : 'default'}>
             <Link href="/contact">{t(locale, 'cartContactPharmacy')}</Link>
-          </div>
+          </Button>}
         </aside>
       </div>
     </>}
@@ -229,7 +228,7 @@ export function CartView({ checkout = false, recommendations = [], cloudName, lo
   </div>;
 }
 
-function CartAction({ locale, canOrder, subtotalMinor }: { locale: Locale; canOrder: boolean; subtotalMinor: number | null }) {
+function CartAction({ locale, subtotalMinor }: { locale: Locale; subtotalMinor: number | null }) {
   const dock = useFixedDockClearance('--cart-dock-clearance');
 
   return <div ref={dock} className={`cart-mobile-bar ${styles.action}`}>
@@ -237,8 +236,8 @@ function CartAction({ locale, canOrder, subtotalMinor }: { locale: Locale; canOr
       <span>{t(locale, 'cartEstimatedSubtotal')}</span>
       <strong>{subtotalMinor === null ? t(locale, 'cartUnavailable') : <CurrencyAmount value={subtotalMinor / 100} locale={locale} />}</strong>
     </div>
-    <Button asChild size="sm" variant={canOrder ? 'default' : 'outline'}>
-      <Link href="/checkout" data-cart-next>{t(locale, canOrder ? 'cartProceed' : 'cartOrderingInfo')}<Icon name="arrow" /></Link>
+    <Button asChild size="sm">
+      <Link href="/checkout" data-cart-next>{t(locale, 'cartProceed')}<Icon name="arrow" /></Link>
     </Button>
   </div>;
 }

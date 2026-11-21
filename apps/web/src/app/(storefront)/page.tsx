@@ -70,10 +70,10 @@ export default async function HomePage() {
       <div className="home-content">
         <h1 className="sr-only">{u(locale, "Al Mina Pharmacy — health, beauty and everyday care")}</h1>
         <div className="home-lead">
-          <Suspense fallback={null}><HomeCategoryLane catalogue={catalogue} /></Suspense>
           <Suspense fallback={<HomeHero locale={locale} loading />}>
             <HomeCampaign locale={locale} banners={banners} campaigns={campaigns} catalogue={catalogue} />
           </Suspense>
+          <Suspense fallback={null}><HomeCategoryLane catalogue={catalogue} /></Suspense>
         </div>
         <Suspense fallback={<section className="home-shelf-skeleton">
           <p className="sr-only" role="status">{locale === "ar" ? "جارٍ تحميل المنتجات…" : "Loading products…"}</p>

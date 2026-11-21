@@ -13,14 +13,14 @@ for (const locale of ['en', 'ar'] as const) {
     const dock = page.locator('.checkout-mobile-action');
     const name = page.locator('[name=name]');
     await expect(action).toHaveCount(1);
-    await expect(action).toHaveCSS('border-radius', '10px');
+    await expect(action).toHaveCSS('border-radius', '12px');
     await expect(dock).toHaveCSS('position', 'fixed');
     await expect.poll(() => dock.evaluate(element => {
       const shell = element.closest('.storefront-shell')!;
       const clearance = parseInt(getComputedStyle(shell).getPropertyValue('--checkout-dock-clearance'));
       return clearance >= element.getBoundingClientRect().height;
     })).toBe(true);
-    await expect(name).toHaveCSS('border-radius', '10px');
+    await expect(name).toHaveCSS('border-radius', '12px');
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `.verification-results/p5-02-${locale}-details-${page.context().browser()?.browserType().name()}.png` });
     await action.click();
@@ -62,7 +62,9 @@ for (const locale of ['en', 'ar'] as const) {
     await expect(page.locator('.checkout-flow')).toHaveAttribute('data-stage', 'payment');
     await expect(action).toHaveAttribute('type', 'button');
     await expect(page.locator('.checkout-payment-stage h2')).toBeFocused();
-    await expect(page.locator('.checkout-order-panel dl')).toBeVisible();
+    await expect(page.locator('.checkout-quote-preview > summary')).toBeVisible();
+    await page.locator('.checkout-quote-preview > summary').click();
+    await expect(page.locator('.checkout-quote-preview dl')).toBeVisible();
     await expect(page.locator('.checkout-payment-choice input[value=cash]')).toBeChecked();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `.verification-results/p5-02-${locale}-review-${page.context().browser()?.browserType().name()}.png` });

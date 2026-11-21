@@ -1,4 +1,5 @@
 import { AccountLanguage } from '../../../components/account-locale';
+import { getWebEnvironment } from '../../../lib/server/env';
 import { getLocale } from '../../../lib/server/i18n';
 import { headers } from 'next/headers';
 import { CustomerAccount } from '../../../components/customer-account';
@@ -12,6 +13,6 @@ export default async function AccountPage() {
   const locale = await getLocale();
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   return <StorefrontInformation locale={locale}>
-    <div data-storefront-customer><AccountLanguage locale={locale}><CustomerAccount nonce={nonce} /></AccountLanguage></div>
+    <div data-storefront-customer><AccountLanguage locale={locale}><CustomerAccount nonce={nonce} orderingEnabled={getWebEnvironment().CHECKOUT_ENABLED} /></AccountLanguage></div>
   </StorefrontInformation>;
 }

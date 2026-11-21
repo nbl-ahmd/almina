@@ -76,12 +76,12 @@
   max-inline-size: calc((100% - var(--store-space-8)) * .4);
   min-block-size: var(--store-target-min);
   gap: var(--store-space-6);
-  padding: var(--store-space-4) var(--store-space-10);
+  padding: var(--store-space-4) var(--store-space-12);
   border-radius: var(--store-compact-radius);
   list-style: none;
   cursor: pointer;
   font-size: var(--store-type-13);
-  font-weight: var(--store-weight-medium);
+  font-weight: var(--store-weight-semibold);
   overflow-wrap: anywhere;
 }
 .filterToggle::-webkit-details-marker, .explore > summary::-webkit-details-marker { display: none; }
@@ -240,7 +240,7 @@
 .sort select {
   border-radius: var(--store-compact-radius);
   border-color: transparent;
-  background: transparent;
+  background: var(--store-secondary-surface);
   padding-inline: var(--store-space-10) var(--store-space-32);
   font-size: var(--store-type-14);
   font-weight: var(--store-weight-medium);
@@ -326,7 +326,7 @@
 .results :global(.product-grid), .skeleton {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--store-space-10);
+  gap: var(--store-space-12);
 }
 .skeleton > div {
   display: grid;

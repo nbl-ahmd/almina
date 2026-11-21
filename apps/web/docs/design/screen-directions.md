@@ -1,12 +1,12 @@
 # Accepted storefront screen directions
 
-Updated 19 November 2026. These compositions describe the selected storefront as implemented. [DESIGN.md](../../DESIGN.md) owns visual roles and [PRODUCT.md](../../PRODUCT.md) owns facts. See [decisions](decisions.md) and [progress](implementation-progress.md).
+Updated 21 November 2026. These compositions describe the selected storefront as implemented. [DESIGN.md](../../DESIGN.md) owns visual roles and [PRODUCT.md](../../PRODUCT.md) owns facts. See [decisions](decisions.md) and [progress](implementation-progress.md).
 
 ## Home
 
-Keep delivery context, search and cart prominent. Start catalogue discovery with visual category shortcuts, then the responsive campaign and shelves. On phones, category tiles scroll within their rail and product shelves start with two columns. Desktop puts shopping navigation below the wide search field and uses five columns for full-width shelves.
+Keep delivery context, search and cart prominent. The campaign hero leads, followed by the visual category shortcut lane, then product shelves. Uploaded artwork uses a 3:1 phone frame and a 4:1 desktop frame. The fallback campaign uses a shorter frame so shoppers reach the first shelf earlier. Category tiles scroll within their phone rail, and the first shelf uses two compact cards per row. Desktop puts shopping navigation below the wide pill search, a mint department strip under it, and uses five columns for full-width shelves. Empty collections render nothing rather than an orphan heading.
 
-The built-in carousel lead combines bilingual text with real catalogue photography and links to all products. Admin-published art uses the existing mobile and desktop artboards. Use spacing and surface changes for visual grouping. Keep headings and continuation links close to the products they describe.
+The built-in carousel lead combines bilingual text on a soft radial mint wash with real catalogue photography and links to all products. Admin-published art uses the existing mobile and desktop artboards. Use spacing and surface changes for visual grouping. Keep headings, mint “View all” chips and continuation links close to the products they describe.
 
 ## Listing and search
 
@@ -14,13 +14,13 @@ Preserve real query/count/filter/sort/pagination and suggestion fallback, with n
 
 ## Product detail
 
-Latest N03 `docs/design/storefront/references/2026-11-17/03-green-pharmacy-screens.jpg` supersedes the standalone phone toolbar. Phone: full-width gallery at top, overlay Back/Save/Cart, compact identity/price/stock/options, verified facts/description before useful alternatives and persistent quantity/purchase access. One real photo has no fake carousel dots. Sticky buying replaces global bottom navigation and measures clearance so final content remains reachable.
+Latest N03 `docs/design/storefront/references/2026-11-17/03-green-pharmacy-screens.jpg` supersedes the standalone phone toolbar. Phone: full-width gallery at top, overlay Back/Save/Cart, compact identity, price and stock with delivery area before purchase, verified facts/description before useful alternatives and persistent quantity/purchase access. One real photo has no fake carousel dots. Sticky buying replaces global bottom navigation and measures clearance so final content remains reachable.
 
 Desktop retains the global search/location/cart shell and gallery beside buying context. Real thumbnail/pack links select actual records and preserve price/stock relationships. Return to results preserves existing query/scroll/focus behavior. Keep actual descriptions/specifications/reviews/policies and honest missing states; reference screenshots do not fill catalogue gaps.
 
 ## Shell, cart, checkout and customer states
 
-Search has browsing/focused/task contexts. Location and menu interactions retain native labels/focus, optional user-triggered GPS/manual fallback and Arabic direction. Cart and checkout have one dominant continuation within their task mode. Browser cart data and server-loaded estimates remain distinct from final server quotes. Preserve auth, conditional payment availability, failed/pending/unavailable states and existing account features.
+Search has browsing/focused/task contexts. The header search is a 48px mint pill with a 40px circular green submit; focus turns the surface white with a green halo. Location and menu interactions retain native labels/focus, optional user-triggered GPS/manual fallback and Arabic direction. Cart and checkout have one dominant continuation within their task mode; cart recommendations use real in-stock products and shrink to two when the cart has items. Browser cart data and server-loaded estimates remain distinct from final server quotes. Preserve auth, conditional payment availability, failed/pending/unavailable states and existing account features.
 
 The checkout uses the accepted canvas, readable labels above native fields, and one continuation in a measured phone dock or desktop review column. On short landscape screens and when the software keyboard opens, the action moves into the page. Enter and review the address before progressing on phones. Desktop keeps the form and order breakdown together. Payment options and result messages follow the existing checkout and provider state. [Checkout verification](implementation-evidence/p5-02-checkout.md).
 

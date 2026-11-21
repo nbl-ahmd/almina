@@ -10,11 +10,15 @@ test('final checkout evidence, responsive controls, RTL and reduced motion',asyn
   await page.screenshot({path:`${directory}/${name}.png`,fullPage:true});
  }
  await page.setViewportSize({width:390,height:844});
+ const quote = page.locator('.checkout-quote-preview');
+ await expect(quote.locator('summary')).toContainText('Delivery');
+ await quote.locator('summary').click();
+ await expect(quote.getByText('VAT (included)', { exact: true })).toBeVisible();
  await page.getByRole('button',{name:'Back',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Contact and delivery',exact:true})).toBeFocused();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>{window.scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()));})));await page.screenshot({path:`${directory}/mobile-details.png`,fullPage:true});
  await expect(page.locator('[name=address]')).toHaveCSS('min-height','48px');
- await expect(page.locator('[name=address]')).toHaveCSS('border-radius','10px');
+ await expect(page.locator('[name=address]')).toHaveCSS('border-radius','12px');
  expect(await page.locator('[name=address]').evaluate(el=>el.getBoundingClientRect().bottom+window.scrollY)).toBeLessThan(1000);
  await page.getByRole('combobox',{name:'Emirate',exact:true}).click();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));

@@ -12,6 +12,10 @@
         "role": "primary",
         "displayName": "Action hover"
       },
+      "action-soft": {
+        "role": "primary",
+        "displayName": "Action soft"
+      },
       "text": {
         "role": "neutral",
         "displayName": "Text"
@@ -174,8 +178,8 @@
     "shadows": [
       {
         "name": "overlay",
-        "value": "0 8px 24px #1c29251c",
-        "purpose": "Suggestions/dialog context; cards stay flat."
+        "value": "0 16px 40px #1033281f",
+        "purpose": "Suggestions/dialog context; cards stay flat until hover."
       }
     ],
     "motion": [
@@ -221,7 +225,7 @@
       "refersTo": "button-primary",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Primary action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#1855ba;color:#ffffff;border-color:#1855ba;}.ds-button:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}.ds-button:hover:not(:disabled),.ds-button:active:not(:disabled){background:#134597;border-color:#134597;}.ds-button:disabled{background:#edf1f8;color:#596980;border-color:#dce4f1;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button[aria-busy=true]{background:#1855ba;border-color:#1855ba;color:#ffffff;cursor:progress;}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:12px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#0e5b48;color:#ffffff;border-color:#0e5b48;}.ds-button:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}.ds-button:hover:not(:disabled),.ds-button:active:not(:disabled){background:#0a4738;border-color:#0a4738;}.ds-button:disabled{background:#edf2ef;color:#5b6b63;border-color:#dde8e2;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button[aria-busy=true]{background:#0e5b48;border-color:#0e5b48;color:#ffffff;cursor:progress;}"
     },
     {
       "name": "Outline action",
@@ -229,7 +233,7 @@
       "refersTo": "button-outline",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Outline action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#1855ba;border-color:#dce4f1;}.ds-button:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#dce9ff;color:#182640;}.ds-button:disabled{background:#edf1f8;color:#596980;border-color:#dce4f1;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){border-color:transparent;}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:12px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#0e5b48;border-color:#dde8e2;}.ds-button:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#d8eee4;color:#14261f;}.ds-button:disabled{background:#edf2ef;color:#5b6b63;border-color:#dde8e2;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){border-color:transparent;}"
     },
     {
       "name": "Ghost action",
@@ -237,7 +241,7 @@
       "refersTo": "button-ghost",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Ghost action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#52617a;border-color:transparent;}.ds-button:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#dce9ff;color:#182640;}.ds-button:disabled{background:#edf1f8;color:#596980;border-color:#dce4f1;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:12px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:transparent;color:#56685f;border-color:transparent;}.ds-button:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}.ds-button:hover:not(:disabled){background:#d8eee4;color:#14261f;}.ds-button:disabled{background:#edf2ef;color:#5b6b63;border-color:#dde8e2;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Destructive action",
@@ -245,7 +249,7 @@
       "refersTo": "button-destructive",
       "description": "Shared Button appearance. The standalone example has no connected action.",
       "html": "<button type=\"button\" class=\"ds-button\">Destructive action</button>",
-      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:10px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#a11d31;color:#ffffff;border-color:#a11d31;}.ds-button:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}.ds-button:disabled{background:#edf1f8;color:#596980;border-color:#dce4f1;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){filter:brightness(.95);}"
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;min-width:0;max-width:100%;padding:12px 24px;border:1px solid transparent;border-radius:12px;font:500 15px/1.5 \"Plus Jakarta Sans\",sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);background:#a11d31;color:#ffffff;border-color:#a11d31;}.ds-button:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}.ds-button:disabled{background:#edf2ef;color:#5b6b63;border-color:#dde8e2;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-button:hover:not(:disabled){filter:brightness(.95);}"
     },
     {
       "name": "Labelled field",
@@ -253,7 +257,7 @@
       "refersTo": "field",
       "description": "Compact labelled field with visible focus and invalid states. Checkout and account layouts own their field geometry.",
       "html": "<label class=\"ds-label\">Field sample<input class=\"ds-field\" value=\"Synthetic value\" /></label>",
-      "css": ".ds-label{display:grid;gap:6px;font:500 14px/1.5 \"Plus Jakarta Sans\",sans-serif;color:#182640;}.ds-field{box-sizing:border-box;min-height:44px;width:100%;min-width:0;padding:12px 16px;border:1px solid #7889a2;border-radius:10px;background:#ebf1fa;color:#182640;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,#1855ba 15%,transparent);background:#ffffff;border-color:#1855ba;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#1855ba;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
+      "css": ".ds-label{display:grid;gap:6px;font:500 14px/1.5 \"Plus Jakarta Sans\",sans-serif;color:#14261f;}.ds-field{box-sizing:border-box;min-height:44px;width:100%;min-width:0;padding:12px 16px;border:1px solid #84988f;border-radius:12px;background:#eaf2ed;color:#14261f;font:inherit;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-field:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,#0e5b48 15%,transparent);background:#ffffff;border-color:#0e5b48;}.ds-field[aria-invalid=true]{border-color:#a11d31;outline-color:#a11d31;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}} .ds-field:hover:not(:disabled){background:#ffffff;border-color:#0e5b48;}.ds-field[aria-invalid=true]:hover{border-color:#a11d31;}"
     },
     {
       "name": "Compact navigation",
@@ -261,7 +265,7 @@
       "refersTo": "navigation",
       "description": "Visual-only current-page treatment; links are local fragment examples.",
       "html": "<nav class=\"ds-nav\" aria-label=\"Navigation sample\"><a href=\"#home\" aria-current=\"page\">Home</a><a href=\"#shop\">Shop</a><a href=\"#cart\">Cart</a></nav>",
-      "css": ".ds-nav{display:flex;justify-content:space-around;background:#ffffff;box-shadow:0 -4px 20px rgba(24,38,64,.08);font:400 10px/1.5 \"Plus Jakarta Sans\",sans-serif;}.ds-nav a{display:flex;align-items:center;justify-content:center;min-width:64px;min-height:48px;color:#182640;text-decoration:none;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-nav a[aria-current]{color:#1855ba;font-weight:700;}.ds-nav a:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-nav{display:flex;justify-content:space-around;background:#ffffff;box-shadow:0 -4px 20px rgba(24,38,64,.08);font:400 10px/1.5 \"Plus Jakarta Sans\",sans-serif;}.ds-nav a{display:flex;align-items:center;justify-content:center;min-width:64px;min-height:48px;color:#14261f;text-decoration:none;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-nav a[aria-current]{color:#0e5b48;font-weight:700;}.ds-nav a:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Stock label",
@@ -269,7 +273,7 @@
       "refersTo": "stock",
       "description": "Informational style sample, not a claim about an item.",
       "html": "<span class=\"ds-stock\">In stock — style sample</span>",
-      "css": ".ds-stock{display:inline-flex;max-width:100%;padding:3px 8px;border-radius:9999px;background:#e7f5ef;color:#086657;font:500 11px/1.5 \"Plus Jakarta Sans\",sans-serif;overflow-wrap:anywhere;}"
+      "css": ".ds-stock{display:inline-flex;max-width:100%;padding:3px 8px;border-radius:9999px;background:#e0f3e9;color:#07634f;font:500 11px/1.5 \"Plus Jakarta Sans\",sans-serif;overflow-wrap:anywhere;}"
     },
     {
       "name": "Card frame — missing data",
@@ -277,7 +281,7 @@
       "refersTo": "card",
       "description": "Actual supported unknown-price/missing-photo anatomy, labelled noncommercial.",
       "html": "<article class=\"ds-card\"><div class=\"ds-photo\">Photo unavailable</div><div class=\"ds-card-body\"><h3>Layout sample — not for sale</h3><p>Price unavailable</p><button type=\"button\" disabled>Unavailable sample</button></div></article>",
-      "css": ".ds-card{max-width:240px;min-width:0;border-radius:18px;background:#ffffff;color:#182640;overflow:hidden;font:400 15px/1.5 \"Plus Jakarta Sans\",sans-serif;}.ds-photo{display:grid;place-items:center;min-height:128px;padding:8px;background:#f5f7fb;border-radius:10px;}.ds-card-body{padding:6px 10px 10px;}.ds-card h3{margin:4px 0 8px;font-size:15px;font-weight:500;line-height:1.4;overflow-wrap:anywhere;}.ds-card p{font-size:13px;}.ds-card button{min-height:44px;max-width:100%;border:1px solid #dce4f1;border-radius:10px;padding:8px 12px;white-space:normal;color:#596980;background:#edf1f8;font:inherit;}"
+      "css": ".ds-card{max-width:240px;min-width:0;border-radius:20px;background:#ffffff;color:#14261f;overflow:hidden;font:400 15px/1.5 \"Plus Jakarta Sans\",sans-serif;}.ds-photo{display:grid;place-items:center;min-height:128px;padding:8px;background:#f1f6f3;border-radius:12px;}.ds-card-body{padding:6px 10px 10px;}.ds-card h3{margin:4px 0 8px;font-size:15px;font-weight:500;line-height:1.4;overflow-wrap:anywhere;}.ds-card p{font-size:13px;}.ds-card button{min-height:44px;max-width:100%;border:1px solid #dde8e2;border-radius:12px;padding:8px 12px;white-space:normal;color:#5b6b63;background:#edf2ef;font:inherit;}"
     },
     {
       "name": "Family option",
@@ -285,7 +289,7 @@
       "refersTo": "option",
       "description": "Native current-option link; labels are noncommercial samples, not fabricated pack availability.",
       "html": "<a class=\"ds-option\" href=\"#pack\" aria-current=\"page\">Current pack sample</a>",
-      "css": ".ds-option{display:inline-flex;align-items:center;min-height:44px;max-width:100%;box-sizing:border-box;padding:8px 12px;border:0;border-radius:9999px;background:#dce9ff;color:#182640;font:600 14px/1.5 \"Plus Jakarta Sans\",sans-serif;text-decoration:none;overflow-wrap:anywhere;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-option:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
+      "css": ".ds-option{display:inline-flex;align-items:center;min-height:44px;max-width:100%;box-sizing:border-box;padding:8px 12px;border:0;border-radius:9999px;background:#d8eee4;color:#14261f;font:600 14px/1.5 \"Plus Jakarta Sans\",sans-serif;text-decoration:none;overflow-wrap:anywhere;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-option:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button,.ds-field,.ds-nav a,.ds-option{transition:none;animation:none}}"
     },
     {
       "name": "Quick add",
@@ -293,28 +297,28 @@
       "refersTo": "quick-add",
       "description": "Visual-only geometry of the real server-checked purchase control; no cart handler attached.",
       "html": "<button class=\"ds-quick\" type=\"button\" aria-label=\"Add to cart sample\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"/></svg></button>",
-      "css": ".ds-quick{display:inline-flex;align-items:center;justify-content:center;width:44px;min-height:44px;padding:10px;border:0;border-radius:10px;background:#1855ba;color:#ffffff;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick svg{width:22px;height:22px;}.ds-quick:hover,.ds-quick:active{background:#134597;}@media(prefers-reduced-motion:no-preference){.ds-quick{transition:scale 120ms cubic-bezier(.2,.7,.2,1),background-color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick:active:not(:focus-visible):not(:disabled){scale:.98;}}.ds-quick:focus-visible{outline:2px solid #1855ba;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-quick{transition:none}} .ds-quick:disabled{background:#edf1f8;color:#596980;cursor:not-allowed;}.ds-quick[aria-busy=true]{background:#1855ba;color:#ffffff;cursor:progress;}"
+      "css": ".ds-quick{display:inline-flex;align-items:center;justify-content:center;width:44px;min-height:44px;padding:10px;border:0;border-radius:12px;background:#0e5b48;color:#ffffff;cursor:pointer;transition:background-color 120ms cubic-bezier(.2,.7,.2,1),border-color 120ms cubic-bezier(.2,.7,.2,1),color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick svg{width:22px;height:22px;}.ds-quick:hover,.ds-quick:active{background:#0a4738;}@media(prefers-reduced-motion:no-preference){.ds-quick{transition:scale 120ms cubic-bezier(.2,.7,.2,1),background-color 120ms cubic-bezier(.2,.7,.2,1);}.ds-quick:active:not(:focus-visible):not(:disabled){scale:.98;}}.ds-quick:focus-visible{outline:2px solid #0e5b48;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-quick{transition:none}} .ds-quick:disabled{background:#edf2ef;color:#5b6b63;cursor:not-allowed;}.ds-quick[aria-busy=true]{background:#0e5b48;color:#ffffff;cursor:progress;}"
     }
   ],
   "narrative": {
-    "northStar": "App-like on mobile, complete on desktop.",
-    "overview": "Search, category shortcuts and real catalogue photography lead the Al Mina storefront. Phone screens keep buying controls close. Desktop uses a wide search field, a single visual category row and five-column home shelves. Plus Jakarta Sans and IBM Plex Sans Arabic support English and Arabic. Blue identifies actions, coral marks cart counts and verified offers, and green communicates stock and success.",
+    "northStar": "Apothecary calm, app-like on mobile, complete on desktop.",
+    "overview": "Search, category shortcuts and the campaign hero lead the Al Mina storefront. Phone screens keep buying controls close. Desktop uses a pill search field, a mint department strip and five-column home shelves. Plus Jakarta Sans and IBM Plex Sans Arabic support English and Arabic. Deep apothecary green identifies buying actions, mint builds supporting surfaces, and coral marks the brand, cart counts and verified offers.",
     "keyCharacteristics": [
       "Search-led navigation with delivery context and useful discovery.",
-      "Cool canvas, white shopping surfaces and clear blue actions, with fewer decorative borders.",
-      "Quiet product cards with contained factual photography and readable prices.",
+      "Calm off-white canvas, white surfaces, mint supporting fills and deep-green buying actions.",
+      "Quiet product cards with contained factual photography, a generous photo well and readable prices.",
       "Image-first phone PDP with contextual overlay controls and persistent buying.",
       "Equivalent English/Arabic tasks and desktop/mobile continuity."
     ],
     "rules": [
       {
         "name": "The action-foreground rule.",
-        "body": "Use white on action blue for accessible labels and pending states. Contrast is 6.89:1 at rest and 9.03:1 on hover. Use dark ink on coral badges at 5.91:1. Keyboard focus uses a visible outline or a brand border and soft ring.",
+        "body": "Use white on action green for accessible labels and pending states. Contrast is 8.05:1 at rest and 10.65:1 on hover. Use dark ink on coral badges at 5.91:1. Keyboard focus uses a visible outline or a brand border and soft ring.",
         "section": "colors"
       },
       {
         "name": "The state-meaning rule.",
-        "body": "Selected options use their quiet neutral surface plus current/pressed semantics. Bottom navigation retains its observed active-navigation text with aria-current; it does not use the option surface. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 3.92:1 text pairing is an inactive-control exemption, not a normal-text pass.",
+        "body": "Selected options use their mint selected surface plus current/pressed semantics; the strongest option uses green text and weight rather than a filled pill. Bottom navigation retains its active-navigation green with aria-current. Added/success uses positive treatment and a real count/status; saved uses its heart/pressed state; error uses explicit invalid/alert treatment. Offer text/surface is separate from error and cannot imply an actual promotion without verified data. Stock/unavailable retain literal status text. Inactive controls use disabled roles; their 4.98:1 text pairing is an inactive-control exemption, not a normal-text pass.",
         "section": "colors"
       },
       {
@@ -330,6 +334,7 @@
       "Do preserve shared/admin consumers until replacement is verified and distinguish local direction acceptance from release acceptance."
     ],
     "donts": [
+      "Don't restore the superseded blue #1855ba action palette or the categories-first home order.",
       "Don't restore retired lavender/teal candidate values, split desktop lead or standalone phone PDP toolbar as default guidance.",
       "Don't generate a competing palette/font/token system from skills, metadata snippets, references or the archive.",
       "Don't copy unsupported ratings, delivery promises, medical claims, prices, discounts, services or payment availability.",

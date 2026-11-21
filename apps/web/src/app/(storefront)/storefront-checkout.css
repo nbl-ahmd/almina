@@ -293,3 +293,15 @@
   .checkout-frame .checkout-loader { animation: checkout-spin 750ms linear infinite; }
 }
 @keyframes checkout-spin { to { transform: rotate(360deg); } }
+
+
+.checkout-frame .checkout-quote-preview {
+  margin-block-end: var(--store-space-16);
+}
+@media (min-width: 1024px) {
+  .checkout-frame .checkout-quote-preview { display: none; }
+}
+@media (max-width: 1023px) {
+  .checkout-frame [data-stage='payment'] .checkout-quote-preview { display: block; }
+  .checkout-frame [data-stage='payment'] .checkout-wide-totals { display: none; }
+}

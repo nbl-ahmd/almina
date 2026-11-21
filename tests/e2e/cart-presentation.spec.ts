@@ -87,7 +87,7 @@ test('missing and out-of-stock items stay distinct from a cart read outage', asy
   await expect(page.locator('.cart-item').getByText('This quantity is no longer available.')).toHaveCount(1);
   await expect(page.locator('.cart-item').getByText('Unavailable product', { exact: true })).toBeVisible();
   await expect(page.locator('.cart-subtotal')).toHaveText('Unavailable');
-  await expect(page.getByRole('link', { name: 'Ordering information' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Contact the pharmacy' })).toBeVisible();
 
   expect((await request.get(fixture + '/__fixture/failure')).ok()).toBe(true);
   try {

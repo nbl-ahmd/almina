@@ -7,6 +7,7 @@
   "colors": {
     "action": "--store-action",
     "action-hover": "--store-action-hover",
+    "action-soft": "--color-brand-soft",
     "text": "--store-text",
     "text-muted": "--store-text-muted",
     "canvas": "--store-canvas",
@@ -43,6 +44,7 @@
     "control": "--store-control-radius",
     "action": "--store-action-radius",
     "card": "--store-card-radius",
+    "panel": "--radius-panel",
     "search": "--store-search-radius",
     "search-action": "--store-search-action-radius",
     "campaign": "--store-campaign-radius",
@@ -50,7 +52,7 @@
     "option": "--store-compact-radius",
     "field": "--store-field-radius",
     "compact": "--store-compact-radius",
-    "quick-action": "--radius-control"
+    "quick-action": "--store-radius-14"
   },
   "spacing": {
     "2": "--store-space-2",
@@ -117,7 +119,7 @@
       "lineHeight": "--store-leading-product"
     },
     "card-price": {
-      "fontSize": "--store-type-21",
+      "fontSize": "--store-type-17",
       "fontWeight": "--store-weight-bold",
       "letterSpacing": "--store-tracking-price"
     },

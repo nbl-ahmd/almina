@@ -66,7 +66,7 @@ function CardPrice({ product, locale }: { product: Product; locale: Locale }) {
 
 function Stock({ product, locale, grouped = false }: { product: Product; locale: Locale; grouped?: boolean }) {
   const available = product.stock > 0;
-  const label = available ? u(locale, 'In stock') : u(locale, 'Currently unavailable');
+  const label = available ? u(locale, 'In stock') : u(locale, 'Out of stock');
   return <span className={`product-stock ${styles.stock}`} data-grouped={grouped || undefined} data-stock={available ? 'available' : 'unavailable'}>
     {grouped ? (locale === 'ar' ? 'العبوة المعروضة: ' : 'Shown pack: ') : null}{label}
   </span>;
