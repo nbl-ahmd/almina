@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 const axe=readFileSync(createRequire(resolve('package.json')).resolve('axe-core/axe.min.js'),'utf8');
-for(const width of [768,1280])test(`shopping menu and search dropdown work at ${width}px`,async({page})=>{
+for(const width of [900,1280])test(`shopping menu and search dropdown work at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
  const mobile=width<768;
  const trigger=page.getByRole('button',{name:mobile?'Open shopping menu':'All categories',exact:true});

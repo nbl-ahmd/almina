@@ -1,3 +1,7 @@
+## 2026-11-21 — Market Green / Coral storefront implementation
+
+Implemented the approved customer storefront direction on `feat/market-green-coral-storefront`: scoped tokens and utilities, local fonts, shared shopping components, responsive discovery, product/cart/checkout composition and account presentation. Existing commerce and admin owners remain unchanged. Browser, accessibility and regression evidence is recorded in the [implementation report](MARKET_GREEN_STOREFRONT_2026-11-21.md). This is review work on top of the open design-reset PR; deployment and physical-device release checks remain pending.
+
 ## 2026-11-21 — Design documentation reset
 
 Removed the root design specification, design/reference/review folders, archived visual guidance and project-local design skills, including token templates. Runtime components, application styles required for controls and media, catalogue data, commerce, authentication and integrations are retained. Future design decisions are open.

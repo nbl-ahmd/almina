@@ -15,8 +15,8 @@ for (const width of [360, 390, 768, 1280]) test(`Next checkout at ${width}px con
   if(width===390||width===1280) await page.screenshot({path:`outputs/storefront-controls-2026-10-20/checkout-${width}.png`,fullPage:true});
   await page.evaluate(axe);
   const violations = await page.evaluate(async () => {
-    const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string }[] }> } }).axe;
-    return (await audit.run(document.body)).violations.map(violation => violation.id);
+    const audit = (window as unknown as { axe: { run: (node: Element) => Promise<{ violations: { id: string; nodes: {target: string[]; failureSummary: string}[] }[] }> } }).axe;
+    return (await audit.run(document.body)).violations.map(violation => ({id:violation.id,nodes:violation.nodes.map(node=>({target:node.target,summary:node.failureSummary}))}));
   });
   expect(violations).toEqual([]);
   const submitted = page.waitForRequest(req => req.method() === 'POST' && new URL(req.url()).pathname === '/api/checkout');

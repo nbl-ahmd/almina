@@ -19,7 +19,7 @@ test('checkout controls remain responsive and keyboard usable in English and Ara
  await page.screenshot({path:`${directory}/dropdown.png`});
  await page.keyboard.press('Escape');
  await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
- await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'العربية',exact:true}).click();
+ await page.setViewportSize({width:1440,height:1000});await page.getByRole('contentinfo').getByRole('button',{name:'العربية',exact:true}).click();
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));
  await expect(page.getByRole('heading',{name:'المراجعة والدفع',exact:true})).toBeVisible();
  await page.screenshot({path:`${directory}/arabic.png`,fullPage:true});
