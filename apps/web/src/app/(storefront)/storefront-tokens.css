@@ -1,0 +1,42 @@
+/* The canonical storefront mapping stays inside its surface boundary. */
+.storefront-shell {
+  --color-canvas: #ffffff;
+  --color-text: #1a241d;
+  --color-muted: #59655d;
+  --color-surface: #f6f7f6;
+  --color-divider: #dce3dc;
+  --color-control: #788279;
+  --color-brand: #ff6465;
+  --color-action: #d63d44;
+  --color-hover: #c93640;
+  --color-pressed: #a62832;
+  --color-tint: #fff0ee;
+  --color-forest: #173c25;
+  --color-lime: #c5f28a;
+  --color-focus: #173c25;
+  --color-success: #236245;
+  --color-warning: #79500f;
+  --color-error: #952436;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-badge: 4px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --motion-feedback: 140ms;
+  --motion-sheet-enter: 200ms;
+  --motion-sheet-exit: 140ms;
+  --shadow-floating: 0 4px 16px rgb(26 36 29 / 12%);
+  --layer-sticky: 20;
+  --layer-popover: 30;
+  --layer-scrim: 40;
+  --layer-modal: 50;
+  --layer-toast: 60;
+  --layer-skip: 70;
+}
