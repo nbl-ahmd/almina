@@ -12,7 +12,7 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
     <fieldset
       data-slot="field-set"
       className={cn(
-        "flex flex-col gap-6",
+        "flex min-w-0 flex-col gap-6",
         "has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
         className
       )}
@@ -31,7 +31,7 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-3 font-medium",
+        "mb-3 text-start font-medium",
         "data-[variant=legend]:text-base",
         "data-[variant=label]:text-sm",
         className
@@ -116,7 +116,7 @@ function FieldLabel({
       data-slot="field-label"
       className={cn(
         "group/field-label peer/field-label flex flex-row items-center w-fit gap-2 text-ink leading-snug group-data-[disabled=true]/field:opacity-50",
-        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
+        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
         "has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10",
         className
       )}
@@ -173,7 +173,7 @@ function FieldSeparator({
       <Separator className="absolute inset-0 top-1/2" />
       {children && (
         <span
-          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+          className="relative mx-auto block w-fit bg-background ps-2 pe-2 text-muted-foreground"
           data-slot="field-separator-content"
         >
           {children}

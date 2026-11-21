@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "source": "apps/web/src/app/globals.css",
+  "guide": "apps/web/DESIGN.md",
+  "sidecar": "apps/web/.impeccable/design.json",
+  "status": "Documentation projections of accepted scoped runtime; never generator inputs for CSS",
+  "colors": {
+    "action": "--store-action",
+    "action-hover": "--store-action-hover",
+    "action-soft": "--color-brand-soft",
+    "text": "--store-text",
+    "text-muted": "--store-text-muted",
+    "canvas": "--store-canvas",
+    "surface": "--store-surface",
+    "product-well": "--color-product-well",
+    "input": "--store-input-surface",
+    "border": "--store-border",
+    "control-border": "--store-border-control",
+    "secondary": "--store-secondary-surface",
+    "hover": "--store-hover-surface",
+    "campaign": "--store-campaign-surface",
+    "campaign-alt": "--color-promo-alt",
+    "campaign-ink": "--color-promo-ink",
+    "selected": "--store-selected-surface",
+    "positive": "--store-positive",
+    "positive-surface": "--store-positive-surface",
+    "unavailable": "--store-unavailable",
+    "unavailable-surface": "--store-unavailable-surface",
+    "saved": "--store-saved",
+    "saved-surface": "--store-saved-surface",
+    "error": "--store-error",
+    "disabled-text": "--store-disabled-text",
+    "disabled-surface": "--store-disabled-surface",
+    "focus": "--store-focus",
+    "offer-text": "--store-offer-text",
+    "offer-surface": "--store-offer-surface",
+    "notice": "--store-notice-surface",
+    "selection": "--store-selection-surface",
+    "active-navigation": "--color-brand",
+    "control-hover": "--color-control-hover",
+    "coral": "--color-coral"
+  },
+  "rounded": {
+    "control": "--store-control-radius",
+    "action": "--store-action-radius",
+    "card": "--store-card-radius",
+    "panel": "--radius-panel",
+    "search": "--store-search-radius",
+    "search-action": "--store-search-action-radius",
+    "campaign": "--store-campaign-radius",
+    "status": "--store-compact-radius",
+    "option": "--store-compact-radius",
+    "field": "--store-field-radius",
+    "compact": "--store-compact-radius",
+    "quick-action": "--store-radius-14"
+  },
+  "spacing": {
+    "2": "--store-space-2",
+    "3": "--store-space-3",
+    "4": "--store-space-4",
+    "6": "--store-space-6",
+    "8": "--store-space-8",
+    "10": "--store-space-10",
+    "12": "--store-space-12",
+    "14": "--store-space-14",
+    "16": "--store-space-16",
+    "18": "--store-space-18",
+    "20": "--store-space-20",
+    "24": "--store-space-24",
+    "32": "--store-space-32",
+    "40": "--store-space-40",
+    "64": "--store-space-64"
+  },
+  "components": [
+    "button-primary",
+    "button-outline",
+    "button-ghost",
+    "button-destructive",
+    "field",
+    "navigation",
+    "stock",
+    "card",
+    "option",
+    "quick-add"
+  ],
+  "literalCssExceptions": [
+    "transparent",
+    "currentColor"
+  ],
+  "typography": {
+    "campaign": {
+      "fontSize": "--store-type-32",
+      "fontWeight": "--store-weight-bold",
+      "lineHeight": "--store-leading-display",
+      "letterSpacing": "--store-tracking-title"
+    },
+    "page-title": {
+      "fontSize": "--store-page-title-size",
+      "fontWeight": "--store-weight-bold",
+      "lineHeight": "--store-leading-title",
+      "letterSpacing": "--store-tracking-title"
+    },
+    "product-title": {
+      "fontSize": "--store-product-title-size",
+      "fontWeight": "--store-weight-bold",
+      "lineHeight": "--store-leading-title"
+    },
+    "body": {
+      "fontSize": "--store-type-15",
+      "lineHeight": "--store-leading-body"
+    },
+    "body-arabic": {
+      "fontSize": "--store-type-15",
+      "lineHeight": "--store-leading-body"
+    },
+    "card-name": {
+      "fontSize": "--store-type-15",
+      "fontWeight": "--store-weight-medium",
+      "lineHeight": "--store-leading-product"
+    },
+    "card-price": {
+      "fontSize": "--store-type-17",
+      "fontWeight": "--store-weight-bold",
+      "letterSpacing": "--store-tracking-price"
+    },
+    "supporting": {
+      "fontSize": "--store-type-12",
+      "lineHeight": "--store-leading-body"
+    },
+    "stock": {
+      "fontSize": "--store-stock-size",
+      "fontWeight": "--store-weight-medium",
+      "lineHeight": "--store-leading-body"
+    },
+    "count": {
+      "fontSize": "--store-count-size"
+    }
+  }
+}

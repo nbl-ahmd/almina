@@ -3,6 +3,7 @@ import Link from '../app-link';
 import { useState, type CSSProperties } from 'react';
 import { ComputerDesktopIcon, DevicePhoneMobileIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { campaignImageUrl, campaignReviewSchema, campaignState, growthPagePath, type GrowthPage, type CampaignReview } from '@almina/contracts';
+import { bannerArtwork } from '../../lib/catalog/banner-artwork';
 import { CampaignArtwork } from '../campaign-artwork';
 
 const previewTheme: CSSProperties & Record<`--${string}`,string> = {'--color-brand':'#3456da','--color-brand-hover':'#2545bf','--color-ink':'#19213b','--color-muted':'#61677a','--color-border':'#e7e9f1','--color-subtle':'#f1f3fc'};
@@ -30,6 +31,7 @@ export function CampaignEditor({ page, onChange, cloudName, artwork = [], previe
       <label className="grid gap-1.5 text-sm font-medium">Display priority<input type="number" min={0} max={100} step={1} value={page.priority} onChange={event => change({ priority: Math.min(100, Math.max(0, Math.trunc(Number(event.target.value) || 0))) })} /><span className="text-xs font-normal text-muted">Higher numbers appear first. Ties use the URL name.</span></label>
     </div>
     {usableArtwork.length ? <div className="grid gap-4 sm:grid-cols-2">{(['image','mobileImage'] as const).map(field=><label className="grid gap-1.5 text-sm font-medium" key={field}>{field==='image'?'Choose saved desktop artwork':'Choose saved mobile artwork'}<select value={usableArtwork.some(item=>item.image===page[field])?page[field]:''} onChange={event=>{if(event.target.value)change({[field]:event.target.value});}}><option value="">Select saved banner artwork</option>{usableArtwork.map((item,index)=><option value={item.image} key={item.image+index}>{item.name}</option>)}</select></label>)}</div> : null}
+    {page.homepagePlacement === 'hero' ? <p className="mb-0 text-xs text-muted">Carousel artwork is {bannerArtwork.desktop.width} × {bannerArtwork.desktop.height} px desktop and {bannerArtwork.mobile.width} × {bannerArtwork.mobile.height} px mobile. Artwork is fitted without cropping.</p> : null}
     <p className="mb-0 text-xs text-muted"><Link href="/admin/banners" target="_blank" rel="noopener noreferrer" className="font-medium text-brand">Upload artwork in Banners</Link>, then reload this page after saving your draft to select it here. You can also paste an approved image URL.</p>
     <label className="grid gap-1.5 text-sm font-medium">Mobile artwork URL<input type="url" value={page.mobileImage} onChange={event => change({ mobileImage: event.target.value })} /><span className="text-xs font-normal text-muted">Use approved Cloudinary or pharmacy CDN artwork. Leave blank to reuse the desktop image above.</span></label>
     <label className="grid gap-1.5 text-sm font-medium">Campaign button text<input maxLength={60} value={page.ctaLabel} onChange={event => change({ ctaLabel: event.target.value })} placeholder="e.g. Explore skincare offers" /></label>

@@ -1,4 +1,5 @@
 import 'server-only';
+import { cloudinaryImage } from '@almina/contracts';
 import {searchProducts,type SearchMetadata} from './search';
 import { cache } from 'react';
 import { getWebEnvironment } from './env';
@@ -101,11 +102,17 @@ export function categoryImage(image: string | undefined) {
   return name ? `https://cdn.alminapharmacy.com/cdn/categories/${name}` : '/product-placeholder.svg';
 }
 export async function getBanners() {
+  const { CLOUDINARY_CLOUD_NAME: cloudName } = getWebEnvironment();
   return array(await legacyRead('/api/banners', true)).flatMap(value => {
     if (!value || typeof value !== 'object') return [];
     const raw = value as Record<string, unknown>;
-    const name = fileName(typeof raw.image === 'string' ? raw.image : undefined);
-    return name ? [{ image: `https://cdn.alminapharmacy.com/cdn/banners/${name}`, name: typeof raw.name === 'string' ? raw.name : 'Al Mina Pharmacy offers', href: bannerDestination(raw.link) }] : [];
+    const filename = fileName(typeof raw.image === 'string' ? raw.image : undefined);
+    const artwork: unknown[] = Array.isArray(raw.cloudinaryImages) ? raw.cloudinaryImages : [];
+    const image = cloudinaryImage(artwork[0], cloudName)
+      ?? (filename ? `https://cdn.alminapharmacy.com/cdn/banners/${filename}` : null);
+    const mobileImage = cloudinaryImage(artwork[1], cloudName);
+    return image ? [{ image, ...(mobileImage ? { mobileImage } : {}),
+      name: typeof raw.name === 'string' ? raw.name : 'Al Mina Pharmacy offers', href: bannerDestination(raw.link) }] : [];
   });
 }
 

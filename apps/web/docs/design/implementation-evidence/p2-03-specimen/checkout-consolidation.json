@@ -1,0 +1,200 @@
+{
+  "method": "Remove only earlier normal declarations with identical selector/property/at-rule context; preserve later positions and cross-selector/media/shorthand behavior; skip keyframes/custom properties/important.",
+  "removed": [
+    {
+      "selector": ".checkout-topbar",
+      "context": [],
+      "property": "margin-bottom",
+      "removedValue": "1rem",
+      "removedLine": 71,
+      "winningValue": "1.5rem",
+      "winningLine": 89
+    },
+    {
+      "selector": ".checkout-progress",
+      "context": [],
+      "property": "gap",
+      "removedValue": "1rem",
+      "removedLine": 4,
+      "winningValue": "0",
+      "winningLine": 91
+    },
+    {
+      "selector": ".checkout-progress li",
+      "context": [],
+      "property": "gap",
+      "removedValue": ".5rem",
+      "removedLine": 5,
+      "winningValue": ".625rem",
+      "winningLine": 92
+    },
+    {
+      "selector": ".checkout-progress [aria-current='step'] .checkout-step-number",
+      "context": [],
+      "property": "background",
+      "removedValue": "var(--color-ink)",
+      "removedLine": 8,
+      "winningValue": "var(--color-ink)",
+      "winningLine": 94
+    },
+    {
+      "selector": ".checkout-progress [aria-current='step'] .checkout-step-number",
+      "context": [],
+      "property": "border-color",
+      "removedValue": "var(--color-ink)",
+      "removedLine": 8,
+      "winningValue": "var(--color-ink)",
+      "winningLine": 94
+    },
+    {
+      "selector": ".checkout-progress [data-complete='true'] .checkout-step-number",
+      "context": [],
+      "property": "background",
+      "removedValue": "var(--color-accent)",
+      "removedLine": 9,
+      "winningValue": "var(--color-accent)",
+      "winningLine": 95
+    },
+    {
+      "selector": ".checkout-progress [data-complete='true'] .checkout-step-number",
+      "context": [],
+      "property": "color",
+      "removedValue": "var(--color-teal)",
+      "removedLine": 9,
+      "winningValue": "var(--color-focus)",
+      "winningLine": 95
+    },
+    {
+      "selector": ".checkout-payment-choice",
+      "context": [],
+      "property": "min-height",
+      "removedValue": "5.5rem",
+      "removedLine": 15,
+      "winningValue": "5.5rem",
+      "winningLine": 102
+    },
+    {
+      "selector": ".checkout-payment-choice",
+      "context": [],
+      "property": "border-radius",
+      "removedValue": "12px",
+      "removedLine": 15,
+      "winningValue": "10px",
+      "winningLine": 102
+    },
+    {
+      "selector": ".checkout-payment-choice[data-selected='true']",
+      "context": [],
+      "property": "background",
+      "removedValue": "var(--color-accent)",
+      "removedLine": 18,
+      "winningValue": "var(--color-surface)",
+      "winningLine": 103
+    },
+    {
+      "selector": ".checkout-payment-choice[data-selected='true']",
+      "context": [],
+      "property": "border-color",
+      "removedValue": "var(--color-teal)",
+      "removedLine": 18,
+      "winningValue": "var(--color-ink)",
+      "winningLine": 103
+    },
+    {
+      "selector": ".checkout-payment-choice[data-selected='true'] .checkout-radio-mark",
+      "context": [],
+      "property": "background",
+      "removedValue": "var(--color-teal)",
+      "removedLine": 21,
+      "winningValue": "var(--color-ink)",
+      "winningLine": 104
+    },
+    {
+      "selector": ".checkout-payment-choice[data-selected='true'] .checkout-radio-mark",
+      "context": [],
+      "property": "border-color",
+      "removedValue": "var(--color-teal)",
+      "removedLine": 21,
+      "winningValue": "var(--color-ink)",
+      "winningLine": 104
+    },
+    {
+      "selector": ".checkout-success-mark",
+      "context": [],
+      "property": "color",
+      "removedValue": "var(--color-teal)",
+      "removedLine": 30,
+      "winningValue": "#2459a6",
+      "winningLine": 110
+    },
+    {
+      "selector": ".checkout-success-mark",
+      "context": [],
+      "property": "background",
+      "removedValue": "var(--color-accent)",
+      "removedLine": 30,
+      "winningValue": "#edf3fc",
+      "winningLine": 110
+    },
+    {
+      "selector": ".checkout-success-mark",
+      "context": [],
+      "property": "width",
+      "removedValue": "4.5rem",
+      "removedLine": 30,
+      "winningValue": "5rem",
+      "winningLine": 110
+    },
+    {
+      "selector": ".checkout-success-mark",
+      "context": [],
+      "property": "height",
+      "removedValue": "4.5rem",
+      "removedLine": 30,
+      "winningValue": "5rem",
+      "winningLine": 110
+    },
+    {
+      "selector": ".checkout-confirmation-panel",
+      "context": [],
+      "property": "background",
+      "removedValue": "var(--color-surface)",
+      "removedLine": 29,
+      "winningValue": "transparent",
+      "winningLine": 112
+    },
+    {
+      "selector": ".checkout-form-heading",
+      "context": [
+        "@media (max-width:1023px)"
+      ],
+      "property": "padding",
+      "removedValue": "1.25rem",
+      "removedLine": 77,
+      "winningValue": "0 0 1.25rem",
+      "winningLine": 119
+    },
+    {
+      "selector": ".checkout-progress",
+      "context": [
+        "@media (min-width:1024px)"
+      ],
+      "property": "max-width",
+      "removedValue": "40rem",
+      "removedLine": 44,
+      "winningValue": "44rem",
+      "winningLine": 127
+    },
+    {
+      "selector": ".checkout-progress",
+      "context": [
+        "@media (max-width:1023px)"
+      ],
+      "property": "margin-bottom",
+      "removedValue": "1rem",
+      "removedLine": 76,
+      "winningValue": "12px",
+      "winningLine": 169
+    }
+  ]
+}

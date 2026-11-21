@@ -1,10 +1,14 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Storefront redesign — 2026-10-03
+
+The verification commands below are historical. [P6-01](../../apps/web/docs/design/implementation-evidence/p6-01-retirement.md) retired this fixture and its browser verifier.
 
 Implemented locally on `codex/storefront-design-system` in the additive Next.js storefront. The legacy production application, admin, APIs, database, media references, pricing rules and order submission behavior remain intact. No deployment or route cutover occurred.
 
 ## UI system
 
-[The storefront design system](design-system/STOREFRONT.md) was established before implementation using ui-ux-pro-max and the repository's production constraints. Executable semantic color/spacing/type/geometry/state tokens and shared component styles live in `apps/web/src/app/globals.css`. Retain the self-hosted PT Sans font and use one project-owned stroke SVG family. No additional styling framework, icon package or runtime dependency was installed; legacy Bootstrap/MUI are isolated in the legacy application.
+[The storefront design system](archive/storefront-design-2026-11-15/foundation-guide.md) was established before implementation using ui-ux-pro-max and the repository's production constraints. Executable semantic color/spacing/type/geometry/state tokens and shared component styles live in `apps/web/src/app/globals.css`. Retain the self-hosted PT Sans font and use one project-owned stroke SVG family. No additional styling framework, icon package or runtime dependency was installed; legacy Bootstrap/MUI are isolated in the legacy application.
 
 ## Result
 

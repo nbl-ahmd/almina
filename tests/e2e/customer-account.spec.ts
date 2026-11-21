@@ -29,7 +29,9 @@ async function accountFixture(page: Page, mode: 'ready' | 'unconfigured' | 'goog
   });
 }
 for (const width of [360, 390, 768, 1280]) test(`email account flow handles codes, reload and logout at ${width}px`, async ({ page }) => {
-  await page.setViewportSize({ width, height: 900 }); await accountFixture(page);
+  await page.setViewportSize({ width, height: 900 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await accountFixture(page);
   await page.goto(adminOrigin + '/account');
   await expect(page.getByRole('heading', { name: 'Welcome to Al Mina' })).toBeVisible();
   const panel=await page.locator('section[aria-labelledby="sign-in-heading"]').boundingBox();expect(panel!.width).toBeLessThanOrEqual(441);
@@ -40,8 +42,10 @@ for (const width of [360, 390, 768, 1280]) test(`email account flow handles code
   await page.screenshot({path:`outputs/customer-sign-in-polish-2026-10-20/code-${width}.png`});
   await expect(page.getByRole('button', { name: /Resend code in/ })).toBeDisabled();
   const verifyButton=page.getByRole('button',{name:'Verify & sign in',exact:true});
+  await expect(verifyButton).toBeDisabled();
+  const disabledBackground = await verifyButton.evaluate(element => getComputedStyle(element).backgroundColor);
   await verifyButton.hover({force:true});
-  await expect.poll(()=>verifyButton.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(238, 240, 244)');
+  await expect(verifyButton).toHaveCSS('background-color', disabledBackground);
   await page.getByLabel('Six-digit code', { exact: true }).fill('000000');
   await page.getByRole('button', { name: 'Verify & sign in', exact: true }).click();
   await expect(page.getByRole('alert').filter({hasText:'incorrect'})).toBeVisible();
@@ -183,3 +187,27 @@ for(const width of [360,390,768,1280])test(`Arabic account sign-in and reload at
  await page.reload();await expect(page.getByRole('heading',{name:'مرحباً بك في الميناء'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(failures).toEqual([]);
 });
+
+for (const locale of ['en', 'ar'] as const) {
+  test(`the account privacy link has a visible cue and keyboard focus in ${locale}`, async ({ page, context, browserName }) => {
+    const ar = locale === 'ar';
+    await context.addCookies([{ name: 'almina_lang', value: locale, url: adminOrigin }]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await accountFixture(page);
+    await page.goto(adminOrigin + '/account');
+
+    const privacy = page.getByRole('link', { name: ar ? 'إشعار خصوصية الحساب' : 'account privacy notice', exact: true });
+    const submit = page.getByRole('button', { name: ar ? 'المتابعة بالبريد الإلكتروني' : 'Continue with email', exact: true });
+    await expect(privacy).toHaveCSS('text-decoration-line', 'underline');
+    await privacy.hover();
+    await expect(privacy).toHaveCSS('text-decoration-line', 'underline');
+    await submit.focus();
+    await page.keyboard.press(browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab');
+    await expect(privacy).toBeFocused();
+    await expect(privacy).toHaveCSS('outline-style', 'solid');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(privacy).toBeFocused();
+    await privacy.press('Enter');
+    await expect(page).toHaveURL(adminOrigin + '/privacy');
+  });
+}

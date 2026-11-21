@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:net';
 import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, URLSearchParams } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createStorefrontFixture } from './storefront-fixture.mjs';
 const root = new URL('../../', import.meta.url);
@@ -74,8 +74,11 @@ try {
   assert.ok(secure.headers.get('cache-control').includes('no-store'));
   const secondSecure = await fetch(`${origin}/cart`);
   assert.notEqual(secondSecure.headers.get('content-security-policy').match(/'nonce-([^']+)'/)?.[1], nonce);
-  const literalSearch = await fetch(`${origin}/search?q=%5B`);
-  assert.equal(literalSearch.status, 200); assert.ok((await literalSearch.text()).includes('No products found.'));
+  const literalQuery = new URLSearchParams({ q: 'Daily[', literal: 'true' });
+  const literalSearch = await fetch(`${origin}/search?${literalQuery}`);
+  assert.equal(literalSearch.status, 200);
+  assert.ok((await literalSearch.text()).includes('<h2 id="catalog-empty">No matching products</h2>'),
+    "Literal search containing a bracket should render the empty-result heading");
   for (const path of ['/missing', '/products/missing', '/categories/missing', '/categories/cccccccccccccccccccccccc', '/productdetails/PD9999', '/_next/mcp', '/api/orders']) {
     assert.equal((await fetch(`${origin}${path}`)).status, 404, path);
   }

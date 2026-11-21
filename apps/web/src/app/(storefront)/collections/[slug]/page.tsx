@@ -1,3 +1,6 @@
+import { getLocale } from '../../../../lib/server/i18n';
+import styles from '../../../../components/storefront-information.module.css';
+import { StorefrontInformation } from '../../../../components/storefront-information';
 import { StorefrontIntro } from '../../../../components/storefront-intro';
 import Link from '../../../../components/app-link';
 import { notFound } from "next/navigation";
@@ -32,11 +35,13 @@ export async function generateMetadata({ params, searchParams }: Props) {
     : { ...metadata, robots: { index: false, follow: true } };
 }
 export default async function CollectionPage({ params }: Props) {
+  const locale = await getLocale();
+  const ar = locale === "ar";
   const collection = findCollection((await params).slug);
   if (!collection) notFound();
   const products = await getCollectionProducts(collection);
   return (
-    <div className="collection-page">
+    <StorefrontInformation locale={locale}>
       <StructuredData
         data={breadcrumbData(getWebEnvironment().WEB_ORIGIN, [
           { name: "Home", path: "/" },
@@ -60,22 +65,22 @@ export default async function CollectionPage({ params }: Props) {
           }}
         />
       ) : null}
-      <StorefrontIntro title={collection.title} description={collection.description} artwork={collection.slug === 'baby-care' ? 'family' : collection.slug === 'skin-essentials' ? 'skin' : 'care'} />
+      <div lang="en" dir="ltr"><StorefrontIntro title={collection.title} description={collection.description} /></div>
       {products.length ? (
         <>
           <p className="mb-4 text-sm text-muted">
-            {products.length} available products
+            {ar ? `${products.length.toLocaleString("ar-AE")} · المنتجات المتاحة` : `${products.length} available products`}
           </p>
           <ProductGrid products={products} />
         </>
       ) : (
-        <div className="rounded-xl bg-subtle p-6">
-          <h2 className="text-xl">This collection is being refreshed.</h2>
-          <Link href="/products" className="button rounded-full text-sm">
-            Explore all products
+        <div className={`${styles.panel} ${styles.state}`}>
+          <h2>{ar ? "يجري تحديث هذه المجموعة" : "This collection is being refreshed."}</h2>
+          <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-medium text-teal hover:text-ink">
+            {ar ? "تصفّح جميع المنتجات" : "Explore all products"}
           </Link>
         </div>
       )}
-    </div>
+    </StorefrontInformation>
   );
 }

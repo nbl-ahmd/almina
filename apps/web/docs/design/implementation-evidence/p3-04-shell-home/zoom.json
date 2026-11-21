@@ -1,0 +1,149 @@
+{
+  "method": "CSS zoom 2 at a 640px automated viewport. This approximates reflow at 320 CSS pixels, not native browser or OS zoom.",
+  "results": [
+    {
+      "engine": "chromium",
+      "locale": "en",
+      "viewportWidth": 640,
+      "documentWidth": 640,
+      "elements": [
+        {
+          "selector": "[data-storefront-chrome=header]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": "[data-storefront-home]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": ".home-product-grid",
+          "left": 32,
+          "right": 608,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "selector": "[data-storefront-chrome=footer]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "engine": "chromium",
+      "locale": "ar",
+      "viewportWidth": 640,
+      "documentWidth": 640,
+      "elements": [
+        {
+          "selector": "[data-storefront-chrome=header]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": "[data-storefront-home]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": ".home-product-grid",
+          "left": 32,
+          "right": 608,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "selector": "[data-storefront-chrome=footer]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "locale": "en",
+      "viewportWidth": 640,
+      "documentWidth": 640,
+      "elements": [
+        {
+          "selector": "[data-storefront-chrome=header]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": "[data-storefront-home]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": ".home-product-grid",
+          "left": 32,
+          "right": 608,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "selector": "[data-storefront-chrome=footer]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "locale": "ar",
+      "viewportWidth": 640,
+      "documentWidth": 640,
+      "elements": [
+        {
+          "selector": "[data-storefront-chrome=header]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": "[data-storefront-home]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        {
+          "selector": ".home-product-grid",
+          "left": 32,
+          "right": 608,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "selector": "[data-storefront-chrome=footer]",
+          "left": 0,
+          "right": 640,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        }
+      ]
+    }
+  ]
+}

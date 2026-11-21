@@ -1,0 +1,34 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--store-space-8);
+  min-inline-size: 0;
+  text-align: center;
+}
+.media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--store-space-64);
+  block-size: var(--store-space-64);
+  overflow: hidden;
+  border-radius: var(--store-ref-circle);
+  background: var(--store-surface);
+}
+.media img { inline-size: 78%; block-size: 78%; object-fit: contain; }
+.media[data-placeholder] {
+  background: var(--color-brand-soft);
+  color: var(--store-action);
+}
+.media[data-placeholder] svg { inline-size: var(--store-space-28); block-size: var(--store-space-28); }
+.label {
+  margin: 0;
+  font-size: var(--store-type-14);
+  font-weight: var(--store-weight-semibold);
+  line-height: var(--store-leading-product);
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}

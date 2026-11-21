@@ -1,3 +1,5 @@
+> 2026-11-15: storefront aesthetic references in this historical record are superseded and excluded from current design guidance. Admin specifications, functional contracts and production safeguards remain in force.
+
 # Combined storefront, customer account and wholesale release
 
 The two local branch names (`codex/arabic-phase-four` and `codex/wholesale-portal`) originally pointed at the same production base, `0afd821`. Their pending work shared one checkout rather than forming two divergent commit histories. The combined application changes are committed on `codex/wholesale-portal` for one PR to `master`; the older branch reference is preserved.

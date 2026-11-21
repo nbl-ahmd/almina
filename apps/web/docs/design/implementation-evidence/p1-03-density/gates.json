@@ -1,0 +1,32 @@
+[
+  {
+    "port": 4860,
+    "path": "/design-proof",
+    "status": 404
+  },
+  {
+    "port": 4860,
+    "path": "/design-proof/stress",
+    "status": 404
+  },
+  {
+    "port": 4860,
+    "path": "/design-proof/stress?sample=complete",
+    "status": 404
+  },
+  {
+    "port": 4880,
+    "path": "/design-proof",
+    "status": 404
+  },
+  {
+    "port": 4880,
+    "path": "/design-proof/stress",
+    "status": 404
+  },
+  {
+    "port": 4880,
+    "path": "/design-proof/stress?sample=complete",
+    "status": 404
+  }
+]

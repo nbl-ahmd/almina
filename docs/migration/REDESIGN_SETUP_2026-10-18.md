@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Al Mina redesign setup — 18 October 2026
 
 Tooling and instructions only. No storefront implementation, database change,
@@ -123,6 +125,7 @@ Reproduction uses `install-skill-from-github.py --repo OWNER/REPO --ref COMMIT
 --path SKILL_PATH --dest /absolute/project/.agents/skills`; for Taste add
 `--name gpt-taste`. Never overwrite existing directories blindly.
 
-Rollback: restore the archived DESIGN.md and prior agent/profile instructions.
+Historical rollback instruction retired: do not restore the archived visual
+guide or prior agent/profile instructions.
 New skill folders are isolated additions; application code and deployment did
 not change. No existing skills were deleted.

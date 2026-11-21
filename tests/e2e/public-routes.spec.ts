@@ -50,5 +50,5 @@ test('public icon, manifest and compatibility worker URLs survive frontend repla
     const response = await request.get(path); expect(response.status(), path).toBe(200);
   }
   const worker = await (await request.get('/service-worker.js')).text();
-  expect(worker).not.toContain('importScripts'); expect(worker).not.toContain('event.data'); expect(worker).toContain('/admin/orders');
+  expect(worker).not.toContain('importScripts'); expect(worker).not.toContain('event.data'); expect(worker).toContain('/admin/notifications');
 });

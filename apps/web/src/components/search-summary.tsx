@@ -1,15 +1,94 @@
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import Link from './app-link';
+import type { Locale } from '../lib/i18n';
 import type { SearchMetadata } from '../lib/server/search';
-export function SearchSummary({result,query,locale,unavailable=false,filters={}}:{result:SearchMetadata|undefined;query:string;locale:'en'|'ar';unavailable?:boolean;filters?:Record<string,string>}){
- const ar=locale==='ar',links=result?[...result.collections,...result.categories,...result.brands,...result.querySuggestions].filter((item,index,rows)=>rows.findIndex(other=>other.href===item.href)===index).slice(0,8):[];
- return <section aria-label={ar?'حول نتائج البحث':'About these search results'} className="mb-5 space-y-3 text-sm text-ocean">
- {unavailable||result?.unavailable?<p role="status" className="rounded-xl bg-warning-surface p-4">{ar?'البحث غير متاح مؤقتاً. تصفح الفئات أو تواصل مع الصيدلية.':'Search is temporarily unavailable. Browse categories or contact the pharmacy.'}</p>:null}
- {result?.correction?<p>{ar?'هل تقصد':'Did you mean'} <Link className="font-semibold text-teal underline underline-offset-4" href={'?'+new URLSearchParams({...filters,q:result.correction})}>{result.correction}</Link>? <Link className="ms-3 text-teal underline underline-offset-4" href={'?'+new URLSearchParams({...filters,q:query,literal:'true'})}>{ar?'البحث بالعبارة الأصلية':'Search the original phrase'}</Link></p>:null}
- {result?.interpretation.maxPrice!==undefined&&!filters.maxPrice?<p className="text-xs text-muted">{ar?`منتجات بسعر يصل إلى ${result.interpretation.maxPrice} درهماً`:`Products up to AED ${result.interpretation.maxPrice}`}</p>:null}
- {result?.relaxed?<p role="status">{ar?`لم نعثر على تطابق دقيق. نتائج ذات صلة بـ «${result.interpretedQuery}».`:`No exact match found. Showing related results for “${result.interpretedQuery}”.`}</p>:null}
- {result&&!result.products.length&&!result.unavailable?<p role="status">{ar?'لم نعثر على تطابق. جرّب اسم العلامة التجارية أو نوع المنتج.':'No exact match found. Try a brand or product type, or explore the suggestions below.'}</p>:null}
- {links.length?<nav aria-label={ar?'اقتراحات ذات صلة':'Related suggestions'} className="flex flex-wrap gap-2">{links.map(item=><Link key={item.href} href={item.href} className="inline-flex min-h-11 max-w-full items-center rounded-full border border-border bg-surface px-4 text-sm text-teal hover:border-teal focus-visible:outline-2 focus-visible:outline-ink"><span className="truncate">{item.name}</span></Link>)}</nav>:null}
- {result&&(['brands','forms','sizes','audiences','bodyAreas','concerns','features'] as const).some(key=>result.facets[key].length>1)?<details className="rounded-xl border border-border bg-surface p-4"><summary className="min-h-7 cursor-pointer font-semibold">{ar?'تصفية النتائج':'Narrow these results'}</summary><div className="mt-3 grid gap-4 sm:grid-cols-2">{(['brands','forms','sizes','audiences','bodyAreas','concerns','features'] as const).filter(key=>result.facets[key].length>1).map(key=><nav key={key} aria-label={key}><p className="mb-2 text-xs font-semibold">{({brands:ar?'العلامة التجارية':'Brand',forms:ar?'الشكل':'Form',sizes:ar?'الحجم':'Size',audiences:ar?'الفئة العمرية':'Age group',bodyAreas:ar?'منطقة الاستخدام':'Body area',concerns:ar?'العناية':'Care need',features:ar?'الميزات':'Features'})[key]}</p><div className="flex flex-wrap gap-2">{result.facets[key].slice(0,6).map(item=><Link key={item.value} href={'?'+new URLSearchParams({...filters,q:query,[({brands:'brand',forms:'form',sizes:'size',audiences:'audience',bodyAreas:'bodyArea',concerns:'concern',features:'feature'})[key]]:item.value})} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-subtle px-3 text-xs text-teal hover:bg-accent">{item.value}<span className="text-muted">{item.count}</span></Link>)}</div></nav>)}</div></details>:null}
- {result?.alternatives.length?<nav aria-label={ar?'منتجات مشابهة':'Similar products'}><p className="mb-2 font-semibold">{ar?'منتجات مشابهة':'Similar products'}</p><div className="flex flex-wrap gap-3">{result.alternatives.map(item=><Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center text-teal underline underline-offset-4">{item.name}</Link>)}</div></nav>:null}
- </section>;
+import styles from './catalog-list.module.css';
+
+type SummaryProps = { result: SearchMetadata; locale: Locale };
+
+const facets = [
+  ['brands', 'brand', 'Brand', 'العلامة التجارية'],
+  ['forms', 'form', 'Form', 'الشكل'],
+  ['sizes', 'size', 'Size', 'الحجم'],
+  ['audiences', 'audience', 'Age group', 'الفئة العمرية'],
+  ['bodyAreas', 'bodyArea', 'Body area', 'منطقة الاستخدام'],
+  ['concerns', 'concern', 'Care need', 'العناية'],
+  ['features', 'feature', 'Features', 'الميزات'],
+] as const;
+
+export function SearchDescription({ result, query, locale, filters, matched }: SummaryProps & {
+  query: string; filters: URLSearchParams; matched: boolean;
+}) {
+  const ar = locale === 'ar';
+  const corrected = new URLSearchParams(filters);
+  const original = new URLSearchParams(filters);
+  original.set('q', query);
+  original.set('literal', 'true');
+  if (result.correction) corrected.set('q', result.correction);
+  const price = result.interpretation.maxPrice;
+  return (
+    <>
+      {result.correction ? <p className={styles.queryNote}>
+        {ar ? 'هل تقصد ' : 'Did you mean '}
+        <Link href={'?' + corrected}><bdi>{result.correction}</bdi></Link>?
+        {' · '}<Link href={'?' + original}>{ar ? 'البحث بالعبارة الأصلية' : 'Search the original phrase'}</Link>
+      </p> : null}
+      {price !== undefined && !filters.has('maxPrice') ? <p className={styles.queryNote}>
+        {ar ? `منتجات بسعر يصل إلى ${price} درهماً` : `Products up to AED ${price}`}
+      </p> : null}
+      {result.relaxed && matched ? <p className={styles.queryNote} role="status">
+        {ar ? 'لم نعثر على تطابق دقيق. نتائج ذات صلة بـ ' : 'No exact match found. Showing related results for '}
+        <bdi>“{result.interpretedQuery}”</bdi>.
+      </p> : null}
+    </>
+  );
+}
+
+export function SearchFacets({ result, locale, query }: SummaryProps & { query: URLSearchParams }) {
+  const available = facets.filter(([kind]) => result.facets[kind].length > 1);
+  if (!available.length) return null;
+  return (
+    <details className={styles.explore}>
+      <summary>{locale === 'ar' ? 'تصفية النتائج' : 'Narrow these results'}<ChevronDownIcon aria-hidden="true" /></summary>
+      {available.map(([kind, param, en, ar]) => (
+        <nav className={styles.facet} key={kind} aria-label={locale === 'ar' ? ar : en}>
+          <p>{locale === 'ar' ? ar : en}</p>
+          <div className={styles.chips}>
+            {result.facets[kind].slice(0, 6).map(item => {
+              const next = new URLSearchParams(query);
+              next.set(param, item.value);
+              return <Link className={styles.option} key={item.value} href={'?' + next}
+                aria-current={query.get(param) === item.value ? 'page' : undefined}>
+                <bdi>{item.value}</bdi><span className={styles.badge}>{item.count}</span>
+              </Link>;
+            })}
+          </div>
+        </nav>
+      ))}
+    </details>
+  );
+}
+
+export function SearchDiscovery({ result, locale }: SummaryProps) {
+  const ar = locale === 'ar';
+  const suggestions = [
+    ...result.collections, ...result.categories, ...result.brands,
+    ...result.querySuggestions.map(item => ({ ...item, name: ar ? `ابحث عن «${item.name}»` : item.name })),
+  ].filter((item, index, rows) => rows.findIndex(other => other.href === item.href) === index).slice(0, 8);
+  return (
+    <>
+      {suggestions.length ? <nav className={styles.discovery} aria-label={ar ? 'اقتراحات ذات صلة' : 'Related suggestions'}>
+        <h2>{ar ? 'اقتراحات ذات صلة' : 'Related suggestions'}</h2>
+        <div className={styles.chips}>
+          {suggestions.map(item => <Link key={item.href} className={styles.option} href={item.href}><bdi>{item.name}</bdi></Link>)}
+        </div>
+      </nav> : null}
+      {result.alternatives.length ? <nav className={styles.discovery} aria-label={ar ? 'منتجات مشابهة' : 'Similar products'}>
+        <h2>{ar ? 'منتجات مشابهة' : 'Similar products'}</h2>
+        <div className={styles.chips}>
+          {result.alternatives.map(item => <Link key={item.href} className={styles.textLink} href={item.href}><bdi>{item.name}</bdi></Link>)}
+        </div>
+      </nav> : null}
+    </>
+  );
 }

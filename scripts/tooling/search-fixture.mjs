@@ -3,7 +3,7 @@ import {randomUUID} from 'node:crypto';
 // an Atlas retrieval emulator and supplies no evidence of live search relevance.
 export function searchFixtureResponse(url,products,category){
  const q=url.searchParams.get('q')??'',normalized=q.toLowerCase(),correction=normalized==='dailyy'&&url.searchParams.get('literal')!=='true'?'Daily Care':null,relaxed=normalized==='daily care 900ml';
- let rows=products.filter(p=>((normalized==='dailyy'&&url.searchParams.get('literal')!=='true'||relaxed)&&p.product_id==='PD0001')||normalized==='بشرة'||normalized==='under 50'||p.name.toLowerCase().includes(normalized)||category.name.toLowerCase().includes(normalized));
+ let rows=products.filter(p=>((normalized==='dailyy'&&url.searchParams.get('literal')!=='true'||relaxed)&&p.product_id==='PD0001')||normalized==='بشرة'||normalized==='under 50'||p.product_id.toLowerCase()===normalized||p.name.toLowerCase().includes(normalized)||category.name.toLowerCase().includes(normalized));
  const min=Number(url.searchParams.get('minPrice')??0),max=Number(url.searchParams.get('maxPrice')??999999);
  const price=p=>p.sale&&p.salePrice>=0&&p.salePrice<=p.price?p.salePrice:p.price;
  rows=rows.filter(p=>price(p)>=min&&price(p)<=max&&(!url.searchParams.get('inStock')||p.stock>0));

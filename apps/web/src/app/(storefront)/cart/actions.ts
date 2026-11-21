@@ -1,4 +1,5 @@
 "use server";
+import { catalogueSubtotal } from '../../../lib/catalog/cart-display';
 import { getLocale } from '../../../lib/server/i18n';
 import { t } from '../../../lib/i18n';
 import { readCart, validateCartAddition } from '../../../lib/server/cart';
@@ -6,9 +7,9 @@ import { cartSchema, type CartLine } from '../../../lib/catalog/model';
 export async function loadCart(lines: CartLine[]) {
   const locale = await getLocale();
   const parsed = cartSchema.safeParse(lines);
-  if (!parsed.success) return { error: t(locale,'cartReadServerError'), items: [] };
-  try { return { error: null, items: await readCart(parsed.data, locale) }; }
-  catch { return { error: t(locale,'cartCheckServerError'), items: [] }; }
+  if (!parsed.success) return { error: t(locale,'cartReadServerError'), items: [], subtotalMinor: null };
+  try { const items = await readCart(parsed.data, locale); return { error: null, items, subtotalMinor: catalogueSubtotal(items) }; }
+  catch { return { error: t(locale,'cartCheckServerError'), items: [], subtotalMinor: null }; }
 }
 export async function checkAddition(id: string, quantity: number) {
   const locale = await getLocale();

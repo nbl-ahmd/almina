@@ -1,44 +1,46 @@
 ---
 name: almina-project-profile
-description: Apply Al Mina's storefront redesign brief and production constraints to UI work. Coordinates the competitor-based direction, scoped design skills, Tailwind, Heroicons, optimized fonts, SEO and commerce integrity.
+description: Preserve Al Mina product, commerce, accessibility and production constraints during storefront work. Accepted reference-led replacement, staged consumer migration.
 ---
 
-Read the repository AGENTS.md, apps/web/AGENTS.md and apps/web/DESIGN.md before
-storefront work. Read docs/migration/REDESIGN_SETUP_2026-10-18.md for the active
-replacement brief and skill responsibilities. Old Figma screens and the prior
-blue bordered theme do not constrain the owner-requested redesign.
-apps/web/PRODUCT.md records product facts; existing API/model
-contracts remain authoritative for commerce behavior.
+Read root AGENTS.md, apps/web/AGENTS.md and apps/web/PRODUCT.md. The owner rejected
+previous storefront candidates; archived guides, metadata and old runtime styles
+have no current visual authority. Preserve the real Al Mina identity and exact
+primary #FF5A5F. Read current DESIGN.md, DESIGN-BRIEF.md, screen directions,
+decision register and progress under apps/web/docs/design.
 
-Use Tailwind utilities and shared semantic theme tokens. Retain custom CSS only
-for theme definitions, inherited baseline compatibility or documented browser
-exceptions. Replace the corresponding old component rules after verifying each
-migrated component. Do not enable a global reset that changes admin rendering.
+The selected local direction is A/full-width campaign, five wide-screen home
+columns and the image-first phone product page. The latest review revision uses
+DM Sans, Noto Sans Arabic, mint support surfaces, dark-on-coral primary actions
+with quieter cards and compact controls. The phone product page keeps overlay
+Back, Save and Cart controls and a sticky buying dock. Local direction
+acceptance and production release approval are separate. The public
+consumers now use the accepted system. The progress ledger records finish-review
+evidence, owner acceptance and outstanding release needs.
 
-Use Heroicons outline for interface icons. Keep one optimized font family via
-next/font; the incumbent Plus Jakarta Sans remains until a replacement is chosen
-for the new design on real catalogue content. Do not change fonts solely because
-a generic skill bans a family. Keep client boundaries
-small and product media responsive through next/image.
+One accepted value source lives at
+apps/web/src/components/storefront-system/tokens.module.css; boundary.module.css
+owns opted-in controls/variants/states. DESIGN.md and its scoped sidecar document
+that runtime. The retained storefront-tokens.css palette serves wholesale and
+root missing-page recovery. Shared shell geometry and fallback control consumers
+are listed in docs/design/implementation-evidence/p6-01-retirement.md. Historical
+metadata is excluded from current design authority. Do not activate a competing visual generator or rerun
+palette/font selection. General-purpose skills remain available within this scope.
 
-Impeccable owns composition, hierarchy and critique. Use gpt-taste selectively
-for creative exploration and Emil's skills for purposeful interaction/motion.
-Retail usability, accessible controls, performance and the explicit project brief
-override random layouts, mandatory GSAP/AIDA, cinematic spacing and unrelated
-imagery in generic skills. Never simulate execution or claim checks not run.
-Use the
-official shadcn skill only for shadcn component APIs; Vercel React guidance owns
-performance patterns; next-dev-loop owns runtime verification. Figma skills are
-conditional on Figma operations. Do not combine the older design generators,
-ui-styling, design-system, frontend-design or ui-ux-pro-max as competing sources
-of direction for routine Al Mina storefront work.
+Preserve real catalogue/media/content, contacts, identifiers, URLs, query/return
+behavior, metadata, structured data and indexing policy. Keep EN/AR/RTL, native
+semantics, keyboard labels/focus, usable targets, contrast, responsive behavior,
+reduced motion and honest loading/empty/error/status states. Never invent reviews,
+discounts, delivery promises, medical claims, availability, payment methods or
+services from reference images. Generic campaign/category art cannot represent
+saleable packs, actual staff or verified operational claims.
 
-Preserve real catalog content, contacts, identifiers, URLs, metadata, structured
-data and indexing policy. Never invent discounts, reviews, certifications or
-services from reference screens. Server pricing/stock/order validation remains
-authoritative. A UI library does not authorize changes to commerce or auth.
-
-Verify mobile, tablet and desktop rendering, focus, contrast, text scaling,
-loading/empty/error states, direct navigation/reload and relevant regression
-tests. Compare compiled asset transfer when claiming a performance improvement;
-fixture measurements are not proof of production Core Web Vitals.
+Keep tooling/shared component APIs working. Trace and migrate shared/admin/
+wholesale/root consumers before deleting rules, fonts, components or media.
+Admin retains its own scoped design authority. Preserve Server Components and
+small client boundaries, optimized media/fonts and version-matched Next guidance.
+Server pricing/tax/fees/stock/auth/RBAC/idempotent order/provider contracts remain
+authoritative. Do not access production data/providers, change commerce behavior
+or deploy in this redesign. Verify affected customer/admin runtime paths; source
+presence is not live provider enablement. Record evidence and next task in the
+progress ledger so staged work does not lose context.

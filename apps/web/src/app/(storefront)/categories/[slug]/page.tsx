@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+import { PublicCatalogLoading } from '../../../../components/catalog-loading';
 import { categoryContent } from '../../../../lib/catalog/category-content';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { resolveCategory } from '../../../../lib/server/catalog';
@@ -26,5 +28,5 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     }
     permanentRedirect(`${categoryHref(category)}${retained.size ? `?${retained}` : ''}`);
   }
-  return <><StructuredData data={breadcrumbData(getWebEnvironment().WEB_ORIGIN, [{ name: 'Home', path: '/' }, { name: 'Categories', path: '/categories' }, { name: category.name, path: categoryHref(category) }])} /><CatalogList title={category.name} category={category._id} params={query} parents={[{ name: 'Categories', path: '/categories' }]} /></>;
+  return <><StructuredData data={breadcrumbData(getWebEnvironment().WEB_ORIGIN, [{ name: 'Home', path: '/' }, { name: 'Categories', path: '/categories' }, { name: category.name, path: categoryHref(category) }])} /><Suspense fallback={<PublicCatalogLoading title={category.name} />}><CatalogList title={category.name} category={category._id} params={query} parents={[{ name: 'Categories', path: '/categories' }]} /></Suspense></>;
 }

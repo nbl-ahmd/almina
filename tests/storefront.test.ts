@@ -20,7 +20,7 @@ test('retained catalog query reconstructs only bounded compatibility fields', ()
 });
 test('old documents without new flags remain readable; disabled/orphan/malformed products do not leak', () => {
   assert.ok(readProduct(raw)); assert.ok(readCategory(category));
-  for (const patch of [{ disabled: true }, { category: null }, { category: { ...category, disabled: true } }, { price: -1 }, { stock: -1 }]) assert.equal(readProduct({ ...raw, ...patch }), null);
+  for (const patch of [{ disabled: true }, { category: null }, { category: { ...category, disabled: true } }, { price: -1 }, { price: undefined }, { stock: -1 }]) assert.equal(readProduct({ ...raw, ...patch }), null);
   assert.equal(readCategory({ ...category, disabled: true }), null);
 });
 test('slugs distinguish duplicate names and resolve immutable legacy IDs across name changes', () => {

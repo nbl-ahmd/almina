@@ -1,0 +1,96 @@
+{
+  "source": "Generated P2-05 sidecar with accepted source font faces, 1440px Chromium, reduced motion; isolated shadow examples are not application screens or commerce handlers.",
+  "errors": [],
+  "measured": [
+    {
+      "refersTo": "button-primary",
+      "color": "rgb(32, 42, 48)",
+      "background": "rgb(255, 90, 95)",
+      "radius": "10px",
+      "minHeight": "48px",
+      "fontSize": "15px",
+      "overflow": false
+    },
+    {
+      "refersTo": "button-outline",
+      "color": "rgb(32, 42, 48)",
+      "background": "rgb(255, 255, 255)",
+      "radius": "10px",
+      "minHeight": "48px",
+      "fontSize": "15px",
+      "overflow": false
+    },
+    {
+      "refersTo": "button-ghost",
+      "color": "rgb(88, 99, 107)",
+      "background": "rgba(0, 0, 0, 0)",
+      "radius": "10px",
+      "minHeight": "48px",
+      "fontSize": "15px",
+      "overflow": false
+    },
+    {
+      "refersTo": "button-destructive",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(161, 29, 49)",
+      "radius": "10px",
+      "minHeight": "48px",
+      "fontSize": "15px",
+      "overflow": false
+    },
+    {
+      "refersTo": "field",
+      "color": "rgb(32, 42, 48)",
+      "background": "rgb(240, 243, 243)",
+      "radius": "12px",
+      "minHeight": "48px",
+      "fontSize": "14px",
+      "overflow": false
+    },
+    {
+      "refersTo": "navigation",
+      "color": "rgb(165, 43, 56)",
+      "background": "rgba(0, 0, 0, 0)",
+      "radius": "0px",
+      "minHeight": "48px",
+      "fontSize": "10px",
+      "overflow": false
+    },
+    {
+      "refersTo": "stock",
+      "color": "rgb(38, 96, 77)",
+      "background": "rgb(234, 243, 239)",
+      "radius": "4px",
+      "minHeight": "0px",
+      "fontSize": "11px",
+      "overflow": false
+    },
+    {
+      "refersTo": "card",
+      "color": "rgb(32, 42, 48)",
+      "background": "rgb(255, 255, 255)",
+      "radius": "14px",
+      "minHeight": "0px",
+      "fontSize": "15px",
+      "overflow": false
+    },
+    {
+      "refersTo": "option",
+      "color": "rgb(32, 42, 48)",
+      "background": "rgb(230, 237, 239)",
+      "radius": "8px",
+      "minHeight": "44px",
+      "fontSize": "15px",
+      "overflow": false
+    },
+    {
+      "refersTo": "quick-add",
+      "color": "rgb(32, 42, 48)",
+      "background": "rgb(255, 90, 95)",
+      "radius": "10px",
+      "minHeight": "44px",
+      "fontSize": "13.3333px",
+      "overflow": false
+    }
+  ]
+}

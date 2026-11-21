@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Pharmacy catalog layouts
 
 Held candidate `codex/pharmacy-catalog-layouts`, after admin form PR #40 at `f3b703a`. Homepage hero/discovery/service strip/banners, filter/pagination/breadcrumb components, product detail layout and price/category presentation now use existing Tailwind tokens. Components were adopted incrementally; replaced selectors were removed after callers/hooks were inventoried. Semantic state/quantity/focus/native form/loading primitives intentionally remain small maintained CSS. No styling library, client provider or new dependency was added. Existing product/card/price/filter test hooks remain.

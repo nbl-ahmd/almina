@@ -1,4 +1,5 @@
 'use client';
+import { CurrencyAmount } from './currency-amount';
 import {ConfirmationMark,CheckoutProgress} from './checkout-ui';
 import {GoogleCustomerReviews} from './google-customer-reviews';
 import type {GoogleCommerceConfiguration, ReviewReceipt} from '../lib/google/commerce';
@@ -34,22 +35,22 @@ export function StripeReturn({locale,cancelled,testMode=true,googleReviews,nonce
   useEffect(()=>{let active=true;void Promise.resolve().then(()=>{if(active)void refresh(cancelled);});return()=>{active=false;};},[cancelled]); // eslint-disable-line react-hooks/exhaustive-deps
   const isTest=payment?.testMode??testMode;
   const message=payment?.state==='paid'?(isTest?(ar?'نجح الدفع التجريبي':'Test payment successful'):(ar?'تم استلام الدفع':'Payment received')):payment?.state==='expired'?(isTest?(ar?'انتهى الدفع التجريبي وأُعيد المخزون':'Test checkout ended — stock released'):(ar?'تم إلغاء الدفع':'Checkout cancelled')):payment?.state==='refunded'?(isTest?(ar?'تم رد المبلغ التجريبي وأُعيد المخزون':'Test payment refunded — stock released'):(ar?'تم رد المبلغ':'Payment refunded')):['refund_pending','partially_refunded','disputed'].includes(payment?.state??'')?(ar?'الطلب قيد مراجعة الدفع':'Payment review in progress'):(ar?'في انتظار تأكيد الدفع':'Waiting for payment confirmation');
-  return <><GoogleCustomerReviews config={googleReviews??{merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} nonce={nonce} locale={locale}/><section className={`checkout-flow checkout-payment-result mx-auto max-w-xl rounded-2xl bg-surface p-5 sm:p-8 ${payment?.state==='paid'&&payment.paymentReceived?'checkout-completion':''}`} aria-labelledby="stripe-title">
+  return <><GoogleCustomerReviews config={googleReviews??{merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} nonce={nonce} locale={locale}/><section className={`checkout-flow checkout-standalone checkout-payment-result ${payment?.state==='paid'&&payment.paymentReceived?'checkout-completion':''}`} aria-labelledby="stripe-title">
     <CheckoutProgress stage={payment?.state==='paid'&&payment.paymentReceived?'complete':'payment'} locale={locale}/>{payment?.state==='paid'&&payment.paymentReceived?<ConfirmationMark/>:null}
     <h1 id="stripe-title" aria-live="polite" className="mb-3 text-2xl">{message}</h1>
     <p className="text-sm text-muted">{isTest?(ar?'لا تُحصّل أموال حقيقية ولا يتم توصيل طلب تجريبي. تبقى سلة التسوق محفوظة.':'No real money is collected and no test order will be delivered. Your shopping basket is kept.'):(payment?.state==='paid'?(ar?'تم استلام طلبك. سيتواصل معك فريق الصيدلية بشأن التوصيل.':'Your order has been received. Our pharmacy team will contact you about delivery.'):ar?'يمكنك التواصل مع الصيدلية لمتابعة طلبك. لا تعِد الدفع إذا كانت حالته غير مؤكدة.':'Contact the pharmacy about your order. Please do not pay again while its status is uncertain.')}</p>
     {payment?<p className="text-sm">{isTest?(ar?'مرجع الاختبار: ':'Test reference: '):(ar?'رقم الطلب: ':'Order number: ')}<strong>{payment.orderId}</strong></p>:null}
-    {payment&&!isTest?<p className="text-sm font-semibold">{new Intl.NumberFormat(ar?'ar-AE':'en-AE',{style:'currency',currency:'AED'}).format(payment.totals.totalMinor/100)}</p>:null}
+    {payment&&!isTest?<p className="text-sm font-semibold"><CurrencyAmount value={payment.totals.totalMinor/100} locale={ar?'ar':'en'} /></p>:null}
     {working?<p role="status" className="text-sm">{ar?'جارٍ التحقق من الدفع…':'Verifying your payment…'}</p>:null}
-    {error?<p role="alert" className="text-sm text-danger">{error}</p>:null}
+    {error?<p role="alert" className="checkout-error-summary text-sm">{error}</p>:null}
     <div className="mt-5 flex flex-wrap gap-3">
       {!payment||payment.state==='awaiting_payment'?<>
-        {payment?.checkoutUrl?<a className="button" href={payment.checkoutUrl}>{isTest?(ar?'متابعة الدفع التجريبي':'Resume test payment'):(ar?'متابعة الدفع الآمن':'Resume secure payment')}</a>:null}
+        {payment?.checkoutUrl?<Button asChild><a href={payment.checkoutUrl}>{isTest?(ar?'متابعة الدفع التجريبي':'Resume test payment'):(ar?'متابعة الدفع الآمن':'Resume secure payment')}</a></Button>:null}
         <Button variant="outline" disabled={working} onClick={()=>{void refresh();}}>{ar?'التحقق مجدداً':'Check payment status'}</Button>
         {payment?<Button variant="outline" disabled={working} onClick={()=>{void refresh(true);}}>{isTest?(ar?'إلغاء الاختبار':'Cancel test checkout'):(ar?'إلغاء الدفع':'Cancel checkout')}</Button>:null}
       </>:<Button onClick={()=>{try{sessionStorage.removeItem(pendingKey);}catch{/* Retrying the original key remains safe. */}router.push(isTest?'/checkout':'/products');}}>{isTest?(ar?'العودة للدفع':'Back to checkout'):(ar?'متابعة التسوق':'Continue shopping')}</Button>}
-      {!isTest?<Link className="button button-secondary" href="/contact">{ar?'تواصل مع الصيدلية':'Contact pharmacy'}</Link>:null}
-      {error?<Link className="button button-secondary" href="/checkout">{ar?'العودة للدفع':'Back to checkout'}</Link>:null}
+      {!isTest?<Button asChild variant="outline"><Link href="/contact">{ar?'تواصل مع الصيدلية':'Contact pharmacy'}</Link></Button>:null}
+      {error?<Button asChild variant="outline"><Link href="/checkout">{ar?'العودة للدفع':'Back to checkout'}</Link></Button>:null}
     </div>
   </section></>;
 }

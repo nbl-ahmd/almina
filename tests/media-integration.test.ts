@@ -4,7 +4,9 @@ import { randomUUID } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
 import { archiveEntity, replaceCategory, resolveRetainedAsset } from '../apps/api/src/modules/media/retention';
 import { replaceCloudinaryImages, cloudinarySignature } from '../apps/api/src/modules/media/cloudinary';
-import { createMediaMetadata, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
+import { createBannerWithArtwork, createMediaMetadata, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
+import { resolveLegacyMapping } from '../apps/api/src/modules/media/legacy-migration';
+import { retainedBannerList } from '../apps/api/src/modules/media/compatibility-reads';
 const uri = process.env.COMMERCE_TEST_URI;
 assert.ok(uri || process.env.REQUIRE_DATABASE_TESTS !== '1', 'Disposable database is required');
 test('media metadata records creation references and atomic visibility changes without altering stock or archived history', { skip: !uri }, async () => {
@@ -33,6 +35,18 @@ test('media metadata records creation references and atomic visibility changes w
     assert.equal((await db.collection('categories').findOne({ _id: category._id }))!.image, category.image);
     await assert.rejects(createMediaMetadata(db, 'banners', { name: 'Invalid', link: 'javascript:alert(1)' }, actor, { image: 'synthetic.webp', gdriveFileId: 'synthetic-drive' }));
     assert.equal(await db.collection('banners').countDocuments(), 1);
+    const idForArtwork = randomUUID();
+    const artwork = ['desktop', 'mobile'].map(size => `https://res.cloudinary.com/synthetic/image/upload/v1/almina/banners/${idForArtwork}-${size}.webp`);
+    const published = await createBannerWithArtwork(db, { name: 'Care artwork', link: '/products' }, actor, `banner-${idForArtwork}.webp`, artwork, 'synthetic');
+    const path = '/cdn/banners/' + published.image;
+    assert.deepEqual((await retainedBannerList(db, {})).find(row => row._id.equals(published._id))?.cloudinaryImages, artwork);
+    assert.equal(await resolveLegacyMapping(db, path, 'synthetic'), artwork[0]);
+    assert.equal(await resolveLegacyMapping(db, path, 'other'), null);
+    await archiveEntity(db, 'banners', String(published._id), actor);
+    assert.equal((await retainedBannerList(db, {})).length, 1);
+    assert.equal(await resolveLegacyMapping(db, path, 'synthetic'), artwork[0]);
+    const history = await db.collection('media_history').findOne({ entityId: published._id });
+    assert.deepEqual(history?.nextAssets.cloudinaryImages, artwork);
   } finally { await db.dropDatabase(); await client.close(); }
 });
 test('signed media retries reconcile provider acceptance and preserve old references, revisions, stock and history', { skip: !uri }, async () => {

@@ -1,0 +1,956 @@
+[
+  {
+    "engine": "chromium",
+    "locale": "en",
+    "routes": [
+      {
+        "path": "contact",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "account",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "saved",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "categories",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "privacy",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          }
+        ],
+        "violations": []
+      }
+    ]
+  },
+  {
+    "engine": "chromium",
+    "locale": "ar",
+    "routes": [
+      {
+        "path": "contact",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "account",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "saved",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "categories",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          }
+        ],
+        "violations": []
+      },
+      {
+        "path": "privacy",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          }
+        ],
+        "violations": []
+      }
+    ]
+  },
+  {
+    "engine": "webkit",
+    "locale": "en",
+    "routes": [
+      {
+        "path": "contact",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Let’s talk care."
+          }
+        ]
+      },
+      {
+        "path": "account",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "We could not load your account"
+          }
+        ]
+      },
+      {
+        "path": "saved",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Saved products"
+          }
+        ]
+      },
+      {
+        "path": "categories",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Care for every routine"
+          }
+        ]
+      },
+      {
+        "path": "privacy",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "ltr",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "engine": "webkit",
+    "locale": "ar",
+    "routes": [
+      {
+        "path": "contact",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تواصل مع صيدلية الميناء"
+          }
+        ]
+      },
+      {
+        "path": "account",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "تعذّر تحميل حسابك"
+          }
+        ]
+      },
+      {
+        "path": "saved",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "المنتجات المحفوظة"
+          }
+        ]
+      },
+      {
+        "path": "categories",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "عناية لكل روتين"
+          }
+        ]
+      },
+      {
+        "path": "privacy",
+        "status": 200,
+        "widths": [
+          {
+            "width": 320,
+            "height": 735,
+            "scrollWidth": 320,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 390,
+            "height": 840,
+            "scrollWidth": 390,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 667,
+            "height": 375,
+            "scrollWidth": 667,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 768,
+            "height": 900,
+            "scrollWidth": 768,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          },
+          {
+            "width": 1440,
+            "height": 900,
+            "scrollWidth": 1440,
+            "dir": "rtl",
+            "background": "rgb(250, 251, 251)",
+            "title": "Privacy policy"
+          }
+        ]
+      }
+    ]
+  }
+]

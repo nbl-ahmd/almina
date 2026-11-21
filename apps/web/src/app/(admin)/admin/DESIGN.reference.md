@@ -6,9 +6,8 @@
 the console's direction was derived from. It is **not** the specification for
 this codebase. The implemented, authoritative system is [`DESIGN.md`](./DESIGN.md).
 
-Admin only. The customer storefront has a separate system in
-[`apps/web/DESIGN.md`](../../../../DESIGN.md) and is never affected by this
-material.
+Admin only. The customer storefront visual system was retired on 15 November 2026.
+This admin-only material must not influence its replacement.
 
 The owner supplied three screenshots on 24 October 2026 and asked for the
 console to be redesigned to their anatomy. Measurements below are read from the

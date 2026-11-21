@@ -1,0 +1,140 @@
+/* Storefront-only interaction states. Shared primitive variants come from components/ui. */
+.boundary :where(button:not([data-slot])) {
+  border: 0;
+  background: transparent;
+  min-height: var(--store-target-min);
+  border-radius: var(--store-control-radius);
+  padding: var(--store-space-8) var(--store-space-12);
+}
+.boundary :where(button:not([data-slot])):disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.boundary :is(a, button, input, select, textarea, summary):focus-visible:where(:not([data-store-control="search-input"], [data-slot="input"], [data-slot="native-select"], [data-slot="textarea"], [data-slot="checkbox"])) {
+  outline: 2px solid var(--store-focus);
+  outline-offset: 3px;
+}
+.boundary [data-slot='button'] {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* Meaning states follow variants at equal specificity; hover adds zero specificity. */
+.boundary [data-slot='button'][data-added='true'] {
+  background: var(--store-positive-surface);
+  border-color: transparent;
+  color: var(--store-text);
+}
+.boundary [data-store-control='save'][aria-pressed='true'] {
+  color: var(--store-saved);
+  background: var(--store-saved-surface);
+}
+.boundary [data-slot='button']:is(:disabled, [aria-disabled='true']),
+.boundary [data-store-control='purchase']:disabled {
+  color: var(--store-disabled-text);
+  background: var(--store-disabled-surface);
+  border-color: var(--store-border);
+  opacity: 1;
+  cursor: not-allowed;
+}
+.boundary [data-slot='button'][aria-busy='true'],
+.boundary [data-store-control='purchase'][aria-busy='true'] {
+  background: var(--store-purchase-surface);
+  color: var(--store-purchase-foreground);
+  border-color: var(--store-purchase-surface);
+  opacity: 1;
+  cursor: progress;
+}
+
+/* The group surface carries the stepper shape. Disabled steps mute only the icon. */
+.boundary [data-store-control='stepper'] {
+  border-radius: var(--store-field-radius);
+  background: var(--store-secondary-surface);
+  font-variant-numeric: tabular-nums;
+}
+.boundary [data-store-control='stepper'] [data-slot='button'] {
+  inline-size: var(--store-target-min);
+  min-block-size: var(--store-target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--store-field-radius);
+  background: transparent;
+}
+.boundary [data-store-control='stepper'] [data-slot='button'] svg {
+  inline-size: var(--store-space-16);
+  block-size: var(--store-space-16);
+}
+.boundary [data-store-control='stepper'] [data-slot='button']:where(:disabled, [aria-disabled='true']) {
+  color: var(--store-disabled-text);
+}
+.boundary [data-store-control='stepper'] [data-slot='button']:where(:hover:not(:disabled):not([aria-disabled='true'])) {
+  background: var(--store-hover-surface);
+  color: var(--store-text);
+}
+
+.boundary :global(.card-cart-stepper) {
+  display: inline-flex;
+  align-items: center;
+  min-inline-size: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-stock-bg);
+}
+.boundary :global(.card-cart-stepper) [data-slot='button'] {
+  border-radius: var(--radius-pill);
+  color: var(--color-brand);
+  margin: 0;
+}
+.boundary :global(.card-cart-count) {
+  min-inline-size: 2ch;
+  text-align: center;
+  font-size: var(--store-type-13);
+  font-weight: var(--store-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Options and real/synthetic gallery controls share selected semantics. */
+.boundary [data-store-control='option'][aria-current='page'],
+.boundary [data-store-control='state-choice'][aria-pressed='true'] {
+  background: var(--store-selected-surface); border-color: transparent;
+}
+.boundary [data-store-control='thumbnail'][aria-pressed='true'] {
+  background: var(--store-text); color: var(--store-surface);
+}
+.boundary [data-store-notice='error'] { border-color: var(--store-error); }
+.boundary [data-store-notice='success'] {
+  color: var(--store-positive);
+  background-color: var(--store-positive-surface);
+  border-color: var(--store-positive);
+}
+.boundary [data-store-notice='offer'] {
+  color: var(--store-offer-text);
+  background: var(--store-offer-surface);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .boundary :is(a, button, input, select, textarea, summary) {
+    transition-property: background-color, border-color, color;
+    transition-duration: var(--store-motion-feedback);
+    transition-timing-function: var(--store-motion-easing);
+  }
+  .boundary :is([data-store-control='save'], [data-slot='search-submit']) {
+    transition-property: scale, background-color, border-color, color;
+  }
+  .boundary :is([data-store-control='save'], [data-slot='search-submit']):where(:active:not(:focus-visible):not(:disabled):not([aria-disabled='true']):not([aria-busy='true'])) {
+    scale: .97;
+  }
+  .boundary [data-store-feedback] {
+    opacity: 1;
+    transition: opacity var(--store-motion-enter) var(--store-motion-easing);
+    @starting-style { opacity: .65; }
+  }
+}
+/* Covers shared portal/menu utilities as well as native proof controls. */
+@media (prefers-reduced-motion: reduce) {
+  .boundary *, .boundary *::before, .boundary *::after {
+    transition: none;
+    animation: none;
+    scroll-behavior: auto;
+  }
+}

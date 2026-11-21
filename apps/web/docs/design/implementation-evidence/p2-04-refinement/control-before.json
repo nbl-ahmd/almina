@@ -1,0 +1,36 @@
+[
+  {
+    "motion": "no-preference",
+    "values": [
+      {
+        "id": "primary-utility",
+        "radius": "12px",
+        "transition": "background-color 0.12s, color 0.12s",
+        "font": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "id": "normal-field",
+        "radius": "12px",
+        "transition": "background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+        "font": "storefrontLatin, \"storefrontLatin Fallback\""
+      }
+    ]
+  },
+  {
+    "motion": "reduce",
+    "values": [
+      {
+        "id": "primary-utility",
+        "radius": "12px",
+        "transition": "none",
+        "font": "storefrontLatin, \"storefrontLatin Fallback\""
+      },
+      {
+        "id": "normal-field",
+        "radius": "12px",
+        "transition": "none",
+        "font": "storefrontLatin, \"storefrontLatin Fallback\""
+      }
+    ]
+  }
+]

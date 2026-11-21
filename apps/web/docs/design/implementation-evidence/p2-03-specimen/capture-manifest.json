@@ -1,0 +1,177 @@
+{
+  "startingCommit": "33f8f65",
+  "source": "P2-03 working changes committed with this evidence",
+  "conditions": "Fresh Chromium loopback-only contexts, EN1440x900 and AR390x844, fonts/visible images settled, reduced motion; Next diagnostics hidden only for capture. Actual device cart starts empty in new contexts; synthetic feedback/pack/price samples labelled. No orders.",
+  "captures": [
+    {
+      "file": "context-en.png",
+      "lang": "en",
+      "section": "context",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "1bf6c0e3e73c3183aefea3f67a67e21ec1a75e1edb99abd7b01b2ea05c3a3e93"
+    },
+    {
+      "file": "controls-en.png",
+      "lang": "en",
+      "section": "controls",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "a8bdfbbddc671c45f3e5bc77372414e2ed29f8570e1945212e85c9e934ea07b2"
+    },
+    {
+      "file": "cards-en.png",
+      "lang": "en",
+      "section": "cards",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "5fa5af409231c22548b14d17026c852c0d7bd929681f195aa0376b55aadc7260"
+    },
+    {
+      "file": "product-en.png",
+      "lang": "en",
+      "section": "product",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "9cfff1edf7ac530ba37fe8e03a4e754393eaba7a7140e677332f49b65cacb04b"
+    },
+    {
+      "file": "feedback-en.png",
+      "lang": "en",
+      "section": "feedback",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "6c99109a243dc3078629dd6517104e6c29566459b43a227a453e72bd9f27afce"
+    },
+    {
+      "file": "cart-en.png",
+      "lang": "en",
+      "section": "cart",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "1addf02f0cf88ae35303587b8c108a34d130a95e4ce90f57c9920266039a130b"
+    },
+    {
+      "file": "context-ar.png",
+      "lang": "ar",
+      "section": "context",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "c6c1dd6b786139097f7027987b050ce9777d696303cd38a2dd34361a4511e6a0"
+    },
+    {
+      "file": "controls-ar.png",
+      "lang": "ar",
+      "section": "controls",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "6465a0294e60fb7d5ef006f9098be09650c4274b82e66a47f8a4ae5657388dac"
+    },
+    {
+      "file": "cards-ar.png",
+      "lang": "ar",
+      "section": "cards",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "44bbd4fd1413d9ccfe416b949f7823aecfd9faeb67dce48c3457e83c40896ed2"
+    },
+    {
+      "file": "product-ar.png",
+      "lang": "ar",
+      "section": "product",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "4a3da45bbfddd4ef85800b77d4b206275bf2b6d0d515ab52051e0a40663cfb9b"
+    },
+    {
+      "file": "feedback-ar.png",
+      "lang": "ar",
+      "section": "feedback",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "df0c40ca1f4909ffc52b134033bb59d3b457e61701d568a363093b34c7a9fd94"
+    },
+    {
+      "file": "cart-ar.png",
+      "lang": "ar",
+      "section": "cart",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": false,
+      "path": "/design-proof/components",
+      "sha256": "07da4879fb867538502b89f0a4c3634b3a34c4952febcf1ec07c9c93fe333c9d"
+    },
+    {
+      "file": "home-wide-en.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "changedPixels": 0,
+      "totalPixels": 1296000,
+      "errors": [],
+      "path": "/design-proof?lead=full&columns=5",
+      "lang": "en",
+      "sha256": "53f2ef8ec9fba699879593c50297e3ca96eff4d133d2e352cccba56a58426d21"
+    },
+    {
+      "file": "home-phone-ar.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "changedPixels": 0,
+      "totalPixels": 329160,
+      "errors": [],
+      "path": "/design-proof?lead=full&columns=5",
+      "lang": "ar",
+      "sha256": "e7eb24308a31bf71dcc25541de03a21ca3d557cb32983aab2cfedd68c844a2cb"
+    }
+  ]
+}

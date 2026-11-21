@@ -164,3 +164,11 @@ route-handler compression and Turbopack GC fixes, and the installed 16.4.6
 migration was needed. The previous 16.4.2 build emitted a security stop locally.
 See [PR #95 security notes](PR95_SECURITY_2026-11-17.md) for the separate pinned
 picomatch mitigation, audit policy, verification and rollback.
+
+## 2026-11-19 — Next.js patch and local storefront release checks
+
+Updated the web workspace and its matching ESLint packages from Next.js 16.4.2 to 16.4.6. The npm stable tag and the installed documentation both reported 16.4.6. Node 24.21.0 and React 19.3.0 satisfy the package requirements. The selected patch includes the security fixes in 16.4.5. [16.4.5 security release](https://github.com/vercel/next.js/releases/tag/v16.4.5), [16.4.6 release](https://github.com/vercel/next.js/releases/tag/v16.4.6).
+
+The locked update retains the existing Next DevTools dependency and compatibility patch. The build, typecheck, lint, 274 unit tests, seven release-gate tests, compiled SEO and storefront smoke checks, 45 Chromium regressions, and 12 WebKit regressions passed. The dependency audit reported zero high or critical advisories in both the root and backend and no remaining Next.js advisories. The restarted loopback preview passed ten English and Arabic route checks, and its Turbopack diagnostics returned no compilation issues.
+
+The storefront smoke now uses a valid literal search containing a bracket and checks the current empty-result heading. Local checks used isolated fixtures. The owner-approved design revision and the remaining production evidence are recorded in the [Phase 6 packet](../../apps/web/docs/design/implementation-evidence/phase-6.md#remaining-release-work). Deployment remains excluded.

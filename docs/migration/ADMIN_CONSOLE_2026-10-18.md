@@ -1,3 +1,5 @@
+> 2026-11-15: storefront aesthetic references in this historical record are superseded and excluded from current design guidance. Admin specifications, functional contracts and production safeguards remain in force.
+
 # Administration console redesign — 18 October 2026
 
 Frontend-only redesign of the Next.js administration module

@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Storefront navigation refinement — 21 October 2026
 
 ## Delivered

@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical critique, excluded from current design guidance. Do not restore old visual rules from these findings.
+
 ---
 target: Is my design good? Current Al Mina homepage
 total_score: 28

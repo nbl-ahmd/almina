@@ -5,7 +5,7 @@ import { t, type Locale } from '../lib/i18n';
 export function CheckoutProgress({ stage, locale }: { stage: 'details' | 'payment' | 'complete'; locale: Locale }) {
   const active = ['details', 'payment', 'complete'].indexOf(stage);
   const labels = locale === 'ar' ? ['تفاصيل التوصيل', 'المراجعة والدفع', 'اكتمل الطلب'] : ['Delivery details', 'Review & payment', 'Complete'];
-  return <ol className="checkout-progress" aria-label={locale === 'ar' ? 'مراحل إتمام الطلب' : 'Checkout progress'}>{labels.map((label, index) => <li key={label} aria-current={index === active ? 'step' : undefined} data-complete={index < active}>
+  return <ol role="list" className="checkout-progress" aria-label={locale === 'ar' ? 'مراحل إتمام الطلب' : 'Checkout progress'}>{labels.map((label, index) => <li key={label} aria-current={index === active ? 'step' : undefined} data-complete={index < active}>
     <span className="checkout-step-number" aria-hidden="true">{index < active ? <CheckIcon className="size-4" /> : index + 1}</span><span>{label}</span>
   </li>)}</ol>;
 }
@@ -34,5 +34,5 @@ export function SecureCheckoutLabel({ locale }: { locale: Locale }) {
 }
 
 export function ConfirmationMark() {
-  return <span className="checkout-success-mark" aria-hidden="true"><CheckIcon className="size-9" strokeWidth={2} /></span>;
+  return <span className="checkout-success-mark" data-store-feedback aria-hidden="true"><CheckIcon className="size-9" strokeWidth={2} /></span>;
 }

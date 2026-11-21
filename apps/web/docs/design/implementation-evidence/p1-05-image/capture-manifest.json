@@ -1,0 +1,125 @@
+{
+  "startingCommit": "058d1d5",
+  "source": "Reference N03 correction working changes committed with this evidence",
+  "conditions": "Chromium viewport emulation; reviewed actual product photos with synthetic price/stock, EN/AR, settled fonts/images. Only Next development diagnostics hidden for capture. Not native-device certification.",
+  "captures": [
+    {
+      "file": "pdp-phone-en.png",
+      "lang": "en",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstRelatedCardAdd": {
+        "top": 1061.609375,
+        "bottom": 1105.609375
+      },
+      "sha256": "7d111ec047e941dbb50d85ea53c23b575cd247acf6ce29689dc7e2b365ffc5e7"
+    },
+    {
+      "file": "pdp-narrow-en.png",
+      "lang": "en",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstRelatedCardAdd": {
+        "top": 1018.421875,
+        "bottom": 1062.421875
+      },
+      "sha256": "23285a64c8474de2143873e159136bddd12902cde4b96b8d4159c9b86813f012"
+    },
+    {
+      "file": "pdp-desktop-en.png",
+      "lang": "en",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstRelatedCardAdd": {
+        "top": 1079.84375,
+        "bottom": 1123.84375
+      },
+      "sha256": "a27fad0ce4de61c8e06ab65904152f4b654b06cd97adb81a4a0110a20b1eeaba"
+    },
+    {
+      "file": "pdp-phone-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstRelatedCardAdd": {
+        "top": 1041.109375,
+        "bottom": 1085.109375
+      },
+      "sha256": "4140603245b1e008413fb13d7a9454f35b835c5a01f6af85cc3a7a9896f0be22"
+    },
+    {
+      "file": "pdp-narrow-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstRelatedCardAdd": {
+        "top": 1041.171875,
+        "bottom": 1085.171875
+      },
+      "sha256": "dc1a86061a075af565d77c2844cce5cfb82bcabd8a1705f39444612712acf96e"
+    },
+    {
+      "file": "pdp-desktop-ar.png",
+      "lang": "ar",
+      "path": "/design-proof/products/sample--PD1186",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "httpStatus": 200,
+      "overflow": false,
+      "firstRelatedCardAdd": {
+        "top": 1111.4375,
+        "bottom": 1155.4375
+      },
+      "sha256": "62736d017906e179efe6ba885652e79108ab7db6fc0a40e834119f1d53365985"
+    },
+    {
+      "file": "related-phone-en.png",
+      "lang": "en",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/design-proof/products/sample--PD1186",
+      "state": "scrolled to related product rail",
+      "sha256": "7b80470b93f7e0e3785a25a4c6fa6c15353bd8b9c0d72302a3288b7f737e498f"
+    },
+    {
+      "file": "related-phone-ar.png",
+      "lang": "ar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "path": "/design-proof/products/sample--PD1186",
+      "state": "scrolled to related product rail",
+      "sha256": "046029d28838374f53849e98729074b4b3084d1f273f281f28d4088531e1ccb1"
+    }
+  ]
+}

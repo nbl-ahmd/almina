@@ -1,0 +1,269 @@
+.card, .compact {
+  color: var(--store-text);
+  background: var(--store-surface);
+  border-radius: var(--store-card-radius);
+  min-inline-size: 0;
+}
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--store-space-8);
+  padding: var(--store-card-padding);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 4%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { box-shadow: var(--shadow-2xs), inset 0 0 0 1px var(--color-border); }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card { transition: box-shadow var(--store-motion-feedback); }
+}
+.visual { position: relative; }
+.media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  aspect-ratio: 1;
+  padding: var(--store-space-14);
+  overflow: hidden;
+  border-radius: var(--store-radius-14);
+  background: var(--color-product-well);
+}
+.photo {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.placeholder {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  min-inline-size: 0;
+  color: inherit;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.media .photo { mix-blend-mode: multiply; }
+.media .placeholder, .compactPhoto .placeholder { color: var(--store-text-muted); }
+.stock {
+  display: inline-block;
+  max-inline-size: 100%;
+  padding: var(--store-space-4) var(--store-space-8);
+  border-radius: var(--radius-pill);
+  color: var(--store-positive);
+  background: color-mix(in srgb, var(--store-positive-surface) 88%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--store-positive) 16%, transparent);
+  font-size: var(--store-type-11);
+  line-height: var(--store-leading-label);
+  font-weight: var(--store-weight-semibold);
+  overflow-wrap: anywhere;
+}
+.stock[data-stock="unavailable"] {
+  color: var(--store-unavailable);
+  background: var(--store-unavailable-surface);
+}
+.visual .stock {
+  position: absolute;
+  inset-block-start: var(--store-space-10);
+  inset-inline-start: var(--store-space-10);
+  z-index: 1;
+  max-inline-size: calc(100% - 58px);
+  pointer-events: none;
+}
+.visual :global(.card-save) {
+  position: absolute;
+  isolation: isolate;
+  inset-block-start: var(--store-space-6);
+  inset-inline-end: var(--store-space-6);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: var(--store-target-min);
+  block-size: var(--store-target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--store-text-muted);
+  background: transparent;
+}
+.visual :global(.card-save)::before {
+  content: "";
+  position: absolute;
+  inset: var(--store-space-4);
+  z-index: -1;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-ink) 10%, transparent);
+  backdrop-filter: blur(6px);
+}
+.visual :global(.card-save):hover::before { background: var(--store-hover-surface); }
+.visual :global(.card-save)[data-store-control='save'][aria-pressed='true'] { background: transparent; }
+.visual :global(.card-save)[aria-pressed='true'] svg { color: var(--color-coral); }
+.visual :global(.card-save) svg { inline-size: var(--store-space-20); block-size: var(--store-space-20); }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--store-space-4);
+  font-weight: var(--store-weight-medium);
+  color: var(--store-text-muted);
+  font-size: var(--store-type-12);
+  line-height: var(--store-leading-label);
+}
+.tags > * {
+  display: inline-flex;
+  min-inline-size: 0;
+  align-items: center;
+  min-block-size: var(--store-space-18);
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+.tags a { color: inherit; }
+.tags a:hover { color: var(--store-action); }
+.tags bdi, .title bdi { min-inline-size: 0; overflow-wrap: anywhere; }
+.title {
+  margin: 0;
+  color: var(--store-text);
+  font-size: var(--store-type-14);
+  font-weight: var(--store-weight-semibold);
+  line-height: var(--store-leading-product);
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+.card .title { min-block-size: 2.5rem; }
+.card .title a { display: block; }
+.card .title bdi {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.title a:hover { color: var(--store-action); }
+.optionNote {
+  margin: 0;
+  color: var(--store-text-muted);
+  font-size: var(--store-type-12);
+  line-height: var(--store-leading-product);
+  overflow-wrap: anywhere;
+}
+.buy {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--store-space-6) var(--store-space-4);
+  margin-block-start: auto;
+  min-block-size: var(--store-target-min);
+}
+.price {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  display: grid;
+  justify-items: start;
+  color: var(--store-text);
+  font-variant-numeric: tabular-nums;
+}
+.buy .price { flex: 1 0 auto; align-self: center; }
+.amount {
+  max-inline-size: 100%;
+  font-size: var(--store-type-17);
+  font-weight: var(--store-weight-bold);
+  line-height: var(--store-leading-heading);
+  letter-spacing: var(--store-tracking-price);
+}
+.previous {
+  max-inline-size: 100%;
+  color: var(--store-text-muted);
+  font-size: var(--store-type-12);
+  line-height: var(--store-leading-label);
+}
+.price :global(.currency-amount), .price :global(.currency-visual) { max-inline-size: 100%; white-space: normal; }
+.price :global(.currency-visual) > span { min-inline-size: 0; overflow-wrap: anywhere; }
+.price :global(.dirham-icon) { color: inherit; }
+.choose {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--store-space-4);
+  min-block-size: var(--store-target-min);
+  border: 1px solid transparent;
+  border-radius: var(--store-radius-10);
+  background: var(--store-secondary-surface);
+  padding-inline: var(--store-space-8);
+  font-size: var(--store-type-13);
+  font-weight: var(--store-weight-medium);
+  overflow-wrap: anywhere;
+}
+.choose:hover { background: var(--store-hover-surface); }
+.choose svg { inline-size: var(--store-space-16); block-size: var(--store-space-16); flex-shrink: 0; }
+.buy :global(.card-cart-controls) { display: contents; }
+.buy :global(.add-to-cart), .buy :global(.card-cart-stepper) {
+  margin-inline-start: auto;
+  border-radius: var(--store-radius-14);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-brand) 22%, transparent);
+}
+.buy :global(.card-cart-stepper) { box-shadow: none; }
+.card :global(.card-cart-status), .card :global(.card-save-error) {
+  flex: 0 0 100%;
+  margin: 0;
+  color: var(--store-error);
+  font-size: var(--store-type-12);
+  overflow-wrap: anywhere;
+}
+.card :global(.card-cart-status[data-added="true"]), .card :global(.card-cart-status:empty) {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.compactLink {
+  display: grid;
+  grid-template-columns: minmax(44px, 64px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--store-space-10);
+  min-block-size: var(--store-target-min);
+  padding: var(--store-space-10);
+}
+.compactLink:hover { background: var(--store-hover-surface); border-radius: inherit; }
+.compactPhoto { display: block; block-size: var(--store-space-64); }
+.compactText { display: grid; justify-items: start; gap: var(--store-space-4); min-inline-size: 0; }
+.compactText .amount { font-size: var(--store-type-16); }
+.compactArrow { inline-size: var(--store-space-16); block-size: var(--store-space-16); }
+
+.recentHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--store-space-8);
+  margin-block-end: var(--store-space-8);
+}
+.recentHead h2 {
+  margin: 0;
+  font-size: var(--store-type-18);
+  line-height: var(--store-leading-product);
+}
+.recentRail {
+  display: flex;
+  gap: var(--store-space-10);
+  overflow-x: auto;
+  padding: var(--store-space-4);
+}
+.recentRail > a {
+  flex: 0 0 min(260px, 88%);
+  grid-template-columns: var(--store-space-48) minmax(0, 1fr);
+}
+.recentRail .compactPhoto { block-size: var(--store-space-56); }
+
+@media (max-width: 359px) {
+  .card { padding-inline: var(--store-space-8); }
+  .buy { column-gap: var(--store-space-2); }
+}

@@ -63,3 +63,11 @@ export function decodeStoredCart(raw: string | null, legacy = false): CartLine[]
 }
 
 export const productOptionLabel = (product: Product) => variantLabel(product);
+
+/** Separate a literal terminal pack size while keeping strengths such as 500mg / 5 ml intact. */
+export function literalPackFromName(name: string) {
+  const size = /[ (]+([0-9]+(?:[.,][0-9]+)?\s*(?:ml|kg|g|litres?|liters?))\)?$/i.exec(name);
+  if (!size?.[1]) return null;
+  const prefix = name.slice(0, size.index).trimEnd();
+  return prefix && !/(?:\/|\bper)$/i.test(prefix) ? { label: size[1], prefix } : null;
+}

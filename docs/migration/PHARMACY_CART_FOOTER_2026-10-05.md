@@ -1,3 +1,5 @@
+> SUPERSEDED 2026-11-15: historical implementation evidence only. Not current design guidance. Do not restore its palette, type, layout, tokens or instructions. Functional and production requirements remain in root/web AGENTS.md and apps/web/PRODUCT.md.
+
 # Pharmacy cart and footer
 
 Held candidate on `codex/pharmacy-cart-footer`, after bounded CSV PR #35 at `b57d45f`. No deployment, master merge, database/provider operation or stored contraction.
