@@ -118,7 +118,7 @@
   .product-options a[aria-current="page"] { color: var(--color-forest); background: var(--color-tint); border: 2px solid var(--color-forest); }
   .product-options a[aria-current="page"]::before { content: "✓" / ""; }
   .product-options [aria-disabled="true"] { color: var(--color-muted); background: var(--color-surface); border-color: var(--color-divider); }
-  .gallery-stage { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 16px; background: var(--color-surface); touch-action: pan-y; }
+  .gallery-stage { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 16px; background: var(--color-surface); touch-action: pan-y pinch-zoom; }
   .gallery-image { display: block; inline-size: 100%; block-size: 100%; max-block-size: 560px; padding: 10%; object-fit: contain; }
   .gallery-zoom { position: absolute; inset-block-end: 12px; inset-inline-end: 12px; font-size: .875rem; }
   .gallery-navigation { display: flex; justify-content: center; align-items: center; gap: 16px; padding-block: 8px; }
