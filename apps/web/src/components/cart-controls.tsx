@@ -2,13 +2,13 @@
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
 import { useState } from 'react';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 import { Button } from './ui/button';
 import Link from './app-link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
 import { attributeCart } from '../lib/search/attribution';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from './storefront-icons';
 export function AddToCart({ id, stock, quantityPicker = false, name, priceLabel, locale = 'en' }: { id: string; stock: number; quantityPicker?: boolean; name?: string; priceLabel?: string; locale?: Locale }) {
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);

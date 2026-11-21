@@ -10,7 +10,7 @@ import { CheckoutProgress, PaymentChoices, SecureCheckoutLabel, ConfirmationMark
 import { ProductImage } from './product-image';
 import { loadCart } from '../app/(storefront)/cart/actions';
 import { detailErrors, detailError, detailFields, normalizeCheckoutMobile, type DetailField } from '../lib/checkout/validation';
-import { ChevronDownIcon, LockClosedIcon, ArrowLeftIcon, PencilSquareIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, LockClosedIcon, ArrowLeftIcon, PencilSquareIcon, TruckIcon } from './storefront-icons';
 import { NativeSelect } from './ui/native-select';
 import { Field, FieldLabel, FieldDescription } from './ui/field';
 
@@ -18,7 +18,7 @@ import { emirateLabel } from '../lib/i18n';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from './app-link';
 import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, stripeCheckoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 import { savedArea } from '../lib/location/browser';
 import { z } from 'zod';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';

@@ -1,5 +1,5 @@
 'use client';
-import { BanknotesIcon, CheckIcon, CreditCardIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { BanknotesIcon, CheckIcon, CreditCardIcon, LockClosedIcon } from './storefront-icons';
 import { t, type Locale } from '../lib/i18n';
 
 export function CheckoutProgress({ stage, locale }: { stage: 'details' | 'payment' | 'complete'; locale: Locale }) {

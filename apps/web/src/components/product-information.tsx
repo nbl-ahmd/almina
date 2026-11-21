@@ -3,7 +3,7 @@ import { shopText as u } from '../lib/i18n-storefront';
 import Link from './app-link';
 import type { Product } from '../lib/catalog/model';
 import { categoryHref } from '../lib/catalog/model';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 
 const sectionTitles = new Set(['Key benefits', 'Suitable for', 'Pack details']);
 

@@ -4,7 +4,7 @@ import { CategoryTile } from './category-tile';
 import { ProductCard } from './product-card';
 import Link from './app-link';
 import { type Category, type Product } from '../lib/catalog/model';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 
 export async function StockState({ stock }: { stock: number }) {
   const locale = await getLocale();

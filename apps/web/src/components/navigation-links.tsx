@@ -1,7 +1,7 @@
 'use client';
 import Link from './app-link';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, BuildingStorefrontIcon, TagIcon, ShoppingCartIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BuildingStorefrontIcon, TagIcon, ShoppingCartIcon, UserCircleIcon } from './storefront-icons';
 import { cartCountText, t, type Locale, type MessageKey } from '../lib/i18n';
 import { useCartCount } from '../lib/catalog/use-cart-count';
 
@@ -28,7 +28,7 @@ export function NavigationLinks({ locale = 'en' }: { locale?: Locale }) {
     const cart = link.href === '/cart';
     return <Link key={link.href} aria-current={active ? 'page' : undefined} aria-label={cart && count ? cartCountText(locale,count) : undefined} className="mobile-tab flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-xs leading-none font-medium transition-colors" href={link.href}>
       <span className="mobile-tab-icon relative flex h-7 w-12 shrink-0 items-center justify-center rounded-full">
-        <Glyph className="size-[22px]" strokeWidth={active ? 1.9 : 1.5} aria-hidden="true" />
+        <Glyph className="size-[22px]" weight={active ? "fill" : "regular"} aria-hidden="true" />
         {cart && count ? <span className="absolute -top-1.5 -end-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-semibold ring-2" aria-hidden="true">{count > 99 ? '99+' : count}</span> : null}
       </span>
       <span className="max-w-full truncate">{t(locale, link.key)}</span>

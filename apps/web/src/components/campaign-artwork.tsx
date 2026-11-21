@@ -1,6 +1,6 @@
 import Image, { getImageProps } from 'next/image';
 import Link from './app-link';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon } from './storefront-icons';
 import { campaignImageUrl, growthPagePath, type GrowthPage } from '@almina/contracts';
 
 /** Used by the real homepage and the editor preview so artwork/copy don't drift. */

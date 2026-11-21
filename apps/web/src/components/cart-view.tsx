@@ -7,7 +7,7 @@ import { ProductImage } from './product-image';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
 import { loadCart, checkAddition } from '../app/(storefront)/cart/actions';
 import { money, type CartLine } from '../lib/catalog/model';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
 import { t, tf, itemCountText, type Locale } from '../lib/i18n';
 type Items = Awaited<ReturnType<typeof loadCart>>['items'];

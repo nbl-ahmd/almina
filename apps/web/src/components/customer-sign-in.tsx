@@ -9,7 +9,7 @@ import Link from './app-link';
 import { accountErrorMessage } from '../lib/account/errors';
 import Script from 'next/script';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowLeftIcon, ArrowRightIcon, ArrowPathIcon, CheckCircleIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowRightIcon, ArrowPathIcon, CheckCircleIcon, PencilSquareIcon } from './storefront-icons';
 
 export class AccountRequestError extends Error {
   constructor(readonly status: number, message: string) { super(message); }
@@ -114,7 +114,7 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
   }
   return <div className="mx-auto w-full max-w-[440px] pb-3 sm:pt-2">
     <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm transition-colors"><ArrowLeftIcon className="size-4" />{a("Back to shopping")}</Link>
-    <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl border bg-white shadow-[0_12px_36px_-20px_rgba(25,33,59,0.2)]">
+    <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl border bg-white ">
       <div className="px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
         <div className="mb-6 text-center">
           <h1 id="sign-in-heading" className="mb-2 text-[28px] font-semibold leading-tight tracking-[-0.025em]">{challenge ? a("Check your email") : purpose === 'wholesale' ? a("Business sign-in") : a("Welcome to Al Mina")}</h1>

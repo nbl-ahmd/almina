@@ -12,7 +12,7 @@ import {
   ChatBubbleLeftRightIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
-} from "@heroicons/react/24/outline";
+} from './storefront-icons';
 import {
   ProductPhoto as Photo,
   ProductPrice as Price,
@@ -43,7 +43,7 @@ async function SectionHeading({
 }) {
   const locale = await getLocale();
   return (
-    <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
+    <div className="section-heading">
       <div className="min-w-0">
         <h2 className="m-0 text-[22px] font-semibold tracking-[-0.03em] md:text-[28px]">
           {u(locale,title)}
@@ -67,39 +67,36 @@ async function SectionHeading({
 
 export async function HomeHero({ products, banners = [], campaigns = [] }: { products: Product[]; banners?: Banner[]; campaigns?: GrowthPage[] }) {
   const locale = await getLocale();
-  const product = products.find(item => productImage(item) !== "/product-placeholder.svg");
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
-  const slides = [
-    { title: locale === 'ar' ? 'عناية لكل يوم.' : 'Care for your everyday.', detail: locale === 'ar' ? 'الصحة والجمال واحتياجات العائلة من صيدلية الميناء في رأس الخيمة.' : 'Health, beauty and family essentials. From your neighbourhood pharmacy in Ras Al Khaimah.', href: '/products', cta: locale === 'ar' ? 'تسوق المنتجات' : 'Shop the essentials' },
-    { title: u(locale,'Little essentials. Lots of care.'), detail: u(locale,'Discover baby and family care essentials.'), href: '/collections/baby-care', cta: u(locale,'Explore now ') },
-  ];
-  return <section className="home-hero" aria-label={u(locale,'Discover Al Mina')}>
-    <h1 className="sr-only">{u(locale,'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
-    <CampaignSlider locale={locale} label={u(locale,'Pharmacy promotions')} controlLabel={u(locale,'promotion')}>
+  void products;
+  return <section className="home-hero" aria-label={u(locale, 'Discover Al Mina')}>
+    <h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
+    <CampaignSlider locale={locale} label={u(locale, 'Pharmacy promotions')} controlLabel={u(locale, 'promotion')}>
       {[
-        ...heroCampaigns.map((page,index) => <CampaignArtwork cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index===0} />),
-        ...banners.slice(0,8).map((banner,index) => {
-          const artwork=<div className="catalog-banner-artwork"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:767px) 100vw, 1280px" loading={index===0&&!heroCampaigns.length?'eager':'lazy'} fetchPriority={index===0&&!heroCampaigns.length?'high':undefined} className="object-contain" /></div>;
-          return banner.href?<Link href={banner.href} key={banner.image} className="block">{artwork}</Link>:<div key={banner.image}>{artwork}</div>;
+        ...heroCampaigns.map((page, index) => <CampaignArtwork cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),
+        ...banners.slice(0, 8).map((banner, index) => {
+          const artwork = <div className="catalog-banner-artwork"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} className="object-contain" /></div>;
+          return banner.href ? <Link href={banner.href} key={banner.image}>{artwork}</Link> : <div key={banner.image}>{artwork}</div>;
         }),
-        ...(!heroCampaigns.length&&!banners.length ? slides.map((slide,index) => <div key={slide.href} className="fallback-campaign">
-          <div className="relative z-10 flex flex-col items-start justify-center px-5 pt-7 pb-20 md:px-10 md:py-12">
-            <h2 className="mb-4 max-w-5xl text-[clamp(2.25rem,4.5vw,4rem)] font-semibold leading-[1.02] tracking-[-0.035em] max-md:max-w-[9ch]">{slide.title}</h2>
-            <p className="mb-6 max-w-[38ch] text-sm leading-6 max-md:max-w-[23ch]">{slide.detail}</p>
-            <div className="flex flex-wrap gap-2"><Link href={slide.href} className="button button-accent min-h-12 gap-3 px-5 text-sm">{slide.cta}<ArrowRightIcon className="size-4 rtl:rotate-180" /></Link><Link href="/offers" className="inline-flex min-h-12 items-center px-3 text-sm font-medium">{u(locale,'Offers')}<ArrowUpRightIcon className="ms-2 size-4" /></Link></div>
+        ...(!heroCampaigns.length && !banners.length ? [<div key="everyday" className="fallback-campaign">
+          <div className="campaign-copy">
+            <h2>{locale === 'ar' ? 'عناية لكل يوم.' : 'Care for your everyday.'}</h2>
+            <p>{locale === 'ar' ? 'الصحة والجمال واحتياجات العائلة.' : 'Health, beauty and family essentials.'}</p>
+            <Link href="/products" className="campaign-link">{locale === 'ar' ? 'تسوق المنتجات' : 'Shop products'}<ArrowRightIcon aria-hidden="true" /></Link>
           </div>
-          {product&&index===0 ? <Link href={productHref(product)} className="absolute end-5 bottom-5 z-10 hidden max-w-[280px] items-center gap-3 rounded-xl bg-white p-3 md:flex"><span className="size-14 shrink-0"><Photo product={product} /></span><div className="min-w-0"><span className="mb-1 block line-clamp-2 text-xs font-medium">{product.name}</span><div className="text-sm"><Price product={product} /></div></div><ArrowUpRightIcon className="size-4 shrink-0" /></Link>:null}
-        </div>):[]),
+          <Image className="campaign-subject" src="/design/campaigns/almina-care-courier.png" alt="" width={1254} height={1254} sizes="(max-width:899px) 45vw, 540px" loading="eager" />
+        </div>] : []),
       ]}
     </CampaignSlider>
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-x-5 gap-y-1 border-b pb-3 text-xs"><span>{locale==='ar'?'صيدلية الميناء · رأس الخيمة':'Al Mina Pharmacy · Ras Al Khaimah'}</span><Link href="/contact" className="inline-flex min-h-11 items-center gap-2 font-medium"><ChatBubbleLeftRightIcon className="size-4" />{u(locale,'Product and order questions, answered by our team.')}<ArrowUpRightIcon className="size-4 shrink-0" /></Link></div>
   </section>;
 }
 
 export async function HomeCategories({ categories }: { categories: Category[] }) {
   const locale=await getLocale();if(!categories.length)return null;
-  const selected=categories.slice(0,5),bento=selected.length===5;
-  return <section aria-label={u(locale,'Shop by care')}><SectionHeading title={u(locale,'Shop by care')} href="/categories" link={u(locale,'All categories')} /><div className={`grid-flow-dense gap-3 ${bento?'scrollbar-none flex snap-x snap-proximity overflow-x-auto overscroll-x-contain pb-2 lg:grid lg:grid-cols-4 lg:grid-rows-2':'grid grid-cols-2 md:grid-cols-4'}`}>{selected.map((category,index)=><div key={category._id} className={`${bento&&index===0?'lg:col-span-2 lg:row-span-2':''} min-w-[170px] snap-start lg:min-w-0 [&>a]:h-full [&>a]:min-h-[170px] lg:[&>a]:min-h-[170px] ${bento&&index===0?'lg:[&>a]:min-h-full lg:[&_h3]:text-3xl':''}`}><CategoryTile category={category} /></div>)}</div></section>;
+  return <section aria-label={u(locale, 'Shop by care')}>
+    <SectionHeading title={u(locale, 'Shop by care')} href="/categories" link={u(locale, 'All categories')} />
+    <div className="home-categories">{categories.slice(0, 8).map(category => <CategoryTile key={category._id} category={category} />)}</div>
+  </section>;
 }
 
 export async function HomeProductCarousel({ products }: { products: Product[] }) {
@@ -130,7 +127,7 @@ export async function HomeShelf({
   return (
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+      <div className="home-product-grid">
         {products.slice(0, 4).map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
@@ -139,20 +136,10 @@ export async function HomeShelf({
   );
 }
 
-export async function HomeEditorial() {
- const locale=await getLocale();
- const stories=[
-  {title:u(locale,'The skincare shelf'),detail:u(locale,'Explore cleansers, moisturisers and daily skincare from our current range.'),href:'/collections/skin-essentials'},
-  {title:u(locale,'Care for their little world'),detail:u(locale,'Discover baby care, feeding and everyday family essentials.'),href:'/collections/baby-care'},
-  {title:u(locale,'Everyday personal care'),detail:u(locale,'Browse body, hair and personal care products for your daily routine.'),href:'/collections/daily-care'},
- ];
- return <section aria-label={u(locale,'Explore care collections')}><SectionHeading title={u(locale,'Explore care collections')} href="/categories" /><div className="flex flex-col gap-3 md:flex-row">{stories.map((story,index)=><details key={story.href} name="home-care-stories" open={index===0} className="care-story"><summary className="relative z-10 flex min-h-20 cursor-pointer list-none items-start justify-between gap-3 p-5 text-lg font-semibold md:min-h-[380px] md:group-open/story:min-h-24 md:text-xl"><span className="relative z-10 max-w-[16ch]">{story.title}</span><ArrowUpRightIcon className="size-5 shrink-0 transition-transform group-open/story:rotate-90" /></summary><div className="relative px-5 pb-5"><p className="relative z-10 mb-5 max-w-[28ch] text-sm leading-6">{story.detail}</p><Link href={story.href} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold">{u(locale,'Explore products')}<ArrowRightIcon className="size-4 rtl:rotate-180" /></Link></div></details>)}</div></section>;
-}
-
 export async function HomeSupport() {
   const locale = await getLocale();
   return (
-    <section className="relative overflow-hidden rounded-2xl px-6 py-8 text-white md:px-10 md:py-12">
+    <section className="home-support relative overflow-hidden rounded-2xl px-6 py-8 text-white md:px-10 md:py-12">
       <div className="relative grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-end">
         <div>
           <span className="mb-5 flex size-11 items-center justify-center rounded-full bg-white/10">
@@ -175,7 +162,7 @@ export async function HomeSupport() {
 export async function HomeBenefits() {
   const locale = await getLocale();
   return (
-    <div className="grid grid-cols-3 gap-2 rounded-2xl border bg-white/60 px-2 py-4 text-xs md:gap-6 md:px-6 md:py-4 md:text-[13px]">
+    <div className="home-benefits">
       {[
         { icon: ShieldCheckIcon, label: "Shop with clear product details" },
         { icon: TruckIcon, label: "Delivery details at checkout" },
@@ -258,12 +245,12 @@ export async function HomeCollectionTiles({
   return (
     <section
       aria-label={u(locale,"Featured collections")}
-      className={`grid gap-3 md:gap-4 ${visible.length > 1 ? "md:grid-cols-2" : "md:grid-cols-1"}`}
+      className="home-collections"
     >
       {visible.slice(0, 4).map((collection) => (
         <div
           key={collection.href}
-          className={`grid grid-cols-[1fr_0.78fr] items-stretch gap-3 overflow-hidden rounded-2xl p-4 md:p-5 ${visible.length === 1 ? "md:grid-cols-[1fr_240px]" : ""}`}
+          className="home-collection"
         >
           <div className="flex flex-col justify-between py-1">
             <div>
@@ -401,7 +388,7 @@ export async function HomeCompactShelf({
   return (
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
-      <div className="scrollbar-none flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain pb-1 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-4">
+      <div className="home-compact-grid scrollbar-none flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain pb-1 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-4">
         {products.slice(0, 4).map((product) => (
           <CompactProductCard key={product._id} product={product} />
         ))}

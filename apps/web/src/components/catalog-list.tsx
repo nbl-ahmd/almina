@@ -1,3 +1,4 @@
+import { CatalogFilterPanel } from './catalog-filter-panel';
 import {SearchSummary} from './search-summary';
 import {SearchJourney} from './search-journey';
 import { CatalogSort } from './catalog-sort';
@@ -8,7 +9,7 @@ import { NativeSelect } from './ui/native-select';
 import { Checkbox } from './ui/checkbox';
 import { Button } from './ui/button';
 import { Field, FieldLabel, FieldGroup } from './ui/field';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from './storefront-icons';
 import { CatalogFilterForm } from './catalog-filter-form';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
@@ -18,7 +19,7 @@ import Link from './app-link';
 import { getCategories, getProducts } from '../lib/server/catalog';
 import { categoryHref } from '../lib/catalog/model';
 import { ProductGrid, Breadcrumb } from './storefront';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 export type SearchParams = Record<string, string | string[] | undefined>;
 export function scalar(value: string | string[] | undefined) { return typeof value === 'string' ? value : ''; }
 export async function CatalogList({ title, params, offers = false, category, parents = [] }: { title: string; params: SearchParams; offers?: boolean; category?: string; parents?: { name: string; path: string }[] }) {
@@ -66,13 +67,12 @@ export async function CatalogList({ title, params, offers = false, category, par
   return <div className="catalog-page">{q?<GrowthActivity key={`${q}:${page}`} kind="search" matched={result.products.length>0}/>:null}<Breadcrumb title={u(locale,title)} parents={parents} /><StorefrontIntro title={u(locale,title)} description={offers ? u(locale,'Explore current offers from Al Mina. Real savings, with the current price shown on every product.') : q ? locale === "en" ? `Find the right match for “${q}”. Browse the results or narrow your search.` : `اعثر على ما يناسب بحثك عن «${q}». تصفح النتائج أو ضيّق نطاق البحث.` : editorial?.description ?? u(locale,'Explore products for your health, care and daily routine.')}><span className="text-xs">{locale === "en" ? `Page ${page} · ${result.products.length} ${result.products.length===1?'product':'products'} shown` : `الصفحة ${page} · عرض ${result.products.length} منتجات`}</span></StorefrontIntro>
     <nav className="catalog-category-links scrollbar-none mb-5 flex gap-2 overflow-x-auto pb-2 text-xs md:mb-6 md:flex-wrap" aria-label={u(locale,"Browse categories")}>{categories.slice(0,8).map(cat=><Link className="inline-flex min-h-9 shrink-0 items-center rounded-full border bg-white px-3.5 py-1.5 transition-colors aria-[current=page]:text-white" href={categoryHref(cat)} key={cat._id} aria-current={selected===cat._id?'page':undefined}>{cat.name}</Link>)}<Link className="inline-flex min-h-9 shrink-0 items-center px-3 font-semibold" href="/categories">{u(locale,"All categories")}</Link></nav>
     <div className="catalog-layout grid min-w-0 gap-4 lg:grid-cols-[272px_minmax(0,1fr)] lg:items-start lg:gap-6 [&_.product-grid]:lg:grid-cols-3">
-      <details id="catalog-filters" key={`${q}:${selected}:${inStock}:${minPrice}:${maxPrice}:${sort}`} className="catalog-filters group/filters min-w-0 rounded-2xl border lg:sticky lg:top-6">
-        <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden [&::-webkit-details-marker]:hidden">
+      <CatalogFilterPanel key={`${q}:${selected}:${inStock}:${minPrice}:${maxPrice}:${sort}`} locale={locale} summary={<summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden [&::-webkit-details-marker]:hidden">
           <span className="flex size-8 items-center justify-center rounded-lg"><Icon name="filter" /></span>
           {u(locale,"Filters")}
           {activeFilters ? <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs tabular-nums">{activeFilters}</span>:null}
           <ChevronDownIcon aria-hidden="true" className="ms-auto size-4 shrink-0 group-open/filters:rotate-180" />
-        </summary>
+        </summary>}>
         <CatalogFilterForm locale={locale} className="filters border-t p-4 lg:border-0 lg:p-5">
           <FieldGroup className="gap-5">
             <div className="filter-panel-heading hidden min-h-11 items-center justify-between gap-3 border-b pb-4 lg:flex">
@@ -95,7 +95,7 @@ export async function CatalogList({ title, params, offers = false, category, par
             <details className="group/categories hidden border-t pt-1 lg:block"><summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden">{u(locale,"Explore categories")}<ChevronDownIcon aria-hidden="true" className="size-3.5 group-open/categories:rotate-180" /></summary><nav aria-label={u(locale,"Explore categories")} className="flex flex-col pt-1">{categories.map(cat=><Link className="flex min-h-11 items-center rounded-lg px-2 text-sm transition-colors focus-visible:outline-2" href={categoryHref(cat)} key={cat._id} aria-current={selected===cat._id?'page':undefined}>{cat.name}</Link>)}</nav></details>
           </FieldGroup>
         </CatalogFilterForm>
-      </details>
+      </CatalogFilterPanel>
       <div className="catalog-results min-w-0"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><span className="text-xs">{locale==='ar'?`عرض ${result.products.length} منتجات`:`${result.products.length} ${result.products.length===1?'product':'products'} on this page`}</span><CatalogSort key={`${q}:${selected}:${sort}`} sort={sort} query={sortQuery} locale={locale} /></div>{chips.length?<nav aria-label={locale==='ar'?'عوامل التصفية المطبقة':'Applied filters'} className="mb-4 flex flex-wrap gap-2">{chips.map(chip=><Link key={chip.key} href={removeFilter(chip.key)} aria-label={`${locale==='ar'?'إزالة':'Remove'} ${chip.label || categories.find(cat=>cat._id===selected)?.name || u(locale,'Category')}`} className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full px-3 text-xs"><span className="truncate">{chip.label || categories.find(cat=>cat._id===selected)?.name || u(locale,'Category')}</span><Icon name="close" /></Link>)}</nav>:null}{q ? <p className="catalog-result-label mb-4 text-sm">{locale === "en" ? `Results for “${q}”` : `نتائج البحث عن «${q}»`}</p>:null}{q?<SearchSummary result={result.search} query={q} locale={locale} unavailable={result.searchUnavailable} filters={{...sortQuery,sort}}/>:null}{offers && !result.products.length && !q && !selected ? <div className="rounded-2xl border bg-white p-6 text-center md:p-10"><h2 className="mb-3 text-2xl font-semibold">{u(locale,"No current offers")}</h2><p className="mb-5 text-sm">{u(locale,"There are no active product offers to show right now. Explore the full range for your everyday essentials.")}</p><Link className="button rounded-full text-sm" href="/categories">{u(locale,"Browse categories")}<Icon name="arrow" /></Link></div> : result.search?<SearchJourney key={result.search.searchId} searchId={result.search.searchId} query={q} locale={locale} page={page} products={result.products.map(p=>p._id)}><ProductGrid products={result.products}/></SearchJourney>:<ProductGrid products={result.products} />}
         <div className="mt-5 flex items-start gap-3 rounded-2xl border p-4 text-xs leading-relaxed"><Icon name="phone" /><p className="m-0">{u(locale,"Need help finding a product? ")}<Link className="font-semibold" href="/contact">{u(locale,"Contact Al Mina Pharmacy")}</Link>{u(locale," for product and delivery enquiries.")}</p></div>
         {editorial ? <section className="mt-6 rounded-2xl border bg-white p-5 md:p-7"><h2 className="mb-3 text-xl">{locale === "en" ? `Choosing your ${title.toLowerCase()} essentials` : `اختيار احتياجاتك من ${title}`}</h2><p className="max-w-prose text-sm leading-7">{editorial.body}</p><nav className="my-4 flex flex-wrap gap-2" aria-label={u(locale,"Explore related searches")}>{editorial.topics.map(topic=><Link className="inline-flex min-h-11 items-center rounded-full border bg-white px-4 text-xs transition-colors" href={'/search?'+new URLSearchParams({q:topic,category:category!})} key={topic}>{topic}</Link>)}</nav>{editorial.faqs.map(faq=><details key={faq.question} className="border-t py-3"><summary className="cursor-pointer text-sm font-medium">{faq.question}</summary><p className="mt-3 mb-0 text-sm leading-7">{faq.answer}</p></details>)}</section> : null}

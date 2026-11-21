@@ -1,6 +1,6 @@
 'use client';
 import Link from './app-link';
-import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { ShoppingCartIcon } from './storefront-icons';
 import { cartCountText, t, type Locale } from '../lib/i18n';
 import { useCartCount } from '../lib/catalog/use-cart-count';
 

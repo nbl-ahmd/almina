@@ -43,7 +43,7 @@ export function CampaignSlider({
               aria-label={locale === "en" ? `Show ${controlLabel} ${index + 1}` : `عرض ${u(locale,controlLabel)} ${index + 1}`}
               aria-pressed={active === index}
               onClick={() => setActive(index)}
-              className="group flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 shadow-none outline-offset-0 focus-visible:outline-2"
+              className="group flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0  outline-offset-0 focus-visible:outline-2"
             >
               <span
                 aria-hidden="true"
