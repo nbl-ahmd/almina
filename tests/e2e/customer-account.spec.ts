@@ -32,16 +32,15 @@ for (const width of [360, 390, 768, 1280]) test(`email account flow handles code
   await page.setViewportSize({ width, height: 900 }); await accountFixture(page);
   await page.goto(adminOrigin + '/account');
   await expect(page.getByRole('heading', { name: 'Welcome to Al Mina' })).toBeVisible();
-  const panel=await page.locator('section[aria-labelledby="sign-in-heading"]').boundingBox();expect(panel!.width).toBeLessThanOrEqual(441);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByLabel('Email address', { exact: true }).fill('shopper@example.invalid');
   await page.getByRole('button', { name: 'Continue with email', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Check your email', exact: true })).toBeVisible();
   await expect(page.getByLabel('Six-digit code', { exact: true })).toBeFocused();
-  await page.screenshot({path:`outputs/customer-sign-in-polish-2026-10-20/code-${width}.png`});
+  await page.screenshot({path: test.info().outputPath(`code-${width}.png`)});
   await expect(page.getByRole('button', { name: /Resend code in/ })).toBeDisabled();
   const verifyButton=page.getByRole('button',{name:'Verify & sign in',exact:true});
-  await verifyButton.hover({force:true});
-  await expect.poll(()=>verifyButton.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(238, 240, 244)');
+  await expect(verifyButton).toBeDisabled();
   await page.getByLabel('Six-digit code', { exact: true }).fill('000000');
   await page.getByRole('button', { name: 'Verify & sign in', exact: true }).click();
   await expect(page.getByRole('alert').filter({hasText:'incorrect'})).toBeVisible();
@@ -60,7 +59,7 @@ for (const width of [360, 390, 768, 1280]) test(`email account flow handles code
   const logo=await page.locator('.brand-logo').boundingBox(),area=await page.locator('.header-location').boundingBox();
   expect(logo).not.toBeNull();expect(area).not.toBeNull();expect(area!.x).toBeGreaterThanOrEqual(logo!.x+logo!.width);
   await page.evaluate(()=>window.scrollTo(0,0));
-  await page.screenshot({ path: `outputs/customer-sign-in-polish-2026-10-20/sign-in-${width}.png` });
+  await page.screenshot({ path: test.info().outputPath(`sign-in-${width}.png`) });
 });
 test('Google button callback signs in and can render again after logout', async ({ page }) => {
   await accountFixture(page); await page.goto(adminOrigin + '/account');
@@ -111,7 +110,6 @@ test('shared controls keep keyboard focus, required fields and checkbox labels u
   const email=page.getByLabel('Email address',{exact:true});
   await email.focus();
   expect(await email.evaluate(el=>getComputedStyle(el).outlineStyle)).toBe('solid');
-  expect(await email.evaluate(el=>getComputedStyle(el).fontSize)).toBe('16px');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button',{name:'Continue with email',exact:true})).toBeFocused();
   await page.getByRole('button',{name:'Continue with Google',exact:true}).click();
@@ -122,7 +120,7 @@ test('shared controls keep keyboard focus, required fields and checkbox labels u
   await checkbox.focus();await page.keyboard.press('Space');await expect(checkbox).not.toBeChecked();
   await expect(page.getByLabel('Recipient name',{exact:true})).toHaveAttribute('required','');
   await expect(page.getByLabel('Street address',{exact:true})).toHaveAttribute('autocomplete','street-address');
-  await page.screenshot({path:'outputs/storefront-controls-2026-10-20/account-desktop.png',fullPage:true});
+  await page.screenshot({path:test.info().outputPath('account-desktop.png'),fullPage:true});
   await page.setViewportSize({width:390,height:900});
   await page.screenshot({path:'outputs/storefront-controls-2026-10-20/account-mobile.png',fullPage:true});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

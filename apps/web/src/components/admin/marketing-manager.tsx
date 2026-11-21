@@ -233,7 +233,7 @@ export function MarketingManager({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="mb-2 text-3xl">Email marketing</h1>
-          <p className="m-0 max-w-2xl text-sm text-muted">
+          <p className="m-0 max-w-2xl text-sm">
             Design reusable emails, link real products and send to people who
             asked to hear from Al Mina.
           </p>
@@ -380,7 +380,7 @@ export function MarketingManager({
                     Search catalogue
                   </button>
                 </form>
-                <p className="text-xs text-muted">
+                <p className="text-xs">
                   Reviewed, in-stock general-sale products only. Product links
                   use current catalogue identities.
                 </p>
@@ -505,7 +505,7 @@ export function MarketingManager({
                   <button disabled={busy} onClick={() => void perform(save)}>
                     Save template
                   </button>
-                  <span className="text-xs text-muted">
+                  <span className="text-xs">
                     {dirty
                       ? "Unsaved changes"
                       : template.revision
@@ -530,7 +530,7 @@ export function MarketingManager({
             />
             <details className="admin-panel">
               <summary>Advanced: import MJML</summary>
-              <p className="text-sm text-muted">
+              <p className="text-sm">
                 Paste declarative MJML, then save to validate it. Scripts, raw
                 HTML blocks, external stylesheets and filesystem includes are
                 not allowed.
@@ -577,7 +577,7 @@ export function MarketingManager({
                     )}
                   />
                 ) : (
-                  <p className="text-sm text-muted">Loading preview…</p>
+                  <p className="text-sm">Loading preview…</p>
                 )}
               </details>
             ) : null}
@@ -637,7 +637,7 @@ export function MarketingManager({
                 </button>
               </div>
             </div>
-            <p className="text-sm text-muted">
+            <p className="text-sm">
               Sender:{" "}
               {connections?.providers.find((row) => row.id === provider)
                 ?.sender ?? "Not configured"}
@@ -712,14 +712,14 @@ export function MarketingManager({
                 >
                   Queue campaign
                 </button>
-                <p className="text-xs text-muted">
+                <p className="text-xs">
                   Up to 500 recipients per campaign. Unsubscribes and
                   suppressions are checked again before each send. Uncertain
                   attempts require review and are never automatically resent.
                 </p>
               </>
             ) : (
-              <p className="text-sm text-muted">
+              <p className="text-sm">
                 You can design templates and send approved tests. An
                 administrator approves audience imports and campaign sending.
               </p>
@@ -730,7 +730,7 @@ export function MarketingManager({
       {tab === "contacts" && admin ? (
         <section className="admin-panel space-y-4">
           <h2 className="text-xl">Import consented contacts</h2>
-          <p className="text-sm text-muted">
+          <p className="text-sm">
             One email address per line, up to 500. Import only people who
             explicitly agreed to marketing. Purchases and wholesale approval
             alone are not marketing permission. Existing unsubscribes remain
@@ -811,14 +811,14 @@ export function MarketingManager({
       {tab === "campaigns" ? (
         <section className="admin-panel">
           <h2 className="text-xl">Recent campaigns</h2>
-          <p className="text-sm text-muted">
+          <p className="text-sm">
             Accepted means the provider received the request. Uncertain sends
             require provider review before any new campaign is created.
           </p>
           {campaigns.length ? (
             <ul className="list-none space-y-4 p-0">
               {campaigns.map((row) => (
-                <li key={row._id} className="border-b border-border pb-4">
+                <li key={row._id} className="border-b pb-4">
                   <h3 className="text-base">
                     {row.subject}
                     {row.test ? " · Test" : ""}

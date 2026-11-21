@@ -108,14 +108,14 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
     const id = `review-field-${field}`;
     const label = imageMode ? `Image label · ${labels[field]}` : canEditProduct && key && field !== 'size' ? productFieldLabels[key] : labels[field];
 
-    return <div key={field} className="min-w-0 border-b border-[var(--admin-hairline)] px-3 py-3 last:border-b-0 sm:px-4">
+    return <div key={field} className="min-w-0 border-b px-3 py-3 last:border-b-0 sm:px-4">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         {editable && !discarded ? <label htmlFor={id} className="!m-0 !text-sm !font-medium">{label}</label> : <span className="text-sm font-medium">{label}</span>}
-        {needsAttention || fieldError ? <span className="rounded-md bg-[var(--admin-warning-soft)] px-2 py-1 text-xs font-medium text-[var(--admin-warning)]">
+        {needsAttention || fieldError ? <span className="rounded-md px-2 py-1 text-xs font-medium">
           {original.status === 'conflict' && !edit ? 'Conflict' : 'Check value'}</span>
-          : discarded ? <span className="text-xs text-[var(--admin-muted)]">Not applicable</span>
-          : optionalBlank ? <span className="text-xs text-[var(--admin-muted)]">Optional</span>
-          : edit ? <span className="text-xs text-[var(--admin-muted)]">{imageMode ? 'Extraction correction' : 'Product change'}</span> : null}
+          : discarded ? <span className="text-xs">Not applicable</span>
+          : optionalBlank ? <span className="text-xs">Optional</span>
+          : edit ? <span className="text-xs">{imageMode ? 'Extraction correction' : 'Product change'}</span> : null}
       </div>
       {discarded ? null : editable ? <input id={id} aria-describedby={optionalBlank ? undefined : `${id}-context`} aria-required={isCoreImageIdentityField(field)} aria-invalid={!!fieldError || !!edit && needsAttention}
         className="mt-1.5" value={value} disabled={controlsDisabled} maxLength={500}
@@ -125,13 +125,13 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
           setEdit(field, !imageMode && next.trim() === savedValue ? undefined : { target: imageMode ? 'extraction' : 'catalogue', value: next });
         }} />
         : <p className="!mb-0 !mt-1 break-words text-sm">{row.catalogueValue || 'Missing from catalogue'}</p>}
-      {!optionalBlank ? <p id={`${id}-context`} className={`!mb-0 !mt-1.5 break-words text-xs text-[var(--admin-muted)] ${!needsAttention && !edit && row.imageValue === savedValue ? 'sr-only' : ''}`}>
+      {!optionalBlank ? <p id={`${id}-context`} className={`!mb-0 !mt-1.5 break-words text-xs  ${!needsAttention && !edit && row.imageValue === savedValue ? 'sr-only' : ''}`}>
         Extracted <strong>{original.imageValue || 'Unreadable'}</strong>
         {imageMode ? <> · Catalogue <strong>{row.catalogueValue || 'Missing'}</strong></>
           : edit?.target === 'catalogue' ? <> · Previously <strong>{savedValue || 'blank'}</strong></> : null}
       </p> : null}
-      {fieldError ? <p className="!my-1 text-xs text-[var(--admin-warning)]">{fieldError}</p>
-        : imageMode && needsAttention ? <p className="!my-1 text-xs text-[var(--admin-warning)]">{row.catalogueValue ?
+      {fieldError ? <p className="!my-1 text-xs">{fieldError}</p>
+        : imageMode && needsAttention ? <p className="!my-1 text-xs">{row.catalogueValue ?
           'Enter what the original label shows. Choose another product if the values differ.' :
           'The selected product has no catalogue value to compare.'}</p> : null}
       {!imported ? <div className="mt-1 flex flex-wrap gap-1.5">
@@ -157,17 +157,17 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
         'By approving, you confirm the barcode and other fields identify this exact variant.' :
         'By approving, you confirm these values against the original label.';
 
-  return <section ref={panel} onKeyDown={shortcuts} className="min-w-0 scroll-mt-20 rounded-xl border border-[var(--admin-border)] bg-white" aria-labelledby="review-product-title" aria-busy={busy}>
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--admin-border)] px-4 py-3 sm:px-5">
+  return <section ref={panel} onKeyDown={shortcuts} className="min-w-0 scroll-mt-20 rounded-xl border bg-white" aria-labelledby="review-product-title" aria-busy={busy}>
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
       <div className="min-w-0 flex-1">
         <h2 ref={title} tabIndex={-1} id="review-product-title" className="!m-0 !text-base [overflow-wrap:anywhere]">{detail.product?.name || detail.item.source.identity.name || 'Identify this product'}</h2>
-        <p className="!mb-0 !mt-1 text-xs text-[var(--admin-muted)]">{detail.product?.productId || 'No catalogue match'}{detail.item.status !== 'pending' ? ` · ${detail.item.status}` : ''}</p>
+        <p className="!mb-0 !mt-1 text-xs">{detail.product?.productId || 'No catalogue match'}{detail.item.status !== 'pending' ? ` · ${detail.item.status}` : ''}</p>
       </div>
       <Button variant="ghost" disabled={busy || !hasNext} onClick={onSkip} aria-keyshortcuts="Alt+J"><ForwardIcon className="size-4" aria-hidden="true" />Skip for now</Button>
     </header>
     <div className="grid min-w-0 items-start gap-4 p-3 sm:p-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-      <figure className="m-0 min-w-0 rounded-lg border border-[var(--admin-border)] lg:sticky lg:top-20">
-        <figcaption className="flex flex-wrap items-center justify-between gap-1 border-b border-[var(--admin-hairline)] px-3 py-1.5">
+      <figure className="m-0 min-w-0 rounded-lg border lg:sticky lg:top-20">
+        <figcaption className="flex flex-wrap items-center justify-between gap-1 border-b px-3 py-1.5">
           <span className="text-xs font-medium">Original image</span>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="ghost" disabled={!loaded || imageFailed} onClick={() => setZoom(value => !value)} aria-pressed={zoom}><MagnifyingGlassIcon className="size-4" aria-hidden="true" />{zoom ? 'Fit image' : 'Zoom label'}</Button>
@@ -180,7 +180,7 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
             className={zoom ? 'h-auto w-[180%] max-w-none shrink-0 object-contain' : 'h-full w-full object-contain p-2'} />
         </div>
         {imageFailed ? <p role="alert" className="admin-note admin-note--danger !m-2">Image could not load. Hold it or skip.</p>
-          : !loaded ? <p role="status" className="m-2 text-xs text-[var(--admin-muted)]">Loading original…</p> : null}
+          : !loaded ? <p role="status" className="m-2 text-xs">Loading original…</p> : null}
       </figure>
       <div className="min-w-0 space-y-4">
         {detail.withdrawalReason ? <p role="alert" className="admin-note admin-note--danger">Withdrawn association. {detail.withdrawalReason}</p> : null}
@@ -193,8 +193,8 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
               <h3 className="!m-0 !text-sm">Product fields</h3>
               {!imported ? <Button size="sm" variant="ghost" disabled={busy} onClick={() => setShowAssociation(true)}>Change product</Button> : null}
             </div>
-            {fieldsToReview ? <p role="status" className="!m-0 text-xs text-[var(--admin-warning)]">{fieldsToReview} {fieldsToReview === 1 ? 'field needs' : 'fields need'} attention</p> : null}
-            <div className="rounded-lg border border-[var(--admin-border)]">{visible.map(renderRow)}</div>
+            {fieldsToReview ? <p role="status" className="!m-0 text-xs">{fieldsToReview} {fieldsToReview === 1 ? 'field needs' : 'fields need'} attention</p> : null}
+            <div className="rounded-lg border">{visible.map(renderRow)}</div>
             {admin && !imported && detail.product.fields && preview.comparison.some(row => !visible.includes(row) && editableProductField(row.field)) ? <details>
               <summary className="cursor-pointer py-1 text-sm font-medium">Add a product field</summary>
               <label className="mt-2 !text-xs">Additional product field<select value="" disabled={busy} onChange={event => {
@@ -204,15 +204,15 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
                 .map(row => <option key={row.field} value={row.field}>{labels[row.field]}</option>)}</select></label>
             </details> : null}
           </>}
-        <details className="border-t border-[var(--admin-border)] pt-2">
+        <details className="border-t pt-2">
           <summary className="cursor-pointer py-1 text-sm font-medium">Notes & history</summary>
           <div className="admin-stack pt-3">
             {!imported ? <>
               <label>Review note<textarea rows={2} maxLength={2000} value={note} disabled={busy} onChange={event => setNote(event.target.value)} /></label>
               <label>Reason for holding<select value={holdReason} disabled={busy} onChange={event => setHoldReason(event.target.value)}>{reviewHoldReasons.map(reason => <option key={reason}>{reason}</option>)}</select></label>
             </> : null}
-            <p className="whitespace-pre-line text-xs text-[var(--admin-muted)]">Saved label text · {detail.item.source.labelText.join(' · ') || 'None'}</p>
-            {detail.item.source.sourceNote ? <p className="text-xs text-[var(--admin-muted)]">{detail.item.source.sourceNote}</p> : null}
+            <p className="whitespace-pre-line text-xs">Saved label text · {detail.item.source.labelText.join(' · ') || 'None'}</p>
+            {detail.item.source.sourceNote ? <p className="text-xs">{detail.item.source.sourceNote}</p> : null}
             {detail.item.note ? <p className="text-xs">Latest note · {detail.item.note}</p> : null}
             {detail.product ? <Link className="text-xs underline underline-offset-4" href={admin ? `/admin/products/${detail.product.id}` : '/admin/products'} target="_blank">Open full catalogue record</Link> : null}
             {detail.history.length ? <ol className="space-y-2">{detail.history.map((entry, index) => <li key={entry.reviewedAt + String(index)} className="text-xs"><p>{entry.decision} · {entry.reviewedAt.slice(0, 16).replace('T', ' ')} UTC</p><p>{entry.note}</p></li>)}</ol> : null}
@@ -221,16 +221,16 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
         </details>
       </div>
     </div>
-    <div className="sticky bottom-[calc(var(--admin-bottomnav-height)+20px+env(safe-area-inset-bottom))] z-20 space-y-2 rounded-b-xl border-t border-[var(--admin-border)] bg-white px-3 py-2.5 sm:px-5 md:bottom-0">
+    <div className="sticky z-20 space-y-2 rounded-b-xl border-t bg-white px-3 py-2.5 sm:px-5 md:bottom-0">
       {error ? <p role="alert" className="admin-note admin-note--danger !m-0">{error}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="!m-0 text-xs text-[var(--admin-muted)]">{imported ? 'Already imported. Review history is retained.' : unavailable}</p>
-          {!imported ? <p className="!mb-0 !mt-1 hidden text-xs text-[var(--admin-muted)] sm:block">Alt + Enter to approve · Alt + H to hold · Alt + J to skip</p> : null}
+          <p className="!m-0 text-xs">{imported ? 'Already imported. Review history is retained.' : unavailable}</p>
+          {!imported ? <p className="!mb-0 !mt-1 hidden text-xs sm:block">Alt + Enter to approve · Alt + H to hold · Alt + J to skip</p> : null}
         </div>
         {!imported ? <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <Button className="!min-h-10 flex-1 sm:flex-none" disabled={busy} onClick={() => decide('held')} aria-keyshortcuts="Alt+H"><PauseIcon className="size-4" aria-hidden="true" />Hold & next</Button>
-          <Button className="!min-h-10 flex-1 disabled:!border-[var(--admin-border)] disabled:!bg-[var(--admin-paper-strong)] disabled:!text-[var(--admin-muted)] sm:flex-none" variant="primary" disabled={busy || !ready} onClick={() => decide('approved')} aria-keyshortcuts="Alt+Enter">
+          <Button className="!min-h-10 flex-1 sm:flex-none" variant="primary" disabled={busy || !ready} onClick={() => decide('approved')} aria-keyshortcuts="Alt+Enter">
             <CheckIcon className="size-4" aria-hidden="true" />{busy ? 'Working…' : hasProductChanges ? 'Save changes & approve' : 'Approve & next'}
           </Button>
         </div> : null}

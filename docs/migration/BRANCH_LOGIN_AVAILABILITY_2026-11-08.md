@@ -30,7 +30,7 @@ Regression coverage includes reserved disabled administrators, manual choices, o
 
 ## UI verification
 
-This narrow extension preserves the incumbent neutral Working paper console, Geist typography, existing field/action styles and semantic feedback. No CSS, design tokens, PRODUCT, DESIGN or sidecar changes were introduced for login availability. The original operations workflow's detector pass was not repeated.
+This extension preserves the existing login availability workflow and semantic feedback.
 
 Generated logins can accept an available suggestion with a visible explanation; manually edited logins require an explicit suggestion action. A submit-time conflict returns focus to the login field and preserves the password, contacts and delivery draft. **Continue to delivery** restores the saved location, polygon, fees and estimate instead of silently submitting without the intended coverage. The fresh independent review returned **ship for its scored delivery-recovery finding**; this is a scoped UI conclusion, not a production-deployment or notification-delivery verdict.
 

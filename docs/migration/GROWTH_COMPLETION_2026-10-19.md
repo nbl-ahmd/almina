@@ -10,7 +10,7 @@ No production database migration, deployment, paid campaign, or outbound custome
 message was performed. Everything here is additive code plus tests, and every new
 behaviour is off by default.
 
-## Reading order and source plans
+## Reading order
 
 A new session should read, in this order:
 
@@ -22,18 +22,6 @@ A new session should read, in this order:
    implementation against the commerce direction, plus its “Still needed” table.
 4. `docs/migration/MIGRATION_STATUS.md` — the running status log. Read the newest dated
    entries at the top and the final “Growth programme completion pass” section.
-5. Source plans (research and proposals, not live status):
-   - `outputs/commerce-direction-2026-10-18/RAK_COMPETITOR_GROWTH_PLAN.md` —
-     competitive review and the 90-day phases in §9.
-   - `outputs/commerce-direction-2026-10-18/ALMINA_NEW_COMMERCE_DIRECTION.md` —
-     preceding design and commerce direction.
-6. Supporting evidence: `GROWTH_UI_REVIEW_2026-10-19.md`,
-   `STOREFRONT_EXTENSION_2026-10-19.md`, `VISUAL_MERCHANDISING_2026-10-19.md`,
-   `HOMEPAGE_REDESIGN_V2_2026-10-19.md`, `ADMIN_CONSOLE_2026-10-18.md`.
-
-The `outputs/` documents are the original brief; this file and
-`MIGRATION_STATUS.md` are the only places that record what is actually done.
-
 ## Final state of this pass
 
 | # | Item (from the foundation document) | State |

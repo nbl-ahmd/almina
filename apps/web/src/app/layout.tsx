@@ -1,12 +1,9 @@
 import { connection } from 'next/server';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import localFont from 'next/font/local';
 import './globals.css';
 import { getWebEnvironment } from '../lib/server/env';
 import { siteDescription, siteName } from '../lib/seo';
-// Retained admin/base face loads only if used; storefront preloads its own family.
-const ptSans = localFont({ src: './fonts/PTSans-Regular.woff2', weight: '400', display: 'swap', preload: false });
 export function generateMetadata(): Metadata {
   const env = getWebEnvironment();
   return { metadataBase: new URL(env.WEB_ORIGIN),
@@ -17,5 +14,5 @@ export function generateMetadata(): Metadata {
 }
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await connection(); // Fresh nonce per render; HTML must never be shared from a cache.
-  return <html lang="en"><body id="top" className={ptSans.className}>{children}</body></html>;
+  return <html lang="en"><body id="top">{children}</body></html>;
 }

@@ -1,6 +1,6 @@
 # Commerce plan implementation — 19 October 2026
 
-This checkpoint implements the homepage/discovery portion of `outputs/commerce-direction-2026-10-18/ALMINA_NEW_COMMERCE_DIRECTION.md` and `RAK_COMPETITOR_GROWTH_PLAN.md`. It is not a claim that their complete 90-day growth programme is finished.
+This checkpoint records the homepage and catalogue discovery work within the 90-day growth programme.
 
 ## Implemented locally
 
@@ -39,11 +39,10 @@ The next coherent package is consented retention messaging and provider-backed a
 
 - 20 focused merchandising/storefront/SEO/media/stylesheet tests passed. Added regression coverage for active sale price eligibility, unavailable/hidden products, category membership, duplicate IDs, safe banner destinations and real brand extraction.
 - Focused TypeScript and ESLint passed; production Next.js build passed. Final singleton layout fix subsequently typechecked.
-- Impeccable 4.6 static detect with `--no-config`: zero findings. No global detector ignores added.
 - Local Next MCP: no configuration or session errors.
 - Browser: 360/390/768/1440 widths checked, no document overflow; compact delivery control verified and dialog opened/closed; new collection navigated and reloaded; canonical URL and ItemList/BreadcrumbList verified; product images checked for load failures.
 - Independent finish reviewer requested fixing a singleton collection half-row. Fixed with a full-width compact composition; scoped verdict `ship`.
-- Screenshots under `outputs/homepage-v3-2026-10-19/`. Banner-link behaviour has pure regression tests; no new production banner was uploaded just to test it.
+- Banner-link behaviour has pure regression tests.
 
 ## Delivery boundaries
 

@@ -50,13 +50,13 @@ export function ImageReviewDraftForm({ identity, categories, busy, onCancel, onC
   return <form onSubmit={submit} className="space-y-4" aria-labelledby="review-draft-title">
     <div>
       <h3 id="review-draft-title" className="!m-0 !text-sm">New product draft</h3>
-      <p className="!mb-0 !mt-1 text-xs text-[var(--admin-muted)]">Check the prefilled label details and add the catalogue information. The product starts unpublished.</p>
+      <p className="!mb-0 !mt-1 text-xs">Check the prefilled label details and add the catalogue information. The product starts unpublished.</p>
     </div>
     <fieldset disabled={busy || submitting} className="grid min-w-0 gap-3 sm:grid-cols-2">
       {(Object.keys(productFieldLabels) as (keyof ImageReviewProductChanges)[]).map(key => <label key={key} className={key === 'name' ? 'sm:col-span-2' : ''}>
         {productFieldLabels[key]}<input required={key === 'name'} value={product[key]} onChange={event => update(key, event.target.value)}
           maxLength={{ name: 500, brand: 100, productForm: 120, strength: 120, packLabel: 150, mpn: 70, barcode: 500, gtin: 14 }[key]} />
-        {key === 'gtin' && identity.gtin && !reviewGtin(identity.gtin) ? <span className="text-xs text-[var(--admin-warning)]">Extracted GTIN {identity.gtin} needs checking.</span> : null}
+        {key === 'gtin' && identity.gtin && !reviewGtin(identity.gtin) ? <span className="text-xs">Extracted GTIN {identity.gtin} needs checking.</span> : null}
       </label>)}
       <label>Category<select required value={product.category} onChange={event => update('category', event.target.value)}><option value="">Choose a category</option>
         {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}

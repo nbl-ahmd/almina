@@ -21,7 +21,7 @@ test('product channels reveal prices, save both rates and preserve inactive pric
     await page.setViewportSize({ width, height: 1000 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => scrollTo(0, 0));
-    await page.screenshot({ path: `.impeccable/review/product-channels-${width}.png`, fullPage: true });
+    await page.screenshot({ path: test.info().outputPath(`product-channels-${width}.png`), fullPage: true });
   }
   await page.getByRole('button', { name: 'Save product', exact: true }).click();
   await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();

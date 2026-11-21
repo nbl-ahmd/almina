@@ -1,3 +1,4 @@
+import { catalogueLineMinor } from '../catalog/cart-display';
 import { t, type Locale } from '../i18n';
 import 'server-only';
 import { cartSchema, productOptionLabel, displayPrice, productHref, type CartLine } from '../catalog/model';
@@ -6,9 +7,9 @@ export async function readCart(lines: CartLine[], locale: Locale = 'en') {
   const parsed = cartSchema.parse(lines);
   return Promise.all(parsed.map(async line => {
     const product = await getProductById(line.id);
-    return product ? { ...line, name: product.name, variantLabel: productOptionLabel(product), price: displayPrice(product), stock: product.stock,
+    return product ? { ...line, name: product.name, variantLabel: productOptionLabel(product), price: displayPrice(product), lineTotalMinor: catalogueLineMinor(displayPrice(product), line.quantity), stock: product.stock,
       image: productImage(product), href: productHref(product), available: product.stock >= line.quantity, reminderEligible: product.productType === 'general' && product.contentReviewed === true } :
-      { ...line, name: t(locale,'cartUnavailableProduct'), variantLabel: '', price: null, stock: 0, image: '/product-placeholder.svg', href: '/products', available: false, reminderEligible: false };
+      { ...line, name: t(locale,'cartUnavailableProduct'), variantLabel: '', price: null, lineTotalMinor: null, stock: 0, image: '/product-placeholder.svg', href: '/products', available: false, reminderEligible: false };
   }));
 }
 export async function validateCartAddition(id: string, quantity: number, locale: Locale = 'en') {

@@ -1,3 +1,5 @@
+> 2026-11-15: storefront aesthetic references in this historical record are superseded and excluded from current design guidance. Admin specifications, functional contracts and production safeguards remain in force.
+
 # Combined storefront, customer account and wholesale release
 
 The two local branch names (`codex/arabic-phase-four` and `codex/wholesale-portal`) originally pointed at the same production base, `0afd821`. Their pending work shared one checkout rather than forming two divergent commit histories. The combined application changes are committed on `codex/wholesale-portal` for one PR to `master`; the older branch reference is preserved.
@@ -15,11 +17,9 @@ The two local branch names (`codex/arabic-phase-four` and `codex/wholesale-porta
 
 No production database, product price, stock, customer, order or credential was changed by preparing these commits. The PR does not merge or deploy itself. Deploy compatible web/API versions together, review/apply additive indexes through the existing controlled process, and configure Google OAuth/email authentication privately. Staff must configure wholesale business verification, assignments and actual prices/quantities; no business is approved automatically. Existing email DNS records need separate restoration after the owner's nameserver migration.
 
-Local Impeccable tool updates/hooks, design capture images and scratch screenshots are left outside the application commits. Generated `next-env.d.ts` build paths are excluded.
-
 Verification now accepts an optional restricted `AL_MINA_VERIFICATION_TAG` with `AL_MINA_ISOLATED_BUILD=1`. Build and browser-server processes use the same named directory, preserving an immutable artifact while other local previews/builds continue. For this PR the tag is `combined-pr`. Default deployment/CI build paths are unchanged.
 
-See `CORAL_STOREFRONT_REDESIGN_2026-10-21.md`, `ARABIC_PHASE_FOUR_2026-10-20.md`, `CUSTOMER_ACCOUNT_2026-10-20.md`, `CAMPAIGN_MERCHANDISING_2026-10-20.md` and `WHOLESALE_PORTAL_2026-10-21.md` for domain-specific decisions and rollback constraints.
+See `ARABIC_PHASE_FOUR_2026-10-20.md`, `CUSTOMER_ACCOUNT_2026-10-20.md`, `CAMPAIGN_MERCHANDISING_2026-10-20.md` and `WHOLESALE_PORTAL_2026-10-21.md` for domain-specific decisions and rollback constraints.
 
 ## Verification results
 

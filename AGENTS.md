@@ -39,7 +39,6 @@ Modernize the application incrementally into a scalable production architecture 
 - server-authoritative commerce logic
 - safe inventory handling
 - optimized SEO and performance
-- modern responsive UI
 - backward compatibility with existing production data and URLs
 
 Do not perform a one-shot rewrite.

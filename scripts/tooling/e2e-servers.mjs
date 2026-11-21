@@ -15,7 +15,7 @@ await new Promise((resolve, reject) => mkdir(new URL('.verification-results/', r
 const log = createWriteStream(new URL('.verification-results/e2e-servers.log', root));
 const cleanEnvironment = Object.fromEntries(Object.entries({ PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
   TEST_MONGOD_PATH: process.env.TEST_MONGOD_PATH, AL_MINA_ISOLATED_BUILD: process.env.AL_MINA_ISOLATED_BUILD, AL_MINA_VERIFICATION_TAG: process.env.AL_MINA_VERIFICATION_TAG,
-  AL_MINA_FIXTURE_RUN_ID: runId, APP_ENV: 'development', DATABASE_MODE: 'disabled', NEXT_TELEMETRY_DISABLED: '1', NODE_ENV: 'production',
+  AL_MINA_FIXTURE_RUN_ID: runId, APP_ENV: 'development', DATABASE_MODE: 'disabled', CLOUDINARY_CLOUD_NAME: 'synthetic', NEXT_TELEMETRY_DISABLED: '1', NODE_ENV: 'production',
 }).filter(([, value]) => value !== undefined));
 function launch(args, cwd, env = {}) {
   const child = spawn(process.execPath, args, { cwd: fileURLToPath(cwd), env: { ...cleanEnvironment, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
