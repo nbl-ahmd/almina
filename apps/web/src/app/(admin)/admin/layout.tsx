@@ -1,16 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import localFont from "next/font/local";
 import "./admin.css";
-// One family carries the whole console. Geist is shared with the storefront
-// but loaded as its own instance and never preloaded: administration is a
-// non-indexed, post-login surface, so a preload hint would only waste bandwidth.
-const adminFont = localFont({
-  src: "../../fonts/Geist-Variable.ttf",
-  weight: "400 700",
-  display: "swap",
-  preload: false,
-});
 export const metadata: Metadata = {
   manifest: "/admin/manifest.webmanifest",
   appleWebApp: {capable:true,title:"Al Mina Operations",statusBarStyle:"default"},
@@ -22,5 +12,5 @@ export const metadata: Metadata = {
   },
 };
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  return <div className={`admin-app ${adminFont.className}`}>{children}</div>;
+  return <div className="admin-app">{children}</div>;
 }

@@ -47,12 +47,12 @@ Before activation, rollback is a code rollback leaving additive data intact. Aft
 
 ## Verification
 
-Final checks: 155 unit tests and 31 focused disposable-database integration tests passed. Workspace typecheck, focused ESLint, persistent API build and isolated Next production build passed. Next MCP returned no configuration or browser-session errors. Impeccable static detect returned no findings for the account component (that detector result is not a whole-site certificate). A real browser additionally saved a synthetic product to the signed-in list and loaded it on `/saved`.
+Final checks: 155 unit tests and 31 focused disposable-database integration tests passed. Workspace typecheck, focused ESLint, persistent API build and isolated Next production build passed. Next MCP returned no configuration or browser-session errors. A real browser additionally saved a synthetic product to the signed-in list and loaded it on `/saved`.
 
 - Disposable replica-set tests cover the existing checkout suite and new content/auth/search/reward paths. New tests cover mixed-case historical ownership, origin/RBAC/method gates, 25 account actions without an IP-shared sign-in quota, one-time concurrent code use, concurrent voucher consumption, cancellation/refund, referral replay, stock preservation, medicine exclusions, review ownership/moderation and saved-list isolation.
 - Pure tests verify Google signatures/issuer/audience/expiry/email verification, cookie separation, late saved-list response invalidation, publication/URL/schedule/search rules and the legacy/free-delivery arithmetic boundary.
 - UI verification: real local admin login, reward form load, synthetic customer account, exchange of 500 points into an AED10 voucher and no horizontal overflow at 390px. Both guest and signed-in desktop/mobile captures are under `outputs/growth-2026-10-19/`. The temporary loopback-only visual fixture never enters application imports or production builds.
-- Independent review corrected ownership case, saved-list response races and customer quota isolation; final scoped verdict **ship**. See `GROWTH_UI_REVIEW_2026-10-19.md` for the exact visual scope. Provider-backed email delivery and a live Google account were not exercised; JWT verification was tested with an isolated signing key.
+- Independent review corrected ownership case, saved-list response races and customer quota isolation. Provider-backed email delivery and a live Google account were not exercised; JWT verification was tested with an isolated signing key.
 
 ## Broader plan still outstanding
 

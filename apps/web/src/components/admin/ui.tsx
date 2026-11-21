@@ -2,10 +2,7 @@ import type { ReactNode } from 'react';
 import Link from '../app-link';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from 'radix-ui';
-/* Presentational admin primitives, adapted from the shadcn pattern (cva
-   variants + Radix Slot for asChild) and tuned to the Dub-inspired console.
-   The authoritative visual specification is ../app/(admin)/admin/DESIGN.md.
-   Everything here is server-safe: no hooks, no browser APIs. */
+/* These components are server-safe and use no browser APIs. */
 
 export type Tone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info';
 

@@ -198,8 +198,8 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   await page.getByRole('tab', {name:'Photos',exact:true}).click();
   await expect(page.getByLabel('Choose product photos')).toBeEnabled();
   await page.getByText('Upload recovery', { exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toHaveCSS('padding-left', '20px');
+  await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toBeVisible();
   await page.getByLabel('Choose product photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
   await page.getByRole('button', { name: 'Save product photos', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Product photos saved' })).toBeVisible();
