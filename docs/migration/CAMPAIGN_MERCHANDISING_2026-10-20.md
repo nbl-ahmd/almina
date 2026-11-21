@@ -125,7 +125,4 @@ uploads are disabled. Existing banner references and archive behavior remain
 available. A provider timeout after accepting artwork can leave an unreferenced
 asset. Reconcile it against banner records and history before removing media.
 
-The storefront uses a fixed 4:1 frame on desktop and a 3:1 frame below 768 CSS
-px. Newly published Banners lead the carousel. Managed campaigns and the
-built-in slides remain available. Designer export dimensions and file limits
-are recorded in the [storefront design specification](../../apps/web/DESIGN.md#homepage-carousel-artwork).
+Banner upload/export dimensions are defined by the existing [artwork contract](../../apps/web/src/lib/catalog/banner-artwork.ts). Existing banner publication and compatibility behavior remain part of the application.

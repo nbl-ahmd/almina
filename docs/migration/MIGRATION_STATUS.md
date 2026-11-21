@@ -1,6 +1,6 @@
-## Repository design guidance reset
+## 2026-11-21 — Design documentation reset
 
-Removed the storefront and admin visual specifications, token snapshots, project-local design skills and review artifacts. Removed the live theme, Tailwind configuration, custom fonts, decorative artwork and presentation animations. Storefront, wholesale and admin now use browser defaults with a small stylesheet for accessible controls, interaction states and media sizing. Browser screenshots go to the test results directory.
+Removed the root design specification, design/reference/review folders, archived visual guidance and project-local design skills, including token templates. Runtime components, application styles required for controls and media, catalogue data, commerce, authentication and integrations are retained. Future design decisions are open.
 
 ## 2026-11-19 — Reduce Render background traffic
 
@@ -159,7 +159,7 @@ Last updated: 2026-10-14.
 
 Checkout location follow-up: [complete OpenStreetMap address autofill](CHECKOUT_LOCATION_2026-10-14.md) supersedes the pin-only follow-up. GPS lookup now prefills address, canonical UAE emirate and city/area together with the delivery link; all fields persist in the order snapshot. A same-origin private gateway calls the Render API; distributed MongoDB leases, cache expiry, daily budgets and provider backoff control upstream use. Manual edits invalidate review and clear stale pins; failures preserve manual checkout and uncertain submission retries. Unit/API/contract checks, real-Mongo integration checks, compiled checkout/commerce browser regressions, lint/typecheck/build and a real public-landmark geocoder smoke passed. Public Nominatim has no SLA and a strict application-wide one-request/second limit; larger traffic needs a managed/self-hosted endpoint. Additive geocoding TTL indexes are in the API migration plan; no production deployment/index/data changes occurred.
 
-Development styling follow-up: [overlay CSP and CSS cascade correction](CSS_CSP_2026-10-14.md) restores the real Next dev logo/menu by permitting nonce-free injected style elements only for APP_ENV=development plus NODE_ENV=development. Staging/production/compiled previews retain strict nonce styles and all script protections. Semantic admin/storefront component CSS is layered below Tailwind utilities; secondary media/recovery buttons declare readable surface colors. Live development verification passes 32 public/login route cases across 360/390/768/1280 px with no stylesheet CSP violations, page errors or horizontal overflow; all 59 compiled browser/accessibility cases, typecheck/lint/build and production CSP/SEO smokes pass. Final sequential source verification passes 235 tests with 35 database-gated skips (covered by the preceding dedicated database suite). An earlier concurrent fixture-ownership timeout is rejected evidence; sequential rerun passed without waiving the guard. Continued demo cancellation through the Next gateway returned 200 on both initial/repeated requests, restored stock 10 → 12 exactly once and preserved the original receipt/total. Browser confirmation shows cancelled; the status selector now follows loaded status and refreshes after transitions, with an immediate/reload dispatch regression. No production/provider operation occurred.
+Development styling follow-up: [overlay CSP and CSS cascade correction](CSS_CSP_2026-10-14.md) restores the real Next dev logo/menu by permitting nonce-free injected style elements only for APP_ENV=development plus NODE_ENV=development. Staging/production/compiled previews retain strict nonce styles and all script protections. Live development verification passes 32 public/login route cases across 360/390/768/1280 px with no stylesheet CSP violations, page errors or horizontal overflow; all 59 compiled browser/accessibility cases, typecheck/lint/build and production CSP/SEO smokes pass. Final sequential source verification passes 235 tests with 35 database-gated skips (covered by the preceding dedicated database suite). An earlier concurrent fixture-ownership timeout is rejected evidence; sequential rerun passed without waiving the guard. Continued demo cancellation through the Next gateway returned 200 on both initial/repeated requests, restored stock 10 → 12 exactly once and preserved the original receipt/total. Browser confirmation shows cancelled; the status selector now follows loaded status and refreshes after transitions, with an immediate/reload dispatch regression. No production/provider operation occurred.
 
 The owner confirmed Vercel Next frontend, Render persistent API/workers and MongoDB Atlas. [Deployment ownership, environment setup and persistent local demo](VERCEL_RENDER_ATLAS_2026-10-14.md) supersede the earlier shared-production-database development decision. Root development now requires an explicit development-labelled `backend/.env.local`, with no production env fallback. `npm run dev:demo` seeds and preserves a dedicated loopback replica set, two categories, four products and synthetic admin/staff accounts without provider credentials or reset endpoints. The Vercel app has explicit monorepo build settings; the protected exact-SHA staging workflow targets one combined Render API and Vercel staging. Git deployment holds remain in place; no hosted deployment or production data/provider operation occurred.
 
@@ -323,7 +323,7 @@ Local verification: full typecheck/lint, 52 automated tests with synthetic query
 
 ## Storefront preview route migration
 
-Implemented the requested storefront route structure in the isolated Next.js preview on `codex/storefront-routes`. Public catalog pages now fetch/render on the server through a guarded read-only legacy adapter; client islands handle only gallery/cart interactions and browser storage. Existing product IDs and category MongoDB IDs remain the route identity, with readable slug prefixes. Legacy product/category links are supported and query parameters retained. Permanent redirects are gated by `STOREFRONT_REDIRECTS_VERIFIED` (false by default), pending real staging/production target and URL inventory verification. Typography/palette/card language use the existing PT Sans and pharmacy assets; no production redesign/cutover occurred.
+Implemented the requested storefront route structure in the isolated Next.js preview on `codex/storefront-routes`. Public catalog pages now fetch/render on the server through a guarded read-only legacy adapter; client islands handle only gallery/cart interactions and browser storage. Existing product IDs and category MongoDB IDs remain the route identity, with readable slug prefixes. Legacy product/category links are supported and query parameters retained. Permanent redirects are gated by `STOREFRONT_REDIRECTS_VERIFIED` (false by default), pending real staging/production target and URL inventory verification. No production cutover occurred.
 
 Cart imports legacy IDs/quantities, ignores stored prices and rechecks current catalog/store status through server actions. The checkout URL provides saved-cart review, with ordering disabled: live checkout migration is **incomplete** until the audited pricing, policy, atomic inventory and idempotency prerequisites are remediated. No order, inventory, customer, integration or database writes were introduced. Unmigrated legacy routes remain owned by the legacy deployment.
 
@@ -691,22 +691,3 @@ Verified the decoded destination text on desktop and mobile after reload, no
 horizontal overflow, no browser errors, and no Turbopack compilation issues.
 Component lint passes. Follow-up PR review/merge remains pending; no deployment
 or WhatsApp message was sent by verification.
-
-## 2026-11-21 — Design branches consolidated into master
-
-Merged `codex/storefront-pharmacy-app-reference` and
-`codex/vercel-production-backend-cutover`. The newer design reset and root
-`DESIGN.md` with `docs/design/` govern the final baseline. Conflicting older
-storefront components, styles, fonts, active instructions and appearance-specific
-tests were superseded by the reset. Both branches remain in Git history.
-Compatible media/banner fixes, catalogue/cart helpers and functional tests were
-retained. Historical design records are reference material only.
-
-Merge validation passed workspace typecheck, lint, 281 standard unit tests,
-two cart-display tests and two disposable-database media integration tests.
-
-The merged foundation build passed with isolated local configuration. All 28
-selected compiled Playwright search, commerce and customer-account checks passed,
-including 360/390/768/1280px search and Arabic account coverage. A checkout-label
-conflict was reconciled to the reset locale copy before the successful rerun.
-Eight locale tests also passed after reconciliation. Local merge only.
