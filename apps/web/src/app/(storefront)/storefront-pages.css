@@ -243,3 +243,21 @@
 @media (max-height:500px) { @scope (.storefront-shell) {
   .purchase-dock-controls.is-docked, .checkout-mobile-action, .cart-mobile-bar { position: static; padding: 12px 0; }
 } }
+@scope (.storefront-shell) {
+  .product-information h1 { font-size: clamp(1.75rem, 1.421rem + 1.348vw, 2.5rem); line-height: clamp(2.125rem, 1.796rem + 1.348vw, 2.875rem); }
+  :scope[dir="rtl"] .product-information h1 { line-height: 1.6; letter-spacing: normal; }
+  .product-pack-identity { color: var(--color-muted); margin-block-end: 16px; }
+  .product-purchase-warnings { margin-block: 16px; }
+  .product-card-purchase .product-price { flex-direction: column; align-items: start; gap: 4px; min-block-size: 56px; }
+  .product-card-purchase .product-price>span { min-block-size: 27px; }
+  .checkout-header-help { display: none; }
+  :scope:has(.checkout-page) :is(.storefront-utility-bar,.header-search,.header-location,.header-account,.header-cart,.header-departments,.mobile-nav) { display: none; }
+  :scope:has(.checkout-page) .header-content { grid-template-columns: auto auto; min-block-size: 72px; padding-block: 12px; }
+  :scope:has(.checkout-page) .checkout-header-help { display: inline-flex; align-items: center; justify-self: end; gap: 8px; min-block-size: 44px; font-size: .875rem; }
+  .checkout-header-help svg { inline-size: 20px; block-size: 20px; }
+}
+@media (min-width:900px) { @scope (.storefront-shell) {
+  .cart-left { grid-column: 1; grid-row: 1; }
+  .cart-after { grid-column: 1; grid-row: 2; }
+  .cart-summary { grid-column: 2; grid-row: 1 / span 2; }
+} }

@@ -1,6 +1,6 @@
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
-import { cn } from '../lib/classnames';
+import { cn } from 'cn';
 import Link from './app-link';
 import { ArrowRightIcon, ShoppingBagIcon } from './storefront-icons';
 import { ProductImage } from './product-image';

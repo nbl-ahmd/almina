@@ -33,6 +33,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
             <Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width:899px) 120px, 152px" />
           </Link>
           <div className="header-search"><SearchBox locale={locale} /></div>
+          <Link href="/contact" className="checkout-header-help"><ChatBubbleLeftRightIcon aria-hidden="true" />{t(locale, 'linkContact')}</Link>
           <DeliveryLocation locale={locale} />
           <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account">
             <UserCircleIcon aria-hidden="true" /><span>{t(locale, 'linkAccount')}</span>
