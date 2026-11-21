@@ -5,10 +5,12 @@ test('mobile filters keep draft changes local until apply and Back dismisses the
   await page.goto('/search?q=Daily&minPrice=5');
   const trigger=page.getByRole('button',{name:'Filters',exact:true});
   await trigger.click();
+  await expect(page.locator('.mobile-nav')).toBeHidden();
   const dialog=page.getByRole('dialog',{name:'Filters',exact:true});
   await dialog.getByRole('spinbutton',{name:'From',exact:true}).fill('20');
   await dialog.getByRole('button',{name:'Cancel',exact:true}).click();
   await expect(dialog).toBeHidden();
+  await expect(page.locator('.mobile-nav')).toBeVisible();
   expect(new URL(page.url()).searchParams.get('minPrice')).toBe('5');
   await trigger.click();
   await dialog.getByRole('button',{name:'Reset',exact:true}).click();

@@ -96,3 +96,7 @@ Record route, viewport, locale, browser/device, evidence and result for each acc
 - [ ] Verify gallery current-view announcements, editable quantity limits, required/invalid field associations and initial modal focus without duplicate status announcements.
 
 Native Arabic approval, real-device PWA/keyboard/gesture checks, approved campaign copy/artwork and rendered font/image performance remain implementation acceptance work. Questions skipped because the user supplied a fixed approved direction and requested a finished documentation refinement.
+
+## User correction after first implementation — 2026-11-21
+
+The user rejected the first rendered result as blocky and excessively underlined. The five supplied images govern composition and silhouettes; earlier dimension recipes do not justify a reference mismatch. Current corrections use circular category media, compact mobile campaigns, connected PDP content, unboxed totals and non-prose shopping actions without persistent underlines. The initial runtime review is superseded for visual acceptance; see [correction record](../migration/MARKET_GREEN_REFERENCE_CORRECTION_2026-11-21.md). Keep semantic colors, fonts, accessible behavior and commerce owners.

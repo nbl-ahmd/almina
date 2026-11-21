@@ -36,7 +36,7 @@ export async function ProductInformation({ product }: { product: Product }) {
     ['Sold as', product.saleUnit], ['Form', product.productForm], ['Strength', product.strength],
     ['Manufacturer', product.manufacturer], ['GTIN', product.gtin], ['Product ID', product.product_id],
   ].filter((fact): fact is [string, string] => Boolean(fact[1]));
-  return <section className="product-info-panel rounded-2xl border p-5 md:p-7" aria-label={u(locale,"Product details")}>
+  return <section className="product-info-panel" aria-label={u(locale,"Product details")}>
     <nav className="mb-7 flex gap-5 scrollbar-none overflow-x-auto border-b text-sm font-semibold whitespace-nowrap" aria-label={u(locale,"Product information sections")}>
       <a className="inline-flex min-h-11 items-center border-b-2" href="#product-description">{u(locale,"Overview")}</a>
       {product.usage ? <a className="inline-flex min-h-11 items-center" href="#product-usage">{u(locale,"How to use")}</a> : null}
@@ -55,7 +55,7 @@ export async function ProductInformation({ product }: { product: Product }) {
           <div className="pb-5"><Description text={value} /></div>
         </details>)}
       </div>
-      <aside className="min-w-0 space-y-7 rounded-2xl p-5">
+      <aside className="product-facts min-w-0 space-y-7">
         <div id="product-facts" className="scroll-mt-6" aria-labelledby="product-specifications-title">
           <h2 id="product-specifications-title" className="mb-4 text-lg font-bold">{u(locale,"Product specifications")}</h2>
           <dl className="m-0 divide-y border-y text-sm">

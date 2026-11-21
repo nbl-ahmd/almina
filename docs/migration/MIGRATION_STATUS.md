@@ -1,3 +1,7 @@
+## 2026-11-21 — Storefront reference-alignment correction
+
+The user rejected the first implementation’s blocky geometry and excessive underlines. Corrected the current storefront against the five supplied images: compact circular category discovery, shorter campaigns, connected product details, exposed totals and restrained action styling. Palette, fonts and commerce owners remain unchanged. See the [correction and validation record](MARKET_GREEN_REFERENCE_CORRECTION_2026-11-21.md). The previous visual verdict does not constitute user acceptance; PRs remain open.
+
 ## 2026-11-21 — Market Green / Coral storefront implementation
 
 Implemented the approved customer storefront direction on `feat/market-green-coral-storefront`: scoped tokens and utilities, local fonts, shared shopping components, responsive discovery, product/cart/checkout composition and account presentation. Existing commerce and admin owners remain unchanged. Browser, accessibility and regression evidence is recorded in the [implementation report](MARKET_GREEN_STOREFRONT_2026-11-21.md). This is review work on top of the open design-reset PR; deployment and physical-device release checks remain pending.

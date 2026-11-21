@@ -1,5 +1,7 @@
 # Storefront validation — 2026-11-21
 
+**Initial implementation record:** the user subsequently rejected its visual composition. These tests and screenshots are historical evidence. See [reference correction](MARKET_GREEN_REFERENCE_CORRECTION_2026-11-21.md) for current visual work.
+
 The implementation is on `feat/market-green-coral-storefront`, based on the open design-reset integration branch. All browser commerce data, accounts and provider responses used here are synthetic. No production mutation or real payment was performed.
 
 ## Checks

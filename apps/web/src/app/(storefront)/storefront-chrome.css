@@ -72,3 +72,9 @@
   .language-switcher button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   .header-cart>span:first-of-type { color: var(--color-forest); background: transparent; }
 }
+@scope (.storefront-shell) {
+  .header-search form { border: 0; border-radius: 999px; padding-inline-start: 16px; background: var(--color-surface); }
+  [data-slot="search-submit"] { border-radius: 999px; min-block-size: 40px; padding-inline: 12px; }
+  .header-identity { border-color: var(--color-surface); }
+  .mobile-tab[aria-current="page"] .mobile-tab-icon { border-radius: 999px; }
+}

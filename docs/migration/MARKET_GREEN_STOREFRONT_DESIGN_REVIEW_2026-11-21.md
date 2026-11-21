@@ -1,5 +1,7 @@
 # Market Green storefront implementation review — 2026-11-21
 
+**Superseded visual acceptance:** the user subsequently rejected the first implementation as blocky and over-underlined. The scoped findings below are historical review evidence, not acceptance of reference fidelity. See `MARKET_GREEN_REFERENCE_CORRECTION_2026-11-21.md` for the correction.
+
 This records the finished customer storefront as an extension of the approved Market Green / Coral Edition system. It does not revise that system. [PRODUCT.md](../../PRODUCT.md), [DESIGN.md](../../DESIGN.md) and [the supporting specification](../design/design-review.md) retain their existing authority and precedence. Admin and wholesale are outside this visual review.
 
 ## Evidence and disposition

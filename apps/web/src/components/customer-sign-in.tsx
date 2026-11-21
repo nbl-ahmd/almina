@@ -112,13 +112,13 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
       else await sendCode();
     });
   }
-  return <div className="mx-auto w-full max-w-[440px] pb-3 sm:pt-2">
+  return <div className="customer-sign-in mx-auto w-full max-w-[440px] pb-3 sm:pt-2">
     <Link href="/products" className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm transition-colors"><ArrowLeftIcon className="size-4" />{a("Back to shopping")}</Link>
     <section aria-labelledby="sign-in-heading" className="m-0 overflow-hidden rounded-2xl border bg-white ">
       <div className="px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
         <div className="mb-6 text-center">
           <h1 id="sign-in-heading" className="mb-2 text-[28px] font-semibold leading-tight tracking-[-0.025em]">{challenge ? a("Check your email") : purpose === 'wholesale' ? a("Business sign-in") : a("Welcome to Al Mina")}</h1>
-          <p className="m-0 text-sm leading-6">{challenge ? a("Enter your six-digit sign-in code.") : purpose === 'wholesale' ? a("Use the email address on your pharmacy invitation.") : a("Sign in or create your account.")}</p>
+          <p className="m-0 text-sm leading-6">{challenge ? a("Enter your six-digit sign-in code.") : purpose === 'wholesale' ? a("Use the email address on your pharmacy invitation.") : optionsFailed || (options && !options.emailEnabled && !options.googleClientId) ? a("Continue as a guest") : a("Sign in or create your account.")}</p>
         </div>
         {challenge ? <div className="mb-6 flex min-w-0 items-center gap-2 rounded-xl py-2 pl-3 pr-1"><span className="min-w-0 flex-1 break-all text-sm font-medium">{email.trim()}</span><Button variant="ghost" size="icon" type="button" className="shrink-0" disabled={busy} onClick={changeEmail} aria-label={a("Change email")}><PencilSquareIcon className="size-4" /></Button></div> : null}
         {!options && !optionsFailed ? <div role="status" className="grid min-h-40 content-center gap-3 text-sm"><div className="h-12 rounded-full motion-safe:animate-pulse" /><span className="text-center">{a("Loading sign-in options…")}</span></div> : null}
@@ -137,7 +137,7 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
         </FieldGroup></form> : options && !(options.googleClientId && googleFailed) ? <p className="mt-4 rounded-xl border p-4 text-sm leading-6">{options.googleClientId ? purpose === 'wholesale' ? a("Continue with Google using your invited email. Business access requires pharmacy approval.") : a("Email sign-in is temporarily unavailable. Use Google, or continue as a guest.") : purpose === 'wholesale' ? a("Business sign-in is not available. Please contact the pharmacy; wholesale access requires verified sign-in.") : a("Account sign-in is not connected yet. You can still browse, save products on this device and check out as a guest.")}</p> : null}
         {!options?.emailEnabled && error ? <p role="alert" className="mb-0 mt-4 rounded-xl p-3 text-sm leading-6">{a(error)}</p> : null}
         {notice ? <p role="status" className="mb-0 mt-3 flex items-start justify-center gap-1.5 text-xs leading-5"><CheckCircleIcon className="mt-0.5 size-4 shrink-0" />{a(notice)}</p> : null}
-        {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5">{a("Your email connects your account and purchases.")}<br />{a("Marketing is always optional. ")}<Link href="/privacy" aria-label={a("account privacy notice")}>{a("Read our privacy notice")}</Link>.</p> : null}
+        {!challenge ? <p className="mb-0 mt-5 text-center text-xs leading-5">{options?.emailEnabled || options?.googleClientId ? <>{a("Your email connects your account and purchases.")}<br />{a("Marketing is always optional. ")}</> : null}<Link href="/privacy" aria-label={a("account privacy notice")}>{a("Read our privacy notice")}</Link>.</p> : null}
       </div>
       {purpose==='retail'?<div className="border-t px-5 py-2 text-center"><Link href="/checkout" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors hover:bg-white">{a("Continue as a guest")}<ArrowRightIcon className="size-4" /></Link></div>:null}
     </section>

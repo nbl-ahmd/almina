@@ -31,3 +31,7 @@ Static artwork establishes visible composition, control anatomy and hierarchy. S
 The [historical comparison board](directions.png) is included because the approved brief links it. Its source is `docs/design/directions.png` at commit `9a14ee5`. It records the earlier A/B/C comparison, earlier font labels and illustrative prices. The approved Market Green / Coral Edition text and supporting tokens take precedence over that historical artwork.
 
 The external Sephora, Glossier and Mobbin observations in DESIGN.md are carried from the approved brief's previous audit. This documentation pass reviews the five supplied images and makes no fresh external-site audit claim.
+
+## User correction after implementation
+
+The first implementation was rejected for blocky geometry, excessive underlines and weak reference fidelity. These five references govern composition and control silhouettes. Their compact circular category shortcuts, soft campaign CTA, connected product-detail content, tight product groups and exposed totals take precedence over the first implementation’s literal boxed interpretations. Historical boards and external-site observations are not styling instructions. Keep Al Mina’s semantic palette, fonts, accessible controls and existing commerce behavior.

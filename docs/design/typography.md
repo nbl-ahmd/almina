@@ -8,7 +8,7 @@ Sizes and line heights are CSS pixels at the standard browser text setting. Impl
 
 | Token | Phone reference at 390px, size / line | Desktop reference at 1280px, size / line | Weight | Latin tracking |
 |---|---|---|---|---|
-| type.campaign | 36 / 40 | 56 / 60 maximum | 700 | −.035em |
+| type.campaign | 28 / 32 | 56 / 60 maximum | 700 | −.035em |
 | type.page-title | 28 / 34 | 40 / 46 maximum | 700 | −.025em |
 | type.section | 22 / 28 | 28 / 34 | 700 | −.015em |
 | type.product-name | 16 / 22 | 16 / 22 | 600 | 0 |
@@ -21,7 +21,7 @@ Sizes and line heights are CSS pixels at the standard browser text setting. Impl
 | type.badge | 14 / 20 | 14 / 20 | 600 | 0 |
 | type.navigation | 14 / 20 | 14 / 20 | 600 | 0 |
 
-Campaign and page titles interpolate linearly between their reference sizes at 390px and 1280px, clamping to the endpoints outside that range. At 768px, campaign is approximately 44.5/48.5px and page title 33.1/39.1px. At 900px, campaign is approximately 47.5/51.5px and page title 34.9/40.9px. Section headings use 22/28px below 900px and 28/34px from 900px. Other roles retain their table sizes across widths. Cap the campaign measure around 12–16 characters where the copy permits. Body text has a 65-character maximum measure. Use natural wrapping, with balanced short headings as a progressive enhancement.
+Page titles interpolate linearly between their reference sizes at 390px and 1280px, clamping outside that range. At 768px page title is approximately 33.1/39.1px; at 900px it is approximately 34.9/40.9px. Following the user’s reference-alignment correction, mobile campaign type stays compact at 28/32px so discovery and products enter the first viewport; desktop campaign type uses 56/60px. Section headings use 22/28px below 900px and 28/34px from 900px. Other roles retain their table sizes across widths. Cap the campaign measure around 12–16 characters where the copy permits. Body text has a 65-character maximum measure. Use natural wrapping, with balanced short headings as a progressive enhancement.
 
 ## Product identity and prices
 
