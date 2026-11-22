@@ -415,7 +415,6 @@
 @scope (.storefront-shell) {
   .cart-title-count { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-inline-size: 0; }
   .cart-title-count>span { color: var(--color-muted); font-size: .875rem; }
-  .cart-shopping-exit { display: inline-flex; align-items: center; min-block-size: 44px; font-size: .875rem; }
   .empty-search-page .catalog-toolbar+nav { margin-block-start: 0; }
   .empty-search-page .catalog-toolbar { margin-block-end: 12px; }
   .checkout-mobile-action>div>strong { max-inline-size: 28ch; }

@@ -2,6 +2,8 @@
 
 Two independent reviews identified mobile language access, cart repetition, inconsistent checkout labels and empty-search recovery as priorities. Refined those paths while retaining the approved identity, references and commerce owners. See the [assessment, detector interpretation and verification record](MARKET_GREEN_CRITIQUE_2026-11-22.md). Initial score was 29/40; no post-change rescore or user visual acceptance is claimed. PRs remain open.
 
+Confirmed preference follow-up: mobile language selection is inside the header shopping menu, and the cart opening contains title/count followed by editable items. The temporary standalone language toggle and cart-heading shopping exit were removed.
+
 ## 2026-11-21 — Storefront reference-alignment correction
 
 The user rejected the first implementation’s blocky geometry and excessive underlines. Corrected the current storefront against the five supplied images: compact circular category discovery, shorter campaigns, connected product details, exposed totals and restrained action styling. Palette, fonts and commerce owners remain unchanged. See the [correction and validation record](MARKET_GREEN_REFERENCE_CORRECTION_2026-11-21.md). The previous visual verdict does not constitute user acceptance; PRs remain open.

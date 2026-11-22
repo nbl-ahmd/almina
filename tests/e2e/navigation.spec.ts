@@ -18,7 +18,10 @@ for (const width of [360, 390, 768, 1280]) test(`one responsive pharmacy navigat
   await page.reload(); if(width<900)await page.getByRole('button',{name:'Filters',exact:true}).click(); await expect(page.getByRole('search', { name: 'Filter products' }).getByRole('searchbox')).toHaveValue('Daily');
   if(width<900)await page.keyboard.press('Escape');
   if(width<900){
-    await expect(page.getByRole('button',{name:'Open shopping menu',exact:true})).toHaveCount(0);
+    const menuTrigger=page.getByRole('button',{name:'Open shopping menu',exact:true});
+    await expect(menuTrigger).toBeVisible();await menuTrigger.click();
+    await expect(page.getByRole('dialog').getByRole('button',{name:'العربية',exact:true})).toBeVisible();
+    await page.keyboard.press('Escape');await expect(menuTrigger).toBeFocused();
     await navigation.getByRole('link',{name:'Shop',exact:true}).click();
   } else {
     await navigation.getByRole('button',{name:'All categories',exact:true}).click();

@@ -53,3 +53,11 @@ Native in-app browser creation was unavailable to reviewer B; it used a fresh na
 - Preview fixture product photos are genuinely absent. Production media, physical-device PWA/keyboard checks, manual assistive-technology verification and user visual acceptance remain release checks. Guest-action prominence and some secondary Arabic copy remain minor future review items. An aggregate cart estimate requires server-owned data; no client arithmetic was added.
 
 PRs remain open and unmerged. This is storefront refinement only; admin, production data and deployment remain outside scope.
+
+## Confirmed preference follow-up
+
+The user's later answers supersede the temporary defaults above. Mobile language choice now lives inside the existing header shopping menu, with English/Arabic controls fixed below its scrolling navigation. The previous standalone toggle was removed. The existing Radix dialog supplies focus trapping, Escape dismissal and focus return; the trigger remains available below the 900px desktop breakpoint. The cart opening now contains only title and count before editable items; its extra shopping exit was removed. The order-summary shopping exit remains outside the opening.
+
+Production build, lint and types pass. Language switching and reload persistence pass at 320/390/768px; both language options measure at least 44px high. The navigation regression expectation was updated from an absent header menu to visible language access and Escape focus return. No commerce or account behavior changed.
+
+All nine focused browser checks pass, including keyboard navigation and accessibility checks through 1280px. Final English/Arabic captures reported no page errors; Next.js compilation/session diagnostics are clear. Updated evidence is under `screenshots/header-menu-2026-11-22/`.

@@ -35,7 +35,7 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
           <div className="header-search"><SearchBox locale={locale} /></div>
           <Link href="/contact" className="checkout-header-help"><ChatBubbleLeftRightIcon aria-hidden="true" />{t(locale, 'linkContact')}</Link>
           <DeliveryLocation locale={locale} />
-          <div className="header-language"><LanguageSwitcher locale={locale} label={t(locale, 'language')} size="toggle" /></div>
+          <div className="header-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
           <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account">
             <UserCircleIcon aria-hidden="true" /><span>{t(locale, 'linkAccount')}</span>
           </Link>
