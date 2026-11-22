@@ -1,0 +1,44 @@
+'use client';
+import { adminRequest } from '../../components/admin/controls';
+
+/** Session cache for combobox options, so editing many products does not refetch them. */
+let brandCache: string[] | null = null;
+let brandLoad: Promise<string[]> | null = null;
+
+export async function loadBrands(): Promise<string[]> {
+  if (brandCache) return brandCache;
+  brandLoad ??= (async () => {
+    const found = new Set<string>();
+    // Bounded scan: up to 1,000 products, 100 per request. New brands entered here are added to the cache directly.
+    for (let offset = 0; offset < 1000; offset += 100) {
+      const page = await adminRequest(`products?limit=100&offset=${offset}`);
+      const rows = Array.isArray(page) ? page : [];
+      for (const row of rows) {
+        const brand = (row as { brand?: unknown }).brand;
+        if (typeof brand === 'string' && brand.trim()) found.add(brand.trim());
+      }
+      if (rows.length < 100) break;
+    }
+    brandCache = [...found].sort((a, b) => a.localeCompare(b));
+    return brandCache;
+  })().finally(() => { brandLoad = null; });
+  return brandLoad;
+}
+export function rememberBrand(name: string) {
+  if (brandCache && !brandCache.some(brand => brand.toLowerCase() === name.toLowerCase())) brandCache = [...brandCache, name].sort((a, b) => a.localeCompare(b));
+}
+
+export async function createCategory(name: string): Promise<{ value: string; label: string }> {
+  const body = new FormData();
+  body.set('name', name);
+  await adminRequest('category', 'POST', body);
+  // The create endpoint returns no identifier; read the category back by name.
+  for (let offset = 0; offset < 1000; offset += 100) {
+    const page = await adminRequest(`category?limit=100&offset=${offset}`);
+    const rows = Array.isArray(page) ? page as { _id: string; name: string }[] : [];
+    const match = rows.find(row => row.name.toLowerCase() === name.toLowerCase());
+    if (match) return { value: match._id, label: match.name };
+    if (rows.length < 100) break;
+  }
+  throw new Error('Category added, but it could not be selected. Reload the page and choose it.');
+}

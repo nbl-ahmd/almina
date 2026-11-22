@@ -29,16 +29,6 @@ test('new routing and staff assignment endpoints have matching server and gatewa
   assert.match(upstreamQuery('orders', new URLSearchParams({ review: '1' })), /review=1/);
   assert.throws(() => upstreamQuery('orders', new URLSearchParams({ review: 'all' })));
 });
-test('receiving signals share the existing stream without serializing its private snapshot', async () => {
-  const { orderEventStream } = await import('../apps/web/src/lib/admin/order-stream');
-  let step = 0;
-  const stream = orderEventStream({ signal: new AbortController().signal, intervalMs: 1, sample: async () => step++ === 0
-    ? { state: 'ready', signature: 'private internal snapshot', receiving: { pendingCount: 2, latestIds: ['aaaaaaaaaaaaaaaaaaaaaaaa'] } }
-    : { state: 'revoked' } });
-  let output = ''; for await (const chunk of stream) output += new TextDecoder().decode(chunk);
-  assert.ok(output.includes('"pendingCount":2')); assert.ok(output.includes('"latestIds":["aaaaaaaaaaaaaaaaaaaaaaaa"]'));
-  assert.ok(!output.includes('private internal snapshot')); assert.match(output, /event: revoked/);
-});
 
 test('paused named-area branches stop receiving new routing decisions and fall back without duplicate assignment',()=>{
  const area=rakDeliveryAreas[0]!, first=randomUUID(), second=randomUUID();

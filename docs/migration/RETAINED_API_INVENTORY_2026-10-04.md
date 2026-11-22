@@ -159,6 +159,7 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | PUT | /api/auth/order-routing | admin | Revision-checked audited routing configuration |
 | PUT | /api/auth/users/:id/assignment | admin | Serialized staff branch assignment |
 | GET | /api/orders/receiving | orders | Scoped receiving signals |
+| GET | /api/orders/events | orders | Data-free order-change stream (server-sent events) fed by one change stream per API process |
 | PUT | /api/orders/:id/routing | admin | Audited delivery-area correction |
 | POST | /api/orders/:id/confirm | orders | Scoped pending-to-confirmed transition |
 | POST | /api/orders/:id/pack | orders | Scoped confirmed-to-packed transition |

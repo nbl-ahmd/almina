@@ -1,4 +1,5 @@
 'use client';
+import { inputClass } from './shadcn/styles';
 
 import { useState } from 'react';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -61,7 +62,7 @@ export function ImageReviewAssociation({ detail, admin, disabled, allowDraft, on
   const savedDraft = detail.item.draftProductId && detail.item.draftProductId !== detail.product?.productId ? detail.item.draftProductId : null;
   return <div className="space-y-3">
     {!creating ? <h3 className="!m-0 !text-sm">Find a catalogue match</h3> : null}
-    {error ? <p role="alert" className="admin-note admin-note--danger !my-0">{error}</p> : null}
+    {error ? <p role="alert" className="rounded-lg bg-bad-soft p-4 text-[13px] text-bad !my-0">{error}</p> : null}
     {creating ? (categories && categories.length ? <ImageReviewDraftForm identity={detail.item.source.identity} categories={categories}
       busy={disabled} onCreate={onCreate} onCancel={() => { setCreating(false); setError(''); }} /> :
       <div className="space-y-2">
@@ -69,7 +70,7 @@ export function ImageReviewAssociation({ detail, admin, disabled, allowDraft, on
         <Button variant="ghost" disabled={!!loading} onClick={() => { setCreating(false); setError(''); }}>Back to search</Button>
       </div>) : <>
         <form onSubmit={event => { event.preventDefault(); void search(); }} className="flex items-end gap-2">
-          <label className="min-w-0 flex-1">Find a product<input type="search" value={query} maxLength={80} disabled={disabled || !!loading}
+          <label className="min-w-0 flex-1">Find a product<input className={inputClass} type="search" value={query} maxLength={80} disabled={disabled || !!loading}
             onChange={event => { setQuery(event.target.value); setResults(null); }} placeholder="Name, barcode or product ID" /></label>
           <Button type="submit" disabled={disabled || !!loading || query.trim().length < 2}><MagnifyingGlassIcon className="size-4" aria-hidden="true" />{loading === 'search' ? 'Searching…' : 'Search'}</Button>
         </form>
@@ -78,7 +79,7 @@ export function ImageReviewAssociation({ detail, admin, disabled, allowDraft, on
           <p className="!m-0 text-xs font-medium">{results ? 'Search results' : 'Suggested matches'}</p>
           <ul className="!m-0 list-none divide-y rounded-lg border !p-0">
             {(results ?? suggested).map(product => <li key={product.productId}>
-              <button type="button" className="!flex !w-full !justify-between !gap-3 !rounded-none !border-0 !bg-transparent !text-left" disabled={disabled || !!loading}
+              <button type="button" className="!flex !w-full !justify-between !gap-3 !rounded-lg !border-0 !bg-transparent !text-left" disabled={disabled || !!loading}
                 onClick={() => choose(product.productId)}><span className="min-w-0 [overflow-wrap:anywhere]">{product.name}</span>
                 <span className="shrink-0 text-xs">{product.productId}</span></button>
             </li>)}

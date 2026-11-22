@@ -1,1 +1,43 @@
-{"id":"/admin/","name":"Al Mina Operations","short_name":"Al Mina Admin","start_url":"/admin/orders","scope":"/admin","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}]}
+{
+  "id": "/admin/",
+  "name": "Al Mina Operations",
+  "short_name": "Al Mina Admin",
+  "start_url": "/admin/orders",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "description": "Orders, inventory and customer conversations for Al Mina Pharmacy staff.",
+  "lang": "en",
+  "orientation": "any",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Orders to confirm",
+      "short_name": "Orders",
+      "url": "/admin/orders?status=pending",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

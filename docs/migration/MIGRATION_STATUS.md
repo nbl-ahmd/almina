@@ -1,5 +1,7 @@
 ## 2026-11-22 — Homepage detector follow-up
 
+- Retail coupons are documented in [Storefront coupon codes](STOREFRONT_COUPONS.md).
+
 Addressed the supplied detector report through correct category-link semantics, an unboxed travel glyph and natural product-card flow that avoids stretched internal gaps. Preserved the measured header spacing as a documented false positive. Build/lint/types and 25 selected browser checks pass. See [dispositions and validation](DETECTOR_POLISH_2026-11-22.md). PR remains open.
 
 ## 2026-11-22 — Homepage browser comments

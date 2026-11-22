@@ -1,3 +1,4 @@
+import { appliedCouponSchema } from '@almina/contracts';
 import {paymentSummary} from './dto.js';
 import type { Document } from 'mongodb';
 import { historicalStatus } from './status.js';
@@ -16,5 +17,6 @@ export function legacyOrderDto(order: Document): Document {
     } }));
   const { statusHistory: _history, commerceMigration: _migration, ...view } = order;
   void _history; void _migration;
-  return { ...view, ...(order.payment?.provider==='stripe'?{payment:paymentSummary(order)}:{}), status: historicalStatus(order), snapshotAvailable, cartItems };
+  const coupon = appliedCouponSchema.safeParse(snapshotAvailable ? order.totals?.coupon : null);
+  return { ...view, ...(coupon.success ? { couponCode: coupon.data.code, couponDiscountMinor: coupon.data.discountMinor } : {}), ...(order.payment?.provider==='stripe'?{payment:paymentSummary(order)}:{}), status: historicalStatus(order), snapshotAvailable, cartItems };
 }

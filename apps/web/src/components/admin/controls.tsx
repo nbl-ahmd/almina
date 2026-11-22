@@ -1,9 +1,15 @@
 "use client";
 /* eslint-disable @next/next/no-location-assign-relative-destination -- Session changes need a full reload to discard privileged router state. */
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { adminFileLimit } from '../../lib/admin/upload-limits';
+import { useConfirm } from './confirm-dialog';
+import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { buttonVariants } from './ui';
 export class AdminRateLimitError extends Error {
   constructor(readonly retryAfterSeconds: number) { super('Too many requests. Please wait.'); }
 }
@@ -86,84 +92,41 @@ export async function adminRequest(
     );
   return result.status === 204 ? null : ((await result.json()) as unknown);
 }
+const loginSchema = z.object({
+  username: z.string().trim().min(1, 'Enter your username.').max(100),
+  password: z.string().min(1, 'Enter your password.'),
+});
+type LoginValues = z.infer<typeof loginSchema>;
+
 export function LoginForm() {
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
   const [reveal, setReveal] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    setPending(true);
-    setError("");
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
+  const input = "h-12 w-full rounded-lg border-0 bg-fill px-5 text-sm text-ink outline-none placeholder:text-mute focus:bg-white focus:ring-2 focus:ring-ink aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-bad";
+  async function submit(values: LoginValues) {
     try {
-      await adminRequest("auth/login", "POST", {
-        username: data.get("username"),
-        password: data.get("password"),
-      });
+      await adminRequest("auth/login", "POST", { username: values.username, password: values.password });
       window.location.assign("/admin");
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Sign in failed.");
-      setPending(false);
+      setError('root', { message: error instanceof Error ? error.message : "Sign in failed." });
     }
   }
   return (
-    <form className="admin-form" onSubmit={submit} aria-busy={pending}>
-      <div className="admin-form__section">
-        <div className="admin-form__grid">
-          <div className="admin-field admin-field--wide">
-            <label htmlFor="username" className="admin-field__label">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              autoComplete="username"
-              placeholder="Your staff username"
-              required
-              maxLength={100}
-            />
-          </div>
-          <div className="admin-field admin-field--wide">
-            <div className="admin-login__label-row">
-              <label htmlFor="password" className="admin-field__label">
-                Password
-              </label>
-              <button
-                type="button"
-                className="admin-login__reveal"
-                aria-pressed={reveal}
-                onClick={() => setReveal((value) => !value)}
-              >
-                {reveal ? "Hide" : "Show"}
-              </button>
-            </div>
-            <input
-              id="password"
-              name="password"
-              type={reveal ? "text" : "password"}
-              autoComplete="current-password"
-              placeholder="Your account password"
-              required
-            />
-          </div>
-        </div>
+    <form className="mt-6 grid gap-4" onSubmit={handleSubmit(submit)} aria-busy={isSubmitting} noValidate>
+      <div className="grid gap-1.5">
+        <label htmlFor="username" className="text-[13px] font-medium text-ink">Username</label>
+        <input id="username" autoComplete="username" placeholder="Your staff username" aria-invalid={errors.username ? true : undefined} aria-describedby={errors.username ? 'username-error' : undefined} className={input} {...register('username')} />
+        {errors.username ? <p id="username-error" role="alert" className="m-0 text-xs font-medium text-bad">{errors.username.message}</p> : null}
       </div>
-      <div className="admin-form__footer">
-        <div className="admin-form__status">
-          {error ? (
-            <p role="alert" className="admin-alert admin-alert--danger">
-              {error}
-            </p>
-          ) : (
-            <p className="admin-card__hint admin-hint--tight">
-              Sessions are protected by a server-side cookie.
-            </p>
-          )}
+      <div className="grid gap-1.5">
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="text-[13px] font-medium text-ink">Password</label>
+          <button type="button" aria-pressed={reveal} onClick={() => setReveal(value => !value)} className="rounded-lg px-2 py-1 text-xs font-medium text-mute outline-0 hover:text-ink">{reveal ? "Hide" : "Show"}</button>
         </div>
-        <button disabled={pending}>
-          {pending ? "Signing in…" : "Sign in"}
-        </button>
+        <input id="password" type={reveal ? "text" : "password"} autoComplete="current-password" placeholder="Your account password" aria-invalid={errors.password ? true : undefined} aria-describedby={errors.password ? 'password-error' : undefined} className={input} {...register('password')} />
+        {errors.password ? <p id="password-error" role="alert" className="m-0 text-xs font-medium text-bad">{errors.password.message}</p> : null}
       </div>
+      {errors.root ? <p role="alert" className="m-0 rounded-lg bg-bad-soft px-4 py-3 text-[13px] font-medium text-bad">{errors.root.message}</p> : null}
+      <button type="submit" disabled={isSubmitting} className="mt-1 h-12 rounded-lg bg-ink text-[15px] font-semibold text-white transition hover:bg-ink-2 active:scale-[0.99] disabled:opacity-60">{isSubmitting ? "Signing in…" : "Sign in"}</button>
     </form>
   );
 }
@@ -171,9 +134,9 @@ export function SessionControls() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   return (
-    <div className="admin-actions">
+    <div className="flex items-center">
       <button
-        className="admin-btn--ghost admin-signout"
+        className="inline-flex h-10 items-center gap-2 rounded-lg bg-fill px-3.5 text-[13px] font-medium text-ink hover:bg-line disabled:opacity-50"
         aria-label="Sign out"
         disabled={pending}
         onClick={async () => {
@@ -187,14 +150,10 @@ export function SessionControls() {
           }
         }}
       >
-        <ArrowRightOnRectangleIcon width={17} height={17} aria-hidden="true" />
-        <span className="admin-signout-label">Sign out</span>
+        <ArrowRightOnRectangleIcon className="size-[18px]" aria-hidden="true" />
+        <span className="hidden lg:inline">Sign out</span>
       </button>
-      {error ? (
-        <span className="admin-alert admin-alert--danger" role="alert">
-          {error}
-        </span>
-      ) : null}
+      {error ? <span className="ml-2 rounded-lg bg-bad-soft px-3 py-2 text-xs font-medium text-bad" role="alert">{error}</span> : null}
     </div>
   );
 }
@@ -215,23 +174,23 @@ export function Command({
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
+  const { ask, dialog } = useConfirm();
   return (
     <span>
+      {dialog}
       <button
-        className={variant === "primary" ? undefined : `admin-btn--${variant}`}
+        className={`${buttonVariants({ variant: variant === 'primary' ? 'primary' : variant === 'danger' ? 'danger' : 'outline', size: 'sm' })}${variant === 'danger' ? ' text-bad' : ''}`}
         disabled={pending}
         onClick={async () => {
-          if (confirm && !window.confirm(confirm)) return;
+          if (confirm && !(await ask(confirm, { action: children, danger: variant === 'danger' }))) return;
           setPending(true);
-          setError("");
           try {
             await adminRequest(path, method, body);
+            toast.success("Done");
             router.refresh();
           } catch (error) {
-            setError(
-              error instanceof Error ? error.message : "Request failed.",
-            );
+            const text = error instanceof Error ? error.message : "Request failed.";
+            toast.error(text);
           } finally {
             setPending(false);
           }
@@ -239,11 +198,6 @@ export function Command({
       >
         {pending ? "Saving…" : children}
       </button>
-      {error ? (
-        <span className="admin-alert admin-alert--danger" role="alert">
-          {error}
-        </span>
-      ) : null}
     </span>
   );
 }

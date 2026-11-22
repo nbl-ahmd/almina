@@ -38,7 +38,7 @@ for (const width of [360, 390, 768, 1440]) test(`product tabs preserve edits at 
   await expect(page.getByRole('tablist', { name: 'Product sections' })).toBeVisible();
   const name = page.getByRole('textbox', { name: 'Product name', exact: true });
   await name.fill('Unsaved synthetic edit');
-  await expect(page.getByRole('spinbutton', { name: 'Retail price (AED)', exact: true })).toBeVisible();
+  await expect(page.getByRole('spinbutton', { name: 'Price (AED)', exact: true })).toBeVisible();
   await page.getByRole('tab', { name: 'Variants', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('textbox', { name: 'Product family key (optional)', exact: true })).toBeVisible();

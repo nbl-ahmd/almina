@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import type { Db, Document } from 'mongodb';
 import { bounded } from '../operations/lifecycle.js';
+import { wakeLoop, type Wake } from './wake.js';
 // SMTP provides at-least-once delivery, even with a deterministic Message-ID.
 export function orderOutbox(getDb: () => Promise<Db> | Db, options: {
   send: (order: Document, signal: AbortSignal) => Promise<void>; onFailure: () => void;
   sendTimeoutMs?: number; intervalMs?: number; maxAttempts?: number;
+  /** When healthy, the worker ticks on order changes and only keeps a slow safety interval. */
+  wake?: Wake;
 }) {
   let stopped = false;
   let running: Promise<void> | undefined;
@@ -46,6 +49,6 @@ export function orderOutbox(getDb: () => Promise<Db> | Db, options: {
     if (!running) running = run().finally(() => { running = undefined; });
     return running;
   }
-  const timer = setInterval(() => { void tick(); }, options.intervalMs ?? 5000); timer.unref();
-  return { tick, async stop() { stopped = true; clearInterval(timer); await running; } };
+  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 30000, wake: options.wake });
+  return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

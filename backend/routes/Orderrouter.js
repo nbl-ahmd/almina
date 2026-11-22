@@ -58,6 +58,25 @@ Orderrouter.get('/', async (req, res) => {
   const db = await req.app.locals.getCommerceDb();
   res.json(await require('../commerce/dist/service.cjs').retainedOrderList(db, req.query, req.identity));
 });
+// Staff order-change stream. A change stream on the API process feeds a data-free "orders changed" message; each browser then
+// refetches through its own authorised reads. Idle cost is one heartbeat line per connection. The browser reconnects with Last-Event-ID,
+// so a resumed connection that missed nothing causes no database work at all.
+Orderrouter.get('/events', (req, res) => {
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
+  const domain = require('../commerce/dist/service.cjs');
+  const feed = (req.app.locals.orderLive ??= domain.createOrderLiveFeed({ getDb: () => req.app.locals.getCommerceDb() }));
+  const write = chunk => { try { res.write(chunk); } catch { /* The client already left. */ } };
+  const unsubscribe = feed.subscribe(revision => write(`id: ${revision}\nevent: orders\ndata: {}\n\n`), req.identity.id);
+  if (!unsubscribe) return res.status(429).set('Retry-After', '30').json({ error: 'TOO_MANY_STREAMS' });
+  res.status(200).set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'private, no-store, no-transform', 'X-Accel-Buffering': 'no', 'X-Robots-Tag': 'noindex, nofollow' });
+  res.flushHeaders?.();
+  const current = feed.revision();
+  // A browser that reconnects with the current revision missed nothing and refetches nothing.
+  write(`retry: 1000\nid: ${current}\nevent: ${req.get('last-event-id') === current ? 'ready' : 'orders'}\ndata: {}\n\n`);
+  const heartbeat = setInterval(() => write(': keep-alive\n\n'), 25000);
+  const stop = () => { clearInterval(heartbeat); unsubscribe(); };
+  req.on('close', stop); res.on('close', stop); res.on('error', stop);
+});
 Orderrouter.get('/receiving', async (req, res) => {
   if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
   res.json(await require('../commerce/dist/service.cjs').orderReceiving(await req.app.locals.getCommerceDb(), req.identity));
