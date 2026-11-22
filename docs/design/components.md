@@ -20,6 +20,8 @@ Use the semantic [color](colors.md), [type](typography.md) and [responsive](resp
 
 Keyboard focus uses the palette's 2px focus outline and 2px canvas separation. Reduced motion retains immediate state and status feedback. A disabled control explains unmet prerequisites nearby. Read-only values remain distinguishable from disabled controls.
 
+Carousel pagination uses a small dash for the current slide and shorter marks for the other slides. The visual marks sit inside 44 × 44px targets. Keyboard focus has a visible outline. Clear history uses a plain text button with a 44px minimum target height.
+
 ## Shell and discovery
 
 Desktop header has a 72px minimum identity row with the existing proportionate logo, flexible search, account and cart. A 48px department row follows. Mobile has a 56px minimum identity row and a full-width search row beneath it. Search precedes campaigns. Use the existing routes, accessible names and cart count.

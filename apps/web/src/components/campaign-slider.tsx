@@ -25,6 +25,22 @@ export function CampaignSlider({children,locale='en',label="Product highlights",
     }}>
       {children.map((child,index)=><div key={index} className="campaign-frame" role="group" aria-roledescription={u(locale,'slide')} aria-label={locale==='en'?`${index+1} of ${children.length}`:`${index+1} من ${children.length}`}>{child}</div>)}
     </div>
-    {children.length>1?<div className="campaign-pagination" aria-label={u(locale,'Choose highlight')}>{children.map((_,index)=><button key={index} data-slot="carousel-indicator" type="button" aria-label={locale==='en'?`Show ${controlLabel} ${index+1}`:`عرض ${u(locale,controlLabel)} ${index+1}`} aria-pressed={active===index} onClick={()=>move(index)}><span aria-hidden="true" /></button>)}</div>:null}
+    {children.length > 1 && (
+      <div className="campaign-pagination flex flex-wrap justify-center" role="group" aria-label={u(locale, 'Choose highlight')}>
+        {children.map((_, index) => (
+          <button
+            key={index}
+            data-slot="carousel-indicator"
+            type="button"
+            className="group grid size-11 min-h-11 shrink-0 place-items-center rounded-lg border-0 bg-transparent p-0"
+            aria-label={locale === 'en' ? `Show ${controlLabel} ${index + 1}` : `عرض ${u(locale, controlLabel)} ${index + 1}`}
+            aria-pressed={active === index}
+            onClick={() => move(index)}
+          >
+            <span aria-hidden="true" className="h-1 w-2 rounded-full bg-control-border group-hover:bg-teal group-aria-pressed:w-5 group-aria-pressed:bg-teal" />
+          </button>
+        ))}
+      </div>
+    )}
   </div>;
 }
