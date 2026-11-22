@@ -2,6 +2,7 @@
 import {ConfirmationMark,CheckoutProgress} from './checkout-ui';
 import {GoogleCustomerReviews} from './google-customer-reviews';
 import type {GoogleCommerceConfiguration, ReviewReceipt} from '../lib/google/commerce';
+import {readCoupon, saveCoupon} from '../lib/checkout/coupon';
 import {reconcilePaidCart} from '../lib/payments/paid-cart';
 import {useEffect,useState} from 'react';
 import {stripeCheckoutDtoSchema,checkoutInputSchema} from '@almina/contracts';
@@ -26,6 +27,7 @@ export function StripeReturn({locale,cancelled,testMode=true,googleReviews,nonce
       if(!response.ok)throw new Error('Unavailable');
       const confirmed=stripeCheckoutDtoSchema.parse(await response.json());
       if(!confirmed.testMode&&confirmed.paymentReceived){try{await reconcilePaidCart(confirmed.orderId,confirmed.totals.lines);}catch{/* Payment success is durable even if browser cart storage fails. */}}
+      if (!confirmed.testMode && confirmed.paymentReceived && confirmed.totals.coupon?.code === readCoupon()) saveCoupon('');
       if (!confirmed.testMode && confirmed.state==='paid' && confirmed.paymentReceived && confirmed.createdAt) setReviewReceipt({orderId:confirmed.orderId,email:pending.customer.email,createdAt:confirmed.createdAt,deliveryCountry:'AE'}); else setReviewReceipt(null);
       setPayment(confirmed);
     }catch{setError(ar?'تعذر التحقق من الدفع. أعد المحاولة من المتصفح الذي بدأت منه.':'We could not verify this payment. Retry in the browser where you started checkout.');}
@@ -40,6 +42,7 @@ export function StripeReturn({locale,cancelled,testMode=true,googleReviews,nonce
     <p className="text-sm">{isTest?(ar?'لا تُحصّل أموال حقيقية ولا يتم توصيل طلب تجريبي. تبقى سلة التسوق محفوظة.':'No real money is collected and no test order will be delivered. Your shopping basket is kept.'):(payment?.state==='paid'?(ar?'تم استلام طلبك. سيتواصل معك فريق الصيدلية بشأن التوصيل.':'Your order has been received. Our pharmacy team will contact you about delivery.'):ar?'يمكنك التواصل مع الصيدلية لمتابعة طلبك. لا تعِد الدفع إذا كانت حالته غير مؤكدة.':'Contact the pharmacy about your order. Please do not pay again while its status is uncertain.')}</p>
     {payment?<p className="text-sm">{isTest?(ar?'مرجع الاختبار: ':'Test reference: '):(ar?'رقم الطلب: ':'Order number: ')}<strong>{payment.orderId}</strong></p>:null}
     {payment&&!isTest?<p className="text-sm font-semibold">{new Intl.NumberFormat(ar?'ar-AE':'en-AE',{style:'currency',currency:'AED'}).format(payment.totals.totalMinor/100)}</p>:null}
+    {payment?.totals.coupon && <p className="text-sm">{ar ? 'خصم الرمز' : 'Coupon discount'} <bdi dir="ltr">({payment.totals.coupon.code})</bdi>{' '}−{new Intl.NumberFormat(ar ? 'ar-AE' : 'en-AE', {style:'currency',currency:'AED'}).format(payment.totals.coupon.discountMinor / 100)}</p>}
     {working?<p role="status" className="text-sm">{ar?'جارٍ التحقق من الدفع…':'Verifying your payment…'}</p>:null}
     {error?<p role="alert" className="text-sm text-danger">{error}</p>:null}
     <div className="mt-5 flex flex-wrap gap-3">

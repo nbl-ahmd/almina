@@ -1,3 +1,5 @@
+import { appliedCouponSchema, couponListQuerySchema, couponListSchema, couponRecordSchema } from '@almina/contracts';
+import { listCoupons, saveCoupon } from '../modules/coupons/service.js';
 import { deliveryPointSchema } from '@almina/contracts';
 import {stripeCheckoutDtoSchema} from '@almina/contracts';
 import type {StripePayments} from '../modules/payments/stripe.js';
@@ -160,6 +162,23 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     res.clearCookie(cookieName(development), options).status(204).end();
   });
   router.all('/auth/logout-all', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
+  router.post('/growth/coupon-preview', async (req, res) => {
+    validate(emptyQuerySchema, req.query);
+    verifyBrowserMutation(req, origins);
+    send(res, appliedCouponSchema, await commerce.previewCoupon(req.body));
+  });
+  router.get('/admin/growth/coupons', async (req, res) => {
+    noBody(req);
+    await identity(req, true);
+    const query = validate(couponListQuerySchema, req.query);
+    send(res, couponListSchema, await listCoupons(await getDb(), query.after));
+  });
+  router.post('/admin/growth/coupons', async (req, res) => {
+    const user = await identity(req, true);
+    verifyBrowserMutation(req, origins);
+    validate(emptyQuerySchema, req.query);
+    send(res, couponRecordSchema, await saveCoupon(await getDb(), req.body, user.id));
+  });
   router.post('/checkout/quote', async (req, res) => {
     validate(emptyQuerySchema, req.query);
     verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));

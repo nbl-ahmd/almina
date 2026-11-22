@@ -1,3 +1,4 @@
+import { listCoupons, saveCoupon } from '../apps/api/src/modules/coupons/service.js';
 import assert from 'node:assert/strict';
 import {randomUUID,randomBytes} from 'node:crypto';
 import {createServer} from 'node:http';
@@ -50,6 +51,22 @@ test('Stripe test payments on disposable replica set', {skip:!uri},async t=>{
       await assert.rejects(payments.start({...body,totalMinor:1}),{code:'INVALID_REQUEST'});
       await assert.rejects(payments.start({...body,acceptedQuoteHash:'0'.repeat(64)}),{code:'PRICE_CHANGED'});
       assert.equal(await db.collection('orders').countDocuments(),0);assert.equal(createCalls,0);
+    });
+    await t.test('card checkout charges the coupon total and releases an expired reservation once', async () => {
+      const body = await intent();
+      await db.collection('products').updateOne({ _id: new ObjectId(body.items[0]!.productId) }, { $set: { productType: 'general', contentReviewed: true } });
+      await saveCoupon(db, { code: 'CARD5', revision: 0, enabled: true, discount: { type: 'fixed', amountMinor: 500 },
+        minimumMinor: 0, maximumUses: 1, startsAt: null, endsAt: null }, String(new ObjectId()));
+      const input = { ...body, couponCode: 'CARD5' };
+      const quote = await commerce.quote({ customer: input.customer, items: input.items, couponCode: input.couponCode });
+      const payload = { ...input, acceptedQuoteHash: quoteHash(quote) };
+      const order = await payments.start(payload);
+      assert.equal(order.totals.coupon?.discountMinor, 500);
+      assert.equal((await remoteFor(order.orderId)).amount_total, quote.totalMinor);
+      assert.equal((await payments.start(payload)).orderId, order.orderId);
+      assert.equal((await listCoupons(db)).items[0]!.uses, 1);
+      await Promise.all([payments.status({ idempotencyKey: body.idempotencyKey }, true), payments.status({ idempotencyKey: body.idempotencyKey }, true)]);
+      assert.equal((await listCoupons(db)).items[0]!.uses, 0);
     });
     await t.test('concurrent retries reserve once, send no notifications, block fulfilment, verify payment and full refund once',async()=>{
       const body=await intent();const outcomes=await Promise.all(Array.from({length:8},()=>payments.start(body)));

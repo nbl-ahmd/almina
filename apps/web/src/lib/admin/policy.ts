@@ -272,7 +272,7 @@ const fields = new Set([
   "wholesale",
   "businessName",
   "typeId",
-  "snapshotAvailable",
+  "snapshotAvailable", "couponCode", "couponDiscountMinor",
   "buildingname",
   "flatno",
   "note",

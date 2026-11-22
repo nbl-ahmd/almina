@@ -1,0 +1,35 @@
+@reference "tailwindcss";
+
+.layout { @apply my-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]; }
+.panel {
+  @apply min-w-0 rounded-xl border p-4 sm:p-5;
+  border-color: ButtonBorder;
+  background: Canvas;
+}
+.heading { @apply mt-0 mb-3 text-base font-semibold; }
+.description { @apply mt-0 mb-4 max-w-prose text-sm leading-relaxed; }
+.actions { @apply mb-4 flex flex-wrap gap-2; }
+.list { @apply m-0 list-none space-y-2 p-0; }
+.item {
+  @apply flex min-h-11 w-full cursor-pointer flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-start text-sm;
+  border-color: ButtonBorder;
+}
+.item[aria-pressed="true"] { @apply font-semibold outline-2 -outline-offset-2; }
+.code { @apply min-w-0 font-semibold wrap-anywhere; }
+.usage { @apply text-xs tabular-nums; }
+.count { @apply mt-3 text-xs; }
+.fields { @apply m-0 grid min-w-0 gap-4 border-0 p-0 sm:grid-cols-2; }
+.field { @apply grid min-w-0 gap-1.5 text-sm font-medium; }
+.input {
+  @apply min-h-11 w-full min-w-0 rounded-lg border px-3;
+  border-color: ButtonBorder;
+  background: Canvas;
+  color: CanvasText;
+}
+.toggle { @apply flex items-center gap-2 text-sm sm:col-span-2; }
+.button, .loadMore {
+  @apply min-h-11 w-fit cursor-pointer rounded-full border px-4 text-sm font-medium;
+  border-color: ButtonBorder;
+}
+.loadMore, .message { @apply mt-3; }
+.message { @apply mb-0 text-sm; }

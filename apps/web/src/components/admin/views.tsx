@@ -583,6 +583,10 @@ export function OrderDetail({
           description="Stored figures only. The server remains authoritative."
         >
           <dl className="admin-dl--cards">
+            {typeof order.couponDiscountMinor === 'number' && typeof order.couponCode === 'string' && <div>
+              <dt>Coupon discount ({order.couponCode})</dt>
+              <dd>−AED {(order.couponDiscountMinor / 100).toFixed(2)}</dd>
+            </div>}
             {(
               [
                 ["totalSalePrice", "Product subtotal (AED)"],

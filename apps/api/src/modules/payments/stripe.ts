@@ -1,3 +1,4 @@
+import { releaseCoupon } from '../coupons/service.js';
 import { branchOrderFilter } from '../orders/routing.js';
 import { restoreBranch } from '../delivery/service.js';
 import { createHash } from 'node:crypto';
@@ -129,6 +130,7 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
         if(expired||refunded){
           const status=expired||order.payment.cancellationRequested?'cancelled':'refunded';
           Object.assign(fields,{status,canceled:status==='cancelled',statusHistory:[...(order.statusHistory??[]),{status,at:now,source:testMode?'stripe_test':'stripe'}]});
+          if (expired) await releaseCoupon(db, session, order);
           if(!testMode)await reverseOrderRewards(db,session,order);
         }
       }
@@ -183,7 +185,7 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
       const parsed=checkoutInputSchema.safeParse(raw);
       if(!parsed.success||parsed.data.customer.payment!=='stripe'||!parsed.data.acceptedQuoteHash||parsed.data.voucherCode)throw new HttpError(400,'INVALID_REQUEST');
       const input=parsed.data;input.items=normalizeItems(input.items);
-      const key=digest(input.idempotencyKey),fingerprint=digest(JSON.stringify({customer:input.customer,items:input.items,quoteHash:input.acceptedQuoteHash}));
+      const key=digest(input.idempotencyKey),fingerprint=digest(JSON.stringify({customer:input.customer,items:input.items,quoteHash:input.acceptedQuoteHash,...(input.couponCode ? {couponCode:input.couponCode} : {})}));
       const db=await getDb(),attempts=db.collection<Document&{_id:string}>(collection);
       let attempt=await attempts.findOne({_id:key});
       if(attempt){
@@ -193,7 +195,7 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
       if(config.acceptingPayments===false)throw new HttpError(409,'COMMERCE_UNAVAILABLE');
       if(!testMode&&!await accountReady())throw new HttpError(409,'COMMERCE_UNAVAILABLE');
       if(!attempt){
-        const totals=await commerce.quote({customer:input.customer,items:input.items});
+        const totals=await commerce.quote({customer:input.customer,items:input.items,...(input.couponCode ? {couponCode:input.couponCode} : {})});
         if(quoteHash(totals)!==input.acceptedQuoteHash)throw new HttpError(409,'PRICE_CHANGED');
         if(totals.totalMinor<200||totals.totalMinor>99999999)throw new HttpError(400,'INVALID_REQUEST');
         const expiresAt=new Date(Math.floor(Date.now()/1000)*1000+3600000);
