@@ -4,11 +4,12 @@ import { test } from 'node:test';
 import { MongoClient } from 'mongodb';
 import { staffOrderEmailOutbox, staffOrderMessage, staffOrderRecipient } from '../apps/api/src/modules/notifications/staff-email';
 
+const env = (values: Record<string, string>) => values as unknown as NodeJS.ProcessEnv;
 test('the recipient defaults to the shop inbox, can be changed, and can be turned off', () => {
-  assert.equal(staffOrderRecipient({}), 'info@alminapharmacy.com');
-  assert.equal(staffOrderRecipient({ ORDER_ALERT_EMAIL: 'Orders@Example.com' }), 'orders@example.com');
-  assert.equal(staffOrderRecipient({ ORDER_ALERT_EMAIL: 'off' }), undefined);
-  assert.equal(staffOrderRecipient({ ORDER_ALERT_EMAIL: 'not an address' }), undefined);
+  assert.equal(staffOrderRecipient(env({})), 'info@alminapharmacy.com');
+  assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'Orders@Example.com' })), 'orders@example.com');
+  assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'off' })), undefined);
+  assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'not an address' })), undefined);
 });
 
 test('the staff message summarises the order, escapes content and leaves out customer contact details', () => {
