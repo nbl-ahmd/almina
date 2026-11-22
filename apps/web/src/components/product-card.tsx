@@ -58,12 +58,15 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
     <div className="product-card-identity">
       <Heading><Link href={productHref(product)}>{product.name}</Link></Heading>
       {pack ? <p className="product-pack-label">{pack}</p> : null}
+      {!pack && product.brand ? <p className="product-pack-label">{product.brand}</p> : null}
       {options ? <p className="product-pack-label">{locale === 'ar' ? `${product.familyOptionCount} خيارات متاحة` : `${product.familyOptionCount} options available`}</p> : null}
     </div>
     <div className="product-card-purchase">
       <p className={product.stock > 0 ? 'product-stock' : 'product-stock unavailable'}>{product.stock > 0 ? u(locale, 'In stock') : u(locale, 'Currently unavailable')}</p>
+      <div className="product-card-buy-row">
       <ProductPrice product={product} />
       {options ? <Link className="button" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} />}
+      </div>
     </div>
   </article>;
 }

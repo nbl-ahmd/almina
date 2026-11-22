@@ -1,3 +1,7 @@
+## 2026-11-22 — Mobile product-card polish
+
+Refined mobile cards against the supplied pharmacy references: compact price/add grouping, quiet real metadata, smaller sale badges and aligned shelf tracks, with desktop capsule controls retained. Existing cart behavior is preserved. See [changes and verification](PRODUCT_CARD_POLISH_2026-11-22.md); all 21 selected browser regressions pass. PR remains open.
+
 ## 2026-11-22 — Storefront critique and refinement
 
 Two independent reviews identified mobile language access, cart repetition, inconsistent checkout labels and empty-search recovery as priorities. Refined those paths while retaining the approved identity, references and commerce owners. See the [assessment, detector interpretation and verification record](MARKET_GREEN_CRITIQUE_2026-11-22.md). Initial score was 29/40; no post-change rescore or user visual acceptance is claimed. PRs remain open.
