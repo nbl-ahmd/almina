@@ -1,3 +1,4 @@
+import { CurrencyAmount } from '../../../../components/currency-amount';
 import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
 import { GrowthActivity } from '../../../../components/growth-activity';
 import { getLocale } from '../../../../lib/server/i18n';
@@ -46,34 +47,95 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const [related,variants,reviews,shippingPolicy] = await Promise.all([getProductRecommendations(product),getProductVariants(product),getProductReviews(product._id),getShippingPolicy()]);
   const origin = getWebEnvironment().WEB_ORIGIN;
   const currentPrice = displayPrice(product);
+  const images = productImages(product);
+  const brand = product.brand || product.familyBrand;
+  const pack = [...new Set([product.strength, product.packLabel, productOptionLabel(product)].filter(Boolean))].join(' · ');
+  const suggested = related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4);
   const saving = product.price > currentPrice && product.price > 0 ? Math.round((product.price - currentPrice) / product.price * 100) : 0;
-  const structured=productData(origin, product, productImages(product),variants, Object.fromEntries(variants.map(member=>[member._id,productImages(member)])),shippingPolicy);
+  const structured=productData(origin, product, images,variants, Object.fromEntries(variants.map(member=>[member._id,productImages(member)])),shippingPolicy);
   const reviews_ = reviewListData(reviews);
   const productSchema={...structured,...(aggregateRatingData(reviews)??{}),...(reviews_.length?{review:reviews_}:{})};
   return <><RecordProductView id={product._id} /><StructuredData data={productSchema} />
     <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }, { name: product.name, path: productHref(product) }])} />
-    <div className="pdp-page pb-24 md:pb-0"><Breadcrumb title={product.name} parents={[{ name: u(locale,'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} />
-    <div className="product-detail mb-8 grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6">
-      <div className="product-visual min-w-0 md:sticky md:top-6"><ProductGallery locale={locale} images={productImages(product)} name={product.name} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
+    <div className="pdp-page pb-24 md:pb-0">
+      <Breadcrumb title={product.name} parents={[{ name: u(locale, 'Categories'), path: '/categories' }, { name: product.category.name, path: categoryHref(product.category) }]} />
+      <div className="product-detail mb-8 grid min-w-0 items-start gap-5 md:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)] md:gap-10">
+        <div className="product-visual min-w-0">
+          <ProductGallery
+            locale={locale}
+            images={images}
+            name={product.name}
+            cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME}
+            actions={<SaveProduct locale={locale} id={product._id} name={product.name} iconOnly />}
+          />
+          {images.some(image => !image.startsWith('/')) && <PhotoCredit source={product.imageSource} />}
+        </div>
+        <div className="product-information min-w-0">
+          <div className="mb-3">
+            <div className="flex flex-wrap items-center gap-x-3 text-xs font-semibold">
+              {brand && <Link className="inline-flex min-h-11 items-center" href={`/search?q=${encodeURIComponent(brand)}`}>{brand}</Link>}
+              <Link className="inline-flex min-h-11 items-center text-[var(--color-muted)]" href={categoryHref(product.category)}>{product.category.name}</Link>
+            </div>
+            <h1 className="mb-2 wrap-anywhere">{product.name}</h1>
+            {pack && <p className="m-0 text-sm text-[var(--color-muted)]">{pack}</p>}
+            {reviews?.ratingCount && reviews.average !== null ? (
+              <a className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold" href="#product-reviews">
+                {locale === 'ar' ? `${reviews.average} من 5 · ${reviews.ratingCount} تقييم` : `${reviews.average} / 5 · ${reviews.ratingCount} reviews`}
+              </a>
+            ) : null}
+          </div>
 
-        {productImages(product).some(image => !image.startsWith('/')) ? <PhotoCredit source={product.imageSource} /> : null}
+          <div className="mb-4 border-t border-x-0 border-b-0 border-solid border-border pt-3">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
+              <p className="m-0 text-2xl font-bold md:text-3xl"><CurrencyAmount value={currentPrice} locale={locale} /></p>
+              {saving > 0 && <>
+                <del className="text-sm text-[var(--color-muted)]"><CurrencyAmount value={product.price} locale={locale} /></del>
+                <span className="rounded-md bg-accent px-2 py-0.5 text-xs font-semibold text-sale">{locale === 'ar' ? `وفّر ${saving}%` : `Save ${saving}%`}</span>
+              </>}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 [&_.stock-state]:m-0!">
+              <StockState stock={product.stock} />
+              <span className="text-xs text-[var(--color-muted)]">{locale === 'ar' ? 'رمز المنتج: ' : 'SKU: '}{product.product_id}</span>
+            </div>
+          </div>
+          <ProductOptions product={product} variants={variants} />
+          <ProductPurchaseDock>
+            <div className="pdp-purchase">
+              <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice, locale)} />
+            </div>
+          </ProductPurchaseDock>
+          {product.warnings && <p className="product-purchase-warnings text-sm leading-relaxed">{product.warnings}</p>}
+          {product.summary && <p className="product-summary my-4 text-sm leading-relaxed">{product.summary}</p>}
+
+          <div className="mt-4 flex items-start gap-3 rounded-xl bg-subtle p-3">
+            <span className="mt-0.5 text-teal"><Icon name="pin" /></span>
+            <div className="min-w-0">
+              <h2 className="m-0 text-sm!">{u(locale, 'Delivery in Ras Al Khaimah')}</h2>
+              <p className="m-0 mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{u(locale, 'Checkout confirms the delivery charge and final total before you place an order.')}</p>
+              <div className="flex flex-wrap gap-x-3">
+                <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/shipping">{u(locale, 'Delivery & shipping')}</Link>
+                <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/returns">{u(locale, 'Returns & refunds')}</Link>
+                <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/contact#delivery">{u(locale, 'Delivery enquiries')}</Link>
+              </div>
+            </div>
+          </div>
+          {product.productType === 'general' && product.contentReviewed === true && <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} />}
+          <div className="flex flex-wrap gap-x-5">
+            <Link className="product-contact" href="/cart"><Icon name="bag" />{u(locale, 'View your cart')}</Link>
+            <Link className="product-contact" href="/contact"><Icon name="phone" />{u(locale, 'Contact pharmacy')}</Link>
+          </div>
+        </div>
       </div>
-      <div className="product-information"><h1 className="mb-3 text-[26px] leading-[1.12] font-semibold tracking-[-0.035em] wrap-anywhere md:text-[34px]">{product.name}</h1><div className="product-identity mb-4 flex flex-wrap items-center gap-2 text-xs"><Link className="rounded-full px-3 py-1.5 font-medium" href={categoryHref(product.category)}>{product.category.name}</Link>{product.brand || product.familyBrand ? <Link className="inline-flex min-h-9 items-center px-1" href={`/search?q=${encodeURIComponent(product.brand || product.familyBrand || '')}`}>{product.brand || product.familyBrand}</Link> : null}</div>{product.strength || product.packLabel || productOptionLabel(product) ? <p className="product-pack-identity text-sm">{[product.strength, product.packLabel, productOptionLabel(product)].filter((value,index,all) => value && all.indexOf(value) === index).join(" · ")}</p> : null}
-
-        <div className="product-price-panel"><div className="w-full text-xs font-semibold md:w-auto">{u(locale,"Price")}</div><p className="price m-0 text-3xl font-semibold tabular-nums md:text-3xl">{money(currentPrice,locale)}</p>{saving ? <><del className="text-sm">{money(product.price,locale)}</del><span className="rounded-full px-3 py-1 text-xs font-semibold">{locale === "en" ? `Save ${saving}%` : `وفّر ${saving}%`}</span></> : null}</div>
-        <div className="product-availability"><StockState stock={product.stock} /><span className="text-xs">{locale === "en" ? "SKU: " : "رمز المنتج: "}{product.product_id}</span></div>
-        <ProductOptions product={product} variants={variants} />
-
-        <ProductPurchaseDock><div className="pdp-purchase md:mb-4"><AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice,locale)} /></div></ProductPurchaseDock>
-        {product.warnings ? <p className="product-purchase-warnings text-sm leading-relaxed">{product.warnings}</p> : null}
-        {product.summary || product.description ? <p className="product-summary mb-4 line-clamp-3 text-sm leading-relaxed">{product.summary || product.description?.split('\n')[0]}</p> : null}
-        <div className="product-delivery"><span className="rounded-lg p-2"><Icon name="pin" /></span><div><h2 className="mb-1 text-base font-bold">{u(locale,"Delivery in Ras Al Khaimah")}</h2><p className="m-0 text-sm leading-relaxed">{u(locale,"Checkout confirms the delivery charge and final total before you place an order.")}</p><div className="flex flex-wrap gap-x-4"><Link className="inline-flex min-h-9 items-center text-xs" href="/shipping">{u(locale,"Delivery & shipping")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs" href="/returns">{u(locale,"Returns & refunds")} <Icon name="arrow" /></Link><Link className="inline-flex min-h-9 items-center text-xs" href="/contact#delivery">{u(locale,"Delivery enquiries")} <Icon name="arrow" /></Link></div></div></div>
-        <div className="mb-4"><SaveProduct locale={locale} id={product._id} name={product.name} /></div>
-        {product.productType === 'general' && product.contentReviewed === true ? <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} /> : null}
-        <div className="product-related-actions"><Link className="product-contact" href="/cart"><Icon name="bag" />{u(locale,"View your cart")}</Link><Link className="product-contact" href="/contact"><Icon name="phone" />{u(locale,"Contact pharmacy")}</Link></div>
-
-      </div>
+      <ProductInformation product={product} />
+      <div id="product-reviews" className="scroll-mt-6"><ProductReviews locale={locale} productId={product._id} reviews={reviews} /></div>
+      {suggested.length > 0 && <section className="border-t border-x-0 border-b-0 border-solid border-border pt-6">
+        <div className="section-heading">
+          <h2>{u(locale, 'Similar products')}</h2>
+          <Link href={categoryHref(product.category)}>{u(locale, 'View category')}<Icon name="arrow" /></Link>
+        </div>
+        <ProductGrid headingLevel={3} products={suggested} />
+      </section>}
     </div>
-    <ProductInformation product={product} /><ProductReviews locale={locale} productId={product._id} reviews={reviews} />
-    {related.length?<section><div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="mb-1 text-xl font-semibold tracking-[-0.02em]">{u(locale,"Similar products")}</h2><p className="mb-0 text-xs">{locale === "en" ? `Explore more in ${product.category.name}.` : `استكشف المزيد في ${product.category.name}.`}</p></div><Link className="inline-flex min-h-11 items-center gap-1 text-xs" href={categoryHref(product.category)}>{u(locale,"View category")} <Icon name="arrow" /></Link></div><ProductGrid headingLevel={3} products={related.filter(item => item._id !== product._id && (!product.familyKey || item.familyKey !== product.familyKey)).slice(0, 4)} /></section>:null}</div><GrowthActivity kind="product"/></>;
+    <GrowthActivity kind="product" />
+  </>;
 }

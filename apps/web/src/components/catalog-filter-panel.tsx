@@ -17,7 +17,7 @@ export function CatalogFilterPanel({ children, summary, locale }: {
   summary: ReactNode;
   locale: Locale;
 }) {
-  const mobile = useSyncExternalStore(subscribe, () => window.matchMedia('(width < 900px)').matches, () => false);
+  const mobile = useSyncExternalStore(subscribe, () => window.matchMedia('(width < 900px)').matches, () => null);
   const [open, setOpen] = useState(false);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -50,14 +50,19 @@ export function CatalogFilterPanel({ children, summary, locale }: {
     form.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  if (!mobile) return <details id="catalog-filters" className="catalog-filters" open>
+  if (!mobile) return <details id="catalog-filters" className="catalog-filters group max-lg:open:col-span-2" open={mobile === false}>
     {summary}
     {children}
   </details>;
 
-  return <div className="catalog-mobile-filters" ref={setContainer}>
+  return <div className="catalog-mobile-filters order-1 self-center" ref={setContainer}>
     <Dialog.Root open={open} onOpenChange={changeOpen}>
-      <Dialog.Trigger asChild><Button variant="outline"><AdjustmentsHorizontalIcon aria-hidden="true" />{label}</Button></Dialog.Trigger>
+      <Dialog.Trigger asChild>
+        <button type="button" className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border-0 bg-subtle px-2.5 py-0 text-xs! font-semibold! text-teal hover:bg-accent">
+          <AdjustmentsHorizontalIcon aria-hidden="true" className="size-4" />
+          {label}
+        </button>
+      </Dialog.Trigger>
       <Dialog.Portal container={container}>
         <Dialog.Overlay className="shop-modal-scrim" />
         <Dialog.Content className="shop-filter-sheet" dir={locale === 'ar' ? 'rtl' : 'ltr'} ref={content}>

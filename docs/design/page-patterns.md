@@ -14,11 +14,15 @@ Category shortcuts precede shelves. Each shelf places its heading and View all l
 
 Department order is breadcrumb → H1/count → relevant subcategories → filters/sort and applied chips → products → existing pagination. Description is optional and limited to a short introduction. Desktop has the documented filter rail. Phone filters use a sheet with draft choices. Reset clears the draft, Apply commits it, and other dismissal restores committed choices and focus to Filter.
 
+On phones, place the compact Filters trigger first in the category shortcuts row, with the pills scrolling independently on its inline end. Keep sort and the result count on the compact row below. Preserve the filter trigger when category shortcuts are absent.
+
 Search leads with the submitted query and actual count, followed by filters/sort and products. Keep campaigns below direct results. Suggestions, corrections and no-match recovery reflect actual search responses. A correction offers the original query. An empty filtered result offers Clear filters while preserving context. A request failure retains the query and prior confirmed results with Retry. Preserve filters, sort and browsing position on return from detail. Retain the application's supported pagination mechanism.
 
 ## Product detail
 
 Order is breadcrumb → gallery and purchase block → verified product information → related shelf. Desktop uses equal gallery and purchase columns with a 32px gap. Phone places gallery first. The product name uses the page-title H1 role. Purchase order is complete identity/strength/pack → price and availability → required choices → quantity → accessible coral purchase action → relevant conditions.
+
+Give the gallery its own bounded stage so any image or fallback stays above the title on phones. Keep Save and Zoom as labeled icon controls with 44px touch targets. Show photo navigation only for multiple images, with a horizontal thumbnail strip on phones and a vertical strip alongside the stage on larger screens. Keep currency and stock close to the current price. On phones the purchase dock takes over only when the inline action scrolls out of view, so both actions never compete.
 
 Use 4px between identity lines, 16px before price and 24px between choice groups. Conditions sit 8px below the action. Retain real delivery, stock and purchase restrictions from existing data. Longer information follows available verified fields, such as overview, ingredients/specifications, directions, warnings and storage. Omit absent sections. Phone accordions can keep overview initially open. Important purchase warnings stay beside the action as well as in the full information. A related shelf follows the information.
 
