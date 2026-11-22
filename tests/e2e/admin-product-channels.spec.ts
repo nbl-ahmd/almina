@@ -8,8 +8,8 @@ test.beforeEach(async ({ request }) => { await reset(request); });
 test('product channels reveal prices, save both rates and preserve inactive prices and tab drafts', async ({ page }) => {
   await login(page); await types(page); await page.goto(adminOrigin + '/admin/products/' + productId); await streamSettled(page);
   await expect(page.getByRole('button', { name: 'Save product', exact: true })).toBeEnabled();
-  await expect(page.getByLabel('Retail price (AED)', { exact: true })).toBeVisible();
-  await expect(page.getByLabel(/^Stock adjustment reason/)).toBeHidden();
+  await expect(page.getByLabel('Price (AED)', { exact: true })).toBeVisible();
+  await expect(page.getByLabel(/^Reason for stock change/)).toBeHidden();
   await page.getByRole('switch', { name: 'Wholesale', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Set wholesale price for Salon', exact: true }).check();
   await page.getByLabel('Wholesale price — Salon (AED)', { exact: true }).fill('12.35');
@@ -30,7 +30,7 @@ test('product channels reveal prices, save both rates and preserve inactive pric
   await page.reload(); await streamSettled(page);
   await expect(page.getByLabel('Wholesale price — Salon (AED)', { exact: true })).toHaveValue('12.35');
   await page.getByRole('switch', { name: 'Retail', exact: true }).click();
-  await expect(page.getByLabel('Retail price (AED)', { exact: true })).toBeHidden();
+  await expect(page.getByLabel('Price (AED)', { exact: true })).toBeHidden();
   await expect(page.getByLabel('Wholesale price — Salon (AED)', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Save product', exact: true }).click();
   await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();

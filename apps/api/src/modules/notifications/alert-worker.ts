@@ -1,3 +1,4 @@
+import { wakeLoop, type Wake } from './wake.js';
 import { randomUUID, createHash } from "node:crypto";
 import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 import {
@@ -253,6 +254,7 @@ export async function notificationMaintenance(db: Db, reconcile = true) {
 export function staffAlertWorker(
   getDb: () => Db | Promise<Db>,
   onFailure: () => void = () => {},
+  options: { wake?: Wake } = {},
 ) {
   let stopped = false,
     nextReconciliation = 0,
@@ -272,14 +274,14 @@ export function staffAlertWorker(
       running = undefined;
     }));
   }
-  const timer = setInterval(() => void tick(), orderIntervalMs);
-  timer.unref();
+  // Order alerts wake this worker; the slow interval also drives the 60 s reconciliation sweep.
+  const loop = wakeLoop(tick, { fastMs: orderIntervalMs, slowMs: 30000, wake: options.wake });
   void tick();
   return {
     tick,
     async stop() {
       stopped = true;
-      clearInterval(timer);
+      loop.stop();
       await running;
     },
   };

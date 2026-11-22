@@ -213,6 +213,17 @@ Use clear modules within the API before splitting services.
 
 ---
 
+# Admin Design Direction
+
+The staff and administrator console has its own design direction in `docs/design/admin/`
+(`DESIGN.md`, `PRODUCT.md`, `components.md`, `page-patterns.md`, `responsive.md`, with
+references in `docs/design/admin/references/`). Admin UI work follows those documents.
+The root `DESIGN.md` and `docs/design/*.md` govern the customer storefront only; do not
+apply storefront visuals to the admin, and do not regenerate the root `DESIGN.md` or
+`.impeccable/design.json` from admin code.
+
+---
+
 # Next.js Rules
 
 The target frontend uses Next.js 16 App Router.

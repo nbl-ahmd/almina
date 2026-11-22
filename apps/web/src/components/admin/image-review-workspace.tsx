@@ -1,4 +1,5 @@
 'use client';
+import { selectClass, textareaClass } from './shadcn/styles';
 
 import Image from 'next/image';
 import Link from '../app-link';
@@ -111,7 +112,7 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
     return <div key={field} className="min-w-0 border-b px-3 py-3 last:border-b-0 sm:px-4">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         {editable && !discarded ? <label htmlFor={id} className="!m-0 !text-sm !font-medium">{label}</label> : <span className="text-sm font-medium">{label}</span>}
-        {needsAttention || fieldError ? <span className="rounded-md px-2 py-1 text-xs font-medium">
+        {needsAttention || fieldError ? <span className="rounded-lg px-2 py-1 text-xs font-medium">
           {original.status === 'conflict' && !edit ? 'Conflict' : 'Check value'}</span>
           : discarded ? <span className="text-xs">Not applicable</span>
           : optionalBlank ? <span className="text-xs">Optional</span>
@@ -157,7 +158,7 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
         'By approving, you confirm the barcode and other fields identify this exact variant.' :
         'By approving, you confirm these values against the original label.';
 
-  return <section ref={panel} onKeyDown={shortcuts} className="min-w-0 scroll-mt-20 rounded-xl border bg-white" aria-labelledby="review-product-title" aria-busy={busy}>
+  return <section ref={panel} onKeyDown={shortcuts} className="min-w-0 scroll-mt-20 rounded-lg border bg-white" aria-labelledby="review-product-title" aria-busy={busy}>
     <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
       <div className="min-w-0 flex-1">
         <h2 ref={title} tabIndex={-1} id="review-product-title" className="!m-0 !text-base [overflow-wrap:anywhere]">{detail.product?.name || detail.item.source.identity.name || 'Identify this product'}</h2>
@@ -174,17 +175,17 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
             <a className="inline-flex min-h-9 items-center gap-1 text-xs underline underline-offset-4" href={detail.item.source.imageUrl} target="_blank" rel="noreferrer">Open original<ArrowTopRightOnSquareIcon className="size-3.5" aria-hidden="true" /></a>
           </div>
         </figcaption>
-        <div className={`flex h-[clamp(12rem,34dvh,19rem)] overflow-auto rounded-b-lg lg:h-[clamp(17rem,55dvh,32rem)] ${zoom ? 'items-start justify-start' : 'items-center justify-center'}`}>
+        <div className={`flex h-[clamp(12rem,34dvh,19rem)] overflow-auto rounded-lg lg:h-[clamp(17rem,55dvh,32rem)] ${zoom ? 'items-start justify-start' : 'items-center justify-center'}`}>
           <Image src={detail.item.source.imageUrl} alt={`Original label: ${detail.item.source.identity.name || 'unidentified product'}`} width={600} height={600} unoptimized
             onLoad={() => setLoaded(true)} onError={() => { setLoaded(false); setImageFailed(true); }}
             className={zoom ? 'h-auto w-[180%] max-w-none shrink-0 object-contain' : 'h-full w-full object-contain p-2'} />
         </div>
-        {imageFailed ? <p role="alert" className="admin-note admin-note--danger !m-2">Image could not load. Hold it or skip.</p>
+        {imageFailed ? <p role="alert" className="rounded-lg bg-bad-soft p-4 text-[13px] text-bad !m-2">Image could not load. Hold it or skip.</p>
           : !loaded ? <p role="status" className="m-2 text-xs">Loading original…</p> : null}
       </figure>
       <div className="min-w-0 space-y-4">
-        {detail.withdrawalReason ? <p role="alert" className="admin-note admin-note--danger">Withdrawn association. {detail.withdrawalReason}</p> : null}
-        {detail.item.source.flags.length ? <p role="alert" className="admin-note admin-note--warning">This image is blocked from approval. {detail.item.source.flags.join(', ')}</p> : null}
+        {detail.withdrawalReason ? <p role="alert" className="rounded-lg bg-bad-soft p-4 text-[13px] text-bad">Withdrawn association. {detail.withdrawalReason}</p> : null}
+        {detail.item.source.flags.length ? <p role="alert" className="rounded-lg bg-warn-soft p-4 text-[13px] text-warn">This image is blocked from approval. {detail.item.source.flags.join(', ')}</p> : null}
         {!detail.product || showAssociation ? <ImageReviewAssociation detail={detail} admin={admin} disabled={controlsDisabled}
           allowDraft={!imported && !detail.item.draftProductId}
           onChoose={onChoose} onCreate={onCreate} {...(detail.product ? { onClear: () => onChoose(''), onClose: () => setShowAssociation(false) } : {})} />
@@ -197,7 +198,7 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
             <div className="rounded-lg border">{visible.map(renderRow)}</div>
             {admin && !imported && detail.product.fields && preview.comparison.some(row => !visible.includes(row) && editableProductField(row.field)) ? <details>
               <summary className="cursor-pointer py-1 text-sm font-medium">Add a product field</summary>
-              <label className="mt-2 !text-xs">Additional product field<select value="" disabled={busy} onChange={event => {
+              <label className="mt-2 !text-xs">Additional product field<select className={selectClass} value="" disabled={busy} onChange={event => {
                 const row = preview.comparison.find(value => value.field === event.target.value);
                 if (row && editableProductField(row.field)) setEdit(row.field, { target: 'catalogue', value: '' });
               }}><option value="">Choose a field</option>{preview.comparison.filter(row => !visible.includes(row) && editableProductField(row.field))
@@ -206,10 +207,10 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
           </>}
         <details className="border-t pt-2">
           <summary className="cursor-pointer py-1 text-sm font-medium">Notes & history</summary>
-          <div className="admin-stack pt-3">
+          <div className="grid gap-4 pt-3">
             {!imported ? <>
-              <label>Review note<textarea rows={2} maxLength={2000} value={note} disabled={busy} onChange={event => setNote(event.target.value)} /></label>
-              <label>Reason for holding<select value={holdReason} disabled={busy} onChange={event => setHoldReason(event.target.value)}>{reviewHoldReasons.map(reason => <option key={reason}>{reason}</option>)}</select></label>
+              <label>Review note<textarea className={textareaClass} rows={2} maxLength={2000} value={note} disabled={busy} onChange={event => setNote(event.target.value)} /></label>
+              <label>Reason for holding<select className={selectClass} value={holdReason} disabled={busy} onChange={event => setHoldReason(event.target.value)}>{reviewHoldReasons.map(reason => <option key={reason}>{reason}</option>)}</select></label>
             </> : null}
             <p className="whitespace-pre-line text-xs">Saved label text · {detail.item.source.labelText.join(' · ') || 'None'}</p>
             {detail.item.source.sourceNote ? <p className="text-xs">{detail.item.source.sourceNote}</p> : null}
@@ -221,8 +222,8 @@ export function ImageReviewWorkspace({ detail, admin, busy, hasNext, onDecision,
         </details>
       </div>
     </div>
-    <div className="sticky z-20 space-y-2 rounded-b-xl border-t bg-white px-3 py-2.5 sm:px-5 md:bottom-0">
-      {error ? <p role="alert" className="admin-note admin-note--danger !m-0">{error}</p> : null}
+    <div className="sticky z-20 space-y-2 rounded-lg border-t bg-white px-3 py-2.5 sm:px-5 md:bottom-0">
+      {error ? <p role="alert" className="rounded-lg bg-bad-soft p-4 text-[13px] text-bad !m-0">{error}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="!m-0 text-xs">{imported ? 'Already imported. Review history is retained.' : unavailable}</p>

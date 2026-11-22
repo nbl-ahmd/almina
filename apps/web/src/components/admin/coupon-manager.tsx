@@ -1,9 +1,11 @@
 'use client';
-import styles from './coupon-manager.module.css';
+import { inputClass, selectClass } from './shadcn/styles';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { couponListSchema, couponRecordSchema, couponSaveSchema, type CouponRecord } from '@almina/contracts';
 
+const field = 'grid min-w-0 gap-1.5 text-sm font-medium text-ink';
+const secondary = 'min-h-11 rounded-full border border-line bg-surface px-4 text-sm font-medium text-ink';
 const endpoint = '/api/growth/admin/coupons';
 const dubaiOffset = 4 * 3600000;
 
@@ -95,42 +97,42 @@ export function CouponManager() {
     finally { setBusy(false); }
   }
 
-  return <section className={styles.layout}>
-    <div className={styles.panel}>
-      <h2 className={styles.heading}>Coupon codes</h2>
-      <p className={styles.description}>Campaign discounts on reviewed general-sale products. Customers can use one code per retail order.</p>
-      <div className={styles.actions}>
-        <button type="button" className={styles.button} disabled={busy} onClick={() => edit(null)}>Create coupon</button>
-        <button type="button" className={styles.button} disabled={busy} onClick={() => { setBusy(true); setIssue(''); edit(null); setVersion(value => value + 1); }}>Reload</button>
+  return <section className="my-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+    <div className="min-w-0 rounded-xl bg-surface p-4 shadow-card sm:p-5">
+      <h2 className="mb-3 text-base font-semibold text-ink">Coupon codes</h2>
+      <p className="mb-4 max-w-prose text-sm leading-relaxed text-mute">Campaign discounts on reviewed general-sale products. Customers can use one code per retail order.</p>
+      <div className="mb-4 flex flex-wrap gap-2">
+        <button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-ink-2" disabled={busy} onClick={() => edit(null)}>Create coupon</button>
+        <button type="button" className={secondary} disabled={busy} onClick={() => { setBusy(true); setIssue(''); edit(null); setVersion(value => value + 1); }}>Reload</button>
       </div>
-      <ul className={styles.list}>
+      <ul className="m-0 list-none space-y-2 p-0">
         {coupons.map(coupon => <li key={coupon.code}>
-          <button type="button" className={styles.item} aria-pressed={editing?.code === coupon.code} disabled={busy} onClick={() => edit(coupon)}>
-            <span className={styles.code}>{coupon.code}</span>
-            <span className={styles.usage}>{status(coupon)} · {coupon.uses}{coupon.maximumUses !== null ? ` / ${coupon.maximumUses}` : ''} used</span>
+          <button type="button" className="flex min-h-11 w-full cursor-pointer flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-soft px-3 py-2 text-start text-sm text-ink aria-pressed:bg-fill" aria-pressed={editing?.code === coupon.code} disabled={busy} onClick={() => edit(coupon)}>
+            <span className="min-w-0 font-semibold wrap-anywhere">{coupon.code}</span>
+            <span className="text-xs tabular-nums text-mute">{status(coupon)} · {coupon.uses}{coupon.maximumUses !== null ? ` / ${coupon.maximumUses}` : ''} used</span>
           </button>
         </li>)}
       </ul>
-      {coupons.length > 0 && <p className={styles.count}>{coupons.length} {coupons.length === 1 ? 'coupon' : 'coupons'} {next ? 'shown' : 'total'}</p>}
-      {!busy && coupons.length === 0 && <p className={styles.description}>No coupons yet.</p>}
-      {next && <button className={styles.loadMore} type="button" disabled={busy} onClick={() => void loadMore()}>Load more</button>}
+      {coupons.length > 0 && <p className="mt-3 text-xs text-mute">{coupons.length} {coupons.length === 1 ? 'coupon' : 'coupons'} {next ? 'shown' : 'total'}</p>}
+      {!busy && coupons.length === 0 && <p className="mb-4 max-w-prose text-sm leading-relaxed text-mute">No coupons yet.</p>}
+      {next && <button className="mt-3 min-h-11 rounded-full border border-line bg-surface px-4 text-sm font-medium text-ink" type="button" disabled={busy} onClick={() => void loadMore()}>Load more</button>}
     </div>
-    <form key={formVersion} onSubmit={submit} className={styles.panel}>
-      <h3 className={styles.heading}>{editing ? `Edit ${editing.code}` : 'New coupon'}</h3>
-      <fieldset disabled={busy} className={styles.fields}>
-        <label className={styles.field}>Code<input className={styles.input} name="code" defaultValue={editing?.code} disabled={!!editing} minLength={3} maxLength={32} required placeholder="WELCOME10" /></label>
-        <label className={styles.field}>Discount type<select className={styles.input} value={type} onChange={event => setType(event.target.value === 'fixed' ? 'fixed' : 'percent')}><option value="percent">Percentage</option><option value="fixed">Fixed amount</option></select></label>
-        <label className={styles.field}>{type === 'percent' ? 'Discount (%)' : 'Discount (AED)'}<input className={styles.input} key={type} name="amount" type="number" min={type === 'percent' ? 1 : 0.01} max={type === 'percent' ? 100 : 1_000_000} step="0.01" defaultValue={editing?.discount.type === type ? ('basisPoints' in editing.discount ? editing.discount.basisPoints : editing.discount.amountMinor) / 100 : ''} required /></label>
-        {type === 'percent' && <label className={styles.field}>Maximum discount (AED)<input className={styles.input} name="cap" type="number" min="0.01" max={1_000_000} step="0.01" defaultValue={editing?.discount.type === 'percent' && editing.discount.capMinor !== null ? editing.discount.capMinor / 100 : ''} placeholder="No cap" /></label>}
-        <label className={styles.field}>Minimum eligible spend (AED)<input className={styles.input} name="minimum" type="number" min="0" max={1_000_000} step="0.01" defaultValue={(editing?.minimumMinor ?? 0) / 100} required /></label>
-        <label className={styles.field}>Total usage limit<input className={styles.input} name="limit" type="number" min="1" max={1_000_000} defaultValue={editing?.maximumUses ?? ''} placeholder="Unlimited" /></label>
-        <label className={styles.field}>Starts (UAE time)<input className={styles.input} name="start" type="datetime-local" defaultValue={dateInput(editing?.startsAt)} /></label>
-        <label className={styles.field}>Ends (UAE time)<input className={styles.input} name="end" type="datetime-local" defaultValue={dateInput(editing?.endsAt)} /></label>
-        <label className={styles.toggle}><input name="enabled" type="checkbox" defaultChecked={editing?.enabled ?? false} /> Enable coupon</label>
-        <button type="submit" className={styles.button}>Save coupon</button>
+    <form key={formVersion} onSubmit={submit} className="min-w-0 rounded-xl bg-surface border border-line p-5">
+      <h3 className="mb-3 text-base font-semibold text-ink">{editing ? `Edit ${editing.code}` : 'New coupon'}</h3>
+      <fieldset disabled={busy} className="m-0 grid min-w-0 gap-4 border-0 p-0 sm:grid-cols-2">
+        <label className={field}>Code<input className={inputClass} name="code" defaultValue={editing?.code} disabled={!!editing} minLength={3} maxLength={32} required placeholder="WELCOME10" /></label>
+        <label className={field}>Discount type<select className={selectClass} value={type} onChange={event => setType(event.target.value === 'fixed' ? 'fixed' : 'percent')}><option value="percent">Percentage</option><option value="fixed">Fixed amount</option></select></label>
+        <label className={field}>{type === 'percent' ? 'Discount (%)' : 'Discount (AED)'}<input className={inputClass} key={type} name="amount" type="number" min={type === 'percent' ? 1 : 0.01} max={type === 'percent' ? 100 : 1_000_000} step="0.01" defaultValue={editing?.discount.type === type ? ('basisPoints' in editing.discount ? editing.discount.basisPoints : editing.discount.amountMinor) / 100 : ''} required /></label>
+        {type === 'percent' && <label className={field}>Maximum discount (AED)<input className={inputClass} name="cap" type="number" min="0.01" max={1_000_000} step="0.01" defaultValue={editing?.discount.type === 'percent' && editing.discount.capMinor !== null ? editing.discount.capMinor / 100 : ''} placeholder="No cap" /></label>}
+        <label className={field}>Minimum eligible spend (AED)<input className={inputClass} name="minimum" type="number" min="0" max={1_000_000} step="0.01" defaultValue={(editing?.minimumMinor ?? 0) / 100} required /></label>
+        <label className={field}>Total usage limit<input className={inputClass} name="limit" type="number" min="1" max={1_000_000} defaultValue={editing?.maximumUses ?? ''} placeholder="Unlimited" /></label>
+        <label className={field}>Starts (UAE time)<input className={inputClass} name="start" type="datetime-local" defaultValue={dateInput(editing?.startsAt)} /></label>
+        <label className={field}>Ends (UAE time)<input className={inputClass} name="end" type="datetime-local" defaultValue={dateInput(editing?.endsAt)} /></label>
+        <label className="flex items-center gap-2 text-sm sm:col-span-2"><input name="enabled" type="checkbox" defaultChecked={editing?.enabled ?? false} /> Enable coupon</label>
+        <button type="submit" className="min-h-11 w-fit rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-ink-2">Save coupon</button>
       </fieldset>
-      {issue && <p role="alert" className={styles.message}>{issue}</p>}
-      {message && <p role="status" className={styles.message}>{message}</p>}
+      {issue && <p role="alert" className="mt-3 mb-0 text-sm">{issue}</p>}
+      {message && <p role="status" className="mt-3 mb-0 text-sm">{message}</p>}
     </form>
   </section>;
 }

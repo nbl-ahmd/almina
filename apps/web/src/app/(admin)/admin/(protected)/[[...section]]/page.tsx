@@ -1,7 +1,8 @@
 import { NotificationCenter } from '../../../../../components/admin/notification-center';
 import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
 import type { BranchWorkspace } from '@almina/contracts';
-import { StaffBranchAssignment, ReceivingSummary } from '../../../../../components/admin/order-routing';
+import { cloudinaryImage } from '@almina/contracts';
+import { StaffBranchAssignment } from '../../../../../components/admin/order-routing';
 import { reportDays } from '../../../../../lib/admin/dashboard';
 import { RowActions } from '../../../../../components/admin/row-actions';
 import { ImageReviewManager } from '../../../../../components/admin/image-review-manager';
@@ -30,9 +31,13 @@ import {
 import { getWebEnvironment } from "../../../../../lib/server/env";
 import {
   Badge,
+  Callout,
   Card,
+  CreatePanel,
+  FilterChips,
   PageHeader,
-  orderStatusTone,
+  Pager,
+  buttonVariants,
 } from '../../../../../components/admin/ui';
 import {
   Table,
@@ -49,20 +54,29 @@ import {
   BulkTemplates,
 } from "../../../../../components/admin/forms";
 import { Command } from "../../../../../components/admin/controls";
+import { ProductsTable } from '../../../../../components/admin/products-table';
+import { OrdersTable } from '../../../../../components/admin/orders-table';
 type Query = Record<string, string | string[] | undefined>;
-const formPanel = 'admin-form-panel';
-function pagination(section: string, query: Query, length: number) {
-  const offset = Number(query.offset ?? 0);
-  const link = (value: number) =>
-    `/admin/${section}?${new URLSearchParams({ ...Object.fromEntries(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string")), offset: String(value) })}`;
-  return (
-    <nav aria-label="Pagination" className="admin-pagination">
-      {offset > 0 ? (
-        <Link href={link(Math.max(0, offset - 25))}>Previous page</Link>
-      ) : null}
-      {length === 25 ? <Link href={link(offset + 25)}>Next page</Link> : null}
-    </nav>
-  );
+/** Thumbnail URL for the product list: catalogue CDN first, legacy media origin as the fallback. */
+function thumbnail(item: AdminRecord): string | null {
+  const cdn = Array.isArray(item.cloudinaryImages) ? cloudinaryImage(item.cloudinaryImages[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME) : null;
+  if (cdn) return cdn;
+  const first = item.image ?? (Array.isArray(item.images) ? item.images[0] : undefined);
+  return typeof first === 'string' && /^[A-Za-z0-9_.-]+$/.test(first) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${first}` : null;
+}
+const PAGE_SIZE = 25;
+/** Lists request one extra row so "Next" only appears when another page exists. */
+function lookahead(qs: URLSearchParams) {
+  const next = new URLSearchParams(qs);
+  next.set('limit', String(PAGE_SIZE + 1));
+  return next;
+}
+function pageOf<T>(items: T[]) {
+  return { items: items.slice(0, PAGE_SIZE), more: items.length > PAGE_SIZE };
+}
+function pagination(section: string, query: Query, shown: number, more: boolean) {
+  const base = Object.fromEntries(Object.entries(query).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+  return <Pager count={shown} offset={Number(query.offset ?? 0) || 0} more={more} hrefFor={(value) => `/admin/${section}?${new URLSearchParams({ ...base, offset: String(value) })}`} />;
 }
 export default async function AdminPage({
   params,
@@ -84,12 +98,14 @@ export default async function AdminPage({
         <PageHeader
           title="Access denied"
           description="You do not have permission to use this area. Ask an administrator if you need access."
-          actions={<Link href="/admin/orders">View assigned orders</Link>}
+          actions={<Link className={buttonVariants({ variant: "outline" })} href="/admin/orders">View assigned orders</Link>}
         />
       </>
     );
   const qs = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
+    // Presentation-only confirmation from the product editor; never sent upstream.
+    if (key === "saved") continue;
     if (typeof value === "string" && value) qs.set(key, value);
     else if (Array.isArray(value)) notFound();
   }
@@ -139,7 +155,7 @@ export default async function AdminPage({
           <PageHeader
             title="Read-only inventory"
             description="Product changes require an administrator."
-            actions={<Link href="/admin/products">Back to products</Link>}
+            actions={<Link className={buttonVariants({ variant: "outline" })} href="/admin/products">Back to products</Link>}
           />
         </>
       );
@@ -163,6 +179,17 @@ export default async function AdminPage({
         detail === "new"
           ? undefined
           : record(await adminRead(`products/${detail}`));
+      // Neighbours in the current catalogue order, so many products can be edited without returning to the list.
+      let previousHref: string | undefined, nextHref: string | undefined, position = '';
+      if (product) {
+        const neighbours = rows(await adminRead("products", new URLSearchParams({ limit: "100" })).catch(() => []));
+        const index = neighbours.findIndex(item => display(item._id) === detail);
+        if (index >= 0) {
+          if (index > 0) previousHref = `/admin/products/${display(neighbours[index - 1]!._id)}`;
+          if (index < neighbours.length - 1) nextHref = `/admin/products/${display(neighbours[index + 1]!._id)}`;
+          position = `${index + 1} of ${neighbours.length >= 100 ? '100+' : neighbours.length}`;
+        }
+      }
       return (
         <>
           <PageHeader
@@ -174,10 +201,10 @@ export default async function AdminPage({
             }
             actions={
               <>
-                <Link href="/admin/products">Back to products</Link>
-                {product ? (
-                  <Link href="/admin/needs-action">Back to Needs action</Link>
-                ) : null}
+                {position ? <span className="text-xs text-mute" aria-live="polite">{position}</span> : null}
+                {previousHref ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={previousHref} aria-label="Previous product">‹ Previous</Link> : null}
+                {nextHref ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={nextHref} aria-label="Next product">Next ›</Link> : null}
+                <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href="/admin/products">All products</Link>
               </>
             }
           />
@@ -185,13 +212,15 @@ export default async function AdminPage({
             product={product}
             categories={categories}
             selectedCategory={selectedCategory}
+            nextHref={nextHref}
           />
         </>
       );
     }
-    const products = rows(
-      await adminRead(qs.has("q") ? "products/search" : "products", qs),
-    );
+    const productPage = pageOf(rows(
+      await adminRead(qs.has("q") ? "products/search" : "products", lookahead(qs)),
+    ));
+    const products = productPage.items;
     const view = typeof query.view === "string" ? query.view : "all";
     return (
       <>
@@ -202,125 +231,45 @@ export default async function AdminPage({
             <>
               {user.role === "admin" ? (
                 <Link
-                  className="admin-btn--primary"
+                  className={buttonVariants({ variant: "primary" })}
                   href="/admin/products/new"
                 >
-                  Create product
+                  Add product
                 </Link>
               ) : (
                 <Badge tone="neutral">Read-only inventory</Badge>
               )}
               {user.role === 'admin' ? (
-                <Link href="/admin/needs-action">Review needs action</Link>
+                <Link className={buttonVariants({ variant: "outline" })} href="/admin/needs-action">Review needs action</Link>
               ) : null}
             </>
           }
         />
-        {user.role === 'admin' ? (
-          <p className="admin-hint admin-hint--tight">
-            <Link href="/admin/needs-action?status=all&reason=missing-photo">
-              Missing photos
-            </Link>{' '}
-            ·{' '}
-            <Link href="/admin/needs-action?status=drafts">
-              Unpublished drafts
-            </Link>
-          </p>
+        {query.saved === 'published' || query.saved === 'draft' ? (
+          <Callout tone="success" role="status">
+            <p><strong>{query.saved === 'published' ? 'Product published.' : 'Draft saved.'}</strong> {query.saved === 'published' ? 'It is now visible in the storefront.' : 'It stays hidden from customers until you publish it.'}</p>
+            <Link href="/admin/products/new">Add another product</Link>
+          </Callout>
         ) : null}
-        <nav className="admin-inventory-tabs" aria-label="Inventory views">
-          {[
-            ['all', 'All products'], ['sale', 'On sale'],
-            ['outofstock', 'Out of stock'], ['disabled', 'Disabled'],
-          ].map(([value, label]) => {
+        <FilterChips
+          label="Inventory views"
+          items={[['all', 'All products'], ['sale', 'On sale'], ['outofstock', 'Out of stock'], ['disabled', 'Disabled']].map(([value, label]) => {
             const params = new URLSearchParams();
             if (typeof query.q === 'string' && query.q) params.set('q', query.q);
             if (value !== 'all') params.set('view', value!);
-            return <Link key={value} href={`/admin/products${params.size ? `?${params}` : ''}`}
-              aria-current={view === value ? 'page' : undefined}>{label}</Link>;
+            return { label: label!, href: `/admin/products${params.size ? `?${params}` : ''}`, active: view === value };
           })}
-        </nav>
-        <form className={`${formPanel} admin-inventory-filters`} role="search">
-          <label htmlFor="q">
-            Search products
-            <input
-              id="q"
-              name="q"
-              type="search"
-              defaultValue={display(query.q ?? "")}
-              maxLength={80}
-              placeholder="Product name or PD number"
-            />
-          </label>
-          <input type="hidden" name="view" value={view} />
-          <div className="admin-actions">
-            <button>Apply filters</button>
-            <Link className="admin-btn--secondary" href="/admin/products">
-              Reset
-            </Link>
-          </div>
-        </form>
-        <Table
-          caption="Product inventory"
-          data={products}
-          columns={[
-            { key: "name", label: "Name" },
-            { key: "product_id", label: "Product ID" },
-            { key: "price", label: "Price (AED)", align: "end" },
-            {
-              key: "stock",
-              label: "Stock",
-              align: "end",
-              render: (item) => {
-                const stock = Number(item.stock);
-                return Number.isFinite(stock) && stock <= 0 ? (
-                  <Badge tone="danger">Out of stock</Badge>
-                ) : (
-                  display(item.stock)
-                );
-              },
-            },
-            {
-              key: "disabled",
-              label: "Status",
-              render: (item) =>
-                item.disabled === true ? (
-                  <Badge tone="neutral">Disabled</Badge>
-                ) : (
-                  <Badge tone="success" dot>
-                    Live
-                  </Badge>
-                ),
-            },
-          ]}
-          actions={(item) =>
-            user.role !== "admin" ? (
-              "Read-only"
-            ) : (
-              <>
-                <Link href={`/admin/products/${display(item._id)}`} aria-label={`Edit ${display(item.name)}`}>
-                  Edit
-                </Link>
-                <RowActions label={display(item.name)}>
-                <Command
-                  path={`products/publish/${display(item._id)}`}
-                  confirm="Change this product's published status?"
-                >
-                  Toggle publishing
-                </Command>
-                <Command
-                  path={`products/${display(item._id)}`}
-                  method="DELETE"
-                  variant="danger"
-                  confirm="Archive this product while preserving history and images?"
-                >
-                  Archive product
-                </Command>
-                </RowActions>
-              </>
-            )
-          }
         />
-        {pagination(section, query, products.length)}
+        <form role="search" className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-surface p-3 border border-line">
+          <label htmlFor="q" className="sr-only">Search products</label>
+          <input id="q" name="q" type="search" defaultValue={display(query.q ?? "")} maxLength={80} placeholder="Search by product name or PD number"
+            className="h-11 min-w-0 flex-1 basis-64 rounded-lg border-0 bg-fill px-5 text-sm text-ink outline-none placeholder:text-mute focus:bg-white focus:ring-2 focus:ring-ink" />
+          <input type="hidden" name="view" value={view} />
+          <button className={buttonVariants({ variant: "dark" })}>Search</button>
+          <Link className={buttonVariants({ variant: "outline" })} href="/admin/products">Reset</Link>
+        </form>
+        <ProductsTable admin={user.role === "admin"} products={products.map(item => ({ _id: display(item._id), name: display(item.name), product_id: display(item.product_id), category: display(record(item.category).name), image: thumbnail(item), price: display(item.price), salePrice: item.sale === true && item.salePrice ? display(item.salePrice) : null, stock: display(item.stock), disabled: item.disabled === true }))} />
+        {pagination(section, query, products.length, productPage.more)}
       </>
     );
   }
@@ -332,7 +281,7 @@ export default async function AdminPage({
           <PageHeader
             title="Edit category"
             description={`Update the label, colour and image for ${display(item.name)}.`}
-            actions={<Link href="/admin/categories">Back to categories</Link>}
+            actions={<Link className={buttonVariants({ variant: "outline" })} href="/admin/categories">Back to categories</Link>}
           />
           <Card>
             <AdminForm
@@ -369,14 +318,15 @@ export default async function AdminPage({
         </>
       );
     }
-    const categories = rows(await adminRead("category", qs));
+    const categoryPage = pageOf(rows(await adminRead("category", lookahead(qs))));
+    const categories = categoryPage.items;
     return (
       <>
         <PageHeader
           title="Categories"
           description="Organise the storefront into browsable groups."
         />
-        <details className="admin-create-panel" open={detail === "new"}><summary>Create category</summary>
+        <CreatePanel summary="Create category" open={detail === "new"}>
         <Card title="Create category">
           <AdminForm
             path="category"
@@ -399,7 +349,7 @@ export default async function AdminPage({
             ]}
           />
         </Card>
-        </details>
+        </CreatePanel>
         <Table
           caption="Categories"
           data={categories}
@@ -440,19 +390,20 @@ export default async function AdminPage({
             </RowActions>
           )}
         />
-        {pagination(section, query, categories.length)}
+        {pagination(section, query, categories.length, categoryPage.more)}
       </>
     );
   }
   if (section === "banners") {
-    const banners = rows(await adminRead("banners", qs));
+    const bannerPage = pageOf(rows(await adminRead("banners", lookahead(qs))));
+    const banners = bannerPage.items;
     return (
       <>
         <PageHeader
           title="Banners"
           description="Upload event, offer and campaign artwork for the homepage carousel. Newest banners appear first."
         />
-        <details className="admin-create-panel"><summary>Add banner</summary>
+        <CreatePanel summary="Add banner">
         <Card title="Add banner">
           <AdminForm
             path="banners"
@@ -484,7 +435,7 @@ export default async function AdminPage({
             ]}
           />
         </Card>
-        </details>
+        </CreatePanel>
         <Table
           caption="Published banners"
           data={banners}
@@ -510,7 +461,7 @@ export default async function AdminPage({
             </>
           )}
         />
-        {pagination(section, query, banners.length)}
+        {pagination(section, query, banners.length, bannerPage.more)}
       </>
     );
   }
@@ -520,74 +471,23 @@ export default async function AdminPage({
     if (detail)
       { const order=record(await adminRead(`orders/${detail}`));const setup=user.role==='admin'&&order.deliveryAssignment?record(await adminRead('auth/order-routing')):null;return <OrderDetail order={order} admin={user.role==='admin'} branches={setup?.branches as Parameters<typeof OrderDetail>[0]['branches']} />; }
     // Status is a presentation filter; city authorization is always applied by the API.
-    const orders = rows(await adminRead("orders", qs));
-    const receiving = await adminRead("orders/receiving").then(record).catch(() => null);
-    const active = typeof query.status === "string" ? query.status : "all";
+    const orderPage = pageOf(rows(await adminRead("orders", lookahead(qs))));
+    const orders = orderPage.items;
+        const active = typeof query.status === "string" ? query.status : "all";
     return (
       <>
         <PageHeader
           title="Orders"
           description="Review incoming orders, verify delivery details and confirm fulfilment. Administrators see every order; branch staff see their assigned queue."
         />
-        {receiving ? <ReceivingSummary pendingCount={Number(receiving.pendingCount)} reviewCount={Number(receiving.reviewCount)} oldestPendingAt={typeof receiving.oldestPendingAt === "string" ? receiving.oldestPendingAt : null} /> : <p role="alert" className="admin-alert">Receiving counts are temporarily unavailable. Your authorized orders are still listed below; refresh to check for updates.</p>}
-        <nav aria-label="Order status views" className="admin-segmented">
-          {[
-            "all",
-            "pending",
-            "confirmed",
-            "packed",
-            "dispatched",
-            "cancelled",
-            "refunded",
-          ].map((status) => (
-            <Link
-              key={status}
-              href={`/admin/orders${status === "all" ? "" : `?status=${status}`}`}
-              aria-current={active === status ? "page" : undefined}
-            >
-              {status}
-            </Link>
-          ))}
-        </nav>
-        <Table
-          caption="Orders"
-          data={orders}
-          empty={{
-            title: "No orders in this view",
-            description:
-              "Try another status filter, or wait for new orders to arrive.",
-          }}
-          columns={[
-            { key: "orderId", label: "Order" },
-            { key: "customer.name", label: "Customer" },
-            { key: "customer.city", label: "Customer area" },
-            { key: "routing.branchName", label: "Receiving branch" },
-            { key: "routing.areaLabel", label: "Delivery area", render: order => <>{display(record(order.routing).areaLabel)}{record(order.routing).needsReview ? <Badge tone="warning">Review address</Badge> : null}</> },
-            {
-              key: "customer.totalAmount",
-              label: "Total (AED)",
-              align: "end",
-            },
-            {
-              key: "status",
-              label: "Status",
-              render: (order) => {
-                const status = display(order.status);
-                return (
-                  <Badge tone={orderStatusTone(status)} dot>
-                    {status}
-                  </Badge>
-                );
-              },
-            },
-          ]}
-          actions={(order) => (
-            <Link href={`/admin/orders/${display(order._id)}`}>
-              Open order {display(order.orderId)}
-            </Link>
-          )}
+        <FilterChips
+          label="Order status views"
+          items={["all", "pending", "confirmed", "packed", "dispatched", "cancelled", "refunded"].map((status) => ({
+            label: status.charAt(0).toUpperCase() + status.slice(1), href: `/admin/orders${status === "all" ? "" : `?status=${status}`}`, active: active === status,
+          }))}
         />
-        {pagination(section, query, orders.length)}
+        <OrdersTable orders={orders.map(order => ({ _id: display(order._id), orderId: display(order.orderId), status: display(order.status), customer: { name: display(record(order.customer).name), city: display(record(order.customer).city), totalAmount: display(record(order.customer).totalAmount) }, routing: { branchName: display(record(order.routing).branchName), areaLabel: display(record(order.routing).areaLabel), needsReview: record(order.routing).needsReview === true } }))} />
+        {pagination(section, query, orders.length, orderPage.more)}
       </>
     );
   }
@@ -601,8 +501,8 @@ export default async function AdminPage({
           title="Team & access"
           description="Administrators manage the business. Each branch uses its own store account for orders. Review and retire old staff access below."
         />
-        <p className="admin-alert">Each branch has its own store login. <Link href="/admin/branches">Manage branches and store logins</Link>.</p>
-        <details className="admin-create-panel"><summary>Add administrator</summary><Card title="Add administrator"><AdminForm path="auth/signup" label="Create administrator" fields={[{name:'name',label:'Name',required:true},{name:'username',label:'Username',required:true},{name:'password',label:'Password (at least 12 characters)',type:'password',required:true},{name:'role',label:'Role',type:'hidden',value:'admin'},{name:'cities',label:'Cities',type:'hidden',value:''}]} /></Card></details>
+        <Callout><p>Each branch has its own store login. <Link href="/admin/branches">Manage branches and store logins</Link>.</p></Callout>
+        <CreatePanel summary="Add administrator"><Card title="Add administrator"><AdminForm path="auth/signup" label="Create administrator" fields={[{name:'name',label:'Name',required:true},{name:'username',label:'Username',required:true},{name:'password',label:'Password (at least 12 characters)',type:'password',required:true},{name:'role',label:'Role',type:'hidden',value:'admin'},{name:'cities',label:'Cities',type:'hidden',value:''}]} /></Card></CreatePanel>
         <Card title="Store accounts" description="Created with each branch. Store accounts can receive and fulfil assigned orders; business settings remain administrator-only.">
           <Table caption="Branch store accounts" data={workspace.logins.map(login=>({...login, name:routing.branches.find(branch=>branch.id===login.branchId)?.name??'Branch unavailable'}))} columns={[{key:'name',label:'Branch'},{key:'username',label:'Store login'},{key:'disabled',label:'Access',render:item=>item.disabled?'Paused':'Can sign in'}]} actions={()=> <Link href="/admin/branches">Manage in Branches</Link>} />
         </Card>
@@ -610,11 +510,11 @@ export default async function AdminPage({
           <Table caption="Administrator accounts" data={users.filter(item=>item.role==='admin')} columns={[{key:'name',label:'Name'},{key:'username',label:'Username'}]} actions={item=>display(item._id)===user.id?'Current account':<Command path={`auth/users/${display(item._id)}`} method="DELETE" variant="danger" confirm="Deactivate this administrator and revoke all sessions? History is retained.">Deactivate account</Command>} />
         </Card>
         {users.some(item=>item.role!=='admin')?<Card title="Legacy staff access" description="Review these older accounts before moving receiving devices to branch store logins.">
-          <p className="admin-alert">Legacy staff retain catalogue viewing, marketing and image-review access, in addition to assigned orders. Assign their receiving branch or deactivate them after replacing their login. New store accounts have narrower fulfilment permissions.</p>
+          <Callout tone="warning"><p>Legacy staff retain catalogue viewing, marketing and image-review access, in addition to assigned orders. Assign their receiving branch or deactivate them after replacing their login. New store accounts have narrower fulfilment permissions.</p></Callout>
           <Table caption="Legacy staff accounts" data={users.filter(item=>item.role!=='admin')} columns={[{key:'name',label:'Name'},{key:'username',label:'Username'},{key:'role',label:'Access',render:()=> 'Legacy staff — broad access'},{key:'branchId',label:'Receiving branch',render:item=>routing.branches.find(branch=>branch.id===item.branchId)?.name??'Not assigned — review access'}]} actions={item=><><StaffBranchAssignment key={display(item._id)+display(item.branchId)} id={display(item._id)} branchId={typeof item.branchId==='string'?item.branchId:null} branches={routing.branches} /><Command path={`auth/users/${display(item._id)}`} method="DELETE" variant="danger" confirm="Deactivate this legacy account and revoke all sessions? History is retained.">Deactivate account</Command></>} />
         </Card>:null}
         {users.length === 25 ? (
-          <nav className="admin-pagination" aria-label="Pagination">
+          <nav className="mb-4 flex gap-2 [&_a]:inline-flex [&_a]:h-10 [&_a]:items-center [&_a]:rounded-lg [&_a]:bg-surface [&_a]:px-5 [&_a]:text-[13px] [&_a]:font-medium [&_a]:text-ink [&_a]:no-underline [&_a]:border border-line" aria-label="Pagination">
             <Link href={`/admin/users?before=${display(users.at(-1)?._id)}`}>
               Next page
             </Link>
@@ -633,7 +533,7 @@ export default async function AdminPage({
           description="Control storefront availability. Closing the store stops new checkout activity."
         />
         <Card title="Storefront availability">
-          <p className="admin-actions">
+          <p className="m-0 mb-4 flex items-center gap-3">
             <span>Current status</span>
             <Badge tone={open ? "success" : "danger"} dot>
               {display(store.status)}
@@ -717,7 +617,7 @@ export default async function AdminPage({
                 ? `Showing a page of ${display(conversation.messageCount)} stored messages, in chronological order. The first page contains the most recent messages.`
                 : "Stored messages, in chronological order."
             }
-            actions={<Link href="/admin/whatsapp">Back to WhatsApp</Link>}
+            actions={<Link className={buttonVariants({ variant: "outline" })} href="/admin/whatsapp">Back to WhatsApp</Link>}
           />
           <Table
             caption="Conversation history"
@@ -728,7 +628,7 @@ export default async function AdminPage({
               { key: "timestamp", label: "Sent" },
             ]}
           />
-          <nav aria-label="Conversation history pages" className="admin-pagination">
+          <nav aria-label="Conversation history pages" className="mb-4 flex gap-2 [&_a]:inline-flex [&_a]:h-10 [&_a]:items-center [&_a]:rounded-lg [&_a]:bg-surface [&_a]:px-5 [&_a]:text-[13px] [&_a]:font-medium [&_a]:text-ink [&_a]:no-underline [&_a]:border border-line">
             {Number(conversation.messageOffset) > 0 ? <Link href={`/admin/whatsapp/${detail}?${new URLSearchParams({ limit: String(query.limit ?? 25), offset: String(Math.max(0, Number(conversation.messageOffset) - Number(query.limit ?? 25))) })}`}>Newer messages</Link> : null}
             {conversation.hasOlderMessages === true ? <Link href={`/admin/whatsapp/${detail}?${new URLSearchParams({ limit: String(query.limit ?? 25), offset: String(Number(conversation.messageOffset ?? 0) + Number(query.limit ?? 25)) })}`}>Older messages</Link> : null}
           </nav>
@@ -762,10 +662,11 @@ export default async function AdminPage({
       );
     }
     const [recipients, posters, reports] = await Promise.all([
-      adminRead("whatsapp/recipients", qs),
+      adminRead("whatsapp/recipients", lookahead(qs)),
       adminRead("whatsapp/image", qs),
       adminRead("whatsapp/reports", qs),
     ]);
+    const recipientPage = pageOf(rows(recipients));
     return (
       <>
         <PageHeader
@@ -774,7 +675,7 @@ export default async function AdminPage({
         />
         <Table
           caption="Recipients"
-          data={rows(recipients)}
+          data={recipientPage.items}
           columns={[
             { key: "name", label: "Name" },
             { key: "from", label: "Number" },
@@ -798,15 +699,15 @@ export default async function AdminPage({
             </Link>
           )}
         />
-        {pagination(section, query, rows(recipients).length)}
+        {pagination(section, query, recipientPage.items.length, recipientPage.more)}
         <BulkTemplates
-          recipients={rows(recipients).map((item) => ({
+          recipients={recipientPage.items.map((item) => ({
             from: display(item.from),
             name: display(item.name),
             promotionStatus: display(item.promotionStatus),
           }))}
         />
-        <div className="admin-grid admin-grid--2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <Card title="Send template">
             <AdminForm
               path="whatsapp/s"

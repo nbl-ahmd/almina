@@ -1,15 +1,65 @@
 // No caching of authenticated pages, customer data, or offline writes.
-self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
-self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
-self.addEventListener('push',event=>event.waitUntil((async()=>{
- const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
- const admin=clients.filter(client=>new URL(client.url).pathname.startsWith('/admin/'));
- for(const client of admin)client.postMessage({type:'almina-alerts-updated'});
- // Always show a visible notification (required by iOS Web Push). Keep lock-screen content generic.
- await self.registration.showNotification('Al Mina Pharmacy',{body:'New activity is available. Sign in to review your notifications.',tag:'almina-activity',renotify:true,silent:admin.some(client=>client.visibilityState==='visible'),icon:'/android-chrome-192x192.png',data:{url:'/admin/notifications'}});
+// Push messages carry no payload (nothing about a customer travels through the push service). When one arrives the worker
+// asks the console for the order counts with the staff session cookie, so the notification can say what is waiting.
+// Counts are not personal data; if the session is gone the notification stays generic.
+const ORDERS = '/admin/orders?status=pending';
+const FALLBACK = '/admin/notifications';
+const ICON = '/android-chrome-192x192.png';
+
+self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+
+const adminClients = async () => (await self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+  .filter(client => new URL(client.url).pathname.startsWith('/admin'));
+
+async function pendingSummary() {
+  try {
+    const response = await fetch('/api/admin/orders/receiving', { cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(4000) });
+    if (!response.ok) return null;
+    const value = await response.json();
+    return Number.isInteger(value.pendingCount) && value.pendingCount >= 0 ? value.pendingCount : null;
+  } catch { return null; }
+}
+
+async function setBadge(count) {
+  try {
+    if (!self.navigator.setAppBadge) return;
+    if (count > 0) await self.navigator.setAppBadge(count); else await self.navigator.clearAppBadge();
+  } catch { /* Badges are optional. */ }
+}
+
+self.addEventListener('push', event => event.waitUntil((async () => {
+  const windows = await adminClients();
+  for (const client of windows) client.postMessage({ type: 'almina-alerts-updated' });
+  const visible = windows.some(client => client.visibilityState === 'visible');
+  const pending = await pendingSummary();
+  await setBadge(pending ?? 0);
+  // Always show a visible notification (required by iOS Web Push). Keep lock-screen content to counts.
+  const orders = pending !== null && pending > 0;
+  await self.registration.showNotification(orders ? (pending === 1 ? 'New order to confirm' : `${pending} orders to confirm`) : 'Al Mina Pharmacy', {
+    body: orders ? 'Open the inbox to review and confirm.' : 'New activity is available. Sign in to review your notifications.',
+    tag: orders ? 'almina-orders' : 'almina-activity', renotify: true, silent: visible,
+    // Order alerts stay on desktop until handled; they are the thing this channel exists for.
+    requireInteraction: orders, vibrate: orders ? [200, 100, 200] : undefined, timestamp: Date.now(),
+    icon: ICON, badge: ICON, actions: orders ? [{ action: 'orders', title: 'Open orders' }] : [],
+    data: { url: orders ? ORDERS : FALLBACK },
+  });
 })()));
-self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil((async()=>{
- const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
- const existing=clients.find(client=>new URL(client.url).pathname.startsWith('/admin/'));
- if(existing){await existing.navigate('/admin/notifications');await existing.focus();}else await self.clients.openWindow('/admin/notifications');
-})());});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const target = event.notification.data && typeof event.notification.data.url === 'string' && event.notification.data.url.startsWith('/admin/')
+    ? event.notification.data.url : FALLBACK;
+  event.waitUntil((async () => {
+    const existing = (await adminClients())[0];
+    if (existing) {
+      try { await existing.focus(); await existing.navigate(target); return; } catch { /* Fall through to a new window. */ }
+    }
+    await self.clients.openWindow(target);
+  })());
+});
+
+// The console clears the badge as soon as staff look at the inbox.
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'almina-badge' && Number.isInteger(event.data.count) && event.data.count >= 0) event.waitUntil(setBadge(event.data.count));
+});

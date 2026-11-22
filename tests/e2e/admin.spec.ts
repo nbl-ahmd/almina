@@ -168,7 +168,7 @@ test('admin stock adjustment requires a reason, preserves the retry receipt and 
   await page.goto(adminOrigin + '/admin/products/' + productId);
   await streamSettled(page);
   await page.getByLabel('Stock quantity', { exact: true }).fill('7');
-  await page.getByLabel(/^Stock adjustment reason/).fill('Physical count verified');
+  await page.getByLabel(/^Reason for stock change/).fill('Physical count verified');
   const saving = page.waitForRequest(request => request.method() === 'PUT' && request.url() === adminOrigin + '/api/admin/products/' + productId);
   await page.getByRole('button', { name: 'Save product', exact: true }).click();
   const payload = (await saving).postData() ?? '';

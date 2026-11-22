@@ -65,7 +65,7 @@ test('staff can maintain a verified family option through the existing product f
   await page.getByLabel('Variant size',{exact:true}).fill('Medium');
   await page.getByRole('tab',{name:'Overview',exact:true}).click();
   // Editing an option does not request an inventory adjustment.
-  await expect(page.getByLabel(/^Stock adjustment reason/)).toBeHidden();
+  await expect(page.getByLabel(/^Reason for stock change/)).toBeHidden();
   await page.getByRole('button',{name:'Save product',exact:true}).click();
   await expect(page.getByRole('status').filter({hasText:'Saved successfully.'})).toBeVisible();
   await page.reload();
@@ -73,7 +73,7 @@ test('staff can maintain a verified family option through the existing product f
   await expect(page.getByLabel('Variant size',{exact:true})).toHaveValue('Medium');
   await page.getByLabel(/^Family strength identity/).fill('20mg');
   await page.getByRole('tab',{name:'Overview',exact:true}).click();
-  await expect(page.getByLabel(/^Stock adjustment reason/)).toBeHidden();
+  await expect(page.getByLabel(/^Reason for stock change/)).toBeHidden();
   await page.getByRole('button',{name:'Save product',exact:true}).click();
   await expect(page.locator('form').getByRole('alert')).toContainText('Check the family name, brand, form, strength, category and option combinations.');
   await page.goto(checkoutOrigin+'/products/synthetic-family--PD8001');

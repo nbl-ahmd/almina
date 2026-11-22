@@ -10,6 +10,11 @@ test('incomplete ERP identities cannot publish even when review flags are checke
   assert.ok(publicationIssues({...item,productType:'prescription'}).some(issue=>issue.startsWith('Product classification')));
   assert.ok(publicationIssues({...item,productType:'unreviewed'}).some(issue=>issue.startsWith('Product classification')));
 });
+test('description, pack size and saleable unit are optional to publish but still required for advertising feeds',()=>{
+  const bare={...item,description:'',packLabel:'',saleUnit:''};
+  assert.deepEqual(storePublicationIssues(bare),[]);
+  for(const issue of ['Description','Pack / specification','Saleable unit'])assert.ok(publicationIssues(bare).includes(issue));
+});
 test('honest missing-photo store listings retain medical gates and stay excluded from advertising feeds',()=>{
   const noPhoto={...item,brand:'',cloudinaryImages:[],imageRights:'unreviewed' as const};
   assert.deepEqual(storePublicationIssues(noPhoto),[]);

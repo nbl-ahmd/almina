@@ -1,20 +1,20 @@
 import { ZoneOrderReassignment } from './delivery-management';
 import type { OrderRouting } from '@almina/contracts';
-import { PhotoIcon } from '@heroicons/react/24/outline';
 import { OrderCosts } from './order-costs';
 import { feedIssues } from '../../lib/catalog/feed';
 import { readProduct } from '../../lib/catalog/model';
 import { productImages } from '../../lib/server/catalog';
-import { publicationIssues, storePublicationIssues, cloudinaryImage } from "@almina/contracts";
+import { storePublicationIssues, cloudinaryImage } from "@almina/contracts";
 import { getWebEnvironment } from "../../lib/server/env";
 import { randomUUID } from "node:crypto";
 import { CloudinaryUpload } from "./cloudinary-upload";
+import { PhotoPicker } from "./photo-picker";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AdminRecord } from "../../lib/admin/policy";
 import { Command } from "./controls";
 import { AdminForm, type Field } from "./forms";
-import { Badge, Card, PageHeader, orderStatusTone } from "./ui";
+import { Badge, Card, PageHeader, buttonVariants, orderStatusTone } from "./ui";
 import { orderLinePresentation } from '../../lib/admin/order-lines';
 import Link from '../app-link';
 export function record(value: unknown): AdminRecord {
@@ -40,93 +40,70 @@ export type Column = {
   align?: "end";
   render?: (row: AdminRecord) => ReactNode;
 };
+const cellAction = '[&_a]:inline-flex [&_a]:h-8 [&_a]:items-center [&_a]:rounded-lg [&_a]:border [&_a]:border-line-strong [&_a]:bg-surface [&_a]:px-3.5 [&_a]:text-xs [&_a]:font-medium [&_a]:text-ink [&_a]:no-underline hover:[&_a]:bg-soft [&_button]:h-8 [&_button]:rounded-lg [&_button]:px-3.5 [&_button]:text-xs';
 export function Table({
   caption,
   columns,
   data,
   actions,
   empty,
+  compact,
 }: {
   caption: string;
   columns: Column[];
   data: AdminRecord[];
   actions?: (row: AdminRecord) => ReactNode;
   empty?: { title?: string; description?: string };
+  /** Keep the table layout on phones (scrolls sideways) instead of stacking each row into a card. */
+  compact?: boolean;
 }) {
+  const stack = !compact;
   return (
-    <div
-      className="admin-table-wrap"
-      tabIndex={0}
-      role="region"
-      aria-label={caption}
-    >
-      <table role="table">
-        <caption>{caption}</caption>
-        <thead role="rowgroup">
-          <tr role="row">
-            {columns.map((column) => (
-              <th
-                scope="col"
-                role="columnheader"
-                key={column.key}
-                className={column.align === "end" ? "admin-num" : undefined}
-              >
-                {column.label}
-              </th>
-            ))}
-            {actions ? (
-              <th scope="col" role="columnheader">
-                Actions
-              </th>
-            ) : null}
-          </tr>
-        </thead>
-        <tbody role="rowgroup">
-          {data.map((row, index) => (
-            <tr key={display(row._id ?? index)} role="row">
+    <div className="mb-4 overflow-hidden rounded-lg bg-surface border border-line">
+      <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-ink" tabIndex={0} role="region" aria-label={caption}>
+        <table className={`w-full border-collapse ${stack ? "block md:table" : "table text-[13px]"}`}>
+          <caption className="sr-only">{caption}</caption>
+          <thead className={stack ? "hidden md:table-header-group" : undefined}>
+            <tr>
               {columns.map((column) => (
-                <td
-                  key={column.key}
-                  role="cell"
-                  data-label={column.label}
-                  className={column.align === "end" ? "admin-num" : undefined}
-                >
-                  {column.render
-                    ? column.render(row)
-                    : display(
-                        column.key
-                          .split(".")
-                          .reduce<unknown>(
-                            (value, key) => record(value)[key],
-                            row,
-                          ),
-                      )}
-                </td>
+                <th key={column.key} scope="col" className={`whitespace-nowrap bg-soft ${stack ? "px-5" : "px-4"} py-3 text-xs font-semibold text-mute ${column.align === 'end' ? 'text-right' : 'text-left'}`}>
+                  {column.label}
+                </th>
               ))}
-              {actions ? (
-                <td role="cell" data-label="Actions">
-                  <div className="admin-row-actions">{actions(row)}</div>
+              {actions ? <th scope="col" className="bg-soft px-5 py-3 text-left text-xs font-semibold text-mute">Actions</th> : null}
+            </tr>
+          </thead>
+          <tbody className={stack ? "block md:table-row-group" : undefined}>
+            {data.map((row, index) => (
+              <tr key={display(row._id ?? index)} className={stack ? "block border-b border-line px-4 py-2.5 last:border-0 md:table-row md:border-0 md:p-0 md:even:bg-soft md:hover:bg-soft" : "even:bg-soft"}>
+                {columns.map((column) => (
+                  <td key={column.key} data-label={column.label}
+                    className={stack ? `flex items-center justify-between gap-4 py-0.5 text-[13.5px] before:text-xs before:font-medium before:text-mute before:content-[attr(data-label)] md:table-cell md:px-5 md:py-3.5 md:[overflow-wrap:normal] md:before:content-none ${column.align === 'end' ? 'md:text-right md:tabular-nums' : ''}` : `whitespace-nowrap px-4 py-2.5 ${column.align === 'end' ? 'text-right tabular-nums' : ''}`}>
+                    <span className="min-w-0 text-right md:text-inherit">
+                      {column.render ? column.render(row) : display(column.key.split('.').reduce<unknown>((value, key) => record(value)[key], row))}
+                    </span>
+                  </td>
+                ))}
+                {actions ? (
+                  <td className={stack ? "block pt-2 md:table-cell md:px-5 md:py-3.5" : "px-4 py-2.5"}>
+                    <div className={`flex flex-wrap items-center gap-1.5 ${cellAction}`}>{actions(row)}</div>
+                  </td>
+                ) : null}
+              </tr>
+            ))}
+            {!data.length ? (
+              <tr className="block md:table-row">
+                <td className="block md:table-cell" colSpan={columns.length + (actions ? 1 : 0)}>
+                  <div className="grid justify-items-center gap-1 px-6 py-12 text-center">
+                    <p className="m-0 text-[15px] font-semibold text-ink">{empty?.title ?? 'No records found.'}</p>
+                    {empty?.description ? <p className="m-0 max-w-sm text-[13px] text-mute">{empty.description}</p> : null}
+                  </div>
                 </td>
-              ) : null}
-            </tr>
-          ))}
-          {!data.length ? (
-            <tr role="row">
-              <td
-                role="cell"
-                colSpan={columns.length + (actions ? 1 : 0)}
-              >
-                <div className="admin-empty">
-                  <p className="admin-empty__title">
-                    {empty?.title ?? "No records found."}
-                  </p>
-                  {empty?.description ? <p>{empty.description}</p> : null}
-                </div>
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -134,10 +111,12 @@ export function ProductForm({
   product,
   categories,
   selectedCategory,
+  nextHref,
 }: {
   product?: AdminRecord | undefined;
   categories: AdminRecord[];
   selectedCategory?: string | undefined;
+  nextHref?: string | undefined;
 }) {
   const edit = !!product;
   const section = (
@@ -181,6 +160,7 @@ export function ProductForm({
           name: "description",
           label: "Description",
           type: "textarea",
+          required: true,
           value: display(product?.description ?? ""),
           rows: 5,
         },
@@ -241,39 +221,25 @@ export function ProductForm({
           min: 0,
           step: "0.01",
           value: product?.salePrice == null ? "" : display(product.salePrice),
-          hint: "Required when sale is enabled; cannot exceed the regular price.",
+          hint: "Leave blank when the product is not on sale. The store shows the sale price automatically.",
           prefix: "AED",
         },
-        ...(edit ? [{
-          name: "sale",
-          label: "On sale",
-          value: product?.sale === true ? "true" : "false",
-          options: [
-            { value: "false", label: "No" },
-            { value: "true", label: "Yes" },
-          ],
-        }] as Field[] : []),
       ],
     ),
     ...section(
       "Catalogue",
       "Classification, identifiers and the storefront category.",
       [
-        ...(edit
-          ? []
-          : ([
-              {
-                name: "category",
-                label: "Category",
-                required: true,
-                value: selectedCategory,
-                options: categories.map((category) => ({
-                  value: display(category._id),
-                  label: display(category.name),
-                })),
-                hint: "Products stay in this category until moved.",
-              },
-            ] as Field[])),
+        {
+          name: "category",
+          label: "Category",
+          required: true,
+          value: selectedCategory ?? (edit ? (typeof product?.category === 'object' && product.category ? display(record(product.category)._id) : display(product?.category)) : undefined),
+          options: categories.map((category) => ({
+            value: display(category._id),
+            label: display(category.name),
+          })),
+        },
         ...(!edit ? [{
           name: "barcode",
           label: "Barcode (optional)",
@@ -289,8 +255,8 @@ export function ProductForm({
           label: "Manufacturer part number (optional)",
           value: display(product?.mpn ?? ""),
         },
-        { name: "saleUnit", label: "Saleable unit", value: display(product?.saleUnit ?? "") },
-        { name: "packLabel", label: "Pack / specification", value: display(product?.packLabel ?? "") },
+        { name: "saleUnit", label: "Saleable unit", value: display(product?.saleUnit ?? ""), hint: "How one unit is sold. Defaults to Each when left blank." },
+        { name: "packLabel", label: "Pack / specification", required: true, value: display(product?.packLabel ?? ""), placeholder: "e.g. 30 tablets, 200 ml" },
         { name: "productForm", label: "Product form", value: display(product?.productForm ?? "") },
         {
           name: "strength",
@@ -299,17 +265,18 @@ export function ProductForm({
         },
         {
           name: "productType",
-          label: "Product classification",
+          label: "Product type",
+          required: true,
           value: display(product?.productType ?? ""),
           options: [
-            { value: "", label: "Not reviewed" },
-            { value: "unreviewed", label: "Unreviewed" },
+            { value: "", label: "Select product type" },
             { value: "general", label: "General sale" },
-            { value: "otc", label: "OTC medicine" },
-            { value: "prescription", label: "Prescription" },
+            { value: "otc", label: "Pharmacy medicine (OTC)" },
+            { value: "prescription", label: "Prescription only — not sold online" },
           ],
           kind: "segmented",
           span: "full",
+          hint: "Medicines must be classified before they can be published.",
         },
         {
           name: "condition",
@@ -335,17 +302,6 @@ export function ProductForm({
           ],
         },
         {
-          name: "imageRights",
-          label: "Image usage permission",
-          value: display(product?.imageRights ?? ""),
-          options: [
-            { value: "", label: "Not reviewed" },
-            { value: "unreviewed", label: "Unreviewed" },
-            { value: "authorized", label: "Authorised" },
-          ],
-          kind: "segmented",
-        },
-        {
           name: "googleProductCategory",
           label: "Google product category",
           value: display(product?.googleProductCategory ?? ""),
@@ -353,34 +309,16 @@ export function ProductForm({
       ],
     ),
     ...section(
-      "Review & publishing",
-      "Each confirmation is an explicit editorial decision. Nothing publishes automatically.",
+      "Marketing",
+      "Optional channel approvals and search overrides. Storefront publishing does not require these.",
       [
-        {
-          name: "contentReviewed",
-          label: "Content and exact image match reviewed",
-          value: product?.contentReviewed === true ? "true" : "false",
-          options: [
-            { value: "false", label: "No — pending review" },
-            { value: "true", label: "Yes — reviewed" },
-          ],
-        },
-        {
-          name: "stockVerified",
-          label: "Physical stock verified",
-          value: product?.stockVerified === true ? "true" : "false",
-          options: [
-            { value: "false", label: "No — pending review" },
-            { value: "true", label: "Yes — reviewed" },
-          ],
-        },
         {
           name: "googleApproved",
           label: "Approved for Google catalog export",
           value: product?.googleApproved === true ? "true" : "false",
           options: [
-            { value: "false", label: "No — pending review" },
-            { value: "true", label: "Yes — reviewed" },
+            { value: "false", label: "Not approved" },
+            { value: "true", label: "Approved" },
           ],
         },
         {
@@ -388,8 +326,8 @@ export function ProductForm({
           label: "Approved for Meta catalog export",
           value: product?.metaApproved === true ? "true" : "false",
           options: [
-            { value: "false", label: "No — pending review" },
-            { value: "true", label: "Yes — reviewed" },
+            { value: "false", label: "Not approved" },
+            { value: "true", label: "Approved" },
           ],
         },
         {
@@ -397,7 +335,7 @@ export function ProductForm({
           label: "Image source URL",
           value: display(product?.imageSource ?? ""),
           span: "full",
-          hint: "Record where the approved image came from. Upload the actual file below.",
+          hint: "Record where the approved image came from. Upload the actual file on the Photos tab.",
         },
         {
           name: "seoTitle",
@@ -470,41 +408,55 @@ export function ProductForm({
         ] as Field[])
       : []),
   ];
-  const compactFields = fields.map((field): Field => {
-    const section = ['price', 'salePrice', 'sale', 'stock', 'stockReason'].includes(field.name) ? 'Overview'
-      : ['name', 'brand', 'category', 'summary', 'description'].includes(field.name) ? 'Overview'
-      : ['ingredients', 'usage', 'warnings', 'storage'].includes(field.name) ? 'Care & usage'
-      : field.section === 'Catalogue' || field.name === 'manufacturer' ? 'Organisation'
-      : field.section === 'Review & publishing' ? 'Publishing' : 'Variants';
-    return { ...field, section, advanced: false, sectionDescription: '',
-      ...(field.name === 'price' ? { label: 'Retail price (AED)' } : {}),
-      ...(field.name === 'description' ? { rows: 3 } : {}),
-      ...(['productType', 'condition', 'imageRights'].includes(field.name) ? { kind: 'select' as const } : {}) };
-  });
-  const categoryIndex = compactFields.findIndex(field => field.name === 'category');
-  if (categoryIndex >= 0) {
-    const categoryField = compactFields.splice(categoryIndex, 1)[0]!;
-    compactFields.splice(compactFields.findIndex(field => field.name === 'brand') + 1, 0, categoryField);
-  }
+  const sectionOf = (name: string) =>
+    ['name', 'brand', 'category', 'productType'].includes(name) ? 'Basics'
+    : ['price', 'salePrice', 'stock', 'stockReason'].includes(name) ? 'Pricing'
+    : ['packLabel', 'summary', 'description'].includes(name) ? 'Listing'
+    : ['ingredients', 'usage', 'warnings', 'storage'].includes(name) ? 'Care & usage'
+    : ['barcode', 'gtin', 'mpn', 'manufacturer', 'identifierStatus', 'saleUnit'].includes(name) ? 'Identifiers'
+    : ['familyKey', 'familyName', 'familyBrand', 'familyForm', 'familyStrength', 'variantSize', 'variantFlavour', 'variantPackSize'].includes(name) ? 'Variants'
+    : 'Catalogue feeds';
+  const order = ['name', 'brand', 'category', 'productType', 'price', 'stock', 'stockReason', 'salePrice', 'packLabel', 'summary', 'description'];
+  const productTypeValue = typeof product?.productType === 'string' && ['general', 'otc', 'prescription'].includes(product.productType) ? product.productType : 'general';
+  const stockReasons = ['Stock count', 'Received stock', 'Damaged or expired', 'Correction'].map(value => ({ value, label: value }));
+  const overrides: Record<string, Partial<Field>> = {
+    name: { required: true, span: 'full', placeholder: 'e.g. Panadol Extra 500mg' },
+    brand: { kind: 'combobox', creatable: 'brand', required: true, placeholder: 'Choose or add a brand' },
+    category: { kind: 'combobox', creatable: 'category', required: true, placeholder: 'Choose or add a category', hint: '' },
+    productType: { kind: 'segmented', label: 'Type', required: true, span: 'full', value: productTypeValue, hint: 'Prescription items are never sold online.',
+      options: [{ value: 'general', label: 'General' }, { value: 'otc', label: 'Pharmacy medicine (OTC)' }, { value: 'prescription', label: 'Prescription' }] },
+    price: { label: 'Price (AED)', required: true, prefix: 'AED', min: 0, step: '0.01' },
+    salePrice: { kind: 'offer', label: 'Offer', span: 'full' },
+    stock: { label: 'Stock', required: true, min: 0, step: '1' },
+    stockReason: { kind: 'select', label: 'Reason for stock change', required: false, value: 'Stock count', options: stockReasons, hint: '' },
+    packLabel: { label: 'Pack size', required: false, placeholder: 'e.g. 24 tablets, 200 ml' },
+    summary: { span: 'full', hint: '' },
+    description: { required: false, rows: 4, span: 'full', placeholder: 'Optional' },
+  };
+  const compactFields = fields.filter(field => field.name !== 'imageSource').map((field): Field => ({
+    ...field, section: sectionOf(field.name), advanced: false, sectionDescription: '', ...(overrides[field.name] ?? {}),
+  })).sort((left, right) => (order.indexOf(left.name) + 1 || 99) - (order.indexOf(right.name) + 1 || 99));
   const readinessProduct = edit ? readProduct({...product,disabled:false,category:typeof product.category==='object'?product.category:categories.find(category=>String(category._id)===String(product.category))}) : null;
+  const readinessIssues = edit ? storePublicationIssues({ ...product, contentReviewed: true, stockVerified: true, saleUnit: product.saleUnit || 'Each', imageRights: 'authorized' }) : [];
   return (
-    <div className="admin-product-page">
+    <div className="grid gap-4">
       <AdminForm
       path={edit ? `products/${display(product._id)}` : "products"}
       method={edit ? "PUT" : "POST"}
       multipart
       productAudience={{ audience: typeof product?.audience === 'string' ? product.audience : undefined, wholesaleAudience: typeof product?.wholesaleAudience === 'string' ? product.wholesaleAudience : undefined, wholesaleTypeIds: Array.isArray(product?.wholesaleTypeIds) ? product.wholesaleTypeIds.filter((id): id is string => typeof id === 'string') : [] }}
       fields={compactFields}
-      label={edit ? "Save product" : "Create product"}
-      productMedia={<aside className="admin-product-media" aria-label="Product media">
-          {edit ? <><div className="admin-product-gallery"><MediaPreview item={product} kind="products" origin={getWebEnvironment().LEGACY_API_ORIGIN} /></div><CloudinaryUpload productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} /></> :
-            <Card title="Product photos"><div className="admin-product-photo-empty"><PhotoIcon width={32} height={32} aria-hidden="true" /><p>Create this product to add photos.</p><span>You can then upload up to five product images.</span></div></Card>}
-          <div className="admin-product-helper"><strong>{edit ? 'Editing an existing product' : 'Start with the essentials'}</strong><p>{edit ? 'Changes are saved together. Stock adjustments require a reason.' : 'Add a name, category, price and opening stock. Additional details can be completed later.'}</p></div>
+      label="Save & publish"
+      publishDefault={edit ? product.disabled !== true : true}
+      productLive={edit ? product.disabled !== true : true}
+      {...(nextHref ? { nextHref } : {})}
+      productMedia={<aside className="grid content-start gap-4" aria-label="Product media">
+          {edit ? <><div className="rounded-xl bg-surface p-4 border border-line empty:hidden"><MediaPreview item={product} kind="products" origin={getWebEnvironment().LEGACY_API_ORIGIN} /></div><CloudinaryUpload productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} /></> :
+            <PhotoPicker />}
         </aside>}
-      productChecks={<div className="admin-product-checks">
-    {readinessProduct ? <details className="admin-panel"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h2>{channel==='google'?'Google':'Meta'}</h2>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Publishing, channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
-    {edit && product.catalogManaged===true ? <details className="admin-panel"><summary>Catalogue review</summary><p>Proposed website stock: {display(product.websiteStockProposed)}. The opening stock is an estimate; verify it before publishing.</p>{storePublicationIssues(product).length?<ul>{storePublicationIssues(product).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Store publication checks complete. Publishing is a separate action.</p>}{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).length ? <><h3>Photo and catalogue improvements</h3><p>A missing photo uses a labelled placeholder in the store. Advertising feeds still need an actual authorized photo and verified brand.</p><ul>{publicationIssues(product).filter(issue=>!storePublicationIssues(product).includes(issue)).map(issue=><li key={issue}>{issue}</li>)}</ul></> : null}</details>:null}
-
+      productChecks={<div className="grid gap-4">
+    {edit ? <details className="mb-4 rounded-xl bg-surface p-5 border border-line [&>summary]:cursor-pointer [&>summary]:text-sm [&>summary]:font-semibold [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[13px] [&_p]:text-[13px]" open={readinessIssues.length > 0}><summary>{readinessIssues.length ? `${readinessIssues.length} details to complete before publishing` : 'Ready to publish'}</summary>{readinessIssues.length ? <ul>{readinessIssues.map(issue => <li key={issue}>{issue}</li>)}</ul> : <p>All required storefront details are present. Saving publishes this product.</p>}{product.catalogManaged === true && typeof product.websiteStockProposed === 'number' ? <p className="mt-3 text-xs text-mute">Imported stock estimate: {display(product.websiteStockProposed)}. Confirm the counted stock before saving.</p> : null}</details> : <p className="m-0 text-xs text-mute">The product publishes as soon as you save. Required fields are marked.</p>}
+    {readinessProduct ? <details className="mb-4 rounded-xl bg-surface p-5 border border-line [&>summary]:cursor-pointer [&>summary]:text-sm [&>summary]:font-semibold [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[13px] [&_p]:text-[13px]"><summary>Google / Meta catalog readiness</summary>{(['google','meta'] as const).map(channel=><div key={channel}><h2>{channel==='google'?'Google':'Meta'}</h2>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).length?<ul>{feedIssues(readinessProduct,channel,productImages(readinessProduct).filter(image=>image.startsWith('https://'))).map(issue=><li key={issue}>{issue}</li>)}</ul>:<p>Product fields complete. Channel eligibility and live feed validation are separate steps.</p>}</div>)}</details>:null}
       </div>}
     />
     </div>
@@ -534,21 +486,21 @@ export function OrderDetail({
             <Badge tone={orderStatusTone(status)} dot>
               {status}
             </Badge>
-            <Link href="/admin/orders">Back to orders</Link>
+            <Link className={buttonVariants({ variant: "outline" })} href="/admin/orders">Back to orders</Link>
           </>
         }
       />
 
-      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="admin-alert admin-alert--danger">Check this address before dispatch. The order remains visible to administrators.</p> : null}{!order.deliveryAssignment?<p className="text-sm">This older order has no saved polygon assignment. Verify the original address before dispatch. Administrators retain access.</p>:null}</Card>
+      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="mb-3 rounded-lg bg-bad-soft px-4 py-3 text-[13px] font-medium text-bad">Check this address before dispatch. The order remains visible to administrators.</p> : null}{!order.deliveryAssignment?<p className="text-sm">This older order has no saved polygon assignment. Verify the original address before dispatch. Administrators retain access.</p>:null}</Card>
       {admin&&order.deliveryAssignment&&branches?<ZoneOrderReassignment orderId={id} branchId={String(record(order.deliveryAssignment).branchId)} branches={branches} />:null}
-      {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="admin-dl--cards">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
-      {stripePayment?.provider==='stripe'?<div className="admin-alert" role="status"><strong>{stripePayment.testMode?'Stripe test payment':'Stripe online payment'} · {display(stripePayment.state)}</strong><p>Only verified paid orders can be fulfilled. Paid-order cancellation requests a refund; cancellation finishes after Stripe confirms it. Dispatched goods are not automatically restocked.</p>{stripePayment.reference?<p>Stripe reference: {stripePayment.reference}</p>:null}{stripePayment.refundIssue?<p>{stripePayment.refundIssue}</p>:null}</div>:null}
-      <div className="admin-grid admin-grid--2">
+      {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="m-0 grid gap-2 [&>div]:rounded-lg [&>div]:bg-soft [&>div]:px-4 [&>div]:py-3 [&_dt]:text-xs [&_dt]:text-mute [&_dd]:m-0 [&_dd]:mt-0.5 [&_dd]:break-words [&_dd]:text-sm [&_dd]:font-medium">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
+      {stripePayment?.provider==='stripe'?<div className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0" role="status"><strong>{stripePayment.testMode?'Stripe test payment':'Stripe online payment'} · {display(stripePayment.state)}</strong><p>Only verified paid orders can be fulfilled. Paid-order cancellation requests a refund; cancellation finishes after Stripe confirms it. Dispatched goods are not automatically restocked.</p>{stripePayment.reference?<p>Stripe reference: {stripePayment.reference}</p>:null}{stripePayment.refundIssue?<p>{stripePayment.refundIssue}</p>:null}</div>:null}
+      <div className="mb-4 grid gap-4 lg:grid-cols-2 [&>section]:mb-0">
         <Card
           title="Customer and delivery"
           description="Contact and address details supplied at checkout."
         >
-          <dl className="admin-dl--cards">
+          <dl className="m-0 grid gap-2 [&>div]:rounded-lg [&>div]:bg-soft [&>div]:px-4 [&>div]:py-3 [&_dt]:text-xs [&_dt]:text-mute [&_dd]:m-0 [&_dd]:mt-0.5 [&_dd]:break-words [&_dd]:text-sm [&_dd]:font-medium">
             {(
               [
                 ["name", "Customer"],
@@ -571,7 +523,7 @@ export function OrderDetail({
           </dl>
           {typeof customer.maplink === "string" &&
           /^https:\/\//.test(customer.maplink) ? (
-            <p className="admin-hint admin-hint--tight">
+            <p className="m-0 mt-3 text-xs">
               <a href={customer.maplink} rel="noreferrer" target="_blank">
                 Open delivery map
               </a>
@@ -582,7 +534,7 @@ export function OrderDetail({
           title="Recorded amounts"
           description="Stored figures only. The server remains authoritative."
         >
-          <dl className="admin-dl--cards">
+          <dl className="m-0 grid gap-2 [&>div]:rounded-lg [&>div]:bg-soft [&>div]:px-4 [&>div]:py-3 [&_dt]:text-xs [&_dt]:text-mute [&_dd]:m-0 [&_dd]:mt-0.5 [&_dd]:break-words [&_dd]:text-sm [&_dd]:font-medium">
             {typeof order.couponDiscountMinor === 'number' && typeof order.couponCode === 'string' && <div>
               <dt>Coupon discount ({order.couponCode})</dt>
               <dd>−AED {(order.couponDiscountMinor / 100).toFixed(2)}</dd>
@@ -632,9 +584,9 @@ export function OrderDetail({
         ]}
       />
       <Card title="Order actions">
-        {!readyForFulfilment ? <p className="admin-alert">Payment is not ready for fulfilment. Await a verified live payment before confirming, packing or dispatching.</p> : null}
-        {status === 'pending' && readyForFulfilment ? <div className="admin-alert"><p>Verify the delivery address and payment status, then accept this order for your pharmacy.</p><Command path={`orders/${id}/confirm`} method="POST" variant="primary">Confirm order</Command></div> : null}
-        {status === 'confirmed' && readyForFulfilment ? <div className="admin-alert"><p>Prepare and check every item before marking the order ready for dispatch.</p><Command path={`orders/${id}/pack`} method="POST" variant="primary">Mark as packed</Command></div> : null}
+        {!readyForFulfilment ? <p className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0">Payment is not ready for fulfilment. Await a verified live payment before confirming, packing or dispatching.</p> : null}
+        {status === 'pending' && readyForFulfilment ? <div className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0"><p>Verify the delivery address and payment status, then accept this order for your pharmacy.</p><Command path={`orders/${id}/confirm`} method="POST" variant="primary">Confirm order</Command></div> : null}
+        {status === 'confirmed' && readyForFulfilment ? <div className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0"><p>Prepare and check every item before marking the order ready for dispatch.</p><Command path={`orders/${id}/pack`} method="POST" variant="primary">Mark as packed</Command></div> : null}
         {readyForFulfilment ? <AdminForm
           path={`orders/${id}`}
           method="PUT"
@@ -653,8 +605,8 @@ export function OrderDetail({
           label="Dispatch order"
           confirm="Dispatch this order with the entered billing details?"
         /> : null}
-        <hr className="admin-divider" />
-        <div className="admin-actions">
+        <hr className="my-5 border-0 border-t border-line" />
+        <div className="flex flex-wrap items-center gap-2">
           <Command
             path={`orders/cancel/${id}`}
             body={{ cancelled: true }}
@@ -666,7 +618,7 @@ export function OrderDetail({
         </div>
         {admin ? (
           <>
-            <hr className="admin-divider" />
+            <hr className="my-5 border-0 border-t border-line" />
             <AdminForm
               key={`${id}-${status}`}
               path={`orders/edit/${id}`}
@@ -692,7 +644,7 @@ export function OrderDetail({
           </>
         ) : null}
       </Card>
-      {admin && order.schemaVersion===2?<details className="admin-panel"><summary>Contribution reporting · actual costs</summary><OrderCosts key={id} orderId={id}/></details>:null}
+      {admin && order.schemaVersion===2?<details className="mb-4 rounded-xl bg-surface p-5 border border-line [&>summary]:cursor-pointer [&>summary]:text-sm [&>summary]:font-semibold [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[13px] [&_p]:text-[13px]"><summary>Contribution reporting · actual costs</summary><OrderCosts key={id} orderId={id}/></details>:null}
     </>
   );
 }

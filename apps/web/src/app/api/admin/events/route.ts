@@ -1,64 +1,39 @@
-import { z } from 'zod';
-import { receivingSignalSchema } from '../../../../lib/admin/receiving';
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  currentIdentity,
-  sessionHeader,
-} from "../../../../lib/server/admin/gateway";
+import { currentIdentity, sessionHeader } from "../../../../lib/server/admin/gateway";
 import { getWebEnvironment } from "../../../../lib/server/env";
-import { orderEventStream } from "../../../../lib/admin/order-stream";
-export const runtime = 'nodejs';
+
+export const runtime = "nodejs";
 export const maxDuration = 30;
-// Every sample is independently authorized by the persistent API; SSE contains invalidations only.
+// The persistent API owns the live feed (one MongoDB change stream for every connected staff browser). This route only
+// authenticates the browser and relays that stream. It ends the relay at 25 s, inside the hosting limit; the browser
+// reconnects within a second and sends Last-Event-ID, so a connection that missed nothing costs no database work.
+const RELAY_MS = 25000;
+const encoder = new TextEncoder();
+const headers = { "Cache-Control": "private, no-store, no-transform", "X-Robots-Tag": "noindex, nofollow" };
+const frame = (event: string) => new Response(encoder.encode(`retry: 3000\nevent: ${event}\ndata: {}\n\n`), { headers: { ...headers, "Content-Type": "text/event-stream", "X-Accel-Buffering": "no" } });
+
 export async function GET(request: NextRequest) {
-  const headers = {
-    "Cache-Control": "private, no-store",
-    "X-Robots-Tag": "noindex, nofollow",
-  };
   try {
-    if (!(await currentIdentity()))
-      return NextResponse.json(
-        { error: "Sign in required" },
-        { status: 401, headers },
-      );
-    if (request.nextUrl.search)
-      return NextResponse.json(
-        { error: "Invalid request" },
-        { status: 400, headers },
-      );
+    if (!(await currentIdentity())) return NextResponse.json({ error: "Sign in required" }, { status: 401, headers });
+    if (request.nextUrl.search) return NextResponse.json({ error: "Invalid request" }, { status: 400, headers });
     const env = getWebEnvironment();
-    const cookie = await sessionHeader();
-    const stream = orderEventStream({
-      signal: request.signal,
-      lastEventId: request.headers.get("last-event-id") ?? undefined,
-      async sample(signal) {
-        const result = await fetch(
-          `${env.LEGACY_API_ORIGIN}/api/orders/receiving`,
-          {
-            headers: { cookie, origin: env.WEB_ORIGIN },
-            cache: "no-store",
-            redirect: "manual",
-            signal: AbortSignal.any([signal, AbortSignal.timeout(12000)]),
-          },
-        );
-        if (result.status === 401 || result.status === 403)
-          return { state: "revoked" };
-        if (!result.ok) return { state: "unavailable" };
-        const value = receivingSignalSchema.extend({signature:z.string().regex(/^[a-f0-9]{64}$/)}).parse(await result.json());
-        return { state: 'ready', signature: value.signature, receiving: { pendingCount: value.pendingCount, latestIds: value.latestIds, reviewCount:value.reviewCount, oldestPendingAt:value.oldestPendingAt } };
-      },
+    const lastEventId = request.headers.get("last-event-id");
+    const upstream = await fetch(`${env.LEGACY_API_ORIGIN}/api/orders/events`, {
+      headers: { cookie: await sessionHeader(), origin: env.WEB_ORIGIN, ...(lastEventId && /^[a-f0-9]{8}\.\d{1,12}$/.test(lastEventId) ? { "last-event-id": lastEventId } : {}) },
+      cache: "no-store",
+      redirect: "manual",
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(RELAY_MS)]),
     });
-    return new Response(stream, {
-      headers: {
-        ...headers,
-        "Content-Type": "text/event-stream",
-        "X-Accel-Buffering": "no",
-      },
+    if (upstream.status === 401 || upstream.status === 403) return frame("revoked");
+    if (!upstream.ok || !upstream.body) return frame("unavailable");
+    // The relay ends by timeout or by the browser leaving; end the stream cleanly instead of surfacing the abort.
+    const reader = upstream.body.getReader();
+    const body = new ReadableStream<Uint8Array>({
+      async pull(controller) { try { const chunk = await reader.read(); if (chunk.done) controller.close(); else controller.enqueue(chunk.value); } catch { try { controller.close(); } catch { /* Already closed. */ } } },
+      cancel() { void reader.cancel().catch(() => undefined); },
     });
+    return new Response(body, { headers: { ...headers, "Content-Type": "text/event-stream", "X-Accel-Buffering": "no" } });
   } catch {
-    return NextResponse.json(
-      { error: "Order updates unavailable" },
-      { status: 503, headers },
-    );
+    return frame("unavailable");
   }
 }

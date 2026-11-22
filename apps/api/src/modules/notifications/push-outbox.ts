@@ -1,3 +1,4 @@
+import { wakeLoop, type Wake } from './wake.js';
 import { removePushDevice, pushDevices, subscriptionDigest, pushReceiptId } from './push-devices.js';
 import { historicalStatus } from '../orders/status.js';
 import { routingRecipients } from '../orders/routing.js';
@@ -17,6 +18,8 @@ function cursorId(value: unknown): ObjectId | undefined {
 export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
   send: (subscription: PushSubscription, signal: AbortSignal) => Promise<void>;
   onFailure: () => void; intervalMs?: number; sendTimeoutMs?: number;
+  /** When healthy, the worker ticks on order changes and only keeps a slow safety interval. */
+  wake?: Wake;
 }) {
   const interval = options.intervalMs ?? 1000, deadline = options.sendTimeoutMs ?? 10000;
   if (!Number.isInteger(interval) || interval < 1 || interval > 60000 || !Number.isInteger(deadline) || deadline < 1 || deadline > 15000) throw new Error('Invalid push worker bounds');
@@ -111,6 +114,6 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
     }
   }
   function tick() { if (stopped) return Promise.resolve(); if (!running) running = run().finally(() => { running = undefined; }); return running; }
-  const timer = setInterval(() => { void tick(); }, interval); timer.unref();
-  return { tick, async stop() { stopped = true; clearInterval(timer); await running; } };
+  const loop = wakeLoop(tick, { fastMs: interval, slowMs: 30000, wake: options.wake });
+  return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

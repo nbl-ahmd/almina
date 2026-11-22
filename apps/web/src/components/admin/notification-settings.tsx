@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { adminRequest } from './controls';
+import { buttonVariants } from './ui';
 
 export function NotificationSettings({
   publicKey,
@@ -33,12 +34,12 @@ export function NotificationSettings({
     return()=>{stopped=true;};
   },[]);
   return (
-    <div className="admin-device-settings">
+    <div className="grid gap-3 [&_p]:m-0 [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-ink-2">
       {!supported?<p role="status">Push is not available in this browser. On iPhone or iPad, add this admin page to your Home Screen, open the installed app, then enable notifications.</p>:null}
       <p>For an app-style experience, install Al Mina Operations from your browser’s install menu. On iPhone or iPad use Share → Add to Home Screen. Delivery and background sounds follow your device’s notification and Focus settings.</p>
       <p role="status">{feedback==='error'&&!configurationChecked?'Device status unavailable.':!deviceChecked?'Checking this device…':deviceConnected?'This device is registered for this account.':deviceSubscribed?'This browser has a notification registration. Enable it to connect this account.':'Notifications are off on this device.'}</p>
-      <div className="admin-device-settings__actions"><button
-        className="admin-btn--secondary"
+      <div className="flex flex-wrap gap-2"><button
+        className={buttonVariants({ variant: "outline" })}
         disabled={pending || !deviceChecked || !deviceSubscribed}
         onClick={async () => {
           setPending(true);setMessage('');
@@ -60,7 +61,7 @@ export function NotificationSettings({
       >
         Disable on this device
       </button>
-      <button
+      <button className={buttonVariants({ variant: "default" })}
         disabled={!supported || pending || !serverKey || !configurationChecked || (deviceConnected && deviceSubscribed)}
         onClick={async () => {
           setPending(true);setMessage('');
@@ -137,7 +138,7 @@ export function NotificationSettings({
           Background push is not configured on the order service. Ask an administrator to configure delivery; keep Orders open with sound enabled until then.
         </p>
       ) : null}
-      {message?<p role={feedback==='error'?'alert':'status'} className={`admin-alert admin-alert--${feedback==='error'?'danger':'success'}`}>{message}</p>:null}
+      {message?<p role={feedback==='error'?'alert':'status'} className={`rounded-lg px-4 py-3 text-[13px] font-medium ${feedback==='error'?'bg-bad-soft text-bad':'bg-ok-soft text-ok'}`}>{message}</p>:null}
     </div>
   );
 }

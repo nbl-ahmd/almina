@@ -58,5 +58,7 @@ export function publicationIssues(product:Record<string,unknown>):string[] {
 // Store listings may honestly show a missing-photo placeholder. Advertising feeds
 // retain publicationIssues() and still require real, authorized images and brand.
 export function storePublicationIssues(product:Record<string,unknown>):string[] {
-  return publicationIssues(product).filter(issue=>issue!=='Brand'&&issue!=='Product image'&&!(issue==='Image usage permission'&&!hasProductPhoto(product)));
+  // A description, pack size and saleable unit improve a listing but are not needed to sell it; feeds (publicationIssues) stay strict.
+  const optional=new Set(['Brand','Product image','Description','Pack / specification','Saleable unit']);
+  return publicationIssues(product).filter(issue=>!optional.has(issue)&&!(issue==='Image usage permission'&&!hasProductPhoto(product)));
 }

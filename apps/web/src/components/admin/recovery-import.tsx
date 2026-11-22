@@ -1,4 +1,5 @@
 "use client";
+import { buttonVariants } from './ui';
 import { useRef, useState } from 'react';
 import { adminRequest } from './controls';
 type Preview = { previewId?: string; hash?: string; rows: { product_id: string; name: string; barcode: string; price: string; salePrice?: string; category: string; vat: boolean; featured: boolean; description: string; cloudinaryImages: string[] }[];
@@ -39,30 +40,30 @@ export function RecoveryImport() {
     } catch (error) { setFailure(`${error instanceof Error ? error.message : 'Import failed.'} Retry the same review after an uncertain response.`); }
     finally { setPending(false); }
   }
-  return <section className="admin-card admin-stack" aria-labelledby="recovery-title">
+  return <section className="mb-4 grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" aria-labelledby="recovery-title">
     <div><h2 id="recovery-title">Recover product drafts</h2>
       <p>Use reviewed product IDs, barcodes, AED prices and image matches. Importing keeps every product disabled with zero stock and keeps the store closed.</p>
       <p><a href="/api/admin/recovery/template" download="recovery-products.csv">Download CSV template</a> or <a href="/templates/recovery-products.xlsx" download="recovery-products.xlsx">spreadsheet template</a>. Open it in your spreadsheet application and set product IDs and barcodes to text before entering values. Export the product sheet as CSV.</p>
     </div>
-    <div className="admin-form-panel">
+    <div className="grid gap-3 rounded-xl bg-surface p-4 border border-line">
       <label htmlFor="recovery-file">Reviewed product file
         <input ref={fileInput} id="recovery-file" type="file" accept=".csv,.json,text/csv,application/json" disabled={pending}
           onChange={() => { setPreview(null); setFailure(''); setMessage(''); }} />
       </label>
-      <button disabled={pending} onClick={() => { void inspect(); }}>{pending ? 'Working…' : 'Preview products'}</button>
+      <button className={buttonVariants({ variant: "default" })} disabled={pending} onClick={() => { void inspect(); }}>{pending ? 'Working…' : 'Preview products'}</button>
     </div>
-    {failure ? <p role="alert" className="admin-note admin-note--danger admin-note--flush">{failure}</p> : null}
-    {message ? <p role="status" className="admin-note admin-note--flush">{message}</p> : null}
+    {failure ? <p role="alert" className="mb-0 rounded-lg bg-bad-soft p-4 text-[13px] text-bad">{failure}</p> : null}
+    {message ? <p role="status" className="mb-0 rounded-lg bg-fill p-4 text-[13px]">{message}</p> : null}
     {preview?.errors.length ? <div role="region" aria-label="Import errors"><h3>Correct these rows and preview again</h3>
-      <ul className="admin-list-disc">{preview.errors.map((error, i) => <li key={i}>Row {error.row || 'file'} · {error.field}: {error.message}</li>)}</ul></div> : null}
-    {preview?.rows.length ? <><div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Product preview"><table role="table"><caption>Review {preview.rows.length} products before importing</caption>
+      <ul className="m-0 list-disc pl-5 text-[13px]">{preview.errors.map((error, i) => <li key={i}>Row {error.row || 'file'} · {error.field}: {error.message}</li>)}</ul></div> : null}
+    {preview?.rows.length ? <><div className="mb-4 overflow-x-auto rounded-lg bg-surface border border-line" tabIndex={0} role="region" aria-label="Product preview"><table role="table"><caption>Review {preview.rows.length} products before importing</caption>
       <thead role="rowgroup"><tr role="row">{['Product ID', 'Name', 'Barcode', 'Price (AED)', 'Sale price (AED)', 'Category', 'VAT', 'Featured', 'Description', 'Images'].map(label => <th scope="col" role="columnheader" key={label}>{label}</th>)}</tr></thead>
-      <tbody role="rowgroup">{preview.rows.map(row => <tr key={row.product_id} role="row"><td role="cell">{row.product_id}</td><td role="cell" data-label="Name">{row.name}</td><td role="cell" data-label="Barcode">{row.barcode}</td><td role="cell" data-label="Price (AED)">{row.price}</td><td role="cell" data-label="Sale price (AED)">{row.salePrice ?? 'None'}</td><td role="cell" data-label="Category">{row.category}</td><td role="cell" data-label="VAT">{String(row.vat)}</td><td role="cell" data-label="Featured">{String(row.featured)}</td><td role="cell" data-label="Description">{row.description || 'None'}</td><td role="cell" data-label="Images">{row.cloudinaryImages.length ? <ul className="admin-list-disc admin-break">{row.cloudinaryImages.map(url => <li key={url} className="admin-cell-clamp">{url}</li>)}</ul> : 'None'}</td></tr>)}</tbody></table></div>
-      <div className="admin-actions"><button disabled={pending || !preview.hash || !preview.previewId || !!preview.errors.length} onClick={() => { void commit(); }}>Import reviewed drafts</button></div></> : null}
-    <div className="admin-actions">
-      <button className="admin-btn--secondary" disabled={pending} onClick={() => { void commit(true); }}>Retry interrupted import</button>
-      <button className="admin-btn--secondary" disabled={pending} onClick={() => { sessionStorage.removeItem(retryKey); setPreview(null); setFailure(''); setMessage('Local review cleared. Check the catalog before preparing a replacement file. Saved products and server receipts remain intact.'); }}>Clear local review</button>
+      <tbody role="rowgroup">{preview.rows.map(row => <tr key={row.product_id} role="row"><td role="cell">{row.product_id}</td><td role="cell" data-label="Name">{row.name}</td><td role="cell" data-label="Barcode">{row.barcode}</td><td role="cell" data-label="Price (AED)">{row.price}</td><td role="cell" data-label="Sale price (AED)">{row.salePrice ?? 'None'}</td><td role="cell" data-label="Category">{row.category}</td><td role="cell" data-label="VAT">{String(row.vat)}</td><td role="cell" data-label="Featured">{String(row.featured)}</td><td role="cell" data-label="Description">{row.description || 'None'}</td><td role="cell" data-label="Images">{row.cloudinaryImages.length ? <ul className="m-0 list-disc break-words pl-5 text-[13px]">{row.cloudinaryImages.map(url => <li key={url} className="block max-w-xs truncate">{url}</li>)}</ul> : 'None'}</td></tr>)}</tbody></table></div>
+      <div className="flex flex-wrap items-center gap-2"><button className={buttonVariants({ variant: "default" })} disabled={pending || !preview.hash || !preview.previewId || !!preview.errors.length} onClick={() => { void commit(); }}>Import reviewed drafts</button></div></> : null}
+    <div className="flex flex-wrap items-center gap-2">
+      <button className={`${buttonVariants({ variant: "outline" })}`} disabled={pending} onClick={() => { void commit(true); }}>Retry interrupted import</button>
+      <button className={`${buttonVariants({ variant: "outline" })}`} disabled={pending} onClick={() => { sessionStorage.removeItem(retryKey); setPreview(null); setFailure(''); setMessage('Local review cleared. Check the catalog before preparing a replacement file. Saved products and server receipts remain intact.'); }}>Clear local review</button>
     </div>
-    <p className="admin-card__hint">Use decimal prices with at most two places. VAT and featured values use true or false. Separate image URLs with |. Use raster upload URLs from the configured Cloudinary account. No existing products, stock, orders or customers are overwritten.</p>
+    <p className="m-0 text-[13px] text-mute">Use decimal prices with at most two places. VAT and featured values use true or false. Separate image URLs with |. Use raster upload URLs from the configured Cloudinary account. No existing products, stock, orders or customers are overwritten.</p>
   </section>;
 }

@@ -1,14 +1,21 @@
 "use client";
+import { buttonVariants, inputClass, selectClass, textareaClass } from './shadcn/styles';
 import { ProductAudienceFields, type ProductAudience } from "./product-audience";
-import { useId, useState, type FormEvent, type ReactNode } from "react";
-import { flushSync } from 'react-dom';
-import { SectionTabs, SectionPanel } from './section-tabs';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { toast } from "sonner";
+import { SwitchRow } from "./kit";
+import { OfferField } from "./offer-field";
+import { PendingPhotosContext } from "./photo-context";
+import { prepareProductImages } from "../../lib/admin/product-images";
+import { Combobox, type ComboOption } from "./shadcn/combobox";
+import { createCategory, loadBrands, rememberBrand } from "../../lib/admin/catalogue-options";
 import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
 import { wholesaleRequest } from '../wholesale/request';
 import { useRouter } from "next/navigation";
 import Link from '../app-link';
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { adminRequest } from "./controls";
+import { useConfirm } from "./confirm-dialog";
 import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';
 
 export type FieldKind =
@@ -24,6 +31,8 @@ export type FieldKind =
   | "segmented"
   | "toggle"
   | "tags"
+  | "combobox"
+  | "offer"
   | "file"
   | "hidden";
 
@@ -48,6 +57,8 @@ export type Field = {
   suffix?: string;
   placeholder?: string;
   rows?: number;
+  /** Combobox: "brand" or "category" lets the admin add a missing value from the dropdown. */
+  creatable?: "brand" | "category";
   accept?: string;
   disabled?: boolean;
 };
@@ -95,12 +106,12 @@ function FieldShell({
   children: ReactNode;
 }) {
   return (
-    <div className={`admin-field${wide ? " admin-field--wide" : ""}`}>
-      <label htmlFor={id} className="admin-field__label">
+    <div className={`grid min-w-0 content-start gap-1.5${wide ? " sm:col-span-2" : ""}`}>
+      <label htmlFor={id} className="text-[13px] font-medium text-ink">
         <span>
           {label}
           {required ? (
-            <span className="admin-field__required" aria-hidden="true">
+            <span className="font-normal text-mute" aria-hidden="true">
               {' '}· required
             </span>
           ) : null}
@@ -108,7 +119,7 @@ function FieldShell({
       </label>
       {children}
       {hint ? (
-        <p className="admin-field__hint" id={`${id}-hint`}>
+        <p className="m-0 text-xs text-mute" id={`${id}-hint`}>
           {hint}
         </p>
       ) : null}
@@ -125,22 +136,9 @@ function ToggleField({
 }) {
   const [on, setOn] = useState(field.value === "true");
   return (
-    <div className="admin-field admin-field--half">
+    <div className="grid min-w-0 content-start gap-1.5">
       <input type="hidden" name={field.name} value={on ? "true" : "false"} />
-      <button
-        type="button"
-        role="switch"
-        aria-checked={on}
-        aria-label={field.label}
-        className="admin-switch"
-        onClick={() => setOn((value) => !value)}
-      >
-        <span className="admin-switch__text">
-          <strong>{field.label}</strong>
-          {field.hint ? <span>{field.hint}</span> : null}
-        </span>
-        <span className="admin-switch__track" aria-hidden="true" />
-      </button>
+      <SwitchRow checked={on} onCheckedChange={setOn} title={field.label} hint={field.hint} ariaLabel={field.label} />
       {!field.hint ? null : <span className="sr-only" id={`${id}-hint`}>{field.hint}</span>}
     </div>
   );
@@ -157,16 +155,16 @@ function SegmentedField({
 }) {
   const options = field.options ?? [];
   return (
-    <fieldset className={`admin-field${isWide(field, kind) ? " admin-field--wide" : ""}`}>
-      <legend className="admin-field__label">
+    <fieldset className={`m-0 grid min-w-0 content-start gap-1.5 border-0 p-0${isWide(field, kind) ? " sm:col-span-2" : ""}`}>
+      <legend className="text-[13px] font-medium text-ink">
         {field.label}
         {field.required ? (
-          <span className="admin-field__required" aria-hidden="true">
+          <span className="font-normal text-mute" aria-hidden="true">
             {' '}· required
           </span>
         ) : null}
       </legend>
-      <div className="admin-choice">
+      <div className="flex flex-wrap gap-2 [&_label]:inline-flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2 [&_label]:rounded-lg [&_label]:bg-fill [&_label]:px-4 [&_label]:py-2.5 [&_label]:text-[13px] [&_label:has(:checked)]:bg-fill">
         {options.map((option) => {
           const optionId = `${id}-${option.value || "none"}`;
           return (
@@ -186,7 +184,7 @@ function SegmentedField({
         })}
       </div>
       {field.hint ? (
-        <p className="admin-field__hint" id={`${id}-hint`}>
+        <p className="m-0 text-xs text-mute" id={`${id}-hint`}>
           {field.hint}
         </p>
       ) : null}
@@ -202,22 +200,22 @@ function TagsField({ id, field }: { id: string; field: Field }) {
     .filter(Boolean);
   const update = (next: string[]) => setValue(next.join(", "));
   return (
-    <div className="admin-field admin-field--wide">
-      <label htmlFor={id} className="admin-field__label">
+    <div className="grid min-w-0 content-start gap-1.5 sm:col-span-2">
+      <label htmlFor={id} className="text-[13px] font-medium text-ink">
         {field.label}
         {field.required ? (
-          <span className="admin-field__required" aria-hidden="true">
+          <span className="font-normal text-mute" aria-hidden="true">
             {' '}· required
           </span>
         ) : null}
       </label>
-      <div className="admin-tags">
+      <div className="grid gap-2">
         {tags.length ? (
-          <span className="admin-tags__chips">
+          <span className="flex flex-wrap gap-1.5">
             {tags.map((tag) => (
-              <span className="admin-tag" key={tag}>
+              <span className="inline-flex items-center gap-1 rounded-lg bg-fill px-3 py-1 text-xs font-medium" key={tag}>
                 {tag}
-                <button
+                <button className={buttonVariants({ variant: "default" })}
                   type="button"
                   aria-label={`Remove ${tag}`}
                   onClick={() => update(tags.filter((value) => value !== tag))}
@@ -228,7 +226,7 @@ function TagsField({ id, field }: { id: string; field: Field }) {
             ))}
           </span>
         ) : null}
-        <input
+        <input className={inputClass}
           id={id}
           name={field.name}
           value={value}
@@ -241,7 +239,7 @@ function TagsField({ id, field }: { id: string; field: Field }) {
         />
       </div>
       {field.hint ? (
-        <p className="admin-field__hint" id={`${id}-hint`}>
+        <p className="m-0 text-xs text-mute" id={`${id}-hint`}>
           {field.hint}
         </p>
       ) : null}
@@ -251,11 +249,11 @@ function TagsField({ id, field }: { id: string; field: Field }) {
 
 function FileField({ id, field }: { id: string; field: Field }) {
   return (
-    <label htmlFor={id} className="admin-dropzone admin-field--wide">
-      <span className="admin-dropzone__icon" aria-hidden="true">
+    <label htmlFor={id} className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2">
+      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
         <CloudArrowUpIcon />
       </span>
-      <span className="admin-dropzone__text">
+      <span className="grid text-[13px] [&>strong]:font-semibold [&>span]:text-xs [&>span]:text-mute">
         <strong>{field.label}</strong>
         <span>{field.hint ?? "PNG, JPG, WebP or CSV · up to 3 MB"}</span>
       </span>
@@ -273,7 +271,30 @@ function FileField({ id, field }: { id: string; field: Field }) {
   );
 }
 
+function ComboField({ id, field }: { id: string; field: Field }) {
+  const [value, setValue] = useState(field.value ?? '');
+  const [brands, setBrands] = useState<string[] | null>(null);
+  const [added, setAdded] = useState<ComboOption[]>([]);
+  useEffect(() => { if (field.creatable === 'brand') void loadBrands().then(setBrands).catch(() => setBrands([])); }, [field.creatable]);
+  const base: ComboOption[] = field.creatable === 'brand' ? (brands ?? []).map(brand => ({ value: brand, label: brand })) : (field.options ?? []).filter(option => option.value);
+  const options = [...base, ...added.filter(item => !base.some(option => option.value === item.value))];
+  if (value && !options.some(option => option.value === value)) options.push({ value, label: value });
+  return (
+    <FieldShell id={id} label={field.label} hint={field.hint} required={field.required} wide={isWide(field, 'combobox')}>
+      <Combobox id={id} name={field.name} value={value} options={options} onValueChange={setValue} {...(field.required ? { required: true } : {})}
+        placeholder={field.placeholder ?? `Select ${field.label.toLowerCase()}`} searchPlaceholder={`Search ${field.label.toLowerCase()}`}
+        loading={field.creatable === 'brand' && brands === null} createNoun={field.creatable ?? 'item'}
+        {...(field.creatable ? { onCreate: async (label: string) => {
+          const created = field.creatable === 'brand' ? (rememberBrand(label), { value: label, label }) : await createCategory(label);
+          setAdded(list => [...list, created]); return created;
+        } } : {})} />
+    </FieldShell>
+  );
+}
+
 function renderField(field: Field) {
+  if (field.kind === "offer") return <OfferField key={field.name} name={field.name} label={field.label} initial={field.value} />;
+  if (field.kind === "combobox") return <ComboField key={field.name} id={`field-${field.name}`} field={field} />;
   const id = `${field.name}-${Math.abs(hash(field.name + (field.label ?? "")))}`;
   const kind = resolveKind(field);
   if (kind === "hidden") {
@@ -304,7 +325,7 @@ function renderField(field: Field) {
   let control: ReactNode;
   if (kind === "select") {
     control = (
-      <select {...common} defaultValue={field.value}>
+      <select className={selectClass} {...common} defaultValue={field.value}>
         {field.options?.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -314,7 +335,7 @@ function renderField(field: Field) {
     );
   } else if (kind === "textarea") {
     control = (
-      <textarea
+      <textarea className={textareaClass}
         {...common}
         defaultValue={field.value}
         rows={field.rows ?? 4}
@@ -324,11 +345,11 @@ function renderField(field: Field) {
     );
   } else if (field.prefix || field.suffix) {
     control = (
-      <div className="admin-input-shell">
+      <div className="flex items-center overflow-hidden rounded-lg border border-line-strong bg-surface focus-within:ring-2 focus-within:ring-ink/80 [&_input]:rounded-none [&_input]:border-0 [&_input]:bg-transparent [&_input]:ring-0 [&_input]:focus-visible:ring-0">
         {field.prefix ? (
-          <span className="admin-input-shell__affix admin-input-shell__affix--prefix">{field.prefix}</span>
+          <span className="shrink-0 whitespace-nowrap pl-3.5 text-[13px] text-mute">{field.prefix}</span>
         ) : null}
-        <input
+        <input className={inputClass}
           {...common}
           type={kind}
           defaultValue={field.value}
@@ -340,13 +361,13 @@ function renderField(field: Field) {
           autoComplete={kind === "password" ? "new-password" : undefined}
         />
         {field.suffix ? (
-          <span className="admin-input-shell__affix">{field.suffix}</span>
+          <span className="shrink-0 whitespace-nowrap pr-3.5 text-[13px] text-mute">{field.suffix}</span>
         ) : null}
       </div>
     );
   } else {
     control = (
-      <input
+      <input className={inputClass}
         {...common}
         type={kind}
         defaultValue={field.value}
@@ -425,6 +446,9 @@ export function AdminForm({
   footerNote,
   productMedia,
   productChecks,
+  publishDefault = true,
+  productLive,
+  nextHref,
 }: {
   path: string;
   method?: string;
@@ -436,32 +460,48 @@ export function AdminForm({
   footerNote?: ReactNode;
   productMedia?: ReactNode;
   productChecks?: ReactNode;
+  /** Initial storefront visibility. Saving always publishes by default. */
+  publishDefault?: boolean;
+  /** Whether the saved record is currently live. Defaults to publishDefault. */
+  productLive?: boolean;
+  /** Product editor: where "Save & next" goes, for working through many products quickly. */
+  nextHref?: string;
 }) {
   const router = useRouter();
+  const { ask, dialog } = useConfirm();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  useEffect(() => { if (message) toast.success(message); }, [message]);
+  useEffect(() => {
+    if (!path.startsWith('products')) return;
+    const onKey = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); formRef.current?.requestSubmit(); } };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [path]);
   const [version, setVersion] = useState(0);
-  const sectionId = useId();
   const productEditor = path === 'products' || path.startsWith('products/');
   const productId = productEditor && path !== 'products' ? path.split('/')[1] : undefined;
   const pricing = useProductTrade(productId, productAudience);
-  const [activeTab, setActiveTab] = useState('Overview');
+  const formRef = useRef<HTMLFormElement>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const saveMode = useRef<'save' | 'next' | 'another'>('save');
   const [stockChanged, setStockChanged] = useState(false);
+  const [published, setPublished] = useState(publishDefault);
   const [partialSave, setPartialSave] = useState<{ terms: TradeTerms; created: boolean } | null>(null);
-  const tabs = ['Overview', 'Care & usage', 'Organisation', 'Variants', 'Photos', 'Publishing'].map(id => ({ id, label: id }));
   const sections = groups(fields);
   if (productEditor) sections.sort((a, b) => Number(a.advanced) - Number(b.advanced));
   const singleOpenSection = sections.length === 1 && !sections[0]!.title;
+  const liveAtLoad = productLive ?? publishDefault;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (confirm && !window.confirm(confirm)) return;
-    if (partialSave) return;
     const form = event.currentTarget;
+    if (confirm && !(await ask(confirm, { action: label ?? 'Save' }))) return;
+    if (partialSave) return;
     let terms: TradeTerms | undefined;
     if (productAudience) {
       try { terms = productTradeTerms(pricing.trade, productId ?? '000000000000000000000000'); }
-      catch (failure) { setActiveTab('Overview'); setError(failure instanceof Error ? failure.message : 'Check channel prices.'); return; }
+      catch (failure) { setError(failure instanceof Error ? failure.message : 'Check channel prices.'); return; }
     }
     const data = new FormData(form);
     setPending(true);
@@ -472,13 +512,39 @@ export function AdminForm({
       if (value instanceof File && !value.size) data.delete(name);
     if (data.get("salePrice") === "") data.delete("salePrice");
     if (productEditor && !pricing.trade.retail) {
-      for (const name of ['price', 'salePrice', 'sale']) {
+      for (const name of ['price', 'salePrice']) {
         const saved = fields.find(field => field.name === name)?.value;
         if (saved) data.set(name, saved);
         else if (name === 'price') data.set(name, '0');
       }
     }
-    if (productEditor && data.get('stockReason') === '') data.delete('stockReason');
+    let publish = published;
+    let downgraded = '';
+    if (productEditor) {
+      // The sale price is the source of truth; the store derives "on sale" from it.
+      data.set('sale', data.get('salePrice') ? 'true' : 'false');
+      if (!data.get('productType')) data.set('productType', 'general');
+      const brand = String(data.get('brand') ?? '').trim();
+      const category = String(data.get('category') ?? '').trim();
+      const required = [!String(data.get('name') ?? '').trim() ? 'name' : '', !brand ? 'brand' : '', !category ? 'category' : '', data.get('price') === '' ? 'price' : '', data.get('stock') === '' ? 'stock' : ''].filter(Boolean);
+      if (required.length && pricing.trade.retail) {
+        setPending(false);
+        setError(`Add ${required.join(', ')} to save.`);
+        return;
+      }
+      if (publish) {
+        // The server never publishes prescription items: save a draft instead of failing.
+        if (data.get('productType') === 'prescription') { publish = false; downgraded = 'Prescription products cannot be sold online, so this was saved as a draft.'; }
+      }
+      if (publish) {
+        data.set('contentReviewed', 'true');
+        data.set('stockVerified', 'true');
+        if (!data.get('saleUnit')) data.set('saleUnit', 'Each');
+        // Adding photos is the admin's confirmation that they may be used.
+        if (!data.get('imageRights')) data.set('imageRights', 'authorized');
+      }
+    }
+    if (productEditor && (data.get('stockReason') === '' || !stockChanged)) data.delete('stockReason');
     const json: Record<string, unknown> = Object.fromEntries(data);
     if ("branchId" in json && json.branchId === "") json.branchId = null;
     if ("billamount" in json) json.billamount = Number(json.billamount);
@@ -506,17 +572,33 @@ export function AdminForm({
         }
       }
       setStockChanged(false);
+      if (productEditor) {
+        if (!savedProductId) throw new Error('Product saved, but its identifier was not returned. Reload Products to continue.');
+        if (publish !== liveAtLoad) await adminRequest(`products/publish/${savedProductId}`, 'PUT', {});
+        if (path === 'products' && photoFiles.length) {
+          try {
+            const prepared = await prepareProductImages(photoFiles);
+            const upload = new FormData(); upload.set('uploadKey', crypto.randomUUID()); upload.set('expectedMediaRevision', '0');
+            for (const file of prepared) upload.append('images', file);
+            await adminRequest(`media/products/${savedProductId}`, 'POST', upload);
+          } catch (failure) { toast.error(`Product saved, but photos were not added: ${failure instanceof Error ? failure.message : 'upload failed'} Add them on the product page.`); }
+        }
+        const mode = saveMode.current;
+        saveMode.current = 'save';
+        const state = publish ? 'published' : 'draft';
+        toast.success(downgraded || (publish ? 'Saved and live' : 'Saved as draft'));
+        if (mode === 'next' && nextHref) router.push(nextHref);
+        else if (mode === 'another') router.push('/admin/products/new');
+        else if (path === 'products') router.push(`/admin/products/${savedProductId}`);
+        else { setPublished(publish); router.refresh(); setVersion(value => value + 1); setStockChanged(false); }
+        void state;
+        return;
+      }
       setMessage(
         result && typeof result === "object" && "count" in result
           ? `Saved ${String(result.count)} products.`
           : isWhatsapp ? 'Accepted by provider. Delivery requires a delivery report.' : "Saved successfully.",
       );
-      if (method === "POST" && path === "products" && result && typeof result === 'object' && 'product' in result) {
-        const created = result.product as { _id?: unknown };
-        if (typeof created?._id === 'string' && /^[a-f0-9]{24}$/i.test(created._id)) {
-          router.push(`/admin/products/${created._id}`); router.refresh(); return;
-        }
-      }
       if (method === "POST") {
         form.reset();
         setVersion((value) => value + 1);
@@ -529,13 +611,14 @@ export function AdminForm({
     }
   }
   const saveControls = (
-      <div className="admin-form__footer">
-        <div className="admin-form__status">
-          {error ? <p role="alert" className="admin-alert admin-alert--danger">{error}</p> : null}
-          {message ? <p role="status" className="admin-alert admin-alert--success">{message}</p> : null}
-          {!error && !message && footerNote ? <p className="admin-card__hint admin-hint--tight">{footerNote}</p> : null}
+      <div className="sticky bottom-20 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4 border border-line shadow-pop md:bottom-3">
+        <div className="min-w-0 flex-1 text-[13px] max-sm:[&>p:not([role=alert])]:hidden">
+          {error ? <p role="alert" className="m-0 rounded-lg bg-bad-soft px-3 py-2 text-[13px] font-medium text-bad">{error}</p> : null}
+          {!error && !message && footerNote ? <p className="m-0 text-xs text-mute">{footerNote}</p> : null}
+          {!error && !message && productEditor ? <p className="m-0 text-xs text-mute">{published ? 'Saving publishes this product to the storefront.' : 'Saving keeps this product hidden from customers.'}</p> : null}
         </div>
-        {partialSave ? <button type="button" disabled={pending} onClick={async () => {
+        {productEditor ? <SwitchRow className="border-0 px-0 py-0 max-sm:[&_span_span]:hidden sm:w-auto sm:min-w-56" checked={published} disabled={pending} onCheckedChange={setPublished} title={published ? 'Published' : 'Draft'} hint={published ? 'Visible in the storefront' : 'Hidden from customers'} /> : null}
+        {partialSave ? <button className={buttonVariants({ variant: "default" })} type="button" disabled={pending} onClick={async () => {
           setPending(true);
           try {
             // A lost response may have committed. Read back before replaying a revision-sensitive write.
@@ -544,53 +627,70 @@ export function AdminForm({
             if (!same && current.revision !== partialSave.terms.revision) throw Error('Wholesale pricing changed elsewhere. Open the product again to review the current rates.');
             pricing.saved(same ? current : (await wholesaleRequest<TradeTerms>('admin/terms', partialSave.terms)).data);
             setPartialSave(null); setError(''); setMessage('Product and channel prices saved.');
-            if (partialSave.created) router.push(`/admin/products/${partialSave.terms.productId}`);
+            if (published !== liveAtLoad) await adminRequest(`products/publish/${partialSave.terms.productId}`, 'PUT', {});
+            router.push(`/admin/products?saved=${published ? 'published' : 'draft'}`);
             router.refresh();
           } catch (failure) { setError(failure instanceof Error ? failure.message : 'Wholesale pricing could not be saved.'); }
           finally { setPending(false); }
-        }}>{pending ? 'Retrying…' : 'Retry wholesale pricing'}</button> : <button disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : label}</button>}
+        }}>{pending ? 'Retrying…' : 'Retry wholesale pricing'}</button> : <>
+          {productEditor && nextHref ? <button type="submit" onClick={() => { saveMode.current = 'next'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & next</button> : null}
+          {productEditor && path === 'products' ? <button type="submit" onClick={() => { saveMode.current = 'another'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & add another</button> : null}
+          <button type="submit" onClick={() => { saveMode.current = 'save'; }} className={buttonVariants({ variant: "default" })} disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : productEditor ? (published ? 'Save & publish' : 'Save draft') : label}</button>
+        </>}
         {partialSave ? <Link href={`/admin/products/${partialSave.terms.productId}`}>Open saved product</Link> : null}
       </div>
   );
-  const ordinarySections = sections.map((section, index) => <section className="admin-form__section" key={`${section.title}-${index}`}>
-    {!singleOpenSection ? <div className="admin-form__heading"><div><h2>{section.title || 'Details'}</h2>{section.description ? <p>{section.description}</p> : null}</div></div> : null}
-    <div className="admin-form__grid">{section.fields.map(renderField)}</div>
+  const ordinarySections = sections.map((section, index) => <section className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" key={`${section.title}-${index}`}>
+    {!singleOpenSection ? <div className="[&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_p]:m-0 [&_p]:mt-0.5 [&_p]:text-[13px] [&_p]:text-mute"><div><h2>{section.title || 'Details'}</h2>{section.description ? <p>{section.description}</p> : null}</div></div> : null}
+    <div className="grid gap-4 sm:grid-cols-2">{section.fields.map(renderField)}</div>
   </section>);
-  const pricingNames = ['price', 'salePrice', 'sale'];
-  return <div className={productEditor ? 'admin-product-editor' : undefined}>
-    {productEditor ? <SectionTabs id={sectionId} label="Product sections" tabs={tabs} value={activeTab} onChange={setActiveTab} /> : null}
-    <form className={`admin-form${productEditor ? ' admin-form--product' : ''}`} onSubmit={submit} aria-busy={pending} hidden={productEditor && activeTab === 'Photos'} onChange={event => {
+  const named = (name: string) => fields.filter(field => field.section === name && resolveKind(field) !== 'hidden');
+  const grid = (list: Field[]) => <div className="grid gap-4 sm:grid-cols-2">{list.map(field => field.name === 'stockReason'
+    ? <div key={field.name} hidden={!stockChanged} className="sm:col-span-2">{renderField({ ...field, required: stockChanged })}</div>
+    : renderField(field))}</div>;
+  const card = (title: string, description: string, body: ReactNode) => <section className="grid content-start gap-4 rounded-xl border border-line bg-surface p-5 md:p-6">
+    <div className="[&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_p]:m-0 [&_p]:mt-0.5 [&_p]:text-[13px] [&_p]:text-mute"><h2>{title}</h2>{description ? <p>{description}</p> : null}</div>{body}
+  </section>;
+  const moreGroups = ['Care & usage', 'Identifiers', 'Variants', 'Catalogue feeds'].filter(name => named(name).length);
+  const productBody = <>
+    {card('Basics', '', grid(named('Basics')))}
+    {card('Price & stock', '', <>
+      <fieldset disabled={!pricing.trade.retail} hidden={!pricing.trade.retail} className="m-0 min-w-0 border-0 p-0">{grid(named('Pricing'))}</fieldset>
+      {!pricing.trade.retail ? <p className="m-0 text-[13px] text-mute">Retail is off for this product. Turn it on under More details to set a retail price.</p> : null}
+    </>)}
+    {card('Listing', 'Optional. A pack size and description help customers choose.', grid(named('Listing')))}
+    <details className="group rounded-xl border border-line bg-surface" onInvalidCapture={event => { (event.target as HTMLElement).closest('details')?.setAttribute('open', ''); }}>
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-5 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+        More details <span className="text-xs font-normal text-mute">Channels, care, identifiers, variants, feeds</span>
+      </summary>
+      <div className="grid gap-6 border-t border-line p-5 md:p-6">
+        <div className="grid gap-3">
+          <h3 className="m-0 text-sm font-semibold">Sales channels</h3>
+          <ProductChannels trade={pricing.trade} onChange={pricing.setTrade} reload={pricing.reload} />
+          <WholesalePrices trade={pricing.trade} onChange={pricing.setTrade} />
+          {productAudience ? <div hidden={!pricing.trade.wholesale} className="grid gap-3"><ProductAudienceFields initial={productAudience} types={pricing.trade.types} /></div> : null}
+        </div>
+        {moreGroups.map(name => <div key={name} className="grid gap-3"><h3 className="m-0 text-sm font-semibold">{name}</h3>{grid(named(name))}</div>)}
+        {productChecks}
+      </div>
+    </details>
+  </>;
+  return <PendingPhotosContext.Provider value={{ files: photoFiles, setFiles: setPhotoFiles }}><div className="grid gap-4">{dialog}
+    <div className={productEditor && productMedia ? 'grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_340px]' : ''}>
+    <form ref={formRef} className="grid min-w-0 gap-4" onSubmit={submit} aria-busy={pending} onChange={event => {
       if (productEditor && event.target instanceof HTMLInputElement && event.target.name === 'stock') setStockChanged(event.target.value !== fields.find(field => field.name === 'expectedStock')?.value);
-    }} onInvalidCapture={event => {
-      if (!productEditor || !(event.target instanceof HTMLElement)) return;
-      const panel = event.target.closest<HTMLElement>('[data-product-panel]');
-      if (panel?.dataset.productPanel) flushSync(() => setActiveTab(panel.dataset.productPanel!));
     }}>
       {fields.map(field => resolveKind(field) === 'hidden' ? renderField(field) : null)}
-      <fieldset className="admin-form-lock" disabled={pending || Boolean(partialSave)}>
-      <div key={version} className="admin-form__sections">
-      {productEditor && productAudience ? <>
-        <SectionPanel id={sectionId} name="Overview" active={activeTab === 'Overview'}><div data-product-panel="Overview" className="product-overview">
-          <ProductChannels trade={pricing.trade} onChange={pricing.setTrade} reload={pricing.reload} />
-          <section className="admin-form__section product-pricing"><div className="admin-form__heading"><h2>Channel prices</h2></div>
-            <fieldset disabled={!pricing.trade.retail} hidden={!pricing.trade.retail} className="admin-form__grid admin-form-lock">{fields.filter(field => pricingNames.includes(field.name)).map(field => renderField({ ...field, required: pricing.trade.retail && field.required === true }))}</fieldset>
-            <WholesalePrices trade={pricing.trade} onChange={pricing.setTrade} />
-          </section>
-          <section className="admin-form__section product-basics"><div className="admin-form__heading"><h2>Product details & stock</h2></div><div className="admin-form__grid">{fields.filter(field => field.section === 'Overview' && !pricingNames.includes(field.name)).map(field => field.name === 'stockReason' ? <div key={field.name} hidden={!stockChanged} className="admin-field--wide">{renderField({ ...field, required: stockChanged })}</div> : renderField(field))}</div></section>
-          <div hidden={!pricing.trade.wholesale} className="admin-form__section product-access"><ProductAudienceFields initial={productAudience} types={pricing.trade.types} /></div>
-        </div></SectionPanel>
-        {sections.filter(section => section.title !== 'Overview').map(section => <SectionPanel key={section.title} id={sectionId} name={section.title} active={activeTab === section.title}><section className="admin-form__section" data-product-panel={section.title}><div className="admin-form__heading"><h2>{section.title}</h2></div><div className="admin-form__grid">{section.fields.map(renderField)}</div></section></SectionPanel>)}
-      </> : ordinarySections}
+      <fieldset className="m-0 min-w-0 border-0 p-0" disabled={pending || Boolean(partialSave)}>
+      <div key={version} className="grid gap-4">
+      {productEditor ? productBody : ordinarySections}
       </div>
       </fieldset>
       {saveControls}
     </form>
-    {productEditor ? <>
-      <SectionPanel id={sectionId} name="Photos" active={activeTab === 'Photos'}>{productMedia}</SectionPanel>
-      <div hidden={activeTab !== 'Publishing'}>{productChecks}</div>
-    </> : null}
-  </div>;
-
+    {productEditor && productMedia ? <div className="min-w-0 max-xl:order-first xl:sticky xl:top-20">{productMedia}</div> : null}
+    </div>
+  </div></PendingPhotosContext.Provider>;
 }
 
 export { NotificationSettings } from './notification-settings';
@@ -599,6 +699,7 @@ export function BulkTemplates({
 }: {
   recipients: { from: string; name: string; promotionStatus: string }[];
 }) {
+  const { ask, dialog } = useConfirm();
   const [selected, setSelected] = useState<string[]>([]);
   const [csvNumbers, setCsvNumbers] = useState<string[]>([]);
   const [csvError, setCsvError] = useState("");
@@ -606,13 +707,9 @@ export function BulkTemplates({
   const [results, setResults] = useState<string[]>([]);
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (
-      !window.confirm(
-        `Send this approved template to ${selected.length} selected recipients?`,
-      )
-    )
-      return;
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    if (!(await ask(`Send this approved template to ${selected.length} selected recipients?`, { action: 'Send template' }))) return;
+    const data = new FormData(form);
     setPending(true);
     setResults([]);
     for (const recipient of selected) {
@@ -637,20 +734,21 @@ export function BulkTemplates({
     setPending(false);
   }
   return (
-    <form className="admin-card admin-form" onSubmit={send}>
-      <div className="admin-card__head">
+    <form className="mb-4 grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" onSubmit={send}>
+      {dialog}
+      <div className="mb-1 [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold">
         <div>
           <h2>Broadcast template</h2>
-          <p className="admin-card__hint">Send one approved template to a reviewed recipient list. Delivery requires a provider report.</p>
+          <p className="m-0 text-[13px] text-mute">Send one approved template to a reviewed recipient list. Delivery requires a provider report.</p>
         </div>
       </div>
-      <div className="admin-form__section">
-        <div className="admin-form__grid">
-          <label className="admin-dropzone admin-field--wide" htmlFor="recipient-csv">
-            <span className="admin-dropzone__icon" aria-hidden="true">
+      <div className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2" htmlFor="recipient-csv">
+            <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
               <CloudArrowUpIcon />
             </span>
-            <span className="admin-dropzone__text">
+            <span className="grid text-[13px] [&>strong]:font-semibold [&>span]:text-xs [&>span]:text-mute">
               <strong>Recipient CSV</strong>
               <span>First column · up to 25 numbers · 256 KB</span>
             </span>
@@ -691,9 +789,9 @@ export function BulkTemplates({
               }}
             />
           </label>
-          {csvError ? <p role="alert" className="admin-alert admin-alert--danger">{csvError}</p> : null}
+          {csvError ? <p role="alert" className="m-0 rounded-lg bg-bad-soft px-3 py-2 text-[13px] font-medium text-bad">{csvError}</p> : null}
           {csvNumbers.length ? (
-            <p className="admin-card__hint">
+            <p className="m-0 text-[13px] text-mute">
               Imported {csvNumbers.length} recipient numbers. Review the CSV and
               promotion permissions before sending.
             </p>
@@ -702,7 +800,7 @@ export function BulkTemplates({
       </div>
       <fieldset disabled={pending}>
         <legend>Recipients</legend>
-        <div className="admin-checklist">
+        <div className="grid max-h-80 gap-1 overflow-y-auto rounded-lg bg-soft p-2 [&_label]:flex [&_label]:items-center [&_label]:gap-3 [&_label]:rounded-lg [&_label]:p-2.5 [&_label]:text-[13px]">
           {recipients.map((item) => {
             const eligible =
               item.promotionStatus !== "Stop promotions" &&
@@ -728,16 +826,16 @@ export function BulkTemplates({
           })}
         </div>
       </fieldset>
-      <div className="admin-form-panel">
+      <div className="grid gap-3 rounded-xl bg-surface p-4 border border-line">
         <label htmlFor="bulk-template">
           Template name
-          <input id="bulk-template" name="template" required />
+          <input className={inputClass} id="bulk-template" name="template" required />
         </label>
         <label htmlFor="bulk-link">
           Image URL
-          <input id="bulk-link" name="link" type="url" required />
+          <input className={inputClass} id="bulk-link" name="link" type="url" required />
         </label>
-        <button disabled={pending || !selected.length}>
+        <button className={buttonVariants({ variant: "default" })} disabled={pending || !selected.length}>
           {pending ? "Sending…" : `Send to ${selected.length} recipients`}
         </button>
       </div>

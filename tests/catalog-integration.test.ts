@@ -161,6 +161,21 @@ test('real catalog reads and legacy product mutations preserve validation, visib
   }
 });
 
+test('product update can move a product to an active category and rejects archived or unknown ones', { skip: !uri }, async () => {
+  const { updateProductInventory } = await import('../apps/api/src/modules/inventory/adjustments');
+  const client = await new MongoClient(uri!).connect();
+  const db = client.db(`almina_category_move_${randomUUID().replaceAll('-', '')}`);
+  const actor = String(new ObjectId()), id = new ObjectId(), from = new ObjectId(), to = new ObjectId(), archived = new ObjectId();
+  try {
+    await db.collection('categories').insertMany([{ _id: from, name: 'From' }, { _id: to, name: 'To' }, { _id: archived, name: 'Old', archivedAt: new Date() }]);
+    await db.collection('products').insertOne({ _id: id, product_id: 'PD_MOVE', price: 5, stock: 1, sale: false, category: from });
+    await assert.rejects(updateProductInventory(db, String(id), { category: String(archived) }, actor), { status: 400 });
+    await assert.rejects(updateProductInventory(db, String(id), { category: String(new ObjectId()) }, actor), { status: 400 });
+    await updateProductInventory(db, String(id), { category: String(to) }, actor);
+    assert.deepEqual((await db.collection('products').findOne({ _id: id }))!.category, to);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
 test('inventory ledger commits once, rejects stale concurrent edits and retains actor/reason and exact money', { skip: !uri }, async () => {
   const { updateProductInventory } = await import('../apps/api/src/modules/inventory/adjustments');
   const client = await new MongoClient(uri!).connect();
