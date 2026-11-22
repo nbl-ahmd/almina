@@ -6,6 +6,7 @@ import Link from './app-link';
 import { ArrowRightIcon, ShoppingBagIcon } from './storefront-icons';
 import { ProductImage } from './product-image';
 import { AddToCart } from './cart-controls';
+import { SaveProduct } from './save-product';
 import { productImage } from '../lib/server/catalog';
 import { getWebEnvironment } from '../lib/server/env';
 import { displayPrice, money, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
@@ -52,22 +53,40 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
   const saving = product.sale ? Math.max(0, product.price - displayPrice(product)) : 0;
   const discount = product.price > 0 ? Math.floor(saving / product.price * 100 + 1e-8) : 0;
 
-  return <article data-product-id={product._id} className={cn('product-card', className)}>
-    <Link href={productHref(product)} aria-label={locale === 'ar' ? `عرض ${product.name}` : `View ${product.name}`} className="product-media">
-      <ProductPhoto product={product} />
-      {saving > 0 ? <span className="product-offer" aria-label={locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}>{discount > 0 ? (locale === 'ar' ? `خصم ${discount}٪` : `${discount}% off`) : u(locale, 'Offer')}</span> : null}
-    </Link>
-    <div className="product-card-identity">
-      <Heading><Link href={productHref(product)}>{product.name}</Link></Heading>
-      {pack ? <p className="product-pack-label">{pack}</p> : null}
-      {!pack && product.brand ? <p className="product-pack-label">{product.brand}</p> : null}
-      {options ? <p className="product-pack-label">{locale === 'ar' ? `${product.familyOptionCount} خيارات متاحة` : `${product.familyOptionCount} options available`}</p> : null}
-      <p className={product.stock > 0 ? 'product-stock' : 'product-stock unavailable'}>{product.stock > 0 ? u(locale, 'In stock') : u(locale, 'Currently unavailable')}</p>
+  return <article
+    data-product-id={product._id}
+    className={cn('product-card relative flex min-w-0 flex-col gap-2 rounded-2xl border border-solid border-border bg-white p-2.5 md:p-3', className)}
+  >
+    <div className="relative aspect-[5/4] shrink-0">
+      <Link href={productHref(product)} aria-label={locale === 'ar' ? `عرض ${product.name}` : `View ${product.name}`} className="product-media absolute inset-0 rounded-lg bg-subtle">
+        <div className="absolute inset-x-[16%] top-8 bottom-2 grid grid-rows-[minmax(0,1fr)] place-items-center">
+          <ProductPhoto product={product} />
+        </div>
+      </Link>
+      <div className="pointer-events-none absolute start-1 top-1 flex max-w-[calc(100%-52px)] flex-wrap items-start gap-1">
+        <span className={cn('rounded-md px-1.5 py-0.5 text-[11px] leading-tight font-semibold', product.stock > 0 ? 'bg-subtle text-[var(--color-success)]' : 'bg-subtle text-[var(--color-muted)]')}>
+          {product.stock > 0 ? u(locale, 'In stock') : u(locale, 'Currently unavailable')}
+        </span>
+        {saving > 0 && <span className="rounded-md bg-accent px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-sale">
+          <span className="sr-only">{locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}</span>
+          <span aria-hidden="true">{discount > 0 ? (locale === 'ar' ? `خصم ${discount}٪` : `${discount}% off`) : u(locale, 'Offer')}</span>
+        </span>}
+      </div>
+      <div className="absolute end-0 top-0">
+        <SaveProduct id={product._id} name={product.name} locale={locale} iconOnly />
+      </div>
     </div>
-    <div className="product-card-purchase">
-      <div className="product-card-buy-row">
-      <ProductPrice product={product} />
-      {options ? <Link className="button" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} />}
+    <div className="product-card-identity grid min-w-0 gap-1.5">
+      {(product.brand || pack) && <div className="flex min-w-0 flex-wrap gap-1">
+        {[...new Set([product.brand, pack].filter(Boolean))].map(label => <span key={label} className="max-w-full rounded-md bg-subtle px-1.5 py-0.5 text-[11px] leading-snug text-[var(--color-muted)]">{label}</span>)}
+      </div>}
+      <Heading><Link href={productHref(product)}>{product.name}</Link></Heading>
+      {options && <p className="m-0 text-xs text-[var(--color-muted)]">{locale === 'ar' ? `${product.familyOptionCount} خيارات متاحة` : `${product.familyOptionCount} options available`}</p>}
+    </div>
+    <div className="product-card-purchase mt-auto pt-1">
+      <div className="product-card-buy-row max-[599px]:[&_.add-to-cart]:size-11! max-[599px]:[&_.add-to-cart]:min-h-11! max-[599px]:[&_.add-to-cart]:rounded-xl! max-[599px]:[&_.add-to-cart]:p-0!">
+        <ProductPrice product={product} />
+        {options ? <Link className="button" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} />}
       </div>
     </div>
   </article>;
