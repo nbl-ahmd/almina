@@ -3,12 +3,20 @@ import { useRouter } from 'next/navigation';
 import { localeCookie, type Locale } from '../lib/i18n';
 
 /** Switches the storefront language preference. The choice is a UI preference only; content stays CMS-reviewed. */
-export function LanguageSwitcher({ locale, label, size = 'compact' }: { locale: Locale; label: string; size?: 'compact' | 'default' }) {
+export function LanguageSwitcher({ locale, label, size = 'compact' }: { locale: Locale; label: string; size?: 'compact' | 'default' | 'toggle' }) {
   const router = useRouter();
   function choose(next: Locale) {
     if (next === locale) return;
     document.cookie = `${localeCookie}=${next}; path=/; max-age=31536000; samesite=lax`;
     router.refresh();
+  }
+  if (size === 'toggle') {
+    const next = locale === 'en' ? 'ar' : 'en';
+    return <div className="language-switcher language-toggle" aria-label={label} role="group">
+      <button data-slot="language-option" type="button" className="language-toggle-button" aria-label={locale === 'en' ? 'Switch to Arabic' : 'التبديل إلى الإنجليزية'} onClick={() => choose(next)}>
+        <span lang={next} dir={next === 'ar' ? 'rtl' : 'ltr'}>{next === 'ar' ? 'العربية' : 'English'}</span>
+      </button>
+    </div>;
   }
   const dimensions = size === 'default' ? 'text-sm' : 'text-[13px]';
   // Opt out of inherited commerce-button styling; these are quiet utility actions.

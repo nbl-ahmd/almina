@@ -238,7 +238,7 @@ test('mobile checkout preserves delivery details when going back and payment cho
  await page.setViewportSize({width:390,height:844});await prepare(page);
  await page.getByRole('button',{name:'Back',exact:true}).click();
  await expect(page.getByLabel('Name',{exact:true})).toHaveValue(customer.name);
- await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
+ await page.getByRole('button',{name:'Review order',exact:true}).click();
  const cash=page.getByRole('radio',{name:/Cash on delivery/});await cash.focus();await page.keyboard.press('ArrowDown');
  await expect(page.getByRole('radio',{name:/Credit or debit card/})).toBeChecked();
  await expect(page.getByRole('button',{name:'Continue to test payment'})).toBeVisible();

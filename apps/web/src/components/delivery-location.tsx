@@ -61,7 +61,9 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
   return <><div className="header-location flex min-w-0 justify-end">
     <button data-slot="delivery-selector" type="button" className="group inline-flex min-h-11 max-w-full min-w-0 items-center gap-1.5 rounded-lg border-0 bg-transparent px-1 py-1 text-start  transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 md:max-w-[210px] md:px-2" onClick={() => window.dispatchEvent(new Event(openEvent))} aria-label={t(locale,'areaChooseAria')}>
       <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
-      <span className="min-w-0 truncate text-[13px] font-medium">{area ? area.city : t(locale,'areaDeliverTo')}<span className="hidden md:inline">{area ? `, ${emirateLabel(locale,area.emirate)}` : ` · ${t(locale,'areaChooseYours')}`}</span></span>
+      <span className="delivery-label min-w-0 truncate text-[13px] font-medium" title={area ? `${area.city}, ${emirateLabel(locale,area.emirate)}` : t(locale,'areaChooseYours')}>
+        {area ? <>{area.city}<span className="delivery-region">, {emirateLabel(locale,area.emirate)}</span></> : <><span className="delivery-compact">{t(locale,'areaDeliverTo')}</span><span className="delivery-complete">{t(locale,'areaChooseYours')}</span></>}
+      </span>
       <ChevronDownIcon className="size-3 shrink-0" aria-hidden="true" />
     </button></div>
     <dialog ref={dialog} aria-labelledby="delivery-area-heading" onCancel={close} className="delivery-area-sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border-0 bg-white px-5 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))]  sm:inset-0 sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-32px)] sm:max-w-md sm:rounded-2xl sm:p-7">

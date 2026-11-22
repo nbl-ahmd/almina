@@ -18,7 +18,7 @@ test('checkout controls remain responsive and keyboard usable in English and Ara
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
  await page.screenshot({path:`${directory}/dropdown.png`});
  await page.keyboard.press('Escape');
- await page.getByRole('button',{name:'Continue to payment',exact:true}).click();
+ await page.getByRole('button',{name:'Review order',exact:true}).click();
  await page.setViewportSize({width:1440,height:1000});await page.getByRole('contentinfo').getByRole('button',{name:'العربية',exact:true}).click();
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>window.scrollTo(0,0));
  await expect(page.getByRole('heading',{name:'المراجعة والدفع',exact:true})).toBeVisible();
@@ -27,7 +27,7 @@ test('checkout controls remain responsive and keyboard usable in English and Ara
  await expect(page.locator('.checkout-form-heading h2')).toBeFocused();
  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>{window.scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()));})));
  await page.screenshot({path:`${directory}/arabic-details.png`,fullPage:true});
- await page.getByRole('button',{name:'المتابعة إلى الدفع',exact:true}).click();
+ await page.getByRole('button',{name:'مراجعة الطلب',exact:true}).click();
  await page.getByRole('button',{name:/تقديم الطلب/}).click();
  await expect(page.getByRole('heading',{name:'تم استلام الطلب',exact:true})).toBeVisible();
  await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`${directory}/confirmation.png`,fullPage:true});

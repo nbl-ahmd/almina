@@ -9,7 +9,7 @@ const sectionTitles = new Set(['Key benefits', 'Suitable for', 'Pack details']);
 
 /** Plain text only: preserve older descriptions and never interpret imported HTML. */
 function Description({ text }: { text: string }) {
-  return <div className="space-y-5 text-sm leading-7 wrap-anywhere">
+  return <div className="product-prose space-y-5 text-sm leading-7 wrap-anywhere">
     {text.split(/\n\s*\n/).filter(block => block.trim()).map((block, index) => {
       const lines = block.trim().split('\n');
       const heading = sectionTitles.has(lines[0] ?? '') ? lines.shift() : undefined;

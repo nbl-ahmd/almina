@@ -11,7 +11,7 @@ test('correction, relaxation, zero recovery, filters and reload remain usable',a
  await page.goto('/search?q=dailyy&minPrice=10&inStock=true');await expect(page.getByText('Did you mean')).toBeVisible();await expect(page.locator('.product-card')).toHaveCount(1);
  await page.getByRole('link',{name:'Search the original phrase'}).click();await expect(page).toHaveURL(/literal=true/);await expect(page).toHaveURL(/minPrice=10/);
  await page.goto('/search?q=daily+care+900ml');await expect(page.getByText('No exact match found. Showing related results')).toBeVisible();
- await page.goto('/search?q=missing');await expect(page.getByText('No exact match found. Try a brand')).toBeVisible();await expect(page.getByRole('link',{name:'Daily Care',exact:true})).toBeVisible();
+ await page.goto('/search?q=missing');await expect(page.getByRole('heading',{name:'No products found.',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:'Daily Care',exact:true})).toBeVisible();
  await page.goto('/search?q=Daily+Care&minPrice=10&maxPrice=25&sort=price-asc');await page.reload();await expect(page.locator('.product-card')).toHaveCount(1);await expect(page.locator('input[type="number"][name="minPrice"]')).toHaveValue('10');
  const robots=await page.locator('meta[name="robots"]').getAttribute('content');expect(robots).toContain('noindex');
 });

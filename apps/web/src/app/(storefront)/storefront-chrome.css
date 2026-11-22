@@ -78,3 +78,19 @@
   .header-identity { border-color: var(--color-surface); }
   .mobile-tab[aria-current="page"] .mobile-tab-icon { border-radius: 999px; }
 }
+@scope (.storefront-shell) {
+  .header-language { display: block; }
+  .header-content { grid-template-columns: auto minmax(0,1fr) auto; gap: 8px; }
+  .language-switcher .language-toggle-button { display: inline-flex; min-inline-size: 44px; min-block-size: 44px; align-items: center; justify-content: center; padding: 4px; font-size: .875rem; font-weight: 600; }
+  .language-toggle-button [lang="ar"] { font-family: var(--font-arabic), Tahoma, sans-serif; }
+  .delivery-region, .delivery-complete { display: none; }
+  .delivery-compact { display: inline; }
+  :scope:has(.checkout-page) .header-language { display: none; }
+}
+@media (max-width:359px) { @scope (.storefront-shell) { .brand-logo img { inline-size: 104px; } } }
+@media (min-width:900px) { @scope (.storefront-shell) {
+  .header-language { display: none; }
+  .header-content { grid-template-columns: auto minmax(0,1fr) auto auto auto; gap: 24px; }
+  .delivery-complete, .delivery-region { display: inline; }
+  .delivery-compact { display: none; }
+} }
