@@ -18,7 +18,7 @@ export async function ProductGrid({ products, headingLevel = 2, variant: _varian
 }
 export async function CategoryGrid({ categories, rail = false }: { categories: Category[]; rail?: boolean }) {
   const locale = await getLocale();
-  return categories.length ? <div className={rail ? 'scrollbar-none grid auto-cols-[160px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto pb-2 md:auto-cols-[220px]' : 'grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4'}>{categories.map(category => <CategoryTile key={category._id} category={category} headingLevel={2} />)}</div> : <div className="empty-state rounded-2xl"><h2>{u(locale,"Categories are not available yet")}</h2><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
+  return categories.length ? <div className={rail ? 'scrollbar-none grid auto-cols-[160px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto pb-2 md:auto-cols-[220px]' : 'grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4'}>{categories.map(category => <CategoryTile key={category._id} category={category} />)}</div> : <div className="empty-state rounded-2xl"><h2>{u(locale,"Categories are not available yet")}</h2><Link className="button button-secondary" href="/categories">{u(locale,"Browse categories")}</Link></div>;
 }
 export async function Breadcrumb({ title, parents = [] }: { title: string; parents?: { name: string; path: string }[] }) {
   const locale = await getLocale();

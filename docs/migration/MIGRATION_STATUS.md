@@ -1,3 +1,7 @@
+## 2026-11-22 — Homepage detector follow-up
+
+Addressed the supplied detector report through correct category-link semantics, an unboxed travel glyph and natural product-card flow that avoids stretched internal gaps. Preserved the measured header spacing as a documented false positive. Build/lint/types and 25 selected browser checks pass. See [dispositions and validation](DETECTOR_POLISH_2026-11-22.md). PR remains open.
+
 ## 2026-11-22 — Homepage browser comments
 
 Applied the seven annotated requests: matched search geometry, compact category rail, native swipeable campaigns, compact cards and dirham marks, two brand rows, small discount badges and removal of the benefits strip. Existing commerce behavior remains unchanged. See [changes, currency provenance and verification](HOMEPAGE_COMMENTS_2026-11-22.md). PR remains open.

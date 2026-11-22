@@ -10,6 +10,7 @@ export {
   List as Bars3Icon,
   Bell as BellIcon,
   Storefront as BuildingStorefrontIcon,
+  Suitcase as SuitcaseIcon,
   Chats as ChatBubbleLeftRightIcon,
   CheckCircle as CheckCircleIcon,
   Check as CheckIcon,
