@@ -7,8 +7,6 @@ import { CategoryTile } from "./category-tile";
 import Image from "next/image";
 import Link from './app-link';
 import {
-  ShieldCheckIcon,
-  TruckIcon,
   ChatBubbleLeftRightIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -85,7 +83,12 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
             <Link href="/products" className="campaign-link">{locale === 'ar' ? 'تسوق المنتجات' : 'Shop products'}<ArrowRightIcon aria-hidden="true" /></Link>
           </div>
           <Image className="campaign-subject" src="/design/campaigns/almina-care-courier.png" alt="" width={1254} height={1254} sizes="(max-width:899px) 45vw, 540px" loading="eager" />
-        </div>] : []),
+        </div>,
+        ...[
+          {key:'skincare',href:'/collections/skin-essentials',title:locale==='ar'?'أساسيات العناية بالبشرة':'Skincare essentials',body:locale==='ar'?'اكتشف منتجات العناية اليومية بالبشرة.':'Explore your daily skincare shelf.',image:'/design/campaigns/skincare-'+locale+'.webp'},
+          {key:'personal',href:'/collections/daily-care',title:locale==='ar'?'عناية شخصية لكل يوم':'Personal care, every day',body:locale==='ar'?'تسوق منتجات العناية بالجسم والشعر.':'Discover body, hair and personal care.',image:'/design/campaigns/personal-care-'+locale+'.webp'},
+        ].map(slide=><div key={slide.key} className="fallback-campaign secondary-campaign"><div className="campaign-copy"><h2>{slide.title}</h2><p>{slide.body}</p><Link href={slide.href} className="campaign-link">{locale==='ar'?'تسوق المجموعة':'Shop collection'}<ArrowRightIcon aria-hidden="true" /></Link></div><Image className="campaign-collection-art" src={slide.image} alt="" width={960} height={320} sizes="(max-width:899px) 50vw, 640px" /></div>)
+        ] : []),
       ]}
     </CampaignSlider>
   </section>;
@@ -156,32 +159,6 @@ export async function HomeSupport() {
         </div>
       </div>
     </section>
-  );
-}
-
-export async function HomeBenefits() {
-  const locale = await getLocale();
-  return (
-    <div className="home-benefits">
-      {[
-        { icon: ShieldCheckIcon, label: "Shop with clear product details" },
-        { icon: TruckIcon, label: "Delivery details at checkout" },
-        {
-          icon: ChatBubbleLeftRightIcon,
-          label: "Help from your local pharmacy",
-        },
-      ].map(({ icon: BenefitIcon, label }) => (
-        <div
-          key={u(locale,label)}
-          className="flex flex-col items-center gap-2 text-center md:flex-row md:justify-center md:text-left"
-        >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full">
-            <BenefitIcon className="size-4" />
-          </span>
-          {u(locale,label)}
-        </div>
-      ))}
-    </div>
   );
 }
 

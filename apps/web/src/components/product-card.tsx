@@ -1,3 +1,4 @@
+import { CurrencyAmount } from './currency-amount';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
 import { cn } from 'cn';
@@ -34,8 +35,8 @@ export async function ProductPhoto({ product, eager = false }: { product: Produc
 export async function ProductPrice({ product }: { product: Product }) {
   const locale = await getLocale();
   return <p className="product-price" data-price>
-    <span>{product.familyPriceVaries ? u(locale, 'From ') : ''}<bdi>{money(displayPrice(product), locale)}</bdi></span>
-    {product.sale && displayPrice(product) < product.price ? <del><bdi>{money(product.price, locale)}</bdi></del> : null}
+    <span>{product.familyPriceVaries ? u(locale, 'From ') : ''}<CurrencyAmount value={displayPrice(product)} locale={locale} /></span>
+    {product.sale && displayPrice(product) < product.price ? <del><CurrencyAmount value={product.price} locale={locale} /></del> : null}
   </p>;
 }
 
@@ -49,11 +50,12 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
   const options = Boolean(product.familyKey && (product.familyOptionCount ?? 0) > 1);
   const pack = productOptionLabel(product) || product.packLabel;
   const saving = product.sale ? Math.max(0, product.price - displayPrice(product)) : 0;
+  const discount = product.price > 0 ? Math.floor(saving / product.price * 100 + 1e-8) : 0;
 
   return <article data-product-id={product._id} className={cn('product-card', className)}>
     <Link href={productHref(product)} aria-label={locale === 'ar' ? `عرض ${product.name}` : `View ${product.name}`} className="product-media">
       <ProductPhoto product={product} />
-      {saving > 0 ? <span className="product-offer">{locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}</span> : null}
+      {saving > 0 ? <span className="product-offer" aria-label={locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}>{discount > 0 ? (locale === 'ar' ? `خصم ${discount}٪` : `${discount}% off`) : u(locale, 'Offer')}</span> : null}
     </Link>
     <div className="product-card-identity">
       <Heading><Link href={productHref(product)}>{product.name}</Link></Heading>

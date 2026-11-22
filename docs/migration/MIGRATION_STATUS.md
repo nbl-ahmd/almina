@@ -1,3 +1,7 @@
+## 2026-11-22 — Homepage browser comments
+
+Applied the seven annotated requests: matched search geometry, compact category rail, native swipeable campaigns, compact cards and dirham marks, two brand rows, small discount badges and removal of the benefits strip. Existing commerce behavior remains unchanged. See [changes, currency provenance and verification](HOMEPAGE_COMMENTS_2026-11-22.md). PR remains open.
+
 ## 2026-11-22 — Mobile product-card polish
 
 Refined mobile cards against the supplied pharmacy references: compact price/add grouping, quiet real metadata, smaller sale badges and aligned shelf tracks, with desktop capsule controls retained. Existing cart behavior is preserved. See [changes and verification](PRODUCT_CARD_POLISH_2026-11-22.md); all 21 selected browser regressions pass. PR remains open.

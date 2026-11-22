@@ -93,3 +93,8 @@
   .delivery-complete, .delivery-region { display: inline; }
   .delivery-compact { display: none; }
 } }
+@scope (.storefront-shell) {
+  .header-search form { min-block-size: 52px; padding: 4px; padding-inline-start: 14px; border-radius: 12px; gap: 8px; }
+  .header-search form [data-slot="header-search-input"] { min-block-size: 44px; block-size: 44px; }
+  .header-search form [data-slot="search-submit"] { display: inline-flex; align-self: stretch; align-items: center; justify-content: center; min-block-size: 44px; min-inline-size: 44px; padding: 0 12px; border-radius: 8px; }
+}

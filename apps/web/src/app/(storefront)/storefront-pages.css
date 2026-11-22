@@ -55,9 +55,6 @@
   .compact-product-identity h3 { margin: 0 0 8px; font-size: 1rem; font-weight: 600; }
   .compact-product-open { display: grid; place-items: center; inline-size: 44px; block-size: 44px; border: 1px solid var(--color-control); border-radius: 8px; }
   .compact-product-open svg { inline-size: 20px; block-size: 20px; }
-  .home-benefits { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; padding-block: 16px; border-block: 1px solid var(--color-divider); color: var(--color-muted); font-size: .875rem; }
-  .home-benefits>div { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-  .home-benefits svg { inline-size: 20px; block-size: 20px; color: var(--color-forest); }
   .home-collections { display: grid; gap: 16px; }
   .home-collection { display: grid; grid-template-columns: 1fr .75fr; gap: 24px; padding: 24px; background: var(--color-surface); border-radius: 16px; }
   .home-collection h2 { font-size: 1.375rem; }
@@ -82,7 +79,6 @@
     .campaign-copy p { margin-block-end: 16px; }
     .campaign-subject { object-fit: contain; object-position: center bottom; max-block-size: 360px; }
     .home-collections { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
-    .home-benefits>div { flex-direction: row; justify-content: center; }
   }
 }
 @media (min-width:1200px) { @scope (.storefront-shell) { .product-grid { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 24px; } } }
@@ -442,3 +438,36 @@
   .empty-search-page .catalog-toolbar { margin-block-end: 12px; }
   .checkout-mobile-action>div>strong { max-inline-size: 28ch; }
 }
+@scope (.storefront-shell) {
+  .campaign-track { position: relative; display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; border-radius: 12px; }
+  .campaign-track::-webkit-scrollbar, .home-categories::-webkit-scrollbar, .brand-rail::-webkit-scrollbar { display: none; }
+  .campaign-frame { flex: 0 0 100%; min-inline-size: 0; scroll-snap-align: start; }
+  .campaign-pagination { display: flex; justify-content: center; gap: 0; }
+  .campaign-pagination [data-slot="carousel-indicator"] { display: grid; place-items: center; inline-size: 44px; block-size: 44px; min-block-size: 44px; padding: 0; border-radius: 8px; }
+  .campaign-pagination [data-slot="carousel-indicator"]>span { inline-size: 20px; block-size: 3px; border-radius: 2px; }
+  .secondary-campaign { background: var(--color-tint); }
+  .campaign-collection-art { align-self: center; inline-size: 100%; block-size: 100%; object-fit: cover; object-position: right center; }
+  .home-categories { scrollbar-width: none; grid-auto-columns: 88px; gap: 12px; }
+  .home-categories .category-media { border-radius: 12px; }
+  .brand-rail { display: grid; grid-template-rows: repeat(2,auto); grid-auto-flow: column; grid-auto-columns: minmax(150px,1fr); gap: 8px; overflow-x: auto; scrollbar-width: none; padding-block: 0; }
+  .brand-rail>a { min-inline-size: 0; min-block-size: 48px; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: .8125rem; }
+  .brand-rail>a>span:first-child { inline-size: 32px; block-size: 32px; padding: 3px; }
+  .currency-visual { display: inline-flex; align-items: baseline; gap: .22em; white-space: nowrap; }
+  .dirham-symbol { display: inline-block; inline-size: .9em; block-size: .8em; min-block-size: 12px; background: currentColor; mask: url('/currency/dirham.svg') center / contain no-repeat; }
+  .product-card .product-offer { inset: 6px auto auto 6px; padding: 2px 5px; font-size: .6875rem; border-radius: 4px; line-height: 1.5; }
+  :scope[dir="rtl"] .product-card .product-offer { inset-inline-start: 6px; inset-inline-end: auto; }
+}
+@media (max-width:599px) { @scope (.storefront-shell) {
+  .product-card-identity :is(h2,h3) { font-size: .875rem; line-height: 1.4; }
+  .product-card .product-pack-label, .product-card .product-stock { font-size: .6875rem; }
+  .product-card .product-media { aspect-ratio: 1.08; padding: 12%; }
+  .product-card-buy-row .product-price { font-size: .875rem; }
+  .product-card-buy-row .product-price del { font-size: .75rem; }
+} }
+@media (min-width:900px) { @scope (.storefront-shell) {
+  .home-categories { grid-auto-flow: row; grid-template-columns: repeat(auto-fit,minmax(88px,104px)); grid-auto-columns: auto; gap: 12px; overflow: visible; }
+  .home-categories .category-media { inline-size: 64px; block-size: 64px; }
+  .home-categories .category-media>img { inline-size: 56px; block-size: 56px; }
+  .home-categories .category-tile :is(h2,h3) { font-size: .8125rem; line-height: 1.4; }
+  .brand-rail { grid-auto-flow: row; grid-template-columns: repeat(4,minmax(0,1fr)); }
+} }

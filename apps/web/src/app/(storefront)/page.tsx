@@ -8,7 +8,6 @@ import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
 import {
   HomeManagedCampaigns,
-  HomeBenefits,
   HomeBrandStrip,
   HomeCollectionTiles,
   HomeCompactShelf,
@@ -178,7 +177,6 @@ async function HomeContent() {
             </Link>
           </section>
         ) : null}
-        <HomeBenefits />
         <HomeCollectionTiles collections={collectionTiles} />
         {offerShelf.length >= 2 ? (
           <HomeShelf
