@@ -67,10 +67,14 @@ test('commerce overview uses actual period reports, ranked products and keyboard
     expect(created.status()).toBe(201);
   }
   await login(page);
-  await expect(page.getByRole('heading', { name: 'Sales overview', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Most ordered products', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Most ordered products', exact: true }).locator('../..').locator('..')).toContainText('Synthetic care product');
-  await expect(page.getByRole('heading', { name: 'Most ordered products', exact: true }).locator('../..').locator('..')).toContainText('2 units ordered');
+  const salesHeading = page.getByRole('heading', { name: 'Sales overview', exact: true });
+  const rankedHeading = page.getByRole('heading', { name: 'Most ordered products', exact: true });
+  await expect(salesHeading).toBeVisible();
+  await expect(rankedHeading).toBeVisible();
+  const sales = salesHeading.locator('xpath=ancestor::section[1]');
+  const ranked = rankedHeading.locator('xpath=ancestor::section[1]');
+  await expect(ranked).toContainText('Synthetic care product');
+  await expect(ranked).toContainText('2 units ordered');
   await expect(page.getByRole('heading', { name: 'System health', exact: true })).toHaveCount(0);
   const period = page.getByRole('combobox', { name: 'Report period', exact: true });
   await period.click();
@@ -78,10 +82,10 @@ test('commerce overview uses actual period reports, ranked products and keyboard
   await expect(page).toHaveURL(adminOrigin + '/admin?days=7');
   await streamSettled(page);
   await expect(period).toContainText('Last 7 days');
-  const chart = page.getByRole('application');
+  const chart = sales.getByRole('application');
   await chart.focus();
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator('.recharts-tooltip-wrapper')).toContainText('AED');
+  await expect(sales.locator('.recharts-tooltip-wrapper')).toContainText('AED');
   await page.getByRole('button', { name: 'Line', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Line', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Orders', exact: true }).click();
@@ -90,5 +94,5 @@ test('commerce overview uses actual period reports, ranked products and keyboard
   await page.getByRole('button', { name: 'Export report', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('almina-orders-7-days.csv');
   await page.reload(); await streamSettled(page);
-  await expect(page.getByRole('heading', { name: 'Most ordered products', exact: true }).locator('../..').locator('..')).toContainText('2 units ordered');
+  await expect(ranked).toContainText('2 units ordered');
 });

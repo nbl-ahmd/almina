@@ -24,7 +24,6 @@ test('admin configures a coupon, guest sees it in cart and checkout, and the ord
   await expect(page.getByRole('alert').filter({ hasText: 'minimum spend' })).toBeVisible();
   await page.getByRole('button', { name: /Increase .* quantity/ }).click();
   await expect(page.getByRole('status', { name: /Quantity .*: 2/ })).toBeVisible();
-  await code.press('Enter');
   await expect(page.getByText('Estimated coupon savings')).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: 'Estimated coupon savings' })).toContainText('4.00');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
