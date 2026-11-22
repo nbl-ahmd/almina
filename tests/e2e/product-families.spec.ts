@@ -1,4 +1,4 @@
-import {test,expect,reset,commerceOrigin,checkoutOrigin,customer,login} from './fixtures';
+import { test, expect, reset, commerceOrigin, checkoutOrigin, customer, login, openMoreDetails, saveProductButton, savedToast, chooseBrand } from './fixtures';
 test.beforeEach(async({request})=>{await reset(request);expect((await request.post(commerceOrigin+'/__fixture/families')).ok()).toBeTruthy();});
 for(const width of [360,390,768,1280]) {
   test(`family selection is responsive and each SKU is directly accessible at ${width}px`,async({page})=>{
@@ -61,20 +61,18 @@ test('staff can maintain a verified family option through the existing product f
   await login(page);
   await page.goto('http://127.0.0.1:4720/admin/products/ccccccccccccccccccccccc1');
   await expect(page.getByLabel(/^Product family key/)).toHaveValue('synthetic-options');
-  await page.getByRole('tab',{name:'Variants',exact:true}).click();
+  await chooseBrand(page, 'Synthetic'); await openMoreDetails(page);
   await page.getByLabel('Variant size',{exact:true}).fill('Medium');
-  await page.getByRole('tab',{name:'Overview',exact:true}).click();
   // Editing an option does not request an inventory adjustment.
   await expect(page.getByLabel(/^Reason for stock change/)).toBeHidden();
-  await page.getByRole('button',{name:'Save product',exact:true}).click();
-  await expect(page.getByRole('status').filter({hasText:'Saved successfully.'})).toBeVisible();
+  await saveProductButton(page).click();
+  await expect(savedToast(page)).toBeVisible();
   await page.reload();
-  await page.getByRole('tab',{name:'Variants',exact:true}).click();
+  await openMoreDetails(page);
   await expect(page.getByLabel('Variant size',{exact:true})).toHaveValue('Medium');
   await page.getByLabel(/^Family strength identity/).fill('20mg');
-  await page.getByRole('tab',{name:'Overview',exact:true}).click();
   await expect(page.getByLabel(/^Reason for stock change/)).toBeHidden();
-  await page.getByRole('button',{name:'Save product',exact:true}).click();
+  await saveProductButton(page).click();
   await expect(page.locator('form').getByRole('alert')).toContainText('Check the family name, brand, form, strength, category and option combinations.');
   await page.goto(checkoutOrigin+'/products/synthetic-family--PD8001');
   await expect(page.getByRole('region',{name:'Product options'})).toContainText('Selected: Size: Medium · Flavour: Vanilla');

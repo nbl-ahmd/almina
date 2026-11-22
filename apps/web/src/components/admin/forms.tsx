@@ -249,18 +249,18 @@ function TagsField({ id, field }: { id: string; field: Field }) {
 
 function FileField({ id, field }: { id: string; field: Field }) {
   return (
-    <label htmlFor={id} className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2">
+    <label htmlFor={id} className="flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2">
       <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
         <CloudArrowUpIcon />
       </span>
-      <span className="grid text-[13px] [&>strong]:font-semibold [&>span]:text-xs [&>span]:text-mute">
+      <span className="grid min-w-0 text-[13px] [&>strong]:font-semibold [&>span]:text-xs [&>span]:text-mute">
         <strong>{field.label}</strong>
         <span>{field.hint ?? "PNG, JPG, WebP or CSV · up to 3 MB"}</span>
       </span>
       <input
         id={id}
         name={field.name}
-        type="file"
+        type="file" className="ml-auto min-w-0 max-w-[45%] text-xs text-mute"
         multiple={field.multiple}
         required={field.required}
         disabled={field.disabled}
@@ -651,12 +651,15 @@ export function AdminForm({
   const card = (title: string, description: string, body: ReactNode) => <section className="grid content-start gap-4 rounded-xl border border-line bg-surface p-5 md:p-6">
     <div className="[&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_p]:m-0 [&_p]:mt-0.5 [&_p]:text-[13px] [&_p]:text-mute"><h2>{title}</h2>{description ? <p>{description}</p> : null}</div>{body}
   </section>;
+  const stockFieldNames = ['stock', 'stockReason'];
   const moreGroups = ['Care & usage', 'Identifiers', 'Variants', 'Catalogue feeds'].filter(name => named(name).length);
   const productBody = <>
     {card('Basics', '', grid(named('Basics')))}
     {card('Price & stock', '', <>
-      <fieldset disabled={!pricing.trade.retail} hidden={!pricing.trade.retail} className="m-0 min-w-0 border-0 p-0">{grid(named('Pricing'))}</fieldset>
+      {/* Stock is shared by every channel, so only the retail price and offer follow the Retail switch. */}
+      <fieldset disabled={!pricing.trade.retail} hidden={!pricing.trade.retail} className="m-0 min-w-0 border-0 p-0">{grid(named('Pricing').filter(field => !stockFieldNames.includes(field.name)))}</fieldset>
       {!pricing.trade.retail ? <p className="m-0 text-[13px] text-mute">Retail is off for this product. Turn it on under More details to set a retail price.</p> : null}
+      {grid(named('Pricing').filter(field => stockFieldNames.includes(field.name)))}
     </>)}
     {card('Listing', 'Optional. A pack size and description help customers choose.', grid(named('Listing')))}
     <details className="group rounded-xl border border-line bg-surface" onInvalidCapture={event => { (event.target as HTMLElement).closest('details')?.setAttribute('open', ''); }}>
@@ -744,17 +747,17 @@ export function BulkTemplates({
       </div>
       <div className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2" htmlFor="recipient-csv">
+          <label className="flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2" htmlFor="recipient-csv">
             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
               <CloudArrowUpIcon />
             </span>
-            <span className="grid text-[13px] [&>strong]:font-semibold [&>span]:text-xs [&>span]:text-mute">
+            <span className="grid min-w-0 text-[13px] [&>strong]:font-semibold [&>span]:text-xs [&>span]:text-mute">
               <strong>Recipient CSV</strong>
               <span>First column · up to 25 numbers · 256 KB</span>
             </span>
             <input
               id="recipient-csv"
-              type="file"
+              type="file" className="ml-auto min-w-0 max-w-[45%] text-xs text-mute"
               accept=".csv,text/csv"
               disabled={pending}
               onChange={async (event) => {

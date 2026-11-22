@@ -46,3 +46,11 @@
   .admin-app :where(input[type=checkbox], input[type=radio]) { width: 1rem; height: 1rem; accent-color: var(--color-ink); }
   .admin-app :where(button):disabled { cursor: not-allowed; }
 }
+
+/* Email designer (GrapesJS): on phones one panel shows at a time, switched by the Canvas / Blocks and styles buttons. */
+@media (max-width: 767px) {
+  .marketing-designer[data-mobile-panel="canvas"] :is(.gjs-pn-views, .gjs-pn-views-container),
+  .marketing-designer[data-mobile-panel="controls"] .gjs-cv-canvas { display: none; }
+  .marketing-designer[data-mobile-panel="canvas"] .gjs-cv-canvas,
+  .marketing-designer[data-mobile-panel="controls"] :is(.gjs-pn-views, .gjs-pn-views-container) { width: 100%; }
+}

@@ -151,12 +151,13 @@ test('business account shows verified details, trade history and prefills delive
 });
 
 test('product visibility controls submit selected business types and preserve them on reload',async({page})=>{
- const {login,adminOrigin,reset}=await import('./fixtures');await reset(page.request);await login(page);
+ const {login,adminOrigin,reset,openMoreDetails,saveProductButton,savedToast,chooseBrand}=await import('./fixtures');await reset(page.request);await login(page);
  for(const id of ['salon','pharmacy'])expect((await page.request.post(adminOrigin+'/api/wholesale/admin/types',{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{id,name:id==='salon'?'Salon':'Pharmacy',active:true,allowMedicines:false,revision:0}})).ok()).toBe(true);
  await page.goto(adminOrigin+'/admin/products/'+productId);
+ await chooseBrand(page);await openMoreDetails(page);
  await page.getByRole('switch',{name:'Wholesale',exact:true}).click();
  await page.getByRole('switch',{name:'Retail',exact:true}).click();
- await page.locator('.product-trade-row').filter({hasText:'Salon'}).getByRole('checkbox').check();
+ await page.getByRole('checkbox',{name:'Set wholesale price for Salon',exact:true}).check();
  await page.getByLabel('Wholesale price — Salon (AED)',{exact:true}).fill('12.50');
  await page.getByRole('combobox',{name:'Wholesale business types',exact:true}).selectOption('selected');
  await page.getByLabel('Salon',{exact:true}).check();
@@ -165,10 +166,10 @@ test('product visibility controls submit selected business types and preserve th
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  }
  const saved=page.waitForResponse(response=>response.url().includes('/api/admin/products/'+productId)&&response.request().method()==='PUT');
- await page.getByRole('button',{name:'Save product',exact:true}).click();
+ await saveProductButton(page).click();
  expect((await saved).ok()).toBe(true);
- await expect(page.getByRole('status').filter({hasText:'Saved successfully.'})).toBeVisible();
- await page.reload();
+ await expect(savedToast(page)).toBeVisible();
+ await page.reload();await openMoreDetails(page);
  await expect(page.getByRole('switch',{name:'Wholesale',exact:true})).toHaveAttribute('aria-checked','true');
  await expect(page.getByRole('switch',{name:'Retail',exact:true})).toHaveAttribute('aria-checked','false');
  await expect(page.getByLabel('Wholesale price — Salon (AED)',{exact:true})).toHaveValue('12.50');
@@ -176,7 +177,7 @@ test('product visibility controls submit selected business types and preserve th
  await expect(page.getByLabel('Salon',{exact:true})).toBeChecked();
  await expect(page.getByLabel('Pharmacy',{exact:true})).not.toBeChecked();
  await page.screenshot({path:'.verification-results/admin-product-audience-1280.png',fullPage:true});
- await page.goto(adminOrigin+'/admin/products/new');
+ await page.goto(adminOrigin+'/admin/products/new');await openMoreDetails(page);
  await expect(page.getByRole('switch',{name:'Retail',exact:true})).toHaveAttribute('aria-checked','true');
  await expect(page.getByRole('switch',{name:'Wholesale',exact:true})).toHaveAttribute('aria-checked','false');
 });
