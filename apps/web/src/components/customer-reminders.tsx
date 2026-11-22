@@ -9,7 +9,7 @@ import { Field, FieldLabel, FieldGroup } from './ui/field';
 import { useEffect, useState, type FormEvent } from 'react';
 import Link from './app-link';
 import { reminderDtoSchema, retentionPolicySchema, type RetentionPolicy } from '@almina/contracts';
-import { BellIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from './storefront-icons';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
 import { checkAddition } from '../app/(storefront)/cart/actions';
 import { t, tf, type Locale } from '../lib/i18n';

@@ -15,18 +15,24 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: origins, credentials: true, methods: ['GET', 'POST'] },
   allowRequest: (req, callback) => callback(null, origins.includes(req.headers.origin)) });
 app.locals.io = secureRealtime(io, app.locals.auth, origins, development);
-let stripeWorker, worker, pushWorker, reminderWorker, campaignWorker, imageReviewWorker, searchWorker, merchantWorker, alertWorker;
+let stripeWorker, worker, staffEmailWorker, pushWorker, reminderWorker, campaignWorker, imageReviewWorker, searchWorker, merchantWorker, alertWorker, wake;
 let shutdown;
 database.connect().then(async () => {
   if (app.locals.draining) return database.close();
   if (!await domain.retainedReadiness(() => database.getDb(), false)) throw new Error('Database unavailable');
   if (app.locals.draining) return database.close();
   await domain.prepareStaffAlertStorage(database.getDb());
-  alertWorker=domain.staffAlertWorker(()=>database.getDb(),()=>console.error(JSON.stringify({level:'error',service:'api',event:'staff_alert_failed'})));
-  pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb());
-  if (app.locals.draining) { await alertWorker?.stop(); await pushWorker?.stop(); return database.close(); }
+  // One change stream wakes the order workers, so they do not poll an idle database every second or five seconds.
+  wake = domain.createOutboxWake(() => database.getDb(), { log: message => console.warn(message) });
+  alertWorker=domain.staffAlertWorker(()=>database.getDb(),()=>console.error(JSON.stringify({level:'error',service:'api',event:'staff_alert_failed'})),{ wake });
+  pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb(), process.env, { wake });
+  if (app.locals.draining) { await alertWorker?.stop(); await pushWorker?.stop(); await wake?.shutdown(); return database.close(); }
   if (process.env.EMAIL_PROVIDER === 'resend') await domain.prepareEmailStorage(database.getDb());
-  worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb());
+  worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb(), { wake });
+  // Safety net: the shop inbox hears about every new order even if push, WhatsApp or the console are down.
+  if (domain.staffEmailConfigured()) staffEmailWorker = await domain.staffOrderEmailOutbox(async () => database.getDb(), { wake, adminOrigin: process.env.ADMIN_ORIGIN || process.env.GROWTH_WEB_ORIGIN,
+    smtpFactory: options => require('./integrations/smtp.cjs').createSmtpTransport(options), onFailure: () => console.error(JSON.stringify({ level: 'error', service: 'api', event: 'staff_order_email_failed' })) });
+  else console.warn(JSON.stringify({ level: 'warn', service: 'api', event: 'staff_order_email_disabled' }));
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || origins[0];
   if (process.env.GROWTH_EMAIL_ENABLED === 'true' && origins.includes(reminderOrigin)) reminderWorker = domain.retentionWorker(async () => database.getDb(), {origin: reminderOrigin, onFailure: () => console.error('Requested reminder processing failed')});
   if (process.env.MARKETING_EMAIL_ENABLED === 'true') campaignWorker = domain.marketingWorker(async () => database.getDb());
@@ -38,7 +44,7 @@ database.connect().then(async () => {
   server.listen(runtime.port, development ? '127.0.0.1' : undefined, () => console.log('Express API listening'));
 }).catch(async () => {
   if (!app.locals.draining) { console.error('API initialization failed'); process.exitCode = 1; }
-  await alertWorker?.stop(); await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await imageReviewWorker?.stop(); await pushWorker?.stop(); await database.close();
+  await alertWorker?.stop(); await merchantWorker?.stop(); await stripeWorker?.stop(); await searchWorker?.stop(); await imageReviewWorker?.stop(); await pushWorker?.stop(); await wake?.shutdown(); await database.close();
 });
 server.requestTimeout = 15000;
 server.headersTimeout = 10000;
@@ -55,7 +61,7 @@ function stop() {
       io.close(() => resolve());
       server.closeIdleConnections();
     }),
-    stopWorkers: async () => { await Promise.all([alertWorker?.stop(),merchantWorker?.stop(), stripeWorker?.stop(), worker?.stop(), pushWorker?.stop(), reminderWorker?.stop(), campaignWorker?.stop(), imageReviewWorker?.stop(), searchWorker?.stop()]); },
+    stopWorkers: async () => { await Promise.all([staffEmailWorker?.stop(), alertWorker?.stop(),merchantWorker?.stop(), stripeWorker?.stop(), worker?.stop(), pushWorker?.stop(), wake?.shutdown(), reminderWorker?.stop(), campaignWorker?.stop(), imageReviewWorker?.stop(), searchWorker?.stop()]); },
     closeDatabase: async () => { await database.close(); },
     forceConnections: () => { io.disconnectSockets(true); server.closeAllConnections(); },
   }).catch(() => { console.error('Retained shutdown deadline failed'); process.exit(1); });

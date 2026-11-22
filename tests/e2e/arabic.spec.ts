@@ -36,7 +36,7 @@ test('Arabic catalogue and PDP localize controls while retaining product identit
   await context.addCookies([{ name: 'almina_lang', value: 'ar', url: 'http://127.0.0.1:4710' }]);
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto('/products');
-  await page.locator('#catalog-filters > summary').click();
+  await page.getByRole('button',{name:'الفلاتر',exact:true}).click();
   const filter = page.getByRole('search', { name: 'تصفية المنتجات' });
   await filter.getByRole('searchbox', { name: 'ابحث عن المنتجات' }).fill('Daily');
   await filter.getByRole('button', { name: 'تطبيق الفلاتر' }).click();
@@ -59,13 +59,14 @@ test('Arabic catalogue and PDP localize controls while retaining product identit
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('Arabic homepage campaign controls keep navigation and product names intact', async ({ page, context }) => {
+test('Arabic homepage fallback campaign keeps navigation and product names intact', async ({ page, context }) => {
   await context.addCookies([{ name: 'almina_lang', value: 'ar', url: 'http://127.0.0.1:4710' }]);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'صيدلية الميناء — الصحة والجمال والعناية اليومية' })).toHaveCount(1);
   const campaign = page.getByRole('region', { name: 'عروض الصيدلية', exact: true });
-  await campaign.getByRole('button', { name: 'عرض عرض 2', exact: true }).click();
-  await expect(campaign.getByRole('group', { name: '2 من 2', exact: true })).toBeVisible();
+  await expect(campaign.getByRole('heading',{name:'عناية لكل يوم.',exact:true})).toBeVisible();
+  await campaign.getByRole('link',{name:'تسوق المنتجات',exact:true}).click();
+  await expect(page).toHaveURL(/\/products$/);
 });
 
 test('Arabic server stock messages reject excessive additions without mutating the cart', async ({ page, context, request }) => {

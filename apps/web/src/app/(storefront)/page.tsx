@@ -8,13 +8,11 @@ import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
 import {
   HomeManagedCampaigns,
-  HomeBenefits,
   HomeBrandStrip,
   HomeCollectionTiles,
   HomeCompactShelf,
   HomeRoutine,
   HomeCategories,
-  HomeEditorial,
   HomeHero,
   HomeProductCarousel,
   HomeShelf,
@@ -162,7 +160,6 @@ async function HomeContent() {
             (a, b) => categoryRank(a.name) - categoryRank(b.name),
           )}
         />
-        <HomeBenefits />
         <HomeShelf
           title={u(locale,"Your everyday essentials")}
           description={u(locale,"Small essentials. A little more care, every day.")}
@@ -197,7 +194,6 @@ async function HomeContent() {
           href="/collections/daily-care"
         />
         <HomeRoutine products={skin} />
-        <HomeEditorial />
         <HomeCompactShelf
           title={u(locale,"AED 50 & under")}
           description={u(locale,"Available essentials within your budget.")}

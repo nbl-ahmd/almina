@@ -1,6 +1,7 @@
 import { deliveryPointSchema, zoneDeliverySchema } from './delivery-zones';
 import {searchAttributionSchema} from './search';
 import { z } from 'zod';
+import { couponCodeSchema, appliedCouponSchema } from './coupons';
 
 const id = z.string().regex(/^[a-fA-F0-9]{24}$/).transform(value => value.toLowerCase());
 const shortText = z.string().trim().max(200);
@@ -14,7 +15,8 @@ export const customerInputSchema = z.object({
   payment: z.enum(['cash', 'card', 'stripe']),
 }).strict();
 const items = z.array(z.object({ productId: id, quantity: z.number().int().min(1).max(1000) }).strict()).min(1).max(100);
-export const quoteInputSchema = z.object({ customer: customerInputSchema, items, voucherCode:z.string().regex(/^AM-[A-F0-9]{24}$/).optional() }).strict();
+export const couponPreviewInputSchema = z.object({ items, couponCode: couponCodeSchema }).strict();
+export const quoteInputSchema = z.object({ customer: customerInputSchema, items, couponCode: couponCodeSchema.optional(), voucherCode:z.string().regex(/^AM-[A-F0-9]{24}$/).optional() }).strict();
 // Optional only for retained legacy clients; the Next gateway requires acknowledgment.
 export const checkoutInputSchema = quoteInputSchema.extend({ idempotencyKey: z.uuid(), searchAttribution:searchAttributionSchema.optional(), acceptedQuoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional() }).strict();
 export const statusInputSchema = z.object({ status: orderStatusSchema,
@@ -24,11 +26,11 @@ const minor = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const lineSnapshotSchema = z.object({
   familyKey:z.string().max(80).optional(),variantLabel:z.string().max(500).optional(),
   productId: id, sku: z.string(), barcode: z.string().nullable(), name: z.string(), quantity: z.number().int().positive(),
-  unitPriceMinor: minor, salePriceMinor: minor.nullable(), discountMinor: minor, voucherDiscountMinor:minor.optional(),
+  unitPriceMinor: minor, salePriceMinor: minor.nullable(), discountMinor: minor, voucherDiscountMinor:minor.optional(), couponDiscountMinor:minor.optional(),
   taxRateBps: z.number().int().nonnegative(), taxMinor: minor, lineTotalMinor: minor,
 }).strict();
 export const quoteDtoSchema = z.object({ delivery: zoneDeliverySchema.optional(), currency: z.literal('AED'), policyVersion: z.string(),
-  vatMode: z.enum(['inclusive', 'exclusive']), voucher:z.object({code:z.string().regex(/^AM-[A-F0-9]{24}$/),discountMinor:minor}).strict().optional(), lines: z.array(lineSnapshotSchema),
+  vatMode: z.enum(['inclusive', 'exclusive']), coupon: appliedCouponSchema.optional(), voucher:z.object({code:z.string().regex(/^AM-[A-F0-9]{24}$/),discountMinor:minor}).strict().optional(), lines: z.array(lineSnapshotSchema),
   subtotalMinor: minor, discountMinor: minor, taxMinor: minor, deliveryFeeMinor: minor,
   minimumOrderMinor: minor, totalMinor: minor,
 }).strict();

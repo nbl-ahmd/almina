@@ -40,7 +40,7 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
   });
   // Fixed read-only live status endpoints cannot spend the allowance needed to save an order.
   // Both pools remain IP bounded before authentication; all existing RBAC still runs below.
-  const liveRead = req => ['GET','HEAD'].includes(req.method) && /^\/api\/(?:auth\/me|orders\/(?:receiving|notifications))\/?$/i.test(req.originalUrl.split('?')[0]);
+  const liveRead = req => ['GET','HEAD'].includes(req.method) && /^\/api\/(?:auth\/me|orders\/(?:receiving|events|notifications))\/?$/i.test(req.originalUrl.split('?')[0]);
   app.use('/api', rateLimit({ windowMs:60000,limit:240,standardHeaders:'draft-8',legacyHeaders:false,skip:req=>!liveRead(req) }));
   app.use('/api', rateLimit({ windowMs:60000,limit:120,standardHeaders:'draft-8',legacyHeaders:false,skip:liveRead }));
   app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false }));

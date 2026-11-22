@@ -1,11 +1,14 @@
 // Retained URLs execute the same maintained domains as the modular API.
 export * from './modules/orders/commerce.js';
+export { createOrderLiveFeed, type OrderLiveFeed } from './modules/orders/live.js';
 export * from './modules/store/service.js';
 export * from './modules/recovery/catalog.js';
 export { recoveryTemplate } from './modules/recovery/csv.js';
 export * from './modules/inventory/adjustments.js';
 export * from './modules/operations/lifecycle.js';
 export * from './modules/notifications/outbox.js';
+export { staffOrderEmailOutbox, staffEmailConfigured, staffOrderRecipient, staffOrderMessage } from './modules/notifications/staff-email.js';
+export { createOutboxWake, wakeLoop, type Wake } from './modules/notifications/wake.js';
 export * from './modules/media/retention.js';
 export * from './modules/media/cloudinary.js';
 export * from './modules/media/image-review.js';

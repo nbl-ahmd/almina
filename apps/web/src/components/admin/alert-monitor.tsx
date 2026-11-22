@@ -98,7 +98,8 @@ export function AlertMonitor({ actor }: { actor: string }) {
         .then((registration) => registration?.update())
         .catch(() => undefined);
     void poll();
-    const timer = setInterval(() => void poll(), 15000);
+    // Order events trigger an immediate poll (below); this interval is only the safety net for stock and payment alerts.
+    const timer = setInterval(() => void poll(), 60000);
     window.addEventListener("almina:orders-updated", message);
     window.addEventListener("almina:notifications-changed", message);
     document.addEventListener("visibilitychange", resume);

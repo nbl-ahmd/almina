@@ -60,6 +60,12 @@ export async function updateProductInventory(db: Db, id: string, raw: unknown, a
       if (delta !== 0 && (!input.stockReason || !input.inventoryKey)) throw new HttpError(400, 'INVALID_REQUEST');
       const fields: Document = {};
       for (const name of ['name', 'price', 'stock', 'description', 'sale', 'salePrice', ...familyFieldNames, ...productContentNames] as const) if (input[name] !== undefined) fields[name] = input[name];
+      if (input.category !== undefined && String(product.category) !== input.category) {
+        // Moving a product between categories is allowed to an active, non-archived category only.
+        const category = await db.collection('categories').findOne({ _id: new ObjectId(input.category), archivedAt: { $exists: false } }, { session });
+        if (!category) throw new HttpError(400, 'INVALID_REQUEST');
+        fields.category = category._id;
+      }
       if (assets) fields.mediaRevision = (product.mediaRevision ?? 0) + 1;
       const next: Document = { ...product, ...fields, ...assets };
       if (input.stockVerified === true || input.stock !== undefined) { fields.stockReviewedAt = new Date(); fields.stockReviewedBy = actor; next.stockReviewedAt = fields.stockReviewedAt; }

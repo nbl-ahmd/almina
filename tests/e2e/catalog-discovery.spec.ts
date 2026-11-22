@@ -4,7 +4,7 @@ for(const width of [390,1280])test(`category-first discovery and sorting preserv
  await expect(page.getByRole('heading',{name:'Shop by category',exact:true})).toBeVisible();
  await expect(page.getByRole('link',{name:'View the full catalogue',exact:true})).toBeVisible();
  await expect(page.getByRole('link',{name:'Skincare essentials',exact:true}).last()).toBeVisible();
- if(width>=768)await expect(page.getByRole('navigation',{name:'Shop navigation',exact:true}).getByRole('link',{name:'Everyday care',exact:true})).toBeVisible();
+ if(width>=900)await expect(page.getByRole('navigation',{name:'Shop navigation',exact:true}).getByRole('link',{name:'Everyday care',exact:true})).toBeVisible();
  await page.goto('/search?q=Daily&inStock=true&minPrice=5');
  const sort=page.getByRole('combobox',{name:'Sort by',exact:true});await expect(sort).toBeVisible();
  await sort.selectOption('price-asc');await expect(page).toHaveURL(/sort=price-asc/);

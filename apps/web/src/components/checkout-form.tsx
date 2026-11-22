@@ -1,4 +1,6 @@
 'use client';
+import { CouponField } from './coupon-field';
+import { couponError, readCoupon, saveCoupon } from '../lib/checkout/coupon';
 import { DeliveryPinPicker } from './delivery-pin-picker';
 import type { DeliveryPoint } from '@almina/contracts';
 import {searchAttributions,searchUsageAllowed,reportSearchEvent} from '../lib/search/attribution';
@@ -10,7 +12,7 @@ import { CheckoutProgress, PaymentChoices, SecureCheckoutLabel, ConfirmationMark
 import { ProductImage } from './product-image';
 import { loadCart } from '../app/(storefront)/cart/actions';
 import { detailErrors, detailError, detailFields, normalizeCheckoutMobile, type DetailField } from '../lib/checkout/validation';
-import { ChevronDownIcon, LockClosedIcon, ArrowLeftIcon, PencilSquareIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, LockClosedIcon, ArrowLeftIcon, PencilSquareIcon, TruckIcon } from './storefront-icons';
 import { NativeSelect } from './ui/native-select';
 import { Field, FieldLabel, FieldDescription } from './ui/field';
 
@@ -18,7 +20,7 @@ import { emirateLabel } from '../lib/i18n';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from './app-link';
 import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, stripeCheckoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 import { savedArea } from '../lib/location/browser';
 import { z } from 'zod';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
@@ -51,7 +53,7 @@ const inputMessages = (locale: Locale): Record<InputCode, string> => ({
 });
 const currencyFormat = (locale: Locale) => new Intl.NumberFormat(locale === 'ar' ? 'ar-AE' : 'en-AE', { style: 'currency', currency: 'AED' });
 const acknowledgment = z.object({ quote: quoteDtoSchema, quoteHash: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
-type Reviewed = z.infer<typeof acknowledgment> & { customer: CheckoutInput['customer']; items: CheckoutInput['items'];voucherCode?:string };
+type Reviewed = z.infer<typeof acknowledgment> & { customer: CheckoutInput['customer']; items: CheckoutInput['items'];voucherCode?:string; couponCode?:string };
 type SavedDeliveryAddress={coordinates?:DeliveryPoint;id:string;label:string;name:string;mobile:string;emirate:string;city:string;address:string;buildingname:string;flatno:string;note:string;maplink:string;isDefault:boolean};
 type InputCode = 'CART_EMPTY' | 'CART_CHANGED';
 class CheckoutFailure extends Error {
@@ -107,6 +109,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const [reviewReceipt, setReviewReceipt] = useState<ReviewReceipt | null>(null);
   const [paymentMethod,setPaymentMethod]=useState('cash');
   const [voucherCode,setVoucherCode]=useState('');
+  const [couponCode, setCouponCode] = useState('');
   const [savedAddresses,setSavedAddresses]=useState<SavedDeliveryAddress[]>([]);
   const [ready, setReady] = useState(false);
   const [working, setWorking] = useState(false);
@@ -147,6 +150,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     const timerState = locationTimer;
     void Promise.resolve().then(() => {
       if (!active) return;
+      setCouponCode(readCoupon());
       try {
         const area = savedArea();
         if (area) setDelivery(previous => ({ ...previous, city: area.city, emirate: area.emirate }));
@@ -220,14 +224,14 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     if (coordinates) setCoordinates(null);
     if (maplink) { setMaplink(''); setLocationMessage(t(locale, 'checkoutAddressChanged')); }
   }
-  function intent() {
+  function intent(code = couponCode) {
     if (!form.current) throw new Error('Form unavailable');
     const data=Object.fromEntries(new FormData(form.current));
     if(typeof data.mobile==='string')data.mobile=normalizeCheckoutMobile(data.mobile);
     const customer = customerInputSchema.parse({...data,...(coordinates?{coordinates}:{})});
     const items = storedCart().map(line => ({ productId: line.id, quantity: line.quantity }));
     if (!items.length) throw new InputError('CART_EMPTY');
-    return { customer, items, ...(voucherCode.trim()?{voucherCode:voucherCode.trim().toUpperCase()}:{} ) };
+    return { customer, items, ...(voucherCode.trim()?{voucherCode:voucherCode.trim().toUpperCase()}:{} ), ...(code ? { couponCode: code } : {}) };
   }
   function focusDetails(name?:string) {
     setStage('details');
@@ -244,19 +248,19 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     const name=target.name as DetailField, message=detailError(name,target.value,locale);
     setFieldErrors(previous=>{const next={...previous};if(message)next[name]=message;else delete next[name];return next;});
   }
-  async function refreshQuote(paymentOverride?:string) {
+  async function refreshQuote(paymentOverride?:string, couponOverride?:string) {
     if(busy.current||attempt||locating)return false;
     if(!validateDetails())return false;
     busy.current=true;setWorking(true);setError('');setReviewed(null);
     try {
-      const input=intent();
+      const input=intent(couponOverride);
       if(paymentOverride){input.customer.payment=customerInputSchema.shape.payment.parse(paymentOverride);if(paymentOverride==='stripe')delete input.voucherCode;}
       const response=acknowledgment.parse(await send('/api/checkout/quote',input));
       // A cart modified in another tab cannot become a stale payable review.
       if(JSON.stringify(input.items)!==JSON.stringify(storedCart().map(line=>({productId:line.id,quantity:line.quantity}))))throw new InputError('CART_CHANGED');
       setReviewed({...response,...input});setOrderExpanded(true);setShowErrorSummary(false);
       recordCommerceEvent('checkout_reviewed');return true;
-    }catch(failure){recordCommerceEvent('checkout_failed');setError(failure instanceof CheckoutFailure?errors[failure.code]??t(locale,'checkoutErrorReviewGeneric'):failure instanceof InputError?inputs[failure.code]:t(locale,'checkoutErrorCheckDetails'));return false;}
+    }catch(failure){recordCommerceEvent('checkout_failed');setError(failure instanceof CheckoutFailure?(couponError(failure.code, locale) || errors[failure.code] || t(locale,'checkoutErrorReviewGeneric')):failure instanceof InputError?inputs[failure.code]:t(locale,'checkoutErrorCheckDetails'));return false;}
     finally{busy.current=false;setWorking(false);}
   }
   async function review(event:FormEvent<HTMLFormElement>){
@@ -280,7 +284,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       let input = attempt;
       if (!input) {
         const current = intent();
-        if (JSON.stringify(current) !== JSON.stringify({ customer: reviewed!.customer, items: reviewed!.items, ...(reviewed!.voucherCode?{voucherCode:reviewed!.voucherCode}:{} ) })) {
+        if (JSON.stringify(current) !== JSON.stringify({ customer: reviewed!.customer, items: reviewed!.items, ...(reviewed!.voucherCode?{voucherCode:reviewed!.voucherCode}:{} ), ...(reviewed!.couponCode ? { couponCode: reviewed!.couponCode } : {}) })) {
           setReviewed(null); throw new InputError('CART_CHANGED');
         }
         const attribution=searchAttributions().filter(row=>current.items.some(item=>item.productId===row.productId));
@@ -299,6 +303,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       }
       const committed = checkoutDtoSchema.parse(await send('/api/checkout', input));
       if (committed.createdAt && committed.status !== 'cancelled') setReviewReceipt({ orderId: committed.orderId, email: input.customer.email, createdAt: committed.createdAt, deliveryCountry: 'AE' });
+      if (input.couponCode) saveCoupon('');
       setResult(committed); setAttempt(null); setReviewed(null);
       recordCommerceEvent('checkout_confirmed');
       try { sessionStorage.removeItem(pendingKey); } catch { /* A replay is safe if storage fails. */ }
@@ -308,10 +313,10 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       } catch { /* Committed order remains successful; cart storage cannot undo it. */ }
     } catch (failure) {
       recordCommerceEvent('checkout_failed');
-      if (failure instanceof CheckoutFailure && failure.definite && (!stripeSubmission||['PRICE_CHANGED','INSUFFICIENT_STOCK','PRODUCT_UNAVAILABLE','MINIMUM_ORDER','INVALID_TRANSITION','COMMERCE_UNAVAILABLE'].includes(failure.code))) {
+      if (failure instanceof CheckoutFailure && failure.definite && (!stripeSubmission||['COUPON_UNAVAILABLE','COUPON_MINIMUM','COUPON_COMBINATION','COUPON_PAYMENT_MINIMUM','PRICE_CHANGED','INSUFFICIENT_STOCK','PRODUCT_UNAVAILABLE','MINIMUM_ORDER','INVALID_TRANSITION','COMMERCE_UNAVAILABLE'].includes(failure.code))) {
         try { sessionStorage.removeItem(pendingKey); } catch { /* Same key still cannot duplicate a committed order. */ }
         setAttempt(null); setReviewed(null);
-        setError(errors[failure.code] ?? t(locale, 'checkoutErrorRejected'));
+        setError(couponError(failure.code, locale) || errors[failure.code] || t(locale, 'checkoutErrorRejected'));
       } else setError(submitted ? t(locale, 'checkoutErrorUncertain')
         : failure instanceof InputError ? inputs[failure.code] : t(locale, 'checkoutErrorNotSaved'));
     } finally { busy.current = false; setWorking(false); }
@@ -330,12 +335,26 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
         : attempt?(ar?'متابعة الدفع الآمن':'Resume secure payment'):(ar?`ادفع ${formatted(total!.totalMinor)}`:`Pay ${formatted(total!.totalMinor)}`)
       : attempt?t(locale,'checkoutRetryPending'):tf(locale,'checkoutPlaceOrder',{total:formatted(total!.totalMinor)});
     return <Button type={canPay?'button':'submit'} form="checkout-details" className={className} disabled={working||locating||error===t(locale,'checkoutRecoverError')} onClick={canPay?()=>{void place();}:undefined}>
-      {working?<><span className="checkout-loader" aria-hidden="true" />{attempt?t(locale,'checkoutConfirming'):t(locale,'checkoutChecking')}</>:canPay?payLabel:<><span className="lg:hidden">{stage==='details'?(ar?'المتابعة إلى الدفع':'Continue to payment'):(ar?'تحديث إجمالي الطلب':'Update order total')}</span><span className="hidden lg:inline">{t(locale,'checkoutReview')}</span><Icon name="arrow" /></>}
+      {working?<><span className="checkout-loader" aria-hidden="true" />{attempt?t(locale,'checkoutConfirming'):t(locale,'checkoutChecking')}</>:canPay?payLabel:<><span>{t(locale,'checkoutReview')}</span><Icon name="arrow" /></>}
     </Button>;
   }
+  const couponField = !attempt && <CouponField locale={locale} code={couponCode} disabled={working || locating}
+    onApply={code => {
+      if (voucherCode.trim() && paymentMethod !== 'stripe') {
+        setError(couponError('COUPON_COMBINATION', locale));
+        return;
+      }
+      void refreshQuote(undefined, code).then(applied => {
+        if (applied) { setCouponCode(code); saveCoupon(code); }
+      });
+    }}
+    onRemove={() => {
+      setCouponCode(''); saveCoupon(''); setReviewed(null); setError('');
+      if (stage === 'payment') void refreshQuote(undefined, '');
+    }} />;
   function basketLines(){
     return <ul className="m-0 list-none p-0">{basket.map(item=><li key={item.id} className="flex items-center gap-3 border-b py-4 last:border-0">
-      <ProductImage src={item.image} alt="" width={52} height={52} sizes="52px" className="size-13 shrink-0 rounded-xl object-contain" />
+      <ProductImage locale={locale} src={item.image} alt="" width={52} height={52} sizes="52px" className="size-13 shrink-0 rounded-xl object-contain" />
       <span className="min-w-0 flex-1"><span className="block text-sm font-medium leading-5">{item.name}</span>{item.variantLabel?<span className="block text-xs">{item.variantLabel}</span>:null}<span className="mt-1 block text-xs">{tf(locale,'checkoutQty',{count:item.quantity})}</span></span>
       {item.price!==null?<span className="text-sm font-medium tabular-nums">{currencyFormat(locale).format(item.price)}<span className="block text-end text-xs font-normal">{ar?'للقطعة':'each'}</span></span>:null}
     </li>)}</ul>;
@@ -344,7 +363,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   if(result)return <><GoogleCustomerReviews config={googleReviews??{merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} locale={locale} nonce={nonce}/><section className="checkout-flow checkout-completion mx-auto max-w-2xl" aria-labelledby="order-confirmation">
     <CheckoutProgress stage="complete" locale={locale}/><div className="checkout-confirmation-panel">
       <ConfirmationMark/><h1 ref={confirmation} tabIndex={-1} className="mb-3 text-2xl font-semibold outline-none sm:text-3xl" id="order-confirmation">{t(locale,'checkoutOrderReceived')}</h1><p className="text-sm leading-6">{t(locale,'checkoutThankYou')}</p>
-      <dl className="my-7 grid grid-cols-2 gap-5 rounded-xl p-5 text-start"><div><dt className="mb-1 text-xs">{t(locale,'checkoutOrderNumber')}</dt><dd className="m-0 break-words text-lg font-semibold">{result.orderId}</dd></div><div className="text-end"><dt className="mb-1 text-xs">{t(locale,'checkoutOrderTotal')}</dt><dd className="m-0 text-lg font-semibold tabular-nums">{formatted(result.totals.totalMinor)}</dd></div></dl>
+      <dl className="my-7 grid grid-cols-2 gap-5 rounded-xl p-5 text-start"><div><dt className="mb-1 text-xs">{t(locale,'checkoutOrderNumber')}</dt><dd className="m-0 break-words text-lg font-semibold">{result.orderId}</dd></div><div className="text-end"><dt className="mb-1 text-xs">{t(locale,'checkoutOrderTotal')}</dt><dd className="m-0 text-lg font-semibold tabular-nums">{formatted(result.totals.totalMinor)}</dd></div>{result.totals.coupon && <div className="col-span-2"><dt className="text-xs">{ar ? 'خصم الرمز' : 'Coupon discount'} <bdi dir="ltr">({result.totals.coupon.code})</bdi></dt><dd className="m-0 text-sm">−{formatted(result.totals.coupon.discountMinor)}</dd></div>}</dl>
       <div className="flex gap-3 text-start"><TruckIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/><div><h2 className="mb-1 text-base font-semibold">{t(locale,'checkoutNextTitle')}</h2><p className="m-0 text-sm leading-6">{t(locale,'checkoutNextBody')}</p></div></div>
       <div className="mt-7 flex flex-col gap-2 sm:flex-row"><Link className="button min-h-12 flex-1 text-sm" href="/products">{t(locale,'checkoutContinueShopping')}<Icon name="arrow"/></Link><Link className="button button-secondary min-h-12 flex-1 text-sm" href="/contact">{t(locale,'checkoutContactPharmacyShort')}</Link></div>
     </div>
@@ -382,6 +401,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
                 <Field><FieldLabel htmlFor="checkout-form-field-9">{t(locale,'checkoutFlat')}</FieldLabel><Input id="checkout-form-field-9" name="flatno" defaultValue={attempt?.customer.flatno} maxLength={200} placeholder={t(locale,'checkoutFlatPlaceholder')}/></Field>
                 <Field className="sm:col-span-2"><FieldLabel htmlFor="checkout-form-field-10">{t(locale,'checkoutNote')}</FieldLabel><Input id="checkout-form-field-10" name="note" defaultValue={attempt?.customer.note} maxLength={1000} placeholder={t(locale,'checkoutNotePlaceholder')}/></Field>
               </div></details>
+              {stage === 'details' && couponCode && couponField}
             </section>
           </div>
           <div className="checkout-payment-stage">
@@ -389,7 +409,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
             {deliveryCustomer?<div className="mb-6 flex items-start gap-3 rounded-xl p-4 lg:hidden"><Icon name="pin"/><div className="min-w-0 flex-1"><h3 className="mb-1 text-sm font-semibold">{ar?'التوصيل إلى':'Deliver to'} {deliveryCustomer.name}</h3><p className="m-0 break-words text-sm leading-6">{deliveryCustomer.address}, {deliveryCustomer.city}, {emirateLabel(locale,deliveryCustomer.emirate)}</p></div><button type="button" disabled={working||!!attempt} className="inline-flex min-h-11 items-center text-sm font-medium" onClick={()=>focusDetails()} aria-label={ar?'تعديل تفاصيل التوصيل':'Edit delivery details'}><PencilSquareIcon className="size-5" aria-hidden="true"/></button></div>:null}
             <section className="checkout-payment-section" aria-labelledby="payment-details-heading"><h3 className="sr-only" id="payment-details-heading">{t(locale,'checkoutPayment')}</h3><PaymentChoices locale={locale} value={selectedPayment} online={stripeOptionVisible} testMode={stripeTestMode} legacyCard={attempt?.customer.payment==='card'} onChange={changePayment}/>
               <p className="mt-4 flex items-start gap-2 text-xs leading-5"><LockClosedIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true"/>{selectedPayment==='stripe'?(stripeTestMode?(ar?'استخدم بطاقة اختبار؛ لن يتم تحصيل أموال حقيقية.':'Use a test card; no money will be charged.'):(ar?'ستنتقل إلى صفحة آمنة لإتمام الدفع. قد يطلب مصرفك تأكيد العملية.':'You’ll continue to a secure payment page. Your bank may ask you to verify the payment.')):t(locale,'checkoutPayWhenArrives')}</p>
-              {selectedPayment!=='stripe'?<details className="checkout-optional mt-5"><summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium">{ar?'هل لديك قسيمة مكافآت؟':'Have a reward voucher?'}<ChevronDownIcon className="size-4" aria-hidden="true"/></summary><Field className="py-3"><FieldLabel htmlFor="checkout-form-field-12">{t(locale,'checkoutVoucher')}</FieldLabel><div className="flex gap-2"><Input id="checkout-form-field-12" value={voucherCode} maxLength={27} placeholder="AM-…" onChange={event=>setVoucherCode(event.target.value.toUpperCase())} autoComplete="off"/><Button type="submit" variant="outline" disabled={working||!!attempt}>{ar?'تطبيق':'Apply'}</Button></div><FieldDescription>{t(locale,'checkoutVoucherHint')}</FieldDescription></Field></details>:null}
+              {stage === 'payment' && couponField}
+              {selectedPayment!=='stripe'&&!couponCode?<details className="checkout-optional mt-5"><summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium">{ar?'هل لديك قسيمة مكافآت؟':'Have a reward voucher?'}<ChevronDownIcon className="size-4" aria-hidden="true"/></summary><Field className="py-3"><FieldLabel htmlFor="checkout-form-field-12">{t(locale,'checkoutVoucher')}</FieldLabel><div className="flex gap-2"><Input id="checkout-form-field-12" value={voucherCode} maxLength={27} placeholder="AM-…" onChange={event=>setVoucherCode(event.target.value.toUpperCase())} autoComplete="off"/><Button type="submit" variant="outline" disabled={working||!!attempt}>{ar?'تطبيق':'Apply'}</Button></div><FieldDescription>{t(locale,'checkoutVoucherHint')}</FieldDescription></Field></details>:null}
             </section>
           </div>
         </fieldset>
@@ -397,14 +418,14 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       </form>
       <aside className={`checkout-order-panel min-w-0 rounded-2xl  p-5 lg:sticky lg:top-6 lg:p-6 ${stage==='details'?'hidden lg:block':''}`} aria-labelledby="checkout-summary">
         <div className="mb-2 flex items-center justify-between gap-3"><h2 ref={summary} tabIndex={-1} className="m-0 scroll-mt-24 text-lg font-semibold outline-none" id="checkout-summary">{t(locale,'checkoutOrderSummary')}</h2><button type="button" aria-expanded={orderExpanded} aria-controls="checkout-order-items" className="inline-flex min-h-11 items-center gap-1 text-xs font-medium lg:hidden" onClick={()=>setOrderExpanded(value=>!value)}>{orderExpanded?(ar?'إخفاء':'Hide'):(ar?'عرض التفاصيل':'Details')}<ChevronDownIcon className="size-4" aria-hidden="true"/></button><Link href="/cart" className="hidden min-h-11 items-center text-sm font-medium lg:inline-flex">{ar?'تعديل':'Edit'}</Link></div>
-        <div id="checkout-order-items" className={orderExpanded?'':'hidden lg:block'}>{total?<ul className="m-0 list-none p-0">{total.lines.map(line=><li key={line.productId} className="flex items-start gap-3 border-b py-4"><ProductImage src={basket.find(item=>item.id===line.productId)?.image??'/product-placeholder.svg'} alt="" width={56} height={56} sizes="56px" className="size-14 shrink-0 rounded-lg object-contain"/><span className="min-w-0 flex-1 text-sm font-medium leading-5">{line.name}{line.variantLabel?<span className="block text-xs">{line.variantLabel}</span>:null}<span className="mt-1 block text-xs font-normal">{tf(locale,'checkoutQty',{count:line.quantity})}</span></span><strong className="shrink-0 text-sm tabular-nums">{formatted(line.lineTotalMinor)}</strong></li>)}</ul>:basketLines()}</div>
+        <div id="checkout-order-items" className={orderExpanded?'':'hidden lg:block'}>{total?<ul className="m-0 list-none p-0">{total.lines.map(line=><li key={line.productId} className="flex items-start gap-3 border-b py-4"><ProductImage locale={locale} src={basket.find(item=>item.id===line.productId)?.image??'/product-placeholder.svg'} alt="" width={56} height={56} sizes="56px" className="size-14 shrink-0 rounded-lg object-contain"/><span className="min-w-0 flex-1 text-sm font-medium leading-5">{line.name}{line.variantLabel?<span className="block text-xs">{line.variantLabel}</span>:null}<span className="mt-1 block text-xs font-normal">{tf(locale,'checkoutQty',{count:line.quantity})}</span></span><strong className="shrink-0 text-sm tabular-nums">{formatted(line.lineTotalMinor)}</strong></li>)}</ul>:basketLines()}</div>
         {total?.delivery?<p className="my-3 text-sm">{ar?'وقت التوصيل التقديري':'Estimated delivery'}: {total.delivery.estimatedMinutes} {ar?'دقيقة':'minutes'} · {total.delivery.branchName}</p>:null}
-        {total?<dl className="my-5 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 text-sm tabular-nums"><dt>{t(locale,'checkoutItems')}</dt><dd className="m-0 text-end">{formatted(total.subtotalMinor)}</dd>{total.voucher?<><dt>{t(locale,'checkoutRewardVoucher')}</dt><dd className="m-0 text-end">−{formatted(total.voucher.discountMinor)}</dd></>:null}<dt>{t(locale,'checkoutDelivery')}</dt><dd className="m-0 text-end">{formatted(total.deliveryFeeMinor)}</dd><dt>{total.vatMode==='inclusive'?t(locale,'checkoutVatIncluded'):t(locale,'checkoutVat')}</dt><dd className="m-0 text-end">{formatted(total.taxMinor)}</dd><dt className="border-t pt-4 text-lg font-semibold">{t(locale,'checkoutTotal')}</dt><dd className="m-0 border-t pt-4 text-end text-lg font-semibold">{formatted(total.totalMinor)}</dd></dl>:<p className="my-5 min-h-18 text-sm leading-6" role="status">{working?t(locale,'checkoutChecking'):basketError|| (ar?'أضف تفاصيل التوصيل لتأكيد الإجمالي ورسوم التوصيل.':'Add your delivery details to confirm the total and delivery charge.')}</p>}
+        {total?<dl className="my-5 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 text-sm tabular-nums"><dt>{t(locale,'checkoutItems')}</dt><dd className="m-0 text-end">{formatted(total.subtotalMinor)}</dd>{total.coupon && <><dt>{ar ? 'خصم الرمز' : 'Coupon discount'} <bdi dir="ltr">({total.coupon.code})</bdi></dt><dd className="m-0 text-end">−{formatted(total.coupon.discountMinor)}</dd></>}{total.voucher?<><dt>{t(locale,'checkoutRewardVoucher')}</dt><dd className="m-0 text-end">−{formatted(total.voucher.discountMinor)}</dd></>:null}<dt>{t(locale,'checkoutDelivery')}</dt><dd className="m-0 text-end">{formatted(total.deliveryFeeMinor)}</dd><dt>{total.vatMode==='inclusive'?t(locale,'checkoutVatIncluded'):t(locale,'checkoutVat')}</dt><dd className="m-0 text-end">{formatted(total.taxMinor)}</dd><dt className="border-t pt-4 text-lg font-semibold">{t(locale,'checkoutTotal')}</dt><dd className="m-0 border-t pt-4 text-end text-lg font-semibold">{formatted(total.totalMinor)}</dd></dl>:<p className="my-5 min-h-18 text-sm leading-6" role="status">{working?t(locale,'checkoutChecking'):basketError|| (ar?'أضف تفاصيل التوصيل لتأكيد الإجمالي ورسوم التوصيل.':'Add your delivery details to confirm the total and delivery charge.')}</p>}
         <div className="hidden lg:block">{primaryAction('w-full min-h-12') }<p className="mt-3 text-center text-xs leading-5">{t(locale,'checkoutFinalTotalNote')}</p></div>
         {attempt?<p role="status" className="mt-4 text-sm leading-6">{t(locale,'checkoutPendingNotice')}</p>:null}
         <div className="mt-5 flex flex-wrap gap-x-4 border-t pt-3 text-xs"><Link className="inline-flex min-h-11 items-center" href="/shipping">{ar?'التوصيل':'Delivery'}</Link><Link className="inline-flex min-h-11 items-center" href="/privacy">{ar?'الخصوصية':'Privacy'}</Link><Link className="inline-flex min-h-11 items-center" href="/returns">{ar?'الإرجاع':'Returns'}</Link><Link className="inline-flex min-h-11 items-center" href="/contact">{ar?'تحتاج مساعدة؟':'Need help?'}</Link></div>
       </aside>
     </div>
-    <div className="checkout-mobile-action lg:hidden"><div className="flex items-center justify-between gap-3 pb-2 text-sm"><span>{stage==='details'?(ar?'تفاصيل التوصيل':'Delivery details'):t(locale,'checkoutTotal')}</span><strong className="font-semibold tabular-nums">{total?formatted(total.totalMinor):(ar?'يتأكد في الخطوة التالية':'Confirmed next')}</strong></div>{primaryAction('w-full min-h-12')}<p className="mt-2 mb-0 text-center text-xs leading-5">{stage==='details'?(ar?'راجع إجمالي طلبك قبل تأكيده.':'Review your total before placing your order.'):t(locale,'checkoutFinalTotalNote')}</p></div>
+    <div className="checkout-mobile-action lg:hidden"><div className="flex items-center justify-between gap-3 pb-2 text-sm"><span>{t(locale,'checkoutTotal')}</span><strong className="font-semibold tabular-nums">{total?formatted(total.totalMinor):(ar?'يُحسب بعد تفاصيل التوصيل':'Calculated after delivery details')}</strong></div>{primaryAction('w-full min-h-12')}<p className="mt-2 mb-0 text-center text-xs leading-5">{stage==='details'?(ar?'راجع إجمالي طلبك قبل تأكيده.':'Review your total before placing your order.'):t(locale,'checkoutFinalTotalNote')}</p></div>
   </section>;
 }

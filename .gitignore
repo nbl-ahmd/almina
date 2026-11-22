@@ -30,3 +30,6 @@ outputs/
 
 # Named verification builds must not collide with active local previews.
 .next-verification-*/
+
+# Local visual review captures and tool output.
+.impeccable/review/

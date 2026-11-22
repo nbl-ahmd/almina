@@ -1,3 +1,31 @@
+## 2026-11-22 — Homepage detector follow-up
+
+- Retail coupons are documented in [Storefront coupon codes](STOREFRONT_COUPONS.md).
+
+Addressed the supplied detector report through correct category-link semantics, an unboxed travel glyph and natural product-card flow that avoids stretched internal gaps. Preserved the measured header spacing as a documented false positive. Build/lint/types and 25 selected browser checks pass. See [dispositions and validation](DETECTOR_POLISH_2026-11-22.md). PR remains open.
+
+## 2026-11-22 — Homepage browser comments
+
+Applied the seven annotated requests: matched search geometry, compact category rail, native swipeable campaigns, compact cards and dirham marks, two brand rows, small discount badges and removal of the benefits strip. Existing commerce behavior remains unchanged. See [changes, currency provenance and verification](HOMEPAGE_COMMENTS_2026-11-22.md). PR remains open.
+
+## 2026-11-22 — Mobile product-card polish
+
+Refined mobile cards against the supplied pharmacy references: compact price/add grouping, quiet real metadata, smaller sale badges and aligned shelf tracks, with desktop capsule controls retained. Existing cart behavior is preserved. See [changes and verification](PRODUCT_CARD_POLISH_2026-11-22.md); all 21 selected browser regressions pass. PR remains open.
+
+## 2026-11-22 — Storefront critique and refinement
+
+Two independent reviews identified mobile language access, cart repetition, inconsistent checkout labels and empty-search recovery as priorities. Refined those paths while retaining the approved identity, references and commerce owners. See the [assessment, detector interpretation and verification record](MARKET_GREEN_CRITIQUE_2026-11-22.md). Initial score was 29/40; no post-change rescore or user visual acceptance is claimed. PRs remain open.
+
+Confirmed preference follow-up: mobile language selection is inside the header shopping menu, and the cart opening contains title/count followed by editable items. The temporary standalone language toggle and cart-heading shopping exit were removed.
+
+## 2026-11-21 — Storefront reference-alignment correction
+
+The user rejected the first implementation’s blocky geometry and excessive underlines. Corrected the current storefront against the five supplied images: compact circular category discovery, shorter campaigns, connected product details, exposed totals and restrained action styling. Palette, fonts and commerce owners remain unchanged. See the [correction and validation record](MARKET_GREEN_REFERENCE_CORRECTION_2026-11-21.md). The previous visual verdict does not constitute user acceptance; PRs remain open.
+
+## 2026-11-21 — Market Green / Coral storefront implementation
+
+Implemented the approved customer storefront direction on `feat/market-green-coral-storefront`: scoped tokens and utilities, local fonts, shared shopping components, responsive discovery, product/cart/checkout composition and account presentation. Existing commerce and admin owners remain unchanged. Browser, accessibility and regression evidence is recorded in the [implementation report](MARKET_GREEN_STOREFRONT_2026-11-21.md). This is review work on top of the open design-reset PR; deployment and physical-device release checks remain pending.
+
 ## 2026-11-21 — Design documentation reset
 
 Removed the root design specification, design/reference/review folders, archived visual guidance and project-local design skills, including token templates. Runtime components, application styles required for controls and media, catalogue data, commerce, authentication and integrations are retained. Future design decisions are open.

@@ -8,8 +8,8 @@ import { t, emirateLabel, type Locale } from '../lib/i18n';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { deliveryEmirates, reverseLocationDtoSchema } from '@almina/contracts';
 import { areaEvent, savedArea, saveArea, type DeliveryArea } from '../lib/location/browser';
-import { Icon } from './icon';
-import { ChevronDownIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { Icon } from './storefront-icon';
+import { ChevronDownIcon, MapPinIcon } from './storefront-icons';
 const openEvent = 'almina-open-delivery-area';
 const promptKey = 'almina.delivery-prompt.v1';
 export function DeliveryAreaPrompt({ locale = 'en' }: { locale?: Locale }) {
@@ -59,12 +59,14 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
     }, () => { clearTimeout(timer); if (id === request.current) { setWorking(false); setMessage(t(locale,'areaDenied')); } }, { timeout: 15000, maximumAge: 60000 }); } catch { clearTimeout(timer); if (id === request.current) { setWorking(false); setMessage(t(locale,'areaUnavailable')); } }
   }
   return <><div className="header-location flex min-w-0 justify-end">
-    <button data-slot="delivery-selector" type="button" className="group inline-flex min-h-11 max-w-full min-w-0 items-center gap-1.5 rounded-lg border-0 bg-transparent px-1 py-1 text-start shadow-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 md:max-w-[210px] md:px-2" onClick={() => window.dispatchEvent(new Event(openEvent))} aria-label={t(locale,'areaChooseAria')}>
+    <button data-slot="delivery-selector" type="button" className="group inline-flex min-h-11 max-w-full min-w-0 items-center gap-1.5 rounded-lg border-0 bg-transparent px-1 py-1 text-start  transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 md:max-w-[210px] md:px-2" onClick={() => window.dispatchEvent(new Event(openEvent))} aria-label={t(locale,'areaChooseAria')}>
       <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
-      <span className="min-w-0 truncate text-[13px] font-medium">{area ? area.city : t(locale,'areaDeliverTo')}<span className="hidden md:inline">{area ? `, ${emirateLabel(locale,area.emirate)}` : ` · ${t(locale,'areaChooseYours')}`}</span></span>
+      <span className="delivery-label min-w-0 truncate text-[13px] font-medium" title={area ? `${area.city}, ${emirateLabel(locale,area.emirate)}` : t(locale,'areaChooseYours')}>
+        {area ? <>{area.city}<span className="delivery-region">, {emirateLabel(locale,area.emirate)}</span></> : <><span className="delivery-compact">{t(locale,'areaDeliverTo')}</span><span className="delivery-complete">{t(locale,'areaChooseYours')}</span></>}
+      </span>
       <ChevronDownIcon className="size-3 shrink-0" aria-hidden="true" />
     </button></div>
-    <dialog ref={dialog} aria-labelledby="delivery-area-heading" onCancel={close} className="delivery-area-sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border-0 bg-white px-5 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))] shadow-raised sm:inset-0 sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-32px)] sm:max-w-md sm:rounded-2xl sm:p-7">
+    <dialog ref={dialog} aria-labelledby="delivery-area-heading" onCancel={close} className="delivery-area-sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border-0 bg-white px-5 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))]  sm:inset-0 sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-32px)] sm:max-w-md sm:rounded-2xl sm:p-7">
       <div aria-hidden="true" className="mx-auto -mt-3 mb-4 h-1 w-9 rounded-full sm:hidden" />
       <div className="mb-3 flex items-center justify-between gap-3"><h2 id="delivery-area-heading" className="m-0 text-xl">{t(locale,'areaHeading')}</h2><Button variant="outline" size="icon" shape="pill" type="button" className="shrink-0" onClick={close} aria-label={t(locale,'areaClose')}><Icon name="close" /></Button></div>
       <p className="text-sm">{t(locale,'areaIntro')}</p>

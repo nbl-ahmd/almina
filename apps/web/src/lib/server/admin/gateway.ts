@@ -56,7 +56,13 @@ export async function upstream(path: string, init: RequestInit = {}) {
 }
 export const currentIdentity = cache(async (): Promise<Identity | null> => {
   if (!(await sessionHeader())) return null;
-  const response = await upstream("auth/me");
+  // A restart or a brief database hiccup on the API answers 5xx for a moment; one short retry keeps staff signed in
+  // instead of showing an error page for a read that would succeed a moment later.
+  let response = await upstream("auth/me").catch(() => null);
+  if (!response || response.status >= 500) {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    response = await upstream("auth/me");
+  }
   if (response.status === 401) return null;
   if (!response.ok) throw new AdminError(response.status);
   const parsed = identitySchema.safeParse(await response.json());

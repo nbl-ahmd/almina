@@ -1,285 +1,92 @@
-import { getCategories } from "../lib/server/catalog";
-import { categoryHref } from "../lib/catalog/model";
-import { StorefrontMenu } from "./storefront-menu";
-import { SearchBox } from "./search-box";
-import Image from "next/image";
+import Image from 'next/image';
 import Link from './app-link';
-import {
-  PhoneIcon,
-  UserCircleIcon,
-  EnvelopeIcon,
-  MapPinIcon,
-  ArrowUpRightIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/24/outline";
-import { NavigationLinks } from "./navigation-links";
-import { CartLink } from "./cart-link";
-import { DeliveryLocation } from "./delivery-location";
-import { UsagePreferences } from "./usage-preferences";
-import { LanguageSwitcher } from "./language-switcher";
-import { t, type Locale, type MessageKey } from "../lib/i18n";
-import { businessContact, policyLinks } from "../lib/policies";
+import { getCategories } from '../lib/server/catalog';
+import { categoryHref } from '../lib/catalog/model';
+import { t, type Locale, type MessageKey } from '../lib/i18n';
+import { businessContact, policyLinks } from '../lib/policies';
+import { StorefrontMenu } from './storefront-menu';
+import { SearchBox } from './search-box';
+import { NavigationLinks } from './navigation-links';
+import { CartLink } from './cart-link';
+import { DeliveryLocation } from './delivery-location';
+import { UsagePreferences } from './usage-preferences';
+import { LanguageSwitcher } from './language-switcher';
+import { PhoneIcon, UserCircleIcon, EnvelopeIcon, ArrowUpIcon, ChatBubbleLeftRightIcon } from './storefront-icons';
 
 export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
-  const categories = (await getCategories().catch(()=>[])).filter(category=>!category.disabled).map(category=>({name:category.name,href:categoryHref(category)}));
-  return (
-    <>
-      <a
-        className="skip-link fixed top-2 left-2 z-[100] -translate-y-[160%] rounded-full px-5 py-3 text-white focus:translate-y-0"
-        href="#main-content"
-      >
-        {t(locale, 'skipToContent')}
-      </a>
-      <header className="storefront-header sticky top-0 z-40 md:static md:z-auto">
-        <div className="storefront-utility-bar hidden md:block">
-          <div className="mx-auto flex max-w-[1344px] items-center justify-between gap-6 px-6 py-1 text-[13px] leading-5 lg:px-8">
-            <span className="min-w-0 flex-1 text-pretty">{t(locale, 'announcement')}</span>
-            <div className="flex shrink-0 items-center gap-4">
-              <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
-              <span className="h-4 w-px" aria-hidden="true" />
-              <a
-                className="inline-flex min-h-11 items-center gap-2 underline-offset-4 hover:underline"
-                href="tel:+971504825007"
-                dir="ltr"
-              >
-                <PhoneIcon className="size-3.5" aria-hidden="true" />
-                +971 50 482 5007
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className="border-b">
-          <div className="header-content mx-auto grid max-w-[1344px] grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-2 px-4 py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-x-3 md:px-6 md:py-3 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] lg:gap-x-4 lg:px-8">
-            {/* Mobile uses the persistent tab bar; the drawer remains available for future use. */}
-            <Link
-              href="/"
-              aria-label={t(locale, 'homeAria')}
-              className="brand-logo inline-flex w-fit"
-            >
-              <Image
-                className="h-auto w-[88px] object-contain md:w-[120px] lg:w-[132px] xl:w-[144px]"
-                src="/logo.png"
-                alt="Al Mina Pharmacy"
-                width={2789}
-                height={910}
-                sizes="(max-width: 767px) 88px, (max-width: 1023px) 120px, (max-width: 1279px) 132px, 144px"
-              />
-            </Link>
-            <div className="col-span-full row-start-2 min-w-0 lg:col-auto lg:row-auto lg:mx-auto lg:w-full lg:max-w-[600px]">
-              <SearchBox locale={locale} />
-            </div>
-            <DeliveryLocation locale={locale} />
-            <Link
-              href="/account"
-              aria-label={t(locale, 'linkAccount')}
-              className="hidden size-11 shrink-0 items-center justify-center rounded-full transition-colors md:inline-flex md:size-12 lg:gap-2 lg:px-3 xl:w-auto"
-            >
-              <UserCircleIcon className="size-[23px]" aria-hidden="true" />
-              <span className="hidden text-sm font-medium xl:inline">{t(locale, 'linkAccount')}</span>
-            </Link>
-            <div className="hidden md:block"><CartLink locale={locale} /></div>
-          </div>
-        </div>
-        <div className="hidden border-b md:block">
-          <div className="mx-auto flex max-w-[1344px] items-center justify-between gap-6 px-6 py-0.5 lg:px-8">
-            <StorefrontMenu categories={categories} locale={locale} />
-            <span className="hidden shrink-0 items-center gap-1.5 text-[13px] xl:flex">
-              <MapPinIcon className="size-3.5" aria-hidden="true" />
-              {t(locale, 'footerLocation')}
-            </span>
-          </div>
-        </div>
-        <NavigationLinks locale={locale} />
-      </header>
-      <nav
-        aria-label={t(locale, 'quickContactAria')}
-        className="floating-contact fixed right-4 bottom-[calc(84px+env(safe-area-inset-bottom))] z-30 md:right-6 md:bottom-6"
-      >
-        <a
-          href={`https://wa.me/${businessContact.telephone.replace(/\D/g, '')}?text=${encodeURIComponent("Hi Al Mina Pharmacy! I'd like to make an inquiry about your products.")}`}
-          aria-label={locale === 'ar' ? 'تواصل مع صيدلية المينا عبر واتساب' : 'Chat with Al Mina Pharmacy on WhatsApp'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex size-12 items-center justify-center rounded-full text-white shadow-raised transition-transform motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 md:size-14"
-        >
-          <svg className="size-7" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true" focusable="false">
-            <path d="M16.027 3C9.389 3 4 8.222 4 14.667c0 2.47.873 4.75 2.34 6.586L5 29l8.083-2.57c.909.254 1.87.393 2.944.393 6.638 0 12.027-5.223 12.027-11.667C28.055 8.223 22.666 3 16.027 3zm0 2.4c5.326 0 9.638 4.2 9.638 9.333 0 5.134-4.312 9.334-9.638 9.334-.955 0-1.873-.136-2.72-.4l-1.12-.343-4.68 1.486 1.06-4.11-.727-.867c-1.15-1.351-1.8-3.08-1.8-5.1 0-5.133 4.311-9.333 9.637-9.333zm-4.088 4.672c-.182 0-.485.07-.738.352-.254.282-.968.944-.968 2.3 0 1.356.992 2.667 1.13 2.852.14.188 1.918 3.064 4.74 4.17 2.82 1.106 2.82.737 3.327.69.508-.047 1.64-.67 1.873-1.32.232-.65.232-1.207.163-1.324-.07-.118-.254-.188-.53-.33-.276-.141-1.64-.808-1.894-.9-.254-.094-.44-.142-.626.14-.186.284-.716.9-.878 1.08-.163.188-.325.212-.598.07-.277-.141-1.16-.426-2.212-1.35-.818-.715-1.37-1.6-1.532-1.883-.163-.282-.017-.434.123-.574.126-.124.277-.324.416-.486.139-.165.185-.283.277-.472.093-.188.046-.353-.023-.495-.07-.142-.618-1.512-.874-2.07-.23-.503-.465-.575-.647-.58z" />
-          </svg>
-        </a>
-      </nav>
-    </>
-  );
-}
-const shopLinks: [MessageKey, string][] = [
-    ["linkCategories", "/categories"],
-  ["linkOffers", "/offers"],
-  ["linkShopBrands", "/brands"],
-];
-const helpLinks: [MessageKey, string][] = [
-  ["linkGuides", "/health-guides"],
-  ["linkAbout", "/about"],
-  ["linkContact", "/contact"],
-  ["linkDelivery", "/contact"],
-];
-const accountLinks: [MessageKey, string][] = [
-  ["linkSaved", "/saved"],
-  ["linkAccount", "/account"],
-  ["linkCart", "/cart"],
-];
-const footerLinkClass = "group -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-lg px-2 text-[13px]  sm:text-sm transition-colors duration-200   ";
-const footerArrowClass = "hidden size-3.5 shrink-0  transition-[color,transform] duration-200  motion-safe:group-hover:translate-x-0.5 md:block md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100";
-const footerVisitLinkClass = "group -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-lg ps-8 pe-2 text-[13px]  sm:text-sm transition-colors duration-200   ";
-export function Footer({
-  telemetryEnabled = false,
-  locale = 'en',
-}: {
-  telemetryEnabled?: boolean;
-  locale?: Locale;
-}) {
-  return (
-    <footer className="storefront-footer mt-16 pt-6 pb-[172px] md:pt-10 md:pb-24">
-      <div className="mx-auto max-w-[1344px] px-3 md:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-[20px] shadow-raised">
-          <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
-            <div className="px-5 pt-7 pb-7 md:px-10 md:pt-10 md:pb-9 lg:py-12 lg:pr-12">
-              <Link href="/" aria-label={t(locale, 'homeAria')} className="inline-flex w-fit">
-                <Image
-                  className="h-auto w-[140px] object-contain md:w-[184px]"
-                  src="/logo.png"
-                  alt=""
-                  width={2789}
-                  height={910}
-                  sizes="(max-width: 767px) 140px, 184px"
-                />
-              </Link>
-              <h2 className="mt-8 mb-0 max-w-[16ch] text-[clamp(2rem,3.6vw,3.35rem)] leading-[1.04] font-semibold tracking-[-0.03em] text-balance rtl:leading-[1.25] rtl:tracking-normal">
-                {t(locale, 'footerCare')}
-              </h2>
-              <p className="mt-4 mb-0 max-w-[44ch] text-[15px] leading-6">
-                {t(locale, 'footerTagline')}
-              </p>
-            </div>
-            <div className="px-3 pb-3 md:px-4 md:pb-4 lg:py-4 lg:pr-4">
-              <div className="flex h-full flex-col rounded-2xl p-5 md:p-7">
-                <h3 className="m-0 text-lg font-semibold">{t(locale, 'footerTalk')}</h3>
-                <p className="mt-2 mb-0 max-w-[36ch] text-sm leading-6">{t(locale, 'footerSupport')}</p>
-                <div className="mt-5 flex flex-col">
-                  <a
-                    href="tel:+971504825007"
-                    className="group flex min-h-12 items-center gap-3 border-t text-sm font-semibold transition-colors duration-200"
-                  >
-                    <PhoneIcon className="size-4 shrink-0" aria-hidden="true" />
-                    <span dir="ltr">+971 50 482 5007</span>
-                    <ArrowUpRightIcon
-                      className="ms-auto size-4 shrink-0 transition-[color,transform] duration-200 motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5"
-                      aria-hidden="true"
-                    />
-                  </a>
-                  <a
-                    href="mailto:info@alminapharmacy.com"
-                    className="group flex min-h-12 items-center gap-3 border-t text-sm transition-colors duration-200"
-                  >
-                    <EnvelopeIcon className="size-4 shrink-0" aria-hidden="true" />
-                    <span className="break-all">info@alminapharmacy.com</span>
-                    <ArrowUpRightIcon
-                      className="ms-auto size-4 shrink-0 transition-[color,transform] duration-200 motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </div>
-                <div className="mt-auto flex flex-col gap-2.5 pt-6 sm:flex-row">
-                  <Link
-                    href="/contact"
-                    className="group inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold whitespace-nowrap transition-[background-color,transform] duration-200 motion-safe:active:scale-[0.99]"
-                  >
-                    {t(locale, 'linkContact')}
-                    <ArrowUpRightIcon
-                      className="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5"
-                      aria-hidden="true"
-                    />
-                  </Link>
-                  <a
-                    href="tel:+971504825007"
-                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold whitespace-nowrap transition-[background-color,border-color,transform] duration-200 hover:bg-white/70 motion-safe:active:scale-[0.99]"
-                  >
-                    <PhoneIcon className="size-4 shrink-0" aria-hidden="true" />
-                    {t(locale, 'checkoutCallPharmacy')}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-7 border-t px-5 py-7 md:px-10 md:py-9 lg:grid-cols-4 lg:gap-8">
-            <nav aria-label={t(locale, 'footerShopAria')}>
-              <h3 className="mb-2 text-[13px] font-semibold">{t(locale, 'footerShop')}</h3>
-              {shopLinks.map(([key, path]) => (
-                <Link key={path} className={footerLinkClass} href={path!}>
-                  <span>{t(locale, key)}</span>
-                  <ArrowUpRightIcon className={footerArrowClass} aria-hidden="true" />
-                </Link>
-              ))}
-            </nav>
-            <nav aria-label={t(locale, 'footerHelpAria')}>
-              <h3 className="mb-2 text-[13px] font-semibold">{t(locale, 'footerHelp')}</h3>
-              {helpLinks.map(([key, path]) => (
-                <Link key={key} className={footerLinkClass} href={path!}>
-                  <span>{t(locale, key)}</span>
-                  <ArrowUpRightIcon className={footerArrowClass} aria-hidden="true" />
-                </Link>
-              ))}
-            </nav>
-            <nav aria-label={t(locale, 'footerAccountAria')} className="col-span-2 sm:col-span-1">
-              <h3 className="mb-2 text-[13px] font-semibold">{t(locale, 'footerAccount')}</h3>
-              {accountLinks.map(([key, path]) => (
-                <Link key={path} className={footerLinkClass} href={path!}>
-                  <span>{t(locale, key)}</span>
-                  <ArrowUpRightIcon className={footerArrowClass} aria-hidden="true" />
-                </Link>
-              ))}
-            </nav>
-            <div className="col-span-2 sm:col-span-1">
-              <h3 className="mb-2 text-[13px] font-semibold">{t(locale, 'footerVisit')}</h3>
-              <p className="mt-3 mb-0 flex items-start gap-2 text-sm leading-6">
-                <MapPinIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <span>{t(locale, 'footerLocation')}</span>
-              </p>
-              <Link key="map" className={footerVisitLinkClass} href="/map">
-                <span>{t(locale, 'footerMap')}</span>
-                <ArrowUpRightIcon className={footerArrowClass} aria-hidden="true" />
-              </Link>
-              <Link key="local" className={footerVisitLinkClass} href="/ras-al-khaimah">
-                <span>{t(locale, 'linkLocal')}</span>
-                <ArrowUpRightIcon className={footerArrowClass} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <nav aria-label={t(locale, 'footerPoliciesAria')} className="flex flex-wrap gap-x-5 gap-y-1 border-t px-5 py-4 text-xs md:px-10">
-            {policyLinks.map(item => (
-              <Link key={item.path} className="inline-flex min-h-9 items-center transition-colors hover:underline hover:underline-offset-4" href={item.path}>
-                {t(locale, item.key)}
-              </Link>
-            ))}
-          </nav>
-          {telemetryEnabled ? (
-            <div className="px-5 md:px-10">
-              <UsagePreferences locale={locale}/>
-            </div>
-          ) : null}
-          <div className="flex flex-col gap-4 border-t px-5 py-4 text-xs sm:flex-row sm:items-center sm:justify-between md:px-10">
-            <span>{t(locale, 'footerBottom')}</span>
-            <div className="flex items-center justify-between gap-3 sm:justify-end">
-              <LanguageSwitcher locale={locale} label={t(locale, 'language')} size="default" />
-              <a
-                href="#top"
-                className="group inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-xs font-medium transition-colors duration-200"
-              >
-                <ArrowUpIcon className="size-4 transition-transform duration-200 motion-safe:group-hover:-translate-y-0.5" aria-hidden="true" />
-                {t(locale, 'backToTop')}
-              </a>
-            </div>
-          </div>
+  const categories = (await getCategories().catch(() => []))
+    .filter(category => !category.disabled)
+    .map(category => ({ name: category.name, href: categoryHref(category) }));
+
+  return <>
+    <a className="skip-link" href="#main-content">{t(locale, 'skipToContent')}</a>
+    <header className="storefront-header">
+      <div className="storefront-utility-bar">
+        <div className="chrome-container utility-content">
+          <span>{t(locale, 'announcement')}</span>
+          <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
         </div>
       </div>
-    </footer>
-  );
+      <div className="header-identity">
+        <div className="header-content chrome-container">
+          <Link href="/" aria-label={t(locale, 'homeAria')} className="brand-logo">
+            <Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width:899px) 120px, 152px" />
+          </Link>
+          <div className="header-search"><SearchBox locale={locale} /></div>
+          <Link href="/contact" className="checkout-header-help"><ChatBubbleLeftRightIcon aria-hidden="true" />{t(locale, 'linkContact')}</Link>
+          <DeliveryLocation locale={locale} />
+          <div className="header-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
+          <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account">
+            <UserCircleIcon aria-hidden="true" /><span>{t(locale, 'linkAccount')}</span>
+          </Link>
+          <div className="header-cart"><CartLink locale={locale} /></div>
+        </div>
+      </div>
+      <div className="header-departments chrome-container">
+        <StorefrontMenu categories={categories} locale={locale} />
+        <Link href="/contact" className="header-help"><ChatBubbleLeftRightIcon aria-hidden="true" />{t(locale, 'linkContact')}</Link>
+      </div>
+      <NavigationLinks locale={locale} />
+    </header>
+  </>;
+}
+
+const groups: { title: MessageKey; aria: MessageKey; links: [MessageKey, string][] }[] = [
+  { title: 'footerShop', aria: 'footerShopAria', links: [['linkCategories', '/categories'], ['linkOffers', '/offers'], ['linkShopBrands', '/brands']] },
+  { title: 'footerHelp', aria: 'footerHelpAria', links: [['linkGuides', '/health-guides'], ['linkAbout', '/about'], ['linkContact', '/contact'], ['linkDelivery', '/contact#delivery']] },
+  { title: 'footerAccount', aria: 'footerAccountAria', links: [['linkSaved', '/saved'], ['linkAccount', '/account'], ['linkCart', '/cart']] },
+];
+
+export function Footer({ telemetryEnabled = false, locale = 'en' }: { telemetryEnabled?: boolean; locale?: Locale }) {
+  return <footer className="storefront-footer">
+    <div className="chrome-container footer-content">
+      <div className="footer-intro">
+        <Link href="/" aria-label={t(locale, 'homeAria')}>
+          <Image src="/logo.png" alt="" width={2789} height={910} sizes="144px" />
+        </Link>
+        <p>{t(locale, 'footerTagline')}</p>
+        <span>{t(locale, 'footerLocation')}</span>
+        <Link href="/map">{t(locale, 'footerMap')}</Link>
+      </div>
+      {groups.map(group => <nav key={group.title} aria-label={t(locale, group.aria)}>
+        <h2>{t(locale, group.title)}</h2>
+        {group.links.map(([key, href]) => <Link href={href} key={key}>{t(locale, key)}</Link>)}
+      </nav>)}
+      <div className="footer-contact">
+        <h2>{t(locale, 'footerTalk')}</h2>
+        <a href={`tel:${businessContact.telephone}`}><PhoneIcon aria-hidden="true" /><span dir="ltr">+971 50 482 5007</span></a>
+        <a href={`mailto:${businessContact.email}`}><EnvelopeIcon aria-hidden="true" />{businessContact.email}</a>
+        <a href={businessContact.whatsapp} rel="noopener noreferrer"><ChatBubbleLeftRightIcon aria-hidden="true" />{locale === 'ar' ? 'تواصل عبر واتساب' : 'Chat on WhatsApp'}</a>
+      </div>
+      <nav className="footer-policy" aria-label={t(locale, 'footerPoliciesAria')}>
+        {policyLinks.map(policy => <Link href={policy.path} key={policy.path}>{t(locale, policy.key)}</Link>)}
+      </nav>
+      <div className="footer-bottom">
+        <span>{t(locale, 'footerBottom')}</span>
+        <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
+        <a href="#top"><ArrowUpIcon aria-hidden="true" />{t(locale, 'backToTop')}</a>
+      </div>
+      {telemetryEnabled ? <UsagePreferences locale={locale} /> : null}
+    </div>
+  </footer>;
 }

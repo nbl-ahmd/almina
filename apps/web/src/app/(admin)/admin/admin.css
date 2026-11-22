@@ -1,47 +1,48 @@
-/* Administration controls, modal positioning, and data visibility. */
-.admin-brand img, .admin-login img, .admin-app img[src*="logo"] { max-inline-size: 9rem; }
-.admin-topbar, .admin-row-actions, .admin-bottomnav { flex-wrap: wrap; align-items: center; gap: .5rem; }
-.admin-topbar, .admin-row-actions { display: flex; }
-.admin-menu, .admin-bottomnav, .admin-field--hidden, .admin-product-gallery:empty { display: none; }
-.admin-sheet-overlay, .admin-menu-overlay { position: fixed; inset: 0; z-index: 70; background: rgb(0 0 0 / .25); }
-.admin-sheet {
-  position: fixed;
-  inset: 1rem;
-  z-index: 71;
-  padding: 1rem;
-  overflow: auto;
-  background: Canvas;
-  border: 1px solid ButtonBorder;
-}
-.admin-nav__link, .admin-sheet__link { display: block; }
-.admin-field > label, .admin-field__label { display: block; }
-.admin-field { margin-block: .5rem; }
-.admin-table-wrap table { border-collapse: collapse; }
-.admin-table-wrap :is(th, td) { padding: .25rem .5rem; text-align: start; }
-.admin-product-gallery img { max-block-size: 12rem; object-fit: contain; }
+/* Tailwind entry for the administration console. Components style themselves with
+   utilities; this file only declares the design tokens (docs/design/admin/DESIGN.md).
+   Utilities are !important because the root globals.css carries unlayered rules
+   (svg sizing, focus outline) that would otherwise beat layered utilities.
+   legacy.css still styles screens that have not been migrated yet and shrinks as they are. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) important;
+@source "../../../components/admin";
+@source "./";
+@source "../../../components/delivery-map.tsx";
 
-.admin-chart, .commerce-chart, .commerce-ring { margin-inline: 0; }
-.commerce-chart__plot { position: relative; }
-.admin-chart__plot svg, .commerce-chart__plot svg { display: block; inline-size: 100%; block-size: auto; max-block-size: 20rem; }
-.admin-chart__line, .admin-chart__grid, .commerce-chart__line, .commerce-chart__grid, .commerce-chart__cursor { fill: none; stroke: currentColor; }
-.admin-chart__area, .commerce-chart__area { fill: none; }
-.commerce-chart__tooltip { position: absolute; inset-block-start: 0; max-inline-size: 50%; background: Canvas; pointer-events: none; }
-.commerce-ring svg { inline-size: 8rem; block-size: 8rem; }
-.commerce-ring__track { fill: none; stroke: GrayText; stroke-width: 9; }
-
-@media (max-width: 767px) {
-  .admin-sidebar { display: none; }
-  .admin-menu, .admin-bottomnav { display: flex; }
-  .marketing-designer[data-mobile-panel="canvas"] :is(.gjs-pn-views, .gjs-pn-views-container),
-  .marketing-designer[data-mobile-panel="controls"] .gjs-cv-canvas { display: none; }
-  .marketing-designer[data-mobile-panel="canvas"] .gjs-cv-canvas,
-  .marketing-designer[data-mobile-panel="controls"] :is(.gjs-pn-views, .gjs-pn-views-container) { width: 100%; }
+@theme {
+  /* Minimal: near-white canvas, white surfaces, hairline borders, ink for emphasis. Status colours only for status. */
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
+  --color-soft: #f7f7f8;
+  --color-fill: #f1f1f3;
+  --color-line: #e7e7ea;
+  --color-line-strong: #d6d6db;
+  --color-ink: #111114;
+  --color-ink-2: #2c2c31;
+  --color-mute: #62626a;
+  --color-faint: #a1a1a9;
+  --color-mint: #111114;
+  --color-mint-2: #2c2c31;
+  --color-mint-soft: #f1f1f3;
+  --color-ok: #15803d;
+  --color-ok-soft: #e8f6ed;
+  --color-warn: #92580a;
+  --color-warn-soft: #fdf3e1;
+  --color-bad: #c0262f;
+  --color-bad-soft: #fdecec;
+  --color-info: #1d4ed8;
+  --color-info-soft: #e9f0ff;
+  --shadow-card: 0 0 0 1px #e7e7ea;
+  --shadow-pop: 0 0 0 1px #e7e7ea, 0 12px 32px -12px rgb(17 17 20 / 20%);
 }
 
-.admin-row-popover {
-  max-inline-size: calc(100vw - 1rem);
-  border: 1px solid ButtonBorder;
-  padding: .5rem;
-  background: Canvas;
+/* Console base: scoped reset only. Controls are styled by the shadcn-style components and recipes
+   in components/admin/shadcn; there are no element-level control rules here to conflict with them. */
+@layer base {
+  .admin-app *, .admin-app ::before, .admin-app ::after { border: 0 solid var(--color-line); }
+  .admin-app :where(button, [role=button]) { border: 0 solid transparent; padding: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+  .admin-app :where(h1, h2, h3, h4, p, ul, ol, dl, figure) { margin: 0; }
+  .admin-app :where(input[type=checkbox], input[type=radio]) { width: 1rem; height: 1rem; accent-color: var(--color-ink); }
+  .admin-app :where(button):disabled { cursor: not-allowed; }
 }
-.admin-row-popover > * { display: block; }

@@ -5,5 +5,5 @@ export function StorefrontIntro({ title, description, children }: {
   description: string;
   children?: ReactNode;
 }) {
-  return <header><h1>{title}</h1><p>{description}</p>{children}</header>;
+  return <header className="storefront-intro"><h1>{title}</h1><p>{description}</p>{children}</header>;
 }

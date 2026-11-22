@@ -3,16 +3,14 @@
 body { overflow-wrap: anywhere; }
 img, video, iframe, input, select, textarea, fieldset { max-inline-size: 100%; }
 img, video { block-size: auto; }
-svg:not([width]):not([height]) { inline-size: 1.25em; block-size: 1.25em; vertical-align: middle; }
+svg:not([width]):not([height]):not(.admin-app *) { inline-size: 1.25em; block-size: 1.25em; vertical-align: middle; }
 button, input, select, textarea { font: inherit; }
-button:has(svg), button[aria-label] { min-block-size: 24px; }
-button[aria-pressed="true"], [data-slot="checkbox"][aria-checked="true"] { outline: 1px solid currentColor; }
-:is(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
-[data-slot="checkbox"] { min-inline-size: 1.5em; color: ButtonText; background: ButtonFace; }
+button:not(.admin-app *):has(svg), button:not(.admin-app *)[aria-label] { min-block-size: 24px; }
+/* Retained screens still use this selected-state fallback. Storefront controls own their states. */
+button[aria-pressed="true"]:not(:where(.storefront-shell *, .admin-app *)), [data-slot="checkbox"][aria-checked="true"]:not(.admin-app *) { outline: 1px solid currentColor; }
+:is(button, a, input, select, textarea, [tabindex]):not(.admin-app *):focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+[data-slot="checkbox"]:not(.admin-app *) { min-inline-size: 1.5em; color: ButtonText; background: ButtonFace; }
 [data-slot="field"][data-orientation="vertical"] { display: grid; justify-items: start; }
-[data-slot="carousel-indicator"] { min-inline-size: 2rem; }
-[data-slot="carousel-indicator"]::before { content: "○" / ""; }
-[data-slot="carousel-indicator"][aria-pressed="true"]::before { content: "●" / ""; }
 [role="alert"] { font-weight: bold; }
 
 .sr-only, :is(.skip-link, .admin-skip):not(:focus) {

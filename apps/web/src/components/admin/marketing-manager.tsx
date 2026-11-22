@@ -1,4 +1,7 @@
 "use client";
+import { inputClass, selectClass } from './shadcn/styles';
+import { buttonVariants } from './ui';
+import { useConfirm } from './confirm-dialog';
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { Editor } from "grapesjs";
@@ -84,6 +87,7 @@ export function MarketingManager({
   admin: boolean;
   nonce: string;
 }) {
+  const { ask, dialog } = useConfirm();
   const [tab, setTab] = useState("design"),
     [templates, setTemplates] = useState<Template[]>([]),
     [template, setTemplate] = useState<Template | null>(null),
@@ -145,8 +149,8 @@ export function MarketingManager({
       active = false;
     };
   }, []);
-  function select(value: Template) {
-    if (dirty && !window.confirm("Discard unsaved email changes?")) return;
+  async function select(value: Template) {
+    if (dirty && !(await ask("Discard unsaved email changes?", { action: "Discard changes", danger: true }))) return;
     setTemplate(value);
     currentSource.current = value.mjml;
     setDirty(false);
@@ -230,9 +234,10 @@ export function MarketingManager({
   const field = "grid gap-1.5 text-sm font-medium";
   return (
     <div className="space-y-5">
+      {dialog}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="mb-2 text-3xl">Email marketing</h1>
+          <h1 className="mb-1 text-2xl font-semibold tracking-tight">Email marketing</h1>
           <p className="m-0 max-w-2xl text-sm">
             Design reusable emails, link real products and send to people who
             asked to hear from Al Mina.
@@ -240,7 +245,7 @@ export function MarketingManager({
         </div>
         <button
           type="button"
-          className="admin-btn--secondary"
+          className={`${buttonVariants({ variant: "outline" })}`}
           disabled={busy}
           onClick={() =>
             void perform(async () => {
@@ -265,7 +270,7 @@ export function MarketingManager({
             type="button"
             key={id}
             aria-pressed={tab === id}
-            className={tab === id ? "" : "admin-btn--secondary"}
+            className={tab === id ? buttonVariants({ variant: "dark" }) : buttonVariants({ variant: "outline" })}
             onClick={() => setTab(id!)}
           >
             {label}
@@ -273,12 +278,12 @@ export function MarketingManager({
         ))}
       </nav>
       {message ? (
-        <p role="status" className="admin-panel">
+        <p role="status" className="rounded-xl bg-surface p-5 border border-line md:p-6">
           {message}
         </p>
       ) : null}
       {connections && !connections.providers.some((row) => row.configured) ? (
-        <div className="admin-panel">
+        <div className="rounded-xl bg-surface p-5 border border-line md:p-6">
           <h2 className="text-base">
             Designing is available · sending needs setup
           </h2>
@@ -293,11 +298,11 @@ export function MarketingManager({
         <>
           <div className="space-y-4">
             <aside className="grid gap-4 lg:grid-cols-3">
-              <section className="admin-panel">
+              <section className="rounded-xl bg-surface p-5 border border-line md:p-6">
                 <h2 className="text-lg">Saved templates</h2>
                 <label className={field}>
                   Open a template
-                  <select
+                  <select className={selectClass}
                     value={template.revision ? template.id : ""}
                     onChange={(event) => {
                       const value = templates.find(
@@ -317,21 +322,21 @@ export function MarketingManager({
                 <div className="mt-3 grid gap-2">
                   <button
                     type="button"
-                    className="admin-btn--secondary"
+                    className={`${buttonVariants({ variant: "outline" })}`}
                     onClick={() => select(blank())}
                   >
                     New newsletter
                   </button>
                   <button
                     type="button"
-                    className="admin-btn--secondary"
+                    className={`${buttonVariants({ variant: "outline" })}`}
                     onClick={() => select(blank("first-aid"))}
                   >
                     Workplace first aid
                   </button>
                   <button
                     type="button"
-                    className="admin-btn--secondary"
+                    className={`${buttonVariants({ variant: "outline" })}`}
                     onClick={() =>
                       select({
                         ...template,
@@ -346,7 +351,7 @@ export function MarketingManager({
                   </button>
                 </div>
               </section>
-              <section className="admin-panel">
+              <section className="rounded-xl bg-surface p-5 border border-line md:p-6">
                 <h2 className="text-lg">Add products</h2>
                 <form
                   onSubmit={(event) => {
@@ -368,7 +373,7 @@ export function MarketingManager({
                 >
                   <label className={field}>
                     Find a product
-                    <input
+                    <input className={inputClass}
                       value={query}
                       minLength={2}
                       maxLength={80}
@@ -389,7 +394,7 @@ export function MarketingManager({
                     <li key={product._id}>
                       <button
                         type="button"
-                        className="admin-btn--secondary w-full text-left"
+                        className={`${buttonVariants({ variant: "outline" })} w-full text-left`}
                         onClick={() => {
                           const href =
                             "https://alminapharmacy.com" + productHref(product);
@@ -414,11 +419,11 @@ export function MarketingManager({
                   ))}
                 </ul>
               </section>
-              <section className="admin-panel">
+              <section className="rounded-xl bg-surface p-5 border border-line md:p-6">
                 <h2 className="text-lg">Campaign artwork</h2>
                 <label className={field}>
                   Artwork description
-                  <input
+                  <input className={inputClass}
                     value={imageAlt}
                     maxLength={180}
                     onChange={(event) => setImageAlt(event.target.value)}
@@ -470,10 +475,10 @@ export function MarketingManager({
               </section>
             </aside>
             <section className="min-w-0 space-y-4">
-              <div className="admin-panel grid gap-3 md:grid-cols-2">
+              <div className="rounded-xl bg-surface p-5 border border-line md:p-6 grid gap-3 md:grid-cols-2">
                 <label className={field}>
                   Template name
-                  <input
+                  <input className={inputClass}
                     required
                     maxLength={120}
                     value={template.name}
@@ -482,7 +487,7 @@ export function MarketingManager({
                 </label>
                 <label className={field}>
                   Email subject
-                  <input
+                  <input className={inputClass}
                     required
                     maxLength={180}
                     value={template.subject}
@@ -493,7 +498,7 @@ export function MarketingManager({
                 </label>
                 <label className={field}>
                   Preview text
-                  <input
+                  <input className={inputClass}
                     maxLength={200}
                     value={template.previewText}
                     onChange={(event) =>
@@ -502,7 +507,7 @@ export function MarketingManager({
                   />
                 </label>
                 <div className="flex items-end gap-3">
-                  <button disabled={busy} onClick={() => void perform(save)}>
+                  <button className={buttonVariants({ variant: "default" })} disabled={busy} onClick={() => void perform(save)}>
                     Save template
                   </button>
                   <span className="text-xs">
@@ -528,7 +533,7 @@ export function MarketingManager({
                 sendKey.current = testKey.current = null;
               }}
             />
-            <details className="admin-panel">
+            <details className="rounded-xl bg-surface p-5 border border-line md:p-6">
               <summary>Advanced: import MJML</summary>
               <p className="text-sm">
                 Paste declarative MJML, then save to validate it. Scripts, raw
@@ -560,7 +565,7 @@ export function MarketingManager({
             </details>
             {template.revision ? (
               <details
-                className="admin-panel"
+                className="rounded-xl bg-surface p-5 border border-line md:p-6"
                 onToggle={(event) => {
                   if (event.currentTarget.open) void loadPreview();
                 }}
@@ -582,12 +587,12 @@ export function MarketingManager({
               </details>
             ) : null}
           </section>
-          <section className="admin-panel space-y-4">
+          <section className="rounded-xl bg-surface p-5 border border-line md:p-6 space-y-4">
             <h2 className="text-xl">Test and send</h2>
             <div className="grid gap-4 md:grid-cols-3">
               <label className={field}>
                 Send using
-                <select
+                <select className={selectClass}
                   value={provider}
                   onChange={(event) => {
                     setProvider(event.target.value as "resend" | "outlook");
@@ -611,7 +616,7 @@ export function MarketingManager({
               </label>
               <label className={field}>
                 Approved test email
-                <input
+                <input className={inputClass}
                   type="email"
                   value={testEmail}
                   onChange={(event) => {
@@ -622,7 +627,7 @@ export function MarketingManager({
               </label>
               <div className="flex items-end">
                 <button
-                  className="admin-btn--secondary"
+                  className={`${buttonVariants({ variant: "outline" })}`}
                   disabled={
                     busy ||
                     dirty ||
@@ -651,7 +656,7 @@ export function MarketingManager({
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className={field}>
                     Audience
-                    <select
+                    <select className={selectClass}
                       value={audience}
                       onChange={(event) => {
                         setAudience(event.target.value);
@@ -670,7 +675,7 @@ export function MarketingManager({
                   {audience === "contacts" ? (
                     <label className={field}>
                       Contact list (blank selects all)
-                      <input
+                      <input className={inputClass}
                         value={list}
                         maxLength={60}
                         onChange={(event) => {
@@ -692,7 +697,7 @@ export function MarketingManager({
                   I reviewed the saved email, product links, artwork and
                   recipient consent, and approve this campaign.
                 </label>
-                <button
+                <button className={buttonVariants({ variant: "default" })}
                   disabled={
                     busy ||
                     dirty ||
@@ -701,12 +706,8 @@ export function MarketingManager({
                     !connections?.providers.find((row) => row.id === provider)
                       ?.configured
                   }
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Queue this campaign for the selected consented audience?",
-                      )
-                    )
+                  onClick={async () => {
+                    if (await ask("Queue this campaign for the selected consented audience?", { action: "Queue campaign" }))
                       void perform(() => queue(false));
                   }}
                 >
@@ -728,7 +729,7 @@ export function MarketingManager({
         </>
       ) : null}
       {tab === "contacts" && admin ? (
-        <section className="admin-panel space-y-4">
+        <section className="rounded-xl bg-surface p-5 border border-line md:p-6 space-y-4">
           <h2 className="text-xl">Import consented contacts</h2>
           <p className="text-sm">
             One email address per line, up to 500. Import only people who
@@ -738,7 +739,7 @@ export function MarketingManager({
           </p>
           <label className={field}>
             List name
-            <input
+            <input className={inputClass}
               value={list}
               maxLength={60}
               onChange={(event) => setList(event.target.value)}
@@ -746,7 +747,7 @@ export function MarketingManager({
           </label>
           <label className={field}>
             How consent was obtained
-            <input
+            <input className={inputClass}
               value={consentSource}
               minLength={5}
               maxLength={300}
@@ -755,7 +756,7 @@ export function MarketingManager({
           </label>
           <label className={field}>
             Consent date
-            <input
+            <input className={inputClass}
               type="date"
               value={consentAt}
               max={new Date().toISOString().slice(0, 10)}
@@ -770,7 +771,7 @@ export function MarketingManager({
               onChange={(event) => setContactText(event.target.value)}
             />
           </label>
-          <button
+          <button className={buttonVariants({ variant: "default" })}
             disabled={
               busy ||
               !list ||
@@ -809,7 +810,7 @@ export function MarketingManager({
         </section>
       ) : null}
       {tab === "campaigns" ? (
-        <section className="admin-panel">
+        <section className="rounded-xl bg-surface p-5 border border-line md:p-6">
           <h2 className="text-xl">Recent campaigns</h2>
           <p className="text-sm">
             Accepted means the provider received the request. Uncertain sends

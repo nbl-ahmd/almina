@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const requestIdSchema = z.uuid();
 export const errorCodeSchema = z.enum([
   'DELIVERY_SETUP_REQUIRED','DELIVERY_LOCATION_REQUIRED','BRANCH_STOCK_CONFLICT','BRANCH_STOCK_RETIRED','BRANCH_LOGIN_CONFLICT',
+  'COUPON_UNAVAILABLE','COUPON_MINIMUM','COUPON_COMBINATION','COUPON_PAYMENT_MINIMUM',
   'VOUCHER_UNAVAILABLE','VOUCHER_MINIMUM',
   'REMINDERS_UNAVAILABLE', 'REMINDER_PRODUCT_INELIGIBLE', 'REMINDER_LIMIT',
   'INVALID_REQUEST', 'NOT_FOUND', 'METHOD_NOT_ALLOWED', 'SERVICE_UNAVAILABLE', 'INTERNAL_ERROR',
@@ -43,6 +44,7 @@ export const mongoIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/);
 export * from './api';
 
 export * from './commerce';
+export * from './coupons';
 
 export { cloudinaryImage } from './media';
 export * from './operations';

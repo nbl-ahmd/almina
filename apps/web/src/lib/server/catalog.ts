@@ -93,12 +93,14 @@ export function productImage(product: Product) {
   const cloudinary = publicImage(product.cloudinaryImages?.[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME, getWebEnvironment().APP_ENV === 'production');
   if (cloudinary) return cloudinary;
   const image = fileName(product.image);
+  if (process.env.ALMINA_LOCAL_DEMO === '1' && image?.startsWith('demo-catalog-')) return `/demo-catalog/${image}`;
   if (image) return `https://cdn.alminapharmacy.com/cdn/products/${image}`;
   const legacy = fileName(product.images?.[0]);
   return legacy ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${legacy}` : '/product-placeholder.svg';
 }
 export function categoryImage(image: string | undefined) {
   const name = fileName(image);
+  if (process.env.ALMINA_LOCAL_DEMO === '1' && name?.startsWith('demo-catalog-')) return `/demo-catalog/${name}`;
   return name ? `https://cdn.alminapharmacy.com/cdn/categories/${name}` : '/product-placeholder.svg';
 }
 export async function getBanners() {
@@ -123,6 +125,7 @@ export function productImages(product: Product) {
   }) ?? [];
   const images = product.images?.flatMap(value => {
     const name = fileName(value);
+    if (process.env.ALMINA_LOCAL_DEMO === '1' && name?.startsWith('demo-catalog-')) return [`/demo-catalog/${name}`];
     return name ? [`${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${name}`] : [];
   }) ?? [];
   return [...new Set([productImage(product), ...cloudinary, ...images])];

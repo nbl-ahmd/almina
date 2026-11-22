@@ -28,3 +28,8 @@ test('staff alert stylesheet has an exact CSP hash without allowing arbitrary in
  const policy=stylesheetPolicy('test-nonce','production','production',false,true);
  assert.ok(policy.includes(`'sha256-${digest}'`));assert.ok(policy.includes(`'sha256-${createHash('sha256').update('').digest('base64')}'`));assert.ok(!policy.includes("'unsafe-inline'"));assert.ok(!stylesheetPolicy('test-nonce','production','production').includes(digest));
 });
+
+test('allowing inline styles never adds hashes, because a hash would silently disable unsafe-inline',()=>{
+  assert.equal(stylesheetPolicy('n','development','development',false,true),"style-src 'self' 'unsafe-inline'");
+  assert.equal(stylesheetPolicy('n','production','production',true,true),"style-src 'self' 'unsafe-inline'");
+});

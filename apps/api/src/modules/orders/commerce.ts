@@ -1,3 +1,5 @@
+import { couponAllocation, consumeCoupon, releaseCoupon } from '../coupons/service.js';
+import { couponPreviewInputSchema } from '@almina/contracts';
 import { applyZoneQuote, restoreBranch, deliverySettings } from '../delivery/service.js';
 import { resolveDeliveryArea } from '@almina/contracts';
 import { branchOrderFilter } from './routing.js';
@@ -52,7 +54,9 @@ export function normalizeItems(input: QuoteInput['items']): QuoteInput['items'] 
   }
   return [...quantities].sort(([a], [b]) => a.localeCompare(b)).map(([productId, quantity]) => ({ productId, quantity }));
 }
-export function calculateQuote(input: QuoteInput, products: Document[], policy: CommercePolicy, voucher?:{code:string;allocation:Map<string,number>}): Quote {
+type BasketPricing = { items: QuoteInput['items']; customer: { emirate: string } };
+type AppliedDiscount = { code: string; allocation: Map<string, number> };
+export function calculateQuote<T extends BasketPricing>(input: T, products: Document[], policy: CommercePolicy, voucher?: AppliedDiscount, coupon?: AppliedDiscount): Quote {
   const fee = policy.delivery.find(rule => rule.emirate === input.customer.emirate);
   if (!fee) throw new HttpError(400, 'INVALID_REQUEST');
   const byId = new Map(products.map(product => [String(product._id), product]));
@@ -72,15 +76,17 @@ export function calculateQuote(input: QuoteInput, products: Document[], policy: 
     const salePriceMinor = product.sale === true ? moneyMinor(product.salePrice) : null;
     if (salePriceMinor !== null && salePriceMinor > unitPriceMinor) throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
     const voucherDiscountMinor=voucher?.allocation.get(item.productId)??0;
+    const couponDiscountMinor = coupon?.allocation.get(item.productId) ?? 0;
+    const lineDiscount = voucherDiscountMinor + couponDiscountMinor;
     const original = BigInt(salePriceMinor ?? unitPriceMinor) * BigInt(item.quantity);
-    if(!Number.isSafeInteger(voucherDiscountMinor)||voucherDiscountMinor<0||BigInt(voucherDiscountMinor)>original)throw new HttpError(503,'COMMERCE_UNAVAILABLE');
-    const charged = original-BigInt(voucherDiscountMinor);
+    if(!Number.isSafeInteger(lineDiscount)||lineDiscount<0||BigInt(lineDiscount)>original)throw new HttpError(503,'COMMERCE_UNAVAILABLE');
+    const charged = original-BigInt(lineDiscount);
     const taxRateBps = product.vat === true ? policy.vatRateBps : 0;
     // Round VAT once per line, half up; inclusive tax is embedded and never added again.
     const tax = roundedRatio(charged, taxRateBps, policy.vatMode === 'inclusive' ? 10000 + taxRateBps : 10000);
     const family = familyProfile(product);
     return { ...item, ...(family?{familyKey:family.familyKey!,variantLabel:variantLabel(family)}:{}), sku: product.product_id, barcode: typeof product.barcode === 'string' ? product.barcode : null,
-      name: product.name, unitPriceMinor, salePriceMinor, ...(voucher?{voucherDiscountMinor}:{}), taxRateBps, taxMinor: safe(tax),
+      name: product.name, unitPriceMinor, salePriceMinor, ...(voucher?{voucherDiscountMinor}:{}), ...(coupon?{couponDiscountMinor}:{}), taxRateBps, taxMinor: safe(tax),
       discountMinor: safe(BigInt(unitPriceMinor) * BigInt(item.quantity) - charged),
       lineTotalMinor: safe(charged + (policy.vatMode === 'exclusive' ? tax : 0n)) };
   });
@@ -89,7 +95,7 @@ export function calculateQuote(input: QuoteInput, products: Document[], policy: 
   const subtotalMinor = safe(lines.reduce((total, line) => total + BigInt(line.salePriceMinor ?? line.unitPriceMinor) * BigInt(line.quantity), 0n));
   if (subtotalMinor < policy.minimumOrderMinor) throw new HttpError(422, 'MINIMUM_ORDER');
   const deliveryFeeMinor = fee.freeAboveMinor !== undefined && subtotalMinor >= fee.freeAboveMinor ? 0 : fee.feeMinor;
-  return { ...(voucher?{voucher:{code:voucher.code,discountMinor:lines.reduce((sum,line)=>sum+(line.voucherDiscountMinor??0),0)}}:{}), currency: 'AED', policyVersion: policy.version, vatMode: policy.vatMode, lines, subtotalMinor,
+  return { ...(coupon ? { coupon: { code: coupon.code, discountMinor: lines.reduce((sum, line) => sum + (line.couponDiscountMinor ?? 0), 0) } } : {}), ...(voucher?{voucher:{code:voucher.code,discountMinor:lines.reduce((sum,line)=>sum+(line.voucherDiscountMinor??0),0)}}:{}), currency: 'AED', policyVersion: policy.version, vatMode: policy.vatMode, lines, subtotalMinor,
     discountMinor: sum('discountMinor'), taxMinor, deliveryFeeMinor, minimumOrderMinor: policy.minimumOrderMinor,
     totalMinor: safe(BigInt(sum('lineTotalMinor')) + BigInt(deliveryFeeMinor)) };
 }
@@ -106,20 +112,32 @@ async function policyFrom(db: Db, session?: ClientSession): Promise<CommercePoli
   if (!parsed.success) throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
   return parsed.data;
 }
-async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, customerId?:string, wholesale?:WholesaleCustomer) {
+async function basketProducts(db: Db, items: QuoteInput['items'], session?: ClientSession) {
   const queryOptions = { ...options, ...(session ? { session } : {}) };
-  const store = await db.collection('stores').findOne({}, queryOptions);
-  if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
-  if(!(await deliverySettings(db,session)).active)await assertServiceable(db, input.customer);
-  let products:Document[] = await db.collection('products').find({ _id: { $in: input.items.map(item => new ObjectId(item.productId)) } },
+  const products:Document[] = await db.collection('products').find({ _id: { $in: items.map(item => new ObjectId(item.productId)) } },
     { ...queryOptions, projection: { ...Object.fromEntries(familyFieldNames.map(key=>[key,1])), product_id: 1, barcode: 1, name: 1, price: 1, sale: 1, salePrice: 1, vat: 1,
       stock: 1, disabled: 1, active: 1, published: 1, audience: 1, wholesaleAudience: 1, wholesaleTypeIds: 1, category: 1, productType:1, contentReviewed:1, archivedAt:1 } }).toArray();
   const categories = await db.collection('categories').find({ _id: { $in: products.map(product => product.category) }, disabled: { $ne: true } }, queryOptions).toArray();
   const visible = new Set(categories.map(category => String(category._id)));
   if (products.some(product => !visible.has(String(product.category)))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
-  if(wholesale){if(input.voucherCode||input.customer.email.trim().toLowerCase()!==wholesale.email.toLowerCase())throw new HttpError(403,'FORBIDDEN');products=(await prepareWholesaleProducts(db,wholesale,products,normalizeItems(input.items),session)).products;}
+  return products;
+}
+async function quoteFrom(db: Db, input: QuoteInput, session?: ClientSession, customerId?:string, wholesale?:WholesaleCustomer) {
+  const queryOptions = { ...options, ...(session ? { session } : {}) };
+  const store = await db.collection('stores').findOne({}, queryOptions);
+  if (store?.status !== 'open') throw new HttpError(503, 'COMMERCE_UNAVAILABLE');
+  if(!(await deliverySettings(db,session)).active)await assertServiceable(db, input.customer);
+  let products = await basketProducts(db, input.items, session);
+  if (input.couponCode && input.voucherCode) throw new HttpError(422, 'COUPON_COMBINATION');
+  if(wholesale){if(input.voucherCode||input.couponCode||input.customer.email.trim().toLowerCase()!==wholesale.email.toLowerCase())throw new HttpError(403,'FORBIDDEN');products=(await prepareWholesaleProducts(db,wholesale,products,normalizeItems(input.items),session)).products;}
   if (!wholesale && products.some(product => !visibleToRetail(product))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
   const policy=await policyFrom(db,session),base=calculateQuote(input,products,policy);
+  if (input.couponCode) {
+    const { allocation } = await couponAllocation(db, input.couponCode, products, base.lines, session);
+    const quote = await applyZoneQuote(db, input.customer, calculateQuote(input, products, policy, undefined, { code: input.couponCode, allocation }), session);
+    if (input.customer.payment === 'stripe' && quote.totalMinor < 200) throw new HttpError(422, 'COUPON_PAYMENT_MINIMUM');
+    return quote;
+  }
   if(!input.voucherCode)return applyZoneQuote(db,input.customer,base,session);
   const {allocation}=await voucherAllocation(db,input.voucherCode,customerId,products,base.lines,session);
   return applyZoneQuote(db,input.customer,calculateQuote(input,products,policy,{code:input.voucherCode,allocation}),session);
@@ -129,16 +147,27 @@ function checkoutResult(doc: Document, replayed: boolean) {
   return { id: String(doc._id), orderId: doc.orderId as string, status: doc.status as OrderStatus, ...(doc.createdAt instanceof Date ? { createdAt: doc.createdAt.toISOString() } : {}), totals: doc.totals as Quote, replayed };
 }
 function requestHash(input: CheckoutInput,customerId?:string,wholesale?:WholesaleCustomer) {
-  return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(wholesale?{channel:'wholesale',owner:wholesale.id}:{}), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ) })).digest('hex');
+  return createHash('sha256').update(JSON.stringify({ customer: input.customer, items: normalizeItems(input.items), ...(wholesale?{channel:'wholesale',owner:wholesale.id}:{}), ...(input.voucherCode?{voucherCode:input.voucherCode,customerId}:{} ), ...(input.couponCode ? { couponCode: input.couponCode } : {}) })).digest('hex');
 }
 export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{beforeTransition:(id:string,input:{status:OrderStatus},staff:Staff)=>Promise<void>}) {
   return {
+    async previewCoupon(raw: unknown) {
+      const { items, couponCode } = parse(couponPreviewInputSchema, raw);
+      const db = await getDb();
+      const products = await basketProducts(db, items);
+      if (products.some(product => !visibleToRetail(product))) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
+      const policy = await policyFrom(db);
+      const { lines } = calculateQuote({ items, customer: { emirate: policy.delivery[0]!.emirate } }, products, { ...policy, minimumOrderMinor: 0 });
+      const { discountMinor } = await couponAllocation(db, couponCode, products, lines);
+      return { code: couponCode, discountMinor };
+    },
     async quote(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer) {
       const input = parse(quoteInputSchema, raw);
       return quoteFrom(await getDb(), input,undefined,customerId,wholesale);
     },
     async checkout(raw: unknown,customerId?:string,wholesale?:WholesaleCustomer, stripeReservation?: {sessionId:string; attemptId:string; expiresAt:Date; testMode?:boolean}) {
       const input = parse(checkoutInputSchema, raw);
+      if (input.couponCode && !input.acceptedQuoteHash) throw new HttpError(400, 'INVALID_REQUEST');
       if (input.customer.payment === 'stripe' && (!stripeReservation || wholesale || input.voucherCode)) throw new HttpError(400, 'INVALID_REQUEST');
       if (input.customer.payment !== 'stripe' && stripeReservation) throw new HttpError(400, 'INVALID_REQUEST');
       input.items = normalizeItems(input.items);
@@ -169,6 +198,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
           }
           const _id = new ObjectId();
           const now = new Date();
+          if (totals.coupon) await consumeCoupon(db, session, totals.coupon.code);
           if(input.voucherCode)await consumeVoucher(db,session,input.voucherCode,customerId!,_id);
           // Claim key before stock changes. _id has a built-in unique index; receipt and order commit together.
           await db.collection<Document & { _id: string }>('checkout_requests').insertOne({ _id: key, fingerprint, orderId: _id, createdAt: now }, { session });
@@ -193,7 +223,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
             cancellationRestocks: (await policyFrom(db, session)).cancellationRestocks,
             // Compatibility values are derived only here, never from the browser.
             dispatched: false, canceled: false,
-            customer: { ...input.customer, totalprice: (totals.subtotalMinor + totals.discountMinor - (totals.voucher?.discountMinor??0)) / 100 + '',
+            customer: { ...input.customer, totalprice: (totals.subtotalMinor + totals.discountMinor - (totals.voucher?.discountMinor??0) - (totals.coupon?.discountMinor ?? 0)) / 100 + '',
               totalSalePrice: totals.subtotalMinor / 100, totalVat: totals.taxMinor / 100,
               deliveryFee: totals.deliveryFeeMinor / 100, totalAmount: totals.totalMinor / 100 },
             cartItems: input.items.map(item => ({ _id: new ObjectId(item.productId), quantity: item.quantity })) };
@@ -243,7 +273,8 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
           if(order.payment?.provider==='stripe'){
             if(order.payment.testMode!==false||!paymentGuard)throw new HttpError(409,'INVALID_TRANSITION');
             if(current===input.status){outcome={status:input.status};return;}
-            if(['cancelled','refunded'].includes(input.status)){
+            if (input.status === 'cancelled') await releaseCoupon(db, session, order);
+          if(['cancelled','refunded'].includes(input.status)){
               if(order.payment.refundRequested&&order.payment.state==='refund_pending'&&current!=='legacy_conflict'){outcome={status:current};return;}
               throw new HttpError(409,'INVALID_TRANSITION');
             }
@@ -276,6 +307,7 @@ export function createCommerceService(getDb: () => Promise<Db>, paymentGuard?:{b
             await restoreBranch(db,session,order);
             fields['inventory.restored'] = true;
           }
+          if (input.status === 'cancelled') await releaseCoupon(db, session, order);
           if(['cancelled','refunded'].includes(input.status))await reverseOrderRewards(db,session,order);
           fields.statusHistory = [...(Array.isArray(order.statusHistory) ? order.statusHistory : []),
             ...path.map(status => ({ status, at: new Date(), actorId: new ObjectId(staff.id) }))];

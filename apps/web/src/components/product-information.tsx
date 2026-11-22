@@ -3,13 +3,13 @@ import { shopText as u } from '../lib/i18n-storefront';
 import Link from './app-link';
 import type { Product } from '../lib/catalog/model';
 import { categoryHref } from '../lib/catalog/model';
-import { Icon } from './icon';
+import { Icon } from './storefront-icon';
 
 const sectionTitles = new Set(['Key benefits', 'Suitable for', 'Pack details']);
 
 /** Plain text only: preserve older descriptions and never interpret imported HTML. */
 function Description({ text }: { text: string }) {
-  return <div className="space-y-5 text-sm leading-7 wrap-anywhere">
+  return <div className="product-prose space-y-5 text-sm leading-7 wrap-anywhere">
     {text.split(/\n\s*\n/).filter(block => block.trim()).map((block, index) => {
       const lines = block.trim().split('\n');
       const heading = sectionTitles.has(lines[0] ?? '') ? lines.shift() : undefined;
@@ -36,7 +36,7 @@ export async function ProductInformation({ product }: { product: Product }) {
     ['Sold as', product.saleUnit], ['Form', product.productForm], ['Strength', product.strength],
     ['Manufacturer', product.manufacturer], ['GTIN', product.gtin], ['Product ID', product.product_id],
   ].filter((fact): fact is [string, string] => Boolean(fact[1]));
-  return <section className="product-info-panel rounded-2xl border p-5 md:p-7" aria-label={u(locale,"Product details")}>
+  return <section className="product-info-panel" aria-label={u(locale,"Product details")}>
     <nav className="mb-7 flex gap-5 scrollbar-none overflow-x-auto border-b text-sm font-semibold whitespace-nowrap" aria-label={u(locale,"Product information sections")}>
       <a className="inline-flex min-h-11 items-center border-b-2" href="#product-description">{u(locale,"Overview")}</a>
       {product.usage ? <a className="inline-flex min-h-11 items-center" href="#product-usage">{u(locale,"How to use")}</a> : null}
@@ -55,7 +55,7 @@ export async function ProductInformation({ product }: { product: Product }) {
           <div className="pb-5"><Description text={value} /></div>
         </details>)}
       </div>
-      <aside className="min-w-0 space-y-7 rounded-2xl p-5">
+      <aside className="product-facts min-w-0 space-y-7">
         <div id="product-facts" className="scroll-mt-6" aria-labelledby="product-specifications-title">
           <h2 id="product-specifications-title" className="mb-4 text-lg font-bold">{u(locale,"Product specifications")}</h2>
           <dl className="m-0 divide-y border-y text-sm">

@@ -1,4 +1,5 @@
 "use client";
+import { buttonVariants } from "./ui";
 import { useEffect, useRef, useState } from "react";
 import type { Editor } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
@@ -84,7 +85,7 @@ export default function MarketingDesigner({
   }, []);
   return (
     <div
-      className="marketing-designer min-w-0 overflow-hidden rounded-xl border"
+      className="min-w-0 overflow-hidden rounded-lg bg-surface border border-line"
       data-mobile-panel={mobilePanel}
     >
       <div
@@ -94,7 +95,7 @@ export default function MarketingDesigner({
       >
         <button
           type="button"
-          className={mobilePanel === "canvas" ? "" : "admin-btn--secondary"}
+          className={buttonVariants({ variant: mobilePanel === "canvas" ? "dark" : "outline", size: "sm" })}
           aria-pressed={mobilePanel === "canvas"}
           onClick={() => setMobilePanel("canvas")}
         >
@@ -102,7 +103,7 @@ export default function MarketingDesigner({
         </button>
         <button
           type="button"
-          className={mobilePanel === "controls" ? "" : "admin-btn--secondary"}
+          className={buttonVariants({ variant: mobilePanel === "controls" ? "dark" : "outline", size: "sm" })}
           aria-pressed={mobilePanel === "controls"}
           onClick={() => setMobilePanel("controls")}
         >

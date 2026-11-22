@@ -1,19 +1,19 @@
 import {test,expect} from './fixtures';
 
-for(const width of [360,390,768,1440])test(`filter panel keeps native behavior at ${width}px`,async({page})=>{
+for(const width of [360,390,768,1440])test(`filter panel supports responsive keyboard behavior at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:1000});
  await page.goto('/search?q=Daily&minPrice=5&maxPrice=25&sort=price-asc');
- const panel=page.locator('#catalog-filters'),summary=panel.locator(':scope > summary');
- if(width<1024){await expect(summary).toBeVisible();await summary.press('Space');await expect(panel).toHaveAttribute('open');}
- else await expect(summary).toBeHidden();
+ const panel=page.locator('#catalog-filters'),trigger=page.getByRole('button',{name:'Filters',exact:true});
+ if(width<900){await expect(trigger).toBeVisible();await trigger.press('Space');await expect(page.getByRole('dialog',{name:'Filters',exact:true})).toBeVisible();}
+ else await expect(panel.locator(':scope > summary')).toBeHidden();
  const form=page.getByRole('search',{name:'Filter products',exact:true});await expect(form).toBeVisible();
  const lower=form.getByRole('spinbutton',{name:'From',exact:true}),upper=form.getByRole('spinbutton',{name:'To',exact:true});
  await expect(lower).toHaveValue('5');await expect(upper).toHaveValue('25');
  for(const field of [lower,upper]) await expect(field).toBeEditable();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await panel.scrollIntoViewIfNeeded();
+ await form.scrollIntoViewIfNeeded();
  await page.screenshot({path:test.info().outputPath(`filters-${width}.png`)});
- if(width<1024){await expect(summary).toBeVisible();await summary.press('Space');await expect(form).toBeHidden();await page.keyboard.press('Space');await expect(form).toBeVisible();}
+ if(width<900){await page.keyboard.press('Escape');await expect(form).toBeHidden();await expect(trigger).toBeFocused();await trigger.press('Space');await expect(form).toBeVisible();}
 });
 
 test('price range rejects reversed bounds and applying filters preserves query, sort and hidden refinements',async({page})=>{
@@ -32,7 +32,7 @@ test('price range rejects reversed bounds and applying filters preserves query, 
 test('Arabic filters keep price labels, decimal entry and inline validation readable',async({page,context})=>{
  await context.addCookies([{name:'almina_lang',value:'ar',url:test.info().project.use.baseURL!}]);
  await page.setViewportSize({width:390,height:1000});await page.goto('/search?q=Daily');
- await page.locator('#catalog-filters > summary').click();const form=page.getByRole('search',{name:'تصفية المنتجات',exact:true});
+ await page.getByRole('button',{name:'الفلاتر',exact:true}).click();const form=page.getByRole('search',{name:'تصفية المنتجات',exact:true});
  const lower=form.getByRole('spinbutton',{name:'من',exact:true}),upper=form.getByRole('spinbutton',{name:'إلى',exact:true});
  await expect(lower).toHaveAttribute('placeholder','أدنى');await expect(upper).toHaveAttribute('placeholder','أقصى');
  await expect(page.locator('.storefront-shell')).toHaveAttribute('dir','rtl');

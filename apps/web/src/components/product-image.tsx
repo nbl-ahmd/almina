@@ -1,13 +1,18 @@
 "use client";
+import { ShoppingBagIcon } from "./storefront-icons";
 import { useState } from "react";
 import Image, { type ImageProps, type ImageLoaderProps } from "next/image";
 import { cloudinaryDelivery } from "../lib/catalog/image-delivery";
 
-type Props = Omit<ImageProps, "loader"> & { cloudName?: string | undefined };
+type Props = Omit<ImageProps, "loader"> & { cloudName?: string | undefined; locale?: "en" | "ar" };
 
-export function ProductImage({ cloudName, alt, ...props }: Props) {
+export function ProductImage({ cloudName, alt, locale = "en", ...props }: Props) {
   const [failed, setFailed] = useState<ImageProps["src"] | null>(null);
-  const source = failed === props.src ? "/product-placeholder.svg" : props.src;
+  if (failed === props.src || props.src === "/product-placeholder.svg") {
+    const label = locale === "ar" ? "الصورة غير متاحة" : "Image unavailable";
+    return <span className={`${props.className ?? ""} product-image-fallback`} role="img" aria-label={alt || label}><ShoppingBagIcon aria-hidden="true" /><span>{label}</span></span>;
+  }
+  const source = props.src;
   const useCdn = cloudinaryDelivery(source, cloudName, 640) !== null;
   const loader = ({ src, width }: ImageLoaderProps) =>
     cloudinaryDelivery(src, cloudName, width) ?? src;
