@@ -34,9 +34,9 @@ function Fulfilment({ report }: { report: DashboardReport | null }) {
   const other = Math.max(0, total - completed - cancelled);
   const percentage = total ? Math.round(completed / total * 100) : 0;
   const stages = [
-    { label: 'Dispatched', count: completed, color: 'var(--admin-chart)', href: '/admin/orders?status=dispatched' },
-    { label: 'Cancelled', count: cancelled, color: 'var(--admin-danger)', href: '/admin/orders?status=cancelled' },
-    { label: 'Other stages', count: other, color: 'var(--admin-border-strong)', href: '/admin/orders' },
+    { label: 'Dispatched', count: completed, color: 'CanvasText', href: '/admin/orders?status=dispatched' },
+    { label: 'Cancelled', count: cancelled, color: 'GrayText', href: '/admin/orders?status=cancelled' },
+    { label: 'Other stages', count: other, color: 'ButtonBorder', href: '/admin/orders' },
   ];
   let offset = 0;
   return <Card title="Fulfilment" className="commerce-fulfilment" aside={<TruckIcon width={18} height={18} aria-hidden="true" />}>

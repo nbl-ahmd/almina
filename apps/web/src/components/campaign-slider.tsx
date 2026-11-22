@@ -43,11 +43,11 @@ export function CampaignSlider({
               aria-label={locale === "en" ? `Show ${controlLabel} ${index + 1}` : `عرض ${u(locale,controlLabel)} ${index + 1}`}
               aria-pressed={active === index}
               onClick={() => setActive(index)}
-              className="group flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 shadow-none outline-offset-0 focus-visible:outline-2 focus-visible:outline-ink"
+              className="group flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 shadow-none outline-offset-0 focus-visible:outline-2"
             >
               <span
                 aria-hidden="true"
-                className={`h-[3px] w-7 rounded-full transition-[background-color,transform] duration-150 motion-reduce:transition-none ${active === index ? "scale-x-100 bg-ink" : "scale-x-75 bg-ink/25 group-hover:bg-ink/50"}`}
+                className={`h-[3px] w-7 rounded-full transition-[background-color,transform] duration-150 motion-reduce:transition-none ${active === index ? "scale-x-100 " : "scale-x-75  "}`}
               />
             </button>
           ))}

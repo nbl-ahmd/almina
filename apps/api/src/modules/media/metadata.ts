@@ -1,4 +1,4 @@
-import { storePublicationIssues } from '@almina/contracts';
+import { cloudinaryImage, storePublicationIssues } from '@almina/contracts';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
@@ -36,8 +36,21 @@ export async function createMediaMetadata(db: Db, collection: Collection, raw: u
   if (!collections.includes(collection) || !ObjectId.isValid(actor)
     || (assets && (typeof assets.image !== 'string' || typeof assets.gdriveFileId !== 'string' || !/^[A-Za-z0-9_-]{1,200}\.(webp|png|jpe?g|avif|gif)$/i.test(assets.image) || !/^[A-Za-z0-9_-]{1,200}$/.test(assets.gdriveFileId)))
     || (!assets && collection !== 'categories')) throw new HttpError(400, 'INVALID_REQUEST');
-  const document = { _id: new ObjectId(), ...fields, ...(collection === 'categories' ? { color: fields.color ?? '198, 229, 214',
-    image: '305dd291-e32e-4d7f-9abb-aae212c434a4.webp', gdriveFileId: '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL' } : {}), ...assets, createdAt: new Date() };
+  return saveMediaMetadata(db, collection, { ...fields, ...(collection === 'categories' ? {
+    color: fields.color ?? '198, 229, 214', image: '305dd291-e32e-4d7f-9abb-aae212c434a4.webp',
+    gdriveFileId: '1cQnD6nDQ7Qge0LplEP22vuVTjtphlkoL',
+  } : {}), ...assets }, actor);
+}
+export function createBannerWithArtwork(db: Db, raw: unknown, actor: string, filename: string, urls: string[], cloudName: string) {
+  const fields = mediaMetadataInput('banners', raw);
+  if (!ObjectId.isValid(actor) || !/^banner-[a-f0-9-]{36}\.webp$/.test(filename)
+    || urls.length < 1 || urls.length > 2 || urls.some(url => !cloudinaryImage(url, cloudName))) {
+    throw new HttpError(400, 'INVALID_REQUEST');
+  }
+  return saveMediaMetadata(db, 'banners', { ...fields, image: filename, cloudinaryImages: urls }, actor);
+}
+async function saveMediaMetadata<T extends Document>(db: Db, collection: Collection, fields: T, actor: string) {
+  const document = { _id: new ObjectId(), ...fields, createdAt: new Date() };
   const session = db.client.startSession();
   try {
     await session.withTransaction(async () => {

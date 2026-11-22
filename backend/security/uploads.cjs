@@ -12,7 +12,7 @@ module.exports = { imageUploadOptions };
 
 async function validateImageUploads(req, _res, next) {
   // Client MIME labels are untrusted. Validate decoded format before DB/provider effects.
-  const files = [...(Array.isArray(req.files) ? req.files : []), ...(req.file ? [req.file] : [])];
+  const files = req.file ? [req.file] : Array.isArray(req.files) ? req.files : Object.values(req.files ?? {}).flat();
   const formats = { 'image/jpeg': 'jpeg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/avif': 'heif' };
   try {
     for (const file of files) {

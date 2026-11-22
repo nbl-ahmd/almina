@@ -84,7 +84,7 @@ export default function MarketingDesigner({
   }, []);
   return (
     <div
-      className="marketing-designer min-w-0 overflow-hidden rounded-xl border border-border"
+      className="marketing-designer min-w-0 overflow-hidden rounded-xl border"
       data-mobile-panel={mobilePanel}
     >
       <div
@@ -110,7 +110,7 @@ export default function MarketingDesigner({
         </button>
       </div>
       <div ref={container} className="min-w-0" />
-      <p className="m-0 bg-white p-3 text-xs text-muted">
+      <p className="m-0 bg-white p-3 text-xs">
         Drag sections on a wider screen. On a phone, add products or artwork
         above, then switch views to inspect the canvas and edit selected styles.
       </p>

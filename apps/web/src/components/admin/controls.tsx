@@ -65,6 +65,9 @@ export async function adminRequest(
       throw new Error('Check the family name, brand, form, strength, category and option combinations. Each combination must be unique.');
     }
   }
+  if (path === 'banners' && method === 'POST' && result.status === 503) {
+    throw new Error('Banner storage is unavailable. Reload Banners to check whether it was published before retrying.');
+  }
   if (!result.ok)
     throw new Error(
       result.status === 401

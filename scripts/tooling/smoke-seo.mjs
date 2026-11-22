@@ -20,6 +20,9 @@ async function freePort() {
   const port = probe.address().port; await new Promise(resolve => probe.close(resolve)); return port;
 }
 const canonical = 'https://shop.example.invalid';
+function headingText(html) {
+  return html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g, '').trim();
+}
 try {
   // Short-lived synthetic loopback TLS only; Node trusts this certificate in the child.
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', join(directory, 'key.pem'),
@@ -32,6 +35,7 @@ try {
   web = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: fileURLToPath(new URL('apps/web/', root)), stdio: 'ignore', env: {
       AL_MINA_ISOLATED_BUILD: process.env.AL_MINA_ISOLATED_BUILD,
+      AL_MINA_VERIFICATION_TAG: process.env.AL_MINA_VERIFICATION_TAG,
       APP_ENV: 'production', NODE_ENV: 'production', WEB_ORIGIN: canonical, API_ORIGIN: fixtureOrigin, CLOUDINARY_CLOUD_NAME: 'synthetic',
       STOREFRONT_PRODUCT_REPLACEMENTS: '{"PDRETIRED":"PD0001","PDUNAVAILABLE":"PD9999"}',
       NODE_EXTRA_CA_CERTS: join(directory, 'cert.pem'), NEXT_TELEMETRY_DISABLED: '1',
@@ -53,7 +57,7 @@ try {
       const html = await response.text(), head = html.match(/<head>([\s\S]*?)<\/head>/)?.[1];
       assert.ok(head.includes(`<link rel="canonical" href="${canonical}${path}"`), path);
       const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
-      assert.ok(visible.match(/<h1\b[^>]*>([^<]*)<\/h1>/)?.[1] === recovered.name);
+      assert.equal(headingText(visible), recovered.name, path);
       assert.ok(visible.includes(index === 0 ? 'AED 0.00' : 'AED 9.99'));
       assert.ok(visible.includes('Out of stock'));
       const data = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
@@ -92,7 +96,7 @@ try {
       if (path.includes('daily-care')) {
         // Discard all executable/RSC script text: this must be real visible SSR markup.
         const visibleHtml = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
-        assert.ok(visibleHtml.match(/<h1\b[^>]*>([^<]*)<\/h1>/)?.[1] === 'Daily Care');
+        assert.equal(headingText(visibleHtml), 'Daily Care', path);
         assert.ok(visibleHtml.includes('Daily care product description.'));
         assert.ok(visibleHtml.includes('AED 20.00'));
         const data = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));

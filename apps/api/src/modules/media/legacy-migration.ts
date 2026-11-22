@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import type {Db,Document} from 'mongodb';
+import { retainedBannerArtwork } from './compatibility-reads.js';
 export const legacyPath=/^\/cdn\/(products|categories|banners)\/[A-Za-z0-9][A-Za-z0-9_-]{0,179}\.(webp|png|jpe?g|gif|avif)$/i;
 export function mappedTarget(value:unknown,cloud:string|undefined):string|null{
  if(typeof value!=='string'||!cloud||!/^[A-Za-z0-9_-]{1,100}$/.test(cloud))return null;
@@ -18,5 +19,7 @@ export async function legacyInventory(db:Db){
 export async function resolveLegacyMapping(db:Db,path:string,cloud:string|undefined){
  if(!legacyPath.test(path))return null;
  const row=await db.collection<Document & {_id:string}>('legacy_media_mappings').findOne({_id:path,verified:true},{projection:{target:1},maxTimeMS:3000});
- return mappedTarget(row?.target,cloud);
+ const mapped = mappedTarget(row?.target,cloud);
+ if (mapped || !path.startsWith('/cdn/banners/')) return mapped;
+ return retainedBannerArtwork(db, path.slice('/cdn/banners/'.length), {}, cloud);
 }

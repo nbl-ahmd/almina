@@ -60,16 +60,16 @@ export default async function CollectionPage({ params }: Props) {
           }}
         />
       ) : null}
-      <StorefrontIntro title={collection.title} description={collection.description} artwork={collection.slug === 'baby-care' ? 'family' : collection.slug === 'skin-essentials' ? 'skin' : 'care'} />
+      <StorefrontIntro title={collection.title} description={collection.description} />
       {products.length ? (
         <>
-          <p className="mb-4 text-sm text-muted">
+          <p className="mb-4 text-sm">
             {products.length} available products
           </p>
           <ProductGrid products={products} />
         </>
       ) : (
-        <div className="rounded-xl bg-subtle p-6">
+        <div className="rounded-xl p-6">
           <h2 className="text-xl">This collection is being refreshed.</h2>
           <Link href="/products" className="button rounded-full text-sm">
             Explore all products

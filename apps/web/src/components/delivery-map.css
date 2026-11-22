@@ -1,41 +1,26 @@
-.delivery-map { height: 340px; width: 100%; position: relative; z-index: 0; border: 1px solid #d4d4d4; border-radius: 12px; background: #f5f5f5; }
-.delivery-map-pin { background: transparent; border: 0; }
-.delivery-map-pin span { display: block; width: 20px; height: 20px; border-radius: 50%; background: #2563eb; border: 3px solid white; box-shadow: 0 2px 6px #0005; }
-.delivery-map .leaflet-control a { min-height: 32px; min-width: 32px; color: #171717; }
-@media(max-width:600px){.delivery-map{height:300px;}.delivery-map .leaflet-control a{min-height:44px;min-width:44px;line-height:44px;}}
-
-/* The same map stays mounted in the native modal top layer: no lost drawing draft. */
-.delivery-map-workspace { display: block; position: relative; inset: auto; margin: 0; padding: 0; width: 100%; max-width: none; max-height: none; min-width: 0; border: 1px solid #d4d4d4; border-radius: 12px; color: #171717; background: #fff; }
-.delivery-map-workspace:not([open]) { display: none; }
-.delivery-map-workspace .delivery-map { border: 0; border-radius: 0; }
-.delivery-map-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #e5e5e5; }
-.delivery-map-toolbar strong { font-size: 15px; font-weight: 600; }
-.delivery-map-toolbar p, .delivery-map-guidance p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #525252; }
-.delivery-map-actions { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
-.delivery-map-actions button { min-height: 44px; padding: 8px 14px; border: 1px solid #d4d4d4; border-radius: 8px; background: #fff; color: #171717; font-size: 14px; font-weight: 600; cursor: pointer; }
-.delivery-map-actions button:hover { background: #f5f5f5; }
-.delivery-map-actions button:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
-.delivery-map-actions button:disabled { opacity: .5; cursor: default; }
-.delivery-map-guidance { padding: 12px 16px; border-top: 1px solid #e5e5e5; }
-.delivery-map-guidance small { display: block; margin-top: 4px; color: #525252; font-size: 12px; }
-.delivery-map-workspace:modal { position: fixed; inset: 0; display: flex; flex-direction: column; margin: 0; width: 100%; height: 100dvh; max-width: 100%; max-height: 100dvh; border: 0; border-radius: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+/* Leaflet needs a sized container in both the embedded and expanded views. */
+.delivery-map { width: 100%; height: 340px; z-index: 0; }
+.delivery-map-pin span { display: block; width: 20px; height: 20px; background: Highlight; border: 2px solid Canvas; }
+.delivery-map-workspace { position: relative; inset: auto; width: 100%; max-width: none; margin: 0; padding: .5rem; }
+.delivery-map-workspace:modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+}
 .delivery-map-workspace:modal .delivery-map { flex: 1; min-height: 160px; height: auto; }
-.delivery-map-workspace:modal::backdrop { background: #fff; }
-@media(max-width:600px){.delivery-map-toolbar{align-items:flex-start;flex-direction:column;padding:12px;}.delivery-map-actions{width:100%;}.delivery-map-actions button{flex:1;}.delivery-map-guidance{padding:10px 12px;}}
-
-.delivery-map .leaflet-pm-toolbar .button-container > a { display: flex; align-items: center; gap: 6px; width: auto; min-width: 96px; min-height: 44px; padding: 0 8px; text-decoration: none; }
+.delivery-map .leaflet-pm-toolbar .button-container > a {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  width: auto;
+  min-height: 44px;
+  padding-inline: .5rem;
+}
 .delivery-map .leaflet-pm-toolbar .control-icon { width: 26px; height: 30px; flex-shrink: 0; }
-.delivery-map-tool-label { font: 600 12px/1.2 Arial, sans-serif; }
-
-.delivery-place-search { padding: 12px 16px; border-bottom: 1px solid #e5e5e5; background: #fff; max-height: 38dvh; overflow-y: auto; }
-.delivery-place-search__input { display: flex; align-items: end; gap: 8px; }
-.delivery-place-search label { display: grid; flex: 1; gap: 4px; font-size: 13px; font-weight: 600; min-width: 0; }
-.delivery-place-search input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid #a3a3a3; border-radius: 8px; background: #fff; color: #171717; font-size: 16px; }
-.delivery-place-search button { min-height: 44px; padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 8px; background: #fff; color: #171717; font-size: 13px; font-weight: 600; white-space: nowrap; }
-.delivery-place-search button:disabled { opacity: .5; }
-.delivery-place-search :is(input,button):focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
-.delivery-place-search p,.delivery-place-search small { display: block; margin: 6px 0 0; color: #525252; font-size: 12px; line-height: 1.4; }
-.delivery-place-search ul { list-style: none; margin: 8px 0; padding: 0; }
-.delivery-place-search li { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid #e5e5e5; font-size: 13px; }
-.delivery-place-search li>div { display: flex; gap: 8px; flex-wrap: wrap; }
-@media(max-width:600px){.delivery-place-search{padding:10px 12px;}.delivery-place-search__input{flex-wrap:wrap;}.delivery-place-search__input label{flex-basis:100%;}}
+.delivery-map-actions { display: flex; flex-wrap: wrap; gap: .25rem; }
+.delivery-place-search { max-height: 38dvh; overflow-y: auto; }
+@media (max-width: 600px) { .delivery-map { height: 300px; } }

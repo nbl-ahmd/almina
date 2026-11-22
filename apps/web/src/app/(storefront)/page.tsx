@@ -3,7 +3,6 @@ import { getLocale } from '../../lib/server/i18n';
 import { shopText as u } from '../../lib/i18n-storefront';
 import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
-import { ScrollReveal } from "../../components/scroll-reveal";
 import { Suspense, cache } from "react";
 import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
@@ -155,10 +154,9 @@ async function HomeContent() {
       products: (collectionResults[index] ?? []).filter(
         (product) => productImage(product) !== "/product-placeholder.svg",
       ),
-      tone: ["bg-[#eaf1ea]", "bg-[#f7ece3]", "bg-[#eceaf5]"][index]!,
     }));
   return (
-      <ScrollReveal>
+      <>
         <HomeCategories
           categories={[...categories].sort(
             (a, b) => categoryRank(a.name) - categoryRank(b.name),
@@ -172,9 +170,9 @@ async function HomeContent() {
           href="/collections/daily-care"
         />
         {!all.length ? (
-          <section className="rounded-2xl border border-border p-6">
+          <section className="rounded-2xl border p-6">
             <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
-            <p className="text-sm text-muted">
+            <p className="text-sm">
               {u(locale,"You can try again or contact the pharmacy for product enquiries.")}
             </p>
             <Link className="button rounded-full text-sm" href="/">
@@ -210,6 +208,6 @@ async function HomeContent() {
         <HomeManagedCampaigns campaigns={campaigns} />
         <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
         <HomeSupport />
-      </ScrollReveal>
+      </>
   );
 }
