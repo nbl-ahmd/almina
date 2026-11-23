@@ -34,3 +34,20 @@ test('the direct stream refuses missing, reused and forged tickets', async ({ pa
   expect((await request.post(adminOrigin + '/api/admin/events/ticket', { headers: { origin: adminOrigin } })).status()).toBe(401);
   expect((await page.request.post(adminOrigin + '/api/admin/events/ticket', { headers: { origin: 'https://evil.example' } })).status()).toBe(403);
 });
+
+test('the direct stream stays open past the 15 second idle-socket limit and keeps receiving keep-alives', async ({ page }) => {
+  test.setTimeout(90000);
+  await login(page); await streamSettled(page);
+  const result = await page.evaluate(async (origin: string) => {
+    const grant = await (await fetch('/api/admin/events/ticket', { method: 'POST', cache: 'no-store' })).json() as { ticket: string };
+    const controller = new AbortController(); const started = Date.now();
+    const response = await fetch(origin + '/api/orders/events/stream', { headers: { 'x-stream-ticket': grant.ticket }, cache: 'no-store', credentials: 'omit', signal: controller.signal });
+    const reader = response.body!.getReader(); let chunks = 0, ended = false;
+    const pump = (async () => { for (;;) { const chunk = await reader.read(); if (chunk.done) { ended = true; return; } chunks++; } })().catch(() => { ended = true; });
+    await new Promise(resolve => setTimeout(resolve, 22000));
+    const state = { stillOpen: !ended, chunks, seconds: Math.round((Date.now() - started) / 1000) };
+    controller.abort(); await pump; return state;
+  }, commerceOrigin);
+  expect(result.stillOpen).toBe(true);
+  expect(result.chunks).toBeGreaterThanOrEqual(3); // the opening message and at least two keep-alives
+});

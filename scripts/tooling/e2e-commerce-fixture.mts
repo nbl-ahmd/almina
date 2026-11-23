@@ -151,6 +151,8 @@ app.use('/api', (req, res, next) => {
   req.url = '/api' + req.url; legacy(req, res, next);
 });
 const server = createServer(app).listen(4730, '127.0.0.1');
+// Same idle-socket rule as production (backend/server.js): event streams must keep themselves alive inside it.
+server.setTimeout(15000, socket => socket.destroy());
 async function stop() {
   for (const timer of timers) clearTimeout(timer);
   server.closeAllConnections();

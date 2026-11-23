@@ -8,6 +8,7 @@ export * from './modules/inventory/adjustments.js';
 export * from './modules/operations/lifecycle.js';
 export * from './modules/notifications/outbox.js';
 export { staffOrderEmailOutbox, staffEmailConfigured, staffOrderRecipient, staffOrderMessage } from './modules/notifications/staff-email.js';
+export { SERVER_SOCKET_TIMEOUT_MS, STREAM_HEARTBEAT_MS } from './modules/orders/live.js';
 export { issueStreamTicket, consumeStreamTicket, STREAM_MAX_LIFETIME_MS } from './modules/orders/stream-tickets.js';
 export { createOutboxWake, createLocalWriteSignal, wakeLoop, type Wake, type LocalWriteSignal } from './modules/notifications/wake.js';
 export * from './modules/media/retention.js';

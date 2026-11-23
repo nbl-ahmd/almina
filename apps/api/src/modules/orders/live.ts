@@ -9,6 +9,11 @@ import type { LocalWriteSignal } from '../notifications/wake.js';
  *  If change streams are unavailable (standalone MongoDB) it degrades to a slow invalidation timer that only
  *  runs while somebody is connected. Messages carry no order data; each browser refetches through its own
  *  authorised reads. */
+/** The API closes any socket that is idle this long (backend/server.js). Event streams are idle between messages, so they must send a
+ *  keep-alive comment well inside it; otherwise every stream dies at this age and every browser reconnects, with a ticket and
+ *  database lookups each time. */
+export const SERVER_SOCKET_TIMEOUT_MS = 15000;
+export const STREAM_HEARTBEAT_MS = 10000;
 export type LiveListener = (revision: string) => void;
 type Options = {
   getDb: () => Promise<Db>;

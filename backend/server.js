@@ -53,7 +53,7 @@ server.requestTimeout = 15000;
 server.headersTimeout = 10000;
 server.keepAliveTimeout = 5000;
 server.maxHeadersCount = 50;
-server.setTimeout(15000, socket => socket.destroy());
+server.setTimeout(domain.SERVER_SOCKET_TIMEOUT_MS, socket => socket.destroy());
 
 function stop() {
   if (shutdown) return shutdown;
