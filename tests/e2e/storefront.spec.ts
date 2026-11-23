@@ -91,8 +91,17 @@ for (const [path, content] of [['/', 'Your everyday essentials'], ['/search?q=Da
 }
 test('add to cart, authoritative price, stock limit and persistence work on desktop and mobile', async ({ page }) => {
   await page.goto('/products/daily-care--PD0001');
-  await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
+  await page.locator('.pdp-purchase').getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
   await expect(page.locator('main')).toContainText('Added to cart.');
+  // The add button turns into the way forward instead of a second button appearing next to it.
+  await expect(page.locator('.pdp-purchase').getByRole('button', { name: 'Add to cart: Daily Care', exact: true })).toHaveCount(0);
+  await expect(page.locator('.pdp-purchase').getByRole('link', { name: 'View cart', exact: true })).toHaveCount(0);
+  const goToCart = page.locator('.pdp-purchase').getByRole('link', { name: 'Go to cart: Daily Care', exact: true });
+  await expect(goToCart).toHaveAttribute('href', '/cart');
+  await expect(page.locator('.pdp-purchase').getByRole('link', { name: 'Checkout', exact: true })).toHaveAttribute('href', '/checkout');
+  // Wanting more means the button goes back to adding.
+  await page.getByRole('button', { name: 'Increase purchase quantity', exact: true }).click();
+  await expect(page.locator('.pdp-purchase').getByRole('button', { name: 'Add to cart: Daily Care', exact: true })).toBeVisible();
   await page.goto('/cart');
   await expect(page.locator('main')).toContainText('AED 20.00 per item');
   for (let quantity = 2; quantity <= 4; quantity++) {

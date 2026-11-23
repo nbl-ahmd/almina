@@ -400,3 +400,14 @@
   .category-media-symbol svg { inline-size: 28px; block-size: 28px; }
   .product-card-buy-row { align-self: stretch; }
 }
+
+/* Horizontal rails must contain their own absolutely positioned descendants (sr-only labels, badges). Without a positioned
+   scroller they escape the clip and stretch the page, which showed up as sideways scrolling on the homepage. */
+.storefront-shell :is(.overflow-x-auto, .home-categories, .brand-rail, .home-compact-grid, .catalog-category-links) { position: relative; }
+.compact-product-card { position: relative; }
+
+.checkout-locate { background: var(--color-tint); border-color: var(--color-divider); }
+.checkout-locate p:last-child { color: var(--color-muted); }
+.checkout-location-status { border-color: var(--color-divider); }
+.go-to-cart { text-decoration: none; }
+.go-to-cart[data-added] .purchase-feedback { color: inherit; }

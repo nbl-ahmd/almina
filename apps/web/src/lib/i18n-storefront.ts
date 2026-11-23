@@ -34,6 +34,8 @@ export const arabicShopCopy: Record<string, string> = {
   "Your cart changed. Please try again.": "تغيّرت سلتك. يرجى المحاولة مرة أخرى.",
   "Unable to save your cart in this browser.": "تعذّر حفظ سلتك في هذا المتصفح.",
   "View cart": "عرض السلة",
+  "Go to cart": "الانتقال إلى السلة",
+  "Checkout": "إتمام الشراء",
   "Quantity": "الكمية",
   "Decrease purchase quantity": "تقليل كمية الشراء",
   "Increase purchase quantity": "زيادة كمية الشراء",

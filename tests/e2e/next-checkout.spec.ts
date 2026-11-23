@@ -79,6 +79,8 @@ test('checkout adds an opt-in GPS pin, invalidates review and saves the pin with
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Check delivery pin in Google Maps' })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=25.789%2C55.943');
   await expect(page.getByLabel('Street address', { exact: true })).toHaveValue('Synthetic street, Synthetic area, Ras Al Khaimah, United Arab Emirates');
+  // Feedback sits right under the locate card, so it is seen without scrolling, and it reads as a success.
+  await expect(page.locator('.checkout-locate + .checkout-location-status')).toHaveAttribute('data-tone', /success|warning/);
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Synthetic area');
   await expect(page.getByRole('combobox', { name: 'Emirate', exact: true })).toHaveValue('Ras al-Khaimah');
   await page.screenshot({ path: '.verification-results/checkout-autofill.jpg', fullPage: true });
@@ -118,6 +120,7 @@ for (const code of [1, 2, 3]) test(`GPS failure ${code} leaves manual checkout a
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByText(code === 1 ? 'Location permission was denied.' : code === 3 ? 'Location timed out.' : 'Unable to find your location.', { exact: false })).toBeVisible();
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
+  await expect(page.locator('.checkout-locate + .checkout-location-status')).toHaveAttribute('data-tone', 'error');
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 });
