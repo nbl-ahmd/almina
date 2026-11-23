@@ -3,9 +3,9 @@ import {test,expect,login,reset} from './fixtures';
 test('storefront links do not speculatively fetch dynamic routes but clicks still navigate',async({page})=>{
  const prefetches:string[]=[];
  page.on('request',request=>{if(request.headers()['next-router-prefetch']==='1'||request.headers().purpose==='prefetch')prefetches.push(request.url());});
- await page.goto('/products');await page.waitForLoadState('networkidle');
+ await page.goto('/products');await page.waitForLoadState('load');await page.waitForTimeout(1500);
  await page.getByRole('heading',{name:'Daily Care',exact:true}).hover();
- await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await page.waitForLoadState('networkidle');
+ await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await page.waitForTimeout(1500);
  await page.waitForTimeout(1000);
  expect(prefetches).toEqual([]);
  await page.getByRole('link',{name:'Daily Care',exact:true}).click();

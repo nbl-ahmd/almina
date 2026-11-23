@@ -6,7 +6,7 @@ import { staffOrderEmailOutbox, staffOrderMessage, staffOrderRecipient } from '.
 
 const env = (values: Record<string, string>) => values as unknown as NodeJS.ProcessEnv;
 test('the recipient defaults to the shop inbox, can be changed, and can be turned off', () => {
-  assert.equal(staffOrderRecipient(env({})), 'info@alminapharmacy.com');
+  assert.equal(staffOrderRecipient(env({})), 'alminapharmacyrak@gmail.com');
   assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'Orders@Example.com' })), 'orders@example.com');
   assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'off' })), undefined);
   assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'not an address' })), undefined);

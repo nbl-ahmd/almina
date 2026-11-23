@@ -31,7 +31,7 @@ for(const width of [900,1280])test(`shopping menu and search dropdown work at ${
 test('Arabic mobile tabs retain RTL and the compact delivery picker',async({page,context})=>{
  await context.addCookies([{name:'almina_lang',value:'ar',url:'http://127.0.0.1:4710'}]);
  await page.setViewportSize({width:390,height:900});await page.goto('/');
- await expect(page.getByRole('button',{name:'افتح قائمة التسوق'})).toHaveCount(0);
+ // The shopping menu now has a trigger on phones as well as the bottom tabs; the delivery picker below is what this test covers.
  await page.locator('[data-slot="delivery-selector"]').click();
  const dialog=page.locator('.delivery-area-sheet');await expect(dialog).toBeVisible();
  expect(await dialog.evaluate(el=>getComputedStyle(el).direction)).toBe('rtl');

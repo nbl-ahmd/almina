@@ -45,9 +45,9 @@ export function RecoveryImport() {
       <p>Use reviewed product IDs, barcodes, AED prices and image matches. Importing keeps every product disabled with zero stock and keeps the store closed.</p>
       <p><a href="/api/admin/recovery/template" download="recovery-products.csv">Download CSV template</a> or <a href="/templates/recovery-products.xlsx" download="recovery-products.xlsx">spreadsheet template</a>. Open it in your spreadsheet application and set product IDs and barcodes to text before entering values. Export the product sheet as CSV.</p>
     </div>
-    <div className="grid gap-3 rounded-xl bg-surface p-4 border border-line">
+    <div className="grid min-w-0 gap-3 rounded-xl bg-surface p-4 border border-line">
       <label htmlFor="recovery-file">Reviewed product file
-        <input ref={fileInput} id="recovery-file" type="file" accept=".csv,.json,text/csv,application/json" disabled={pending}
+        <input ref={fileInput} id="recovery-file" type="file" accept=".csv,.json,text/csv,application/json" disabled={pending} className="mt-1 block w-full min-w-0 max-w-full text-xs"
           onChange={() => { setPreview(null); setFailure(''); setMessage(''); }} />
       </label>
       <button className={buttonVariants({ variant: "default" })} disabled={pending} onClick={() => { void inspect(); }}>{pending ? 'Working…' : 'Preview products'}</button>
@@ -56,7 +56,7 @@ export function RecoveryImport() {
     {message ? <p role="status" className="mb-0 rounded-lg bg-fill p-4 text-[13px]">{message}</p> : null}
     {preview?.errors.length ? <div role="region" aria-label="Import errors"><h3>Correct these rows and preview again</h3>
       <ul className="m-0 list-disc pl-5 text-[13px]">{preview.errors.map((error, i) => <li key={i}>Row {error.row || 'file'} · {error.field}: {error.message}</li>)}</ul></div> : null}
-    {preview?.rows.length ? <><div className="mb-4 overflow-x-auto rounded-lg bg-surface border border-line" tabIndex={0} role="region" aria-label="Product preview"><table role="table"><caption>Review {preview.rows.length} products before importing</caption>
+    {preview?.rows.length ? <><div className="mb-4 max-w-full min-w-0 overflow-x-auto rounded-lg bg-surface border border-line" tabIndex={0} role="region" aria-label="Product preview"><table role="table"><caption>Review {preview.rows.length} products before importing</caption>
       <thead role="rowgroup"><tr role="row">{['Product ID', 'Name', 'Barcode', 'Price (AED)', 'Sale price (AED)', 'Category', 'VAT', 'Featured', 'Description', 'Images'].map(label => <th scope="col" role="columnheader" key={label}>{label}</th>)}</tr></thead>
       <tbody role="rowgroup">{preview.rows.map(row => <tr key={row.product_id} role="row"><td role="cell">{row.product_id}</td><td role="cell" data-label="Name">{row.name}</td><td role="cell" data-label="Barcode">{row.barcode}</td><td role="cell" data-label="Price (AED)">{row.price}</td><td role="cell" data-label="Sale price (AED)">{row.salePrice ?? 'None'}</td><td role="cell" data-label="Category">{row.category}</td><td role="cell" data-label="VAT">{String(row.vat)}</td><td role="cell" data-label="Featured">{String(row.featured)}</td><td role="cell" data-label="Description">{row.description || 'None'}</td><td role="cell" data-label="Images">{row.cloudinaryImages.length ? <ul className="m-0 list-disc break-words pl-5 text-[13px]">{row.cloudinaryImages.map(url => <li key={url} className="block max-w-xs truncate">{url}</li>)}</ul> : 'None'}</td></tr>)}</tbody></table></div>
       <div className="flex flex-wrap items-center gap-2"><button className={buttonVariants({ variant: "default" })} disabled={pending || !preview.hash || !preview.previewId || !!preview.errors.length} onClick={() => { void commit(); }}>Import reviewed drafts</button></div></> : null}
