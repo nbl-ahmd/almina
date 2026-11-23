@@ -6,6 +6,7 @@ import { HttpError } from '../../errors.js';
 import { earliestDue, wakeLoop, type Wake } from './wake.js';
 import { historicalStatus } from '../orders/status.js';
 import { createEmailClient, reserveEmailBudget, resendReady, usesResend } from './provider.js';
+import { aed, emailOrder, productImages, staffOrderEmail } from './order-email-html.js';
 import { deliverEmail, type MailMessage, type MailTransport, type SmtpCredentials, type SmtpOptions } from './email.js';
 
 /** Default inbox that learns about every new order even when push, WhatsApp or the admin console are unavailable.
@@ -35,28 +36,15 @@ export function escalationMinutes(env: NodeJS.ProcessEnv = process.env): number[
   return values;
 }
 
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!);
-const clean = (value: unknown, max: number) => typeof value === 'string' ? value.replace(/[\r\n\t]+/g, ' ').trim().slice(0, max) : '';
-const aed = (minor: unknown) => typeof minor === 'number' && Number.isFinite(minor) ? `AED ${(minor / 100).toFixed(2)}` : 'total unavailable';
-
 /** Staff-facing summary of a committed order. Contains no phone number or e-mail: staff open the console for those. */
-export function staffOrderMessage(order: Document, to: string, adminOrigin?: string, reminder?: { stage: number; waitingMinutes: number }): MailMessage & { text: string; html: string } {
+export function staffOrderMessage(order: Document, to: string, adminOrigin?: string, reminder?: { stage: number; waitingMinutes: number },
+  extras: { images?: Map<string, string>; storefrontOrigin?: string } = {}): MailMessage & { text: string; html: string } {
   const orderId = z.string().regex(/^OD[0-9]+$/).parse(order.orderId);
-  const lines = Array.isArray(order.lines) ? (order.lines as Document[]).slice(0, 30) : [];
-  const total = aed(order.totals?.totalMinor);
-  const area = clean(order.customer?.city, 60) || clean(order.customer?.emirate, 60) || 'delivery area not set';
-  const method = order.payment?.provider === 'stripe' ? 'Paid online' : 'Cash on delivery';
-  const rows = lines.map((line) => ({ name: clean(line.name, 120) || 'Item', quantity: Number.isInteger(line.quantity) ? Number(line.quantity) : 1 }));
-  const link = adminOrigin && /^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/.test(adminOrigin) ? `${adminOrigin}/admin/orders?status=pending` : undefined;
-  const lead = reminder ? `REMINDER: order ${orderId} has waited ${reminder.waitingMinutes} min without confirmation` : `New order ${orderId}: ${total}`;
-  const text = [lead, ...(reminder ? [`Total: ${total}`] : []), `Area: ${area}`, `Payment: ${method}`, '', ...rows.map((row) => `${row.quantity} x ${row.name}`),
-    ...(Array.isArray(order.lines) && order.lines.length > lines.length ? [`and ${order.lines.length - lines.length} more`] : []),
-    '', link ? `Open the order inbox: ${link}` : 'Open the admin order inbox to confirm it.'].join('\n');
-  const html = `<p><strong>${reminder ? `Reminder: order ${escapeHtml(orderId)} has waited ${reminder.waitingMinutes} min without confirmation` : `New order ${escapeHtml(orderId)}`}</strong> &middot; ${escapeHtml(total)}</p><p>Area: ${escapeHtml(area)}<br>Payment: ${escapeHtml(method)}</p>`
-    + `<ul>${rows.map((row) => `<li>${row.quantity} &times; ${escapeHtml(row.name)}</li>`).join('')}</ul>`
-    + (link ? `<p><a href="${escapeHtml(link)}">Open the order inbox</a></p>` : '<p>Open the admin order inbox to confirm it.</p>');
-  return { to, subject: reminder ? `REMINDER (${reminder.waitingMinutes} min): order ${orderId} is still unconfirmed` : `New order ${orderId} · ${total} · ${area}`, text, html,
-    messageId: `<almina-staff-order-${orderId}${reminder ? `-r${reminder.stage}` : ''}@alminapharmacy.com>` };
+  const view = emailOrder(order, extras.images);
+  const total = aed(order.totals?.totalMinor) || 'total unavailable';
+  const rendered = staffOrderEmail(view, { ...(adminOrigin ? { adminOrigin } : {}), ...(extras.storefrontOrigin ? { storefrontOrigin: extras.storefrontOrigin } : {}), ...(reminder ? { reminder } : {}) });
+  return { to, subject: reminder ? `REMINDER (${reminder.waitingMinutes} min): order ${orderId} is still unconfirmed` : `New order ${orderId} · ${total} · ${rendered.area}`,
+    text: rendered.text, html: rendered.html, messageId: `<almina-staff-order-${orderId}${reminder ? `-r${reminder.stage}` : ''}@alminapharmacy.com>` };
 }
 
 export function staffEmailConfigured(env: NodeJS.ProcessEnv = process.env) {
@@ -87,7 +75,7 @@ const smtpFactory = (factory: (options: SmtpOptions) => MailTransport) =>
  * job is closed; a provider idempotency key and a deterministic Message-ID cover the unavoidable at-least-once window.
  */
 export async function staffOrderEmailOutbox(getDb: () => Promise<Db> | Db, options: {
-  onFailure: () => void; adminOrigin?: string; intervalMs?: number; sendTimeoutMs?: number; maxAttempts?: number; wake?: Wake;
+  onFailure: () => void; adminOrigin?: string; storefrontOrigin?: string; intervalMs?: number; sendTimeoutMs?: number; maxAttempts?: number; wake?: Wake;
   smtpFactory?: (options: SmtpOptions) => MailTransport; delivery?: Delivery;
   /** Minutes after arrival at which an unconfirmed order is reminded about. Defaults to ORDER_ALERT_ESCALATION_MINUTES (5 and 15). */
   escalateAfterMinutes?: number[];
@@ -130,7 +118,8 @@ export async function staffOrderEmailOutbox(getDb: () => Promise<Db> | Db, optio
         await jobs.updateOne({ _id: job._id, staffReminderLeaseToken: token }, { ...release, $set: { staffEmailReminders: stages.length } }, query); return;
       }
       const waitingMinutes = Math.max(1, Math.round((now.getTime() - new Date(job.createdAt).getTime()) / 60000));
-      const message = staffOrderMessage(order, recipient!, options.adminOrigin, { stage: stage + 1, waitingMinutes });
+      const images = await productImages(db, order).catch(() => new Map<string, string>());
+      const message = staffOrderMessage(order, recipient!, options.adminOrigin, { stage: stage + 1, waitingMinutes }, { images, ...(options.storefrontOrigin ? { storefrontOrigin: options.storefrontOrigin } : {}) });
       const deliver = usesResend() ? () => resend(db!, message, cancellation.signal) : smtp ? () => smtp(message, cancellation.signal) : undefined;
       if (!deliver) throw new Error('No e-mail transport configured');
       await bounded(deliver(), timeout);
@@ -157,7 +146,8 @@ export async function staffOrderEmailOutbox(getDb: () => Promise<Db> | Db, optio
       const order = await db.collection('orders').findOne({ _id: job.orderId }, query);
       const unpaidOnline = order?.payment?.provider === 'stripe' && (order.payment.testMode !== false || order.payment.state !== 'paid' || order.payment.refundRequested);
       if (!order || unpaidOnline) { await jobs.updateOne({ _id: job._id, staffEmailLeaseToken: token }, { ...release, $set: { staffEmailState: 'skipped' } }, query); return; }
-      const message = staffOrderMessage(order, recipient!, options.adminOrigin);
+      const images = await productImages(db, order).catch(() => new Map<string, string>());
+      const message = staffOrderMessage(order, recipient!, options.adminOrigin, undefined, { images, ...(options.storefrontOrigin ? { storefrontOrigin: options.storefrontOrigin } : {}) });
       const deliver = usesResend() ? () => resend(db!, message, cancellation.signal) : smtp ? () => smtp(message, cancellation.signal) : undefined;
       if (!deliver) throw new Error('No e-mail transport configured');
       await bounded(deliver(), timeout);

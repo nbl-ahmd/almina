@@ -137,3 +137,7 @@ or loyalty/offer rule invented by this setup.
   final completion when this document was first written.
 - Live storefront email login, signed webhook receipt, staff-visible notification
   behaviour and policy activation must be verified after merge/private Render setup.
+
+## Order e-mails rendered in code (2026-11-23)
+
+The customer order confirmation no longer uses the hosted `almina-order-v1` template. `order-email-html.ts` renders it (and the staff alert) as table-based HTML with product photos, line prices, subtotal, delivery, VAT and total, sent through the same Resend path (suppression check, budget, idempotency key, delivery record). The hosted template remains in Resend, unused, and can be deleted later. The staff alert now includes customer name, address, note and map link; phone number and e-mail stay out of it. Rollback: remove the `content` argument in `sendOrderEmail` to fall back to the hosted template.
