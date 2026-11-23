@@ -1,3 +1,5 @@
+import { createEventWorker } from '../operations/event-worker.js';
+import type { LocalWriteSignal } from '../notifications/wake.js';
 import { randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import type { EnvironmentSource } from '@almina/config/env';
@@ -62,18 +64,13 @@ export async function processSearchEmbeddings(db: Db, env: SearchEnvironment, pr
   }
 }
 
-export function searchEmbeddingWorker(getDb: () => Db | Promise<Db>, source: EnvironmentSource = process.env) {
+export function searchEmbeddingWorker(getDb: () => Db | Promise<Db>, source: EnvironmentSource = process.env, hooks: { local?: LocalWriteSignal } = {}) {
   const env = readSearchEnvironment(source);
   if (!env.SEARCH_EMBEDDING_WORKER_ENABLED) return undefined;
   if (env.SEARCH_PROVIDER !== 'atlas' || !env.SEARCH_SEMANTIC_ENABLED || !source.SEARCH_EMBEDDING_API_KEY) throw new Error('Background search embedding configuration incomplete');
   const provider = geminiEmbeddings(env, source.SEARCH_EMBEDDING_API_KEY);
-  let active: Promise<void> | undefined, stopped = false;
-  const tick = () => {
-    if (stopped || active) return;
-    active = Promise.resolve().then(getDb).then(db => processSearchEmbeddings(db, env, provider)).then(() => undefined)
-      .catch(() => { console.error('{"event":"search_embedding_batch_failed"}'); })
-      .finally(() => { active = undefined; });
-  };
-  const timer = setInterval(tick, 60000); timer.unref(); tick();
-  return { async stop() { stopped = true; clearInterval(timer); await active; } };
+  // Runs at start-up, then 30 s after the catalogue is edited, and keeps going (5 s apart) only while there is a backlog to embed.
+  const worker = createEventWorker(async () => { const result = await processSearchEmbeddings(await getDb(), env, provider); return !!result && result.leased && result.products > 0; },
+    { local: hooks.local, collections: ['products', 'categories'], debounceMs: 30000, drainMs: 5000, onError: () => console.error('{"event":"search_embedding_batch_failed"}') });
+  return { stop: () => worker.stop() };
 }

@@ -98,8 +98,7 @@ export function AlertMonitor({ actor }: { actor: string }) {
         .then((registration) => registration?.update())
         .catch(() => undefined);
     void poll();
-    // Order events trigger an immediate poll (below); this interval is only the safety net for stock and payment alerts.
-    const timer = setInterval(() => void poll(), 60000);
+    // No timer: the live stream (orders and staff alerts), Web Push messages, returning to the tab and coming back online all trigger a refresh.
     window.addEventListener("almina:orders-updated", message);
     window.addEventListener("almina:notifications-changed", message);
     document.addEventListener("visibilitychange", resume);
@@ -108,7 +107,6 @@ export function AlertMonitor({ actor }: { actor: string }) {
     return () => {
       stopped = true;
       abort.abort();
-      clearInterval(timer);
       window.removeEventListener("almina:orders-updated", message);
       window.removeEventListener("almina:notifications-changed", message);
       document.removeEventListener("visibilitychange", resume);

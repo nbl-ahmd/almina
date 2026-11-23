@@ -32,15 +32,15 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
     if (req.method === 'OPTIONS') {
       const headers = String(req.headers['access-control-request-headers'] ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
       if (!origins.includes(req.headers.origin) || !lookupPolicy(req.headers['access-control-request-method'], req.path)
-        || headers.some(header => !['content-type', 'x-csrf-protection', 'idempotency-key'].includes(header))) return next(fail(403, 'FORBIDDEN'));
+        || headers.some(header => !['content-type', 'x-csrf-protection', 'idempotency-key', 'x-stream-ticket', 'last-event-id'].includes(header))) return next(fail(403, 'FORBIDDEN'));
       return res.set({ 'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE',
-        'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection, Idempotency-Key', 'Access-Control-Max-Age': '600' }).status(204).end();
+        'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Protection, Idempotency-Key, X-Stream-Ticket, Last-Event-ID', 'Access-Control-Max-Age': '600' }).status(204).end();
     }
     next();
   });
   // Fixed read-only live status endpoints cannot spend the allowance needed to save an order.
   // Both pools remain IP bounded before authentication; all existing RBAC still runs below.
-  const liveRead = req => ['GET','HEAD'].includes(req.method) && /^\/api\/(?:auth\/me|orders\/(?:receiving|events|notifications))\/?$/i.test(req.originalUrl.split('?')[0]);
+  const liveRead = req => ['GET','HEAD'].includes(req.method) && /^\/api\/(?:auth\/me|orders\/(?:receiving|events(?:\/(?:stream|ticket))?|notifications))\/?$/i.test(req.originalUrl.split('?')[0]);
   app.use('/api', rateLimit({ windowMs:60000,limit:240,standardHeaders:'draft-8',legacyHeaders:false,skip:req=>!liveRead(req) }));
   app.use('/api', rateLimit({ windowMs:60000,limit:120,standardHeaders:'draft-8',legacyHeaders:false,skip:liveRead }));
   app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false }));
@@ -50,7 +50,7 @@ function installBoundary(app, { auth, origins, development = false, webhookSecre
     req.accessPolicy = route.policy;
     // Published catalog/poster media is intentionally embedded cross-origin and fetched by Meta.
     if (route.policy === 'public' && /\/(?:images|image)\/[^/]+\/?$/i.test(req.path)) res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-    if (!['public', 'login', 'webhook', 'verification'].includes(route.policy)) {
+    if (!['public', 'login', 'webhook', 'verification', 'stream'].includes(route.policy)) {
       req.identity = await auth.authenticate(readSessionCookie(req.headers, development));
       if (route.policy === 'admin' && req.identity.role !== 'admin') throw fail(403, 'FORBIDDEN');
       if (req.identity.accountType === 'branch' && !require('../commerce/dist/service.cjs').storeAccountRouteAllowed(req.method, req.originalUrl.split('?')[0])) throw fail(403, 'FORBIDDEN');

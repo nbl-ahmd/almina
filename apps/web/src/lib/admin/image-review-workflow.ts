@@ -89,3 +89,14 @@ export function nextImageReviewId(items: Pick<ImageReviewItem, 'itemId'>[], curr
   const index = items.findIndex(item => item.itemId === current);
   return items.slice(index + 1).concat(items.slice(0, Math.max(0, index))).find(item => item.itemId !== current)?.itemId ?? null;
 }
+
+/** One-step reviewer decision. The reviewer has the image beside the catalogue record and may correct the record in the same
+ *  step, so no per-field confirmations or written evidence are collected. The server still blocks flagged images, withdrawn
+ *  associations, stale product records and (for shared barcodes) an unconfirmed variant. */
+export function quickReviewDecision(detail: ImageReviewDetail, changes: ImageReviewProductChanges, decision: 'approved' | 'held' | 'rejected',
+  originalLoaded: boolean, sharedConfirmed: boolean, note = ''): Omit<ImageReviewDecisionInput, 'requestId'> {
+  const fallback = decision === 'approved' ? 'Approved' : decision === 'held' ? 'Held for another check' : 'Not a match';
+  return { itemId: detail.item.itemId, expectedRevision: detail.item.revision, productId: detail.product?.productId ?? null, productRevision: detail.product?.revision ?? null,
+    decision, originalViewed: decision === 'approved' && originalLoaded, sharedIdentifierConfirmed: decision === 'approved' && sharedConfirmed, checks: [],
+    note: note.trim() || fallback, ...(decision === 'approved' && Object.keys(changes).length ? { productChanges: changes } : {}) };
+}

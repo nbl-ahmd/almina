@@ -22,7 +22,10 @@ test('honest missing-photo store listings retain medical gates and stay excluded
   assert.equal(feedProduct('https://shop.example.invalid',noPhoto,[],'google'),null);
   for(const productType of ['unreviewed','prescription'])assert.ok(storePublicationIssues({...noPhoto,productType}).some(issue=>issue.startsWith('Product classification')));
   assert.ok(storePublicationIssues({...noPhoto,name:'...Mxmn'}).includes('Complete product name / identity'));
-  assert.ok(storePublicationIssues({...noPhoto,cloudinaryImages:item.cloudinaryImages}).includes('Image usage permission'));
+  // Image usage permission, content review and stock review are recorded on publication; they never block going live.
+  assert.deepEqual(storePublicationIssues({...item,imageRights:'unreviewed',contentReviewed:false,stockVerified:false}),[]);
+  // Advertising feeds stay strict.
+  assert.ok(publicationIssues({...item,imageRights:'unreviewed'}).includes('Image usage permission'));
 });
 test('verified GTINs retain leading zeroes and reject invalid check digits; missing barcode is not a GTIN',()=>{
   assert.equal(validGtin('00012345600012'),true);assert.equal(validGtin('00012345600013'),false);

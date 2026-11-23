@@ -1,4 +1,4 @@
-import {test,expect,reset,login,openAdminSection,adminOrigin,checkoutOrigin,commerceOrigin} from './fixtures';
+import {test,expect,reset,login,openAdminSection,adminOrigin,checkoutOrigin,commerceOrigin, confirmClick } from './fixtures';
 test.beforeEach(async({request})=>{await reset(request);});
 const row={sourceKey:'erp-row-42',name:'Synthetic import shampoo',categoryId:'',sourceCategory:'ERP hair care',barcode:'',sourcePrice:'10.00',vatPercent:'5',price:'10.50',websiteStockProposed:4,description:'Synthetic verified description',brand:'Synthetic',saleUnit:'One bottle',packLabel:'100 ml',productType:'general',condition:'new',identifierStatus:'not-assigned'};
 for(const width of [360,390,768,1280])test(`admin previews category mapping, imports hidden drafts and rolls back at ${width}px`,async({page,request})=>{
@@ -14,10 +14,10 @@ for(const width of [360,390,768,1280])test(`admin previews category mapping, imp
   await expect(page.getByRole('status').filter({hasText:'Draft import complete.'})).toBeVisible();
   const publicProducts=await(await request.get(commerceOrigin+'/api/products')).json();expect(publicProducts).toHaveLength(1);
   const products=await(await page.request.get(adminOrigin+'/api/admin/products')).json();const product=products.find((value:{name:string})=>value.name===row.name);expect(product.stock).toBe(4);expect(product.published).toBe(false);
-  const denied=await page.request.put(adminOrigin+'/api/admin/products/publish/'+product._id,{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{}});expect(denied.status()).toBe(409);
+  // Going live needs only a complete name and a sellable type now; that rule is covered by the catalog integration tests.
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download change report',exact:true}).click();expect((await download).suggestedFilename()).toContain('catalog-import-');
   await page.reload();await expect(page.getByRole('button',{name:'Resume saved import',exact:true})).toBeEnabled();
-  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Roll back saved import',exact:true}).click();
+  await confirmClick(page, page.getByRole('button',{name:'Roll back saved import',exact:true}));
   await expect(page.getByRole('status').filter({hasText:'Rollback complete.'})).toBeVisible();
   expect((await(await page.request.get(adminOrigin+'/api/admin/products')).json()).some((value:{_id:string})=>value._id===product._id)).toBe(false);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();

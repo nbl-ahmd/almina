@@ -63,7 +63,7 @@ test('consented cart, quote and checkout failure events never replace authoritat
   expect((await request.post(commerceOrigin + '/__fixture/price')).status()).toBe(204);
   const failure = page.waitForResponse(res => new URL(res.url()).pathname === '/api/commerce-events' && res.request().postDataJSON().event === 'checkout_failed');
   await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
-  await expect(page.locator('p[role="alert"]')).toContainText('Prices or delivery have changed');
+  await expect(page.locator('[role="alert"]').first()).toContainText('Prices or delivery have changed');
   expect((await failure).status()).toBe(204);
   // Consented navigation may also report page_viewed; retain strict commerce sequencing
   // without depending on the hydration timer winning the reporter's consent setup.

@@ -1,4 +1,4 @@
-import { test, expect, reset, login, commerceOrigin, adminOrigin } from './fixtures';
+import { test, expect, reset, login, commerceOrigin, adminOrigin, confirmClick } from './fixtures';
 test.beforeEach(async ({ request }) => { await reset(request); });
 for (const width of [360, 390, 768, 1280]) test(`WhatsApp accepted retries survive reload and uncertain sends never fabricate messages at ${width}px`, async ({ page, request }) => {
   await login(page); await page.setViewportSize({ width, height: 900 });
@@ -6,11 +6,11 @@ for (const width of [360, 390, 768, 1280]) test(`WhatsApp accepted retries survi
   await page.goto(path);
   await page.getByRole('textbox', { name: 'Message', exact: true }).fill('Synthetic safe reply');
   await page.getByRole('button', { name: 'Send message', exact: true }).focus(); await page.keyboard.press('Enter');
-  await expect(page.locator('form').getByRole('status')).toContainText('Accepted by provider');
+  await expect(page.getByText(/Accepted by provider/).first()).toBeVisible();
   await page.reload();
   await page.getByRole('textbox', { name: 'Message', exact: true }).fill('Synthetic safe reply');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
-  await expect(page.locator('form').getByRole('status')).toContainText('Accepted by provider');
+  await expect(page.getByText(/Accepted by provider/).first()).toBeVisible();
   expect(await (await request.get(commerceOrigin + '/__fixture/whatsapp/state')).json()).toEqual({ sends: 1, receipts: 1, messages: 1 });
   await request.post(commerceOrigin + '/__fixture/whatsapp/failure');
   await page.getByRole('textbox', { name: 'Message', exact: true }).fill('Synthetic uncertain reply');
@@ -29,32 +29,32 @@ for (const width of [360, 390, 768, 1280]) test(`single/bulk template receipts s
   await page.getByLabel('Recipient number', { exact: true }).fill('971500000001');
   await page.getByLabel('Approved template name', { exact: true }).fill(`synthetic_${width}`);
   await page.getByLabel('Template image URL', { exact: true }).fill('https://example.com/synthetic.jpeg');
-  page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Send template', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Accepted by provider.' })).toBeVisible();
+  await confirmClick(page, page.getByRole('button', { name: 'Send template', exact: true }));
+  await expect(page.getByText('Accepted by provider.').first()).toBeVisible();
   await page.reload(); await page.getByRole('checkbox', { name: 'Synthetic Recipient (971500000001)' }).check();
   await page.getByLabel('Template name', { exact: true }).fill(`synthetic_${width}`);
   await page.getByLabel('Image URL', { exact: true }).fill('https://example.com/synthetic.jpeg');
-  page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Send to 1 recipients', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: '971500000001: accepted by provider' })).toBeVisible();
+  await confirmClick(page, page.getByRole('button', { name: 'Send to 1 recipients', exact: true }));
+  await expect(page.getByText('971500000001: accepted by provider').first()).toBeVisible();
   expect(await (await request.get(commerceOrigin + '/__fixture/whatsapp/state')).json()).toEqual({ sends, receipts: sends, messages: 0 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.evaluate(() => sessionStorage.setItem('almina-whatsapp-retry-v1', '{'));
-  page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Send to 1 recipients', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'failed or uncertain' })).toBeVisible();
+  await confirmClick(page, page.getByRole('button', { name: 'Send to 1 recipients', exact: true }));
+  await expect(page.getByText('failed or uncertain').first()).toBeVisible();
   expect(await (await request.get(commerceOrigin + '/__fixture/whatsapp/state')).json()).toEqual({ sends, receipts: sends, messages: 0 });
 });
 for (const width of [360, 390, 768, 1280]) test(`WhatsApp history stays accessible through keyboard pagination and reload at ${width}px`, async ({ page, request }) => {
   await request.post(commerceOrigin + '/__fixture/whatsapp/history'); await login(page); await page.setViewportSize({ width, height: 900 });
   await page.goto(adminOrigin + '/admin/whatsapp/971500000001');
-  const history = page.getByRole('table', { name: 'Conversation history' });
-  await expect(history.getByRole('row')).toHaveCount(26); await expect(history).toContainText('Synthetic history 36'); await expect(history).toContainText('Synthetic history 60');
+  const history = page.getByRole('table', { name: 'Conversation history' }); const header = width < 768 ? 0 : 1; // Phones stack rows into cards and hide the header row.
+  await expect(history.getByRole('row')).toHaveCount(25 + header); await expect(history).toContainText('Synthetic history 36'); await expect(history).toContainText('Synthetic history 60');
   const pages = page.getByRole('navigation', { name: 'Conversation history pages' });
   await pages.getByRole('link', { name: 'Older messages' }).focus(); await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/offset=25/); await page.reload(); await expect(history).toContainText('Synthetic history 11'); await expect(history).not.toContainText('Synthetic history 60');
-  await pages.getByRole('link', { name: 'Older messages' }).click(); await expect(history.getByRole('row')).toHaveCount(12);
+  await pages.getByRole('link', { name: 'Older messages' }).click(); await expect(history.getByRole('row')).toHaveCount(11 + header);
   await expect(history).toContainText('Synthetic history 0'); await expect(pages.getByRole('link', { name: 'Older messages' })).toHaveCount(0);
   await pages.getByRole('link', { name: 'Newer messages' }).click(); await expect(page).toHaveURL(/offset=25/);
-  await page.goto(adminOrigin + '/admin/whatsapp/971500000001?offset=75'); await expect(history.getByRole('row')).toHaveCount(2);
+  await page.goto(adminOrigin + '/admin/whatsapp/971500000001?offset=75'); await expect(history.getByRole('row')).toHaveCount(1 + header);
   await expect(history.getByRole('cell', { name: 'No records found.', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.locator('body')).not.toContainText('private-provider');

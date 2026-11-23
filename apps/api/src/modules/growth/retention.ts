@@ -1,3 +1,5 @@
+import { createEventWorker } from '../operations/event-worker.js';
+import { earliestDue, type LocalWriteSignal } from '../notifications/wake.js';
 import { retailAudienceFilter } from '../catalog/audience.js';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
@@ -110,45 +112,53 @@ async function sendReminder(message: Delivery, db: Db) {
 }
 
 /** Opt-in, one-shot messages. Ambiguous SMTP results are never automatically resent. */
-export function retentionWorker(getDb: () => Promise<Db>, options: { origin: string; send?: (message: Delivery) => Promise<void>; enabled?: boolean; intervalMs?: number; now?: () => Date; onFailure?: () => void }) {
+export function retentionWorker(getDb: () => Promise<Db>, options: { local?: LocalWriteSignal; origin: string; send?: (message: Delivery) => Promise<void>; enabled?: boolean; intervalMs?: number; now?: () => Date; onFailure?: () => void }) {
   const origin = new URL(options.origin);
   if (origin.username || origin.password || origin.pathname !== '/' || !['http:', 'https:'].includes(origin.protocol) || origin.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(origin.hostname)) throw new Error('Invalid reminder origin');
   let stopped = false, running: Promise<void> | undefined;
-  async function run() {
-    if (!(options.enabled ?? retentionProviderReady())) return;
+  async function run(): Promise<boolean> {
+    if (!(options.enabled ?? retentionProviderReady())) return false;
     const now = options.now?.() ?? new Date(), db = await getDb(), policy = await retentionPolicy(db);
-    if (!policy.enabled) return;
+    if (!policy.enabled) return false;
     const reminders = db.collection<RecordWithKey>('customer_reminders');
     await reminders.updateMany({ state: 'sending', leaseUntil: { $lte: now } }, { $set: { state: 'uncertain', updatedAt: now } }, query);
     const leaseToken = randomUUID();
     const row = await reminders.findOneAndUpdate({ expiresAt: { $gt: now }, $or: [{ state: 'waiting', nextCheckAt: { $lte: now } }, { state: 'processing', leaseUntil: { $lte: now } }] },
       { $set: { state: 'processing', leaseToken, leaseUntil: new Date(now.getTime() + 60000), nextCheckAt: new Date(now.getTime() + 3600000) } }, { returnDocument: 'after', sort: { nextCheckAt: 1 }, ...query });
-    if (!row) return;
+    if (!row) return false;
     const predicate = { _id: row._id, state: 'processing', revision: row.revision, leaseToken };
     const wait = () => reminders.updateOne(predicate, { $set: { state: 'waiting' }, $unset: { leaseToken: '', leaseUntil: '' } }, query);
     try {
-      if (!reminderEnabled(policy, row.kind) || row.dueAt > now) { await wait(); return; }
+      if (!reminderEnabled(policy, row.kind) || row.dueAt > now) { await wait(); return true; }
       const customer = await db.collection('customers').findOne({ _id: row.customerId, disabled: { $ne: true }, verifiedAt: { $type: 'date' } }, { ...query, projection: { email: 1 } });
       const products = await generalProducts(db, row.items.map((item: { id: string }) => item.id));
-      if (!customer || products.length !== row.items.length) { await reminders.updateOne(predicate, { $set: { state: 'cancelled' } }, query); return; }
+      if (!customer || products.length !== row.items.length) { await reminders.updateOne(predicate, { $set: { state: 'cancelled' } }, query); return true; }
       const purchased = await db.collection('orders').findOne({ ...customerOrderFilter(String(customer.email)), createdAt: { $gte: row.consentedAt }, status: { $nin: ['cancelled', 'refunded'] },
         ...(row.kind === 'replenishment' ? { 'totals.lines.productId': { $in: row.items.map((item: { id: string }) => item.id) } } : {}) }, { ...query, projection: { _id: 1 } });
-      if (purchased && ['cart', 'replenishment'].includes(row.kind)) { await reminders.updateOne(predicate, { $set: { state: 'cancelled' } }, query); return; }
+      if (purchased && ['cart', 'replenishment'].includes(row.kind)) { await reminders.updateOne(predicate, { $set: { state: 'cancelled' } }, query); return true; }
       const ready = row.kind === 'restock' ? products[0]!.stock > 0 : row.kind === 'price-drop' ? products[0]!.stock > 0 && priceMinor(products[0]!) < row.baselineMinor : products.some(product => product.stock > 0);
-      if (!ready) { await wait(); return; }
+      if (!ready) { await wait(); return true; }
       const token = randomBytes(32).toString('base64url');
       const claimed = await reminders.updateOne(predicate, { $set: { state: 'sending', unsubscribeHash: hash(token), updatedAt: now } }, query);
-      if (!claimed.modifiedCount) return; // Consent was cancelled or replaced while evaluating.
+      if (!claimed.modifiedCount) return true; // Consent was cancelled or replaced while evaluating.
       try {
         await (options.send ?? (message => sendReminder(message, db)))({ to: String(customer.email), kind: row.kind, accountUrl: new URL('/account#reminders', origin).href,
           unsubscribeUrl: new URL('/unsubscribe?token=' + token, origin).href, messageId: `<${hash(row._id + ':' + row.revision)}@alminapharmacy.com>` });
         await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'sent', sentAt: now }, $unset: { leaseToken: '', leaseUntil: '' } }, query);
       } catch (error) {
-        if (error instanceof EmailBudgetExceeded) { await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'waiting' }, $unset: { leaseToken: '', leaseUntil: '' } }, query); return; }
+        if (error instanceof EmailBudgetExceeded) { await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'waiting' }, $unset: { leaseToken: '', leaseUntil: '' } }, query); return true; }
         await reminders.updateOne({ _id: row._id, state: 'sending', leaseToken }, { $set: { state: 'uncertain' } }, query); options.onFailure?.(); }
     } catch { await wait().catch(() => undefined); options.onFailure?.(); }
+    return true;
   }
-  const tick = () => { if (stopped) return Promise.resolve(); if (!running) running = run().catch(() => { options.onFailure?.(); }).finally(() => { running = undefined; }); return running; };
-  const timer = setInterval(() => { void tick(); }, options.intervalMs ?? 30000); timer.unref();
-  return { tick, async stop() { stopped = true; clearInterval(timer); await running; } };
+  const plainTick = () => { if (stopped) return Promise.resolve(); if (!running) running = run().then(() => undefined, () => { options.onFailure?.(); }).finally(() => { running = undefined; }); return running; };
+  if (options.local) {
+    // Event-driven: starts once, wakes when a reminder is written, drains while reminders are due, then sleeps until the next due time.
+    const nextDue = async () => { const db = await getDb(), reminders = db.collection('customer_reminders'), now = new Date();
+      return earliestDue(reminders, [{ filter: { state: 'waiting', expiresAt: { $gt: now } }, field: 'nextCheckAt' }, { filter: { state: { $in: ['processing', 'sending'] } }, field: 'leaseUntil' }], now); };
+    const worker = createEventWorker(run, { local: options.local, collections: ['customer_reminders'], debounceMs: 2000, drainMs: 1000, nextDue, onError: () => options.onFailure?.() });
+    return { tick: () => worker.tick(), async stop() { stopped = true; await worker.stop(); } };
+  }
+  const timer = setInterval(() => { void plainTick(); }, options.intervalMs ?? 120000); timer.unref();
+  return { tick: plainTick, async stop() { stopped = true; clearInterval(timer); await running; } };
 }

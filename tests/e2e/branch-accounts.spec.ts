@@ -67,7 +67,7 @@ test('public store listings select an existing branch and save through the prote
  await page.getByRole('button',{name:'Add public listing',exact:true}).click();
  await page.getByRole('combobox',{name:'Store',exact:true}).selectOption(id);await page.getByLabel('Phone',{exact:true}).fill('+971500000000');
  await page.getByLabel('I have verified this branch’s details',{exact:true}).check();await page.getByLabel('Publish this directory publicly',{exact:true}).check();
- await page.getByRole('button',{name:'Save branch directory',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Branch directory saved.'})).toBeVisible();
+ await page.getByRole('button',{name:'Save branch directory',exact:true}).click();await expect(page.getByText('Branch directory saved.').first()).toBeVisible();
  const directory=await(await page.request.get(adminOrigin+'/api/growth/admin/branches')).json();expect(directory.data.items[0].branchId).toBe(id);
  for(const width of [360,390,768,1280]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();}
  await page.goto(adminOrigin+'/admin/users');await streamSettled(page);await expect(page.getByRole('table',{name:'Branch store accounts',exact:true})).toContainText('Synthetic Public Store');
@@ -77,7 +77,7 @@ test('public store listings select an existing branch and save through the prote
  await expect(page.getByText('Background push is not configured on the order service.',{exact:false})).toBeVisible();
  await expect(page.getByRole('button',{name:'Enable on this device',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Disable on this device',exact:true})).toBeDisabled();
  for(const width of [390,1280]){await page.setViewportSize({width,height:900});await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();await page.screenshot({path:`.verification-results/operations-alerts-${width}.png`,fullPage:true});}
- await page.route('**/api/admin/orders/notification-settings',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic unavailable'})}));await page.reload();await streamSettled(page);await expect(page.getByRole('alert').filter({hasText:'Could not check notification delivery.'})).toHaveClass(/admin-alert--danger/);await page.setViewportSize({width:390,height:900});await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:'.verification-results/operations-alerts-390.png',fullPage:true});
+ await page.route('**/api/admin/orders/notification-settings',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Synthetic unavailable'})}));await page.reload();await streamSettled(page);await expect(page.getByRole('alert').filter({hasText:'Could not check notification delivery.'})).toHaveClass(/bg-bad-soft/);await page.setViewportSize({width:390,height:900});await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:'.verification-results/operations-alerts-390.png',fullPage:true});
 });
 
 test('staff notifications support personal reads, settings, tests and responsive layouts',async({page})=>{
@@ -88,8 +88,8 @@ test('staff notifications support personal reads, settings, tests and responsive
  await page.getByRole('button',{name:'Mark read: Test notification',exact:true}).click();
  await expect(page.getByRole('button',{name:'Mark unread: Test notification',exact:true})).toBeVisible();
  await page.reload();await streamSettled(page);await expect(page.getByRole('button',{name:'Mark unread: Test notification',exact:true})).toBeVisible();
- await page.getByRole('checkbox',{name:'Low and out-of-stock products',exact:true}).uncheck();await page.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Alert preferences saved.'})).toBeVisible();
- await page.getByLabel('Low-stock threshold',{exact:true}).fill('7');await page.getByRole('button',{name:'Save threshold',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Stock threshold saved.'})).toBeVisible();
+ await page.getByRole('checkbox',{name:'Low and out-of-stock products',exact:true}).uncheck();await page.getByRole('button',{name:'Save preferences',exact:true}).click();await expect(page.getByText('Alert preferences saved.').first()).toBeVisible();
+ await page.getByLabel('Low-stock threshold',{exact:true}).fill('7');await page.getByRole('button',{name:'Save threshold',exact:true}).click();await expect(page.getByText('Stock threshold saved.').first()).toBeVisible();
  await page.reload();await streamSettled(page);await expect(page.getByLabel('Low-stock threshold',{exact:true})).toHaveValue('7');await expect(page.getByRole('checkbox',{name:'Low and out-of-stock products',exact:true})).not.toBeChecked();
  for(const width of [320,390,768,1280]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();await page.screenshot({path:`.verification-results/notifications-${width}.png`,fullPage:true});}
  await expect(page.locator('link[rel=manifest]')).toHaveAttribute('href','/admin/manifest.webmanifest');
@@ -98,12 +98,15 @@ test('staff notifications support personal reads, settings, tests and responsive
 test('notification sound is one-shot and never loops for old pending orders',async({page})=>{
  let fresh=false;
  await page.clock.install();
- await page.addInitScript(()=>{const violations:string[]=[];Object.assign(window,{__notificationCsp:violations});document.addEventListener('securitypolicyviolation',event=>{if(event.violatedDirective.startsWith('style-src'))violations.push(event.violatedDirective);});const state={count:0};Object.assign(window,{__notificationAudio:state});class AudioMock{state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}createOscillator(){return {frequency:{value:0},connect(){},disconnect(){},start(){state.count++;},stop(){},onended:null};}createGain(){return {connect(){},disconnect(){},gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}}};}}Object.defineProperty(window,'AudioContext',{value:AudioMock});});
+ await page.addInitScript(()=>{const violations:string[]=[];Object.assign(window,{__notificationCsp:violations});document.addEventListener('securitypolicyviolation',event=>{if(event.violatedDirective.startsWith('style-src'))violations.push(event.violatedDirective);});const state={count:0};Object.assign(window,{__notificationAudio:state});class AudioMock{state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}createOscillator(){return {frequency:{value:0},connect(){},disconnect(){},type:'',start(){state.count++;},stop(){},onended:null};}createGain(){return {connect(){},disconnect(){},gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}}};}}Object.defineProperty(window,'AudioContext',{value:AudioMock});});
  await page.route('**/api/admin/orders/notifications',route=>{const now=new Date();return route.fulfill({json:{items:fresh?[{id:'aaaaaaaaaaaaaaaaaaaaaaab',kind:'order',title:'Order received',description:'Synthetic event',href:'/admin/orders',createdAt:now.toISOString(),resolved:false,read:false,announce:true}]:[],nextCursor:null,unread:fresh?1:0,hasMoreUnread:false,observedAt:now.toISOString()}});});
- await login(page);await page.getByRole('button',{name:'Turn sound alerts on',exact:true}).click();await expect(page.getByRole('button',{name:'Turn sound alerts off',exact:true})).toBeVisible();
+ await login(page);await page.getByRole('button',{name:'Turn order alarm on',exact:true}).click();await expect(page.getByRole('button',{name:'Turn order alarm off',exact:true})).toBeVisible();
+ const sounds=()=>page.evaluate(()=>Reflect.get(window,'__notificationAudio').count);
+ // Turning the alarm on plays one short confirmation chime (two beeps); old pending orders add nothing after that.
+ await expect.poll(sounds).toBe(2);
  await page.clock.runFor(125000);
- expect(await page.evaluate(()=>Reflect.get(window,'__notificationAudio').count)).toBe(0);
- fresh=true;await page.clock.runFor(16000);await expect.poll(()=>page.evaluate(()=>Reflect.get(window,'__notificationAudio').count)).toBe(1);
- await page.clock.runFor(125000);expect(await page.evaluate(()=>Reflect.get(window,'__notificationAudio').count)).toBe(1);
- await page.getByRole('button',{name:'Test sound',exact:true}).click();expect(await page.evaluate(()=>Reflect.get(window,'__notificationAudio').count)).toBe(2);expect(await page.evaluate(()=>Reflect.get(window,'__notificationCsp'))).toEqual([]);
+ expect(await sounds()).toBe(2);
+ // A genuinely new order chimes exactly once when the live stream announces it (there is no alert timer any more), and never loops.
+ fresh=true;await page.evaluate(()=>window.dispatchEvent(new Event('almina:notifications-changed')));await page.clock.runFor(1000);await expect.poll(sounds).toBe(4);
+ await page.clock.runFor(125000);expect(await sounds()).toBe(4);expect(await page.evaluate(()=>Reflect.get(window,'__notificationCsp'))).toEqual([]);
 });

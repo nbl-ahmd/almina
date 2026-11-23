@@ -3,8 +3,8 @@ import { MongoServerError, ObjectId, type Db, type Document, type ClientSession 
 import {
   cloudinaryImage, imageReviewStageSchema, imageReviewListQuerySchema, imageReviewDecisionSchema,
   imageReviewSelectionSchema, imageReviewImportSchema, imageReviewExportQuerySchema, imageReviewPublishSchema,
-  imageReviewDraftSchema, imageReviewProductFields, imageReviewEditableFields, canDiscardImageExtraction, storePublicationIssues,
-  imageIdentitySchema, type ImageIdentity, type ImageReviewItem, type ImageReviewSource,
+  imageReviewDraftSchema, imageReviewProductFields, storePublicationIssues,
+  type ImageIdentity, type ImageReviewItem, type ImageReviewSource,
   type ImageReviewProduct, type ImageReviewDetail, type ImageReviewList, type ImageReviewManifest,
   type ImageReviewApprovedMapping, type ImageReviewDecisionInput,
 } from '@almina/contracts';
@@ -151,27 +151,12 @@ export async function getImageReview(db: Db, itemId: string, actor: string, prod
     withdrawalReason: barrier ? String(barrier.reason) : null, sharedIdentifiers: shared,
     history: history.map(event => ({ decision: String(event.kind ?? event.result?.status ?? 'reviewed'), reviewer: String(event.actor), note: String(event.result?.note ?? ''), reviewedAt: (event.createdAt as Date).toISOString() })) };
 }
-function validateChecks(row: StoredItem, product: Document, value: ImageReviewDecisionInput) {
+function validateChecks(row: StoredItem, _product: Document, value: ImageReviewDecisionInput) {
+  // One reviewer decision per image. The reviewer sees the image beside the catalogue record and can correct the record in the
+  // same step, so approval no longer needs per-field confirmations or written evidence. What still blocks approval: a flagged
+  // source image, an image that was not shown, a withdrawn association and a product that changed after it was viewed.
   if (!value.originalViewed || row.source.flags.length) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-  const base = row.source.identity, catalogue = imageReviewProductIdentity(product, base);
-  const comparison = compareImageIdentity(base, catalogue);
   if (new Set(value.checks.map(c => c.field)).size !== value.checks.length) throw new HttpError(400, 'INVALID_REQUEST');
-  for (const field of comparison.filter(c => c.required || value.checks.some(check => check.field === c.field && (check.imageValue || check.catalogueValue || check.discardedExtraction)))) {
-    const check = value.checks.find(c => c.field === field.field);
-    if (!check?.confirmed) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-    if (check.discardedExtraction) {
-      if (check.imageValue || check.catalogueValue || check.evidence.length < 10 ||
-        !canDiscardImageExtraction(base, catalogue, field.field)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-      continue;
-    }
-    // Corrections retain the pipeline extraction and require a human receipt.
-    // The check must use the catalogue's actual identity after any approved update.
-    const correctedOcr = check.imageValue !== field.imageValue;
-    if ((field.catalogueValue && check.catalogueValue !== field.catalogueValue) || (correctedOcr && check.evidence.length < 10)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-    const resolved = compareImageIdentity(imageIdentitySchema.parse({ ...base, [field.field]: check.imageValue }), imageIdentitySchema.parse({ ...catalogue, [field.field]: check.catalogueValue })).find(c => c.field === field.field)!;
-    if (field.status !== 'match' && check.evidence.length < 10) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-    if (resolved.status !== 'match' && !(field.field === 'name' && resolved.status === 'unknown' && check.imageValue && check.catalogueValue && check.evidence.length >= 10)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-  }
 }
 export async function decideImageReview(db: Db, raw: unknown, actor: string) {
   await authorize(db, actor); const value = parse(imageReviewDecisionSchema, raw), digest = reviewDigest(value);
@@ -191,11 +176,6 @@ export async function decideImageReview(db: Db, raw: unknown, actor: string) {
         product = await productByBusinessId(db, value.productId, session);
         if (imageReviewProductRevision(product) !== value.productRevision || await withdrawn(db, row, value.productId, session)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
         if (value.productChanges && Object.keys(value.productChanges).length) {
-          for (const [field, key] of Object.entries(imageReviewEditableFields)) {
-            if (value.productChanges[key] === undefined) continue;
-            const check = value.checks.find(candidate => candidate.field === field);
-            if (!check?.confirmed || !check.imageValue || check.evidence.length < 10) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
-          }
           const current = await db.collection('products').findOne({ _id: product._id }, { session });
           if (!current) throw new HttpError(404, 'NOT_FOUND');
           priorProduct = productDto(current, row.source.identity, true);
@@ -206,7 +186,7 @@ export async function decideImageReview(db: Db, raw: unknown, actor: string) {
           product = nextProduct;
         }
         validateChecks(row, product, value);
-        if ((await sharedIdentifiers(db, product, session)).length && (!value.sharedIdentifierConfirmed || value.note.length < 10)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+        if ((await sharedIdentifiers(db, product, session)).length && !value.sharedIdentifierConfirmed) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
       }
       const productRevision = product ? imageReviewProductRevision(product) : value.productRevision;
       const now = new Date(), approvalId = value.decision === 'approved' ? reviewDigest([row._id, value.requestId, row.sourceDigest, productRevision]) : null;

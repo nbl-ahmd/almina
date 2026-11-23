@@ -1,4 +1,4 @@
-import { test as base, expect, type Page, type APIRequestContext } from '@playwright/test';
+import { test as base, expect, type Page, type APIRequestContext, type Locator } from '@playwright/test';
 export const commerceOrigin = 'http://127.0.0.1:4730';
 export const adminOrigin = 'http://127.0.0.1:4720';
 export const customer = { name: 'Synthetic', mobile: '0501234567', email: 'synthetic@example.invalid',
@@ -89,3 +89,35 @@ export async function streamSettled(page: Page) {
     observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
   }));
 }
+
+/** Clicks a control that asks for confirmation, accepting the admin confirm dialog (or a native prompt on legacy surfaces). */
+export async function confirmClick(page: Page, control: Locator) {
+  page.once('dialog', dialog => void dialog.accept());
+  await control.click();
+  const dialog = page.getByRole('alertdialog');
+  try { await dialog.waitFor({ state: 'visible', timeout: 1500 }); } catch { return; }
+  await dialog.getByRole('button').last().click();
+  await dialog.waitFor({ state: 'hidden' });
+}
+
+/** The product editor keeps channels, care, identifiers and variants under one disclosure. */
+export async function openMoreDetails(page: Page) {
+  const summary = page.locator('summary').filter({ hasText: 'More details' });
+  if (!(await page.locator('details[open] > summary').filter({ hasText: 'More details' }).count())) await summary.click();
+}
+export const saveProductButton = (page: Page) => page.getByRole('button', { name: /^(Save & publish|Save draft)$/ });
+export const savedToast = (page: Page) => page.getByText(/^(Saved and live|Saved as draft|Saved successfully\.|Product and channel prices saved\.)/).first();
+
+/** Brand and category are required, searchable and creatable; this picks or adds the value through the real control. */
+async function pickCombo(page: Page, name: string, value: string) {
+  const trigger = page.getByRole('combobox', { name, exact: true });
+  await trigger.click();
+  await page.keyboard.type(value);
+  await page.keyboard.press('Enter');
+  await expect(trigger).toContainText(value);
+}
+export async function chooseBrand(page: Page, value = 'Synthetic Brand') {
+  const trigger = page.getByRole('combobox', { name: 'Brand', exact: true });
+  if ((await trigger.textContent())?.includes('Choose or add')) await pickCombo(page, 'Brand', value);
+}
+export const chooseCategory = (page: Page, value = 'Synthetic category') => pickCombo(page, 'Category', value);

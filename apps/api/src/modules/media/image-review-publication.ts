@@ -1,3 +1,5 @@
+import { createEventWorker } from '../operations/event-worker.js';
+import type { LocalWriteSignal } from '../notifications/wake.js';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { ClientSession, Db, Document } from 'mongodb';
@@ -190,12 +192,11 @@ export async function runImagePublicationLocally(db: Db, jobId: string, cloudNam
   return 'interrupted';
 }
 
-export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configuration: { cloudName?: string; transport?: typeof fetch; enabled?: () => boolean; intervalMs?: number } = {}) {
-  let stopped = false, running: Promise<unknown> | undefined;
-  const tick = () => {
-    if (stopped || running || configuration.enabled?.() === false) return;
-    running = Promise.resolve().then(getDb).then(db => processImagePublication(db, configuration.cloudName, configuration.transport)).catch(() => undefined).finally(() => { running = undefined; });
-  };
-  const timer = setInterval(tick, configuration.intervalMs ?? 1500); timer.unref(); tick();
-  return { stop: async () => { stopped = true; clearInterval(timer); await running; } };
+export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configuration: { cloudName?: string; transport?: typeof fetch; enabled?: () => boolean; intervalMs?: number; local?: LocalWriteSignal } = {}) {
+  // Starting, resuming or pausing a run writes its job document, which wakes this worker; it then keeps going until nothing is queued.
+  const worker = createEventWorker(async () => {
+    if (configuration.enabled?.() === false) return false;
+    return (await processImagePublication(await getDb(), configuration.cloudName, configuration.transport)) !== false;
+  }, { local: configuration.local, collections: ['image_review_publications'], debounceMs: 250, drainMs: configuration.intervalMs ?? 1500 });
+  return { stop: () => worker.stop() };
 }

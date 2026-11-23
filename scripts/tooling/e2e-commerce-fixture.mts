@@ -57,6 +57,14 @@ async function reset() {
 await reset();
 const app = express() as Express;
 app.use(express.json({ limit: '128kb' }));
+app.post('/__fixture/products', async (req, res) => {
+  const rows = Array.isArray(req.body?.products) ? req.body.products as Record<string, unknown>[] : [];
+  const docs = rows.map((row, index) => ({ product_id: `PD${7000 + fixtureCase * 100 + index}`, category: new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa'), price: 12, stock: 5, productType: 'general',
+    catalogManaged: true, disabled: false, published: true, images: [], ...row }));
+  if (docs.length > 50) return res.status(400).end();
+  await db.collection('products').insertMany(docs);
+  res.json({ productIds: docs.map(doc => doc.product_id) });
+});
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
 app.post('/__fixture/stripe-paid',(_req,res)=>{stripe.paid();res.sendStatus(204);});
 app.post('/__fixture/stripe-refunded',(_req,res)=>{stripe.refunded();res.sendStatus(204);});
@@ -137,7 +145,7 @@ const mediaTransport: typeof fetch = async (url, options) => {
   mediaAssets.set(publicId, asset); return Response.json({ ...asset, signature: cloudinarySignature({ public_id: publicId, version: '1' }, 'synthetic-not-a-secret') });
 };
 const location = { enabled: true, endpoint: 'https://geocoder.example.invalid/reverse', userAgent: 'AlMinaSyntheticTest/1', dailyLimit: 100, fetch: async () => Response.json({ display_name: 'Synthetic street, Synthetic area, Ras Al Khaimah, United Arab Emirates', address: { country_code: 'ae', state: 'Ras Al Khaimah Emirate', suburb: 'Synthetic area', city: 'Ras Al Khaimah', road: 'Synthetic street' } }) };
-const legacy = createLegacyApp({ stripePayments, location, commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
+const legacy = createLegacyApp({ stripePayments, location, commerceTelemetryEnabled: process.env.COMMERCE_TELEMETRY_ENABLED === 'true', getCommerceDb: () => db, whatsappSender: async () => { whatsappSends++; if (whatsappFailure) throw new Error('Synthetic uncertain send'); return { providerId: `synthetic-message-${whatsappSends}` }; }, mediaTransport, cloudinaryUploads: { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' }, trustProxy: ['127.0.0.1'], recoveryAllowed: true, recoveryCloudName: 'synthetic', imageReviewEnabled: true, origins: [origin, 'http://127.0.0.1:4720', 'http://127.0.0.1:4740', 'http://127.0.0.1:4760'], development: true });
 app.use('/api', (req, res, next) => {
   // Preserve the full path expected by the actual authorization boundary.
   req.url = '/api' + req.url; legacy(req, res, next);

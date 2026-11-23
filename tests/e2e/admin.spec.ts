@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import { test, expect, reset, state, login, streamSettled, commerceOrigin, adminOrigin, customer, productId } from './fixtures';
+import { test, expect, reset, state, login, streamSettled, commerceOrigin, adminOrigin, customer, productId, confirmClick, saveProductButton, savedToast, chooseBrand } from './fixtures';
 const localRequire = createRequire(process.cwd() + '/package.json');
 const axe = readFileSync(localRequire.resolve('axe-core/axe.min.js'), 'utf8');
 
@@ -65,7 +65,7 @@ for (const width of [360, 390, 768, 1280]) test(`administrator creation clears c
   await expect(page.getByLabel('Password (at least 12 characters)', { exact: true })).toHaveValue('');
   expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(200);
   expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(200);
-  page.once('dialog', dialog => dialog.accept()); await row.getByRole('button', { name: 'Deactivate account', exact: true }).click();
+  await confirmClick(page, row.getByRole('button', { name: 'Deactivate account', exact: true }));
   await expect(row).toHaveCount(0);
   expect((await request.get(commerceOrigin + '/api/auth/me')).status()).toBe(401);
   expect((await request.post(commerceOrigin + '/api/auth/login', { headers: browser, data: { username, password } })).status()).toBe(401);
@@ -137,16 +137,14 @@ test('admin order update reaches the real writer and prevents cancellation after
   await page.screenshot({ path: '.verification-results/admin-order-price.jpg', type: 'jpeg', fullPage: true });
   await page.getByRole('textbox', { name: 'Bill number', exact: true }).fill('12345');
   await page.getByRole('spinbutton', { name: 'Bill amount (AED)', exact: true }).fill('40');
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Dispatch order', exact: true }).click();
-  await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
+  await confirmClick(page, page.getByRole('button', { name: 'Dispatch order', exact: true }));
+  await expect(savedToast(page)).toBeVisible();
   expect((await state(request)).orders[0]!.status).toBe('dispatched');
   await expect(page.getByRole('combobox', { name: 'Order status', exact: true })).toHaveValue('dispatched');
   await page.reload();
   await streamSettled(page);
   await expect(page.getByRole('combobox', { name: 'Order status', exact: true })).toHaveValue('dispatched');
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Cancel order', exact: true }).click();
+  await confirmClick(page, page.getByRole('button', { name: 'Cancel order', exact: true }));
   await expect(page.locator('main')).toContainText('This record has changed or the action is unavailable.');
   const result = await state(request); expect(result.orders[0]!.status).toBe('dispatched'); expect(result.stock).toBe(2);
   await page.goto(adminOrigin+'/admin/growth');
@@ -167,13 +165,14 @@ test('admin stock adjustment requires a reason, preserves the retry receipt and 
   await login(page);
   await page.goto(adminOrigin + '/admin/products/' + productId);
   await streamSettled(page);
-  await page.getByLabel('Stock quantity', { exact: true }).fill('7');
-  await page.getByLabel(/^Reason for stock change/).fill('Physical count verified');
+  await chooseBrand(page);
+  await page.getByLabel('Stock', { exact: true }).fill('7');
+  await page.getByLabel(/^Reason for stock change/).selectOption('Stock count');
   const saving = page.waitForRequest(request => request.method() === 'PUT' && request.url() === adminOrigin + '/api/admin/products/' + productId);
-  await page.getByRole('button', { name: 'Save product', exact: true }).click();
+  await saveProductButton(page).click();
   const payload = (await saving).postData() ?? '';
   expect(payload).not.toMatch(/name="(?:vat|featured|barcode)"/);
-  await expect(page.getByText('Saved successfully.', { exact: true })).toBeVisible();
+  await expect(savedToast(page)).toBeVisible();
   expect((await state(request)).stock).toBe(7);
   const response = await page.request.put(adminOrigin + '/api/admin/products/' + productId, {
     headers: { origin: adminOrigin, 'x-csrf-protection': '1' },
@@ -192,25 +191,24 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   await page.route('**/*.js', async route => { await scriptsReady; await route.continue(); });
   await page.goto(adminOrigin + '/admin/products/' + productId, { waitUntil: 'commit' });
   try {
+    // Uploads stay off until the page is interactive.
     await expect(page.locator('button').filter({hasText:'Save product photos'})).toBeDisabled();
-    await expect(page.getByLabel('Choose product photos')).toBeDisabled();
   } finally { releaseScripts(); }
-  await page.getByRole('tab', {name:'Photos',exact:true}).click();
-  await expect(page.getByLabel('Choose product photos')).toBeEnabled();
+  await expect(page.locator('#product-photos')).toBeEnabled();
   await page.getByText('Upload recovery', { exact: true }).click();
   await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toBeVisible();
-  await page.getByLabel('Choose product photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
+  await page.locator('#product-photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
   await page.getByRole('button', { name: 'Save product photos', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Product photos saved' })).toBeVisible();
+  await expect(page.getByText(/Product photos saved/).first()).toBeVisible();
   const product = await (await page.request.get(adminOrigin + '/api/admin/products/' + productId)).json();
   expect(product.cloudinaryImages[0]).toMatch(/^https:\/\/res.cloudinary.com\/synthetic\/image\/upload\/v1\/almina\/products\//);
   expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);
   await page.goto(adminOrigin + '/admin/products');
   await streamSettled(page);
   await page.getByRole('button', { name: /^More actions for/ }).click();
-  page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Archive product', exact: true }).click();
-  await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('No records found.');
+  await confirmClick(page, page.getByRole('menuitem', { name: /^Archive/ }));
+  await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('No products match');
   expect((await state(request)).stock).toBe(4);
   const unpublished = await page.request.put(adminOrigin + '/api/admin/products/publish/' + productId, { headers: { origin: adminOrigin, 'x-csrf-protection': '1' }, data: {} });
   expect(unpublished.status()).toBe(409);

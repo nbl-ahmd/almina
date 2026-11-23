@@ -85,7 +85,7 @@ export default function MarketingDesigner({
   }, []);
   return (
     <div
-      className="min-w-0 overflow-hidden rounded-lg bg-surface border border-line"
+      className="marketing-designer min-w-0 overflow-hidden rounded-lg border border-line bg-surface"
       data-mobile-panel={mobilePanel}
     >
       <div
