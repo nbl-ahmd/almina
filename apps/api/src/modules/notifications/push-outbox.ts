@@ -114,6 +114,6 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
     }
   }
   function tick() { if (stopped) return Promise.resolve(); if (!running) running = run().finally(() => { running = undefined; }); return running; }
-  const loop = wakeLoop(tick, { fastMs: interval, slowMs: 30000, wake: options.wake });
+  const loop = wakeLoop(tick, { fastMs: interval, slowMs: 120000, wake: options.wake });
   return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

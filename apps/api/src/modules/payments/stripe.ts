@@ -269,10 +269,11 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
         const order=await(await getDb()).collection('orders').findOne({...selector,'payment.paymentIntentId':pi});if(order)await synchronize(order.payment.attemptId);
       }
     },
-    async reconcile(){
+    async reconcile(sweepPaid=true){
       if(!options)return;const db=await getDb();
       const urgent=await db.collection('orders').find({...selector,'payment.state':{$in:['awaiting_payment','refund_pending','partially_refunded','disputed']}}).sort({'payment.checkedAt':1}).limit(10).toArray();
-      const paid=await db.collection('orders').find({...selector,'payment.state':'paid'}).sort({'payment.checkedAt':1}).limit(10).toArray();
+      // Paid orders are already settled; re-checking them with Stripe is a slow safety sweep, not a per-minute job.
+      const paid=sweepPaid?await db.collection('orders').find({...selector,'payment.state':'paid'}).sort({'payment.checkedAt':1}).limit(10).toArray():[];
       let failed=false;
       for(const order of [...urgent,...paid]){try{await finishRequestedRefund(order.payment.attemptId);await synchronize(order.payment.attemptId);}catch{failed=true;await db.collection('orders').updateOne({_id:order._id},{$set:{'payment.checkedAt':new Date()}});}}
       if(failed)throw new HttpError(503,'SERVICE_UNAVAILABLE');
@@ -281,8 +282,8 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
 }
 export type StripePayments=ReturnType<typeof createStripePayments>;
 export function stripeReconciler(payments:StripePayments,onFailure:()=>void){
-  let running:Promise<void>|undefined,stopped=false;
-  const tick=()=>stopped?Promise.resolve():running??=(payments.reconcile().catch(onFailure).finally(()=>{running=undefined;}));
+  let running:Promise<void>|undefined,stopped=false,lastPaidSweep=0;
+  const tick=()=>{if(stopped)return Promise.resolve();const sweep=Date.now()-lastPaidSweep>=900000;if(sweep)lastPaidSweep=Date.now();return running??=(payments.reconcile(sweep).catch(onFailure).finally(()=>{running=undefined;}));};
   const timer=payments.enabled?setInterval(()=>{void tick();},60000):undefined;timer?.unref();
   return {tick,stop:async()=>{stopped=true;if(timer)clearInterval(timer);await running;}};
 }

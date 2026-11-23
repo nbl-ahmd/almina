@@ -6,7 +6,9 @@ try {
   runtime = retainedRuntimeConfiguration(process.env);
 } catch { console.error('Retained runtime configuration invalid'); process.exit(1); }
 const domain = require('./commerce/dist/service.cjs');
-const database = domain.createPersistentDatabase(runtime);
+// The API process makes every order and notification write, so the driver's own command events wake the workers instantly.
+const localWrites = domain.createLocalWriteSignal();
+const database = domain.createPersistentDatabase(runtime, undefined, { localWrites });
 const { createLegacyApp } = require('./app');
 const { secureRealtime } = require('./security/realtime.cjs');
 const { development, origins, trustProxy } = runtime;
@@ -23,7 +25,7 @@ database.connect().then(async () => {
   if (app.locals.draining) return database.close();
   await domain.prepareStaffAlertStorage(database.getDb());
   // One change stream wakes the order workers, so they do not poll an idle database every second or five seconds.
-  wake = domain.createOutboxWake(() => database.getDb(), { log: message => console.warn(message) });
+  wake = domain.createOutboxWake(() => database.getDb(), { log: message => console.warn(message), local: localWrites });
   alertWorker=domain.staffAlertWorker(()=>database.getDb(),()=>console.error(JSON.stringify({level:'error',service:'api',event:'staff_alert_failed'})),{ wake });
   pushWorker = await require('./integrations/push.cjs').startStaffPush(async () => database.getDb(), process.env, { wake });
   if (app.locals.draining) { await alertWorker?.stop(); await pushWorker?.stop(); await wake?.shutdown(); return database.close(); }

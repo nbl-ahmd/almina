@@ -149,6 +149,6 @@ export function retentionWorker(getDb: () => Promise<Db>, options: { origin: str
     } catch { await wait().catch(() => undefined); options.onFailure?.(); }
   }
   const tick = () => { if (stopped) return Promise.resolve(); if (!running) running = run().catch(() => { options.onFailure?.(); }).finally(() => { running = undefined; }); return running; };
-  const timer = setInterval(() => { void tick(); }, options.intervalMs ?? 30000); timer.unref();
+  const timer = setInterval(() => { void tick(); }, options.intervalMs ?? 120000); timer.unref();
   return { tick, async stop() { stopped = true; clearInterval(timer); await running; } };
 }

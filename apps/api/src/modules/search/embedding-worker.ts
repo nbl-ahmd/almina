@@ -1,3 +1,4 @@
+import { idleBackoffLoop } from '../operations/idle-loop.js';
 import { randomUUID } from 'node:crypto';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import type { EnvironmentSource } from '@almina/config/env';
@@ -67,13 +68,10 @@ export function searchEmbeddingWorker(getDb: () => Db | Promise<Db>, source: Env
   if (!env.SEARCH_EMBEDDING_WORKER_ENABLED) return undefined;
   if (env.SEARCH_PROVIDER !== 'atlas' || !env.SEARCH_SEMANTIC_ENABLED || !source.SEARCH_EMBEDDING_API_KEY) throw new Error('Background search embedding configuration incomplete');
   const provider = geminiEmbeddings(env, source.SEARCH_EMBEDDING_API_KEY);
-  let active: Promise<void> | undefined, stopped = false;
-  const tick = () => {
-    if (stopped || active) return;
-    active = Promise.resolve().then(getDb).then(db => processSearchEmbeddings(db, env, provider)).then(() => undefined)
-      .catch(() => { console.error('{"event":"search_embedding_batch_failed"}'); })
-      .finally(() => { active = undefined; });
-  };
-  const timer = setInterval(tick, 60000); timer.unref(); tick();
-  return { async stop() { stopped = true; clearInterval(timer); await active; } };
+  // Each batch checks up to 100 products; once the catalogue is up to date it rests for up to 10 minutes between checks.
+  const loop = idleBackoffLoop(async () => {
+    try { const result = await processSearchEmbeddings(await getDb(), env, provider); return !!result && result.leased && result.products > 0; }
+    catch { console.error('{"event":"search_embedding_batch_failed"}'); return false; }
+  }, { minMs: 15000, maxMs: 600000 });
+  return { stop: () => loop.stop() };
 }

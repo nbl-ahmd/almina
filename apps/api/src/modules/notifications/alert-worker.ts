@@ -10,7 +10,8 @@ import {
 type Row = Document & { _id: string };
 const query = { maxTimeMS: 3000 };
 const orderIntervalMs = 5000;
-const reconciliationIntervalMs = 60000;
+// Stock and payment sweeps are a safety net; order alerts are woken by the orders themselves.
+const reconciliationIntervalMs = 300000;
 const maintenanceId = "staff-alert-maintenance";
 
 function pendingOrderJobs(enabledAt: Date): Filter<Row> {
@@ -274,8 +275,8 @@ export function staffAlertWorker(
       running = undefined;
     }));
   }
-  // Order alerts wake this worker; the slow interval also drives the 60 s reconciliation sweep.
-  const loop = wakeLoop(tick, { fastMs: orderIntervalMs, slowMs: 30000, wake: options.wake });
+  // Order alerts wake this worker; the slow interval also drives the 5 minute reconciliation sweep.
+  const loop = wakeLoop(tick, { fastMs: orderIntervalMs, slowMs: 120000, wake: options.wake });
   void tick();
   return {
     tick,

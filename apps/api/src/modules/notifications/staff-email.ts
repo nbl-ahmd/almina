@@ -170,6 +170,6 @@ export async function staffOrderEmailOutbox(getDb: () => Promise<Db> | Db, optio
     }
   }
   function tick() { if (stopped) return Promise.resolve(); if (!running) running = run().then(remind).finally(() => { running = undefined; }); return running; }
-  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 30000, wake: options.wake });
+  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 120000, wake: options.wake });
   return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

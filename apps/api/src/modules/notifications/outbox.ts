@@ -49,6 +49,6 @@ export function orderOutbox(getDb: () => Promise<Db> | Db, options: {
     if (!running) running = run().finally(() => { running = undefined; });
     return running;
   }
-  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 30000, wake: options.wake });
+  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 120000, wake: options.wake });
   return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

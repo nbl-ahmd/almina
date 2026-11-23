@@ -212,7 +212,7 @@ export async function processMerchantSync(db: Db, config: MerchantConfiguration,
     succeeded = true;
     return result;
   } finally {
-    await jobs.updateOne({ _id: jobId, owner }, { $set: { leaseUntil: new Date(Date.now() + (succeeded ? 900000 : 300000)), ...(succeeded ? {} : { state: 'retry', lastFailureAt: new Date() }) }, $unset: { owner: '' } }, { maxTimeMS: 3000 });
+    await jobs.updateOne({ _id: jobId, owner }, { $set: { leaseUntil: new Date(Date.now() + (succeeded ? 1800000 : 300000)), ...(succeeded ? {} : { state: 'retry', lastFailureAt: new Date() }) }, $unset: { owner: '' } }, { maxTimeMS: 3000 });
   }
 }
 
@@ -228,6 +228,7 @@ export function merchantSyncWorker(getDb: () => Db | Promise<Db>, source: Readon
       .then(result => { if (result) console.info(JSON.stringify({ event: 'merchant_sync_completed', ...result })); })
       .catch(() => console.error('Merchant sync failed; will retry')).finally(() => { running = undefined; });
   };
-  const timer = setInterval(tick, 60000); timer.unref(); tick();
+  // A product feed only needs to follow catalogue edits within the hour; checking whether a run is due costs two writes.
+  const timer = setInterval(tick, 300000); timer.unref(); tick();
   return { stop: async () => { stopped = true; clearInterval(timer); await running; } };
 }

@@ -1,4 +1,4 @@
-import type { ChangeStream, Db } from 'mongodb';
+import type { ChangeStream, Db, MongoClient } from 'mongodb';
 
 /** Wakes background workers when order data changes, so they stop asking the database "anything new?" on a timer.
  *
@@ -8,8 +8,41 @@ import type { ChangeStream, Db } from 'mongodb';
  *  only makes an ordinary worker tick happen sooner. */
 export type Wake = { subscribe(listener: () => void): () => void; healthy(): boolean; shutdown(): Promise<void> };
 
-export function createOutboxWake(getDb: () => Promise<Db> | Db, options: { coalesceMs?: number; log?: (message: string) => void } = {}): Wake {
-  const { coalesceMs = 150, log = () => undefined } = options;
+/** Knows about order writes made by this very process, from the database driver's own command events (no extra traffic).
+ *  All order and notification writes go through the one API process, so this wakes the workers instantly even when the
+ *  database offers no change streams (Atlas free tier filters, outages, standalone servers). Writes made by other
+ *  processes are still caught by the workers' slow safety interval and by the change stream when it is available. */
+export type LocalWriteSignal = { attach(client: Pick<MongoClient, 'on'>): void; subscribe(listener: () => void): () => void };
+const WATCHED = new Set(['orders', 'order_outbox']);
+const WRITES = new Set(['insert', 'update', 'findAndModify', 'delete']);
+export function createLocalWriteSignal(): LocalWriteSignal {
+  const listeners = new Set<() => void>();
+  const pending = new Map<number, true>();
+  let transactional = false;
+  const fire = () => { for (const listener of [...listeners]) { try { listener(); } catch { /* One worker must not stop the others. */ } } };
+  return {
+    attach(client) {
+      const listen = client.on.bind(client) as (event: string, handler: (event: Record<string, unknown>) => void) => void;
+      listen('commandStarted', event => {
+        const name = event.commandName, command = event.command as Record<string, unknown> | undefined;
+        if (typeof name !== 'string' || !WRITES.has(name) || !command) return;
+        const collection = command[name];
+        if (typeof collection !== 'string' || !WATCHED.has(collection)) return;
+        // Writes inside a transaction become visible at commit, not now.
+        if (command.autocommit === false) transactional = true; else pending.set(event.requestId as number, true);
+      });
+      listen('commandSucceeded', event => {
+        if (event.commandName === 'commitTransaction') { if (transactional) { transactional = false; fire(); } return; }
+        if (pending.delete(event.requestId as number)) fire();
+      });
+      listen('commandFailed', event => { pending.delete(event.requestId as number); if (event.commandName === 'abortTransaction') transactional = false; });
+    },
+    subscribe(listener) { listeners.add(listener); return () => { listeners.delete(listener); }; },
+  };
+}
+
+export function createOutboxWake(getDb: () => Promise<Db> | Db, options: { coalesceMs?: number; log?: (message: string) => void; local?: LocalWriteSignal } = {}): Wake {
+  const { coalesceMs = 150, log = () => undefined, local } = options;
   const listeners = new Set<() => void>();
   let stream: ChangeStream | undefined;
   let healthyNow = false;
@@ -52,11 +85,13 @@ export function createOutboxWake(getDb: () => Promise<Db> | Db, options: { coale
     }
   }
   void open();
+  const unsubscribeLocal = local?.subscribe(fire);
   return {
     subscribe(listener) { listeners.add(listener); return () => { listeners.delete(listener); }; },
-    healthy: () => healthyNow,
+    // With a local write signal the workers can always rest on their slow safety interval.
+    healthy: () => healthyNow || local !== undefined,
     async shutdown() {
-      stopped = true; healthyNow = false; clearTimeout(coalesce); clearTimeout(retry); listeners.clear();
+      stopped = true; healthyNow = false; clearTimeout(coalesce); clearTimeout(retry); listeners.clear(); unsubscribeLocal?.();
       const current = stream; stream = undefined;
       try { await current?.close(); } catch { /* Already closed. */ }
     },

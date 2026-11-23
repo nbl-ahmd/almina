@@ -1,3 +1,4 @@
+import { idleBackoffLoop } from '../operations/idle-loop.js';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { ClientSession, Db, Document } from 'mongodb';
@@ -191,11 +192,10 @@ export async function runImagePublicationLocally(db: Db, jobId: string, cloudNam
 }
 
 export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configuration: { cloudName?: string; transport?: typeof fetch; enabled?: () => boolean; intervalMs?: number } = {}) {
-  let stopped = false, running: Promise<unknown> | undefined;
-  const tick = () => {
-    if (stopped || running || configuration.enabled?.() === false) return;
-    running = Promise.resolve().then(getDb).then(db => processImagePublication(db, configuration.cloudName, configuration.transport)).catch(() => undefined).finally(() => { running = undefined; });
-  };
-  const timer = setInterval(tick, configuration.intervalMs ?? 1500); timer.unref(); tick();
-  return { stop: async () => { stopped = true; clearInterval(timer); await running; } };
+  // Fast while a run is active, then it backs off to one check every 15 s when nothing is queued.
+  const loop = idleBackoffLoop(async () => {
+    if (configuration.enabled?.() === false) return false;
+    return (await processImagePublication(await getDb(), configuration.cloudName, configuration.transport)) !== false;
+  }, { minMs: configuration.intervalMs ?? 1500, maxMs: Math.max(15000, configuration.intervalMs ?? 0) });
+  return { stop: () => loop.stop() };
 }
