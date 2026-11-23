@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { ChangeStream, Db } from 'mongodb';
+import type { LocalWriteSignal } from '../notifications/wake.js';
 
-/** Tiny, data-free "orders changed" signal for staff browsers.
+/** Tiny, data-free "orders or alerts changed" signal for staff browsers.
  *
  *  One MongoDB change stream per API process feeds every connected staff stream, so an idle system issues no
  *  timed reads. The cursor opens when the first browser connects and closes shortly after the last one leaves.
@@ -22,10 +23,14 @@ type Options = {
   /** Fallback invalidation period when change streams are unsupported. */
   fallbackMs?: number;
   log?: (message: string, detail?: Record<string, unknown>) => void;
+  /** Committed writes made by this process. When given, no change stream or timer is used at all: while browsers are connected the feed
+   *  listens to the driver's own write events (no database requests), and with nobody connected it listens to nothing. */
+  local?: LocalWriteSignal;
 };
 
 export function createOrderLiveFeed(options: Options) {
-  const { getDb, maxSubscribers = 200, maxPerKey = 6, coalesceMs = 500, idleGraceMs = 30000, fallbackMs = 15000, log = () => undefined } = options;
+  const { getDb, maxSubscribers = 200, maxPerKey = 6, coalesceMs = 500, idleGraceMs = 30000, fallbackMs = 15000, log = () => undefined, local } = options;
+  let unlisten: (() => void) | undefined;
   const boot = randomUUID().slice(0, 8);
   const listeners = new Map<LiveListener, string>();
   const perKey = new Map<string, number>();
@@ -65,8 +70,9 @@ export function createOrderLiveFeed(options: Options) {
     opening = true;
     try {
       const db = await getDb();
-      const opened = db.collection('orders').watch(
-        [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] } } }, { $project: { operationType: 1 } }],
+      // Orders and staff alerts (stock, payment) share one signal; each browser refetches only the reads it is authorised for.
+      const opened = db.watch(
+        [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] }, 'ns.coll': { $in: ['orders', 'staff_alerts'] } } }, { $project: { operationType: 1 } }],
         { maxAwaitTimeMS: 10000 },
       );
       stream = opened;
@@ -95,14 +101,15 @@ export function createOrderLiveFeed(options: Options) {
   return {
     revision,
     size: () => listeners.size,
-    active: () => Boolean(stream) || Boolean(fallback),
+    active: () => Boolean(stream) || Boolean(fallback) || Boolean(unlisten),
     /** Returns undefined when the process or this user already holds the maximum number of streams. */
     subscribe(listener: LiveListener, key: string) {
       if (listeners.size >= maxSubscribers || (perKey.get(key) ?? 0) >= maxPerKey) return undefined;
       listeners.set(listener, key);
       perKey.set(key, (perKey.get(key) ?? 0) + 1);
       clearTimeout(idle); idle = undefined;
-      if (unsupported) startFallback(); else void open();
+      if (local) unlisten ??= local.subscribe(changed, ['orders', 'staff_alerts']);
+      else if (unsupported) startFallback(); else void open();
       let done = false;
       return () => {
         if (done) return;
@@ -110,11 +117,12 @@ export function createOrderLiveFeed(options: Options) {
         listeners.delete(listener);
         const left = (perKey.get(key) ?? 1) - 1;
         if (left <= 0) perKey.delete(key); else perKey.set(key, left);
-        if (!listeners.size) { idle = setTimeout(() => { idle = undefined; if (!listeners.size) void close(); }, idleGraceMs); idle.unref?.(); }
+        if (!listeners.size && local) { unlisten?.(); unlisten = undefined; }
+        else if (!listeners.size) { idle = setTimeout(() => { idle = undefined; if (!listeners.size) void close(); }, idleGraceMs); idle.unref?.(); }
       };
     },
     /** For graceful shutdown and tests. */
-    async shutdown() { clearTimeout(coalesce); clearTimeout(idle); coalesce = idle = undefined; listeners.clear(); perKey.clear(); await close(); },
+    async shutdown() { clearTimeout(coalesce); clearTimeout(idle); coalesce = idle = undefined; unlisten?.(); unlisten = undefined; listeners.clear(); perKey.clear(); await close(); },
   };
 }
 export type OrderLiveFeed = ReturnType<typeof createOrderLiveFeed>;

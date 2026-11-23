@@ -1,4 +1,5 @@
-import { wakeLoop, type Wake } from './wake.js';
+import { createEventWorker } from '../operations/event-worker.js';
+import { wakeLoop, type LocalWriteSignal, type Wake } from './wake.js';
 import { randomUUID, createHash } from "node:crypto";
 import { ObjectId, type Db, type Document, type Filter } from "mongodb";
 import {
@@ -10,7 +11,9 @@ import {
 type Row = Document & { _id: string };
 const query = { maxTimeMS: 3000 };
 const orderIntervalMs = 5000;
-const reconciliationIntervalMs = 60000;
+const reconciliationIntervalMs = 300000; // Only used without a local write signal (tests, the standalone v1 server).
+// With a local write signal the stock/payment sweep runs when products, orders or the alert rules change, never on a clock.
+const sweepCollections = ['products', 'orders', 'notification_controls:staff-alert-rules'] as const;
 const maintenanceId = "staff-alert-maintenance";
 
 function pendingOrderJobs(enabledAt: Date): Filter<Row> {
@@ -22,7 +25,8 @@ function pendingOrderJobs(enabledAt: Date): Filter<Row> {
 }
 
 /** Persistent-service reconciliation; never runs in Next.js or inside a commerce transaction. */
-export async function notificationMaintenance(db: Db, reconcile = true) {
+/** Returns true when a bounded pass stopped before the end of a catalogue, payment or alert list and another pass should follow. */
+export async function notificationMaintenance(db: Db, reconcile = true): Promise<boolean> {
   const controls = db.collection<Row>("notification_controls"),
     outbox = db.collection<Row>("order_outbox"),
     token = randomUUID(),
@@ -35,15 +39,15 @@ export async function notificationMaintenance(db: Db, reconcile = true) {
     );
   } else {
     const control = await controls.findOne({ _id: maintenanceId }, { ...query, projection: { enabledAt: 1, leaseUntil: 1 } });
-    if (!control || control.leaseUntil > now) return;
-    if (!(await outbox.findOne(pendingOrderJobs(control.enabledAt), { ...query, projection: { _id: 1 } }))) return;
+    if (!control || control.leaseUntil > now) return false;
+    if (!(await outbox.findOne(pendingOrderJobs(control.enabledAt), { ...query, projection: { _id: 1 } }))) return false;
   }
   const lease = await controls.findOneAndUpdate(
     { _id: maintenanceId, leaseUntil: { $lte: now } },
     { $set: { leaseUntil: new Date(Date.now() + 60000), token } },
     { ...query, returnDocument: "after" },
   );
-  if (!lease) return;
+  if (!lease) return false;
   try {
     const jobs = await outbox
       .find(pendingOrderJobs(lease.enabledAt), { ...query, projection: { orderId: 1 } })
@@ -62,7 +66,7 @@ export async function notificationMaintenance(db: Db, reconcile = true) {
       }
       await outbox.updateOne({ _id: job._id }, { $set: { inAppState: "done" } }, query);
     }
-    if (!reconcile) return;
+    if (!reconcile) return false;
     const payments = await db
       .collection("orders")
       .find(
@@ -243,6 +247,7 @@ export async function notificationMaintenance(db: Db, reconcile = true) {
       },
       query,
     );
+    return payments.length === 25 || outstanding.length === 100 || products.length === 100;
   } finally {
     await controls.updateOne(
       { _id: maintenanceId, token },
@@ -254,17 +259,19 @@ export async function notificationMaintenance(db: Db, reconcile = true) {
 export function staffAlertWorker(
   getDb: () => Db | Promise<Db>,
   onFailure: () => void = () => {},
-  options: { wake?: Wake } = {},
+  options: { wake?: Wake; local?: LocalWriteSignal } = {},
 ) {
   let stopped = false,
     nextReconciliation = 0,
     running: Promise<void> | undefined;
+  const eventDriven = options.local !== undefined;
   function tick() {
     if (stopped) return Promise.resolve();
     return (running ??= (async () => {
       try {
         const now = Date.now();
-        const reconcile = now >= nextReconciliation;
+        // Event-driven: new-order alerts here; the stock/payment sweep has its own event worker below.
+        const reconcile = !eventDriven && now >= nextReconciliation;
         await notificationMaintenance(await getDb(), reconcile);
         if (reconcile) nextReconciliation = now + reconciliationIntervalMs;
       } catch {
@@ -274,14 +281,18 @@ export function staffAlertWorker(
       running = undefined;
     }));
   }
-  // Order alerts wake this worker; the slow interval also drives the 60 s reconciliation sweep.
-  const loop = wakeLoop(tick, { fastMs: orderIntervalMs, slowMs: 30000, wake: options.wake });
-  void tick();
+  const loop = wakeLoop(tick, { fastMs: orderIntervalMs, slowMs: 120000, wake: options.wake });
+  // Stock edits, imports, payment problems and rule changes arrive as writes. One debounced sweep checks the catalogue once
+  // after a burst of changes (and once at start-up), draining its cursors, then goes quiet.
+  const sweep = eventDriven ? createEventWorker(async () => notificationMaintenance(await getDb(), true), {
+    local: options.local, collections: sweepCollections, debounceMs: 30000, drainMs: 500, onError: onFailure }) : undefined;
+  if (!eventDriven) void tick();
   return {
     tick,
     async stop() {
       stopped = true;
       loop.stop();
+      await sweep?.stop();
       await running;
     },
   };

@@ -37,3 +37,28 @@ The staff alert worker (5 s), staff push worker (1 s) and order email worker (5 
 - Verification: `tsc` (web, api), eslint, `npm run test:unit` (281 pass), live-feed and staff e-mail integration tests
   against a disposable MongoDB, `build:foundation` with placeholder env. Not verified: Atlas change-stream support and
   real Resend/SMTP delivery (need production credentials), Playwright e2e (specs stale; need a production build).
+
+## Design review: direct stream, escalation, install guidance (2026-11-23)
+
+Compared with how large order platforms notify merchants (an event published when the order is committed; a native-push
+wake-up for closed devices; a live connection for open ones; acknowledgement with escalation; a slow safety net), this system
+now has each piece at the right size for one pharmacy, without a message broker.
+
+- **Direct stream.** The staff browser no longer depends on the Vercel relay (which the 25 s function limit forced to reconnect
+  about twice a minute). `POST /api/admin/events/ticket` (web gateway, session cookie, same-origin only) asks the API for a
+  one-time ticket (`POST /api/orders/events/ticket`, 30 s, stored as a SHA-256 hash in `stream_tickets` with a TTL index). The page
+  then opens `GET {API}/api/orders/events/stream` with `X-Stream-Ticket`. The cookie is never sent to the API origin. The API ends
+  each stream after 5 minutes, which makes the page mint a fresh ticket, so a deactivated account loses the live signal within
+  5 minutes; it carries no order data in any case. After 3 failed direct attempts the page falls back to the relay route.
+  SSE was chosen over WebSocket on purpose: the signal is one-way, SSE needs no upgrade handling or extra library, passes proxies
+  and reuses the tested feed. WebSocket would add nothing here.
+  CSP `connect-src` allows the API origin on `/admin` pages only; CORS allows the two extra request headers on that route only.
+- **One signal for orders and alerts.** The live feed watches `orders` and `staff_alerts` (stock, payment). The alert poll is now a
+  5-minute safety net that only runs in a visible tab.
+- **Escalation.** After the first order e-mail, unconfirmed orders are reminded about at 5 and 15 minutes
+  (`ORDER_ALERT_ESCALATION_MINUTES`, comma list or `off`). Each stage is leased, sent once and idempotent; confirmed, cancelled or
+  unpaid-online orders are never reminded about. Rollback: set it to `off`.
+- **Install guidance.** Notification settings now show an Install app button where the browser offers one (desktop Chrome/Edge,
+  Android), steps for iPhone/iPad (Web Push there only works from the installed app) and an "Installed" state.
+- **Not changed / still open.** No native FCM/APNs app; no re-push of unacknowledged orders (escalation is e-mail); Atlas
+  change-stream support and the Render plan (free plan sleeps) still need checking on production.

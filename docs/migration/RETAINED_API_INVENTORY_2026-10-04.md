@@ -160,6 +160,8 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | PUT | /api/auth/users/:id/assignment | admin | Serialized staff branch assignment |
 | GET | /api/orders/receiving | orders | Scoped receiving signals |
 | GET | /api/orders/events | orders | Data-free order-change stream (server-sent events) fed by one change stream per API process |
+| POST | /api/orders/events/ticket | orders | Mints a one-time 30 s ticket (stored hashed, TTL-indexed) for the direct stream; also allowed for branch store accounts |
+| GET | /api/orders/events/stream | stream | Same data-free stream, authenticated by the one-time `X-Stream-Ticket` header instead of a cookie; ends after 5 minutes |
 | PUT | /api/orders/:id/routing | admin | Audited delivery-area correction |
 | POST | /api/orders/:id/confirm | orders | Scoped pending-to-confirmed transition |
 | POST | /api/orders/:id/pack | orders | Scoped confirmed-to-packed transition |

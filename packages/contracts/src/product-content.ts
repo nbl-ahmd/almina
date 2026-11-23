@@ -55,10 +55,13 @@ export function publicationIssues(product:Record<string,unknown>):string[] {
   if(!hasProductPhoto(product))issues.push('Product image');
   return issues;
 }
-// Store listings may honestly show a missing-photo placeholder. Advertising feeds
-// retain publicationIssues() and still require real, authorized images and brand.
+// Selling in the store needs only an identifiable product that may legally be listed online: a complete name and a general or
+// pharmacy-medicine (OTC) type. Prescription items are never sold online. Content, stock and image-rights review stamps are not
+// required: the editor and the visibility toggle record them when a product goes live. Advertising feeds keep the strict
+// publicationIssues() list (brand, description, pack size, real photo).
 export function storePublicationIssues(product:Record<string,unknown>):string[] {
-  // A description, pack size and saleable unit improve a listing but are not needed to sell it; feeds (publicationIssues) stay strict.
-  const optional=new Set(['Brand','Product image','Description','Pack / specification','Saleable unit']);
-  return publicationIssues(product).filter(issue=>!optional.has(issue)&&!(issue==='Image usage permission'&&!hasProductPhoto(product)));
+  const issues:string[]=[];
+  if(typeof product.name!=='string'||!product.name.trim()||incompleteProductNamePattern.test(product.name))issues.push('Complete product name / identity');
+  if(!['general','otc'].includes(String(product.productType)))issues.push('Product classification (prescription requires a separate dispensing workflow)');
+  return issues;
 }

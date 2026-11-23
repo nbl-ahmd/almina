@@ -12,11 +12,14 @@ function createLegacyApp(options) {
   };
   app.locals.operationsMetrics = createOperationalMetrics('retained-api', Date.now, options.commerceTelemetryEnabled === true);
   installOperationalMetrics(app, app.locals.operationsMetrics);
-  const auth = options.auth ?? createSessionService(getDb);
+  const auth = options.auth ?? createSessionService(getDb, undefined, { cacheMs: options.development ? 0 : 15000 });
   app.locals.draining = false;
   app.locals.driveMedia = options.driveMedia;
   app.locals.whatsappSender = options.whatsappSender;
   const healthHeaders = require('./security/boundary.cjs').securityHeaders(options.development);
+  // JSON compresses about 5:1 and Render bills outbound bytes. Event streams must stay unbuffered; images are already compressed.
+  const compression = require('compression');
+  app.use(compression({ threshold: 1024, filter: (req, res) => !/\/events(?:\/|$)/.test(req.path) && !String(res.getHeader('Content-Type') ?? '').includes('text/event-stream') && compression.filter(req, res) }));
   // External uptime ping: no authentication, database or provider work.
   app.get('/api/ping', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').type('text/plain').send('pong'));
   app.get('/health/live', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').json({ status: 'live' }));

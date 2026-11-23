@@ -1,3 +1,5 @@
+import { createEventWorker } from '../operations/event-worker.js';
+import type { LocalWriteSignal } from '../notifications/wake.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { JWT } from 'google-auth-library';
 import sharp from 'sharp';
@@ -169,11 +171,16 @@ export async function syncMerchantSnapshot(inputs: MerchantProductInput[], dataS
   return { eligible: seen.size, uploaded, withdrawn };
 }
 
-export async function processMerchantSync(db: Db, config: MerchantConfiguration, provider = createMerchantProvider(config), checkImages = (input: MerchantProductInput) => validateMerchantImages(input, config.cloudName)) {
+export async function processMerchantSync(db: Db, config: MerchantConfiguration, provider = createMerchantProvider(config), checkImages = (input: MerchantProductInput) => validateMerchantImages(input, config.cloudName), options: { onlyIfStale?: boolean } = {}) {
   const jobs = db.collection<Document & { _id: string }>('merchant_jobs'), owner = randomUUID();
   const jobId = config.dataSource;
   try { await jobs.updateOne({ _id: jobId }, { $setOnInsert: { leaseUntil: new Date(0) } }, { upsert: true, maxTimeMS: 3000 }); }
   catch (error) { if ((error as { code?: number }).code !== 11000) throw error; }
+  // Start-up check: a restart only needs a sync when the last one is old or failed. Edits made while running already triggered one.
+  if (options.onlyIfStale) {
+    const last = await jobs.findOne({ _id: jobId }, { projection: { lastSuccessAt: 1, state: 1 }, maxTimeMS: 3000 });
+    if (last?.state === 'ready' && last.lastSuccessAt instanceof Date && Date.now() - last.lastSuccessAt.getTime() < 86400000) return null;
+  }
   const lease = await jobs.findOneAndUpdate({ _id: jobId, leaseUntil: { $lte: new Date() } }, { $set: { owner, leaseUntil: new Date(Date.now() + 300000) } }, { returnDocument: 'after', maxTimeMS: 3000 });
   if (!lease) return null;
   let succeeded = false;
@@ -212,22 +219,28 @@ export async function processMerchantSync(db: Db, config: MerchantConfiguration,
     succeeded = true;
     return result;
   } finally {
-    await jobs.updateOne({ _id: jobId, owner }, { $set: { leaseUntil: new Date(Date.now() + (succeeded ? 900000 : 300000)), ...(succeeded ? {} : { state: 'retry', lastFailureAt: new Date() }) }, $unset: { owner: '' } }, { maxTimeMS: 3000 });
+    await jobs.updateOne({ _id: jobId, owner }, { $set: { leaseUntil: new Date(succeeded ? Date.now() : Date.now() + 300000), ...(succeeded ? {} : { state: 'retry', lastFailureAt: new Date() }) }, $unset: { owner: '' } }, { maxTimeMS: 3000 });
   }
 }
 
-export function merchantSyncWorker(getDb: () => Db | Promise<Db>, source: Readonly<Record<string, string | undefined>> = process.env) {
+export function merchantSyncWorker(getDb: () => Db | Promise<Db>, source: Readonly<Record<string, string | undefined>> = process.env, hooks: { local?: LocalWriteSignal } = {}) {
   let config: MerchantConfiguration | null;
   try { config = merchantConfiguration(source); }
   catch { console.error('Merchant configuration invalid; sync disabled'); return undefined; }
   if (!config) return undefined;
-  const provider = createMerchantProvider(config); let stopped = false, running: Promise<unknown> | undefined;
-  const tick = () => {
-    if (stopped || running) return;
-    running = Promise.resolve().then(() => getDb()).then(db => processMerchantSync(db, config, provider))
-      .then(result => { if (result) console.info(JSON.stringify({ event: 'merchant_sync_completed', ...result })); })
-      .catch(() => console.error('Merchant sync failed; will retry')).finally(() => { running = undefined; });
-  };
-  const timer = setInterval(tick, 60000); timer.unref(); tick();
-  return { stop: async () => { stopped = true; clearInterval(timer); await running; } };
+  const settings = config, provider = createMerchantProvider(settings);
+  let first = true, retryAt: Date | null = null, dailyAt = new Date(Date.now() + 86400000);
+  // Google needs a listing when a product changes and a refresh now and then. So the sync runs: once at start-up if the last one is
+  // stale; two minutes after the catalogue was edited (one run per burst of edits); a few minutes after a failure; and once a day.
+  const worker = createEventWorker(async () => {
+    const stale = first; first = false;
+    try {
+      const result = await processMerchantSync(await getDb(), settings, provider, undefined, stale ? { onlyIfStale: true } : {});
+      if (result) console.info(JSON.stringify({ event: 'merchant_sync_completed', ...result }));
+      retryAt = null;
+    } catch { console.error('Merchant sync failed; will retry'); retryAt = new Date(Date.now() + 300000); }
+    dailyAt = new Date(Date.now() + 86400000);
+    return false;
+  }, { local: hooks.local, collections: ['products', 'categories', 'stores'], debounceMs: 120000, nextDue: async () => retryAt ?? dailyAt });
+  return { stop: () => worker.stop() };
 }

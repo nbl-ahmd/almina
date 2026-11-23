@@ -11,8 +11,13 @@ const dummyHash = '$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW'
 const queryOptions = { maxTimeMS: 3000, timeoutMS: 4000 };
 const staffProjection = { _id: 1, username: 1, name: 1, role: 1, cities: 1, branchId: 1, accountType: 1, password: 1, disabled: 1 };
 type ErrorFactory = (status: number, code: ErrorCode) => Error;
-export function createSessionService(getDb: GetDb, error: ErrorFactory = (status, code) => new HttpError(status, code)) {
+/** `cacheMs` keeps a verified session's identity in memory for a few seconds. Every staff request, stream and poll otherwise costs two
+ *  database reads (session, user) before any real work. Logout and `revokeUser` drop cached entries at once; a user disabled or
+ *  changed in some other way is picked up when the entry expires. Off by default so tests and tools see changes immediately. */
+export function createSessionService(getDb: GetDb, error: ErrorFactory = (status, code) => new HttpError(status, code), options: { cacheMs?: number } = {}) {
   const unauthorized = () => error(401, 'UNAUTHORIZED');
+  const cacheMs = options.cacheMs ?? 0, cache = new Map<string, { user: Staff; userId: string; until: number }>();
+  const forgetUser = (userId: string) => { for (const [key, entry] of cache) if (entry.userId === userId) cache.delete(key); };
   function identity(doc: Document): Staff {
     const result = staffDtoSchema.safeParse({ id: id(doc._id), username: doc.username, name: doc.name, role: doc.role, ...(doc.accountType === 'branch' ? { accountType: 'branch' } : {}), ...(typeof doc.branchId === 'string' ? { branchId: doc.branchId } : {}),
       cities: Array.isArray(doc.cities) ? doc.cities.filter((city: unknown) => typeof city === 'string') : [] });
@@ -37,21 +42,31 @@ export function createSessionService(getDb: GetDb, error: ErrorFactory = (status
     },
     async authenticate(token: string | undefined) {
       if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) throw unauthorized();
+      const key = digest(token), hit = cacheMs ? cache.get(key) : undefined;
+      if (hit && hit.until > Date.now()) return hit.user;
+      if (hit) cache.delete(key);
       const db = await getDb();
       const session = await db.collection('api_sessions').findOne({ tokenHash: digest(token), scheme: 'cookie-v2', expiresAt: { $gt: new Date() } }, queryOptions);
       const userId = id(session?.userId); if (!userId) throw unauthorized();
       const doc = await db.collection('users').findOne({ _id: new ObjectId(userId), disabled: { $ne: true } }, { ...queryOptions, projection: staffProjection });
       if (!doc || !['admin', 'user'].includes(doc.role) || typeof doc.password !== 'string'
         || session?.passwordFingerprint !== digest(doc.password)) throw unauthorized();
-      return identity(doc);
+      const user = identity(doc);
+      if (cacheMs) {
+        if (cache.size >= 500) for (const [stale, entry] of cache) { if (entry.until <= Date.now() || cache.size >= 500) cache.delete(stale); if (cache.size < 400) break; }
+        cache.set(key, { user, userId: id(doc._id)!, until: Math.min(Date.now() + cacheMs, session.expiresAt.getTime()) });
+      }
+      return user;
     },
     async logout(token: string | undefined) {
       if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) throw unauthorized();
+      cache.delete(digest(token));
       await (await getDb()).collection('api_sessions').deleteOne({ tokenHash: digest(token) }, queryOptions);
     },
     async revokeUser(userId: { toHexString(): string }) {
       let value: string; try { value = userId.toHexString(); } catch { throw error(400, 'INVALID_REQUEST'); }
       if (!/^[a-f0-9]{24}$/.test(value)) throw error(400, 'INVALID_REQUEST');
+      forgetUser(value);
       await (await getDb()).collection('api_sessions').deleteMany({ userId: new ObjectId(value) }, queryOptions);
     },
     async limitLogin(username: unknown, ip: string | undefined) {

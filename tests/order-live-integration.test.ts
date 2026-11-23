@@ -19,6 +19,15 @@ test('a real MongoDB change stream signals an inserted order once and stays quie
     for (let waited = 0; waited < 5000 && !seen.length; waited += 100) await new Promise(resolve => setTimeout(resolve, 100));
     assert.equal(seen.length, 1);
     assert.ok(!JSON.stringify(seen).includes('Private'));
+    // Staff alerts (stock, payment) share the signal.
+    const before = seen.length;
+    await db.collection('staff_alerts').insertOne({ kind: 'stock', eventId: 'alert-1', resolved: false });
+    for (let waited = 0; waited < 5000 && seen.length === before; waited += 100) await new Promise(resolve => setTimeout(resolve, 100));
+    assert.equal(seen.length, before + 1);
+    // Unrelated collections never wake the browsers.
+    await db.collection('something_else').insertOne({ value: 1 });
+    await new Promise(resolve => setTimeout(resolve, 900));
+    assert.equal(seen.length, before + 1);
     leave();
     await new Promise(resolve => setTimeout(resolve, 400));
     assert.equal(feed.active(), false);

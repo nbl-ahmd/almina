@@ -6,7 +6,7 @@ import { createOrderLiveFeed } from '../apps/api/src/modules/orders/live';
 class FakeStream extends EventEmitter { closed = false; async close() { this.closed = true; this.emit('close'); } }
 function harness(options: Partial<Parameters<typeof createOrderLiveFeed>[0]> = {}) {
   const streams: FakeStream[] = []; const pipelines: unknown[] = [];
-  const db = { collection: () => ({ watch: (pipeline: unknown) => { pipelines.push(pipeline); const stream = new FakeStream(); streams.push(stream); return stream; } }) };
+  const db = { watch: (pipeline: unknown) => { pipelines.push(pipeline); const stream = new FakeStream(); streams.push(stream); return stream; } };
   const feed = createOrderLiveFeed({ getDb: async () => db as never, coalesceMs: 5, idleGraceMs: 20, fallbackMs: 15, ...options });
   return { feed, streams, pipelines };
 }
@@ -20,7 +20,7 @@ test('one change stream serves every browser, opens on demand and carries no ord
   const b = feed.subscribe(revision => seen[1]!.push(revision), 'user-b')!;
   await wait(5);
   assert.equal(streams.length, 1);
-  assert.deepEqual(JSON.parse(JSON.stringify(pipelines[0])), [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] } } }, { $project: { operationType: 1 } }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(pipelines[0])), [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] }, 'ns.coll': { $in: ['orders', 'staff_alerts'] } } }, { $project: { operationType: 1 } }]);
   // A burst of changes becomes one message per browser.
   for (let index = 0; index < 5; index++) streams[0]!.emit('change', { operationType: 'insert', fullDocument: { customer: 'private' } });
   await wait(30);

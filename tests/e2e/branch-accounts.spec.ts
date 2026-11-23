@@ -98,15 +98,15 @@ test('staff notifications support personal reads, settings, tests and responsive
 test('notification sound is one-shot and never loops for old pending orders',async({page})=>{
  let fresh=false;
  await page.clock.install();
- await page.addInitScript(()=>{const violations:string[]=[];Object.assign(window,{__notificationCsp:violations});document.addEventListener('securitypolicyviolation',event=>{if(event.violatedDirective.startsWith('style-src'))violations.push(event.violatedDirective);});const state={count:0};Object.assign(window,{__notificationAudio:state});class AudioMock{state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}createOscillator(){return {frequency:{value:0},connect(){},disconnect(){},start(){state.count++;},stop(){},onended:null};}createGain(){return {connect(){},disconnect(){},gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}}};}}Object.defineProperty(window,'AudioContext',{value:AudioMock});});
+ await page.addInitScript(()=>{const violations:string[]=[];Object.assign(window,{__notificationCsp:violations});document.addEventListener('securitypolicyviolation',event=>{if(event.violatedDirective.startsWith('style-src'))violations.push(event.violatedDirective);});const state={count:0};Object.assign(window,{__notificationAudio:state});class AudioMock{state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}createOscillator(){return {frequency:{value:0},connect(){},disconnect(){},type:'',start(){state.count++;},stop(){},onended:null};}createGain(){return {connect(){},disconnect(){},gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}}};}}Object.defineProperty(window,'AudioContext',{value:AudioMock});});
  await page.route('**/api/admin/orders/notifications',route=>{const now=new Date();return route.fulfill({json:{items:fresh?[{id:'aaaaaaaaaaaaaaaaaaaaaaab',kind:'order',title:'Order received',description:'Synthetic event',href:'/admin/orders',createdAt:now.toISOString(),resolved:false,read:false,announce:true}]:[],nextCursor:null,unread:fresh?1:0,hasMoreUnread:false,observedAt:now.toISOString()}});});
- await login(page);await page.getByRole('button',{name:'Turn sound alerts on',exact:true}).click();await expect(page.getByRole('button',{name:'Turn sound alerts off',exact:true})).toBeVisible();
+ await login(page);await page.getByRole('button',{name:'Turn order alarm on',exact:true}).click();await expect(page.getByRole('button',{name:'Turn order alarm off',exact:true})).toBeVisible();
  const sounds=()=>page.evaluate(()=>Reflect.get(window,'__notificationAudio').count);
- // Turning sound on plays one confirmation chime; old pending orders add nothing after that.
- await expect.poll(sounds).toBe(1);
+ // Turning the alarm on plays one short confirmation chime (two beeps); old pending orders add nothing after that.
+ await expect.poll(sounds).toBe(2);
  await page.clock.runFor(125000);
- expect(await sounds()).toBe(1);
- // A genuinely new order chimes exactly once, on the next 60 s alert poll, and never loops.
- fresh=true;await page.clock.runFor(61000);await expect.poll(sounds).toBe(2);
- await page.clock.runFor(125000);expect(await sounds()).toBe(2);expect(await page.evaluate(()=>Reflect.get(window,'__notificationCsp'))).toEqual([]);
+ expect(await sounds()).toBe(2);
+ // A genuinely new order chimes exactly once when the live stream announces it (there is no alert timer any more), and never loops.
+ fresh=true;await page.evaluate(()=>window.dispatchEvent(new Event('almina:notifications-changed')));await page.clock.runFor(1000);await expect.poll(sounds).toBe(4);
+ await page.clock.runFor(125000);expect(await sounds()).toBe(4);expect(await page.evaluate(()=>Reflect.get(window,'__notificationCsp'))).toEqual([]);
 });

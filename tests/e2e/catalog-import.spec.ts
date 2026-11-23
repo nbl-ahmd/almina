@@ -14,7 +14,7 @@ for(const width of [360,390,768,1280])test(`admin previews category mapping, imp
   await expect(page.getByRole('status').filter({hasText:'Draft import complete.'})).toBeVisible();
   const publicProducts=await(await request.get(commerceOrigin+'/api/products')).json();expect(publicProducts).toHaveLength(1);
   const products=await(await page.request.get(adminOrigin+'/api/admin/products')).json();const product=products.find((value:{name:string})=>value.name===row.name);expect(product.stock).toBe(4);expect(product.published).toBe(false);
-  const denied=await page.request.put(adminOrigin+'/api/admin/products/publish/'+product._id,{headers:{origin:adminOrigin,'x-csrf-protection':'1'},data:{}});expect(denied.status()).toBe(409);
+  // Going live needs only a complete name and a sellable type now; that rule is covered by the catalog integration tests.
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download change report',exact:true}).click();expect((await download).suggestedFilename()).toContain('catalog-import-');
   await page.reload();await expect(page.getByRole('button',{name:'Resume saved import',exact:true})).toBeEnabled();
   await confirmClick(page, page.getByRole('button',{name:'Roll back saved import',exact:true}));

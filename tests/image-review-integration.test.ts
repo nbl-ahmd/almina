@@ -46,7 +46,6 @@ test('review decisions persist independently of imports, protect withdrawals and
       const detail = await getImageReview(db, row.itemId, String(staff));
       if (row.source.assetId === 'withdrawn') { assert.ok(detail.withdrawalReason); await assert.rejects(decideImageReview(db, decision(detail), String(staff)), { status: 409 }); continue; }
       await assert.rejects(decideImageReview(db, decision(detail, { originalViewed: false }), String(staff)), { status: 409 });
-      await assert.rejects(decideImageReview(db, decision(detail, { checks: [] }), String(staff)), { status: 409 });
       const savedInput = decision(detail), saved = await decideImageReview(db, savedInput, String(staff));
       assert.deepEqual(await decideImageReview(db, savedInput, String(staff)), saved);
       assert.equal(saved.status, 'approved'); approvals.push(saved.approvalId!);
@@ -88,23 +87,17 @@ test('pharmacist evidence resolves missing fields and corrects OCR while catalog
     await stageImageReview(db, pack([source('needs-evidence')]), String(actor), 'synthetic');
     const row = (await listImageReviews(db, {}, String(actor))).items[0]!;
     let detail = await getImageReview(db, row.itemId, String(actor));
-    await assert.rejects(decideImageReview(db, decision(detail), String(actor)), { status: 409 });
     const verified = decision(detail); const brand = verified.checks.find(c => c.field === 'brand')!; brand.catalogueValue = 'Acme'; brand.evidence = 'Manufacturer catalogue independently checked for this product ID.';
     const saved = await decideImageReview(db, verified, String(actor)); assert.equal(saved.status, 'approved');
     await db.collection('products').updateOne({ _id: product }, { $set: { packLabel: '100 g' } });
     assert.equal((await exportImageReviewApprovals(db, {}, String(actor))).staleItemIds.length, 1);
     detail = await getImageReview(db, row.itemId, String(actor));
-    const conflicting = decision(detail); conflicting.checks.forEach(c => { c.confirmed = true; c.evidence = 'Trying to confirm an unresolved catalogue conflict.'; });
-    await assert.rejects(decideImageReview(db, conflicting, String(actor)), { status: 409 });
-    const badCatalogue = decision(detail); badCatalogue.checks.find(c => c.field === 'size')!.catalogueValue = '50 g';
-    await assert.rejects(decideImageReview(db, badCatalogue, String(actor)), { status: 409 });
     await db.collection('products').updateOne({ _id: product }, { $set: { brand: 'Acme', packLabel: '50 g', strength: '5%' } });
     const ocrSource = source('ocr-correction', 'PD_TEST', { identity: imageIdentitySchema.parse({ ...source('x').identity, strength: '2%' }) });
     await stageImageReview(db, pack([ocrSource]), String(actor), 'synthetic');
     const ocr = (await listImageReviews(db, {}, String(actor))).items.find(item => item.source.assetId === 'ocr-correction')!;
     detail = await getImageReview(db, ocr.itemId, String(actor));
     const correction = decision(detail); const strength = correction.checks.find(c => c.field === 'strength')!; strength.imageValue = '5%';
-    await assert.rejects(decideImageReview(db, correction, String(actor)), { status: 409 });
     strength.evidence = 'Original label re-read by pharmacist; saved OCR 2% was incorrect, visible label is 5%.';
     const corrected = await decideImageReview(db, correction, String(actor)); assert.equal(corrected.status, 'approved');
     assert.equal((await getImageReview(db, ocr.itemId, String(actor))).item.source.identity.strength, '2%');
@@ -512,11 +505,7 @@ test('inline identity correction and image approval commit together with the cor
     const size = input.checks.find(check => check.field === 'size')!;
     size.catalogueValue = '50 g';
     await assert.rejects(decideImageReview(db, input, String(staff)), { status: 403 });
-    await assert.rejects(decideImageReview(db, input, String(admin)), { status: 409 });
     size.evidence = 'I verified this value on the individual original label.';
-    await assert.rejects(decideImageReview(db, { ...input, checks: input.checks.filter(check => check.field !== 'brand') }, String(admin)), { status: 409 });
-    assert.equal((await db.collection('products').findOne({ _id: id }))?.packLabel, '100 g');
-    assert.equal((await getImageReview(db, row.itemId, String(admin))).item.status, 'pending');
     await assert.rejects(decideImageReview(db, { ...input, productChanges: { price: 0 } }, String(admin)), { status: 400 });
     await db.collection('products').updateOne({ _id: id }, { $set: { packLabel: '75 g' } });
     await assert.rejects(decideImageReview(db, input, String(admin)), { status: 409 });
@@ -590,9 +579,6 @@ test('a single field edit creates an auditable approval and keeps unrelated pack
     const omitted = detail.comparison.filter(field => field.required)
       .map(field => inlineReviewCheck(field, field.field === 'size' ? discard : undefined));
     const approved = imageReviewDecision(detail, omitted, 'approved', true, false, '');
-    const fake = approved.checks.map(check => check.field === 'strength' ? { ...check, imageValue: '', catalogueValue: '', discardedExtraction: true as const,
-      evidence: 'Claimed on original label' } : check);
-    await assert.rejects(decideImageReview(db, { ...approved, checks: fake, requestId: randomUUID() }, admin), { status: 409 });
     const saved = await decideImageReview(db, { ...approved, requestId: randomUUID() }, admin);
     assert.equal(saved.source.identity.size, '1000 mg per tablet');
     assert.equal((await db.collection('products').findOne({ _id: id }))?.packLabel, '20 count');
@@ -613,7 +599,7 @@ test('a single field edit creates an auditable approval and keeps unrelated pack
   } finally { await db.dropDatabase(); await client.close(); }
 });
 
-test('approval permits blank optional strength and form while retaining core and populated variant checks', { skip: !uri }, async () => {
+test('approval needs no per-field confirmation: blank optional strength and form, and a conflicting value, all approve in one step', { skip: !uri }, async () => {
   const client = new MongoClient(uri!), db = client.db('almina_image_review_optional_' + randomUUID().replaceAll('-', ''));
   const admin = String(new ObjectId());
   try {
@@ -637,7 +623,6 @@ test('approval permits blank optional strength and form while retaining core and
       if (item.source.assetId === 'blank-form') {
         assert.deepEqual(initialReviewChecks(detail).map(check => check.field), ['name', 'brand']);
         const input = decision(detail);
-        await assert.rejects(decideImageReview(db, { ...input, checks: input.checks.filter(check => check.field !== 'brand') }, admin), { status: 409 });
         assert.equal((await decideImageReview(db, input, admin)).status, 'approved');
       } else if (item.source.assetId === 'blank-strength') {
         assert.equal(initialReviewChecks(detail).some(check => check.field === 'strength'), false);
@@ -653,10 +638,33 @@ test('approval permits blank optional strength and form while retaining core and
           assert.equal(result.source.identity.strength, '250 mg');
           assert.equal(result.status, 'approved');
         } else {
-          await assert.rejects(decideImageReview(db, decision(detail, { checks: checks.map(check => ({ ...check, confirmed: true })) }), admin), { status: 409 });
+          // A conflicting value is shown to the reviewer, who corrects the record or rejects; the server no longer demands written evidence.
+          assert.equal((await decideImageReview(db, decision(detail), admin)).status, 'approved');
         }
       }
     }
-    assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 3);
+    assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 4);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('one-step approval: no evidence or note, inline corrections need no receipts, and the real blockers remain', { skip: !uri }, async () => {
+  const client = new MongoClient(uri!), db = client.db('almina_image_review_one_step_' + randomUUID().replaceAll('-', ''));
+  const admin = String(new ObjectId()), staff = String(new ObjectId());
+  try {
+    await db.collection('users').insertMany([{ _id: new ObjectId(admin), role: 'admin' }, { _id: new ObjectId(staff), role: 'user' }]);
+    await db.collection('products').insertOne({ product_id: 'PD_TEST', name: 'Acme Skin Cream', brand: 'Acme', productForm: 'Cream', packLabel: '100 g' });
+    await stageImageReview(db, pack([source('one-step')]), admin, 'synthetic');
+    const row = (await listImageReviews(db, {}, admin)).items[0]!;
+    const detail = await getImageReview(db, row.itemId, admin);
+    const base = decision(detail);
+    const bare = { ...base, checks: [], note: '' };
+    // Still required: the original was shown, and only an administrator may change catalogue fields.
+    await assert.rejects(decideImageReview(db, { ...bare, originalViewed: false }, admin), { status: 409 });
+    await assert.rejects(decideImageReview(db, { ...bare, productChanges: { packLabel: '50 g' } }, staff), { status: 403 });
+    // Not required: per-field confirmations, evidence text, a note, or a receipt for the corrected value.
+    const saved = await decideImageReview(db, { ...bare, productChanges: { packLabel: '50 g' } }, admin);
+    assert.equal(saved.status, 'approved');
+    assert.equal((await db.collection('products').findOne({ product_id: 'PD_TEST' }))?.packLabel, '50 g');
+    assert.equal((await exportImageReviewApprovals(db, {}, admin)).mappings.length, 1);
   } finally { await db.dropDatabase(); await client.close(); }
 });

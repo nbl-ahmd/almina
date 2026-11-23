@@ -33,7 +33,11 @@ function PublishSwitch({ product }: { product: ProductRow }) {
   async function change(next: boolean) {
     setLive(next); setBusy(true);
     try { await adminRequest(`products/publish/${product._id}`, 'PUT'); toast.success(next ? `${product.name} is live` : `${product.name} is hidden`); router.refresh(); }
-    catch (error) { setLive(!next); toast.error(error instanceof Error ? error.message : 'Could not change publishing.'); }
+    catch (error) {
+      setLive(!next);
+      // A product that cannot go live needs its type or name fixed: take the reviewer straight to the editor.
+      toast.error(error instanceof Error ? error.message : 'Could not change publishing.', { action: { label: 'Open product', onClick: () => router.push(`/admin/products/${product._id}`) }, duration: 8000 });
+    }
     finally { setBusy(false); }
   }
   return (

@@ -23,7 +23,7 @@ export function NeedsAction({ data, q, reason, status }: { data: unknown; q?: st
       <label className="grid gap-1.5 text-xs font-medium text-mute">Action needed<select className={select} name="reason" defaultValue={reason ?? 'all'}>
         <option value="all">All review items</option><option value="identity">Incomplete product name</option>
         <option value="classification">Classification not confirmed</option><option value="prescription">Prescription — keep as draft</option>
-        <option value="content">Content needs review</option><option value="images">Image or permission needed</option>
+        <option value="content">Brand or description missing</option>
         <option value="missing-photo">Missing photo</option>
       </select></label>
       <button className={buttonVariants({ variant: 'dark' })}>Apply filters</button>
@@ -41,7 +41,7 @@ export function NeedsAction({ data, q, reason, status }: { data: unknown; q?: st
             </div>
             <p className="m-0 text-xs text-mute">{display(product.product_id)}</p>
             <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Review checklist">
-              {(Array.isArray(product.reasons) && product.reasons.length ? product.reasons : ['Ready for final publication review']).map(value => <li key={String(value)}><Badge tone="neutral" className="normal-case">{String(value).startsWith('Product classification') ? product.productType === 'prescription' ? 'Prescription dispensing workflow required' : 'Confirm product classification' : String(value)}</Badge></li>)}
+              {(Array.isArray(product.reasons) && product.reasons.length ? product.reasons : ['Ready to publish']).map(value => <li key={String(value)}><Badge tone="neutral" className="normal-case">{String(value).startsWith('Product classification') ? product.productType === 'prescription' ? 'Prescription dispensing workflow required' : 'Confirm product classification' : String(value)}</Badge></li>)}
             </ul>
           </div>
           <Link className={buttonVariants({ variant: 'primary' })} href={`/admin/products/${display(product._id)}`} aria-label={`Review ${display(product.name)}`}>

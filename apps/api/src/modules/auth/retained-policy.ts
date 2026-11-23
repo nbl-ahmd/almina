@@ -1,5 +1,5 @@
 // Complete legacy HTTP allowlist. Unlisted paths/methods never reach a handler.
-export type RetainedAccess = 'admin' | 'staff' | 'public' | 'orders' | 'login' | 'webhook' | 'verification';
+export type RetainedAccess = 'admin' | 'staff' | 'public' | 'orders' | 'login' | 'webhook' | 'verification' | 'stream';
 export const routePolicies = [
   ['GET','/api/orders/notifications','staff'],['POST','/api/orders/notifications/read','staff'],['GET','/api/orders/notifications/preferences','staff'],['PUT','/api/orders/notifications/preferences','staff'],['POST','/api/orders/notifications/test','staff'],['GET','/api/orders/notifications/rules','admin'],['PUT','/api/orders/notifications/rules','admin'],
   ['POST','/api/auth/delivery-place-search','admin'],
@@ -25,7 +25,7 @@ export const routePolicies = [
   ['PUT','/api/orders/:id/branch','admin'],
   ['GET', '/api/auth/order-routing', 'admin'], ['PUT', '/api/auth/order-routing', 'admin'], ['PUT', '/api/auth/users/:id/assignment', 'admin'],
   ['POST', '/api/orders/:id/confirm', 'orders'], ['POST', '/api/orders/:id/pack', 'orders'],
-  ['GET', '/api/orders/notification-settings', 'staff'], ['GET', '/api/orders/receiving', 'orders'], ['GET', '/api/orders/events', 'orders'], ['PUT', '/api/orders/:id/routing', 'admin'],
+  ['GET', '/api/orders/notification-settings', 'staff'], ['GET', '/api/orders/receiving', 'orders'], ['GET', '/api/orders/events', 'orders'], ['POST', '/api/orders/events/ticket', 'orders'], ['GET', '/api/orders/events/stream', 'stream'], ['PUT', '/api/orders/:id/routing', 'admin'],
   ['POST', '/api/auth/signup', 'admin'], ['GET', '/api/auth/users', 'admin'], ['DELETE', '/api/auth/users/:id', 'admin'],
   ['POST', '/api/products', 'admin'], ['GET', '/api/products', 'public'], ['GET', '/api/products/search', 'public'],
   ['GET', '/api/products/images/:filename', 'public'], ['GET', '/api/products/category/:categoryId', 'public'],
