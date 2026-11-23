@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { adminRequest } from './controls';
 import { buttonVariants } from './ui';
 import { InstallApp } from './install-app';
+import { AlarmSettings } from './alarm-settings';
 
 export function NotificationSettings({
   publicKey,
@@ -38,6 +39,7 @@ export function NotificationSettings({
     <div className="grid gap-3 [&_p]:m-0 [&_p]:text-[13px] [&_p]:leading-5 [&_p]:text-ink-2">
       {!supported?<p role="status">Push is not available in this browser. On iPhone or iPad, add this admin page to your Home Screen, open the installed app, then enable notifications.</p>:null}
       <InstallApp />
+      <AlarmSettings />
       <p role="status">{feedback==='error'&&!configurationChecked?'Device status unavailable.':!deviceChecked?'Checking this device…':deviceConnected?'This device is registered for this account.':deviceSubscribed?'This browser has a notification registration. Enable it to connect this account.':'Notifications are off on this device.'}</p>
       <div className="flex flex-wrap gap-2"><button
         className={buttonVariants({ variant: "outline" })}
