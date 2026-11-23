@@ -6,7 +6,9 @@ import type { Db, Document } from 'mongodb';
 import { HttpError } from '../../errors.js';
 
 export type EmailKind = 'signin' | 'order' | 'wholesale-invite' | 'cart' | 'restock' | 'price-drop' | 'replenishment';
-export type ApplicationEmail = { kind: EmailKind; to: string; eventId: string; variables: Record<string, string | number> };
+/** Fully rendered content for kinds that are built in code instead of by a hosted Resend template (the order confirmation). */
+export type RenderedContent = { subject: string; html: string; text: string };
+export type ApplicationEmail = { kind: EmailKind; to: string; eventId: string; variables: Record<string, string | number>; content?: RenderedContent };
 const address = z.email().max(254);
 export const emailHash = (value: string) => createHash('sha256').update(value.trim().toLowerCase()).digest('hex');
 export const usesResend = () => process.env.EMAIL_PROVIDER === 'resend';
@@ -52,7 +54,7 @@ export function applicationEmailRequest(message: ApplicationEmail) {
   const sender = message.kind === 'signin' ? 'Al Mina Accounts <noreply' : ['order', 'wholesale-invite'].includes(message.kind) ? 'Al Mina Orders <orders' : 'Al Mina Pharmacy <offers';
   if (!address.safeParse(message.to).success || !message.eventId || message.eventId.length > 240) throw new HttpError(400, 'INVALID_REQUEST');
   return { from: `${sender}@${domain}>`, to: [message.to], replyTo: process.env.EMAIL_REPLY_TO!,
-    template: { id: `almina-${message.kind}-v1`, variables: message.variables },
+    ...(message.content ? { subject: message.content.subject, html: message.content.html, text: message.content.text } : { template: { id: `almina-${message.kind}-v1`, variables: message.variables } }),
     tags: [{ name: 'category', value: message.kind }],
     ...(marketing ? { headers: { 'List-Unsubscribe': `<${oneClickUrl(String(message.variables.CANCEL_URL))}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } } : {}),
   };

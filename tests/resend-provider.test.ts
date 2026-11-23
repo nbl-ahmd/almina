@@ -12,7 +12,7 @@ test('Resend configuration is fail-closed and keeps account/order senders separa
     assert.equal(resendReady(), true); assert.equal(resendReady(true), true);
     const account = applicationEmailRequest({kind:'signin',to:'customer@example.invalid',eventId:'attempt',variables:{CODE:'123456'}});
     assert.equal(account.from,'Al Mina Accounts <noreply@notify.example.invalid>'); assert.equal(account.replyTo,'support@example.invalid'); assert.equal(account.headers,undefined);
-    assert.equal(account.template.id,'almina-signin-v1');
+    assert.equal((account as { template?: { id: string } }).template?.id,'almina-signin-v1');
     const order = applicationEmailRequest({kind:'order',to:'customer@example.invalid',eventId:'OD5050',variables:{ORDER_ID:'OD5050',TOTAL:'AED 20.00'}});
     assert.equal(order.from,'Al Mina Orders <orders@notify.example.invalid>');
     const cart = applicationEmailRequest({kind:'cart',to:'customer@example.invalid',eventId:'reminder',variables:{ACCOUNT_URL:'https://example.invalid/account',CANCEL_URL:'https://example.invalid/unsubscribe?token='+'a'.repeat(43)}});

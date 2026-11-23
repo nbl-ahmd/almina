@@ -33,7 +33,7 @@ database.connect().then(async () => {
   if (process.env.EMAIL_PROVIDER === 'resend') await domain.prepareEmailStorage(database.getDb());
   worker = require('./commerce/outbox.cjs').startOrderOutbox(async () => database.getDb(), { wake });
   // Safety net: the shop inbox hears about every new order even if push, WhatsApp or the console are down.
-  if (domain.staffEmailConfigured()) staffEmailWorker = await domain.staffOrderEmailOutbox(async () => database.getDb(), { wake, adminOrigin: process.env.ADMIN_ORIGIN || process.env.GROWTH_WEB_ORIGIN,
+  if (domain.staffEmailConfigured()) staffEmailWorker = await domain.staffOrderEmailOutbox(async () => database.getDb(), { wake, adminOrigin: process.env.ADMIN_ORIGIN || process.env.GROWTH_WEB_ORIGIN, storefrontOrigin: process.env.GROWTH_WEB_ORIGIN,
     smtpFactory: options => require('./integrations/smtp.cjs').createSmtpTransport(options), onFailure: () => console.error(JSON.stringify({ level: 'error', service: 'api', event: 'staff_order_email_failed' })) });
   else console.warn(JSON.stringify({ level: 'warn', service: 'api', event: 'staff_order_email_disabled' }));
   const reminderOrigin = process.env.GROWTH_WEB_ORIGIN || origins[0];

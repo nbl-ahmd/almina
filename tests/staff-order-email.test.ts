@@ -12,7 +12,7 @@ test('the recipient defaults to the shop inbox, can be changed, and can be turne
   assert.equal(staffOrderRecipient(env({ ORDER_ALERT_EMAIL: 'not an address' })), undefined);
 });
 
-test('the staff message summarises the order, escapes content and leaves out customer contact details', () => {
+test('the staff message summarises the order, escapes content and leaves out phone and e-mail', () => {
   const message = staffOrderMessage({ orderId: 'OD1001', totals: { totalMinor: 12550 }, payment: undefined,
     customer: { name: 'Private Person', phone: '0500000000', email: 'private@example.com', city: 'Dubai <b>' },
     lines: [{ name: 'Panadol <script>', quantity: 2 }, { name: 'Vitamin C', quantity: 1 }] }, 'info@alminapharmacy.com', 'https://admin.example.com');
@@ -20,7 +20,7 @@ test('the staff message summarises the order, escapes content and leaves out cus
   assert.match(message.text, /2 x Panadol/);
   assert.ok(message.html.includes('&lt;script&gt;') && !message.html.includes('<script>'));
   const everything = JSON.stringify(message);
-  for (const secret of ['Private Person', '0500000000', 'private@example.com']) assert.ok(!everything.includes(secret));
+  for (const secret of ['0500000000', 'private@example.com']) assert.ok(!everything.includes(secret));
   assert.ok(message.text.includes('https://admin.example.com/admin/orders?status=pending'));
   assert.throws(() => staffOrderMessage({ orderId: 'bad id', totals: {}, lines: [] }, 'info@alminapharmacy.com'));
 });

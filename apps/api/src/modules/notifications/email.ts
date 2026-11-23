@@ -1,5 +1,6 @@
 import type { Db } from 'mongodb';
 import { usesResend, sendApplicationEmail } from './provider.js';
+import { customerOrderEmail, emailOrder, productImages } from './order-email-html.js';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
 
@@ -71,5 +72,9 @@ export async function sendOrderEmail(db: Db, order: unknown, signal?: AbortSigna
   const persisted = z.object({ orderId: z.string().regex(/^OD[0-9]+$/), totals: z.object({ totalMinor: z.number().int().nonnegative().safe() }).passthrough().optional() }).passthrough().parse(order);
   const orderId = persisted.orderId;
   const total = persisted.totals ? `AED ${(persisted.totals.totalMinor / 100).toFixed(2)}` : 'See your order details';
-  await sendApplicationEmail(db, { kind: 'order', to: message.to, eventId: orderId, variables: { ORDER_ID: orderId, TOTAL: total } }, signal);
+  // The confirmation is rendered here (photos, prices, delivery) rather than by a hosted template, so it is versioned and tested with the code.
+  const images = await productImages(db, order as Record<string, unknown>).catch(() => new Map<string, string>());
+  const origin = process.env.GROWTH_WEB_ORIGIN, support = process.env.EMAIL_REPLY_TO;
+  const content = customerOrderEmail(emailOrder(order as Record<string, unknown>, images), { ...(origin ? { origin } : {}), ...(support ? { supportEmail: support } : {}) });
+  await sendApplicationEmail(db, { kind: 'order', to: message.to, eventId: orderId, variables: { ORDER_ID: orderId, TOTAL: total }, content }, signal);
 }
