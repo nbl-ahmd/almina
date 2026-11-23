@@ -1,3 +1,5 @@
+import {createEventWorker} from '../operations/event-worker.js';
+import type {LocalWriteSignal} from '../notifications/wake.js';
 import { releaseCoupon } from '../coupons/service.js';
 import { branchOrderFilter } from '../orders/routing.js';
 import { restoreBranch } from '../delivery/service.js';
@@ -89,6 +91,10 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
     }
     return parsed.data;
   }
+  const unsettledStates=['awaiting_payment','refund_pending','partially_refunded','disputed'];
+  const unsettled=async()=>(await getDb()).collection('orders').find({...selector,'payment.state':{$in:unsettledStates}},{projection:{createdAt:1,'payment.attemptId':1,'payment.checkedAt':1},maxTimeMS:3000}).sort({'payment.checkedAt':1}).limit(50).toArray();
+  /** Newly created payments are checked after a minute, then less and less often: the webhook is the normal path and this only covers a missed one. */
+  const dueAfter=(order:Document)=>{const checked=order.payment?.checkedAt instanceof Date?order.payment.checkedAt.getTime():0,created=order.createdAt instanceof Date?order.createdAt.getTime():checked,age=Date.now()-created;const wait=age<600000?60000:age<7200000?600000:age<86400000?3600000:86400000;return Math.max(checked+wait,created+60000);};
   async function synchronize(key:string){
     const attempt=await attemptFor(key);if(!attempt.sessionId)return;
     const remote=await verifiedSession(attempt),pi=typeof remote.payment_intent==='object'?remote.payment_intent:null;
@@ -269,23 +275,33 @@ export function createStripePayments(getDb:()=>Promise<Db>, options?:StripeOptio
         const order=await(await getDb()).collection('orders').findOne({...selector,'payment.paymentIntentId':pi});if(order)await synchronize(order.payment.attemptId);
       }
     },
-    async reconcile(sweepPaid=true){
-      if(!options)return;const db=await getDb();
-      const urgent=await db.collection('orders').find({...selector,'payment.state':{$in:['awaiting_payment','refund_pending','partially_refunded','disputed']}}).sort({'payment.checkedAt':1}).limit(10).toArray();
-      // Paid orders are already settled; re-checking them with Stripe is a slow safety sweep, not a per-minute job.
-      const paid=sweepPaid?await db.collection('orders').find({...selector,'payment.state':'paid'}).sort({'payment.checkedAt':1}).limit(10).toArray():[];
-      let failed=false;
-      for(const order of [...urgent,...paid]){try{await finishRequestedRefund(order.payment.attemptId);await synchronize(order.payment.attemptId);}catch{failed=true;await db.collection('orders').updateOne({_id:order._id},{$set:{'payment.checkedAt':new Date()}});}}
+    /** Re-checks payments with Stripe. `due` (the scheduled path) only looks at payments whose check time has come and never sweeps
+     *  settled "paid" orders; `all` (manual or test use) re-checks the unsettled and the most recently checked paid orders now. */
+    async reconcile(scope:'all'|'due'='all'){
+      if(!options)return;const db=await getDb();let failed=false;
+      let batch:Document[];
+      if(scope==='due'){const now=Date.now();batch=(await unsettled()).filter(order=>dueAfter(order)<=now).slice(0,10);}
+      else{
+        const urgent=await db.collection('orders').find({...selector,'payment.state':{$in:unsettledStates}}).sort({'payment.checkedAt':1}).limit(10).toArray();
+        const paid=await db.collection('orders').find({...selector,'payment.state':'paid'}).sort({'payment.checkedAt':1}).limit(10).toArray();
+        batch=[...urgent,...paid];
+      }
+      for(const order of batch){try{await finishRequestedRefund(order.payment.attemptId);await synchronize(order.payment.attemptId);}catch{failed=true;await db.collection('orders').updateOne({_id:order._id},{$set:{'payment.checkedAt':new Date()}});}}
       if(failed)throw new HttpError(503,'SERVICE_UNAVAILABLE');
+    },
+    /** When the earliest unsettled payment is next due for a check, or null when every payment is settled. */
+    async nextDue(){
+      if(!options)return null;
+      const rows=await unsettled();if(!rows.length)return null;
+      const now=Date.now();return new Date(Math.max(now+60000,Math.min(...rows.map(dueAfter))));
     },
   };
 }
 export type StripePayments=ReturnType<typeof createStripePayments>;
-export function stripeReconciler(payments:StripePayments,onFailure:()=>void){
-  let running:Promise<void>|undefined,stopped=false,lastPaidSweep=0;
-  const tick=()=>{if(stopped)return Promise.resolve();const sweep=Date.now()-lastPaidSweep>=900000;if(sweep)lastPaidSweep=Date.now();return running??=(payments.reconcile(sweep).catch(onFailure).finally(()=>{running=undefined;}));};
-  const timer=payments.enabled?setInterval(()=>{void tick();},60000):undefined;timer?.unref();
-  return {tick,stop:async()=>{stopped=true;if(timer)clearInterval(timer);await running;}};
+export function stripeReconciler(payments:StripePayments,onFailure:()=>void,hooks:{local?:LocalWriteSignal}={}){
+  // Runs at start-up, when an order changes (a payment was just started or settled) and when the earliest unsettled payment is due. Never on a clock.
+  const worker=payments.enabled?createEventWorker(async()=>{await payments.reconcile('due');return false;},{local:hooks.local,collections:['orders'],debounceMs:5000,nextDue:()=>payments.nextDue(),onError:onFailure}):undefined;
+  return {tick:()=>worker?.tick()??Promise.resolve(),stop:async()=>{await worker?.stop();}};
 }
 export async function prepareStripeStorage(db:Db,enabled:boolean){
   if(!enabled)return;

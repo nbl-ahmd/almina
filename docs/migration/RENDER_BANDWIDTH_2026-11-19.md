@@ -58,3 +58,6 @@ server-side verification step, so it is scoped separately.
 
 **How to verify after deploy:** overnight Render outbound should fall from 4–8 MB/hour to well under 1 MB/hour. If it does not,
 the remaining source is outside the worker loops: check Atlas "Network" per hour and Render logs around the busiest hours.
+
+**Superseded by `EVENT_DRIVEN_WORKERS_2026-11-23.md`:** the safety intervals, idle backoff and slower sweeps described above were replaced by a
+fully event-driven design (no timers while idle, zero application database commands measured when idle).

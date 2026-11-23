@@ -1,4 +1,5 @@
-import { idleBackoffLoop } from '../operations/idle-loop.js';
+import { createEventWorker } from '../operations/event-worker.js';
+import type { LocalWriteSignal } from '../notifications/wake.js';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { ClientSession, Db, Document } from 'mongodb';
@@ -191,11 +192,11 @@ export async function runImagePublicationLocally(db: Db, jobId: string, cloudNam
   return 'interrupted';
 }
 
-export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configuration: { cloudName?: string; transport?: typeof fetch; enabled?: () => boolean; intervalMs?: number } = {}) {
-  // Fast while a run is active, then it backs off to one check every 15 s when nothing is queued.
-  const loop = idleBackoffLoop(async () => {
+export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configuration: { cloudName?: string; transport?: typeof fetch; enabled?: () => boolean; intervalMs?: number; local?: LocalWriteSignal } = {}) {
+  // Starting, resuming or pausing a run writes its job document, which wakes this worker; it then keeps going until nothing is queued.
+  const worker = createEventWorker(async () => {
     if (configuration.enabled?.() === false) return false;
     return (await processImagePublication(await getDb(), configuration.cloudName, configuration.transport)) !== false;
-  }, { minMs: configuration.intervalMs ?? 1500, maxMs: Math.max(15000, configuration.intervalMs ?? 0) });
-  return { stop: () => loop.stop() };
+  }, { local: configuration.local, collections: ['image_review_publications'], debounceMs: 250, drainMs: configuration.intervalMs ?? 1500 });
+  return { stop: () => worker.stop() };
 }

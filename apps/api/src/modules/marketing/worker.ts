@@ -1,3 +1,5 @@
+import { createEventWorker } from '../operations/event-worker.js';
+import type { LocalWriteSignal } from '../notifications/wake.js';
 import { createHash } from "node:crypto";
 import type { Db, Document } from "mongodb";
 import { eligibleMarketingRecipient } from "./repository.js";
@@ -116,7 +118,13 @@ export async function processMarketingJob(
   }
   return true;
 }
-export function marketingWorker(getDb: () => Promise<Db>) {
+export function marketingWorker(getDb: () => Promise<Db>, hooks: { local?: LocalWriteSignal } = {}) {
+  if (hooks.local) {
+    // A campaign is sent in bounded steps: starting one writes its job, which wakes the worker; it continues while jobs remain, then sleeps.
+    const worker = createEventWorker(async () => marketingConnections().enabled ? (await processMarketingJob(await getDb())) === true : false,
+      { local: hooks.local, collections: ['marketing_jobs'], debounceMs: 500, drainMs: 4000 });
+    return { stop: () => worker.stop() };
+  }
   let stopped = false,
     running: Promise<unknown> | undefined;
   const tick = () => {
