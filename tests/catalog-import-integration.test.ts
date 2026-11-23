@@ -41,7 +41,7 @@ test('needs action paginates drafts, separates identity/classification/Rx and ex
     await db.collection('products').insertMany([
       {...base,product_id:'PD1',name:'...Mxmn',productType:'unreviewed'},
       {...base,product_id:'PD2',name:'Synthetic Rx',productType:'prescription'},
-      {...base,product_id:'PD3',name:'Synthetic [brackets]',productType:'general',contentReviewed:false,cloudinaryImages:[]},
+      {...base,product_id:'PD3',name:'Synthetic [brackets]',productType:'general',description:'',cloudinaryImages:[]},
       {...base,product_id:'PD4',productType:'general',published:true,disabled:false},
       {...base,product_id:'PD5',archivedAt:new Date()},
     ]);
@@ -86,7 +86,13 @@ test('draft import validates gross VAT, source identity, replay, stale edits, pu
     await Promise.all([commitCatalogImport(db,{previewId:preview.previewId},actor),commitCatalogImport(db,{previewId:preview.previewId},actor)]);
     assert.equal(await db.collection('products').countDocuments(),1);let product=(await db.collection('products').findOne())!;
     assert.equal(product.disabled,true);assert.equal(product.published,false);assert.equal(product.stock,4);assert.equal(product.websiteStockProposed,4);assert.equal(product.price,10.5);assert.equal(product.vat,true);assert.equal(product.barcode,'');
+    // Going live needs only a complete name and a sellable type; review stamps are recorded on publication instead of being a gate.
+    const importedType=product.productType;
+    await db.collection('products').updateOne({_id:product._id},{$set:{productType:'unreviewed'}});
     await assert.rejects(toggleCatalogVisibility(db,'products',String(product._id),actor),{code:'CATALOG_REVIEW_REQUIRED'});
+    await db.collection('products').updateOne({_id:product._id},{$set:{productType:'prescription'}});
+    await assert.rejects(toggleCatalogVisibility(db,'products',String(product._id),actor),{code:'CATALOG_REVIEW_REQUIRED'});
+    await db.collection('products').updateOne({_id:product._id},importedType===undefined?{$unset:{productType:''}}:{$set:{productType:importedType}});
     const again=await previewCatalogImport(db,input([{...row,summary:'Updated draft'}]),actor);assert.equal(again.rows[0]!.action,'update');
     await commitCatalogImport(db,{previewId:again.previewId},actor);assert.equal(await db.collection('products').countDocuments(),1);
     const updated=(await db.collection('products').findOne())!;

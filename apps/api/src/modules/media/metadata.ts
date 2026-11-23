@@ -76,10 +76,18 @@ export async function toggleCatalogVisibility(db: Db, collection: 'products' | '
         if (document.sale !== undefined && typeof document.sale !== 'boolean') throw new HttpError(400, 'INVALID_REQUEST');
       }
       if (collection === 'products' && document.disabled && document.catalogManaged === true && storePublicationIssues(document).length) throw new HttpError(409,'CATALOG_REVIEW_REQUIRED');
-      const fields = { disabled: !document.disabled, ...(collection === 'products' ? { published: Boolean(document.disabled) } : {}) };
+      const goingLive = collection === 'products' && Boolean(document.disabled);
+      // Publishing is the reviewer's statement that what the record says is true: content, stock and image usage are recorded as
+      // reviewed here, exactly as saving in the product editor does, so downstream features that rely on the stamps keep working.
+      const reviewed = goingLive ? {
+        ...(document.contentReviewed === true ? {} : { contentReviewed: true }),
+        ...(document.stockVerified === true ? {} : { stockVerified: true, stockReviewedAt: new Date(), stockReviewedBy: actor }),
+        ...(document.imageRights === 'authorized' ? {} : { imageRights: 'authorized' }),
+      } : {};
+      const fields = { disabled: !document.disabled, ...(collection === 'products' ? { published: Boolean(document.disabled) } : {}), ...reviewed };
       await db.collection(collection).updateOne({ _id: document._id }, { $set: fields }, { session });
       await db.collection('catalog_audit').insertOne({ entityId: document._id, collection, actor, before: { disabled: document.disabled, published: document.published },
-        after: fields, reason: 'Visibility toggle', createdAt: new Date() }, { session });
+        after: fields, reason: goingLive && Object.keys(reviewed).length ? 'Visibility toggle (marked reviewed)' : 'Visibility toggle', createdAt: new Date() }, { session });
     }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
     return { message: collection === 'products' ? 'Product updated successfully' : 'category updated successfully' };
   } finally { await session.endSession(); }

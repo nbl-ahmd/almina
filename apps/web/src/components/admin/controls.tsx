@@ -61,7 +61,7 @@ export async function adminRequest(
   if (result.status === 409) {
     const failure: unknown = await result.json().catch(() => null);
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'IMAGE_REVIEW_REQUIRED' && path.startsWith('image-review/')) throw new Error('This association needs another review. Confirm all required identity values and supporting evidence. Reload if the product or image has changed.');
-    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'CATALOG_REVIEW_REQUIRED') throw new Error('Complete the product content, classification, image rights and physical stock review before publishing.');
+    if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'CATALOG_REVIEW_REQUIRED') throw new Error('Choose the product type (General or Pharmacy medicine) and give it a complete name before publishing. Prescription items are never sold online.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'BRANCH_LOGIN_CONFLICT') throw new AdminConflictError('BRANCH_LOGIN_CONFLICT', 'This login is already in use. Choose another username; existing credentials were not changed.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'BRANCH_STOCK_RETIRED') throw new Error('All branches use the main catalogue stock. Update stock from Products.');
     if (failure && typeof failure === 'object' && 'error' in failure && failure.error === 'BRANCH_STOCK_CONFLICT') throw new Error('The branch allocations would exceed available catalogue stock. Review other branches before assigning this quantity or reducing catalogue stock.');

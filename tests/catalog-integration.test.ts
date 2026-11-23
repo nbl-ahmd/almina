@@ -282,3 +282,29 @@ test('families preserve SKU stock, reject mixed strengths and duplicate options,
     assert.equal((await db.collection('orders').findOne())!.lines[0].variantLabel,'Size: Large');
   } finally {await db.dropDatabase();await client.close();}
 });
+
+test('making a managed product live needs only a complete name and a sellable type, and records the review stamps', { skip: !uri }, async () => {
+  const { toggleCatalogVisibility } = await import('../apps/api/src/modules/media/metadata');
+  const client = await new MongoClient(uri!).connect();
+  const db = client.db(`almina_publish_test_${randomUUID().replaceAll('-', '')}`);
+  const actor = String(new ObjectId());
+  const base = { catalogManaged: true, disabled: true, published: false, price: 10, stock: 3, brand: '', description: '' };
+  try {
+    const ready = (await db.collection('products').insertOne({ ...base, name: 'Vitamin C 500 mg tablets', productType: 'general' })).insertedId;
+    await toggleCatalogVisibility(db, 'products', String(ready), actor);
+    const live = (await db.collection('products').findOne({ _id: ready }))!;
+    assert.equal(live.disabled, false); assert.equal(live.published, true);
+    assert.equal(live.contentReviewed, true); assert.equal(live.stockVerified, true); assert.equal(live.imageRights, 'authorized');
+    assert.equal(live.stockReviewedBy, actor);
+    const audit = await db.collection('catalog_audit').findOne({ entityId: ready });
+    assert.equal(audit?.reason, 'Visibility toggle (marked reviewed)');
+    // Hiding never touches the stamps.
+    await toggleCatalogVisibility(db, 'products', String(ready), actor);
+    assert.equal((await db.collection('products').findOne({ _id: ready }))!.disabled, true);
+    for (const rejected of [{ name: 'Vitamin C', productType: 'prescription' }, { name: 'Vitamin C', productType: 'unreviewed' }, { name: '', productType: 'general' }]) {
+      const id = (await db.collection('products').insertOne({ ...base, ...rejected })).insertedId;
+      await assert.rejects(toggleCatalogVisibility(db, 'products', String(id), actor), { code: 'CATALOG_REVIEW_REQUIRED' });
+      assert.equal((await db.collection('products').findOne({ _id: id }))!.disabled, true);
+    }
+  } finally { await db.dropDatabase(); await client.close(); }
+});

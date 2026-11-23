@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Db, Document } from 'mongodb';
-import { incompleteProductNamePattern, publicationIssues, hasProductPhoto } from '@almina/contracts';
+import { incompleteProductNamePattern, storePublicationIssues, hasProductPhoto } from '@almina/contracts';
 import { HttpError } from '../../errors.js';
 
 const querySchema = z.object({
@@ -23,11 +23,11 @@ export function needsActionFilter(query: z.infer<typeof querySchema>): Document 
     identity: { $or: [{ name: { $exists: false } }, { name: '' }, { name: incompleteProductNamePattern }] },
     classification: { productType: { $nin: ['general', 'otc', 'prescription'] } },
     prescription: { productType: 'prescription' },
-    content: { contentReviewed: { $ne: true } },
+    // Listing details help customers choose; they are not a publishing gate.
+    content: { $or: [{ brand: { $in: [null, ''] }, familyBrand: { $in: [null, ''] } }, { description: { $in: [null, ''] } }] },
     'missing-photo': { $nor: [{ image: photoValue }, { images: { $elemMatch: photoValue } }, { cloudinaryImages: { $elemMatch: photoValue } }] },
-    images: { $or: [{ imageRights: { $ne: 'authorized' } }, { $and: [
-      { image: { $in: [null, ''] } }, { 'images.0': { $exists: false } }, { 'cloudinaryImages.0': { $exists: false } },
-    ] }] },
+    // Image permission is no longer a separate check: a missing photo is the only image action left.
+    images: { $nor: [{ image: photoValue }, { images: { $elemMatch: photoValue } }, { cloudinaryImages: { $elemMatch: photoValue } }] },
   };
   return { $and: [
     { archivedAt: { $exists: false } },
@@ -56,6 +56,6 @@ export async function catalogueNeedsAction(db: Db, raw: unknown) {
   return { total: result?.count[0]?.total ?? 0, offset: query.offset, items: (result?.items ?? []).map((product: Document) => ({
     _id: product._id, product_id: product.product_id, name: product.name, productType: product.productType,
     published:product.published!==false&&product.disabled!==true&&product.active!==false,missingPhoto:!hasProductPhoto(product),
-    reasons: publicationIssues(product),
+    reasons: storePublicationIssues(product),
   })) };
 }

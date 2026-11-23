@@ -73,7 +73,7 @@ export type ImageReviewDraftInput = z.infer<typeof imageReviewDraftSchema>;
 export const imageReviewDecisionSchema = z.object({
   itemId: hash, expectedRevision: z.number().int().nonnegative(), productId: businessId.nullable(),
   productRevision: hash.nullable(), decision: z.enum(['approved', 'held', 'rejected']),
-  originalViewed: z.boolean(), checks: imageReviewChecksSchema, note: z.string().trim().min(5).max(2000),
+  originalViewed: z.boolean(), checks: imageReviewChecksSchema, note: z.string().trim().max(2000).default(''),
   sharedIdentifierConfirmed: z.boolean().default(false),
   requestId: z.uuid(),
   productChanges: imageReviewProductChangesSchema.optional(),

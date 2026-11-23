@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { ArrowDownTrayIcon, ArrowPathIcon, PlayIcon } from '@heroicons/react/24/outline';
-import { imageReviewPackageSchema, type ImageReviewList, type ImageReviewDetail, type ImageReviewDecisionInput, type ImageReviewDraftInput, type ImageReviewApprovedMapping, type ImageReviewManifest, type ImagePublicationResponse } from '@almina/contracts';
+import { imageReviewPackageSchema, type ImageReviewList, type ImageReviewItem, type ImageReviewDetail, type ImageReviewDecisionInput, type ImageReviewDraftInput, type ImageReviewApprovedMapping, type ImageReviewManifest, type ImagePublicationResponse } from '@almina/contracts';
 import { adminRequest, AdminRateLimitError } from './controls';
 import { Button, PageHeader } from './ui';
 import { ImageReviewWorkspace } from './image-review-workspace';
@@ -127,15 +128,24 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
     }, true);
   }
   const skip = () => { if (nextId) void task(async () => { populate(await loadDetail(nextId, true)); setMessage('Skipped for now. No decision was saved.'); }); };
+  function publishInBackground(approvalId: string, name: string) {
+    const id = toast.loading(`Publishing ${name}…`);
+    adminRequest('image-review/publish', 'POST', { approvalIds: [approvalId], requestId: crypto.randomUUID() })
+      .then(() => toast.success(`Published ${name}`, { id }))
+      .catch((failure: unknown) => toast.error(`${name} is approved but not published yet. ${failure instanceof Error ? failure.message : 'Publish it from the Approved tab.'}`, { id, duration: 10000 }));
+  }
   async function save(input: Omit<ImageReviewDecisionInput, 'requestId'>) {
     await task(async () => {
       const fingerprint = JSON.stringify(input);
       if (retry.current?.fingerprint !== fingerprint) retry.current = { fingerprint, requestId: crypto.randomUUID() };
-      await adminRequest('image-review/decide', 'POST', { ...input, requestId: retry.current.requestId });
+      const saved = await adminRequest('image-review/decide', 'POST', { ...input, requestId: retry.current.requestId }) as ImageReviewItem;
       if (!countedReviews.current.has(retry.current.requestId)) { countedReviews.current.add(retry.current.requestId); setReviewed(count => count + 1); }
       setLastReview(input.itemId);
+      // Administrators publish as they approve. The upload runs in the background so the next image opens at once.
+      const publishing = input.decision === 'approved' && admin && !!saved.approvalId;
+      if (publishing) publishInBackground(saved.approvalId!, detail?.product?.name ?? 'image');
       const page = await refresh();
-      setMessage(input.decision === 'approved' ? 'Approved. Saved for publication.' : input.decision === 'held' ? 'Held for another check.' : 'Association rejected.');
+      setMessage(input.decision === 'approved' ? (publishing ? 'Approved. Publishing in the background.' : 'Approved.') : input.decision === 'held' ? 'Held for another check.' : 'Marked as not a match.');
       const following = ['pending', 'held'].includes(filter) ? (page.items.some(item => item.itemId === nextId) ? nextId : nextImageReviewId(page.items, input.itemId)) : null;
       if (following) {
         try { populate(await loadDetail(following, true)); }
@@ -229,7 +239,7 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
   }
   const counts = list.counts ?? emptyCounts;
   return <>
-    <PageHeader title="Image review" description="Check each image against the catalogue, then approve or hold it." actions={<Button variant="ghost" disabled={busy || !list.enabled} onClick={exportApproved}><ArrowDownTrayIcon className="size-4" aria-hidden="true" />Export approvals</Button>} />
+    <PageHeader title="Image review" description="Check each image, fix anything that differs, then save. The next image opens by itself." actions={<Button variant="ghost" disabled={busy || !list.enabled} onClick={exportApproved}><ArrowDownTrayIcon className="size-4" aria-hidden="true" />Export approvals</Button>} />
     {!list.enabled ? <section className="mb-4 grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6"><h2>Image review is temporarily disabled</h2><p>Enable the temporary review module on the API service to load maps and review images. Saved review history is retained.</p></section> : <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Review status">{tabs.map(status => <Button key={status} variant={filter === status ? 'primary' : 'ghost'} disabled={busy} aria-pressed={filter === status} onClick={() => task(async () => { await refresh(status); setFilter(status); setDetail(null); })}>{status === 'all' ? 'All images' : `${status[0]!.toUpperCase()}${status.slice(1)} ${counts[status]}`}</Button>)}</div>
@@ -249,7 +259,7 @@ export function ImageReviewManager({ initial, admin }: { initial: ImageReviewLis
       </div></details> : null}
       {admin && publicationError ? <p role="alert" className="rounded-lg bg-bad-soft p-4 text-[13px] text-bad">{publicationError}</p> : null}
       {preview ? <section className="mb-4 grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" aria-labelledby="image-import-title"><h2 id="image-import-title">Import preview · {preview.mappings.length} approved {preview.mappings.length === 1 ? 'image' : 'images'}</h2><p>These existing image links will be added to the listed products. Existing galleries, publication status, prices and stock are preserved.</p><ul className="space-y-2">{preview.mappings.map(mapping => <li key={mapping.approvalId}>{mapping.productId} · {mapping.name}</li>)}</ul><div className="flex flex-wrap items-center gap-2"><Button variant="primary" disabled={busy || publishing} onClick={apply}>Import {preview.mappings.length} approved {preview.mappings.length === 1 ? 'image' : 'images'}</Button><Button disabled={busy} onClick={() => setPreview(null)}>Cancel preview</Button><Button disabled={busy} onClick={() => download('image-import-manifest.json', preview)}>Download this list</Button></div></section> : null}
-      {detail ? <ImageReviewWorkspace key={detail.item.itemId + ':' + viewKey} detail={detail} admin={admin} busy={busy} hasNext={!!nextId} onDecision={save} onChoose={choose} onCreate={createDraft} onSkip={skip} /> : <section className="mb-4 rounded-xl bg-surface p-5 border border-line md:p-6"><h2>{list.items.length ? 'Ready to review' : 'No images in this queue'}</h2><p>{list.items.length ? 'Start with the first image or pick one below. Each decision opens the next image automatically.' : filter === 'pending' ? (admin ? 'Load saved image maps above, or choose another queue.' : 'The administrator can load image maps. You can also check the Held queue.') : 'Choose another queue to continue.'}</p></section>}
+      {detail ? <ImageReviewWorkspace key={detail.item.itemId + ':' + viewKey} detail={detail} admin={admin} busy={busy} hasNext={!!nextId} onDecision={save} onChoose={choose} onCreate={createDraft} onSkip={skip} /> : <section className="mb-4 grid gap-1 rounded-xl border border-line bg-surface p-5 md:p-6"><h2 className="m-0 text-base font-semibold">{list.items.length ? 'Ready to review' : 'No images in this queue'}</h2><p className="m-0 text-sm text-ink-2">{list.items.length ? 'Start with the first image or pick one below. Each decision opens the next image automatically.' : filter === 'pending' ? (admin ? 'Load saved image maps above, or choose another queue.' : 'The administrator can load image maps. You can also check the Held queue.') : 'Choose another queue to continue.'}</p></section>}
       {filter === 'approved' && admin ? <div className="mt-4 flex flex-wrap items-center gap-3"><Button variant="primary" disabled={busy || publishing || publication?.phase === 'paused' || !counts.approved} onClick={publishAll}>Publish all approved images</Button><details><summary className="cursor-pointer py-3 text-sm">Publish a selection</summary><div className="flex flex-wrap gap-2 py-3"><Button disabled={busy || publishing || !selected.length} onClick={publish}>Publish selected ({selected.length})</Button><Button disabled={busy || !selected.length} onClick={previewImport}>Preview selected</Button></div><p className="text-xs">Select up to eight images from the queue below.</p></details></div> : null}
       <details key={detail ? 'reviewing' : 'choosing'} open={!detail} className="mt-5 min-w-0 border-t pt-3"><summary className="cursor-pointer py-2 text-sm font-medium">Browse queue · {list.items.length} on this page</summary>
         <section className="mt-2 min-w-0" aria-label="Images to review">
