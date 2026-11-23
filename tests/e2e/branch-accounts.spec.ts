@@ -106,7 +106,7 @@ test('notification sound is one-shot and never loops for old pending orders',asy
  await expect.poll(sounds).toBe(1);
  await page.clock.runFor(125000);
  expect(await sounds()).toBe(1);
- // A genuinely new order chimes exactly once, on the next 60 s alert poll, and never loops.
- fresh=true;await page.clock.runFor(61000);await expect.poll(sounds).toBe(2);
+ // A genuinely new order chimes exactly once, on the next alert refresh (the 5 minute fallback poll here), and never loops.
+ fresh=true;await page.clock.runFor(301000);await expect.poll(sounds).toBe(2);
  await page.clock.runFor(125000);expect(await sounds()).toBe(2);expect(await page.evaluate(()=>Reflect.get(window,'__notificationCsp'))).toEqual([]);
 });

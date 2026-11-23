@@ -98,8 +98,9 @@ export function AlertMonitor({ actor }: { actor: string }) {
         .then((registration) => registration?.update())
         .catch(() => undefined);
     void poll();
-    // Order events trigger an immediate poll (below); this interval is only the safety net for stock and payment alerts.
-    const timer = setInterval(() => void poll(), 60000);
+    // The live stream (orders and staff alerts) and Web Push trigger an immediate poll (below); this slow interval only covers a
+    // stream that is down. It never runs in a hidden tab.
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') void poll(); }, 300000);
     window.addEventListener("almina:orders-updated", message);
     window.addEventListener("almina:notifications-changed", message);
     document.addEventListener("visibilitychange", resume);

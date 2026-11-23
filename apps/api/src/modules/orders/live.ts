@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { ChangeStream, Db } from 'mongodb';
 
-/** Tiny, data-free "orders changed" signal for staff browsers.
+/** Tiny, data-free "orders or alerts changed" signal for staff browsers.
  *
  *  One MongoDB change stream per API process feeds every connected staff stream, so an idle system issues no
  *  timed reads. The cursor opens when the first browser connects and closes shortly after the last one leaves.
@@ -65,8 +65,9 @@ export function createOrderLiveFeed(options: Options) {
     opening = true;
     try {
       const db = await getDb();
-      const opened = db.collection('orders').watch(
-        [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] } } }, { $project: { operationType: 1 } }],
+      // Orders and staff alerts (stock, payment) share one signal; each browser refetches only the reads it is authorised for.
+      const opened = db.watch(
+        [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] }, 'ns.coll': { $in: ['orders', 'staff_alerts'] } } }, { $project: { operationType: 1 } }],
         { maxAwaitTimeMS: 10000 },
       );
       stream = opened;

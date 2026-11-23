@@ -77,6 +77,32 @@ Orderrouter.get('/events', (req, res) => {
   const stop = () => { clearInterval(heartbeat); unsubscribe(); };
   req.on('close', stop); res.on('close', stop); res.on('error', stop);
 });
+// Direct live stream. The staff session cookie belongs to the web origin, so the web gateway mints a one-time ticket for the signed-in
+// user and the browser opens this stream on the API itself (no 25 s hosting-limit relay). The stream carries no order data and ends after
+// a fixed lifetime, which makes the browser fetch a new ticket and so re-checks access.
+Orderrouter.post('/events/ticket', async (req, res) => {
+  if (Object.keys(req.query).length || Object.keys(req.body ?? {}).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
+  const domain = require('../commerce/dist/service.cjs');
+  res.json(await domain.issueStreamTicket(await req.app.locals.getCommerceDb(), req.identity.id));
+});
+Orderrouter.get('/events/stream', async (req, res) => {
+  if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
+  const domain = require('../commerce/dist/service.cjs');
+  const userId = await domain.consumeStreamTicket(await req.app.locals.getCommerceDb(), req.get('x-stream-ticket'));
+  if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+  const feed = (req.app.locals.orderLive ??= domain.createOrderLiveFeed({ getDb: () => req.app.locals.getCommerceDb() }));
+  const write = chunk => { try { res.write(chunk); } catch { /* The client already left. */ } };
+  const unsubscribe = feed.subscribe(revision => write(`id: ${revision}\nevent: orders\ndata: {}\n\n`), userId);
+  if (!unsubscribe) return res.status(429).set('Retry-After', '30').json({ error: 'TOO_MANY_STREAMS' });
+  res.status(200).set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'private, no-store, no-transform', 'X-Accel-Buffering': 'no', 'X-Robots-Tag': 'noindex, nofollow' });
+  res.flushHeaders?.();
+  const current = feed.revision();
+  write(`retry: 1000\nid: ${current}\nevent: ${req.get('last-event-id') === current ? 'ready' : 'orders'}\ndata: {}\n\n`);
+  const heartbeat = setInterval(() => write(': keep-alive\n\n'), 25000);
+  const lifetime = setTimeout(() => res.end(), domain.STREAM_MAX_LIFETIME_MS);
+  const stop = () => { clearInterval(heartbeat); clearTimeout(lifetime); unsubscribe(); };
+  req.on('close', stop); res.on('close', stop); res.on('error', stop);
+});
 Orderrouter.get('/receiving', async (req, res) => {
   if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
   res.json(await require('../commerce/dist/service.cjs').orderReceiving(await req.app.locals.getCommerceDb(), req.identity));

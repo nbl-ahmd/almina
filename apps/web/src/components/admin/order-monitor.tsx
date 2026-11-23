@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
 import Link from '../app-link';
 import { receivingSignalSchema, waitingMinutes } from '../../lib/admin/receiving';
+import { connectOrderStream } from '../../lib/admin/order-stream-client';
 import { Tip } from './kit';
 import { cn } from './cn';
 
 type LinkState = 'live' | 'connecting' | 'reconnecting';
-// The server closes each stream after ~25 s (hosting limit) and the browser reconnects within about a second.
-// That planned cycle is not an outage: only a gap longer than this is shown to the user.
+// A planned reconnect (the API ends each stream after a few minutes; the relay fallback every ~25 s) is not an outage:
+// only a gap longer than this is shown to the user.
 const GAP_BEFORE_NOTICE_MS = 7000;
 const FALLBACK_POLL_MS = 15000;
 const REFRESH_DEBOUNCE_MS = 1500;
@@ -39,7 +40,7 @@ export function OrderMonitor() {
   }
   useEffect(() => {
     let stopped = false;
-    let events: EventSource | null = null;
+    let disconnect: (() => void) | null = null;
     let gapTimer: ReturnType<typeof setTimeout> | undefined;
     let pollTimer: ReturnType<typeof setTimeout> | undefined;
     let refreshTimer: ReturnType<typeof setTimeout> | undefined;
@@ -91,18 +92,17 @@ export function OrderMonitor() {
       if (!stopped && document.visibilityState === 'visible') pollTimer = setTimeout(() => void poll(), FALLBACK_POLL_MS);
     }
     function open() {
-      if (events || stopped || document.visibilityState !== 'visible') return;
-      const source = new EventSource('/api/admin/events');
-      events = source;
+      if (disconnect || stopped || document.visibilityState !== 'visible') return;
       // "ready": reconnected and nothing changed. "orders": something changed (or this is the first connection).
-      source.addEventListener('ready', live);
-      source.addEventListener('orders', () => { live(); void readReceiving(true); });
-      source.addEventListener('revoked', () => { source.close(); window.location.assign('/admin/login'); });
-      source.addEventListener('unavailable', startGapTimer);
-      source.onerror = startGapTimer;
+      disconnect = connectOrderStream({
+        onReady: live,
+        onOrders: () => { live(); void readReceiving(true); window.dispatchEvent(new Event('almina:notifications-changed')); },
+        onRevoked: () => { window.location.assign('/admin/login'); },
+        onDown: startGapTimer,
+      });
     }
     function close() {
-      events?.close(); events = null;
+      disconnect?.(); disconnect = null;
       clearTimeout(gapTimer); gapTimer = undefined;
       clearTimeout(pollTimer); pollTimer = undefined;
     }
