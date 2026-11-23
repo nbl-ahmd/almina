@@ -72,3 +72,8 @@ test('a transient failure invalidates once (changes may have been missed) and re
   assert.equal(count, 1); await wait(2300);
   assert.equal(streams.length, 2); await feed.shutdown();
 });
+
+import { SERVER_SOCKET_TIMEOUT_MS, STREAM_HEARTBEAT_MS } from '../apps/api/src/modules/orders/live';
+test('event streams send a keep-alive well inside the idle-socket timeout, so they are not cut and re-ticketed every 15 seconds', () => {
+  assert.ok(STREAM_HEARTBEAT_MS * 1.4 <= SERVER_SOCKET_TIMEOUT_MS, `heartbeat ${STREAM_HEARTBEAT_MS} ms must leave a safety margin under ${SERVER_SOCKET_TIMEOUT_MS} ms`);
+});

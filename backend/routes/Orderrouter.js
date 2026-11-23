@@ -73,7 +73,7 @@ Orderrouter.get('/events', (req, res) => {
   const current = feed.revision();
   // A browser that reconnects with the current revision missed nothing and refetches nothing.
   write(`retry: 1000\nid: ${current}\nevent: ${req.get('last-event-id') === current ? 'ready' : 'orders'}\ndata: {}\n\n`);
-  const heartbeat = setInterval(() => write(': keep-alive\n\n'), 25000);
+  const heartbeat = setInterval(() => write(': keep-alive\n\n'), domain.STREAM_HEARTBEAT_MS);
   const stop = () => { clearInterval(heartbeat); unsubscribe(); };
   req.on('close', stop); res.on('close', stop); res.on('error', stop);
 });
@@ -98,7 +98,7 @@ Orderrouter.get('/events/stream', async (req, res) => {
   res.flushHeaders?.();
   const current = feed.revision();
   write(`retry: 1000\nid: ${current}\nevent: ${req.get('last-event-id') === current ? 'ready' : 'orders'}\ndata: {}\n\n`);
-  const heartbeat = setInterval(() => write(': keep-alive\n\n'), 25000);
+  const heartbeat = setInterval(() => write(': keep-alive\n\n'), domain.STREAM_HEARTBEAT_MS);
   const lifetime = setTimeout(() => res.end(), domain.STREAM_MAX_LIFETIME_MS);
   const stop = () => { clearInterval(heartbeat); clearTimeout(lifetime); unsubscribe(); };
   req.on('close', stop); res.on('close', stop); res.on('error', stop);
