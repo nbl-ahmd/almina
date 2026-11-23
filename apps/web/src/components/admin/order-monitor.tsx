@@ -1,11 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-location-assign-relative-destination -- Revoked sessions discard privileged router state. */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
-import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
+import { BellAlertIcon, BellSlashIcon } from '@heroicons/react/24/outline';
 import Link from '../app-link';
 import { receivingSignalSchema, waitingMinutes } from '../../lib/admin/receiving';
 import { connectOrderStream } from '../../lib/admin/order-stream-client';
+import { getOrderAlarm } from '../../lib/admin/order-alarm';
 import { Tip } from './kit';
 import { cn } from './cn';
 
@@ -23,21 +24,20 @@ const waiting = (minutes: number) => minutes >= 1440 ? `${Math.floor(minutes / 1
 export function OrderMonitor() {
   const router = useRouter();
   const [link, setLink] = useState<LinkState>('connecting');
-  const audio = useRef<AudioContext | null>(null);
-  const soundEnabled = useRef(false);
-  const [sound, setSound] = useState(false);
+  const alarm = getOrderAlarm();
+  const alarmStatus = useSyncExternalStore(alarm.subscribe, alarm.status, () => 'off' as const);
+  const lastPending = useRef<number | null>(null);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [oldest, setOldest] = useState<string | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [clock, setClock] = useState<number | null>(null);
-  function chime() {
-    if (!soundEnabled.current || document.visibilityState !== 'visible' || !navigator.onLine || audio.current?.state !== 'running') return;
-    const context = audio.current, oscillator = context.createOscillator(), gain = context.createGain();
-    oscillator.connect(gain); gain.connect(context.destination); oscillator.frequency.value = 660;
-    gain.gain.setValueAtTime(0.08, context.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.3);
-    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
-    oscillator.start(); oscillator.stop(context.currentTime + 0.3);
-  }
+  // Tell the service worker whether this page will ring by itself, so it knows when the system notification may stay silent.
+  useEffect(() => {
+    const worker = navigator.serviceWorker;
+    const send = () => worker?.controller?.postMessage({ type: 'almina-alarm-state', armed: alarmStatus === 'armed' || alarmStatus === 'ringing' });
+    send(); worker?.addEventListener('controllerchange', send);
+    return () => { worker?.removeEventListener('controllerchange', send); };
+  }, [alarmStatus]);
   useEffect(() => {
     let stopped = false;
     let disconnect: (() => void) | null = null;
@@ -49,11 +49,14 @@ export function OrderMonitor() {
 
     function receive(value: unknown) {
       const parsed = receivingSignalSchema.safeParse(value);
-      if (!parsed.success) return;
+      if (!parsed.success) return null;
       setPendingCount(parsed.data.pendingCount);
+      // Nothing is waiting any more: the order was confirmed (here or on another device), so the alarm has done its job.
+      if (parsed.data.pendingCount === 0) alarm.silence();
       // Installed app icon shows how many orders wait. Unsupported browsers simply ignore this.
       try { void (parsed.data.pendingCount > 0 ? navigator.setAppBadge?.(parsed.data.pendingCount) : navigator.clearAppBadge?.())?.catch(() => undefined); } catch { /* Optional. */ }
       setOldest(parsed.data.oldestPendingAt ?? null); setReviewCount(parsed.data.reviewCount ?? 0); setClock(Date.now());
+      return parsed.data.pendingCount;
     }
     // Several events in a burst cost one page refresh, and a hidden tab never refreshes.
     function queueRefresh() {
@@ -72,7 +75,8 @@ export function OrderMonitor() {
     // One authorised read of the receiving counts. Runs when the server says orders changed, and as the fallback below.
     let reading = false;
     async function readReceiving(announce: boolean) {
-      if (reading || stopped || document.visibilityState !== 'visible') return;
+      // A hidden page normally sleeps, but one with the alarm on still reads when a push message reaches it.
+      if (reading || stopped || (document.visibilityState !== 'visible' && alarm.status() === 'off')) return;
       reading = true;
       try {
         const result = await fetch('/api/admin/orders/receiving', { cache: 'no-store' });
@@ -80,7 +84,10 @@ export function OrderMonitor() {
         if (!result.ok) throw new Error();
         const summary: unknown = await result.json();
         const signature = JSON.stringify(summary);
-        receive(summary);
+        const previous = lastPending.current, count = receive(summary);
+        if (count !== null) lastPending.current = count;
+        // More orders waiting than before means a new one arrived: ring (a blocked or off alarm leaves it to the push notification).
+        if (announce && previous !== null && count !== null && count > previous) alarm.ring();
         // The very first read only fills the counts; later changes refresh the page and notify listeners.
         if (announce && baseline !== null && baseline !== signature) { window.dispatchEvent(new Event('almina:orders-updated')); queueRefresh(); }
         baseline = signature;
@@ -107,33 +114,53 @@ export function OrderMonitor() {
       clearTimeout(pollTimer); pollTimer = undefined;
     }
     function onVisibility() {
+      alarm.visibilityChanged();
       if (document.visibilityState === 'hidden') { close(); return; }
       // Back in view: reconnect. A new connection has no resume id, so the server answers "orders" and one read catches up.
       setLink('connecting');
       open();
     }
     function onOnline() { close(); open(); }
+    const chime = () => alarm.chime();
+    // A push message reaching the open page (the app may be in the background) means something happened: read the counts once.
+    const fromPush = (event: MessageEvent) => { if (event.data && event.data.type === 'almina-alerts-updated') void readReceiving(true); };
+    // Sound can only start after a tap; the first tap or key press after a page load unlocks an alarm armed on an earlier visit.
+    const unlock = () => { void alarm.resume(); };
     window.addEventListener('almina:new-alert', chime);
+    navigator.serviceWorker?.addEventListener('message', fromPush);
+    window.addEventListener('pointerdown', unlock); window.addEventListener('keydown', unlock);
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('online', onOnline);
     window.addEventListener('pagehide', close);
+    // An installed app brought back from the background often fires only these, not a visibility change.
+    const comeBack = () => { if (document.visibilityState === 'visible' && !disconnect) { alarm.visibilityChanged(); setLink('connecting'); open(); } };
+    window.addEventListener('pageshow', comeBack); window.addEventListener('focus', comeBack);
     open();
     return () => {
       stopped = true;
       close();
       clearInterval(ageTimer); clearTimeout(refreshTimer);
       window.removeEventListener('almina:new-alert', chime);
+      navigator.serviceWorker?.removeEventListener('message', fromPush);
+      window.removeEventListener('pointerdown', unlock); window.removeEventListener('keydown', unlock);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
       window.removeEventListener('pagehide', close);
-      void audio.current?.close().catch(() => undefined); audio.current = null;
+      window.removeEventListener('pageshow', comeBack); window.removeEventListener('focus', comeBack);
     };
-  }, [router]);
+  }, [router, alarm]);
 
   const age = waitingMinutes(oldest, clock ?? 0);
   const item = 'inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-xs text-ink-2 no-underline outline-0 first:pl-0 hover:text-ink focus-visible:outline-2 focus-visible:outline-ink';
   return (
     <div className="mb-4 flex items-center gap-1 overflow-x-auto border-b border-line pb-1 [scrollbar-width:none]">
+      {alarmStatus === 'ringing' ? (
+        <button type="button" onClick={() => alarm.silence()}
+          className="mr-2 inline-flex h-8 shrink-0 animate-pulse items-center gap-1.5 rounded-lg bg-bad px-3 text-xs font-semibold text-white outline-0 focus-visible:outline-2 focus-visible:outline-ink motion-reduce:animate-none">
+          <BellAlertIcon className="size-[18px]" aria-hidden="true" />New order. Silence alarm
+        </button>
+      ) : null}
+      <span role="alert" className="sr-only">{alarmStatus === 'ringing' ? 'New order waiting. The alarm is ringing.' : ''}</span>
       <p role="status" className="m-0 mr-2 inline-flex h-8 shrink-0 items-center gap-2 text-xs font-medium text-mute">
         <span aria-hidden="true" className={cn('size-2 rounded-full', link === 'live' ? 'bg-ok' : 'animate-pulse bg-warn motion-reduce:animate-none')} />
         {link === 'live' ? 'Live' : link === 'reconnecting' ? 'Reconnecting…' : 'Connecting…'}
@@ -150,14 +177,14 @@ export function OrderMonitor() {
         {reviewCount > 0 ? <Link className={item} href="/admin/orders?status=pending&review=1">{reviewCount} {reviewCount === 1 ? 'address' : 'addresses'} to review</Link> : null}
       </div>
       <span className="flex-1" />
-      <Tip label={sound ? 'Sound alerts on. Click to turn off' : 'Turn on sound for new orders'}>
-        <button type="button" aria-pressed={sound} aria-label={sound ? 'Turn sound alerts off' : 'Turn sound alerts on'}
-          className="grid size-8 shrink-0 place-items-center rounded-lg text-mute outline-0 hover:bg-fill hover:text-ink focus-visible:outline-2 focus-visible:outline-ink max-sm:hidden"
-          onClick={() => {
-            if (sound) { soundEnabled.current = false; setSound(false); return; }
-            try { audio.current ??= new AudioContext(); void audio.current.resume().then(() => { soundEnabled.current = true; setSound(true); chime(); }).catch(() => { soundEnabled.current = false; }); } catch { soundEnabled.current = false; }
-          }}>
-          {sound ? <SpeakerWaveIcon className="size-[18px] text-ink" aria-hidden="true" /> : <SpeakerXMarkIcon className="size-[18px]" aria-hidden="true" />}
+      <Tip label={alarmStatus === 'off' ? 'Turn on the loud new-order alarm' : alarmStatus === 'needs-tap' ? 'Tap once to arm the alarm on this page' : 'Order alarm is on. Click to turn it off'}>
+        <button type="button" aria-pressed={alarmStatus === 'armed' || alarmStatus === 'ringing'}
+          aria-label={alarmStatus === 'off' ? 'Turn order alarm on' : alarmStatus === 'needs-tap' ? 'Tap to arm the order alarm' : 'Turn order alarm off'}
+          className={cn('inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs outline-0 hover:bg-fill focus-visible:outline-2 focus-visible:outline-ink',
+            alarmStatus === 'needs-tap' ? 'font-medium text-warn' : alarmStatus === 'off' ? 'text-mute hover:text-ink' : 'text-ink')}
+          onClick={() => { if (alarmStatus === 'armed' || alarmStatus === 'ringing') alarm.disarm(); else void alarm.arm(); }}>
+          {alarmStatus === 'off' ? <BellSlashIcon className="size-[18px]" aria-hidden="true" /> : <BellAlertIcon className="size-[18px]" aria-hidden="true" />}
+          {alarmStatus === 'needs-tap' ? <span>Tap to arm alarm</span> : alarmStatus === 'off' ? <span className="max-sm:sr-only">Alarm off</span> : <span className="max-sm:sr-only">Alarm on</span>}
         </button>
       </Tip>
     </div>

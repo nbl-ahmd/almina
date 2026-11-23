@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "3.0.3",
+    "compression": "1.8.2",
     "express": "5.2.1",
     "express-rate-limit": "8.7.0",
     "googleapis": "183.0.0",

@@ -9,7 +9,7 @@ export * from './modules/operations/lifecycle.js';
 export * from './modules/notifications/outbox.js';
 export { staffOrderEmailOutbox, staffEmailConfigured, staffOrderRecipient, staffOrderMessage } from './modules/notifications/staff-email.js';
 export { issueStreamTicket, consumeStreamTicket, STREAM_MAX_LIFETIME_MS } from './modules/orders/stream-tickets.js';
-export { createOutboxWake, wakeLoop, type Wake } from './modules/notifications/wake.js';
+export { createOutboxWake, createLocalWriteSignal, wakeLoop, type Wake, type LocalWriteSignal } from './modules/notifications/wake.js';
 export * from './modules/media/retention.js';
 export * from './modules/media/cloudinary.js';
 export * from './modules/media/image-review.js';

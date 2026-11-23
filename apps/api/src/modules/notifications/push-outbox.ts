@@ -1,4 +1,4 @@
-import { wakeLoop, type Wake } from './wake.js';
+import { earliestDue, wakeLoop, type Wake } from './wake.js';
 import { removePushDevice, pushDevices, subscriptionDigest, pushReceiptId } from './push-devices.js';
 import { historicalStatus } from '../orders/status.js';
 import { routingRecipients } from '../orders/routing.js';
@@ -114,6 +114,8 @@ export async function staffPushOutbox(getDb: () => Promise<Db> | Db, options: {
     }
   }
   function tick() { if (stopped) return Promise.resolve(); if (!running) running = run().finally(() => { running = undefined; }); return running; }
-  const loop = wakeLoop(tick, { fastMs: interval, slowMs: 30000, wake: options.wake });
+  const nextDue = async () => { const open = { createdAt: { $gte: enabledAt }, pushState: { $nin: ['done', 'failed'] } };
+    return earliestDue((await getDb()).collection<RecordDocument>('order_outbox'), [{ filter: open, field: 'pushNextAttemptAt' }, { filter: open, field: 'pushLeaseUntil' }]); };
+  const loop = wakeLoop(tick, { fastMs: interval, slowMs: 120000, wake: options.wake, nextDue });
   return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

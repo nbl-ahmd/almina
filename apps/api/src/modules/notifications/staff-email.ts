@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { Db, Document } from 'mongodb';
 import { bounded } from '../operations/lifecycle.js';
 import { HttpError } from '../../errors.js';
-import { wakeLoop, type Wake } from './wake.js';
+import { earliestDue, wakeLoop, type Wake } from './wake.js';
 import { historicalStatus } from '../orders/status.js';
 import { createEmailClient, reserveEmailBudget, resendReady, usesResend } from './provider.js';
 import { deliverEmail, type MailMessage, type MailTransport, type SmtpCredentials, type SmtpOptions } from './email.js';
@@ -11,6 +11,8 @@ import { deliverEmail, type MailMessage, type MailTransport, type SmtpCredential
 /** Default inbox that learns about every new order even when push, WhatsApp or the admin console are unavailable. */
 export const DEFAULT_STAFF_ORDER_RECIPIENT = 'info@alminapharmacy.com';
 const recipientSchema = z.email().max(254);
+/** Reminders only cover orders that are still fresh; after a long outage nobody wants a flood of old reminders. */
+const REMINDER_WINDOW_MS = 6 * 3600000;
 const NON_ORDER_KINDS = ['stock-alert', 'operational-alert', 'test-notification'];
 
 /** `ORDER_ALERT_EMAIL=off` disables the alert; an invalid value also disables it rather than guessing. */
@@ -111,7 +113,7 @@ export async function staffOrderEmailOutbox(getDb: () => Promise<Db> | Db, optio
     try {
       db = await getDb(); const now = new Date(), jobs = db.collection('order_outbox');
       const due = stages.map((minutes, stage) => ({ staffEmailReminders: stage, createdAt: { $lte: new Date(now.getTime() - minutes * 60000) } }));
-      job = await jobs.findOneAndUpdate({ createdAt: { $gte: enabledAt }, kind: { $nin: NON_ORDER_KINDS }, staffEmailState: 'sent', $and: [
+      job = await jobs.findOneAndUpdate({ createdAt: { $gte: new Date(Math.max(enabledAt.getTime(), now.getTime() - REMINDER_WINDOW_MS)) }, kind: { $nin: NON_ORDER_KINDS }, staffEmailState: 'sent', $and: [
         { $or: [{ staffEmailReminders: { $exists: false } }, { staffEmailReminders: { $lt: stages.length } }] },
         { $or: [{ staffReminderNextAt: { $exists: false } }, { staffReminderNextAt: { $lte: now } }] },
         { $or: [{ staffReminderLeaseUntil: { $exists: false } }, { staffReminderLeaseUntil: { $lte: now } }] },
@@ -170,6 +172,28 @@ export async function staffOrderEmailOutbox(getDb: () => Promise<Db> | Db, optio
     }
   }
   function tick() { if (stopped) return Promise.resolve(); if (!running) running = run().then(remind).finally(() => { running = undefined; }); return running; }
-  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 30000, wake: options.wake });
+  // Deferred work is exact: retry times, lease expiries and each reminder's due time. One timer is armed for the earliest.
+  async function nextDue(): Promise<Date | null> {
+    const db = await getDb(), jobs = db.collection('order_outbox'), now = new Date();
+    const fresh = { createdAt: { $gte: new Date(Math.max(enabledAt.getTime(), now.getTime() - REMINDER_WINDOW_MS)) }, kind: { $nin: NON_ORDER_KINDS } };
+    const dates: Date[] = [];
+    const base = await earliestDue(jobs, [
+      { filter: { ...fresh, staffEmailState: 'retry' }, field: 'staffEmailNextAttemptAt' },
+      { filter: { createdAt: { $gte: enabledAt }, kind: { $nin: NON_ORDER_KINDS }, staffEmailState: { $nin: ['sent', 'failed', 'skipped'] } }, field: 'staffEmailLeaseUntil' },
+      ...(stages.length ? [{ filter: { ...fresh, staffEmailState: 'sent' }, field: 'staffReminderNextAt' }, { filter: { ...fresh, staffEmailState: 'sent' }, field: 'staffReminderLeaseUntil' }] : []),
+    ], now);
+    if (base) dates.push(base);
+    if (stages.length) {
+      const rows = await jobs.find({ ...fresh, staffEmailState: 'sent', $or: [{ staffEmailReminders: { $exists: false } }, { staffEmailReminders: { $lt: stages.length } }] },
+        { projection: { createdAt: 1, staffEmailReminders: 1, staffReminderNextAt: 1 }, maxTimeMS: 3000 }).sort({ createdAt: 1 }).limit(50).toArray();
+      for (const row of rows) {
+        const due = new Date(new Date(row.createdAt).getTime() + stages[Number(row.staffEmailReminders ?? 0)]! * 60000);
+        // A due reminder that is waiting out a failure is covered by staffReminderNextAt above; never spin on it.
+        if (due > now) dates.push(due);
+      }
+    }
+    return dates.length ? new Date(Math.min(...dates.map(date => date.getTime()))) : null;
+  }
+  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 120000, wake: options.wake, nextDue });
   return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }

@@ -64,7 +64,7 @@ Orderrouter.get('/', async (req, res) => {
 Orderrouter.get('/events', (req, res) => {
   if (Object.keys(req.query).length) return res.status(400).json({ error: 'INVALID_REQUEST' });
   const domain = require('../commerce/dist/service.cjs');
-  const feed = (req.app.locals.orderLive ??= domain.createOrderLiveFeed({ getDb: () => req.app.locals.getCommerceDb() }));
+  const feed = (req.app.locals.orderLive ??= domain.createOrderLiveFeed({ getDb: () => req.app.locals.getCommerceDb(), ...(req.app.locals.localWrites ? { local: req.app.locals.localWrites } : {}) }));
   const write = chunk => { try { res.write(chunk); } catch { /* The client already left. */ } };
   const unsubscribe = feed.subscribe(revision => write(`id: ${revision}\nevent: orders\ndata: {}\n\n`), req.identity.id);
   if (!unsubscribe) return res.status(429).set('Retry-After', '30').json({ error: 'TOO_MANY_STREAMS' });
@@ -90,7 +90,7 @@ Orderrouter.get('/events/stream', async (req, res) => {
   const domain = require('../commerce/dist/service.cjs');
   const userId = await domain.consumeStreamTicket(await req.app.locals.getCommerceDb(), req.get('x-stream-ticket'));
   if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
-  const feed = (req.app.locals.orderLive ??= domain.createOrderLiveFeed({ getDb: () => req.app.locals.getCommerceDb() }));
+  const feed = (req.app.locals.orderLive ??= domain.createOrderLiveFeed({ getDb: () => req.app.locals.getCommerceDb(), ...(req.app.locals.localWrites ? { local: req.app.locals.localWrites } : {}) }));
   const write = chunk => { try { res.write(chunk); } catch { /* The client already left. */ } };
   const unsubscribe = feed.subscribe(revision => write(`id: ${revision}\nevent: orders\ndata: {}\n\n`), userId);
   if (!unsubscribe) return res.status(429).set('Retry-After', '30').json({ error: 'TOO_MANY_STREAMS' });

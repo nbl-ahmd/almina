@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Db, Document } from 'mongodb';
 import { bounded } from '../operations/lifecycle.js';
-import { wakeLoop, type Wake } from './wake.js';
+import { earliestDue, wakeLoop, type Wake } from './wake.js';
 // SMTP provides at-least-once delivery, even with a deterministic Message-ID.
 export function orderOutbox(getDb: () => Promise<Db> | Db, options: {
   send: (order: Document, signal: AbortSignal) => Promise<void>; onFailure: () => void;
@@ -49,6 +49,9 @@ export function orderOutbox(getDb: () => Promise<Db> | Db, options: {
     if (!running) running = run().finally(() => { running = undefined; });
     return running;
   }
-  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 30000, wake: options.wake });
+  // Retries and expired leases are the only deferred work; a timer is armed for the earliest one and nothing else.
+  const nextDue = async () => earliestDue((await getDb()).collection('order_outbox'), [
+    { filter: { state: 'pending' }, field: 'nextAttemptAt' }, { filter: { state: 'processing' }, field: 'leaseUntil' }]);
+  const loop = wakeLoop(tick, { fastMs: options.intervalMs ?? 5000, slowMs: 120000, wake: options.wake, nextDue });
   return { tick, async stop() { stopped = true; loop.stop(); await running; } };
 }
