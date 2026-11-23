@@ -400,7 +400,15 @@ test('both maintained push worker URLs ignore incoming PII, group alerts and reu
     handlers.notificationclick!({ notification: { close: () => undefined }, waitUntil });await task;
     assert.deepEqual(opened, ['/admin/notifications']); assert.ok(!source.includes('importScripts'));
     windows=[{url:'https://example.invalid/admin/orders',visibilityState:'visible',postMessage:()=>{messages++;},navigate:async(path:string)=>{navigated.push(path);},focus:async()=>{focused++;}}];
-    handlers.push!({waitUntil});await task;assert.equal(messages,1);assert.equal(notifications.at(-1)!.options.silent,true);
+    handlers.push!({waitUntil});await task;assert.equal(messages,1);
+    if(file.endsWith('/admin/worker.js')){
+      // The console only silences the system notification when a visible page has reported that its own loud alarm is armed.
+      assert.equal(notifications.at(-1)!.options.silent,false,'an unarmed page still gets the notification sound');
+      handlers.message!({data:{type:'almina-alarm-state',armed:true},waitUntil});
+      handlers.push!({waitUntil});await task;assert.equal(messages,2);assert.equal(notifications.at(-1)!.options.silent,true,'an armed visible page rings by itself');
+      handlers.message!({data:{type:'almina-alarm-state',armed:false},waitUntil});
+      handlers.push!({waitUntil});await task;assert.equal(notifications.at(-1)!.options.silent,false);messages=1;
+    } else assert.equal(notifications.at(-1)!.options.silent,true);
     handlers.notificationclick!({notification:{close:()=>undefined},waitUntil});await task;assert.deepEqual(navigated,['/admin/notifications']);assert.equal(focused,1);assert.equal(opened.length,1);
   }
 });
