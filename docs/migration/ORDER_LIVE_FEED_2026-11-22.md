@@ -25,7 +25,7 @@ The staff alert worker (5 s), staff push worker (1 s) and order email worker (5 
 - **Gateway hardening:** `currentIdentity` retries `auth/me` once after 400 ms on a 5xx/network failure, and the
   sign-in page renders the form instead of an error page when the API is unreachable.
 - **Staff order e-mail** (`notifications/staff-email.ts`): one e-mail per new order to `ORDER_ALERT_EMAIL`
-  (default `info@alminapharmacy.com`; `off` disables). Independent fields (`staffEmail*`) on the `order_outbox` job so it
+  (default `alminapharmacyrak@gmail.com`; `off` disables). Independent fields (`staffEmail*`) on the `order_outbox` job so it
   never blocks push or customer e-mail; only orders created after first start are announced
   (`notification_controls/staff-order-email-v1`); retries with backoff up to 8 attempts; carries no phone/e-mail of the
   customer. Uses Resend when `EMAIL_PROVIDER=resend` (plain message, budget counted, idempotency key per order), else

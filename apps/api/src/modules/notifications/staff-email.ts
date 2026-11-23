@@ -8,8 +8,9 @@ import { historicalStatus } from '../orders/status.js';
 import { createEmailClient, reserveEmailBudget, resendReady, usesResend } from './provider.js';
 import { deliverEmail, type MailMessage, type MailTransport, type SmtpCredentials, type SmtpOptions } from './email.js';
 
-/** Default inbox that learns about every new order even when push, WhatsApp or the admin console are unavailable. */
-export const DEFAULT_STAFF_ORDER_RECIPIENT = 'info@alminapharmacy.com';
+/** Default inbox that learns about every new order even when push, WhatsApp or the admin console are unavailable.
+ *  A Gmail address on purpose: mail from the notification sub-domain to a mailbox on the shop's own domain can be treated as spoofed by the mail host. */
+export const DEFAULT_STAFF_ORDER_RECIPIENT = 'alminapharmacyrak@gmail.com';
 const recipientSchema = z.email().max(254);
 /** Reminders only cover orders that are still fresh; after a long outage nobody wants a flood of old reminders. */
 const REMINDER_WINDOW_MS = 6 * 3600000;
