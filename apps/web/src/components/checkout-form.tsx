@@ -12,7 +12,7 @@ import { CheckoutProgress, PaymentChoices, SecureCheckoutLabel, ConfirmationMark
 import { ProductImage } from './product-image';
 import { loadCart } from '../app/(storefront)/cart/actions';
 import { detailErrors, detailError, detailFields, normalizeCheckoutMobile, type DetailField } from '../lib/checkout/validation';
-import { ChevronDownIcon, LockClosedIcon, ArrowLeftIcon, PencilSquareIcon, TruckIcon, ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from './storefront-icons';
+import { CheckIcon, UserCircleIcon, ChevronDownIcon, LockClosedIcon, ArrowLeftIcon, PencilSquareIcon, TruckIcon, ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from './storefront-icons';
 import { NativeSelect } from './ui/native-select';
 import { Field, FieldLabel, FieldDescription } from './ui/field';
 
@@ -115,12 +115,21 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const [voucherCode,setVoucherCode]=useState('');
   const [couponCode, setCouponCode] = useState('');
   const [savedAddresses,setSavedAddresses]=useState<SavedDeliveryAddress[]>([]);
+  const [addressesLoaded,setAddressesLoaded]=useState(false);
+  const [account,setAccount]=useState<{email:string}|null>(null);
+  const [accountChecked,setAccountChecked]=useState(false);
+  const [selectedSaved,setSelectedSaved]=useState('');
+  const [contactEditing,setContactEditing]=useState(false);
+  const [contact,setContact]=useState({name:'',mobile:'',email:''});
+  const [manualOpen,setManualOpen]=useState(false);
   const [ready, setReady] = useState(false);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState('');
   const [reviewed, setReviewed] = useState<Reviewed | null>(null);
   const [attempt, setAttempt] = useState<CheckoutInput | null>(null);
   const [result, setResult] = useState<z.infer<typeof checkoutDtoSchema> | null>(null);
+  type Receipt = { lines: { productId: string; name: string; variantLabel?: string | null | undefined; quantity: number; lineTotalMinor: number; image: string }[]; address: string; payment: string; minutes?: number | undefined; customerName: string };
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
   useEffect(() => {
     if(validationAttempt)errorSummary.current?.focus();
   },[validationAttempt]);
@@ -197,8 +206,30 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   // One-shot recovery: re-running on a language switch would reset typed delivery details.
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { const onChange = () => applySavedPoint(true); window.addEventListener(areaEvent, onChange); return () => window.removeEventListener(areaEvent, onChange); }, [attempt]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(()=>{let active=true;void fetch('/api/customer/addresses',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:SavedDeliveryAddress[]};if(active&&Array.isArray(payload.data))setSavedAddresses(payload.data);}).catch(()=>{});return()=>{active=false;}},[]);
-  function applySavedAddress(id:string){const saved=savedAddresses.find(item=>item.id===id);if(!saved||!form.current)return;setDelivery({address:saved.address,emirate:saved.emirate,city:saved.city});setMaplink(saved.coordinates?`https://www.google.com/maps/search/?api=1&query=${saved.coordinates.latitude},${saved.coordinates.longitude}`:saved.maplink);setCoordinates(saved.coordinates??null);say(t(locale, 'checkoutSavedApplied'), 'success');for(const [name,value] of Object.entries({name:saved.name,mobile:saved.mobile,buildingname:saved.buildingname,flatno:saved.flatno,note:saved.note})){const field=form.current.elements.namedItem(name);if(field instanceof HTMLInputElement)field.value=value;}setReviewed(null);}
+  useEffect(()=>{let active=true;
+    void fetch('/api/customer/me',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:{email?:string}};if(active&&typeof payload.data?.email==='string')setAccount({email:payload.data.email});}).catch(()=>{}).finally(()=>{if(active)setAccountChecked(true);});
+    void fetch('/api/customer/addresses',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:SavedDeliveryAddress[]};if(active&&Array.isArray(payload.data))setSavedAddresses(payload.data);}).catch(()=>{}).finally(()=>{if(active)setAddressesLoaded(true);});
+    return()=>{active=false;};},[]);
+  function setField(name:string,value:string,onlyIfEmpty=false){const field=form.current?.elements.namedItem(name);if(field instanceof HTMLInputElement&&(!onlyIfEmpty||!field.value))field.value=value;}
+  function readContact(){const f=form.current;const get=(name:string)=>{const field=f?.elements.namedItem(name);return field instanceof HTMLInputElement?field.value.trim():'';};setContact({name:get('name'),mobile:get('mobile'),email:get('email')});}
+  function applySavedAddress(id:string,quiet=false){const saved=savedAddresses.find(item=>item.id===id);if(!saved||!form.current)return;setSelectedSaved(id);setDelivery({address:saved.address,emirate:saved.emirate,city:saved.city});setMaplink(saved.coordinates?`https://www.google.com/maps/search/?api=1&query=${saved.coordinates.latitude},${saved.coordinates.longitude}`:saved.maplink);setCoordinates(saved.coordinates??null);if(!quiet)say(t(locale, 'checkoutSavedApplied'), 'success');for(const [name,value] of Object.entries({name:saved.name,mobile:saved.mobile,buildingname:saved.buildingname,flatno:saved.flatno,note:saved.note}))setField(name,value);setReviewed(null);readContact();}
+  // A signed-in customer is not asked again for what we already hold: their e-mail comes from the account, name and mobile from their default
+  // saved address, and that address is used unless they picked a different spot on this device.
+  useEffect(()=>{
+    if(!account||!addressesLoaded||!ready||attempt)return;
+    const timer=setTimeout(()=>{
+      setField('email',account.email,true);
+      const preferred=savedAddresses.find(item=>item.isDefault)??savedAddresses[0];
+      if(preferred){
+        setField('name',preferred.name,true);setField('mobile',preferred.mobile,true);
+        if(!savedPoint()&&!form.current?.querySelector<HTMLInputElement>('[name="address"]')?.value)applySavedAddress(preferred.id,true);
+        else setSelectedSaved(previous=>previous);
+      }
+      readContact();
+    },0);
+    return()=>clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[account,addressesLoaded,ready]);
   function locate() {
     if (busy.current || attempt || locating) return;
     setReviewed(null);
@@ -333,6 +364,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       const committed = checkoutDtoSchema.parse(await send('/api/checkout', input));
       if (committed.createdAt && committed.status !== 'cancelled') setReviewReceipt({ orderId: committed.orderId, email: input.customer.email, createdAt: committed.createdAt, deliveryCountry: 'AE' });
       if (input.couponCode) saveCoupon('');
+      setReceipt({ lines: (reviewed?.quote.lines ?? []).map(line => ({ productId: line.productId, name: line.name, variantLabel: line.variantLabel, quantity: line.quantity, lineTotalMinor: line.lineTotalMinor, image: basket.find(item => item.id === line.productId)?.image ?? '/product-placeholder.svg' })),
+        address: `${input.customer.address}, ${input.customer.city}`, payment: input.customer.payment, minutes: reviewed?.quote.delivery?.estimatedMinutes, customerName: input.customer.name });
       setResult(committed); setAttempt(null); setReviewed(null);
       recordCommerceEvent('checkout_confirmed');
       try { sessionStorage.removeItem(pendingKey); } catch { /* A replay is safe if storage fails. */ }
@@ -381,6 +414,15 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       setCouponCode(''); saveCoupon(''); setReviewed(null); setError('');
       if (stage === 'payment') void refreshQuote(undefined, '');
     }} />;
+  const itemsEstimate=basket.length&&basket.every(item=>item.price!==null)?formatted(Math.round(basket.reduce((sum,item)=>sum+(item.price??0)*item.quantity,0)*100)):'';
+  const contactReady=!!account&&!!contact.name&&!!contact.mobile&&!!contact.email;
+  const contactErrors=!!(fieldErrors.name||fieldErrors.mobile||fieldErrors.email);
+  const showContactRow=contactReady&&!contactEditing&&!contactErrors;
+  const hasPlace=!!(coordinates&&delivery.address);
+  const addressErrors=!!(fieldErrors.emirate||fieldErrors.city||fieldErrors.address);
+  const manualVisible=manualOpen||!hasPlace||addressErrors;
+  const pointLabel=savedPoint()?.label;
+  const labelNames=ar?{Home:'المنزل',Work:'العمل',Other:'أخرى'}:{Home:'Home',Work:'Work',Other:'Other'};
   function basketLines(){
     return <ul className="m-0 list-none p-0">{basket.map(item=><li key={item.id} className="flex items-center gap-3 border-b py-4 last:border-0">
       <ProductImage locale={locale} src={item.image} alt="" width={52} height={52} sizes="52px" className="size-13 shrink-0 rounded-xl object-contain" />
@@ -390,18 +432,33 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   }
   if(!ready)return <div className="checkout-flow" role="status"><h1 className="sr-only">{t(locale,'checkoutTitle')}</h1><div className="skeleton h-10 w-48" /><p>{t(locale,'checkoutLoading')}</p></div>;
   if(result)return <><GoogleCustomerReviews config={googleReviews??{merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} locale={locale} nonce={nonce}/><section className="checkout-flow checkout-completion mx-auto max-w-2xl" aria-labelledby="order-confirmation">
-    <CheckoutProgress stage="complete" locale={locale}/><div className="checkout-confirmation-panel">
-      <ConfirmationMark/><h1 ref={confirmation} tabIndex={-1} className="mb-3 text-2xl font-semibold outline-none sm:text-3xl" id="order-confirmation">{t(locale,'checkoutOrderReceived')}</h1><p className="text-sm leading-6">{t(locale,'checkoutThankYou')}</p>
-      <dl className="my-7 grid grid-cols-2 gap-5 rounded-xl p-5 text-start"><div><dt className="mb-1 text-xs">{t(locale,'checkoutOrderNumber')}</dt><dd className="m-0 break-words text-lg font-semibold">{result.orderId}</dd></div><div className="text-end"><dt className="mb-1 text-xs">{t(locale,'checkoutOrderTotal')}</dt><dd className="m-0 text-lg font-semibold tabular-nums">{formatted(result.totals.totalMinor)}</dd></div>{result.totals.coupon && <div className="col-span-2"><dt className="text-xs">{ar ? 'خصم الرمز' : 'Coupon discount'} <bdi dir="ltr">({result.totals.coupon.code})</bdi></dt><dd className="m-0 text-sm">−{formatted(result.totals.coupon.discountMinor)}</dd></div>}</dl>
+    <CheckoutProgress stage="complete" locale={locale}/><div className="checkout-confirmation-panel grid gap-6">
+      <div><ConfirmationMark/><h1 ref={confirmation} tabIndex={-1} className="mb-2 text-2xl font-semibold outline-none sm:text-3xl" id="order-confirmation">{t(locale,'checkoutOrderReceived')}</h1><p className="m-0 text-sm leading-6">{t(locale,'checkoutThankYou')}</p></div>
+      <ol className="pf-tracker" aria-label={ar?'حالة الطلب':'Order status'}>
+        <li data-done="true" data-current="true"><span className="pf-tracker-dot"><CheckIcon className="size-4" aria-hidden="true"/></span>{ar?'تم استلام الطلب':'Order placed'}</li>
+        <li><span className="pf-tracker-dot" aria-hidden="true"/>{ar?'تأكيد الصيدلية':'Pharmacy confirms'}</li>
+        <li><span className="pf-tracker-dot" aria-hidden="true"/>{ar?'في الطريق':'On the way'}</li>
+      </ol>
+      <dl className="grid grid-cols-2 gap-5 rounded-xl p-5 text-start"><div><dt className="mb-1 text-xs">{t(locale,'checkoutOrderNumber')}</dt><dd className="m-0 break-words text-lg font-semibold">{result.orderId}</dd></div><div className="text-end"><dt className="mb-1 text-xs">{t(locale,'checkoutOrderTotal')}</dt><dd className="m-0 text-lg font-semibold tabular-nums">{formatted(result.totals.totalMinor)}</dd></div>{result.totals.coupon && <div className="col-span-2"><dt className="text-xs">{ar ? 'خصم الرمز' : 'Coupon discount'} <bdi dir="ltr">({result.totals.coupon.code})</bdi></dt><dd className="m-0 text-sm">−{formatted(result.totals.coupon.discountMinor)}</dd></div>}</dl>
+      {receipt?<div className="grid gap-4 text-start">
+        <ul className="pf-receipt-lines">{receipt.lines.map(line=><li key={line.productId}><span className="pf-thumb"><ProductImage locale={locale} src={line.image} alt="" width={48} height={48} sizes="48px" className="size-full object-contain p-1"/></span><span className="min-w-0"><span className="block font-medium">{line.name}</span><span className="pf-muted block">{tf(locale,'checkoutQty',{count:line.quantity})}</span></span><strong className="tabular-nums">{formatted(line.lineTotalMinor)}</strong></li>)}</ul>
+        <div className="pf-delivery"><span className="pf-icon" aria-hidden="true"><Icon name="pin"/></span><div className="pf-delivery-text"><p className="pf-eyebrow">{ar?'التوصيل إلى':'Delivering to'} {receipt.customerName}</p><p className="pf-delivery-place">{receipt.address}</p>{receipt.minutes?<p className="pf-muted">{ar?`الوقت التقديري ${receipt.minutes} دقيقة`:`Estimated ${receipt.minutes} minutes`} · {receipt.payment==='stripe'||receipt.payment==='card'?(ar?'مدفوع بالبطاقة':'Paid by card'):(ar?'الدفع عند الاستلام':'Pay on delivery')}</p>:<p className="pf-muted">{receipt.payment==='stripe'||receipt.payment==='card'?(ar?'مدفوع بالبطاقة':'Paid by card'):(ar?'الدفع عند الاستلام':'Pay on delivery')}</p>}</div></div>
+      </div>:null}
       <div className="flex gap-3 text-start"><TruckIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/><div><h2 className="mb-1 text-base font-semibold">{t(locale,'checkoutNextTitle')}</h2><p className="m-0 text-sm leading-6">{t(locale,'checkoutNextBody')}</p></div></div>
-      <div className="mt-7 flex flex-col gap-2 sm:flex-row"><Link className="button min-h-12 flex-1 text-sm" href="/products">{t(locale,'checkoutContinueShopping')}<Icon name="arrow"/></Link><Link className="button button-secondary min-h-12 flex-1 text-sm" href="/contact">{t(locale,'checkoutContactPharmacyShort')}</Link></div>
+      <div className="flex flex-col gap-2 sm:flex-row"><Link className="button min-h-12 flex-1 text-sm" href="/products">{t(locale,'checkoutContinueShopping')}<Icon name="arrow"/></Link><Link className="button button-secondary min-h-12 flex-1 text-sm" href="/contact">{t(locale,'checkoutContactPharmacyShort')}</Link></div>
     </div>
   </section></>;
   if(basketReady&&!basketCount&&!attempt&&!error)return <section className="checkout-flow mx-auto max-w-xl py-10 text-center"><Icon name="bag"/><h1 className="mt-4 text-2xl">{t(locale,'cartEmptyTitle')}</h1><p className="my-4 text-sm">{t(locale,'cartEmptyBody')}</p><Link className="button min-h-12" href="/products">{t(locale,'cartStartShopping')}</Link></section>;
   return <section className="checkout-flow" data-stage={stage} data-keyboard={keyboardOpen} aria-label={t(locale,'checkoutPlaceOrderAria')}>
     <div className="checkout-topbar"><Link className="inline-flex min-h-11 items-center gap-2 text-sm font-medium" href="/cart" aria-label={ar?'العودة إلى السلة':'Back to cart'}><ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden="true"/><span className="hidden sm:inline">{ar?'العودة إلى السلة':'Back to cart'}</span></Link><h1 className="m-0 text-xl font-semibold sm:text-2xl">{t(locale,'checkoutTitle')}</h1><SecureCheckoutLabel locale={locale}/></div>
     <CheckoutProgress stage={stage} locale={locale}/>
-    <details className="checkout-basket-preview mb-5 rounded-xl px-4 lg:hidden"><summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold"><span>{t(locale,'checkoutOrderSummary')}<span className="ms-2 text-xs font-normal">{basketCount?itemCountText(locale,basketCount,'product'):''}</span></span><ChevronDownIcon className="size-4 shrink-0" aria-hidden="true"/></summary>{basketLines()}<Link href="/cart" className="mb-2 inline-flex min-h-11 items-center text-sm font-medium">{ar?'تعديل السلة':'Edit basket'}</Link></details>
+    {stage==='details'?<section className="pf-card pf-narrow-only mb-4" aria-labelledby="pf-order-heading"><h2 id="pf-order-heading" className="pf-card-title">{ar?'طلبك':'Your order'}<span className="pf-muted font-normal">{basketCount?itemCountText(locale,basketCount,'item'):''}</span><Link href="/cart" className="pf-link-button inline-flex items-center">{ar?'تعديل':'Edit'}</Link></h2>
+      <ul className="pf-lines m-0 list-none p-0">{basket.map(item=><li key={item.id} className="pf-line">
+        <span className="pf-thumb"><ProductImage locale={locale} src={item.image} alt="" width={64} height={64} sizes="64px" className="size-full object-contain p-1"/></span>
+        <span className="min-w-0"><span className="pf-line-name block">{item.name}</span>{item.variantLabel?<span className="pf-muted block">{item.variantLabel}</span>:null}<span className="pf-muted block">{tf(locale,'checkoutQty',{count:item.quantity})}</span></span>
+        {item.price!==null?<span className="pf-line-total">{formatted(Math.round(item.price*item.quantity*100))}</span>:null}</li>)}</ul>
+      {itemsEstimate?<dl className="pf-bill"><dt>{ar?'إجمالي المنتجات':'Item total'}</dt><dd>{itemsEstimate}</dd><dt>{t(locale,'checkoutDelivery')}</dt><dd className="pf-muted">{ar?'عند المراجعة':'Shown at review'}</dd></dl>:null}
+    </section>:null}
     <div className="checkout-grid grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10">
       <form id="checkout-details" ref={form} noValidate aria-busy={working} onSubmit={review} onBlurCapture={event=>validateField(event.target)} onChange={()=>{if(!attempt)setReviewed(null);}} className="checkout-form min-w-0 rounded-2xl lg:border">
         {showErrorSummary&&Object.keys(fieldErrors).length?<div ref={errorSummary} tabIndex={-1} role="alert" className="checkout-error-summary m-4 rounded-xl border p-4 outline-none sm:m-6"><h2 className="mb-2 text-base font-semibold">{ar?'تحقق من التفاصيل التالية':'Check these details'}</h2><ul className="m-0 list-none p-0">{detailFields.filter(name=>fieldErrors[name]).map(name=><li key={name}><a className="inline-flex min-h-11 items-center text-sm underline underline-offset-4" href={`#${fieldIds[name]}`} onClick={event=>{event.preventDefault();focusDetails(name);}}>{labels[name]}: {fieldErrors[name]}</a></li>)}</ul></div>:null}
@@ -409,33 +466,38 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
         <fieldset disabled={working||!!attempt} className="m-0 min-w-0 border-0 p-0">
           <legend className="sr-only">{t(locale,'checkoutLegend')}</legend>
           <div className="checkout-details-stage">
-            <div className="checkout-form-heading px-1 pb-5 lg:px-7 lg:pt-7"><h2 ref={stage==='details'?stepHeading:undefined} tabIndex={-1} className="mb-2 scroll-mt-24 text-xl font-semibold outline-none">{t(locale,'checkoutContactDeliveryTitle')}</h2><p className="m-0 text-sm leading-6">{ar?'الحقول مطلوبة ما لم يُذكر أنها اختيارية.':'Required unless marked optional.'}</p></div>
-            <section className="checkout-form-section" aria-labelledby="contact-details-heading"><h3 id="contact-details-heading" className="sr-only mb-4 text-base font-semibold lg:not-sr-only">{t(locale,'checkoutContactDetails')}</h3><div className="grid gap-5 sm:grid-cols-2">
-              <Field><FieldLabel htmlFor={fieldIds.name}>{labels.name}</FieldLabel><Input id={fieldIds.name} name="name" defaultValue={attempt?.customer.name} required maxLength={200} autoComplete="name" placeholder={t(locale,'checkoutNamePlaceholder')} {...fieldState('name')}/>{fieldIssue('name')}</Field>
-              <Field><FieldLabel htmlFor={fieldIds.mobile}>{labels.mobile}</FieldLabel><Input id={fieldIds.mobile} name="mobile" defaultValue={attempt?.customer.mobile} required type="tel" inputMode="tel" pattern="\+?[0-9]{9,15}" autoComplete="tel" maxLength={32} placeholder={t(locale,'checkoutMobilePlaceholder')} {...fieldState('mobile')}/>{fieldIssue('mobile')}</Field>
-              <Field className="sm:col-span-2"><FieldLabel htmlFor={fieldIds.email}>{labels.email}</FieldLabel><Input id={fieldIds.email} name="email" defaultValue={attempt?.customer.email} required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" maxLength={254} autoComplete="email" placeholder={t(locale,'checkoutEmailPlaceholder')} {...fieldState('email')}/>{fieldIssue('email')}</Field>
-            </div></section>
-            <section className="checkout-form-section" aria-labelledby="delivery-details-heading"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><h3 id="delivery-details-heading" className="m-0 text-base font-semibold">{t(locale,'checkoutDeliveryAddress')}</h3></div>
-              {coordinates&&delivery.address?<div className="mb-3 flex items-start gap-3 rounded-2xl border p-3.5 text-sm"><span aria-hidden="true" className="mt-0.5 text-[var(--color-action)]"><Icon name="pin"/></span><div className="min-w-0 flex-1"><p className="m-0 text-xs text-[var(--color-muted)]">{ar?'التوصيل إلى':'Delivering to'}</p><p className="m-0 truncate font-semibold">{delivery.city}</p><p className="m-0 line-clamp-2 text-[13px] text-[var(--color-muted)]">{delivery.address}</p></div><Button variant="outline" size="sm" type="button" disabled={working||locating||!!attempt} onClick={()=>window.dispatchEvent(new Event(openDeliveryEvent))}>{ar?'تغيير':'Change'}</Button></div>:null}
-              <div className="checkout-locate mb-4 grid gap-3 rounded-2xl border p-3.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                <div className="flex min-w-0 items-start gap-3"><span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[var(--color-action)]"><Icon name="pin"/></span><div className="min-w-0"><p className="m-0 text-sm font-semibold">{ar?'التوصيل إلى موقعك':'Deliver to where you are'}</p><p className="m-0 text-xs leading-5">{ar?'نستخدم موقعك فقط لتعبئة العنوان، ويمكنك تعديله.':'We use your location only to fill in the address. You can edit it.'}</p></div></div>
-                <Button type="button" className="min-h-12 w-full rounded-xl sm:w-auto" disabled={locating} onClick={locate} aria-busy={locating} aria-label={locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}>{locating?<ArrowPathIcon className="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true"/>:<Icon name="pin"/>}<span>{locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}</span></Button>
-              </div>
+            <div className="checkout-form-heading px-1 pb-5 lg:px-7 lg:pt-7"><h2 ref={stage==='details'?stepHeading:undefined} tabIndex={-1} className="mb-2 scroll-mt-24 text-xl font-semibold outline-none">{t(locale,'checkoutContactDeliveryTitle')}</h2><p className="sr-only">{ar?'الحقول مطلوبة ما لم يُذكر أنها اختيارية.':'Required unless marked optional.'}</p></div>
+            <section className="checkout-form-section" aria-labelledby="delivery-details-heading"><h3 id="delivery-details-heading" className="mb-3 text-base font-semibold">{t(locale,'checkoutDeliveryAddress')}</h3>
+              {savedAddresses.length?<div className="pf-saved mb-3" role="group" aria-label={t(locale,'checkoutSavedAddress')}>{savedAddresses.map(address=><button key={address.id} type="button" className="pf-saved-item" aria-pressed={selectedSaved===address.id} disabled={working||locating||!!attempt} onClick={()=>applySavedAddress(address.id)}><strong>{address.label}{address.isDefault?` · ${t(locale,'checkoutDefault')}`:''}</strong><span>{address.city}, {address.address}</span></button>)}</div>:null}
+              {hasPlace?<div className="pf-delivery mb-3"><span className="pf-icon" aria-hidden="true"><Icon name="pin"/></span><div className="pf-delivery-text"><p className="pf-eyebrow">{ar?'التوصيل إلى':'Delivering to'}</p><p className="pf-delivery-place">{pointLabel?<span className="pf-chip">{labelNames[pointLabel]}</span>:null}{delivery.city}</p><p className="pf-muted pf-clamp">{delivery.address}</p></div><button type="button" className="pf-link-button" disabled={working||locating||!!attempt} onClick={()=>window.dispatchEvent(new Event(openDeliveryEvent))}>{ar?'تغيير':'Change'}</button></div>
+              :<div className="checkout-locate pf-card mb-3"><div className="flex min-w-0 items-start gap-3"><span aria-hidden="true" className="pf-icon"><Icon name="pin"/></span><div className="min-w-0"><p className="m-0 text-sm font-semibold">{ar?'أين نوصل طلبك؟':'Where should we deliver?'}</p><p className="pf-muted">{ar?'نستخدم موقعك فقط لتعبئة العنوان، ويمكنك تعديله.':'We use your location only to fill in the address. You can edit it.'}</p></div></div>
+                <div className="grid gap-2 sm:grid-cols-2"><Button type="button" className="min-h-12 w-full rounded-xl" disabled={locating} onClick={locate} aria-busy={locating} aria-label={locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}>{locating?<ArrowPathIcon className="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true"/>:<Icon name="pin"/>}<span>{locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}</span></Button>
+                <Button type="button" variant="outline" className="min-h-12 w-full rounded-xl" disabled={locating||working} onClick={()=>window.dispatchEvent(new Event(openDeliveryEvent))}>{ar?'اختيار على الخريطة':'Choose on map'}</Button></div></div>}
               {locationMessage?<div role="status" data-tone={locationTone} className={`checkout-location-status mb-4 flex items-start gap-2.5 rounded-xl border p-3 text-sm leading-6 ${locationTone==='success'?'bg-[#EEF8F1] text-[var(--color-forest)]':locationTone==='warning'?'bg-[#FFF8E6] text-[var(--color-text)]':locationTone==='error'?'bg-[var(--color-tint)] text-[var(--color-pressed)]':'bg-[var(--color-surface)] text-[var(--color-text)]'}`}>{locationTone==='success'?<CheckCircleIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>:locationTone==='info'?(locating?<ArrowPathIcon className="mt-0.5 size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true"/>:<Icon name="pin"/>):<ExclamationTriangleIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>}<span className="min-w-0">{locationMessage}{locationTone==='error'?<span className="mt-1 block text-xs">{ar?'يمكنك أيضاً تحديد دبوس على الخريطة أدناه أو كتابة عنوانك.':'You can also drop a pin on the map below or type your address.'}</span>:null}{locationGuidance?<ol className="m-0 mt-2 grid list-decimal gap-1 ps-5 text-[13px] leading-5">{locationGuidance.steps.map(step=><li key={step}>{step}</li>)}</ol>:null}</span></div>:null}
               <input type="hidden" name="maplink" value={maplink}/>
-              <DeliveryPinPicker value={coordinates} geolocate={false} locale={locale} disabled={working||locating||!!attempt} onChange={point=>{setCoordinates(point);setMaplink(point?`https://www.google.com/maps/search/?api=1&query=${point.latitude},${point.longitude}`:'');setReviewed(null);}} onAddress={address=>{setDelivery({address:address.address,emirate:address.emirate,city:address.city});setReviewed(null);}} />
-              
-              {maplink?<div className="mb-4 flex flex-wrap items-center gap-x-4 text-xs"><a className="inline-flex min-h-11 items-center underline" href={maplink} target="_blank" rel="noopener noreferrer" aria-label={t(locale,'checkoutCheckPinAria')}>{t(locale,'checkoutViewPin')}</a>{!coordinates?<button type="button" className="min-h-11" onClick={()=>{setMaplink('');setCoordinates(null);say(t(locale,'checkoutPinRemoved'));setReviewed(null);}}>{t(locale,'checkoutRemovePin')}</button>:null}<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">{t(locale,'checkoutOsmCredit')}</a></div>:null}
-              {savedAddresses.length?<Field className="mb-5"><FieldLabel htmlFor="checkout-form-field-4">{t(locale,'checkoutSavedAddress')}</FieldLabel><NativeSelect id="checkout-form-field-4" defaultValue="" onChange={event=>applySavedAddress(event.target.value)}><option value="">{t(locale,'checkoutChooseAddress')}</option>{savedAddresses.map(address=><option key={address.id} value={address.id}>{address.label}{address.isDefault?` · ${t(locale,'checkoutDefault')}`:''} — {address.city}</option>)}</NativeSelect></Field>:null}
-              <div className="checkout-address-grid grid gap-5 sm:grid-cols-2"><Field><FieldLabel htmlFor={fieldIds.emirate}>{labels.emirate}</FieldLabel><NativeSelect id={fieldIds.emirate} name="emirate" value={delivery.emirate} disabled={locating} onChange={event=>editDelivery('emirate',event.target.value)} required autoComplete="address-level1" {...fieldState('emirate')}>{emirates.map(value=><option key={value} value={value}>{emirateLabel(locale,value)}</option>)}</NativeSelect>{fieldIssue('emirate')}</Field>
-                <Field><FieldLabel htmlFor={fieldIds.city}>{labels.city}</FieldLabel><Input id={fieldIds.city} name="city" value={delivery.city} disabled={locating} onChange={event=>editDelivery('city',event.target.value)} required maxLength={200} autoComplete="address-level2" placeholder={t(locale,'checkoutCityPlaceholder')} {...fieldState('city')}/>{fieldIssue('city')}</Field>
-                <Field className="col-span-2"><FieldLabel htmlFor={fieldIds.address}>{labels.address}</FieldLabel><Input id={fieldIds.address} name="address" value={delivery.address} disabled={locating} onChange={event=>editDelivery('address',event.target.value)} required maxLength={1000} autoComplete="street-address" placeholder={t(locale,'checkoutStreetPlaceholder')} {...fieldState('address')}/>{fieldIssue('address')}</Field>
-              </div>
-              <details className="checkout-optional mt-4"><summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium">{ar?'إضافة تفاصيل المبنى أو تعليمات التوصيل':'Add building details or delivery instructions'}<ChevronDownIcon className="size-4" aria-hidden="true"/></summary><div className="grid gap-5 py-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-4">
                 <Field><FieldLabel htmlFor="checkout-form-field-8">{t(locale,'checkoutBuilding')}</FieldLabel><Input id="checkout-form-field-8" name="buildingname" defaultValue={attempt?.customer.buildingname} maxLength={200} autoComplete="address-line2" placeholder={t(locale,'checkoutBuildingPlaceholder')}/></Field>
                 <Field><FieldLabel htmlFor="checkout-form-field-9">{t(locale,'checkoutFlat')}</FieldLabel><Input id="checkout-form-field-9" name="flatno" defaultValue={attempt?.customer.flatno} maxLength={200} placeholder={t(locale,'checkoutFlatPlaceholder')}/></Field>
-                <Field className="sm:col-span-2"><FieldLabel htmlFor="checkout-form-field-10">{t(locale,'checkoutNote')}</FieldLabel><Input id="checkout-form-field-10" name="note" defaultValue={attempt?.customer.note} maxLength={1000} placeholder={t(locale,'checkoutNotePlaceholder')}/></Field>
-              </div></details>
+                <Field className="col-span-2"><FieldLabel htmlFor="checkout-form-field-10">{t(locale,'checkoutNote')}</FieldLabel><Input id="checkout-form-field-10" name="note" defaultValue={attempt?.customer.note} maxLength={1000} placeholder={t(locale,'checkoutNotePlaceholder')}/></Field>
+              </div>
+              <details className="checkout-optional mt-4" open={manualVisible}><summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium" onClick={event=>{event.preventDefault();if(hasPlace&&!addressErrors)setManualOpen(value=>!value);}}>{hasPlace?(ar?'تعديل تفاصيل العنوان':'Edit address details'):(ar?'أدخل العنوان يدوياً':'Enter address manually')}<ChevronDownIcon className="size-4" aria-hidden="true"/></summary>
+                <div className="grid gap-5 py-3">
+                  {manualVisible?<DeliveryPinPicker value={coordinates} geolocate={false} locale={locale} disabled={working||locating||!!attempt} onChange={point=>{setManualOpen(true);setCoordinates(point);setMaplink(point?`https://www.google.com/maps/search/?api=1&query=${point.latitude},${point.longitude}`:'');setReviewed(null);}} onAddress={address=>{setDelivery({address:address.address,emirate:address.emirate,city:address.city});setReviewed(null);}} />:null}
+                  {maplink?<div className="flex flex-wrap items-center gap-x-4 text-xs"><a className="inline-flex min-h-11 items-center underline" href={maplink} target="_blank" rel="noopener noreferrer" aria-label={t(locale,'checkoutCheckPinAria')}>{t(locale,'checkoutViewPin')}</a>{!coordinates?<button type="button" className="min-h-11" onClick={()=>{setMaplink('');setCoordinates(null);say(t(locale,'checkoutPinRemoved'));setReviewed(null);}}>{t(locale,'checkoutRemovePin')}</button>:null}<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">{t(locale,'checkoutOsmCredit')}</a></div>:null}
+                  <div className="checkout-address-grid grid gap-5 sm:grid-cols-2"><Field><FieldLabel htmlFor={fieldIds.emirate}>{labels.emirate}</FieldLabel><NativeSelect id={fieldIds.emirate} name="emirate" value={delivery.emirate} disabled={locating} onChange={event=>editDelivery('emirate',event.target.value)} required autoComplete="address-level1" {...fieldState('emirate')}>{emirates.map(value=><option key={value} value={value}>{emirateLabel(locale,value)}</option>)}</NativeSelect>{fieldIssue('emirate')}</Field>
+                    <Field><FieldLabel htmlFor={fieldIds.city}>{labels.city}</FieldLabel><Input id={fieldIds.city} name="city" value={delivery.city} disabled={locating} onChange={event=>editDelivery('city',event.target.value)} required maxLength={200} autoComplete="address-level2" placeholder={t(locale,'checkoutCityPlaceholder')} {...fieldState('city')}/>{fieldIssue('city')}</Field>
+                    <Field className="col-span-2"><FieldLabel htmlFor={fieldIds.address}>{labels.address}</FieldLabel><Input id={fieldIds.address} name="address" value={delivery.address} disabled={locating} onChange={event=>editDelivery('address',event.target.value)} required maxLength={1000} autoComplete="street-address" placeholder={t(locale,'checkoutStreetPlaceholder')} {...fieldState('address')}/>{fieldIssue('address')}</Field></div>
+                </div></details>
+            </section>
+            <section className="checkout-form-section" aria-labelledby="contact-details-heading"><h3 id="contact-details-heading" className="mb-3 text-base font-semibold">{t(locale,'checkoutContactDetails')}</h3>
+              {showContactRow?<div className="pf-contact"><span className="pf-icon" aria-hidden="true"><UserCircleIcon className="size-5"/></span><div className="pf-contact-text"><strong>{contact.name}</strong><span className="pf-muted block">{contact.mobile} · {contact.email}</span></div><button type="button" className="pf-link-button" disabled={working||!!attempt} onClick={()=>setContactEditing(true)}>{ar?'تعديل':'Edit'}</button></div>:null}
+              <div className={showContactRow?'hidden':'grid gap-5 sm:grid-cols-2'}>
+                <Field><FieldLabel htmlFor={fieldIds.name}>{labels.name}</FieldLabel><Input id={fieldIds.name} name="name" defaultValue={attempt?.customer.name} required maxLength={200} autoComplete="name" placeholder={t(locale,'checkoutNamePlaceholder')} {...fieldState('name')}/>{fieldIssue('name')}</Field>
+                <Field><FieldLabel htmlFor={fieldIds.mobile}>{labels.mobile}</FieldLabel><Input id={fieldIds.mobile} name="mobile" defaultValue={attempt?.customer.mobile} required type="tel" inputMode="tel" pattern="\+?[0-9]{9,15}" autoComplete="tel" maxLength={32} placeholder={t(locale,'checkoutMobilePlaceholder')} {...fieldState('mobile')}/>{fieldIssue('mobile')}</Field>
+                <Field className="sm:col-span-2"><FieldLabel htmlFor={fieldIds.email}>{labels.email}</FieldLabel><Input id={fieldIds.email} name="email" defaultValue={attempt?.customer.email} required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" maxLength={254} autoComplete="email" placeholder={t(locale,'checkoutEmailPlaceholder')} {...fieldState('email')}/>{fieldIssue('email')}</Field>
+                {account&&contactEditing?<div className="sm:col-span-2"><Button type="button" variant="outline" onClick={()=>{readContact();setContactEditing(false);}}>{ar?'تم':'Done'}</Button></div>:null}
+              </div>
+              {accountChecked&&!account?<p className="pf-muted mt-3"><Link className="font-semibold text-[var(--color-action)]" href="/account">{ar?'سجّل الدخول':'Sign in'}</Link> {ar?'لاستخدام تفاصيلك وعناوينك المحفوظة وإتمام الطلب أسرع.':'to use your saved details and addresses and check out faster.'}</p>:null}
               {stage === 'details' && couponCode && couponField}
             </section>
           </div>
@@ -461,6 +523,6 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
         <div className="mt-5 flex flex-wrap gap-x-4 border-t pt-3 text-xs"><Link className="inline-flex min-h-11 items-center" href="/shipping">{ar?'التوصيل':'Delivery'}</Link><Link className="inline-flex min-h-11 items-center" href="/privacy">{ar?'الخصوصية':'Privacy'}</Link><Link className="inline-flex min-h-11 items-center" href="/returns">{ar?'الإرجاع':'Returns'}</Link><Link className="inline-flex min-h-11 items-center" href="/contact">{ar?'تحتاج مساعدة؟':'Need help?'}</Link></div>
       </aside>
     </div>
-    <div className="checkout-mobile-action lg:hidden"><div className="flex items-center justify-between gap-3 pb-2 text-sm"><span>{t(locale,'checkoutTotal')}</span><strong className="font-semibold tabular-nums">{total?formatted(total.totalMinor):(ar?'يُحسب بعد تفاصيل التوصيل':'Calculated after delivery details')}</strong></div>{primaryAction('w-full min-h-12')}<p className="mt-2 mb-0 text-center text-xs leading-5">{stage==='details'?(ar?'راجع إجمالي طلبك قبل تأكيده.':'Review your total before placing your order.'):t(locale,'checkoutFinalTotalNote')}</p></div>
+    <div className="checkout-mobile-action lg:hidden"><div className="pf-bar"><span className="pf-bar-total"><small>{total?t(locale,'checkoutTotal'):(ar?'إجمالي المنتجات':'Item total')}</small><strong>{total?formatted(total.totalMinor):(itemsEstimate||'—')}</strong></span>{primaryAction('w-full min-h-12')}</div><p className="mt-2 mb-0 text-center text-xs leading-5">{stage==='details'?(ar?'تُضاف رسوم التوصيل عند المراجعة.':'Delivery is added when you review your order.'):t(locale,'checkoutFinalTotalNote')}</p></div>
   </section>;
 }
