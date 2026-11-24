@@ -21,7 +21,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from './app-link';
 import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, stripeCheckoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
 import { Icon } from './storefront-icon';
-import { savedArea } from '../lib/location/browser';
+import { areaEvent, openDeliveryEvent, savedArea, savedPoint } from '../lib/location/browser';
+import { browserEnvironment, guidanceFor, type Guidance } from '../lib/location/access';
 import { z } from 'zod';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
@@ -105,6 +106,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const [maplink, setMaplink] = useState('');
   const [coordinates,setCoordinates]=useState<DeliveryPoint|null>(null);
   const [locationMessage, setLocationMessage] = useState('');
+  const [locationGuidance, setLocationGuidance] = useState<Guidance | null>(null);
   const [locationTone, setLocationTone] = useState<'info' | 'success' | 'warning' | 'error'>('info');
   const say = (message: string, tone: 'info' | 'success' | 'warning' | 'error' = 'info') => { setLocationMessage(message); setLocationTone(tone); };
   const [delivery, setDelivery] = useState({ address: '', emirate: 'Ras al-Khaimah', city: '' });
@@ -146,6 +148,27 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     target?.focus({ preventScroll: true });
     if (mobile) target?.scrollIntoView({ block: 'start', behavior: 'instant' });
   }, [reviewFocusRequest, stage]);
+  /** The spot confirmed in the "Where are we delivering?" sheet becomes the checkout address, so nobody types it twice. Typed values are
+   *  only replaced when the customer chose a new place in the sheet (announce), never silently on page load over their own edits. */
+  /** Building, flat and note are plain inputs; the form may not be mounted yet on first load, so retry once it is. */
+  function fillPointDetails(saved: NonNullable<ReturnType<typeof savedPoint>>, announce: boolean, triesLeft = 20) {
+    const form_ = form.current;
+    if (!form_) { if (triesLeft > 0) setTimeout(() => fillPointDetails(saved, announce, triesLeft - 1), 50); return; }
+    for (const [name, value] of Object.entries({ buildingname: saved.building, flatno: saved.flat, note: saved.note })) {
+      const field = form_.elements.namedItem(name);
+      if (value && field instanceof HTMLInputElement && (announce || !field.value)) field.value = value;
+    }
+  }
+  function applySavedPoint(announce: boolean) {
+    const saved = savedPoint();
+    if (!saved || attempt) return;
+    setDelivery({ address: saved.address, emirate: saved.emirate, city: saved.city });
+    setCoordinates({ latitude: saved.latitude, longitude: saved.longitude });
+    setMaplink(`https://www.google.com/maps/search/?api=1&query=${saved.latitude},${saved.longitude}`);
+    setReviewed(null);
+    fillPointDetails(saved, announce);
+    if (announce) say(ar ? 'تم استخدام موقع التوصيل المحفوظ. أضف المبنى ورقم الشقة.' : 'Using your saved delivery location. Add your building and flat details.', 'success');
+  }
   useEffect(() => {
     let active = true;
     const requestState = locationRequest;
@@ -156,6 +179,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       try {
         const area = savedArea();
         if (area) setDelivery(previous => ({ ...previous, city: area.city, emirate: area.emirate }));
+        applySavedPoint(false);
         const raw = sessionStorage.getItem(pendingKey);
         if (raw) {
           const value = checkoutInputSchema.parse(JSON.parse(raw));
@@ -172,6 +196,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     };
   // One-shot recovery: re-running on a language switch would reset typed delivery details.
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { const onChange = () => applySavedPoint(true); window.addEventListener(areaEvent, onChange); return () => window.removeEventListener(areaEvent, onChange); }, [attempt]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{let active=true;void fetch('/api/customer/addresses',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:SavedDeliveryAddress[]};if(active&&Array.isArray(payload.data))setSavedAddresses(payload.data);}).catch(()=>{});return()=>{active=false;}},[]);
   function applySavedAddress(id:string){const saved=savedAddresses.find(item=>item.id===id);if(!saved||!form.current)return;setDelivery({address:saved.address,emirate:saved.emirate,city:saved.city});setMaplink(saved.coordinates?`https://www.google.com/maps/search/?api=1&query=${saved.coordinates.latitude},${saved.coordinates.longitude}`:saved.maplink);setCoordinates(saved.coordinates??null);say(t(locale, 'checkoutSavedApplied'), 'success');for(const [name,value] of Object.entries({name:saved.name,mobile:saved.mobile,buildingname:saved.buildingname,flatno:saved.flatno,note:saved.note})){const field=form.current.elements.namedItem(name);if(field instanceof HTMLInputElement)field.value=value;}setReviewed(null);}
   function locate() {
@@ -182,6 +207,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       return;
     }
     const request = ++locationRequest.current;
+    setLocationGuidance(null);
     setLocating(true);
     say(t(locale, 'checkoutLocationWaiting'));
     function finish(message: string, tone: 'success' | 'warning' | 'error' = 'error') {
@@ -215,6 +241,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
             ? t(locale, 'checkoutLocationBusy')
             : t(locale, 'checkoutLocationIncomplete')));
       }, failure => {
+        if (failure.code === 1 && request === locationRequest.current) setLocationGuidance(guidanceFor('denied', browserEnvironment(), locale));
         finish(failure.code === 1 ? t(locale, 'checkoutLocationDenied')
           : failure.code === 3 ? t(locale, 'checkoutLocationTimeout')
           : t(locale, 'checkoutLocationNotFound'));
@@ -389,11 +416,12 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
               <Field className="sm:col-span-2"><FieldLabel htmlFor={fieldIds.email}>{labels.email}</FieldLabel><Input id={fieldIds.email} name="email" defaultValue={attempt?.customer.email} required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" maxLength={254} autoComplete="email" placeholder={t(locale,'checkoutEmailPlaceholder')} {...fieldState('email')}/>{fieldIssue('email')}</Field>
             </div></section>
             <section className="checkout-form-section" aria-labelledby="delivery-details-heading"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><h3 id="delivery-details-heading" className="m-0 text-base font-semibold">{t(locale,'checkoutDeliveryAddress')}</h3></div>
+              {coordinates&&delivery.address?<div className="mb-3 flex items-start gap-3 rounded-2xl border p-3.5 text-sm"><span aria-hidden="true" className="mt-0.5 text-[var(--color-action)]"><Icon name="pin"/></span><div className="min-w-0 flex-1"><p className="m-0 text-xs text-[var(--color-muted)]">{ar?'التوصيل إلى':'Delivering to'}</p><p className="m-0 truncate font-semibold">{delivery.city}</p><p className="m-0 line-clamp-2 text-[13px] text-[var(--color-muted)]">{delivery.address}</p></div><Button variant="outline" size="sm" type="button" disabled={working||locating||!!attempt} onClick={()=>window.dispatchEvent(new Event(openDeliveryEvent))}>{ar?'تغيير':'Change'}</Button></div>:null}
               <div className="checkout-locate mb-4 grid gap-3 rounded-2xl border p-3.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                 <div className="flex min-w-0 items-start gap-3"><span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[var(--color-action)]"><Icon name="pin"/></span><div className="min-w-0"><p className="m-0 text-sm font-semibold">{ar?'التوصيل إلى موقعك':'Deliver to where you are'}</p><p className="m-0 text-xs leading-5">{ar?'نستخدم موقعك فقط لتعبئة العنوان، ويمكنك تعديله.':'We use your location only to fill in the address. You can edit it.'}</p></div></div>
                 <Button type="button" className="min-h-12 w-full rounded-xl sm:w-auto" disabled={locating} onClick={locate} aria-busy={locating} aria-label={locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}>{locating?<ArrowPathIcon className="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true"/>:<Icon name="pin"/>}<span>{locating?t(locale,'checkoutLocating'):t(locale,'checkoutUseLocation')}</span></Button>
               </div>
-              {locationMessage?<div role="status" data-tone={locationTone} className={`checkout-location-status mb-4 flex items-start gap-2.5 rounded-xl border p-3 text-sm leading-6 ${locationTone==='success'?'bg-[#EEF8F1] text-[var(--color-forest)]':locationTone==='warning'?'bg-[#FFF8E6] text-[var(--color-text)]':locationTone==='error'?'bg-[var(--color-tint)] text-[var(--color-pressed)]':'bg-[var(--color-surface)] text-[var(--color-text)]'}`}>{locationTone==='success'?<CheckCircleIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>:locationTone==='info'?(locating?<ArrowPathIcon className="mt-0.5 size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true"/>:<Icon name="pin"/>):<ExclamationTriangleIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>}<span className="min-w-0">{locationMessage}{locationTone==='error'?<span className="mt-1 block text-xs">{ar?'يمكنك أيضاً تحديد دبوس على الخريطة أدناه أو كتابة عنوانك.':'You can also drop a pin on the map below or type your address.'}</span>:null}</span></div>:null}
+              {locationMessage?<div role="status" data-tone={locationTone} className={`checkout-location-status mb-4 flex items-start gap-2.5 rounded-xl border p-3 text-sm leading-6 ${locationTone==='success'?'bg-[#EEF8F1] text-[var(--color-forest)]':locationTone==='warning'?'bg-[#FFF8E6] text-[var(--color-text)]':locationTone==='error'?'bg-[var(--color-tint)] text-[var(--color-pressed)]':'bg-[var(--color-surface)] text-[var(--color-text)]'}`}>{locationTone==='success'?<CheckCircleIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>:locationTone==='info'?(locating?<ArrowPathIcon className="mt-0.5 size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true"/>:<Icon name="pin"/>):<ExclamationTriangleIcon className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>}<span className="min-w-0">{locationMessage}{locationTone==='error'?<span className="mt-1 block text-xs">{ar?'يمكنك أيضاً تحديد دبوس على الخريطة أدناه أو كتابة عنوانك.':'You can also drop a pin on the map below or type your address.'}</span>:null}{locationGuidance?<ol className="m-0 mt-2 grid list-decimal gap-1 ps-5 text-[13px] leading-5">{locationGuidance.steps.map(step=><li key={step}>{step}</li>)}</ol>:null}</span></div>:null}
               <input type="hidden" name="maplink" value={maplink}/>
               <DeliveryPinPicker value={coordinates} geolocate={false} locale={locale} disabled={working||locating||!!attempt} onChange={point=>{setCoordinates(point);setMaplink(point?`https://www.google.com/maps/search/?api=1&query=${point.latitude},${point.longitude}`:'');setReviewed(null);}} onAddress={address=>{setDelivery({address:address.address,emirate:address.emirate,city:address.city});setReviewed(null);}} />
               
