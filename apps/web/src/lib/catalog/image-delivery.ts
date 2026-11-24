@@ -1,4 +1,5 @@
-import { cloudinaryImage } from '@almina/contracts';
+// Subpath import: this runs inside every product image, so it must not pull the contracts barrel (and zod).
+import { cloudinaryImage } from '@almina/contracts/media';
 
 export const mediaOrigin = 'https://cdn.alminapharmacy.com';
 // Deliberately finite: arbitrary transformation strings cannot create unlimited derivatives.

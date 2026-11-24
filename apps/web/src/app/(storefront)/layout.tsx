@@ -1,5 +1,5 @@
 import {cookies, headers} from 'next/headers';
-import {GoogleMerchantWidget} from '../../components/google-customer-reviews';
+import {GoogleMerchantWidget} from '../../components/google-merchant-widget';
 import {googleCommerceConfiguration} from '../../lib/google/commerce';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';

@@ -14,6 +14,7 @@
     "./client": "./src/client.ts",
     "./commerce-events": "./src/commerce-events.ts",
     "./delivery-emirates": "./src/delivery-emirates.ts",
+    "./media": "./src/media.ts",
     "./search": "./src/search.ts"
   }
 }
