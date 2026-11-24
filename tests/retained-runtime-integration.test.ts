@@ -23,7 +23,7 @@ test('real retained production startup uses injected config, leaves historical i
   const before = await db.collection('conversations').find().toArray();
   // Copy only the entry point. Its __dirname is isolated: no backend .env file can be read.
   await copyFile(resolve('backend/server.js'), join(directory, 'server.js'));
-  for (const name of ['node_modules', 'commerce', 'security', 'routes', 'models', 'integrations', 'app.js']) {
+  for (const name of ['node_modules', 'commerce', 'security', 'routes', 'models', 'integrations', 'diagnostics', 'app.js']) {
     await symlink(resolve('backend', name), join(directory, name));
   }
   const child = spawn(process.execPath, [join(directory, 'server.js')], { env: { NODE_ENV: 'production', APP_ENV: 'production',
