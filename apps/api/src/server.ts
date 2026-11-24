@@ -31,7 +31,8 @@ async function main() {
   }) : undefined;
   const campaigns=process.env.MARKETING_EMAIL_ENABLED==='true'?marketingWorker(()=>database.getDb()):undefined;
   const searchWorker = searchEmbeddingWorker(() => database.getDb());
-  await prepareStaffAlertStorage(await database.getDb());
+  // DATABASE_MODE=disabled runs the API without storage (foundation smoke, isolated previews); there is nothing to prepare.
+  if (database.mode === 'enabled') await prepareStaffAlertStorage(await database.getDb());
   const alerts=staffAlertWorker(()=>database.getDb(),()=>logger.log('warn','request_failed'),{ wake });
   const merchantWorker = merchantSyncWorker(() => database.getDb());
   let stopping = false;
