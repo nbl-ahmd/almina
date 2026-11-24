@@ -46,7 +46,7 @@ Known limits to revisit as traffic grows:
 
 ## Phase 2: coverage check at confirm
 
-`POST /api/v1/checkout/coverage` (web proxy `/api/checkout/coverage`, same origin/CSRF rules as the address lookup) answers `serviceable`
+`POST /api/v1/checkout/coverage` (web proxy `/api/checkout/serviceability`, same origin/CSRF rules as the address lookup) answers `serviceable`
 (zone name, estimated minutes, delivery fee, minimum order), `outside`, or `unchecked` (zone rules switched off). The pin map calls it beside
 the address lookup (it never touches the address provider) and shows "We deliver here · about N min · delivery AED X", or blocks Confirm with
 "outside our delivery area". A failed or missing answer is treated as unchecked, so a broken check never stops a customer. It is advice only:

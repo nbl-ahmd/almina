@@ -147,7 +147,7 @@ export function DeliveryLocation({ locale = 'en' }: { locale?: Locale }) {
     if (view !== 'map' || !center || center.zoom < 15) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      void fetch('/api/checkout/coverage', { method: 'POST', credentials: 'same-origin', signal: controller.signal, headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
+      void fetch('/api/checkout/serviceability', { method: 'POST', credentials: 'same-origin', signal: controller.signal, headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' },
         body: JSON.stringify({ latitude: center.latitude, longitude: center.longitude }) }).then(async response => {
         if (response.ok) setCoverage(deliveryCoverageDtoSchema.parse(await response.json()));
       }).catch(() => undefined);
