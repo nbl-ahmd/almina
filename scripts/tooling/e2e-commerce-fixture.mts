@@ -66,6 +66,14 @@ app.post('/__fixture/products', async (req, res) => {
   res.json({ productIds: docs.map(doc => doc.product_id) });
 });
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
+// Stands in for a browser-direct Cloudinary upload: the test records that the asset now exists, as Cloudinary would.
+app.post('/__fixture/media-asset', (req, res) => {
+  const publicId = String(req.query.publicId ?? '');
+  if (!/^almina\/products\/[a-f0-9-]{36}-[0-4]$/.test(publicId)) { res.sendStatus(400); return; }
+  mediaAssets.set(publicId, { public_id: publicId, version: 1, resource_type: 'image', type: 'upload', format: 'webp', width: 500, height: 500, bytes: 100,
+    secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp` });
+  res.sendStatus(204);
+});
 app.post('/__fixture/stripe-paid',(_req,res)=>{stripe.paid();res.sendStatus(204);});
 app.post('/__fixture/stripe-refunded',(_req,res)=>{stripe.refunded();res.sendStatus(204);});
 app.post('/__fixture/reset', async (_req, res, next) => { try { await reset(); res.json({ ready: true }); } catch (error) { next(error); } });

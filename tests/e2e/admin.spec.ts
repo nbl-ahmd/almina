@@ -199,8 +199,20 @@ test('authenticated Cloudinary replacement works through the gateway and archive
   await expect(page.getByRole('button', { name: 'Clear local upload review', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Save product photos', exact: true })).toBeVisible();
   await page.locator('#product-photos').setInputFiles({ name: 'reviewed.png', mimeType: 'image/png', buffer: image });
+  // The browser sends the photo straight to Cloudinary; the test stands in for Cloudinary and records the asset.
+  const direct: string[] = [], viaGateway: string[] = [];
+  await page.route('https://api.cloudinary.com/**', async route => {
+    const body = route.request().postData() ?? '';
+    const publicId = /name="public_id"\r\n\r\n([^\r]+)/.exec(body)?.[1] ?? '';
+    direct.push(publicId);
+    await request.post(`${commerceOrigin}/__fixture/media-asset?publicId=${encodeURIComponent(publicId)}`);
+    await route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: '{}' });
+  });
+  page.on('request', req => { if (req.method() === 'POST' && new URL(req.url()).pathname === `/api/admin/media/products/${productId}`) viaGateway.push(req.url()); });
   await page.getByRole('button', { name: 'Save product photos', exact: true }).click();
   await expect(page.getByText(/Product photos saved/).first()).toBeVisible();
+  expect(direct).toHaveLength(1); expect(direct[0]).toMatch(/^almina\/products\/[a-f0-9-]{36}-0$/);
+  expect(viaGateway, 'no photo bytes go through the gateway or the API').toEqual([]);
   const product = await (await page.request.get(adminOrigin + '/api/admin/products/' + productId)).json();
   expect(product.cloudinaryImages[0]).toMatch(/^https:\/\/res.cloudinary.com\/synthetic\/image\/upload\/v1\/almina\/products\//);
   expect(product.mediaRevision).toBe(1); expect((await state(request)).stock).toBe(4);

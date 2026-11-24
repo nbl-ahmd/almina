@@ -13,7 +13,7 @@ test('media metadata rejects executable destinations, unsafe colors and caller a
 });
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { cloudinarySignature, signedRasterUpload } from '../apps/api/src/modules/media/cloudinary';
+import { cloudinarySignature, signedRasterUpload, directUploadTickets } from '../apps/api/src/modules/media/cloudinary';
 const config = { cloudName: 'synthetic', apiKey: '1234', apiSecret: 'synthetic-not-a-secret' };
 const publicId = 'almina/products/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa-0';
 const response = { public_id: publicId, version: 1, resource_type: 'image', type: 'upload', format: 'webp', width: 500, height: 500, bytes: 100,
@@ -42,4 +42,20 @@ test('upload reconciliation does not repeat existing uploads; hostile provider r
   await assert.rejects(signedRasterUpload(config, new Uint8Array([1]), 'arbitrary/path', AbortSignal.timeout(1000), lookup), { status: 400 });
   const forged: typeof fetch = async (_url, options) => options?.method === 'POST' ? Response.json({ ...response, signature: 'a'.repeat(40) }) : new Response('{}', { status: 404 });
   await assert.rejects(signedRasterUpload(config, new Uint8Array([1]), publicId, AbortSignal.timeout(1000), forged), { status: 503 });
+});
+
+test('direct-upload tickets pin the public id, format and no-overwrite, are signed, and never carry the secret', () => {
+  const config = { cloudName: 'synthetic', apiKey: '123456', apiSecret: 'synthetic-not-a-secret' };
+  const uploadKey = '6f1d2b1e-9d2c-4f6c-8c64-1f0f6d6b9a11';
+  const { uploads, cloudName, apiKey } = directUploadTickets(config, { uploadKey, expectedMediaRevision: 0, count: 2 }, 1700000000);
+  assert.equal(cloudName, 'synthetic'); assert.equal(apiKey, '123456'); assert.equal(uploads.length, 2);
+  for (const [index, ticket] of uploads.entries()) {
+    assert.equal(ticket.publicId, `almina/products/${uploadKey}-${index}`);
+    assert.deepEqual({ ...ticket.fields, signature: undefined }, { allowed_formats: 'webp', overwrite: 'false', public_id: ticket.publicId, timestamp: '1700000000', type: 'upload', api_key: '123456', signature: undefined });
+    const { api_key: _key, signature, ...signed } = ticket.fields; void _key;
+    assert.equal(signature, cloudinarySignature(signed, config.apiSecret));
+  }
+  assert.ok(!JSON.stringify(uploads).includes('synthetic-not-a-secret'));
+  for (const bad of [{ uploadKey, expectedMediaRevision: 0, count: 6 }, { uploadKey, expectedMediaRevision: 0, count: 0 }, { uploadKey: 'x', expectedMediaRevision: 0, count: 1 }, { uploadKey, expectedMediaRevision: 0, count: 1, publicId: 'other/path' }])
+    assert.throws(() => directUploadTickets(config, bad, 1), { status: 400 });
 });

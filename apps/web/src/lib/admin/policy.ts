@@ -78,6 +78,8 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ["GET", `products/${id}`, "staff"],
   ["POST", "products", "admin"],
   ["POST", `media/products/${id}`, "admin"],
+  ["POST", `media/products/${id}/sign`, "admin"],
+  ["POST", `media/products/${id}/commit`, "admin"],
   ["PUT", `products/${id}`, "admin"],
   ["PUT", `products/publish/${id}`, "admin"],
   ["DELETE", `products/${id}`, "admin"],
@@ -339,6 +341,10 @@ export function project(value: unknown): unknown {
   return value;
 }
 export function projectAdminResponse(path: string, value: unknown): unknown {
+  // Browser-direct photo upload ticket: exactly the fields Cloudinary needs, each shape-checked, and nothing else (never the secret).
+  if(/^media\/products\/[a-fA-F0-9]{24}\/sign$/.test(path))return z.object({cloudName:z.string().regex(/^[A-Za-z0-9_-]{1,100}$/),apiKey:z.string().regex(/^[0-9]{1,100}$/),
+    uploads:z.array(z.object({publicId:z.string().regex(/^almina\/products\/[a-f0-9-]{36}-[0-4]$/),fields:z.object({allowed_formats:z.literal('webp'),overwrite:z.literal('false'),public_id:z.string().regex(/^almina\/products\/[a-f0-9-]{36}-[0-4]$/),
+      timestamp:z.string().regex(/^[0-9]{10}$/),type:z.literal('upload'),api_key:z.string().regex(/^[0-9]{1,100}$/),signature:z.string().regex(/^[a-f0-9]{64}$/)}).strict()}).strict()).min(1).max(5)}).strict().parse(value);
   if(path==='auth/branch-login-availability')return branchLoginAvailabilitySchema.parse(value);
   if(path==='orders/notifications')return staffAlertFeedSchema.parse(value);
   if(path==='orders/notifications/preferences')return staffAlertPreferencesSchema.parse(value);

@@ -76,7 +76,7 @@ try {
     WEB_ORIGIN: 'http://127.0.0.1:4710', API_ORIGIN: 'http://127.0.0.1:4711', LEGACY_API_ORIGIN: 'http://127.0.0.1:4711', STOREFRONT_REDIRECTS_VERIFIED: 'true',
   });
   const admin = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4720'], new URL('apps/web/', root), {
-    WEB_ORIGIN: 'http://127.0.0.1:4720', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730',
+    WEB_ORIGIN: 'http://127.0.0.1:4720', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CLOUDINARY_CLOUD_NAME: 'synthetic',
   });
   const checkout = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4740'], new URL('apps/web/', root), {
     WEB_ORIGIN: 'http://127.0.0.1:4740', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CHECKOUT_ENABLED: 'true', STRIPE_TEST_ENABLED:'true', COMMERCE_TELEMETRY_ENABLED: 'true',

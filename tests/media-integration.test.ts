@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
 import { archiveEntity, replaceCategory, resolveRetainedAsset } from '../apps/api/src/modules/media/retention';
-import { replaceCloudinaryImages, cloudinarySignature } from '../apps/api/src/modules/media/cloudinary';
+import { replaceCloudinaryImages, cloudinarySignature, commitDirectCloudinaryImages } from '../apps/api/src/modules/media/cloudinary';
 import { createBannerWithArtwork, createMediaMetadata, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
 import { resolveLegacyMapping } from '../apps/api/src/modules/media/legacy-migration';
 import { retainedBannerList } from '../apps/api/src/modules/media/compatibility-reads';
@@ -86,5 +86,44 @@ test('signed media retries reconcile provider acceptance and preserve old refere
     const archived = (await db.collection('products').findOne({ _id: id }))!; assert.equal(archived.stock, 3); assert.equal(archived.disabled, true);
     assert.equal(archived.gdriveFileIds[0], 'synthetic-product-drive'); assert.deepEqual(archived.cloudinaryImages, product.cloudinaryImages);
     assert.equal(await db.collection('media_history').countDocuments(), 4); // two replacements, two archives
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+
+test('a direct upload is attached only after Cloudinary confirms every photo, once, and a stale revision is refused', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect();
+  const db = client.db('almina_media_direct_test_' + randomUUID().replaceAll('-', ''));
+  const actor = String(new ObjectId()), id = new ObjectId(), uploadKey = randomUUID();
+  const config = { cloudName: 'synthetic', apiKey: '123456', apiSecret: 'synthetic-not-a-secret' };
+  const stored = new Map<string, object>(); let lookups = 0;
+  const transport: typeof fetch = async url => {
+    lookups++; const publicId = decodeURIComponent(String(url).split('/upload/')[1]!);
+    return stored.has(publicId) ? Response.json(stored.get(publicId)) : new Response('{}', { status: 404 });
+  };
+  const asset = (publicId: string, over: object = {}) => ({ public_id: publicId, version: 1, resource_type: 'image', type: 'upload', format: 'webp', width: 500, height: 500, bytes: 100,
+    secure_url: `https://res.cloudinary.com/synthetic/image/upload/v1/${publicId}.webp`, ...over });
+  const input = { uploadKey, expectedMediaRevision: 0, count: 2 };
+  try {
+    await db.collection('products').insertOne({ _id: id, product_id: 'PD_DIRECT', stock: 5, price: 10 });
+    // Nothing uploaded yet: refused, and the product is untouched.
+    await assert.rejects(commitDirectCloudinaryImages(db, String(id), actor, input, config, transport), { status: 400 });
+    stored.set(`almina/products/${uploadKey}-0`, asset(`almina/products/${uploadKey}-0`));
+    await assert.rejects(commitDirectCloudinaryImages(db, String(id), actor, input, config, transport), { status: 400 });
+    assert.equal((await db.collection('products').findOne({ _id: id }))!.mediaRevision, undefined);
+    // A photo that is not WebP or is oversized is refused.
+    stored.set(`almina/products/${uploadKey}-1`, asset(`almina/products/${uploadKey}-1`, { format: 'png' }));
+    await assert.rejects(commitDirectCloudinaryImages(db, String(id), actor, input, config, transport), { status: 503 });
+    stored.set(`almina/products/${uploadKey}-1`, asset(`almina/products/${uploadKey}-1`, { bytes: 6 * 1024 * 1024 }));
+    await assert.rejects(commitDirectCloudinaryImages(db, String(id), actor, input, config, transport), { status: 503 });
+    stored.set(`almina/products/${uploadKey}-1`, asset(`almina/products/${uploadKey}-1`));
+    const result = await commitDirectCloudinaryImages(db, String(id), actor, input, config, transport) as { cloudinaryImages: string[]; mediaRevision: number };
+    assert.equal(result.mediaRevision, 1); assert.equal(result.cloudinaryImages.length, 2);
+    const before = lookups;
+    // Repeating the same confirmation returns the same result without a second change.
+    assert.deepEqual(await commitDirectCloudinaryImages(db, String(id), actor, input, config, transport), result);
+    assert.equal(lookups, before); assert.equal((await db.collection('products').findOne({ _id: id }))!.mediaRevision, 1);
+    assert.equal(await db.collection('media_history').countDocuments(), 1);
+    // The same key cannot be reused for a different request, and a stale revision is refused.
+    await assert.rejects(commitDirectCloudinaryImages(db, String(id), actor, { ...input, count: 1 }, config, transport), { status: 409 });
+    await assert.rejects(commitDirectCloudinaryImages(db, String(id), actor, { uploadKey: randomUUID(), expectedMediaRevision: 0, count: 1 }, config, transport), { status: 409 });
   } finally { await db.dropDatabase(); await client.close(); }
 });

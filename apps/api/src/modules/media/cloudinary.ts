@@ -58,25 +58,30 @@ export async function signedRasterUpload(config: CloudinaryConfig, bytes: Uint8A
   if (!response.ok) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
   return verifyAsset(await responseJson(response), publicId, config, true);
 }
-export async function replaceCloudinaryImages(db: Db, id: string, actor: string, raw: unknown,
-  files: Uint8Array[], config: CloudinaryConfig, transport: typeof fetch = fetch) {
+const uploadRequest = z.object({ uploadKey: z.uuid(), expectedMediaRevision: z.union([z.string().regex(/^\d{1,9}$/).transform(Number), z.number().int().min(0).max(999999999)]), count: z.number().int().min(1).max(5) }).strict();
+/** Browser-direct uploads: the server only decides where a photo may go and signs that, so the image bytes never pass through this process.
+ *  Each ticket pins the public id (derived from the upload key), the format and "never overwrite". */
+export function directUploadTickets(config: CloudinaryConfig, raw: unknown, nowSeconds = Math.floor(Date.now() / 1000)) {
   configured(config);
-  const parsed = z.object({ uploadKey: z.uuid(), expectedMediaRevision: z.string().regex(/^\d{1,9}$/).transform(Number) }).strict().safeParse(raw);
-  if (!parsed.success || !ObjectId.isValid(id) || !ObjectId.isValid(actor) || !files.length || files.length > 5) throw new HttpError(400, 'INVALID_REQUEST');
-  const { uploadKey, expectedMediaRevision } = parsed.data;
-  const digest = createHash('sha256').update(JSON.stringify({ id, actor, expectedMediaRevision, cloud: config.cloudName,
-    files: files.map(bytes => createHash('sha256').update(bytes).digest('hex')) })).digest('hex');
+  const parsed = uploadRequest.safeParse(raw);
+  if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
+  const { uploadKey, count } = parsed.data;
+  return { cloudName: config.cloudName, apiKey: config.apiKey, uploads: Array.from({ length: count }, (_, index) => {
+    const publicId = `almina/products/${uploadKey}-${index}`;
+    const parameters = { allowed_formats: 'webp', overwrite: 'false', public_id: publicId, timestamp: String(nowSeconds), type: 'upload' };
+    return { publicId, fields: { ...parameters, api_key: config.apiKey, signature: cloudinarySignature(parameters, config.apiSecret) } };
+  }) };
+}
+async function claimUpload(db: Db, id: string, actor: string, uploadKey: string, digest: string) {
   const receipts = db.collection<Document & { _id: string }>('media_uploads');
   try { await receipts.insertOne({ _id: uploadKey, digest, actor, entityId: new ObjectId(id), state: 'pending', createdAt: new Date() }); }
   catch (error) { if (!(error && typeof error === 'object' && 'code' in error && error.code === 11000)) throw error; }
   const receipt = await receipts.findOne({ _id: uploadKey });
   if (!receipt || receipt.digest !== digest) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
-  if (receipt.state === 'complete') return receipt.result;
-  const product = await db.collection('products').findOne({ _id: new ObjectId(id) });
-  if (!product || product.archivedAt) throw new HttpError(404, 'NOT_FOUND');
-  if ((product.mediaRevision ?? 0) !== expectedMediaRevision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
-  const signal = AbortSignal.timeout(15000);
-  const urls = await Promise.all(files.map((bytes, index) => signedRasterUpload(config, bytes, `almina/products/${uploadKey}-${index}`, signal, transport)));
+  return { receipts, receipt };
+}
+async function attachProductImages(db: Db, id: string, actor: string, uploadKey: string, expectedMediaRevision: number, urls: string[], reason: string) {
+  const receipts = db.collection<Document & { _id: string }>('media_uploads');
   const session = db.client.startSession(); let result: Document | undefined;
   try {
     await session.withTransaction(async () => {
@@ -85,11 +90,52 @@ export async function replaceCloudinaryImages(db: Db, id: string, actor: string,
       const previous = await db.collection('products').findOne({ _id: new ObjectId(id) }, { session });
       if (!previous || previous.archivedAt || (previous.mediaRevision ?? 0) !== expectedMediaRevision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
       const next = { ...previous, cloudinaryImages: urls, mediaRevision: expectedMediaRevision + 1 };
-      await recordMediaHistory(db, 'products', previous, next, actor, 'Reviewed signed Cloudinary replacement', session);
+      await recordMediaHistory(db, 'products', previous, next, actor, reason, session);
       await db.collection('products').updateOne({ _id: previous._id }, { $set: { cloudinaryImages: urls, mediaRevision: next.mediaRevision } }, { session });
       result = { cloudinaryImages: urls, mediaRevision: next.mediaRevision };
       await receipts.updateOne({ _id: uploadKey }, { $set: { state: 'complete', result, completedAt: new Date() } }, { session });
     });
     return result;
   } finally { await session.endSession(); }
+}
+/** Second half of a direct upload: confirm with Cloudinary's authenticated API that every photo really arrived (right place, WebP, within
+ *  size and pixel limits), then attach them in one transaction, exactly as the proxied upload does. Safe to repeat. */
+export async function commitDirectCloudinaryImages(db: Db, id: string, actor: string, raw: unknown, config: CloudinaryConfig, transport: typeof fetch = fetch) {
+  configured(config);
+  const parsed = uploadRequest.safeParse(raw);
+  if (!parsed.success || !ObjectId.isValid(id) || !ObjectId.isValid(actor)) throw new HttpError(400, 'INVALID_REQUEST');
+  const { uploadKey, expectedMediaRevision, count } = parsed.data;
+  const digest = createHash('sha256').update(JSON.stringify({ id, actor, expectedMediaRevision, cloud: config.cloudName, count, mode: 'direct' })).digest('hex');
+  const { receipt } = await claimUpload(db, id, actor, uploadKey, digest);
+  if (receipt.state === 'complete') return receipt.result;
+  const product = await db.collection('products').findOne({ _id: new ObjectId(id) });
+  if (!product || product.archivedAt) throw new HttpError(404, 'NOT_FOUND');
+  if ((product.mediaRevision ?? 0) !== expectedMediaRevision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+  const signal = AbortSignal.timeout(15000);
+  const urls = await Promise.all(Array.from({ length: count }, async (_, index) => {
+    const publicId = `almina/products/${uploadKey}-${index}`;
+    const found = await transport(`https://api.cloudinary.com/v1_1/${config.cloudName}/resources/image/upload/${encodeURIComponent(publicId)}`,
+      { headers: { authorization: 'Basic ' + Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64') }, signal, redirect: 'error' });
+    if (found.status === 404) { await found.body?.cancel().catch(() => undefined); throw new HttpError(400, 'INVALID_REQUEST'); }
+    if (!found.ok) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
+    return verifyAsset(await responseJson(found), publicId, config, false);
+  }));
+  return attachProductImages(db, id, actor, uploadKey, expectedMediaRevision, urls, 'Reviewed direct Cloudinary replacement');
+}
+export async function replaceCloudinaryImages(db: Db, id: string, actor: string, raw: unknown,
+  files: Uint8Array[], config: CloudinaryConfig, transport: typeof fetch = fetch) {
+  configured(config);
+  const parsed = z.object({ uploadKey: z.uuid(), expectedMediaRevision: z.string().regex(/^\d{1,9}$/).transform(Number) }).strict().safeParse(raw);
+  if (!parsed.success || !ObjectId.isValid(id) || !ObjectId.isValid(actor) || !files.length || files.length > 5) throw new HttpError(400, 'INVALID_REQUEST');
+  const { uploadKey, expectedMediaRevision } = parsed.data;
+  const digest = createHash('sha256').update(JSON.stringify({ id, actor, expectedMediaRevision, cloud: config.cloudName,
+    files: files.map(bytes => createHash('sha256').update(bytes).digest('hex')) })).digest('hex');
+  const { receipt } = await claimUpload(db, id, actor, uploadKey, digest);
+  if (receipt.state === 'complete') return receipt.result;
+  const product = await db.collection('products').findOne({ _id: new ObjectId(id) });
+  if (!product || product.archivedAt) throw new HttpError(404, 'NOT_FOUND');
+  if ((product.mediaRevision ?? 0) !== expectedMediaRevision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+  const signal = AbortSignal.timeout(15000);
+  const urls = await Promise.all(files.map((bytes, index) => signedRasterUpload(config, bytes, `almina/products/${uploadKey}-${index}`, signal, transport)));
+  return attachProductImages(db, id, actor, uploadKey, expectedMediaRevision, urls, 'Reviewed signed Cloudinary replacement');
 }
