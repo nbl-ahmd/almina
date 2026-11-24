@@ -9,6 +9,7 @@ import Link from './app-link';
 import {
   ChatBubbleLeftRightIcon,
   ArrowRightIcon,
+  ChevronRightIcon,
 } from './storefront-icons';
 import {
   ProductPhoto as Photo,
@@ -42,21 +43,18 @@ async function SectionHeading({
   return (
     <div className="section-heading">
       <div className="min-w-0">
-        <h2 className="m-0 text-[22px] font-semibold tracking-[-0.03em] md:text-[28px]">
+        <h2 className="section-title">
           {u(locale,title)}
         </h2>
         {description ? (
-          <p className="mt-1 mb-0 max-w-[52ch] text-[13px] leading-5 md:text-sm">
+          <p className="section-description">
             {u(locale,description)}
           </p>
         ) : null}
       </div>
-      <Link
-        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border bg-white px-3.5 text-xs font-medium transition-colors md:text-[13px]"
-        href={href}
-      >
+      <Link className="section-link" href={href}>
         {u(locale,link)}
-        <ArrowRightIcon className="size-3.5 rtl:-scale-x-100" />
+        <ChevronRightIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
       </Link>
     </div>
   );

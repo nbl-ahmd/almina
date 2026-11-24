@@ -1,6 +1,8 @@
 import './(storefront)/storefront.css';
 import './(storefront)/storefront-pages.css';
+import './(storefront)/purchase-flow.css';
 import './(storefront)/storefront-chrome.css';
+import './(storefront)/storefront-skin.css';
 import { storefrontFontVariables } from '../lib/storefront-fonts';
 import { getLocale } from '../lib/server/i18n';
 import { Navigation, Footer } from '../components/navigation';

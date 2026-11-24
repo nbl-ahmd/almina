@@ -55,37 +55,35 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
 
   return <article
     data-product-id={product._id}
-    className={cn('product-card relative flex min-w-0 flex-col gap-2 rounded-panel border border-solid border-divider bg-canvas p-2.5 md:p-3', className)}
+    className={cn('product-card relative flex min-w-0 flex-col gap-2', className)}
   >
-    <div className="relative aspect-[5/4] shrink-0">
+    <div className="product-tile-media relative aspect-square shrink-0">
       <Link href={productHref(product)} aria-label={locale === 'ar' ? `عرض ${product.name}` : `View ${product.name}`} className="product-media absolute inset-0 rounded-card bg-surface">
-        <div className="absolute inset-x-[11%] top-[13%] bottom-[5%] grid grid-rows-[minmax(0,1fr)] place-items-center">
+        <div className="absolute inset-[11%] grid grid-rows-[minmax(0,1fr)] place-items-center">
           <ProductPhoto product={product} />
         </div>
       </Link>
       <div className="pointer-events-none absolute start-1 top-1 flex max-w-[calc(100%-52px)] flex-wrap items-start gap-1">
         {/* Availability badge only when it changes the decision; available stock is the default state. */}
         {product.stock <= 0 ? <span className="rounded-badge bg-canvas px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-muted">{u(locale, 'Currently unavailable')}</span> : null}
-        {saving > 0 && <span className="rounded-badge bg-tint px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-error">
+        {saving > 0 && <span className="save-sticker">
           <span className="sr-only">{locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}</span>
-          <span aria-hidden="true">{discount > 0 ? (locale === 'ar' ? `خصم ${discount}٪` : `${discount}% off`) : u(locale, 'Offer')}</span>
+          <span aria-hidden="true">{discount > 0 ? (locale === 'ar' ? `وفّر ${discount}٪` : `Save ${discount}%`) : u(locale, 'Offer')}</span>
         </span>}
       </div>
       <div className="absolute end-0 top-0">
         <SaveProduct id={product._id} name={product.name} locale={locale} iconOnly />
       </div>
     </div>
-    <div className="product-card-identity grid min-w-0 gap-1.5">
-      {(product.brand || pack) && <div className="flex min-w-0 flex-wrap gap-1">
-        {[...new Set([product.brand, pack].filter(Boolean))].map(label => <span key={label} className="max-w-full rounded-badge bg-surface px-1.5 py-0.5 text-[11px] leading-snug text-muted">{label}</span>)}
-      </div>}
+    <div className="product-card-identity grid min-w-0 gap-1">
       <Heading><Link href={productHref(product)}>{product.name}</Link></Heading>
-      {options && <p className="m-0 text-xs text-muted">{locale === 'ar' ? `${product.familyOptionCount} خيارات متاحة` : `${product.familyOptionCount} options available`}</p>}
+      {(pack || product.brand) && <p className="product-tile-meta">{pack || product.brand}</p>}
+      {options && <p className="product-tile-meta">{locale === 'ar' ? `${product.familyOptionCount} خيارات متاحة` : `${product.familyOptionCount} options available`}</p>}
     </div>
     <div className="product-card-purchase mt-auto pt-1">
-      <div className="product-card-buy-row max-[599px]:[&_.add-to-cart]:size-11! max-[599px]:[&_.add-to-cart]:min-h-11! max-[599px]:[&_.add-to-cart]:rounded-xl! max-[599px]:[&_.add-to-cart]:p-0!">
+      <div className="product-card-buy-row">
         <ProductPrice product={product} />
-        {options ? <Link className="button" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} />}
+        {options ? <Link className="tile-options" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} compact />}
       </div>
     </div>
   </article>;

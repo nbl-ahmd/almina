@@ -18,12 +18,6 @@
   :scope[dir="rtl"] .campaign-subject { transform: scaleX(-1); }
   .catalog-banner-artwork { position: relative; aspect-ratio: 2 / 1; border-radius: 16px; overflow: hidden; }
   .catalog-banner-artwork img { object-fit: contain; }
-  .home-categories { display: grid; grid-auto-flow: column; grid-auto-columns: 104px; gap: 16px; overflow-x: auto; padding-block: 4px; }
-  .category-tile { display: flex; flex-direction: column; align-items: center; justify-content: start; gap: 12px; min-inline-size: 0; padding: 12px; border-radius: 12px; background: var(--color-surface); text-align: center; }
-  .category-media { display: grid; place-items: center; inline-size: 80px; block-size: 80px; }
-  .category-media img { inline-size: 80px; block-size: 80px; object-fit: contain; }
-  .category-media>svg { inline-size: 32px; block-size: 32px; color: var(--color-forest); }
-  .category-tile .category-label { margin: 0; font-size: 1rem; line-height: 1.4; letter-spacing: 0; font-weight: 600; }
   .home-product-grid, .product-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
   .product-pack { display: block; inline-size: 100%; block-size: 100%; object-fit: contain; }
   .product-photo-fallback, .product-image-fallback { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; text-align: center; color: var(--color-muted); font-size: .875rem; }
@@ -62,7 +56,6 @@
   @scope (.storefront-shell) {
     .home-page { gap: 48px; }
     .home-product-grid { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 24px; }
-    .home-categories { grid-auto-flow: initial; grid-auto-columns: auto; grid-template-columns: repeat(6,minmax(0,1fr)); }
     .fallback-campaign { grid-template-columns: 55% 45%; min-block-size: 360px; }
     .campaign-copy { padding: 32px; }
     .campaign-copy h2 { max-inline-size: 12ch; margin-block-end: 16px; }
@@ -155,8 +148,6 @@
   .checkout-confirmation-panel>span:first-child svg { inline-size: 32px; block-size: 32px; }
   .checkout-confirmation-panel dl { background: var(--color-surface); }
   .checkout-loader { inline-size: 16px; block-size: 16px; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; animation: checkout-turn .8s linear infinite; }
-  a.header-cart { display: inline-flex; align-items: center; gap: 8px; background: var(--color-canvas); color: var(--color-forest); border: 1px solid var(--color-control); border-radius: 8px; }
-  .header-cart>span { color: var(--color-canvas); background: var(--color-forest); }
 }
 @keyframes checkout-turn { to { transform: rotate(360deg); } }
 @media (max-width:899px) {
@@ -247,12 +238,6 @@
   .campaign-link { padding: 10px 16px; border-radius: 999px; background: var(--color-canvas); color: var(--color-forest); font-size: .875rem; text-decoration: none; }
   .campaign-link:hover { background: var(--color-tint); text-decoration: none; }
   .campaign-subject { max-block-size: 240px; object-position: 54% bottom; }
-  .home-categories { grid-auto-columns: 88px; gap: 16px; }
-  .category-tile { gap: 8px; padding: 0; border: 0; border-radius: 0; background: transparent; }
-  .category-media { inline-size: 80px; block-size: 80px; border-radius: 50%; background: var(--color-surface); overflow: hidden; }
-  .category-media>img { inline-size: 64px; block-size: 64px; }
-  .category-media>svg { inline-size: 24px; block-size: 24px; }
-  .category-tile .category-label { font-size: .875rem; line-height: 1.4; font-weight: 600; }
   .product-card-identity :is(h2,h3) { min-block-size: 2.75em; margin-block-end: 4px; }
   .product-card-purchase .product-price { gap: 2px; min-block-size: 48px; }
   .product-card .add-to-cart { border-radius: 999px; }
@@ -309,7 +294,6 @@
   .campaign-copy h2 { font-size: 3.5rem; }
   .campaign-copy p { font-size: 1rem; }
   .campaign-subject { max-block-size: 320px; }
-  .home-categories { grid-template-columns: repeat(8,minmax(0,1fr)); }
   .catalog-layout { gap: 24px; }
   .checkout-form-section, .checkout-payment-section { padding-inline: 0; }
   .checkout-form-heading { padding-inline: 0; padding-block-start: 0; }
@@ -343,11 +327,8 @@
   .checkout-link, .cart-mobile-bar>a, .quantity-control { border-radius: 999px; }
   .purchase-quantity input[type="number"][id] { border: 0; border-radius: 0; inline-size: 40px; padding: 0; min-block-size: 44px; }
   .section-heading { align-items: start; }
-  .home-categories { grid-auto-columns: 104px; gap: 12px; }
 }
 @media (max-width:899px) { @scope (.storefront-shell) {
-  .home-categories .category-media { inline-size: 64px; block-size: 64px; }
-  .home-categories .category-media>img { inline-size: 56px; block-size: 56px; }
 } }
 
 @scope (.storefront-shell) {
@@ -378,8 +359,6 @@
   .campaign-frame { flex: 0 0 100%; min-inline-size: 0; scroll-snap-align: start; }
   .secondary-campaign { background: var(--color-tint); }
   .campaign-collection-art { align-self: center; inline-size: 100%; block-size: 100%; object-fit: cover; object-position: right center; }
-  .home-categories { scrollbar-width: none; grid-auto-columns: 88px; gap: 12px; }
-  .home-categories .category-media { border-radius: 12px; }
   .brand-rail { display: grid; grid-template-rows: repeat(2,auto); grid-auto-flow: column; grid-auto-columns: minmax(150px,1fr); gap: 8px; overflow-x: auto; scrollbar-width: none; padding-block: 0; }
   .brand-rail>a { min-inline-size: 0; min-block-size: 48px; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: .8125rem; }
   .brand-rail>a>span:first-child { inline-size: 32px; block-size: 32px; padding: 3px; }
@@ -392,16 +371,10 @@
   .product-card-buy-row .product-price del { font-size: .75rem; }
 } }
 @media (min-width:900px) { @scope (.storefront-shell) {
-  .home-categories { grid-auto-flow: row; grid-template-columns: repeat(auto-fit,minmax(88px,104px)); grid-auto-columns: auto; gap: 12px; overflow: visible; }
-  .home-categories .category-media { inline-size: 64px; block-size: 64px; }
-  .home-categories .category-media>img { inline-size: 56px; block-size: 56px; }
-  .home-categories .category-tile .category-label { font-size: .8125rem; line-height: 1.4; }
   .brand-rail { grid-auto-flow: row; grid-template-columns: repeat(4,minmax(0,1fr)); }
 } }
 
 @scope (.storefront-shell) {
-  .category-media-symbol { background: transparent; border-radius: 0; }
-  .category-media-symbol svg { inline-size: 28px; block-size: 28px; }
   .product-card-buy-row { align-self: stretch; }
 }
 

@@ -503,7 +503,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
                 <Field className="sm:col-span-2"><FieldLabel htmlFor={fieldIds.email}>{labels.email}</FieldLabel><Input id={fieldIds.email} name="email" defaultValue={attempt?.customer.email} required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" maxLength={254} autoComplete="email" placeholder={t(locale,'checkoutEmailPlaceholder')} {...fieldState('email')}/>{fieldIssue('email')}</Field>
                 {account&&contactEditing?<div className="sm:col-span-2"><Button type="button" variant="outline" onClick={()=>{readContact();setContactEditing(false);}}>{ar?'تم':'Done'}</Button></div>:null}
               </div>
-              {accountChecked&&!account?<p className="pf-muted mt-3"><Link className="font-semibold text-action" href="/account">{ar?'سجّل الدخول':'Sign in'}</Link> {ar?'لاستخدام تفاصيلك وعناوينك المحفوظة وإتمام الطلب أسرع.':'to use your saved details and addresses and check out faster.'}</p>:null}
+              {accountChecked&&!account?<p className="pf-muted mt-3"><Link className="font-semibold text-action-text" href="/account">{ar?'سجّل الدخول':'Sign in'}</Link> {ar?'لاستخدام تفاصيلك وعناوينك المحفوظة وإتمام الطلب أسرع.':'to use your saved details and addresses and check out faster.'}</p>:null}
               {stage === 'details' && couponCode && couponField}
             </section>
           </div>

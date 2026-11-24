@@ -15,7 +15,7 @@ Semantic tokens for the customer storefront (`apps/web/src/app/(storefront)/stor
 | `well` (`surface`) | #F3F5F7 | Product and category media wells, search field, address pill |
 | `control` | #858A96 | Field and stepper boundaries (3:1 on white) |
 | `action` | #D7303A | Every purchase action, add pill outline, coral links |
-| `hover` | #C42A33 | Action hover; coral text on `tint` |
+| `action-text` / `hover` | #C42A33 | Every coral word (links, outlined pills, current step); action hover |
 | `pressed` | #A9232B | Action pressed |
 | `tint` | #FFF0EE | Selected chips, coral icon tiles, cart badge halo |
 | `brand` | #FF6465 | Logo coral; artwork only |
@@ -43,7 +43,10 @@ Semantic tokens for the customer storefront (`apps/web/src/app/(storefront)/stor
 | teal | canvas | 6.05 |
 | teal | teal-tint | 5.34 |
 | warning | warning-tint | 5.81 |
-| hover | tint | 4.86 |
+| action-text | tint | 5.09 |
+| action-text | app | 5.16 |
+| action-text | canvas | 5.64 |
+| action (#D7303A) as text | app | 4.39 — fails; coral text always uses action-text |
 | error | canvas | 6.26 |
 | canvas | brand | 2.89 — never put white text on logo coral |
 

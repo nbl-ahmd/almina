@@ -6,9 +6,9 @@
   .pf-eyebrow { margin: 0; color: var(--color-muted); font-size: .75rem; line-height: 1.4; }
   .pf-muted { margin: 0; color: var(--color-muted); font-size: .8125rem; line-height: 1.45; }
   .pf-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .pf-icon { display: grid; place-items: center; flex: none; inline-size: 40px; block-size: 40px; border-radius: 50%; background: var(--color-tint); color: var(--color-action); }
-  .pf-chip { display: inline-flex; align-items: center; margin-inline-end: 8px; padding: 2px 8px; border-radius: 999px; background: var(--color-tint); color: var(--color-action); font-size: .6875rem; font-weight: 700; letter-spacing: .02em; vertical-align: 1px; }
-  .pf-link-button { flex: none; min-block-size: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--color-action); font: inherit; font-size: .875rem; font-weight: 700; cursor: pointer; border-radius: 999px; }
+  .pf-icon { display: grid; place-items: center; flex: none; inline-size: 40px; block-size: 40px; border-radius: 50%; background: var(--color-tint); color: var(--color-action-text); }
+  .pf-chip { display: inline-flex; align-items: center; margin-inline-end: 8px; padding: 2px 8px; border-radius: 999px; background: var(--color-tint); color: var(--color-action-text); font-size: .6875rem; font-weight: 700; letter-spacing: .02em; vertical-align: 1px; }
+  .pf-link-button { flex: none; min-block-size: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--color-action-text); font: inherit; font-size: .875rem; font-weight: 700; cursor: pointer; border-radius: 999px; }
   .pf-link-button:hover { background: var(--color-tint); }
   .pf-link-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 

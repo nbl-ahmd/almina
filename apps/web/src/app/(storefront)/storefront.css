@@ -9,6 +9,14 @@
 /* Semantic utilities (text-forest, bg-surface, rounded-card …) resolve to the approved
    palette in storefront-tokens.css, which is scoped to .storefront-shell. */
 @theme inline {
+  --color-app: var(--sf-app);
+  --color-line: var(--sf-line);
+  --color-well: var(--sf-well);
+  --color-save: var(--sf-save);
+  --color-save-tint: var(--sf-save-tint);
+  --color-teal: var(--sf-teal);
+  --color-teal-tint: var(--sf-teal-tint);
+  --color-warning-tint: var(--sf-warning-tint);
   --color-canvas: var(--sf-canvas);
   --color-muted: var(--sf-muted);
   --color-surface: var(--sf-surface);
@@ -16,6 +24,7 @@
   --color-control: var(--sf-control);
   --color-brand: var(--sf-brand);
   --color-action: var(--sf-action);
+  --color-action-text: var(--sf-action-text);
   --color-hover: var(--sf-hover);
   --color-pressed: var(--sf-pressed);
   --color-tint: var(--sf-tint);
@@ -25,10 +34,15 @@
   --color-success: var(--sf-success);
   --color-warning: var(--sf-warning);
   --color-error: var(--sf-error);
-  --radius-badge: 4px;
+  --radius-sticker: 6px;
+  --radius-badge: 6px;
   --radius-control: 12px;
-  --radius-card: 12px;
-  --radius-panel: 16px;
+  --radius-well: 12px;
+  --radius-card: 16px;
+  --radius-tile: 16px;
+  --radius-sheet: 20px;
+  --radius-panel: 20px;
+  --radius-pay: 14px;
   --color-ink: var(--color-text);
   --color-border: var(--color-divider);
   --color-subtle: var(--color-surface);
