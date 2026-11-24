@@ -124,6 +124,14 @@ storefront, checkout, coupon, Arabic, search, filter, navigation and account Pla
 122 passed on the first run. The 2 failures were spec assumptions changed by this work: a literal "AED 20.00 per item" `textContent`
 check, and a signed-in fixture without a session cookie. Both specs were updated, and the affected 48 specs passed on rerun.
 
+**Final verification on `a112142` (CI browser pipeline, isolated build):** `build:commerce` and `build:foundation` pass. The **full**
+Playwright suite passes: **229 passed, 0 failed**. `smoke:seo` passes. Two smokes fail for reasons that pre-date this branch, which
+changes nothing under `apps/api`:
+- `smoke:foundation`: the API exits at startup with "Database access is disabled" under `DATABASE_MODE=disabled`.
+- `smoke:storefront`: it expects an `<h2 id="catalog-empty">No matching products</h2>` that no longer exists anywhere on `master`.
+  An earlier empty-search redesign replaced it.
+Both need their own fix on `master`.
+
 ## Coverage of the original brief
 
 This pass covered the shared system: tokens, breakpoints and the product card, plus discovery-page performance, cart and checkout
