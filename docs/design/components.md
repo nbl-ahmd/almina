@@ -1,5 +1,10 @@
 # Storefront components
 
+> **2026-11-24 — Quick Commerce Edition.** `DESIGN.md` replaced the Market Green / Coral direction at the owner's request. Where this
+> document conflicts with `DESIGN.md`, `colors.md` or `typography.md` (palette, lime campaigns, forest accents, radii, card anatomy,
+> purchase-button silhouette), those win. Interaction, accessibility, RTL, data-honesty and ownership rules below still apply.
+
+
 Use the semantic [color](colors.md), [type](typography.md) and [responsive](responsive.md) rules. Fixed anatomy and states apply across pages. Content-dependent shelves and merchandising follow [page patterns](page-patterns.md). Measurements below are CSS pixels, with minimum heights that expand for text.
 
 ## Shared controls

@@ -1,5 +1,10 @@
 # Responsive, PWA and RTL layout
 
+> **2026-11-24 — Quick Commerce Edition.** `DESIGN.md` replaced the Market Green / Coral direction at the owner's request. Where this
+> document conflicts with `DESIGN.md`, `colors.md` or `typography.md` (palette, lime campaigns, forest accents, radii, card anatomy,
+> purchase-button silhouette), those win. Interaction, accessibility, RTL, data-honesty and ownership rules below still apply.
+
+
 The content container is centered with a maximum inner width of 1280px, excluding the page gutters. Below that maximum, inner width equals viewport width minus two gutters. Filter rail gaps are separate from card gaps. All measurements are CSS pixels.
 
 ## Width and grid rules
