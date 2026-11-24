@@ -1,6 +1,7 @@
 import { boundedBody } from '../../../../lib/server/bounded-body';
 import { NextResponse,type NextRequest } from 'next/server';
 import { getWebEnvironment } from '../../../../lib/server/env';
+import { answersGuestLocally, guestReadBody } from '../../../../lib/account/session-reads';
 const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow'};
 async function handle(request:NextRequest,{params}:{params:Promise<{action:string}>}){
  const {action}=await params,env=getWebEnvironment(),development=env.APP_ENV==='development';
@@ -9,6 +10,7 @@ async function handle(request:NextRequest,{params}:{params:Promise<{action:strin
  if(request.nextUrl.search)return NextResponse.json({error:'Invalid request'},{status:400,headers});
  if(request.method!=='GET'&&(request.headers.get('origin')!==env.WEB_ORIGIN||request.headers.get('x-csrf-protection')!=='1'||request.headers.get('sec-fetch-site')==='cross-site'))return NextResponse.json({error:'Access denied'},{status:403,headers});
  try{const values=request.cookies.getAll(name),token=values.length===1&&/^[A-Za-z0-9_-]{43}$/.test(values[0]!.value)?values[0]!.value:'';
+ if(answersGuestLocally(request.method,action,token))return NextResponse.json(guestReadBody,{status:401,headers});
  const body=request.method==='POST'?await boundedBody(request,12000):undefined;if(body&&Buffer.byteLength(body)>12000)return NextResponse.json({error:'Too large'},{status:413,headers});
  const upstream=await fetch(new URL('/api/v1/customers/'+action,env.API_ORIGIN),{method:request.method,redirect:'error',cache:'no-store',signal:AbortSignal.timeout(15000),headers:{origin:env.WEB_ORIGIN,'x-csrf-protection':'1','Content-Type':'application/json',...(token?{cookie:name+'='+token}:{})},...(body?{body}:{})});
  const response=upstream.status===204?new NextResponse(null,{status:204,headers}):NextResponse.json(await upstream.json(),{status:upstream.status,headers});
