@@ -9,6 +9,7 @@ import { AddToCart } from './cart-controls';
 import { SaveProduct } from './save-product';
 import { productImage } from '../lib/server/catalog';
 import { getWebEnvironment } from '../lib/server/env';
+import { cartQuantities } from '../lib/server/cart-quantities';
 import { displayPrice, money, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
 
 export async function ProductPhoto({ product, eager = false }: { product: Product; eager?: boolean }) {
@@ -83,7 +84,7 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
     <div className="product-card-purchase mt-auto pt-1">
       <div className="product-card-buy-row">
         <ProductPrice product={product} />
-        {options ? <Link className="tile-options" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} compact />}
+        {options ? <Link className="tile-options" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} compact initialInCart={(await cartQuantities()).get(product._id) ?? 0} />}
       </div>
     </div>
   </article>;

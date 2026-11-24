@@ -77,7 +77,8 @@ try {
   const literalQuery = new URLSearchParams({ q: 'Daily[', literal: 'true' });
   const literalSearch = await fetch(`${origin}/search?${literalQuery}`);
   assert.equal(literalSearch.status, 200);
-  assert.ok((await literalSearch.text()).includes('<h2 id="catalog-empty">No matching products</h2>'),
+  // The empty result is the shared ProductGrid state (search results stream after the shell).
+  assert.ok(/<h2[^>]*>No products found\.<\/h2>/.test(await literalSearch.text()),
     "Literal search containing a bracket should render the empty-result heading");
   for (const path of ['/missing', '/products/missing', '/categories/missing', '/categories/cccccccccccccccccccccccc', '/productdetails/PD9999', '/_next/mcp', '/api/orders']) {
     assert.equal((await fetch(`${origin}${path}`)).status, 404, path);

@@ -8,10 +8,9 @@ import type { Locale } from '../lib/i18n';
 import { CouponField } from './coupon-field';
 
 export function CartCoupon({ lines, locale }: { lines: CartLine[]; locale: Locale }) {
-  const [request, setRequest] = useState<{ code: string } | null>(() => {
-    const code = readCoupon();
-    return code ? { code } : null;
-  });
+  // The cart can render on the server, so the saved coupon (session storage) is read after hydration.
+  const [request, setRequest] = useState<{ code: string } | null>(null);
+  useEffect(() => { const code = readCoupon(); if (code) queueMicrotask(() => setRequest(current => current ?? { code })); }, []);
   const [checked, setChecked] = useState<{ request: NonNullable<typeof request>; items: string; discount?: number; error?: string } | null>(null);
   const items = JSON.stringify(lines.map(line => ({ productId: line.id, quantity: line.quantity })));
   const current = checked?.request === request && checked.items === items ? checked : null;

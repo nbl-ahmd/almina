@@ -1,4 +1,6 @@
 import { connection } from 'next/server';
+import { headers } from 'next/headers';
+import { getLocale } from '../lib/server/i18n';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
@@ -14,5 +16,7 @@ export function generateMetadata(): Metadata {
 }
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await connection(); // Fresh nonce per render; HTML must never be shared from a cache.
-  return <html lang="en"><body id="top">{children}</body></html>;
+  const admin = (await headers()).get('x-almina-surface') === 'admin';
+  const lang = admin ? 'en' : await getLocale();
+  return <html lang={lang}><body id="top">{children}</body></html>;
 }

@@ -122,3 +122,30 @@ test('add to cart, authoritative price, stock limit and persistence work on desk
   await page.goto('/checkout');
   await expect(page.locator('main')).toContainText('Ordering is not available in this preview.');
 });
+
+test('product tile stepper adds, respects stock, removes and stays in sync with the cart badge', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/products');
+  const tile = page.locator('.product-card').filter({ has: page.getByRole('heading', { name: 'Daily Care', exact: true }) });
+  await tile.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
+  const increase = tile.getByRole('button', { name: 'Add one more Daily Care', exact: true });
+  await expect(increase).toBeVisible();
+  await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', '1 in cart');
+  for (let count = 2; count <= 4; count++) {
+    await increase.click();
+    await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', `${count} in cart`);
+  }
+  // Fixture stock is 4: the stepper stops there, and the badge agrees.
+  await expect(increase).toBeDisabled();
+  await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toHaveCount(1);
+  await page.reload();
+  await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', '4 in cart');
+  for (let count = 3; count >= 1; count--) {
+    await tile.getByRole('button', { name: 'Remove one Daily Care', exact: true }).click();
+    await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', `${count} in cart`);
+  }
+  // At one, decreasing removes the product and the tile returns to "Add".
+  await tile.getByRole('button', { name: 'Remove one Daily Care', exact: true }).click();
+  await expect(tile.getByRole('button', { name: 'Add to cart: Daily Care', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('almina.cart.v1'))).toBe('[]');
+});

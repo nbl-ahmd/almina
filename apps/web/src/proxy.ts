@@ -66,6 +66,8 @@ export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   // Always overwrite untrusted incoming nonce/CSP headers.
   headers.set('x-nonce', nonce);
+  // Lets the root layout pick the document language: admin stays English, storefront follows the locale cookie.
+  headers.set('x-almina-surface', request.nextUrl.pathname.startsWith('/admin') ? 'admin' : 'storefront');
   headers.set('Content-Security-Policy', policy);
   const response = NextResponse.next({ request: { headers } });
   response.headers.set('Content-Security-Policy', policy);
