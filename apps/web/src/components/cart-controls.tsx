@@ -45,7 +45,8 @@ export function AddToCart({ id, stock, quantityPicker = false, compact = false, 
     } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
     finally { setPending(false); }
   }
-  /** Tile stepper: the same device cart, the same server stock check before any increase. */
+  /** Tile stepper: the same device cart, the same server stock check before any increase.
+   *  Its labels differ from the cart page's line stepper so both can appear on one page. */
   async function step(next: number) {
     setPending(true); setMessage('');
     try {
@@ -63,9 +64,9 @@ export function AddToCart({ id, stock, quantityPicker = false, compact = false, 
     const limit = Math.min(stock, 999);
     return <div className="cart-controls tile-controls">
       <div className="tile-stepper" role="group" aria-label={ar ? `الكمية في السلة: ${label}` : `Quantity in cart: ${label}`} aria-busy={pending}>
-        <button type="button" disabled={pending} onClick={() => step(inCart - 1)} aria-label={ar ? `إنقاص كمية ${label}` : `Decrease ${label} quantity`}><Icon name="minus" /></button>
+        <button type="button" disabled={pending} onClick={() => step(inCart - 1)} aria-label={ar ? `أزل قطعة من ${label}` : `Remove one ${label}`}><Icon name="minus" /></button>
         <output aria-live="polite" aria-label={ar ? `${inCart} في السلة` : `${inCart} in cart`}>{pending ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" aria-hidden="true" /> : inCart}</output>
-        <button type="button" disabled={pending || inCart >= limit} onClick={() => step(inCart + 1)} aria-label={ar ? `زيادة كمية ${label}` : `Increase ${label} quantity`}><Icon name="plus" /></button>
+        <button type="button" disabled={pending || inCart >= limit} onClick={() => step(inCart + 1)} aria-label={ar ? `أضف قطعة أخرى من ${label}` : `Add one more ${label}`}><Icon name="plus" /></button>
       </div>
       <p role="status" className="status text-xs empty:hidden" aria-atomic="true">{message}</p>
     </div>;

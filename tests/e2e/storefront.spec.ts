@@ -128,7 +128,7 @@ test('product tile stepper adds, respects stock, removes and stays in sync with 
   await page.goto('/products');
   const tile = page.locator('.product-card').filter({ has: page.getByRole('heading', { name: 'Daily Care', exact: true }) });
   await tile.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
-  const increase = tile.getByRole('button', { name: 'Increase Daily Care quantity', exact: true });
+  const increase = tile.getByRole('button', { name: 'Add one more Daily Care', exact: true });
   await expect(increase).toBeVisible();
   await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', '1 in cart');
   for (let count = 2; count <= 4; count++) {
@@ -141,11 +141,11 @@ test('product tile stepper adds, respects stock, removes and stays in sync with 
   await page.reload();
   await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', '4 in cart');
   for (let count = 3; count >= 1; count--) {
-    await tile.getByRole('button', { name: 'Decrease Daily Care quantity', exact: true }).click();
+    await tile.getByRole('button', { name: 'Remove one Daily Care', exact: true }).click();
     await expect(tile.locator('.tile-stepper output')).toHaveAttribute('aria-label', `${count} in cart`);
   }
   // At one, decreasing removes the product and the tile returns to "Add".
-  await tile.getByRole('button', { name: 'Decrease Daily Care quantity', exact: true }).click();
+  await tile.getByRole('button', { name: 'Remove one Daily Care', exact: true }).click();
   await expect(tile.getByRole('button', { name: 'Add to cart: Daily Care', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('almina.cart.v1'))).toBe('[]');
 });

@@ -70,12 +70,21 @@ Only `transform` and `opacity` animate.
   404 and the guest `/account` reads.
 - Arabic (RTL) home, cart and listing checked at 390px: correct direction, mirrored steppers and sheets, Arabic "Add" label and savings strip.
 
+## Follow-up pass (same day)
+
+| Item | Change |
+|---|---|
+| Tile quantity stepper | Once a product is in the device cart, its tile shows a coral "− n +" stepper (Blinkit). It uses the same `storedCart`/`saveCart` and the same server `checkAddition` before any increase, is capped at stock (and 999), and removes the line at zero. Labels are "Decrease/Increase {name} quantity" and "{n} in cart", so they never collide with the cart page's "Remove {name} from cart". New browser spec in `storefront.spec.ts`. |
+| Server-rendered cart | `saveCart` mirrors ids and quantities into the `almina_cart` cookie (`lib/catalog/cart-cookie.ts`; ≤3,200 chars, SameSite=Lax, Secure on HTTPS, 30 days, cleared when empty). The cart page validates it, reads current catalogue data and renders real lines on first paint. `CartView` reuses that render when it matches `localStorage` (no second server read), otherwise reads again and rewrites the cookie. Tampered or oversized cookies fall back to client loading. Unit tests in `tests/cart-cookie.test.ts`. |
+| Brands page | Curated brand pages, plus "Brands in stock now" from the live catalogue as photo tiles linking to brand search. Shows a real empty state when there are none. |
+| Checkout delivery step | Before a place is chosen, the address fields sit under an "or type the address" divider ahead of building, flat and note, replacing a misleading disclosure that was already open. After a place is chosen they stay behind "Edit address details". Section bands separate delivery and contact. |
+| `<html lang>` | Follows the storefront locale. The proxy marks admin requests on a header it always overwrites, and admin stays English. |
+| Smoke checks failing on `master` | The API no longer prepares staff-alert storage when `DATABASE_MODE=disabled`, so `smoke:foundation` starts. `smoke:storefront` now checks the current "No products found." empty state. |
+
 ## Not changed / follow-ups
 
 - The checkout form's internal fields, address and map tooling keep their structure; only the surface, chips and actions are restyled.
   A step-by-step address sheet like Zomato's is a separate, behaviour-sensitive change.
-- There is no quantity stepper on product tiles: "Add" adds one and offers "Go to cart". A tile stepper would add cart edits outside the cart
-  page and needs its own tests.
 - Campaign artwork is the existing fallback (teal tint plus the courier photo). Real merchandising banners should come from the
   campaigns admin.
 - Native Arabic review, real-device motion and safe-area checks, and owner sign-off on the new identity remain release checks.
