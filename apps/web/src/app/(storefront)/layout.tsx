@@ -2,6 +2,7 @@ import {cookies, headers} from 'next/headers';
 import {GoogleMerchantWidget} from '../../components/google-customer-reviews';
 import {googleCommerceConfiguration} from '../../lib/google/commerce';
 import type { ReactNode } from 'react';
+import type { Viewport } from 'next';
 import { Navigation, Footer } from '../../components/navigation';
 import { StructuredData } from '../../components/structured-data';
 import { organizationData, websiteData } from '../../lib/seo';
@@ -13,6 +14,8 @@ import './storefront-pages.css';
 import './purchase-flow.css';
 import './storefront-chrome.css';
 import { storefrontFontVariables } from '../../lib/storefront-fonts';
+// viewport-fit=cover lets the installed app read real safe-area insets, which the fixed bottom bars already pad for.
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#ffffff' };
 export default async function StorefrontLayout({ children }: { children: ReactNode }) {
  const env = getWebEnvironment();
  const locale = await getLocale();
