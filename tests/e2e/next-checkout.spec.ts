@@ -77,10 +77,11 @@ test('checkout adds an opt-in GPS pin, invalidates review and saves the pin with
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toHaveCount(0);
+  await page.getByText('Edit address details', { exact: true }).click();
   await expect(page.getByRole('link', { name: 'Check delivery pin in Google Maps' })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=25.789%2C55.943');
   await expect(page.getByLabel('Street address', { exact: true })).toHaveValue('Synthetic street, Synthetic area, Ras Al Khaimah, United Arab Emirates');
   // Feedback sits right under the locate card, so it is seen without scrolling, and it reads as a success.
-  await expect(page.locator('.checkout-locate + .checkout-location-status')).toHaveAttribute('data-tone', /success|warning/);
+  await expect(page.locator('.checkout-location-status')).toHaveAttribute('data-tone', /success|warning/);
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Synthetic area');
   await expect(page.getByRole('combobox', { name: 'Emirate', exact: true })).toHaveValue('Ras al-Khaimah');
   await page.screenshot({ path: '.verification-results/checkout-autofill.jpg', fullPage: true });
@@ -106,6 +107,7 @@ test('removing the delivery pin requires a new review', async ({ page, context }
   await expect(page.getByText('GPS accuracy is low', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
+  await page.getByText('Edit address details', { exact: true }).click();
   await page.getByRole('button', { name: 'Remove delivery pin', exact: true }).click();
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toHaveCount(0);
@@ -165,6 +167,7 @@ test('editing a detected delivery address clears its pin and requires review', a
   await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Synthetic area');
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
+  await page.getByText('Edit address details', { exact: true }).click();
   await page.getByLabel('Street address', { exact: true }).fill('Corrected delivery street');
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toHaveCount(0);
@@ -300,4 +303,25 @@ test('mobile checkout preserves delivery details when going back and payment cho
  await expect(page.getByRole('radio',{name:/Credit or debit card/})).toBeChecked();
  await expect(page.getByRole('button',{name:'Continue to test payment'})).toBeVisible();
  expect((await state(request)).orders).toHaveLength(0);
+});
+
+test('a signed-in customer is not asked again for details we hold, and can place the order straight away', async ({ page, request }) => {
+  await page.route('**/api/customer/me', route => route.fulfill({ json: { data: { id: 'c1', email: 'member@example.test' } } }));
+  await page.route('**/api/customer/addresses', route => route.fulfill({ json: { data: [{ id: 'a1', label: 'Home', name: 'Member Name', mobile: '0501234567', emirate: 'Ras al-Khaimah', city: 'Al Ghubb',
+    address: 'Al Ghubb, Ras Al Khaimah, UAE', buildingname: 'Villa 4', flatno: '', note: '', maplink: '', isDefault: true, coordinates: { latitude: 25.79, longitude: 55.94 } }] } }));
+  await page.goto(origin + '/checkout');
+  await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 2 }])), productId);
+  await page.reload();
+  // Contact is a summary row, not three empty fields; the default address is already chosen.
+  await expect(page.getByText('Member Name', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Mobile number', { exact: true })).toBeHidden();
+  await expect(page.getByText('Delivering to', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Home/ }).first()).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Review order', exact: true }).click();
+  const submitted = page.waitForRequest(req => req.method() === 'POST' && new URL(req.url()).pathname === '/api/checkout');
+  await page.getByRole('button', { name: 'Place order — AED 40.00', exact: true }).click();
+  expect((await submitted).postDataJSON().customer).toMatchObject({ name: 'Member Name', email: 'member@example.test', mobile: '0501234567', city: 'Al Ghubb' });
+  await expect(page.getByRole('heading', { name: 'Order received' })).toBeVisible();
+  await expect(page.getByText('Order placed', { exact: true })).toBeVisible();
+  expect((await state(request)).orders).toHaveLength(1);
 });

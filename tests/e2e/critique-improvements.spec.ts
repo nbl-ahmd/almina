@@ -27,7 +27,8 @@ test('active basket opens with one title, product count and editable line',async
   await expect(page.locator('main h1')).toHaveText('Your cart');
   await expect(page.locator('.cart-title-count')).toContainText('1 product');
   await expect(page.locator('.cart-active-heading').getByRole('link')).toHaveCount(0);
-  expect((await page.locator('.cart-item').boundingBox())!.y).toBeLessThan(300);
+  // The delivery row now sits above the basket, so the first line starts a little lower but still within the first screen.
+  expect((await page.locator('.cart-item').boundingBox())!.y).toBeLessThan(420);
   await page.goto('/checkout');await expect(page.getByRole('heading',{name:'Checkout',exact:true})).toBeVisible();
   await expect(page.locator('main h1')).toHaveCount(1);
 });

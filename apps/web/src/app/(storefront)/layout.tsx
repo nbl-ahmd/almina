@@ -10,6 +10,7 @@ import { getLocale } from '../../lib/server/i18n';
 import { isRtl } from '../../lib/i18n';
 import './storefront.css';
 import './storefront-pages.css';
+import './purchase-flow.css';
 import './storefront-chrome.css';
 import { storefrontFontVariables } from '../../lib/storefront-fonts';
 export default async function StorefrontLayout({ children }: { children: ReactNode }) {
