@@ -64,3 +64,12 @@ test('recovered Cloudinary images are restricted to the configured account and r
   }
   assert.equal(cloudinaryImage(url, undefined), null);
 });
+
+test('horizontal rails are positioned so absolutely positioned labels cannot stretch the page sideways', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../apps/web/src/app/(storefront)/storefront-pages.css', import.meta.url), 'utf8');
+  // Screen-reader labels (position: absolute) inside an unpositioned scroller escape its clip and widened the homepage to 944px at 390px.
+  const rule = css.match(/\.storefront-shell :is\(([^)]*)\)\s*\{\s*position:\s*relative/);
+  assert.ok(rule, 'rail positioning rule is missing');
+  for (const rail of ['.overflow-x-auto', '.home-categories', '.brand-rail', '.home-compact-grid', '.catalog-category-links']) assert.ok(rule[1]!.includes(rail), rail);
+});

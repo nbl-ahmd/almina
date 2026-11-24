@@ -35,5 +35,6 @@ export {
   Tag as TagIcon,
   Truck as TruckIcon,
   UserCircle as UserCircleIcon,
+  Warning as ExclamationTriangleIcon,
   X as XMarkIcon,
 } from '@phosphor-icons/react/ssr';
