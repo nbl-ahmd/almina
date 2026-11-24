@@ -90,7 +90,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               <p className="m-0 text-2xl font-bold md:text-3xl"><CurrencyAmount value={currentPrice} locale={locale} /></p>
               {saving > 0 && <>
                 <del className="text-sm text-muted"><CurrencyAmount value={product.price} locale={locale} /></del>
-                <span className="rounded-md bg-accent px-2 py-0.5 text-xs font-semibold text-sale">{locale === 'ar' ? `وفّر ${saving}%` : `Save ${saving}%`}</span>
+                <span className="save-sticker">{locale === 'ar' ? `وفّر ${saving}%` : `Save ${saving}%`}</span>
               </>}
             </div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 [&_.stock-state]:m-0!">

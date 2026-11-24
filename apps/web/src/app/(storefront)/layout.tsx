@@ -13,7 +13,7 @@ import './storefront.css';
 import './storefront-pages.css';
 import './purchase-flow.css';
 import './storefront-chrome.css';
-import './storefront-skin.css';
+import './storefront-system.css';
 import { storefrontFontVariables } from '../../lib/storefront-fonts';
 // viewport-fit=cover lets the installed app read real safe-area insets, which the fixed bottom bars already pad for.
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#ffffff' };

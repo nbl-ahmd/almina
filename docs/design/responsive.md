@@ -1,8 +1,7 @@
 # Responsive, PWA and RTL layout
 
-> **2026-11-24 — Quick Commerce Edition.** `DESIGN.md` replaced the Market Green / Coral direction at the owner's request. Where this
-> document conflicts with `DESIGN.md`, `colors.md` or `typography.md` (palette, lime campaigns, forest accents, radii, card anatomy,
-> purchase-button silhouette), those win. Interaction, accessibility, RTL, data-honesty and ownership rules below still apply.
+> **2026-11-24 — Al Mina Quick.** Visual decisions live in `DESIGN.md`, `tokens.md` and `components.md`. The breakpoints, safe-area, PWA,
+> RTL and accessibility rules below still apply; any older wording about palette, lime campaigns or forest accents is superseded.
 
 
 The content container is centered with a maximum inner width of 1280px, excluding the page gutters. Below that maximum, inner width equals viewport width minus two gutters. Filter rail gaps are separate from card gaps. All measurements are CSS pixels.
@@ -37,7 +36,7 @@ Use existing offline/error behavior. Show connection failures with a recoverable
 
 ## RTL and text expansion
 
-Set locale language and document direction. Use logical properties for padding, margins, alignment, drawer edge and progress direction. Mirror directional arrows and reading order while keeping DOM focus order aligned. Keep logo and product artwork intact. Preserve numeric/SKU/phone runs and isolate mixed-language values as defined in [Typography](typography.md).
+Set locale language and document direction. Use logical properties for padding, margins, alignment, drawer edge and progress direction. Mirror directional arrows and reading order while keeping DOM focus order aligned. Keep logo and product artwork intact. Preserve numeric/SKU/phone runs and isolate mixed-language values as defined in [Tokens](tokens.md).
 
 Arabic labels and long product names grow naturally. At 200% text enlargement, 400% zoom with a 320px effective viewport, and WCAG text-spacing overrides, reflow to a single column where needed. Release sticky regions and avoid horizontal document overflow. Localized chip collections wrap before labels shrink.
 

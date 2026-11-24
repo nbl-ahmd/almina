@@ -65,7 +65,7 @@ export function AddToCart({ id, stock, quantityPicker = false, compact = false, 
     return <div className="cart-controls tile-controls">
       <div className="tile-stepper" role="group" aria-label={ar ? `الكمية في السلة: ${label}` : `Quantity in cart: ${label}`} aria-busy={pending}>
         <button type="button" disabled={pending} onClick={() => step(inCart - 1)} aria-label={ar ? `أزل قطعة من ${label}` : `Remove one ${label}`}><Icon name="minus" /></button>
-        <output aria-live="polite" aria-label={ar ? `${inCart} في السلة` : `${inCart} in cart`}>{pending ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" aria-hidden="true" /> : inCart}</output>
+        <output aria-live="polite" aria-label={ar ? `${inCart} في السلة` : `${inCart} in cart`}>{pending ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" aria-hidden="true" /> : <span key={inCart}>{inCart}</span>}</output>
         <button type="button" disabled={pending || inCart >= limit} onClick={() => step(inCart + 1)} aria-label={ar ? `أضف قطعة أخرى من ${label}` : `Add one more ${label}`}><Icon name="plus" /></button>
       </div>
       <p role="status" className="status text-xs empty:hidden" aria-atomic="true">{message}</p>
