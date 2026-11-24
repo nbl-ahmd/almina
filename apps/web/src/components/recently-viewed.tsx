@@ -4,7 +4,7 @@ import type { Locale } from '../lib/i18n';
 import { useEffect,useState } from 'react';
 import Link from './app-link';
 import { ProductImage } from './product-image';
-import { money } from '../lib/catalog/model';
+import { money } from '../lib/catalog/money';
 import { readSaved } from '../lib/catalog/saved';
 const key='almina.recent-products.v1';
 type Item={id:string;name:string;href:string;price:number;stock:number;image:string};
