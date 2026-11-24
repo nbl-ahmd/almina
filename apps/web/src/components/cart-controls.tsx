@@ -16,12 +16,12 @@ function subscribeCart(callback: () => void) {
   return () => { window.removeEventListener('almina-cart-change', callback); window.removeEventListener('storage', callback); };
 }
 /** Quantity of one product in the device cart, kept current across tiles, tabs and the cart page. */
-function useLineQuantity(id: string) {
-  return useSyncExternalStore(subscribeCart, () => { try { return storedCart().find(line => line.id === id)?.quantity ?? 0; } catch { return 0; } }, () => 0);
+function useLineQuantity(id: string, serverQuantity: number) {
+  return useSyncExternalStore(subscribeCart, () => { try { return storedCart().find(line => line.id === id)?.quantity ?? 0; } catch { return 0; } }, () => serverQuantity);
 }
-export function AddToCart({ id, stock, quantityPicker = false, compact = false, name, priceLabel, locale = 'en' }: { id: string; stock: number; quantityPicker?: boolean; compact?: boolean; name?: string; priceLabel?: string; locale?: Locale }) {
+export function AddToCart({ id, stock, quantityPicker = false, compact = false, initialInCart = 0, name, priceLabel, locale = 'en' }: { id: string; stock: number; quantityPicker?: boolean; compact?: boolean; initialInCart?: number; name?: string; priceLabel?: string; locale?: Locale }) {
   const [quantity, setQuantity] = useState(1);
-  const inCart = useLineQuantity(id);
+  const inCart = useLineQuantity(id, initialInCart);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const ADDED = u(locale,"Added to cart."), added = message === ADDED;
