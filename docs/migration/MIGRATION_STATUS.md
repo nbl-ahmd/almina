@@ -719,3 +719,13 @@ Verified the decoded destination text on desktop and mobile after reload, no
 horizontal overflow, no browser errors, and no Turbopack compilation issues.
 Component lint passes. Follow-up PR review/merge remains pending; no deployment
 or WhatsApp message was sent by verification.
+
+### Storefront modernization pass — 24 November 2026
+
+Audit and refinement of the customer storefront against the approved Market Green / Coral direction and the new checkout-flow
+references. Fixed a missing cart checkout button on 768–899 px tablets: legacy `globals.css` breakpoint helpers were overriding storefront
+utilities, and they are now scoped out. Removed zod from the discovery-page bundles (−21% JS). Guest pages no longer call the customer API.
+Cart and checkout layout shift went from 0.31/0.48 to ≈0.01. Palette and radii are now Tailwind v4 tokens. Product cards, cart, currency
+display and stock state were refined. The PWA manifest, maskable icons and safe-area viewport were added. No commerce, data or API contract
+changes. See [storefront modernization](STOREFRONT_MODERNIZATION_2026-11-24.md) for measurements, verification and follow-ups.
+
