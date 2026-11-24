@@ -1,5 +1,6 @@
 "use client";
 import { decodeStoredCart, cartLines, type CartLine } from '../browser-validation';
+import { writeCartCookie } from './cart-cookie';
 const key = 'almina.cart.v1';
 let decoded: { raw: string | null; legacy: boolean; lines: CartLine[] } | undefined;
 export function storedCart() {
@@ -16,5 +17,6 @@ export function saveCart(lines: CartLine[]) {
   const valid = cartLines(lines);
   if (!valid) throw new Error('Invalid cart');
   localStorage.setItem(key, JSON.stringify(valid));
+  try { writeCartCookie(valid); } catch { /* The cookie only speeds up the cart page's first paint. */ }
   window.dispatchEvent(new Event('almina-cart-change'));
 }

@@ -3,7 +3,7 @@ import { CartCoupon } from './cart-coupon';
 import { DeliveryProgress } from './delivery-progress';
 import { DeliveryRow } from './delivery-row';
 import { ReminderSignup } from './customer-reminders';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from './app-link';
 import { ProductImage } from './product-image';
 import { CurrencyAmount } from './currency-amount';
@@ -12,12 +12,15 @@ import { loadCart, checkAddition } from '../app/(storefront)/cart/actions';
 import { money, type CartLine } from '../lib/catalog/model';
 import { Icon } from './storefront-icon';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
+import { writeCartCookie } from '../lib/catalog/cart-cookie';
 import { t, tf, itemCountText, type Locale } from '../lib/i18n';
 type Items = Awaited<ReturnType<typeof loadCart>>['items'];
-export function CartView({ checkout = false, recommendations, cloudName, locale = 'en' }: { checkout?: boolean; recommendations?: ReactNode; cloudName?: string | undefined; locale?: Locale }) {
-  const [lines, setLines] = useState<CartLine[]>([]);
-  const [items, setItems] = useState<Items>([]);
-  const [ready, setReady] = useState(false);
+export function CartView({ checkout = false, recommendations, cloudName, locale = 'en', initialLines, initialItems }: { checkout?: boolean; recommendations?: ReactNode; cloudName?: string | undefined; locale?: Locale; initialLines?: CartLine[]; initialItems?: Items }) {
+  const [lines, setLines] = useState<CartLine[]>(initialLines ?? []);
+  const [items, setItems] = useState<Items>(initialItems ?? []);
+  const [ready, setReady] = useState(initialItems !== undefined);
+  // The server's cookie render; cleared by "Try again" so a retry always reads from the server.
+  const serverLines = useRef(initialLines);
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -28,6 +31,12 @@ export function CartView({ checkout = false, recommendations, cloudName, locale 
       const current = ++revision;
       try {
         const next = storedCart();
+        // The server already rendered these exact lines from the cookie copy: keep them and skip a second read.
+        // Only an effect's first read may reuse the server render (StrictMode re-runs effects); cart events always read again.
+        const painted = current === 1 ? serverLines.current : undefined;
+        if (painted && JSON.stringify(next) === JSON.stringify(painted)) { setReady(true); return; }
+        // Older carts predate the cookie (or it went stale): rewrite it so the next visit renders on the server.
+        try { writeCartCookie(next); } catch { /* Best effort. */ }
         const result = await loadCart(next);
         if (!active || current !== revision) return;
         setLines(next); setItems(result.items); setError(result.error ?? ''); setReady(true);
@@ -55,7 +64,7 @@ export function CartView({ checkout = false, recommendations, cloudName, locale 
   const savings = items.reduce((sum, item) => sum + (item.formerPrice !== null && item.price !== null ? (item.formerPrice - item.price) * item.quantity : 0), 0);
   const itemsTotal = items.length && items.every(item => item.price !== null) ? items.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0) : null;
   if (!ready) return <div className="empty-state purchase-loading">{!checkout ? <h1>{t(locale, 'cartPageTitle')}</h1> : null}<p role="status">{t(locale, 'cartLoading')}</p><div aria-hidden="true" className="skeleton skeleton-line" /></div>;
-  return <>{!checkout && !items.length ? <h1>{t(locale, 'cartPageTitle')}</h1> : null}{error ? <div className="notice error-notice"><p role="alert">{error}</p><p>{t(locale, 'cartSavedNotRemoved')}</p><button type="button" className="button-secondary" onClick={() => { setReady(false); setRetry(value => value + 1); }}>{t(locale, 'cartTryAgain')}</button></div> : null}
+  return <>{!checkout && !items.length ? <h1>{t(locale, 'cartPageTitle')}</h1> : null}{error ? <div className="notice error-notice"><p role="alert">{error}</p><p>{t(locale, 'cartSavedNotRemoved')}</p><button type="button" className="button-secondary" onClick={() => { serverLines.current = undefined; setReady(false); setRetry(value => value + 1); }}>{t(locale, 'cartTryAgain')}</button></div> : null}
     {!lines.length && !error ? <><div className="grid items-center gap-5 overflow-hidden rounded-2xl p-5 md:grid-cols-2 md:p-8"><div><h2 className="mb-3 text-2xl font-semibold md:text-3xl">{t(locale, 'cartEmptyTitle')}</h2><p className="mb-5 text-sm leading-6">{t(locale, 'cartEmptyBody')}</p><Link className="button rounded-full text-sm" href="/products">{t(locale, 'cartStartShopping')} <Icon name="arrow" /></Link></div></div>{recommendations}</> : items.length ? <>
       {!checkout ? <div className="cart-active-heading"><div className="cart-title-count"><h1>{t(locale, 'cartPageTitle')}</h1><span>{itemCountText(locale, items.length, 'product')}</span></div></div> : null}
       {!checkout ? <DeliveryRow locale={locale} /> : null}<DeliveryProgress locale={locale} lines={lines} />{!checkout && items.every(item => item.reminderEligible) ? <ReminderSignup locale={locale} items={lines} /> : null}<div className="cart-layout grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_300px] lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] lg:gap-8"><div className="cart-left min-w-0"><h2 className="sr-only">{t(locale, 'cartYourItems')}</h2><div className="pf-card py-1"><ul className="cart-items pf-lines m-0 list-none">
