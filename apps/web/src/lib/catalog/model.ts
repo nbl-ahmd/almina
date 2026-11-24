@@ -48,19 +48,7 @@ export const displayPrice = (product: Product) => product.sale === true && produ
 export const cartLineSchema = z.object({ id: z.string().regex(objectId), quantity: z.number().int().min(1).max(999) });
 export const cartSchema = z.array(cartLineSchema).max(100).refine(lines => new Set(lines.map(line => line.id)).size === lines.length);
 export type CartLine = z.infer<typeof cartLineSchema>;
-export function decodeStoredCart(raw: string | null, legacy = false): CartLine[] {
-  try {
-    const data: unknown = JSON.parse(raw ?? '[]');
-    if (!Array.isArray(data)) return [];
-    const candidates = legacy ? data.map((line: unknown) => {
-      if (!line || typeof line !== 'object') return null;
-      const item = line as Record<string, unknown>;
-      return { id: item._id, quantity: item.quantity };
-    }) : data;
-    const result = cartSchema.safeParse(candidates);
-    return result.success ? result.data : [];
-  } catch { return []; }
-}
+export { decodeStoredCart } from '../browser-validation';
 
 export const productOptionLabel = (product: Product) => variantLabel(product);
 

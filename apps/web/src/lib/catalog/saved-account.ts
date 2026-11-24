@@ -1,3 +1,4 @@
+import { renderedAsGuest } from '../account/session-hint';
 import { readSaved,savedKey,setSaved } from './saved';
 // Account-backed lists are never put into guest storage. Signing out restores the guest list.
 let accountIds:string[]|null=null;
@@ -6,7 +7,7 @@ let generation=0;
 // The storefront shell marks whether a customer session cookie was present when the page rendered.
 // Guests skip the account read; an in-page sign-in calls resetSavedAccount, which re-enables it.
 let forced=false;
-function knownGuest(){return !forced&&document.querySelector('[data-customer-session]')?.getAttribute('data-customer-session')==='0';}
+function knownGuest(){return !forced&&renderedAsGuest();}
 export function currentSaved(){return accountIds??readSaved(localStorage.getItem(savedKey));}
 export function resetSavedAccount(){generation++;forced=true;accountIds=null;loading=null;window.dispatchEvent(new Event('almina-saved-change'));}
 export function loadSavedAccount(){

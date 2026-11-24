@@ -1,5 +1,5 @@
 "use client";
-import { decodeStoredCart, cartSchema, type CartLine } from './model';
+import { decodeStoredCart, cartLines, type CartLine } from '../browser-validation';
 const key = 'almina.cart.v1';
 let decoded: { raw: string | null; legacy: boolean; lines: CartLine[] } | undefined;
 export function storedCart() {
@@ -13,6 +13,8 @@ export function storedCart() {
   return decoded.lines;
 }
 export function saveCart(lines: CartLine[]) {
-  localStorage.setItem(key, JSON.stringify(cartSchema.parse(lines)));
+  const valid = cartLines(lines);
+  if (!valid) throw new Error('Invalid cart');
+  localStorage.setItem(key, JSON.stringify(valid));
   window.dispatchEvent(new Event('almina-cart-change'));
 }

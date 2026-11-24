@@ -1,4 +1,5 @@
 'use client';
+import { customerRead } from '../lib/account/session-hint';
 import { CouponField } from './coupon-field';
 import { couponError, readCoupon, saveCoupon } from '../lib/checkout/coupon';
 import { DeliveryPinPicker } from './delivery-pin-picker';
@@ -207,8 +208,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { const onChange = () => applySavedPoint(true); window.addEventListener(areaEvent, onChange); return () => window.removeEventListener(areaEvent, onChange); }, [attempt]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{let active=true;
-    void fetch('/api/customer/me',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:{email?:string}};if(active&&typeof payload.data?.email==='string')setAccount({email:payload.data.email});}).catch(()=>{}).finally(()=>{if(active)setAccountChecked(true);});
-    void fetch('/api/customer/addresses',{cache:'no-store'}).then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:SavedDeliveryAddress[]};if(active&&Array.isArray(payload.data))setSavedAddresses(payload.data);}).catch(()=>{}).finally(()=>{if(active)setAddressesLoaded(true);});
+    void customerRead('/api/customer/me').then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:{email?:string}};if(active&&typeof payload.data?.email==='string')setAccount({email:payload.data.email});}).catch(()=>{}).finally(()=>{if(active)setAccountChecked(true);});
+    void customerRead('/api/customer/addresses').then(async response=>{if(!response.ok)return;const payload=await response.json() as {data?:SavedDeliveryAddress[]};if(active&&Array.isArray(payload.data))setSavedAddresses(payload.data);}).catch(()=>{}).finally(()=>{if(active)setAddressesLoaded(true);});
     return()=>{active=false;};},[]);
   function setField(name:string,value:string,onlyIfEmpty=false){const field=form.current?.elements.namedItem(name);if(field instanceof HTMLInputElement&&(!onlyIfEmpty||!field.value))field.value=value;}
   function readContact(){const f=form.current;const get=(name:string)=>{const field=f?.elements.namedItem(name);return field instanceof HTMLInputElement?field.value.trim():'';};setContact({name:get('name'),mobile:get('mobile'),email:get('email')});}

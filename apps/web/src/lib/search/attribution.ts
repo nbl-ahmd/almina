@@ -1,6 +1,7 @@
 'use client';
 import { usageChoice,privacyBlocked } from '../telemetry/browser';
-import { searchAttributionSchema,type SearchEvent } from '@almina/contracts/search';
+import type { SearchEvent } from '@almina/contracts/search';
+import { searchAttributionsFrom } from '../browser-validation';
 const key='almina.search-attribution.v1';
 export const searchConsentKey='almina.optional-search-usage.v1';
 let storageFailure=false;
@@ -13,6 +14,6 @@ export function reportSearchEvent(event:SearchEvent){
  void fetch('/api/search/events',{method:'POST',keepalive:true,credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer',headers:{'Content-Type':'application/json','X-CSRF-Protection':'1','X-Search-Consent':'1'},body:JSON.stringify(event),signal:controller.signal}).catch(()=>{}).finally(()=>{clearTimeout(timeout);active.delete(controller);});
 }
 export function searchAttributions(){if(!searchUsageAllowed()){try{sessionStorage.removeItem(key);}catch{/* Optional attribution. */}return [];}
- try{const raw=JSON.parse(sessionStorage.getItem(key)??'null') as {expires?:number;items?:unknown}|null;if(!raw?.expires||raw.expires<Date.now())return [];const parsed=searchAttributionSchema.safeParse(raw.items);return parsed.success?parsed.data:[];}catch{return [];}}
+ try{const raw=JSON.parse(sessionStorage.getItem(key)??'null') as {expires?:number;items?:unknown}|null;if(!raw?.expires||raw.expires<Date.now())return [];return searchAttributionsFrom(raw.items)??[];}catch{return [];}}
 export function rememberSearch(searchId:string,productId:string,position:number){if(!searchUsageAllowed())return;try{const items=[...searchAttributions().filter(row=>row.productId!==productId),{searchId,productId,position}].slice(-50);sessionStorage.setItem(key,JSON.stringify({expires:Date.now()+3600000,items}));}catch{/* Commerce does not depend on attribution storage. */}}
 export function attributeCart(productId:string){const row=searchAttributions().find(item=>item.productId===productId);if(row)reportSearchEvent({searchId:row.searchId,event:'search_add_to_cart',items:[{productId,position:row.position}]});}
