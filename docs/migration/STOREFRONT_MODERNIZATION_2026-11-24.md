@@ -48,7 +48,9 @@ Harness scripts are in the git-ignored `.local-demo/redesign/` folder (`capture.
 
 ### Network and bundle (commits `938b19a`, `36e3794`, `9634352`, `eb98e0c`)
 
-- The storefront shell renders `data-customer-session` from the presence of the session cookie. Guests skip session-only reads, and the
+- The storefront shell renders `data-customer-session` from the presence of the session cookie, and `accountRequest` updates it on
+  sign-in and sign-out. Layouts do not re-render on client navigation, so without this a fresh sign-in would read as a guest
+  (covered by a new `customer-account.spec.ts` test). Guests skip session-only reads, and the
   `/api/customer/*` proxy answers tokenless session-only reads with the API's own 401 body without an upstream call
   (`lib/account/session-reads.ts`, `lib/account/session-hint.ts`). An in-page sign-in still re-enables the saved-list read.
 - Dependency-free browser readers (`lib/browser-validation.ts`) replace zod for the cart, delivery area and point, and search attribution.
@@ -67,14 +69,14 @@ Harness scripts are in the git-ignored `.local-demo/redesign/` folder (`capture.
   colour utilities in storefront components now use them, and the off-palette danger colour became `error`.
 - **Responsive boundary.** Legacy helpers in `globals.css` no longer reach inside `.storefront-shell`, so storefront utilities follow the
   documented breakpoints. This fixed the tablet checkout gap.
-- **Product card.** Availability badge only for "Currently unavailable" or "Few left" (stock ≤ 3, real data). Larger pack in the 5:4
-  media well. Names in ink with forest on hover. Badges use `rounded-badge`.
+- **Product card.** Availability badge only when the product is unavailable (recorded in `docs/design/components.md`). Larger pack in
+  the 5:4 media well. Names in ink with forest on hover. Badges use `rounded-badge`.
 - **Prices.** Cart and checkout display amounts with the shared `CurrencyAmount` (dirham mark plus spoken "AED …"). Text labels such as
   "Pay AED …" keep the formatted string.
 - **Stock.** The PDP shows "Out of stock" in the warning colour.
 - **Cart on phones.** Lines and the bill sit on the canvas, separated by full-bleed surface bands. The delivery prompt is a quiet surface
   row. Thumbnail fallbacks show the glyph only. Cart line names use ink.
-- **Layout stability.** Cart and checkout reserve a screen while loading. The checkout order card renders placeholder rows for the stored
+- **Layout stability.** Cart and checkout reserve a screen while loading, including the empty-checkout state (empty-cart CLS 0.81 → 0). The checkout order card renders placeholder rows for the stored
   lines. The server-rendered filter summary matches the mobile pill below 900 px.
 - **Navigation.** Tab labels wrap only between words, with a smaller size below 360 px. Internal links use a direction-aware right arrow.
 
@@ -122,11 +124,25 @@ storefront, checkout, coupon, Arabic, search, filter, navigation and account Pla
 122 passed on the first run. The 2 failures were spec assumptions changed by this work: a literal "AED 20.00 per item" `textContent`
 check, and a signed-in fixture without a session cookie. Both specs were updated, and the affected 48 specs passed on rerun.
 
+## Coverage of the original brief
+
+This pass covered the shared system: tokens, breakpoints and the product card, plus discovery-page performance, cart and checkout
+stability and presentation, guest network traffic and PWA basics. It did **not** redesign every customer page, and some parts of the brief
+remain open:
+
+- Page-level composition passes for the home, PDP, account, information and policy pages beyond the shared component changes.
+- A motion and interaction pass (Emil/animation skills). No motion was added or changed.
+- An SEO and structured-data audit. The existing metadata, canonical, JSON-LD and sitemap implementation was not modified or re-audited.
+- Full end-to-end journeys with sign-in against the real customer API. Browser specs cover them with fixtures only.
+
 ## Not changed / follow-ups
 
 - The root `<html lang>` stays `en`. The storefront wrapper carries the correct `lang`/`dir`. Making the root locale-aware needs a decision for admin routes.
 - Section subtitles such as "Small essentials. A little more care, every day." are approved copy and were left alone.
 - Radix still ships for the menu, gallery and filter sheet. Replacing it with native `<dialog>` is a separate, behaviour-sensitive change.
+- `/brands` renders only its heading when no curated brand has catalogue matches (seen on the demo data). It needs an empty state.
+- Cart and checkout LCP is bound by hydration plus the `loadCart` server action. A cookie-backed server cart would let these render on
+  the server.
 - Real-device PWA checks (iOS safe areas, keyboard, install prompt) and native Arabic review remain release checks.
 
 ## Rollback
