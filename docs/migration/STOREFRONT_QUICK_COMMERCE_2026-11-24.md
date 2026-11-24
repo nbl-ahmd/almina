@@ -81,10 +81,32 @@ Only `transform` and `opacity` animate.
 | `<html lang>` | Follows the storefront locale. The proxy marks admin requests on a header it always overwrites, and admin stays English. |
 | Smoke checks failing on `master` | The API no longer prepares staff-alert storage when `DATABASE_MODE=disabled`, so `smoke:foundation` starts. `smoke:storefront` now checks the current "No products found." empty state. |
 
+**Final verification (follow-up pass, isolated production build):** `smoke:foundation`, `smoke:storefront` and `smoke:seo` all pass,
+and the full Playwright suite passes (**230/230**). Typecheck, lint and 330 unit tests are clean.
+
+### Measured after the follow-up pass
+
+Production build, same harness as the modernization record (390 × 844 mobile, 4× CPU, ~1.6 Mbps / 150 ms, median of three; the cart
+cookie holds one line).
+
+| Page | LCP ms | CLS | JS KB gz | Note |
+|---|---|---|---|---|
+| Cart | **≈2950 → 740** | 0.004 → 0.001 | 315 | Lines render on the server from the cart cookie; no second read on mount |
+| Home | 784 | 0 | 240 | |
+| Products | 1348 (was 2116) | 0.066 | 244 | The shift is the Manrope swap reflowing heavier headings on a throttled first visit; it is still under 0.1 ("good") |
+| Category | 704 | 0.006 | 244 | |
+| Search | 2080 | 0.008 | 244 | Results stream after the shell; the largest paint is now the square product image |
+| Product | 752 | 0 | 312 | |
+| Checkout | 2820 | 0.012 | 335 | Waits for the pending-order recovery check (duplicate-order protection); see follow-ups |
+
 ## Not changed / follow-ups
 
 - The checkout form's internal fields, address and map tooling keep their structure; only the surface, chips and actions are restyled.
   A step-by-step address sheet like Zomato's is a separate, behaviour-sensitive change.
 - Campaign artwork is the existing fallback (teal tint plus the courier photo). Real merchandising banners should come from the
   campaigns admin.
+- The Latin font ships as a 165 KB TTF (69 KB gzip). A WOFF2 subset would arrive sooner and remove most of the listing's font-swap
+  shift. It needs a font tool (fonttools/woff2) that is not installed here.
+- Checkout's first paint waits for its recovery check of pending orders and payments on this device. That check prevents a second order
+  while one is pending or unknown, so it was deliberately left as it is. Speeding it up belongs with checkout/order-integrity work and its tests.
 - Native Arabic review, real-device motion and safe-area checks, and owner sign-off on the new identity remain release checks.
