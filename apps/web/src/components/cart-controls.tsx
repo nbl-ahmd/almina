@@ -1,7 +1,8 @@
 "use client";
 import { shopText as u } from '../lib/i18n-storefront';
 import type { Locale } from '../lib/i18n';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+import { storedCart, saveCart } from '../lib/catalog/browser-cart';
 import { Icon } from './storefront-icon';
 import { Button } from './ui/button';
 import Link from './app-link';
@@ -10,8 +11,17 @@ import { attributeCart } from '../lib/search/attribution';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
 import { ArrowPathIcon } from './storefront-icons';
 /** `compact` is the product-tile control: a small outlined "Add" pill with the same accessible names and checks. */
+function subscribeCart(callback: () => void) {
+  window.addEventListener('almina-cart-change', callback); window.addEventListener('storage', callback);
+  return () => { window.removeEventListener('almina-cart-change', callback); window.removeEventListener('storage', callback); };
+}
+/** Quantity of one product in the device cart, kept current across tiles, tabs and the cart page. */
+function useLineQuantity(id: string) {
+  return useSyncExternalStore(subscribeCart, () => { try { return storedCart().find(line => line.id === id)?.quantity ?? 0; } catch { return 0; } }, () => 0);
+}
 export function AddToCart({ id, stock, quantityPicker = false, compact = false, name, priceLabel, locale = 'en' }: { id: string; stock: number; quantityPicker?: boolean; compact?: boolean; name?: string; priceLabel?: string; locale?: Locale }) {
   const [quantity, setQuantity] = useState(1);
+  const inCart = useLineQuantity(id);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const ADDED = u(locale,"Added to cart."), added = message === ADDED;
@@ -34,6 +44,31 @@ export function AddToCart({ id, stock, quantityPicker = false, compact = false, 
       setMessage(ADDED);
     } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
     finally { setPending(false); }
+  }
+  /** Tile stepper: the same device cart, the same server stock check before any increase. */
+  async function step(next: number) {
+    setPending(true); setMessage('');
+    try {
+      const lines = storedCart();
+      if (next > 0) { const error = await checkAddition(id, next); if (error) { setMessage(error); return; } }
+      if (JSON.stringify(lines) !== JSON.stringify(storedCart())) { setMessage(u(locale,"Your cart changed. Please try again.")); return; }
+      saveCart(next > 0 ? lines.map(line => line.id === id ? { id, quantity: next } : line) : lines.filter(line => line.id !== id));
+      recordCommerceEvent('cart_updated');
+      if (next > inCart) attributeCart(id);
+    } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
+    finally { setPending(false); }
+  }
+  if (compact && !quantityPicker && stock > 0 && inCart > 0) {
+    const ar = locale === 'ar', label = name ?? '';
+    const limit = Math.min(stock, 999);
+    return <div className="cart-controls tile-controls">
+      <div className="tile-stepper" role="group" aria-label={ar ? `الكمية في السلة: ${label}` : `Quantity in cart: ${label}`} aria-busy={pending}>
+        <button type="button" disabled={pending} onClick={() => step(inCart - 1)} aria-label={ar ? `إنقاص كمية ${label}` : `Decrease ${label} quantity`}><Icon name="minus" /></button>
+        <output aria-live="polite" aria-label={ar ? `${inCart} في السلة` : `${inCart} in cart`}>{pending ? <ArrowPathIcon className="size-4 motion-safe:animate-spin" aria-hidden="true" /> : inCart}</output>
+        <button type="button" disabled={pending || inCart >= limit} onClick={() => step(inCart + 1)} aria-label={ar ? `زيادة كمية ${label}` : `Increase ${label} quantity`}><Icon name="plus" /></button>
+      </div>
+      <p role="status" className="status text-xs empty:hidden" aria-atomic="true">{message}</p>
+    </div>;
   }
   return <div className={`cart-controls ${quantityPicker ? 'purchase-controls' : ''} ${compact ? 'tile-controls' : ''}`}><div className="purchase-control-row flex min-w-0 flex-wrap items-center gap-3">{quantityPicker && stock > 0 ? <div className="purchase-quantity flex shrink-0 items-center rounded-xl border [&_input]:w-9 [&_input]:min-w-0 [&_input]:appearance-none [&_input]:border-0 [&_input]:bg-transparent [&_input]:px-0 [&_input]:py-1 [&_input]:text-center [&_input::-webkit-inner-spin-button]:appearance-none [&_input::-webkit-outer-spin-button]:appearance-none"><label className="sr-only" htmlFor={`quantity-${id}`}>{u(locale,"Quantity")}</label><Button variant="ghost" size="icon" type="button" className="quantity-step size-11 min-w-11 rounded-none border-0 bg-transparent p-1.5 disabled:bg-transparent [&_.icon]:size-4" aria-label={u(locale,"Decrease purchase quantity")} disabled={pending || quantity <= 1} onClick={() => changeQuantity(value => Math.max(1, value - 1))}><Icon name="minus" /></Button><input id={`quantity-${id}`} type="number" inputMode="numeric" disabled={pending} min={1} max={Math.min(stock, 999)} value={quantity} onChange={event => changeQuantity(() => Math.max(1, Math.min(stock, 999, Number(event.target.value) || 1)))} /><Button variant="ghost" size="icon" type="button" className="quantity-step size-11 min-w-11 rounded-none border-0 bg-transparent p-1.5 disabled:bg-transparent [&_.icon]:size-4" aria-label={u(locale,"Increase purchase quantity")} disabled={pending || quantity >= Math.min(stock, 999)} onClick={() => changeQuantity(value => Math.min(stock, 999, value + 1))}><Icon name="plus" /></Button></div> : null}
     {added ? <Button asChild variant={quantityPicker ? "accent" : "outline"} className={`add-to-cart go-to-cart min-h-12 rounded-xl px-3 py-3 text-sm font-semibold ${quantityPicker ? 'min-w-[160px] flex-1' : 'min-w-11 w-full'}`}>

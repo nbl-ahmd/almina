@@ -434,3 +434,55 @@
   .account-page .customer-sign-in [data-slot="button"]:not([data-variant]), .account-page .customer-sign-in [data-slot="button"][data-variant="default"] { inline-size: 100%; min-block-size: 52px; border-radius: var(--radius-pay); font-size: 1rem; font-weight: 800; }
   .account-page section, .account-page article { border: 0 !important; border-radius: var(--radius-sheet) !important; background: var(--color-canvas) !important; }
 }
+
+/* ---------- Tile stepper (Blinkit): replaces "Add" once the product is in the cart ---------- */
+@scope (.storefront-shell) {
+  .tile-stepper {
+    display: inline-grid; grid-template-columns: 36px minmax(24px, auto) 36px; align-items: center;
+    block-size: 36px; border-radius: 10px; background: var(--color-action); color: var(--color-canvas);
+    box-shadow: var(--shadow-float); animation: tile-added 200ms var(--ease-out);
+  }
+  .tile-stepper button {
+    position: relative; display: grid; place-items: center; inline-size: 36px; block-size: 36px; min-block-size: 0; padding: 0;
+    border: 0; border-radius: 10px; color: var(--color-canvas); background: transparent;
+    transition: transform var(--motion-press) var(--ease-out), background-color var(--motion-feedback) var(--ease-out);
+  }
+  .tile-stepper button::after { content: ""; position: absolute; inset: -4px 0; }
+  .tile-stepper button:hover:not(:disabled) { background: var(--color-hover); }
+  .tile-stepper button:active:not(:disabled) { transform: scale(.88); }
+  .tile-stepper button:disabled { color: rgb(255 255 255 / 55%); background: transparent; }
+  .tile-stepper .icon { inline-size: 16px; block-size: 16px; }
+  .tile-stepper output { display: grid; place-items: center; min-inline-size: 24px; font-size: .9375rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tile-stepper button:focus-visible { outline-color: var(--color-canvas); box-shadow: 0 0 0 2px var(--color-teal); }
+}
+@media (prefers-reduced-motion: reduce) { @scope (.storefront-shell) { .tile-stepper { animation: none; } } }
+@scope (.storefront-shell) {
+  .product-card-buy-row:has(.tile-stepper) .cart-controls { flex-basis: 100%; }
+  .product-card-buy-row:has(.tile-stepper) .tile-stepper { display: grid; grid-template-columns: 44px 1fr 44px; inline-size: 100%; }
+  .product-card-buy-row:has(.tile-stepper) .tile-stepper button { inline-size: 44px; }
+}
+
+/* ---------- Brands page ---------- */
+@scope (.storefront-shell) {
+  .brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 10px; }
+  .brand-tile {
+    display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-block-size: 64px; padding: 8px 12px 8px 8px;
+    border: 1px solid var(--color-line); border-radius: var(--radius-tile); background: var(--color-canvas); color: var(--color-text); text-decoration: none;
+    transition: background-color var(--motion-feedback) var(--ease-out), transform var(--motion-press) var(--ease-out);
+  }
+  .brand-tile:active { transform: scale(.98); }
+  .brand-tile > svg { color: var(--color-action-text); }
+  .brand-tile-mark { display: grid; place-items: center; inline-size: 48px; block-size: 48px; overflow: hidden; padding: 6px; border-radius: var(--radius-well); background: var(--color-well); color: var(--color-teal); font-size: 1.125rem; font-weight: 800; }
+  .brand-tile-photo img { mix-blend-mode: multiply; }
+  .brand-tile-name { min-inline-size: 0; font-weight: 700; overflow-wrap: anywhere; }
+  @media (hover: hover) and (pointer: fine) { .brand-tile:hover { background: var(--color-well); } }
+}
+@scope (.storefront-shell) {
+  .checkout-or { display: flex; align-items: center; gap: 12px; margin: 4px 0 0; color: var(--color-muted); font-size: .8125rem; font-weight: 600; }
+  .checkout-or span { flex: 1; block-size: 1px; background: var(--color-line); }
+  .checkout-form-section + .checkout-form-section { margin-block-start: 20px; padding-block-start: 20px; border-block-start: 8px solid var(--color-app); margin-inline: -16px; padding-inline: 16px; }
+  .checkout-form-section h3 { font-size: 1.0625rem; font-weight: 800; }
+  .checkout-optional > summary { color: var(--color-action-text); font-weight: 700; }
+}
+@media (min-width: 900px) { @scope (.storefront-shell) { .checkout-form-section + .checkout-form-section { margin-inline: -20px; padding-inline: 20px; } } }
+@media (min-width: 600px) and (max-width: 899px) { @scope (.storefront-shell) { .checkout-form-section + .checkout-form-section { margin-inline: -24px; padding-inline: 24px; } } }
