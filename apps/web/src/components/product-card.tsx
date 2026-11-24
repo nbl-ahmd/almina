@@ -64,9 +64,8 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
         </div>
       </Link>
       <div className="pointer-events-none absolute start-1 top-1 flex max-w-[calc(100%-52px)] flex-wrap items-start gap-1">
-        {/* Availability is shown only when it changes the decision: unavailable, or few left (real stock). */}
-        {product.stock <= 0 ? <span className="rounded-badge bg-canvas px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-muted">{u(locale, 'Currently unavailable')}</span>
-          : product.stock <= 3 ? <span className="rounded-badge bg-canvas px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-warning">{locale === 'ar' ? 'كمية محدودة' : 'Few left'}</span> : null}
+        {/* Availability badge only when it changes the decision; available stock is the default state. */}
+        {product.stock <= 0 ? <span className="rounded-badge bg-canvas px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-muted">{u(locale, 'Currently unavailable')}</span> : null}
         {saving > 0 && <span className="rounded-badge bg-tint px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-error">
           <span className="sr-only">{locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}</span>
           <span aria-hidden="true">{discount > 0 ? (locale === 'ar' ? `خصم ${discount}٪` : `${discount}% off`) : u(locale, 'Offer')}</span>

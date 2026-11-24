@@ -15,6 +15,8 @@
   /* Cart and checkout read the device cart after hydration. Reserve a screen while loading so the footer
      never starts in view and jumps down (was the main layout shift on both pages). */
   .purchase-loading { min-block-size: 100dvh; }
+  /* An empty checkout keeps the same reserved height (content centred) so the footer does not jump up into view. */
+  .purchase-empty { display: grid; align-content: center; justify-items: center; min-block-size: 100dvh; }
   .pf-delivery { margin-block-end: 12px; display: flex; align-items: center; gap: 12px; min-block-size: 76px; padding: 12px 8px 12px 16px; border: 1px solid var(--color-divider); border-radius: 16px; background: var(--color-canvas); }
   .pf-delivery[data-empty="true"] { border-color: transparent; background: var(--color-surface); }
   .pf-delivery-text { flex: 1; min-inline-size: 0; }

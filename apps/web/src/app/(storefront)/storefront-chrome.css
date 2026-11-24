@@ -48,8 +48,8 @@
 @media (max-width:899px) { @scope (.storefront-shell) { :scope { padding-block-end: calc(72px + env(safe-area-inset-bottom)); } } }
 /* Fixed bars span the full width; keep their controls clear of landscape notches. */
 @scope (.storefront-shell) {
-  .mobile-nav { padding-inline-start: max(8px, env(safe-area-inset-left)); padding-inline-end: max(8px, env(safe-area-inset-right)); }
-  :is(.cart-mobile-bar, .checkout-mobile-action) { padding-inline-start: max(16px, env(safe-area-inset-left)); padding-inline-end: max(16px, env(safe-area-inset-right)); }
+  .mobile-nav { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+  :is(.cart-mobile-bar, .checkout-mobile-action) { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
 }
 @media (min-width:600px) { @scope (.storefront-shell) { .chrome-container { padding-inline: 24px; } } }
 @media (min-width:900px) {

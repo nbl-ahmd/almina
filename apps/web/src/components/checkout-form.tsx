@@ -418,6 +418,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       setCouponCode(''); saveCoupon(''); setReviewed(null); setError('');
       if (stage === 'payment') void refreshQuote(undefined, '');
     }} />;
+  // Placeholder rows while the basket loads; storage can be blocked, so never let this read throw during render.
+  const pendingLines=(()=>{if(basketReady)return 0;try{return Math.max(1,storedCart().length);}catch{return 1;}})();
   const itemsEstimateMinor=basket.length&&basket.every(item=>item.price!==null)?Math.round(basket.reduce((sum,item)=>sum+(item.price??0)*item.quantity,0)*100):null;
   const contactReady=!!account&&!!contact.name&&!!contact.mobile&&!!contact.email;
   const contactErrors=!!(fieldErrors.name||fieldErrors.mobile||fieldErrors.email);
@@ -452,12 +454,12 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       <div className="flex flex-col gap-2 sm:flex-row"><Link className="button min-h-12 flex-1 text-sm" href="/products">{t(locale,'checkoutContinueShopping')}<Icon name="arrow"/></Link><Link className="button button-secondary min-h-12 flex-1 text-sm" href="/contact">{t(locale,'checkoutContactPharmacyShort')}</Link></div>
     </div>
   </section></>;
-  if(basketReady&&!basketCount&&!attempt&&!error)return <section className="checkout-flow mx-auto max-w-xl py-10 text-center"><Icon name="bag"/><h1 className="mt-4 text-2xl">{t(locale,'cartEmptyTitle')}</h1><p className="my-4 text-sm">{t(locale,'cartEmptyBody')}</p><Link className="button min-h-12" href="/products">{t(locale,'cartStartShopping')}</Link></section>;
+  if(basketReady&&!basketCount&&!attempt&&!error)return <section className="checkout-flow purchase-empty py-10 text-center [&>*]:max-w-xl"><Icon name="bag"/><h1 className="mt-4 text-2xl">{t(locale,'cartEmptyTitle')}</h1><p className="my-4 text-sm">{t(locale,'cartEmptyBody')}</p><Link className="button min-h-12" href="/products">{t(locale,'cartStartShopping')}</Link></section>;
   return <section className="checkout-flow" data-stage={stage} data-keyboard={keyboardOpen} aria-label={t(locale,'checkoutPlaceOrderAria')}>
     <div className="checkout-topbar"><Link className="inline-flex min-h-11 items-center gap-2 text-sm font-medium" href="/cart" aria-label={ar?'العودة إلى السلة':'Back to cart'}><ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden="true"/><span className="hidden sm:inline">{ar?'العودة إلى السلة':'Back to cart'}</span></Link><h1 className="m-0 text-xl font-semibold sm:text-2xl">{t(locale,'checkoutTitle')}</h1><SecureCheckoutLabel locale={locale}/></div>
     <CheckoutProgress stage={stage} locale={locale}/>
     {stage==='details'?<section className="pf-card pf-narrow-only mb-4" aria-labelledby="pf-order-heading"><h2 id="pf-order-heading" className="pf-card-title">{ar?'طلبك':'Your order'}<span className="pf-muted font-normal">{basketCount?itemCountText(locale,basketCount,'item'):''}</span><Link href="/cart" className="pf-link-button inline-flex items-center">{ar?'تعديل':'Edit'}</Link></h2>
-      <ul className="pf-lines m-0 list-none p-0">{!basketReady?Array.from({length:Math.max(1,storedCart().length)},(_,index)=><li key={index} className="pf-line" aria-hidden="true"><span className="pf-thumb skeleton"/><span className="skeleton skeleton-line m-0 w-3/4"/></li>):null}{basket.map(item=><li key={item.id} className="pf-line">
+      <ul className="pf-lines m-0 list-none p-0">{!basketReady?Array.from({length:pendingLines},(_,index)=><li key={index} className="pf-line" aria-hidden="true"><span className="pf-thumb skeleton"/><span className="skeleton skeleton-line m-0 w-3/4"/></li>):null}{basket.map(item=><li key={item.id} className="pf-line">
         <span className="pf-thumb"><ProductImage locale={locale} src={item.image} alt="" width={64} height={64} sizes="64px" className="size-full object-contain p-1"/></span>
         <span className="min-w-0"><span className="pf-line-name block">{item.name}</span>{item.variantLabel?<span className="pf-muted block">{item.variantLabel}</span>:null}<span className="pf-muted block">{tf(locale,'checkoutQty',{count:item.quantity})}</span></span>
         {item.price!==null?<span className="pf-line-total">{amount(Math.round(item.price*item.quantity*100))}</span>:null}</li>)}</ul>

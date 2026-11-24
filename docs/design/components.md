@@ -32,7 +32,7 @@ Category shortcuts use an 80px circular pack/editorial media region and full lab
 
 ## Product cards and imagery
 
-Full product cards use a white surface, a subtle divider border and 16px corners. Keep the photo area at a consistent 5:4 ratio, including when the image is missing. Place stock and verified offer badges at the top of the media area and the existing save control beside them. Place available brand and pack details in quiet chips above the complete product name.
+Full product cards use a white surface, a subtle divider border and 16px corners. Keep the photo area at a consistent 5:4 ratio, including when the image is missing. Place the verified offer badge, and an availability badge only when the product is unavailable, at the top of the media area with the existing save control beside them. Available stock is the default state and carries no badge (2026-11-24 density decision; see `docs/migration/STOREFRONT_MODERNIZATION_2026-11-24.md`). Place available brand and pack details in quiet chips above the complete product name.
 
 Cards sharing a row stretch to the same height. Keep space below short titles, outside the text group, so the price and action sit at the bottom. Rows can grow to fit longer names and Arabic. Use 16/22px titles, with 14px/1.4 on phones below 600px. Phone prices sit beside a 44 × 44px softly rounded coral add button. On larger screens use a named purchase button. Products with multiple options keep the Choose options action. Keep product-specific accessible names, busy and success states, and visible purchase feedback. Unavailable controls remain disabled and the stock badge explains why.
 

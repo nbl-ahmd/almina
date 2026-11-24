@@ -22,7 +22,7 @@ button[aria-pressed="true"]:not(:where(.storefront-shell *, .admin-app *)), [dat
   white-space: nowrap;
 }
 :is(.skip-link, .admin-skip):focus { position: fixed; z-index: 100; background: Canvas; }
-.hidden:not(.storefront-shell *) { display: none; }
+.hidden:where(:not(.storefront-shell *)) { display: none; }
 [hidden] { display: none !important; }
 .overflow-x-auto, .admin-table-wrap, .thumbnails { overflow-x: auto; }
 .overflow-y-auto { overflow-y: auto; }
@@ -30,31 +30,31 @@ button[aria-pressed="true"]:not(:where(.storefront-shell *, .admin-app *)), [dat
 /* Legacy responsive helpers for retained admin/wholesale screens. The storefront compiles its own Tailwind
    utilities at the documented 600/900/1200px breakpoints, so these must not reach inside it. */
 @media (min-width: 640px) {
-  .sm\:hidden:not(.storefront-shell *) { display: none; }
-  .sm\:block:not(.storefront-shell *) { display: block; }
-  .sm\:inline:not(.storefront-shell *) { display: inline; }
-  .sm\:flex:not(.storefront-shell *) { display: flex; }
-  .sm\:grid:not(.storefront-shell *) { display: grid; }
+  .sm\:hidden:where(:not(.storefront-shell *)) { display: none; }
+  .sm\:block:where(:not(.storefront-shell *)) { display: block; }
+  .sm\:inline:where(:not(.storefront-shell *)) { display: inline; }
+  .sm\:flex:where(:not(.storefront-shell *)) { display: flex; }
+  .sm\:grid:where(:not(.storefront-shell *)) { display: grid; }
 }
 @media (min-width: 768px) {
-  .md\:hidden:not(.storefront-shell *) { display: none; }
-  .md\:block:not(.storefront-shell *) { display: block; }
-  .md\:inline:not(.storefront-shell *) { display: inline; }
-  .md\:inline-flex:not(.storefront-shell *) { display: inline-flex; }
-  .md\:flex:not(.storefront-shell *) { display: flex; }
-  .md\:grid:not(.storefront-shell *) { display: grid; }
+  .md\:hidden:where(:not(.storefront-shell *)) { display: none; }
+  .md\:block:where(:not(.storefront-shell *)) { display: block; }
+  .md\:inline:where(:not(.storefront-shell *)) { display: inline; }
+  .md\:inline-flex:where(:not(.storefront-shell *)) { display: inline-flex; }
+  .md\:flex:where(:not(.storefront-shell *)) { display: flex; }
+  .md\:grid:where(:not(.storefront-shell *)) { display: grid; }
 }
 @media (min-width: 1024px) {
-  .lg\:hidden:not(.storefront-shell *) { display: none; }
-  .lg\:block:not(.storefront-shell *) { display: block; }
-  .lg\:inline:not(.storefront-shell *) { display: inline; }
-  .lg\:flex:not(.storefront-shell *) { display: flex; }
-  .lg\:grid:not(.storefront-shell *) { display: grid; }
+  .lg\:hidden:where(:not(.storefront-shell *)) { display: none; }
+  .lg\:block:where(:not(.storefront-shell *)) { display: block; }
+  .lg\:inline:where(:not(.storefront-shell *)) { display: inline; }
+  .lg\:flex:where(:not(.storefront-shell *)) { display: flex; }
+  .lg\:grid:where(:not(.storefront-shell *)) { display: grid; }
 }
 @media (min-width: 1280px) {
-  .xl\:inline:not(.storefront-shell *) { display: inline; }
-  .xl\:flex:not(.storefront-shell *) { display: flex; }
-  .xl\:grid:not(.storefront-shell *) { display: grid; }
+  .xl\:inline:where(:not(.storefront-shell *)) { display: inline; }
+  .xl\:flex:where(:not(.storefront-shell *)) { display: flex; }
+  .xl\:grid:where(:not(.storefront-shell *)) { display: grid; }
 }
 
 /* Google Identity Services renders its own markup and injects unlayered styles

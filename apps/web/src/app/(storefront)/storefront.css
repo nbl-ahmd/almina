@@ -58,8 +58,10 @@ body:has(.storefront-shell) {
   :scope {
     display: block;
     min-block-size: 100dvh;
-    /* Landscape notches: zero everywhere else (viewport-fit=cover in the storefront layout). */
-    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+    /* Landscape notches: zero everywhere else (viewport-fit=cover in the storefront layout). Insets are physical
+       sides, so physical properties keep them correct in RTL. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     color: var(--color-text);
     background: var(--color-canvas);
     font-family: var(--font-manrope), Arial, sans-serif;
