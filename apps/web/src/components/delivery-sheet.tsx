@@ -14,7 +14,7 @@ import { browserEnvironment, guidanceFor, requestPosition, type Guidance } from 
 import type { MapSettle, MapTarget } from './location-pin-map';
 import { Icon } from './storefront-icon';
 import { ArrowLeftIcon, ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from './storefront-icons';
-const LocationPinMap = dynamic(() => import('./location-pin-map'), { ssr: false, loading: () => <div className="h-full min-h-60 w-full animate-pulse bg-[#e8eee9] motion-reduce:animate-none" aria-hidden="true" /> });
+const LocationPinMap = dynamic(() => import('./location-pin-map'), { ssr: false, loading: () => <div className="h-full min-h-60 w-full animate-pulse bg-surface motion-reduce:animate-none" aria-hidden="true" /> });
 const copy = (ar: boolean) => ({
   useLocation: ar ? 'استخدام موقعي الحالي' : 'Use current location',
   finding: ar ? 'جارٍ تحديد موقعك…' : 'Finding your location…',
@@ -175,11 +175,11 @@ export default function DeliverySheet({ locale = 'en', openSignal }: { locale?: 
     try { savePoint({ ...pending, ...extra }); close(); } catch { setMessage(t(locale, 'areaSaveError')); }
   }
   const sheetClass = view === 'map'
-    ? 'delivery-map-sheet fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-white p-0 text-[var(--color-text)] open:flex'
+    ? 'delivery-map-sheet fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none flex-col overflow-hidden rounded-none border-0 bg-white p-0 text-ink open:flex'
     : 'delivery-area-sheet fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border-0 bg-white px-5 pt-6 pb-[calc(24px+env(safe-area-inset-bottom))] sm:inset-0 sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-32px)] sm:max-w-md sm:rounded-2xl sm:p-7';
   const canConfirm = lookup.state === 'ok' && !!lookup.result && coverage?.status !== 'outside';
-  const guidancePanel = guidance ? <div role="alert" className="mb-4 grid gap-2 rounded-xl bg-[var(--color-tint)] p-3 text-sm text-[var(--color-text)]">
-    <p className="m-0 flex items-start gap-2 font-semibold"><ExclamationTriangleIcon className="mt-0.5 size-5 shrink-0 text-[var(--color-pressed)]" aria-hidden="true" />{guidance.title}</p>
+  const guidancePanel = guidance ? <div role="alert" className="mb-4 grid gap-2 rounded-xl bg-tint p-3 text-sm text-ink">
+    <p className="m-0 flex items-start gap-2 font-semibold"><ExclamationTriangleIcon className="mt-0.5 size-5 shrink-0 text-pressed" aria-hidden="true" />{guidance.title}</p>
     <ol className="m-0 grid gap-1.5 ps-9 text-[13px] leading-5">{guidance.steps.map(step => <li key={step}>{step}</li>)}</ol>
   </div> : null;
   return <>
@@ -188,10 +188,10 @@ export default function DeliverySheet({ locale = 'en', openSignal }: { locale?: 
         <div className="flex items-center gap-2"><Button variant="ghost" size="icon" shape="pill" type="button" onClick={() => setView('map')} aria-label={c.back}><ArrowLeftIcon className="size-5 rtl:rotate-180" aria-hidden="true" /></Button>
           <h2 id="delivery-area-heading" className="m-0 min-w-0 flex-1 text-xl">{c.detailsTitle}</h2>
           <Button variant="ghost" size="icon" shape="pill" type="button" onClick={close} aria-label={t(locale,'areaClose')}><Icon name="close" /></Button></div>
-        <div className="flex items-start gap-3 rounded-xl bg-[var(--color-surface)] p-3 text-sm"><span aria-hidden="true" className="mt-0.5 text-[var(--color-action)]"><Icon name="pin" /></span><span className="min-w-0"><strong className="block">{pending?.city}</strong><span className="line-clamp-2 text-[13px] text-[var(--color-muted)]">{pending?.address}</span></span></div>
+        <div className="flex items-start gap-3 rounded-xl bg-surface p-3 text-sm"><span aria-hidden="true" className="mt-0.5 text-action"><Icon name="pin" /></span><span className="min-w-0"><strong className="block">{pending?.city}</strong><span className="line-clamp-2 text-[13px] text-muted">{pending?.address}</span></span></div>
         <p className="m-0 text-sm">{c.detailsLede}</p>
         <div role="radiogroup" aria-label={c.labelAs} className="flex gap-2">{(['Home', 'Work', 'Other'] as const).map(name => <button key={name} type="button" role="radio" aria-checked={draft.label === name} onClick={() => setDraft(current => ({ ...current, label: name }))}
-          className={`min-h-11 flex-1 rounded-full border px-3 text-sm font-medium ${draft.label === name ? 'border-[var(--color-action)] bg-[var(--color-tint)] text-[var(--color-action)]' : 'bg-white'}`}>{c.labels[name]}</button>)}</div>
+          className={`min-h-11 flex-1 rounded-full border px-3 text-sm font-medium ${draft.label === name ? 'border-action bg-tint text-action' : 'bg-white'}`}>{c.labels[name]}</button>)}</div>
         <FieldGroup>
           <Field><FieldLabel htmlFor="dl-building">{c.building}</FieldLabel><Input id="dl-building" value={draft.building} maxLength={120} autoComplete="off" onChange={event => setDraft(current => ({ ...current, building: event.target.value }))} /></Field>
           <Field><FieldLabel htmlFor="dl-flat">{c.flat}</FieldLabel><Input id="dl-flat" value={draft.flat} maxLength={60} autoComplete="off" onChange={event => setDraft(current => ({ ...current, flat: event.target.value }))} /></Field>
@@ -214,12 +214,12 @@ export default function DeliverySheet({ locale = 'en', openSignal }: { locale?: 
         <div className="grid gap-3 border-t bg-white px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
           {guidancePanel}
           <div role="status" className="flex min-h-12 items-start gap-3 text-sm">
-            <span aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--color-action)]">{lookup.state === 'ok' ? <CheckCircleIcon className="size-5" /> : lookup.state === 'loading' ? <ArrowPathIcon className="size-5 motion-safe:animate-spin" /> : <Icon name="pin" />}</span>
-            <span className="min-w-0">{lookup.state === 'ok' && lookup.result ? <><strong className="block text-[15px]">{lookup.result.city}</strong><span className="line-clamp-2 text-[13px] text-[var(--color-muted)]">{lookup.result.address}</span></>
+            <span aria-hidden="true" className="mt-0.5 shrink-0 text-action">{lookup.state === 'ok' ? <CheckCircleIcon className="size-5" /> : lookup.state === 'loading' ? <ArrowPathIcon className="size-5 motion-safe:animate-spin" /> : <Icon name="pin" />}</span>
+            <span className="min-w-0">{lookup.state === 'ok' && lookup.result ? <><strong className="block text-[15px]">{lookup.result.city}</strong><span className="line-clamp-2 text-[13px] text-muted">{lookup.result.address}</span></>
               : lookup.state === 'loading' ? c.looking : lookup.state === 'outside' ? c.outside : lookup.state === 'busy' ? c.busy : lookup.state === 'failed' ? c.failed : lookup.state === 'zoom' ? c.zoomIn : c.move}</span>
           </div>
-          {lookup.state === 'ok' && coverage?.status === 'serviceable' ? <p role="status" className="m-0 text-[13px] font-medium text-[var(--color-action)]">{c.covered(coverage.estimatedMinutes, coverage.deliveryFeeMinor)}</p> : null}
-          {coverage?.status === 'outside' ? <p role="alert" className="m-0 text-[13px] font-medium text-[var(--color-danger,#b42318)]">{c.notCovered}</p> : null}
+          {lookup.state === 'ok' && coverage?.status === 'serviceable' ? <p role="status" className="m-0 text-[13px] font-medium text-action">{c.covered(coverage.estimatedMinutes, coverage.deliveryFeeMinor)}</p> : null}
+          {coverage?.status === 'outside' ? <p role="alert" className="m-0 text-[13px] font-medium text-error">{c.notCovered}</p> : null}
           {lookup.state === 'busy' || lookup.state === 'failed' ? <div className="flex flex-wrap gap-2">
             {lookup.state === 'busy' ? <Button variant="outline" type="button" onClick={() => setCenter(current => current ? { ...current } : current)}>{c.retry}</Button> : null}
             <Button variant="ghost" type="button" onClick={() => setView('choose')}>{c.manualInstead}</Button>
@@ -231,19 +231,19 @@ export default function DeliverySheet({ locale = 'en', openSignal }: { locale?: 
         <div aria-hidden="true" className="mx-auto -mt-3 mb-4 h-1 w-9 rounded-full sm:hidden" />
         <div className="mb-3 flex items-center justify-between gap-3"><h2 id="delivery-area-heading" className="m-0 text-xl">{t(locale,'areaHeading')}</h2><Button variant="outline" size="icon" shape="pill" type="button" className="shrink-0" onClick={close} aria-label={t(locale,'areaClose')}><Icon name="close" /></Button></div>
         <p className="mt-0 text-sm">{c.lede}</p>
-        {point ? <div className="mb-4 flex items-start gap-3 rounded-xl bg-[var(--color-surface)] p-3 text-sm"><span aria-hidden="true" className="mt-0.5 text-[var(--color-action)]"><Icon name="pin" /></span><span className="min-w-0"><span className="block text-xs text-[var(--color-muted)]">{c.saved}</span><strong className="block">{point.label ? `${c.labels[point.label]} · ` : ''}{point.city}</strong><span className="line-clamp-2 text-[13px] text-[var(--color-muted)]">{[point.building, point.flat].filter(Boolean).join(', ')}{point.building || point.flat ? ' · ' : ''}{point.address}</span></span></div> : null}
+        {point ? <div className="mb-4 flex items-start gap-3 rounded-xl bg-surface p-3 text-sm"><span aria-hidden="true" className="mt-0.5 text-action"><Icon name="pin" /></span><span className="min-w-0"><span className="block text-xs text-muted">{c.saved}</span><strong className="block">{point.label ? `${c.labels[point.label]} · ` : ''}{point.city}</strong><span className="line-clamp-2 text-[13px] text-muted">{[point.building, point.flat].filter(Boolean).join(', ')}{point.building || point.flat ? ' · ' : ''}{point.address}</span></span></div> : null}
         {book.length ? <div className="mb-4 grid gap-2" role="group" aria-label={c.myAddresses}>
-          <span className="text-xs font-semibold text-[var(--color-muted)]">{c.myAddresses}</span>
+          <span className="text-xs font-semibold text-muted">{c.myAddresses}</span>
           {book.map(item => <button key={item.id} type="button" onClick={() => chooseBookAddress(item)} className="flex min-h-12 w-full items-start gap-3 rounded-xl border bg-white p-3 text-start text-sm">
-            <span aria-hidden="true" className="mt-0.5 text-[var(--color-action)]"><Icon name="pin" /></span>
-            <span className="min-w-0"><strong className="block">{item.label}</strong><span className="line-clamp-2 text-[13px] text-[var(--color-muted)]">{item.address}</span></span></button>)}
+            <span aria-hidden="true" className="mt-0.5 text-action"><Icon name="pin" /></span>
+            <span className="min-w-0"><strong className="block">{item.label}</strong><span className="line-clamp-2 text-[13px] text-muted">{item.address}</span></span></button>)}
         </div> : null}
         <div className="grid gap-2">
           <Button type="button" className="min-h-12 w-full rounded-xl" onClick={() => { void locate(true); }} disabled={working} aria-busy={working}>{working ? <ArrowPathIcon className="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true" /> : <Icon name="pin" />}{working ? t(locale,'areaFindingButton') : c.useLocation}</Button>
           <Button variant="outline" type="button" className="min-h-12 w-full rounded-xl" onClick={chooseOnMap} disabled={working}>{c.chooseOnMap}</Button>
         </div>
         <div className="mt-3">{guidancePanel}{message ? <p role="status" className="my-3 text-sm">{message}</p> : null}</div>
-        <div className="my-4 flex items-center gap-3 text-xs text-[var(--color-muted)]" aria-hidden="true"><span className="h-px flex-1 bg-[var(--color-divider)]" />{c.orManual}<span className="h-px flex-1 bg-[var(--color-divider)]" /></div>
+        <div className="my-4 flex items-center gap-3 text-xs text-muted" aria-hidden="true"><span className="h-px flex-1 bg-divider" />{c.orManual}<span className="h-px flex-1 bg-divider" /></div>
         <form onSubmit={submit}><FieldGroup className="grid gap-4"><Field><FieldLabel htmlFor="delivery-location-field-1">{t(locale,'areaEmirate')}</FieldLabel><NativeSelect id="delivery-location-field-1" value={emirate} onChange={event => setEmirate(event.target.value as DeliveryArea['emirate'])} autoComplete="address-level1" disabled={working}>{deliveryEmirates.map(value => <option key={value} value={value}>{emirateLabel(locale,value)}</option>)}</NativeSelect></Field><Field><FieldLabel htmlFor="delivery-location-field-2">{t(locale,'areaCity')}</FieldLabel><Input id="delivery-location-field-2" value={city} onChange={event => setCity(event.target.value)} maxLength={200} autoComplete="address-level2" required placeholder={t(locale,'areaExample')} disabled={working} /></Field><Button type="submit" variant="outline" disabled={working}>{t(locale,'areaSave')}</Button></FieldGroup></form>
         {!area ? <button type="button" className="mt-3 min-h-11 w-full rounded-lg border-0 bg-transparent text-sm font-semibold underline underline-offset-4" onClick={() => { skipLocationPrompt(); close(); }}>{c.browse}</button> : null}
         <p className="mt-4 mb-0 text-xs">{t(locale,'areaStored')}</p>

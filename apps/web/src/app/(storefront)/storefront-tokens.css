@@ -17,6 +17,23 @@
   --color-success: #236245;
   --color-warning: #79500f;
   --color-error: #952436;
+  /* Utility bridge: @theme maps text-forest, bg-surface … to these names (see storefront.css). */
+  --sf-canvas: var(--color-canvas);
+  --sf-muted: var(--color-muted);
+  --sf-surface: var(--color-surface);
+  --sf-divider: var(--color-divider);
+  --sf-control: var(--color-control);
+  --sf-brand: var(--color-brand);
+  --sf-action: var(--color-action);
+  --sf-hover: var(--color-hover);
+  --sf-pressed: var(--color-pressed);
+  --sf-tint: var(--color-tint);
+  --sf-forest: var(--color-forest);
+  --sf-lime: var(--color-lime);
+  --sf-focus: var(--color-focus);
+  --sf-success: var(--color-success);
+  --sf-warning: var(--color-warning);
+  --sf-error: var(--color-error);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

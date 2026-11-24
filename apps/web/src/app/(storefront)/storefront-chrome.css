@@ -21,7 +21,8 @@
   [data-slot="search-clear"], [data-slot="recent-clear"] { color: var(--color-forest); background: transparent; }
   .mobile-nav { display: flex; flex-wrap: nowrap; position: fixed; inset: auto 0 0; z-index: var(--layer-sticky); gap: 0; background: var(--color-canvas); border-block-start: 1px solid var(--color-divider); padding: 4px 8px calc(4px + env(safe-area-inset-bottom)); }
   .mobile-tab { min-block-size: 56px; border-radius: 8px; color: var(--color-muted); font-size: .875rem; line-height: 1.25; }
-  .mobile-tab>span:last-child { white-space: normal; overflow: visible; }
+  /* Labels wrap between words only (Arabic can need two lines); never split a word. */
+  .mobile-tab>span:last-child { white-space: normal; overflow: visible; overflow-wrap: normal; word-break: normal; }
   .mobile-tab[aria-current="page"] { color: var(--color-forest); font-weight: 700; }
   .mobile-tab[aria-current="page"] .mobile-tab-icon { background: var(--color-tint); }
   .mobile-tab-icon>span { background: var(--color-forest); color: var(--color-canvas); }
@@ -45,6 +46,11 @@
   .uppercase { text-transform: none; letter-spacing: normal; }
 }
 @media (max-width:899px) { @scope (.storefront-shell) { :scope { padding-block-end: calc(72px + env(safe-area-inset-bottom)); } } }
+/* Fixed bars span the full width; keep their controls clear of landscape notches. */
+@scope (.storefront-shell) {
+  .mobile-nav { padding-inline-start: max(8px, env(safe-area-inset-left)); padding-inline-end: max(8px, env(safe-area-inset-right)); }
+  :is(.cart-mobile-bar, .checkout-mobile-action) { padding-inline-start: max(16px, env(safe-area-inset-left)); padding-inline-end: max(16px, env(safe-area-inset-right)); }
+}
 @media (min-width:600px) { @scope (.storefront-shell) { .chrome-container { padding-inline: 24px; } } }
 @media (min-width:900px) {
   @scope (.storefront-shell) {
@@ -86,7 +92,7 @@
   .delivery-compact { display: inline; }
   :scope:has(.checkout-page) .header-menu { display: none; }
 }
-@media (max-width:359px) { @scope (.storefront-shell) { .brand-logo img { inline-size: 104px; } } }
+@media (max-width:359px) { @scope (.storefront-shell) { .brand-logo img { inline-size: 104px; } .mobile-nav { padding-inline: 4px; } .mobile-tab { font-size: .75rem; } } }
 @media (min-width:900px) { @scope (.storefront-shell) {
   .header-menu { display: none; }
   .header-content { grid-template-columns: auto minmax(0,1fr) auto auto auto; gap: 24px; }

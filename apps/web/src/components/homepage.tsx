@@ -9,7 +9,6 @@ import Link from './app-link';
 import {
   ChatBubbleLeftRightIcon,
   ArrowRightIcon,
-  ArrowUpRightIcon,
 } from './storefront-icons';
 import {
   ProductPhoto as Photo,
@@ -57,7 +56,7 @@ async function SectionHeading({
         href={href}
       >
         {u(locale,link)}
-        <ArrowUpRightIcon className="size-3.5" />
+        <ArrowRightIcon className="size-3.5 rtl:-scale-x-100" />
       </Link>
     </div>
   );
@@ -277,7 +276,7 @@ export async function HomeBrandStrip({ brands, products }: { brands: string[]; p
               className="group flex min-h-14 min-w-[180px] shrink-0 snap-start items-center gap-3 rounded-xl border bg-white py-2 pr-3 pl-2 text-sm font-medium tracking-[-0.01em] transition-colors"
             >
               {match ? <span className="block size-10 shrink-0 overflow-hidden rounded-full p-1.5"><Photo product={match} /></span> : <span className="flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{brand.slice(0,1).toUpperCase()}</span>}
-              <span className="min-w-0 flex-1 truncate">{brand}</span><ArrowUpRightIcon className="size-3.5 shrink-0 transition-colors" />
+              <span className="min-w-0 flex-1 truncate">{brand}</span><ArrowRightIcon className="size-3.5 shrink-0 transition-colors rtl:-scale-x-100" />
             </Link>
           );
         })}

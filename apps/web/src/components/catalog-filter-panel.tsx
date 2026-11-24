@@ -50,7 +50,7 @@ export function CatalogFilterPanel({ children, summary, locale }: {
     form.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  if (!mobile) return <details id="catalog-filters" className="catalog-filters group max-lg:open:col-span-2" open={mobile === false}>
+  if (!mobile) return <details id="catalog-filters" className={`catalog-filters group max-lg:open:col-span-2 ${mobile === null ? 'max-lg:order-1 max-lg:self-center' : ''}`} open={mobile === false}>
     {summary}
     {children}
   </details>;

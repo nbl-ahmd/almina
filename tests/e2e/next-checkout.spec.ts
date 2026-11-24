@@ -306,6 +306,8 @@ test('mobile checkout preserves delivery details when going back and payment cho
 });
 
 test('a signed-in customer is not asked again for details we hold, and can place the order straight away', async ({ page, request }) => {
+  // A signed-in browser carries the session cookie; guest pages skip account reads entirely.
+  await page.context().addCookies([{ name: 'almina_customer', value: 'a'.repeat(43), url: origin }]);
   await page.route('**/api/customer/me', route => route.fulfill({ json: { data: { id: 'c1', email: 'member@example.test' } } }));
   await page.route('**/api/customer/addresses', route => route.fulfill({ json: { data: [{ id: 'a1', label: 'Home', name: 'Member Name', mobile: '0501234567', emirate: 'Ras al-Khaimah', city: 'Al Ghubb',
     address: 'Al Ghubb, Ras Al Khaimah, UAE', buildingname: 'Villa 4', flatno: '', note: '', maplink: '', isDefault: true, coordinates: { latitude: 25.79, longitude: 55.94 } }] } }));

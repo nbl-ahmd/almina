@@ -29,6 +29,9 @@
   .product-photo-fallback, .product-image-fallback { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; text-align: center; color: var(--color-muted); font-size: .875rem; }
   .product-photo-fallback svg { inline-size: 24px; block-size: 24px; }
   .product-card-identity :is(h2,h3) { margin: 0 0 4px; min-block-size: 2.75em; font-size: 1rem; line-height: 1.375; letter-spacing: 0; font-weight: 600; }
+  /* Names read as product identity (ink), not as navigation links; forest marks hover. */
+  .product-card-identity :is(h2,h3) a { color: var(--color-text); transition: color var(--motion-feedback) ease-out; }
+  .product-card-identity :is(h2,h3) a:hover { color: var(--color-forest); }
   .product-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 0; font-size: 1.125rem; font-weight: 700; font-variant-numeric: tabular-nums; }
   .product-price del { color: var(--color-muted); font-size: .875rem; font-weight: 400; }
   .product-card .purchase-control-row { display: block; }
@@ -88,6 +91,7 @@
   .product-information { border: 0; border-radius: 0; padding: 0; }
   .product-information h1 { font-size: 1.75rem; line-height: 1.25; }
   .stock-state { color: var(--color-success); font-size: .875rem; }
+  .stock-state.out-stock { color: var(--color-warning); font-weight: 600; }
   .product-options { border: 0; border-radius: 0; padding: 0; }
   .product-options :is(a,span[aria-disabled]) { border-radius: 8px; border-color: var(--color-control); }
   .product-options a[aria-current="page"] { color: var(--color-forest); background: var(--color-tint); border: 2px solid var(--color-forest); }
@@ -190,7 +194,7 @@
 
 @scope (.storefront-shell) {
   .product-image-fallback svg { inline-size: 24px; block-size: 24px; }
-  :is(.cart-item-image,.checkout-order-panel,.checkout-basket-preview) .product-image-fallback>span { display: none; }
+  :is(.cart-item-image,.checkout-order-panel,.checkout-basket-preview,.pf-thumb,.compact-product-media) :is(.product-image-fallback,.product-photo-fallback)>span { display: none; }
   .product-image-fallback { overflow-wrap: normal; }
   .map-pin-picker button { min-block-size: 44px; padding: 8px 12px; border: 1px solid var(--color-control); border-radius: 8px; background: var(--color-canvas); color: var(--color-forest); }
   .map-pin-picker button:disabled { color: var(--color-muted); background: var(--color-surface); border-color: var(--color-divider); }
