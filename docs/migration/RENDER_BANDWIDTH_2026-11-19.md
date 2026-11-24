@@ -61,3 +61,20 @@ the remaining source is outside the worker loops: check Atlas "Network" per hour
 
 **Superseded by `EVENT_DRIVEN_WORKERS_2026-11-23.md`:** the safety intervals, idle backoff and slower sweeps described above were replaced by a
 fully event-driven design (no timers while idle, zero application database commands measured when idle).
+
+## Follow-up: 2026-11-24 spike, what was ruled out, and the meter
+
+Render hourly outbound for the API on 24 Nov (UTC): 2–5 MB overnight, then **52, 24, 30 and 17 MB at 06:00–09:00** (the 45 MB "service-initiated"
+point in the console at 11:30 IST), back to 2–4 MB from 10:00. Over the same four hours a pharmacist imported 5, 14, 17 and 8 image-review
+approvals (one manifest each), so the spike follows admin image-review work. The three busy hours repeat the 20–220 MB/hour working-day
+plateaus of 20–22 Nov; 4.84 GB this month is mostly those days, not the idle floor.
+
+Ruled out for that window (checked in Atlas and Render): no orders, uploads, product edits, embedding writes, search sessions or new
+stream tickets; Render logs show only 401s (expired staff sessions) and one 503; the imported originals are 6–17 KB each, so downloading
+them for the integrity check is not the volume. HTTP responses stayed small (6.7 MB at the peak hour), so the bytes leave through
+connections the API opens itself. Render's request logs are not retained for this service, so the destination could not be read back.
+
+`backend/diagnostics/network-usage.cjs` now logs one `net_usage` line (at most every 10 minutes, only when a window moved at least 1 MB)
+with the peers that received the most bytes: host names and totals only, no URLs, bodies or customer data. It makes no requests and can be
+switched off with `NET_USAGE_LOG=false`. After the next busy hour, read the line in the Render logs (`event":"net_usage"`) to see whether the
+bytes go to Atlas, Cloudinary, the e-mail provider or something else, and fix that destination.
