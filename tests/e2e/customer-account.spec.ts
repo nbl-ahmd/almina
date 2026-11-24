@@ -181,3 +181,31 @@ for(const width of [360,390,768,1280])test(`Arabic account sign-in and reload at
  await page.reload();await expect(page.getByRole('heading',{name:'مرحباً بك في الميناء'})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(failures).toEqual([]);
 });
+
+test('an in-page sign-in re-enables account reads after client-side navigation, and sign-out turns them off', async ({ page }) => {
+  await accountFixture(page);
+  const reads: string[] = [];
+  page.on('request', request => { const path = new URL(request.url()).pathname; if (/\/api\/customer\/(addresses|saved|me)$/.test(path)) reads.push(path); });
+  await page.goto(adminOrigin + '/account');
+  const shell = page.locator('[data-customer-session]');
+  await expect(shell).toHaveAttribute('data-customer-session', '0');
+  await page.getByLabel('Email address', { exact: true }).fill('shopper@example.invalid');
+  await page.getByRole('button', { name: 'Continue with email', exact: true }).click();
+  await page.getByLabel('Six-digit code', { exact: true }).fill('123456');
+  await page.getByRole('button', { name: 'Verify & sign in', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Your Al Mina account', exact: true })).toBeVisible();
+  await expect(shell).toHaveAttribute('data-customer-session', '1');
+  // Client-side navigation keeps the layout, so the hint must already say signed in.
+  await page.getByRole('link', { name: 'Keep shopping', exact: true }).click();
+  await expect(page).toHaveURL(/\/products$/);
+  await expect(shell).toHaveAttribute('data-customer-session', '1');
+  reads.length = 0;
+  await page.locator('[data-slot="delivery-selector"]').first().click();
+  await expect.poll(() => reads.includes('/api/customer/addresses')).toBe(true);
+  await page.keyboard.press('Escape');
+  await page.locator('a.header-account').click();
+  await expect(page.getByRole('heading', { name: 'Your Al Mina account', exact: true })).toBeVisible();
+  await expect(shell).toHaveAttribute('data-customer-session', '1');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(shell).toHaveAttribute('data-customer-session', '0');
+});

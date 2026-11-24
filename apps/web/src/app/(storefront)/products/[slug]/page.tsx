@@ -74,10 +74,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <div className="mb-3">
             <div className="flex flex-wrap items-center gap-x-3 text-xs font-semibold">
               {brand && <Link className="inline-flex min-h-11 items-center" href={`/search?q=${encodeURIComponent(brand)}`}>{brand}</Link>}
-              <Link className="inline-flex min-h-11 items-center text-[var(--color-muted)]" href={categoryHref(product.category)}>{product.category.name}</Link>
+              <Link className="inline-flex min-h-11 items-center text-muted" href={categoryHref(product.category)}>{product.category.name}</Link>
             </div>
             <h1 className="mb-2 wrap-anywhere">{product.name}</h1>
-            {pack && <p className="m-0 text-sm text-[var(--color-muted)]">{pack}</p>}
+            {pack && <p className="m-0 text-sm text-muted">{pack}</p>}
             {reviews?.ratingCount && reviews.average !== null ? (
               <a className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold" href="#product-reviews">
                 {locale === 'ar' ? `${reviews.average} من 5 · ${reviews.ratingCount} تقييم` : `${reviews.average} / 5 · ${reviews.ratingCount} reviews`}
@@ -89,13 +89,13 @@ export default async function ProductPage({ params, searchParams }: Props) {
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
               <p className="m-0 text-2xl font-bold md:text-3xl"><CurrencyAmount value={currentPrice} locale={locale} /></p>
               {saving > 0 && <>
-                <del className="text-sm text-[var(--color-muted)]"><CurrencyAmount value={product.price} locale={locale} /></del>
+                <del className="text-sm text-muted"><CurrencyAmount value={product.price} locale={locale} /></del>
                 <span className="rounded-md bg-accent px-2 py-0.5 text-xs font-semibold text-sale">{locale === 'ar' ? `وفّر ${saving}%` : `Save ${saving}%`}</span>
               </>}
             </div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 [&_.stock-state]:m-0!">
               <StockState stock={product.stock} />
-              <span className="text-xs text-[var(--color-muted)]">{locale === 'ar' ? 'رمز المنتج: ' : 'SKU: '}{product.product_id}</span>
+              <span className="text-xs text-muted">{locale === 'ar' ? 'رمز المنتج: ' : 'SKU: '}{product.product_id}</span>
             </div>
           </div>
           <ProductOptions product={product} variants={variants} />
@@ -111,7 +111,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
             <span className="mt-0.5 text-teal"><Icon name="pin" /></span>
             <div className="min-w-0">
               <h2 className="m-0 text-sm!">{u(locale, 'Delivery in Ras Al Khaimah')}</h2>
-              <p className="m-0 mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{u(locale, 'Checkout confirms the delivery charge and final total before you place an order.')}</p>
+              <p className="m-0 mt-1 text-xs leading-relaxed text-muted">{u(locale, 'Checkout confirms the delivery charge and final total before you place an order.')}</p>
               <div className="flex flex-wrap gap-x-3">
                 <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/shipping">{u(locale, 'Delivery & shipping')}</Link>
                 <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/returns">{u(locale, 'Returns & refunds')}</Link>

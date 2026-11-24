@@ -103,7 +103,9 @@ test('add to cart, authoritative price, stock limit and persistence work on desk
   await page.getByRole('button', { name: 'Increase purchase quantity', exact: true }).click();
   await expect(page.locator('.pdp-purchase').getByRole('button', { name: 'Add to cart: Daily Care', exact: true })).toBeVisible();
   await page.goto('/cart');
-  await expect(page.locator('main')).toContainText('AED 20.00 per item');
+  // Amounts show the dirham mark visually; the spoken alternative keeps the full AED value.
+  await expect(page.locator('.cart-unit-price .sr-only').first()).toHaveText('AED 20.00');
+  await expect(page.locator('.cart-unit-price').first()).toContainText('per item');
   for (let quantity = 2; quantity <= 4; quantity++) {
     await page.getByRole('button', { name: 'Increase Daily Care quantity' }).click();
     await expect(page.locator('.quantity')).toHaveText(String(quantity));

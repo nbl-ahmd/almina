@@ -43,6 +43,8 @@ test('mobile delivery sheet saves an area and retains it after reload',async({pa
  await page.setViewportSize({width:390,height:844});await page.goto('/');
  const selector=page.locator('[data-slot="delivery-selector"]');await selector.click();
  const dialog=page.locator('.delivery-area-sheet');await expect(dialog).toBeVisible();
+ // The sheet slides in (DESIGN.md › Motion); measure where it settles.
+ await dialog.evaluate(element=>Promise.all(element.getAnimations().map(animation=>animation.finished)));
  const box=await dialog.boundingBox();expect(box).not.toBeNull();expect(box!.y).toBeGreaterThanOrEqual(0);expect(box!.y+box!.height).toBeLessThanOrEqual(844);
  await dialog.locator('input[autocomplete="address-level2"]').fill('Al Nakheel');
  await dialog.locator('button[type="submit"]').click();await expect(dialog).not.toBeVisible();

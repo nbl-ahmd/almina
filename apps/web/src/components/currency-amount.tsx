@@ -1,4 +1,4 @@
-import { money } from '../lib/catalog/model';
+import { money } from '../lib/catalog/money';
 import type { Locale } from '../lib/i18n';
 
 /** Visual currency mark with a complete spoken currency alternative. Never calculates totals. */

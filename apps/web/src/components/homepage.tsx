@@ -9,7 +9,7 @@ import Link from './app-link';
 import {
   ChatBubbleLeftRightIcon,
   ArrowRightIcon,
-  ArrowUpRightIcon,
+  ChevronRightIcon,
 } from './storefront-icons';
 import {
   ProductPhoto as Photo,
@@ -43,21 +43,18 @@ async function SectionHeading({
   return (
     <div className="section-heading">
       <div className="min-w-0">
-        <h2 className="m-0 text-[22px] font-semibold tracking-[-0.03em] md:text-[28px]">
+        <h2 className="section-title">
           {u(locale,title)}
         </h2>
         {description ? (
-          <p className="mt-1 mb-0 max-w-[52ch] text-[13px] leading-5 md:text-sm">
+          <p className="section-description">
             {u(locale,description)}
           </p>
         ) : null}
       </div>
-      <Link
-        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border bg-white px-3.5 text-xs font-medium transition-colors md:text-[13px]"
-        href={href}
-      >
+      <Link className="section-link" href={href}>
         {u(locale,link)}
-        <ArrowUpRightIcon className="size-3.5" />
+        <ChevronRightIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
       </Link>
     </div>
   );
@@ -277,7 +274,7 @@ export async function HomeBrandStrip({ brands, products }: { brands: string[]; p
               className="group flex min-h-14 min-w-[180px] shrink-0 snap-start items-center gap-3 rounded-xl border bg-white py-2 pr-3 pl-2 text-sm font-medium tracking-[-0.01em] transition-colors"
             >
               {match ? <span className="block size-10 shrink-0 overflow-hidden rounded-full p-1.5"><Photo product={match} /></span> : <span className="flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{brand.slice(0,1).toUpperCase()}</span>}
-              <span className="min-w-0 flex-1 truncate">{brand}</span><ArrowUpRightIcon className="size-3.5 shrink-0 transition-colors" />
+              <span className="min-w-0 flex-1 truncate">{brand}</span><ArrowRightIcon className="size-3.5 shrink-0 transition-colors rtl:-scale-x-100" />
             </Link>
           );
         })}

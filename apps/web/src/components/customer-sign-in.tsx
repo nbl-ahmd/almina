@@ -7,6 +7,7 @@ import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 
 import Link from './app-link';
 import { accountErrorMessage } from '../lib/account/errors';
+import { setSessionHint } from '../lib/account/session-hint';
 import Script from 'next/script';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon, ArrowPathIcon, CheckCircleIcon, PencilSquareIcon } from './storefront-icons';
@@ -27,6 +28,8 @@ export async function accountRequest(action: string, body?: unknown) {
     } catch { /* Gateway errors may be plain responses; use a safe local message. */ }
     throw new AccountRequestError(response.status, accountErrorMessage(response.status, action, code));
   }
+  if (action === 'verify' || action === 'google') setSessionHint(true);
+  if (action === 'logout') setSessionHint(false);
   return response.status === 204 ? null : (await response.json() as { data: unknown }).data;
 }
 type Options = { googleClientId: string | null; emailEnabled: boolean };

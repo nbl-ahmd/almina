@@ -41,26 +41,14 @@ export const productHref = (product: Product) => `/products/${productSlug(produc
 export const categoryHref = (category: Category) => `/categories/${categorySlug(category)}`;
 export const productPath = (name: string, id: string) => `/products/${nameSlug(name)}--${id}`;
 export const categoryPath = (name: string, id: string) => `/categories/${nameSlug(name)}--${id}`;
-export const money = (value: number, locale: 'en' | 'ar' = 'en') => locale === 'en' ? `AED ${value.toFixed(2)}` : new Intl.NumberFormat('ar-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+export { money } from './money';
 // Match the server's active-sale rule, including a valid zero-price sale.
 // Presentation remains a catalog value, not an authoritative checkout quote.
 export const displayPrice = (product: Product) => product.sale === true && product.salePrice !== undefined ? product.salePrice : product.price;
 export const cartLineSchema = z.object({ id: z.string().regex(objectId), quantity: z.number().int().min(1).max(999) });
 export const cartSchema = z.array(cartLineSchema).max(100).refine(lines => new Set(lines.map(line => line.id)).size === lines.length);
 export type CartLine = z.infer<typeof cartLineSchema>;
-export function decodeStoredCart(raw: string | null, legacy = false): CartLine[] {
-  try {
-    const data: unknown = JSON.parse(raw ?? '[]');
-    if (!Array.isArray(data)) return [];
-    const candidates = legacy ? data.map((line: unknown) => {
-      if (!line || typeof line !== 'object') return null;
-      const item = line as Record<string, unknown>;
-      return { id: item._id, quantity: item.quantity };
-    }) : data;
-    const result = cartSchema.safeParse(candidates);
-    return result.success ? result.data : [];
-  } catch { return []; }
-}
+export { decodeStoredCart } from '../browser-validation';
 
 export const productOptionLabel = (product: Product) => variantLabel(product);
 

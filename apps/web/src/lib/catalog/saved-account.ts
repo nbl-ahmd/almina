@@ -1,12 +1,18 @@
+import { renderedAsGuest } from '../account/session-hint';
 import { readSaved,savedKey,setSaved } from './saved';
 // Account-backed lists are never put into guest storage. Signing out restores the guest list.
 let accountIds:string[]|null=null;
 let loading:Promise<void>|null=null;
 let generation=0;
+// The storefront shell marks whether a customer session cookie was present when the page rendered.
+// Guests skip the account read; an in-page sign-in calls resetSavedAccount, which re-enables it.
+let forced=false;
+function knownGuest(){return !forced&&renderedAsGuest();}
 export function currentSaved(){return accountIds??readSaved(localStorage.getItem(savedKey));}
-export function resetSavedAccount(){generation++;accountIds=null;loading=null;window.dispatchEvent(new Event('almina-saved-change'));}
+export function resetSavedAccount(){generation++;forced=true;accountIds=null;loading=null;window.dispatchEvent(new Event('almina-saved-change'));}
 export function loadSavedAccount(){
  const started=generation;
+ if(knownGuest())return Promise.resolve();
  loading??=fetch('/api/customer/saved',{cache:'no-store'}).then(async response=>{if(response.status===401||response.status===404)return;if(!response.ok)throw Error('Saved list unavailable');const value=await response.json();if(started!==generation)return;accountIds=readSaved(JSON.stringify(value.data.ids));window.dispatchEvent(new Event('almina-saved-change'));}).catch(()=>{if(started===generation)loading=null;});
  return loading;
 }

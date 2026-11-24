@@ -1,5 +1,10 @@
 # Reference mapping and provenance
 
+> **2026-11-24 — Quick Commerce Edition.** `DESIGN.md` replaced the Market Green / Coral direction at the owner's request. Where this
+> document conflicts with `DESIGN.md`, `colors.md` or `typography.md` (palette, lime campaigns, forest accents, radii, card anatomy,
+> purchase-button silhouette), those win. Interaction, accessibility, RTL, data-honesty and ownership rules below still apply.
+
+
 The five images supplied with this request were reviewed and saved as exact copies under `docs/design/references/`. Their layout and visual characteristics inform the specification. Al Mina’s approved coral/forest/lime system, fonts and existing assets supply the final identity. Sample prices, brands, reviews, payment methods, medicine claims and delivery promises come from the reference artwork and require actual Al Mina data before use.
 
 ## Pattern mapping

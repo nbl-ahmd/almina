@@ -6,7 +6,8 @@ test('Next imports legacy cart identifiers while discarding forged prices, names
     localStorage.clear(); localStorage.setItem('cartItems', JSON.stringify([{ _id: id, quantity: 2, name: 'Forged', price: 1, salePrice: 1, stock: 999 }]));
   }, productId);
   await page.reload();
-  await expect(page.locator('main')).toContainText('AED 20.00 per item');
+  await expect(page.locator('.cart-unit-price .sr-only').first()).toHaveText('AED 20.00');
+  await expect(page.locator('.cart-unit-price').first()).toContainText('per item');
   await expect(page.locator('main')).not.toContainText('Forged');
   await page.getByRole('button', { name: 'Increase Synthetic care product quantity' }).click();
   await expect(page.getByRole('status', { name: 'Quantity for Synthetic care product: 3' })).toHaveText('3');

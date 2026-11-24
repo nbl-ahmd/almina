@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-export const deliveryEmirates = ['Ras al-Khaimah', 'Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm al-Quwain', 'Fujairah'] as const;
+import { deliveryEmirates } from './delivery-emirates';
+export { deliveryEmirates };
 export const reverseLocationInputSchema = z.object({
   latitude: z.number().finite().min(-90).max(90),
   longitude: z.number().finite().min(-180).max(180),
