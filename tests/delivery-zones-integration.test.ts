@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { MongoClient,ObjectId,type Document } from 'mongodb';
 import { createCommerceService,quoteHash } from '../apps/api/src/modules/orders/commerce';
 import { saveOrderRouting } from '../apps/api/src/modules/orders/routing-admin';
-import { saveZone,saveZoneSettings,setBranchInventory,reassignDelivery,deleteZone,deliverySettings,applyZoneQuote,touchDelivery } from '../apps/api/src/modules/delivery/service';
+import { saveZone,saveZoneSettings,setBranchInventory,reassignDelivery,deleteZone,deliverySettings,applyZoneQuote,touchDelivery,coverageAt } from '../apps/api/src/modules/delivery/service';
 import { retainedOrderList,retainedOrderDetail } from '../apps/api/src/modules/orders/compatibility-reads';
 import { routingRecipients, readOrderRouting } from '../apps/api/src/modules/orders/routing';
 import { migrateCommerce } from '../scripts/migrations/commerce';
@@ -38,7 +38,8 @@ test('real geospatial coverage, overlap priorities, shared inventory, reassignme
  const settings=await deliverySettings(db);await saveZoneSettings(db,{active:false,revision:settings.revision},actor);await deleteZone(db,{id:temporary.id,revision:1},actor);
  });
  await t.test('activation is explicit; unknown pins and outside coverage are rejected without writes',async()=>{
- assert.equal((await deliverySettings(db)).active,false);await saveZone(db,zone,actor);const settings=await deliverySettings(db);await saveZoneSettings(db,{active:true,revision:settings.revision},actor);
+ assert.equal((await deliverySettings(db)).active,false);assert.deepEqual(await coverageAt(db,{latitude:25.7,longitude:55.9}),{status:'unchecked'});await saveZone(db,zone,actor);const settings=await deliverySettings(db);await saveZoneSettings(db,{active:true,revision:settings.revision},actor);
+ assert.deepEqual(await coverageAt(db,{latitude:25.7,longitude:55.9}),{status:'serviceable',zoneName:zone.name,estimatedMinutes:45,deliveryFeeMinor:500,minimumOrderMinor:1000});assert.deepEqual(await coverageAt(db,{latitude:24,longitude:54}),{status:'outside'});await assert.rejects(coverageAt(db,{latitude:'x'}),{code:'INVALID_REQUEST'});
  await assert.rejects(previewDelivery(db,{items,emirate:customer.emirate}),{code:'DELIVERY_LOCATION_REQUIRED'});
  const {coordinates:_pin,...manual}=customer;void _pin;await assert.rejects(service.quote({customer:manual,items}),{code:'DELIVERY_LOCATION_REQUIRED'});await assert.rejects(service.quote({customer:{...customer,coordinates:{latitude:24,longitude:54}},items}),{code:'ADDRESS_NOT_SERVICEABLE'});assert.equal(await db.collection('orders').countDocuments(),0);
  });

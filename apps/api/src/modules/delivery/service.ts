@@ -39,6 +39,12 @@ export async function saveZoneSettings(db:Db,raw:unknown,actor:string){const par
  await requireZoneIndex(db);
  }
  await db.collection<Document&{_id:string}>('delivery_controls').updateOne({_id:'zones'},{$set:{active:parsed.data.active,revision:before.revision+1},$setOnInsert:{orderFence:0}},{session,upsert:true});await db.collection('delivery_audit').insertOne({action:'zone-activation',actor,before,after:parsed.data,at:new Date()},{session});});return zoneAdministration(db);}
+/** Read-only answer for the storefront pin map. Checkout still re-checks everything with the real quote; this only tells the customer early. */
+export async function coverageAt(db:Db,raw:unknown){const point=deliveryPointSchema.safeParse(raw);if(!point.success)throw new HttpError(400,'INVALID_REQUEST');
+ if(!(await deliverySettings(db)).active)return {status:'unchecked' as const};
+ const zone=await db.collection('delivery_zones').find({active:true,deletedAt:{$exists:false},geometry:{$geoIntersects:{$geometry:{type:'Point',coordinates:[point.data.longitude,point.data.latitude]}}}},{...query,projection:{name:1,deliveryFeeMinor:1,minimumOrderMinor:1,estimatedMinutes:1}}).sort({priority:1,_id:1}).limit(1).next();
+ if(!zone)return {status:'outside' as const};
+ return {status:'serviceable' as const,zoneName:String(zone.name),estimatedMinutes:Number(zone.estimatedMinutes),deliveryFeeMinor:Number(zone.deliveryFeeMinor),minimumOrderMinor:Number(zone.minimumOrderMinor)};}
 export function distanceMeters(a:DeliveryPoint,b:DeliveryPoint){const radians=(value:number)=>value*Math.PI/180;const dlat=radians(b.latitude-a.latitude),dlon=radians(b.longitude-a.longitude),x=Math.sin(dlat/2)**2+Math.cos(radians(a.latitude))*Math.cos(radians(b.latitude))*Math.sin(dlon/2)**2;return 6371000*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));}
 type Candidate={delivery:ZoneDelivery;fee:number;minimum:number;priority:number;distance:number};
 export async function selectDelivery(db:Db,customer:{coordinates?:DeliveryPoint|undefined},quote:Quote,session?:ClientSession,targetBranch?:string):Promise<Candidate|null>{

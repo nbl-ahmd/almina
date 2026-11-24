@@ -119,6 +119,7 @@ for (const code of [1, 2, 3]) test(`GPS failure ${code} leaves manual checkout a
   await prepare(page);
   await page.getByRole('button', { name: 'Use my current location', exact: true }).click();
   await expect(page.getByText(code === 1 ? 'Location permission was denied.' : code === 3 ? 'Location timed out.' : 'Unable to find your location.', { exact: false })).toBeVisible();
+  if (code === 1) await expect(page.locator('.checkout-location-status')).toContainText('lock icon');
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
   await expect(page.locator('.checkout-locate + .checkout-location-status')).toHaveAttribute('data-tone', 'error');
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
@@ -210,21 +211,23 @@ test('header delivery selector saves an area, persists on reload and prefills ch
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
 });
 
-test('delivery area GPS denial allows manual selection and Escape returns focus', async ({ page }) => {
+test('delivery area GPS denial explains how to fix it, allows manual selection and Escape returns focus', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition: (_success: unknown, fail: (error: { code: number }) => void) => fail({ code: 1 }) } }));
   await page.goto(origin + '/');
   const trigger = page.getByRole('button', { name: 'Choose delivery area' });
   await trigger.click();
   const dialog = page.getByRole('dialog', { name: 'Where are we delivering?' });
   await dialog.getByRole('button', { name: 'Use current location', exact: true }).click();
-  await expect(dialog.getByRole('status')).toContainText('Choose your area below');
+  // Not just "denied": the customer is told what to change, and the manual way stays available.
+  await expect(dialog.getByRole('alert')).toContainText('Location is blocked for this site');
+  await expect(dialog.getByRole('alert')).toContainText('lock icon');
   await expect(dialog.getByLabel('Delivery city / area', { exact: true })).toBeEnabled();
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();
 });
 
-test('storefront location uses consented GPS, confirms the area and saves no coordinates', async ({ page, context }) => {
+test('storefront location uses consented GPS, shows the pin map, and saves the confirmed spot on this device only', async ({ page, context }) => {
   await context.grantPermissions(['geolocation'], { origin });
   await context.setGeolocation({ latitude: 25.789, longitude: 55.943, accuracy: 10 });
   const response = await page.goto(origin + '/');
@@ -232,9 +235,60 @@ test('storefront location uses consented GPS, confirms the area and saves no coo
   await page.getByRole('button', { name: 'Choose delivery area' }).click();
   const dialog = page.getByRole('dialog', { name: 'Where are we delivering?' });
   await dialog.getByRole('button', { name: 'Use current location', exact: true }).click();
-  await expect(dialog.getByLabel('Delivery city / area', { exact: true })).toHaveValue('Synthetic area');
-  await dialog.getByRole('button', { name: 'Save delivery area' }).click();
+  // The pin map opens on the customer's position and reads the address under the pin.
+  const map = page.getByRole('dialog', { name: 'Confirm delivery location' });
+  await expect(map).toBeVisible();
+  await expect(map.getByRole('application')).toBeVisible();
+  await expect(map.getByRole('status')).toContainText('Synthetic area');
+  await map.getByRole('button', { name: 'Confirm location', exact: true }).click();
+  // Second step: label and door details, all optional.
+  const details = page.getByRole('dialog', { name: 'Add address details' });
+  await expect(details).toBeVisible();
+  await details.getByRole('radio', { name: 'Work' }).click();
+  await details.getByLabel('Building or villa').fill('Tower 9');
+  await details.getByLabel('Flat / floor').fill('Flat 12');
+  await details.getByRole('button', { name: 'Save address', exact: true }).click();
+  await expect(details).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Synthetic area');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('almina.delivery-area.v1')!))).toEqual({ city: 'Synthetic area', emirate: 'Ras al-Khaimah' });
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('almina.delivery-point.v1')!));
+  expect(saved.city).toBe('Synthetic area');
+  expect(saved).toMatchObject({ label: 'Work', building: 'Tower 9', flat: 'Flat 12' });
+  expect(Math.abs(saved.latitude - 25.789)).toBeLessThan(0.01);
+});
+
+test('the confirmed spot pre-fills checkout, shows a Delivering-to card, and can be changed from there', async ({ page }) => {
+  await page.goto(origin + '/');
+  await page.evaluate(({ id }) => {
+    localStorage.setItem('almina.cart.v1', JSON.stringify([{ id, quantity: 1 }]));
+    localStorage.setItem('almina.delivery-area.v1', JSON.stringify({ emirate: 'Ras al-Khaimah', city: 'Al Ghubb' }));
+    localStorage.setItem('almina.delivery-point.v1', JSON.stringify({ latitude: 25.79, longitude: 55.94, address: 'Al Ghubb, Ras Al Khaimah, UAE', emirate: 'Ras al-Khaimah', city: 'Al Ghubb', label: 'Home', building: 'Villa 4', flat: '2nd floor', note: 'Ring twice' }));
+  }, { id: productId });
+  await page.goto(origin + '/checkout');
+  await expect(page.getByLabel('Street address', { exact: true })).toHaveValue('Al Ghubb, Ras Al Khaimah, UAE');
+  await expect(page.getByLabel('City / area', { exact: true })).toHaveValue('Al Ghubb');
+  await expect(page.locator('input[name="maplink"]')).toHaveValue('https://www.google.com/maps/search/?api=1&query=25.79,55.94');
+  await expect(page.locator('input[name="buildingname"]')).toHaveValue('Villa 4');
+  await expect(page.locator('input[name="flatno"]')).toHaveValue('2nd floor');
+  await expect(page.locator('input[name="note"]')).toHaveValue('Ring twice');
+  await expect(page.getByText('Delivering to', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Change', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Where are we delivering?' })).toBeVisible();
+});
+
+test('a first-time visitor is asked where to deliver once, and Browse first keeps the sheet away', async ({ browser }) => {
+  const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+  const page = await context.newPage();
+  await page.goto(origin + '/');
+  const dialog = page.getByRole('dialog', { name: 'Where are we delivering?' });
+  await expect(dialog).toBeVisible({ timeout: 8000 });
+  await expect(dialog.getByRole('button', { name: 'Use current location', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Browse first', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await page.reload();
+  await page.waitForTimeout(2500);
+  await expect(dialog).not.toBeVisible();
+  await context.close();
 });
 
 test('mobile checkout preserves delivery details when going back and payment choices are keyboard accessible',async({page,request})=>{

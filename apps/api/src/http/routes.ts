@@ -53,7 +53,8 @@ import type { CatalogQueryObserver } from '../modules/catalog/timing.js';
 import { operationsSnapshotSchema } from '@almina/contracts';
 import { operationsSnapshot } from '../modules/operations/snapshot.js';
 import type { OperationalMetrics } from '../modules/operations/metrics.js';
-import { reverseLocationDtoSchema, reverseLocationInputSchema } from '@almina/contracts';
+import { reverseLocationDtoSchema, reverseLocationInputSchema, deliveryCoverageDtoSchema } from '@almina/contracts';
+import { coverageAt } from '../modules/delivery/service.js';
 import { createReverseLocationService, type LocationOptions } from '../modules/location/reverse.js';
 
 export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], development = false, observeCatalogQuery?: CatalogQueryObserver, metrics?: OperationalMetrics,
@@ -72,6 +73,13 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     const input = validate(reverseLocationInputSchema, req.body);
     send(res, reverseLocationDtoSchema, await location.lookup(input));
   });
+  router.post('/checkout/coverage', async (req, res) => {
+    validate(emptyQuerySchema, req.query);
+    verifyBrowserMutation(req, origins, () => new HttpError(403, 'FORBIDDEN'));
+    const input = validate(reverseLocationInputSchema, req.body);
+    send(res, deliveryCoverageDtoSchema, await coverageAt(await getDb(), input));
+  });
+  router.all('/checkout/coverage', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
   router.all('/checkout/location', (_req, res, next) => { res.set('Allow', 'POST'); next(new HttpError(405, 'METHOD_NOT_ALLOWED')); });
   function send<T>(res: Parameters<RequestHandler>[1], schema: z.ZodType<T>, data: unknown) {
     // Validate responses too: no raw database fields can leak through the envelope.

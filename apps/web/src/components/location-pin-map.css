@@ -1,0 +1,13 @@
+.location-map { position: relative; inline-size: 100%; block-size: 100%; min-block-size: 240px; background: #e8eee9; overflow: hidden; }
+.location-map-surface { position: absolute; inset: 0; }
+.location-map-surface:focus-visible { outline: 3px solid var(--color-forest, #173C25); outline-offset: -3px; }
+/* The tip of the pin sits exactly on the centre of the map. */
+.location-map-pin { position: absolute; inset-inline-start: 50%; inset-block-start: 50%; z-index: 500; display: block; transform: translate(-50%, -100%); pointer-events: none; transition: transform 140ms ease-out; }
+.location-map-pin svg { display: block; filter: drop-shadow(0 2px 2px rgb(26 36 29 / .25)); }
+.location-map-pin-shadow { position: absolute; inset-inline-start: 50%; inset-block-end: -4px; inline-size: 12px; block-size: 5px; border-radius: 50%; background: rgb(26 36 29 / .3); transform: translateX(-50%); transition: transform 140ms ease-out, opacity 140ms ease-out; }
+.location-map[data-moving] .location-map-pin { transform: translate(-50%, calc(-100% - 10px)); }
+.location-map[data-moving] .location-map-pin-shadow { transform: translateX(-50%) scale(.7); opacity: .6; }
+.location-map-error { position: absolute; inset-inline: 16px; inset-block-start: 16px; z-index: 600; margin: 0; padding: 12px 14px; border-radius: 12px; background: #FFF0EE; color: #A62832; font-size: .875rem; }
+.location-map .leaflet-control-zoom a { inline-size: 44px; block-size: 44px; line-height: 44px; }
+@media (prefers-reduced-motion: reduce) { .location-map-pin, .location-map-pin-shadow { transition: none; } }
+.delivery-map-sheet::backdrop { background: rgb(26 36 29 / 40%); }
