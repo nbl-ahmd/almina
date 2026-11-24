@@ -12,6 +12,25 @@ router.post('/products/:id', upload.array('images', 5), validateImageUploads, as
   res.json(await require('../commerce/dist/service.cjs').replaceCloudinaryImages(db, req.params.id, req.identity.id, req.body, files,
     req.app.locals.cloudinaryUploads, req.app.locals.mediaTransport));
 });
+// Direct uploads: the browser sends each photo straight to Cloudinary with a server-signed ticket, so no image bytes pass through this process.
+router.post('/products/:id/sign', async (req, res) => {
+  if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+  const config = req.app.locals.cloudinaryUploads;
+  if (!config) throw fail(503, 'SERVICE_UNAVAILABLE');
+  const { ObjectId } = require('mongodb');
+  if (!ObjectId.isValid(req.params.id)) throw fail(400, 'INVALID_REQUEST');
+  const db = await req.app.locals.getCommerceDb();
+  const product = await db.collection('products').findOne({ _id: new ObjectId(req.params.id) }, { projection: { archivedAt: 1 } });
+  if (!product || product.archivedAt) throw fail(404, 'NOT_FOUND');
+  res.json(require('../commerce/dist/service.cjs').directUploadTickets(config, req.body));
+});
+router.post('/products/:id/commit', async (req, res) => {
+  if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+  if (!req.app.locals.cloudinaryUploads) throw fail(503, 'SERVICE_UNAVAILABLE');
+  const db = await req.app.locals.getCommerceDb();
+  res.json(await require('../commerce/dist/service.cjs').commitDirectCloudinaryImages(db, req.params.id, req.identity.id, req.body,
+    req.app.locals.cloudinaryUploads, req.app.locals.mediaTransport));
+});
 router.post('/marketing', upload.single('image'), validateImageUploads, async (req,res)=>{
   if(!req.file||Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');
   if(!req.app.locals.cloudinaryUploads)throw fail(503,'SERVICE_UNAVAILABLE');

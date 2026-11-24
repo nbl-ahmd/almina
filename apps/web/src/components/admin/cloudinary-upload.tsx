@@ -3,8 +3,7 @@ import { buttonVariants } from "./ui";
 import { useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
-import { adminRequest } from './controls';
-import { prepareProductImages } from '../../lib/admin/product-images';
+import { uploadProductPhotos } from './direct-upload';
 const subscribe = () => () => {};
 const clientReady = () => true;
 const serverReady = () => false;
@@ -19,14 +18,11 @@ export function CloudinaryUpload({ productId, revision }: { productId: string; r
     if (!files.length || files.length > 5) { setFailure('Choose one to five product photos.'); return; }
     setPending(true);
     try {
-      const prepared = await prepareProductImages(files);
       const saved = sessionStorage.getItem(receiptKey);
       const receipt = saved ? JSON.parse(saved) as { uploadKey: string; expectedMediaRevision: number }
         : { uploadKey: crypto.randomUUID(), expectedMediaRevision: revision };
       sessionStorage.setItem(receiptKey, JSON.stringify(receipt));
-      const data = new FormData(); data.set('uploadKey', receipt.uploadKey); data.set('expectedMediaRevision', String(receipt.expectedMediaRevision));
-      for (const file of prepared) data.append('images', file);
-      await adminRequest(`media/products/${productId}`, 'POST', data);
+      await uploadProductPhotos(productId, files, receipt);
       sessionStorage.removeItem(receiptKey); setMessage('Product photos saved. Previous photos remain retained.'); router.refresh();
     } catch (error) { setFailure(`${error instanceof Error ? error.message : 'Upload failed.'} Retry with the same files after an uncertain response. If this continues, contact the administrator.`); }
     finally { setPending(false); }

@@ -3,12 +3,13 @@ import { adminFileLimit } from './upload-limits';
 const formats = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
 const originalLimit = 20 * 1024 * 1024;
 /** Sequential decoding bounds memory; server validation and normalization remain mandatory. */
-export async function prepareProductImages(files: File[]): Promise<File[]> {
+export async function prepareProductImages(files: File[], perPhotoBudget?: number): Promise<File[]> {
   if (!files.length || files.length > 5) throw new Error('Choose one to five product photos.');
   if (files.some(file => !formats.has(file.type) || !file.size || file.size > originalLimit)) {
     throw new Error('Use JPEG, PNG, WebP, GIF or AVIF photos up to 20 MB each.');
   }
-  const budget = Math.floor((adminFileLimit - 65536) / files.length);
+  // Photos that travel through the gateway share its body limit; direct uploads only need to stay under the server's per-photo limit.
+  const budget = perPhotoBudget ?? Math.floor((adminFileLimit - 65536) / files.length);
   const prepared: File[] = [];
   for (const file of files) {
     let bitmap: ImageBitmap;

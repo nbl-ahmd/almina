@@ -15,6 +15,7 @@ export const routePolicies = [
   ['GET','/api/catalog-import/template','admin'],
   ...['preview','commit','report','rollback'].map(action=>['POST',`/api/catalog-import/${action}`,'admin'] as [string,string,RetainedAccess]),
   ['POST', '/api/media/products/:id', 'admin'],
+  ['POST', '/api/media/products/:id/sign', 'admin'], ['POST', '/api/media/products/:id/commit', 'admin'],
   ['POST','/api/media/marketing','staff'],
   ['GET', '/api/recovery/template', 'admin'], ['POST', '/api/recovery/preview', 'admin'], ['POST', '/api/recovery/commit', 'admin'],
   ['POST', '/api/auth/login', 'login'], ['POST', '/api/auth/logout', 'staff'],

@@ -34,6 +34,8 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 | GET | /api/operations | admin | Maintained process metrics and bounded read-only integrity/queue snapshot |
 | GET | /api/recovery/template | admin | maintained recovery/csv.ts; no provider effects |
 | POST | /api/media/products/:id | admin | Maintained signed Cloudinary upload/reference ledger; bounded authenticated adapter |
+| POST | /api/media/products/:id/sign | admin | Signs per-photo Cloudinary tickets (fixed public id, WebP only, no overwrite); no image bytes reach the API |
+| POST | /api/media/products/:id/commit | admin | Confirms each photo with Cloudinary's authenticated API (WebP, size, pixels), then attaches them in one transaction; repeatable |
 | POST | /api/recovery/preview | admin | maintained recovery/catalog.ts; actor-bound preview |
 | POST | /api/recovery/commit | admin | maintained recovery/catalog.ts; closed-store transaction/ledger |
 | POST | /api/auth/login | login | Login.js → maintained auth/sessions.ts and auth/cookies.ts; compatibility URL adapter |

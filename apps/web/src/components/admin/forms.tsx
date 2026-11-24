@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { SwitchRow } from "./kit";
 import { OfferField } from "./offer-field";
 import { PendingPhotosContext } from "./photo-context";
-import { prepareProductImages } from "../../lib/admin/product-images";
+import { uploadProductPhotos } from "./direct-upload";
 import { Combobox, type ComboOption } from "./shadcn/combobox";
 import { createCategory, loadBrands, rememberBrand } from "../../lib/admin/catalogue-options";
 import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
@@ -577,10 +577,7 @@ export function AdminForm({
         if (publish !== liveAtLoad) await adminRequest(`products/publish/${savedProductId}`, 'PUT', {});
         if (path === 'products' && photoFiles.length) {
           try {
-            const prepared = await prepareProductImages(photoFiles);
-            const upload = new FormData(); upload.set('uploadKey', crypto.randomUUID()); upload.set('expectedMediaRevision', '0');
-            for (const file of prepared) upload.append('images', file);
-            await adminRequest(`media/products/${savedProductId}`, 'POST', upload);
+            await uploadProductPhotos(savedProductId, photoFiles, { uploadKey: crypto.randomUUID(), expectedMediaRevision: 0 });
           } catch (failure) { toast.error(`Product saved, but photos were not added: ${failure instanceof Error ? failure.message : 'upload failed'} Add them on the product page.`); }
         }
         const mode = saveMode.current;
