@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash,randomUUID } from 'node:crypto';
 import { MongoClient,ObjectId,type Document } from 'mongodb';
-import { createServer } from 'node:http';
+import { createServer,request } from 'node:http';
 import { growthPageSchema } from '@almina/contracts';
 import { saveGrowthPage,growthPage,growthPages,savePharmacyProfile,pharmacyProfile } from '../apps/api/src/modules/growth/repository';
 import { requestEmailCode,verifyEmailCode,customerIdentity,customerLogout,customerOrders,customerAddresses,updateCustomerAddresses } from '../apps/api/src/modules/growth/customers';
@@ -11,6 +11,7 @@ import { indexSearchBatch,suggestProducts } from '../apps/api/src/modules/growth
 import { createApp } from '../apps/api/src/app';
 import { createLogger } from '@almina/config/logger';
 import { growthMetrics } from '../apps/api/src/modules/growth/metrics';
+import { saveRetentionPolicy } from '../apps/api/src/modules/growth/retention';
 import { growthProductOptions,growthCategoryOptions } from '../apps/api/src/modules/growth/selectors';
 import { branchDirectory,saveBranchDirectory,readServiceability,saveServiceability,assertServiceable } from '../apps/api/src/modules/growth/branches';
 const uri=process.env.COMMERCE_TEST_URI;
@@ -55,3 +56,56 @@ test('growth content, authentication and search on disposable replica set',{skip
 }finally{await new Promise<void>(resolve=>server.close(()=>resolve()));}});
   await t.test('branches stay private until verified and serviceability is inactive until published',async()=>{assert.equal((await branchDirectory(db)).verified,false);assert.equal((await branchDirectory(db)).items.length,0);await assert.rejects(saveBranchDirectory(db,{items:[{name:'Branch',phone:'+971500000000'}],verified:true},actor),{code:'INVALID_REQUEST'});const branchId=randomUUID();await db.collection<Document & {_id:string}>('growth_settings').insertOne({_id:'order-routing',revision:0,active:false,branches:[{id:branchId,name:'Branch',areaIds:[]}],fallbackBranchId:null});const saved=await saveBranchDirectory(db,{items:[{branchId,name:'Browser name cannot replace the registry',phone:'+971500000000',verified:true}],verified:true},actor);assert.equal(saved.revision,1);assert.equal(saved.items[0]!.name,'Branch');await assert.rejects(saveBranchDirectory(db,{...saved,items:[saved.items[0]!,saved.items[0]!]},actor),{code:'INVALID_REQUEST'});assert.equal((await branchDirectory(db)).items[0]!.name,'Branch');const policy=await readServiceability(db);assert.equal(policy.active,false);await assertServiceable(db,{emirate:'Dubai',city:'Anywhere'});await assert.rejects(saveServiceability(db,{active:true,emirates:[]},actor),{code:'INVALID_REQUEST'});await saveServiceability(db,{active:true,emirates:['Ras al-Khaimah'],blockedCities:['Al Nakheel'],notes:'Neighbourhood delivery during pharmacy hours.'},actor);await assertServiceable(db,{emirate:'Ras al-Khaimah',city:'Al Hamra'});await assert.rejects(assertServiceable(db,{emirate:'Ras al-Khaimah',city:'Al Nakheel'}),{code:'ADDRESS_NOT_SERVICEABLE'});await assert.rejects(assertServiceable(db,{emirate:'Dubai',city:'Al Hamra'}),{code:'ADDRESS_NOT_SERVICEABLE'});});
 }finally{if(secret===undefined)delete process.env.CUSTOMER_AUTH_SECRET;else process.env.CUSTOMER_AUTH_SECRET=secret;await db.dropDatabase();await client.close();}});
+
+// A GET registration with its own 405 catch-all once shadowed both of these POST routes.
+test('signed-in customers save addresses and reminders over HTTP with every mutation guard intact',{skip:!uri},async()=>{
+ assert.match(uri!,/^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+ const client=await new MongoClient(uri!).connect(),db=client.db('customer_routes_'+randomUUID().replaceAll('-',''));
+ const keys=['GROWTH_EMAIL_ENABLED','CUSTOMER_EMAIL_USER','CUSTOMER_EMAIL_PASSWORD'] as const,previous=keys.map(key=>process.env[key]);
+ // Marks the reminder provider ready. No delivery worker runs, so nothing is sent.
+ process.env.GROWTH_EMAIL_ENABLED='true';process.env.CUSTOMER_EMAIL_USER='synthetic@example.invalid';process.env.CUSTOMER_EMAIL_PASSWORD='synthetic-only';
+ const app=createApp({database:{mode:'disabled',checkReadiness:async()=>true},getDb:async()=>db,logger:createLogger({service:'api',environment:'development',write:()=>{}}),development:true,webOrigin:'http://localhost:3000'});
+ const server=createServer(app);
+ try{
+  await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));const bound=server.address();assert.ok(bound&&typeof bound!=='string');
+  const base=`http://127.0.0.1:${bound.port}/api/v1/customers/`;
+  const customerId=new ObjectId(),category=new ObjectId(),productId=new ObjectId(),token='y'.repeat(43);
+  await db.collection('customers').insertOne({_id:customerId,email:'routes@example.invalid',emailHash:'synthetic-route-owner',verifiedAt:new Date()});
+  await db.collection('customer_sessions').insertOne({_id:createHash('sha256').update(token).digest('hex') as never,customerId,expiresAt:new Date(Date.now()+600000)});
+  await db.collection('categories').insertOne({_id:category,name:'Synthetic general'});
+  await db.collection('products').insertOne({_id:productId,name:'Synthetic care',product_id:'SYNTHETIC-CARE',category,productType:'general',contentReviewed:true,published:true,stock:0,price:10});
+  await saveRetentionPolicy(db,{revision:0,enabled:true,restock:true,priceDrop:true,replenishment:true,cartRecovery:true},String(new ObjectId()));
+  const browser={Origin:'http://localhost:3000','Content-Type':'application/json','X-CSRF-Protection':'1'};
+  const signedIn={...browser,Cookie:'almina_customer='+token};
+  const addressId=randomUUID();
+  const cases=[
+   {path:'addresses',body:{operation:'add',addressId,address:{label:'Home',name:'Synthetic Customer',mobile:'+971501234567',emirate:'Ras al-Khaimah',city:'Al Nakheel',address:'Synthetic street'}},savedId:addressId},
+   {path:'reminders',body:{operation:'subscribe',kind:'restock',consent:true,productId:String(productId)},savedId:`${customerId}:restock:${productId}`},
+  ];
+  const stored=async()=>(await db.collection('customers').findOne({_id:customerId}))?.addresses?.length??0;
+  const reminders=()=>db.collection('customer_reminders').countDocuments();
+  for(const {path,body,savedId} of cases){
+   const post=(headers:Record<string,string>)=>fetch(base+path,{method:'POST',headers,body:JSON.stringify(body)});
+   assert.equal((await post(browser)).status,401,path+' guest');
+   const {'X-CSRF-Protection':_csrf,...withoutCsrf}=signedIn;void _csrf;
+   for(const headers of [withoutCsrf,{...signedIn,'Sec-Fetch-Site':'cross-site'},{...signedIn,Origin:'https://evil.invalid'}])assert.equal((await post(headers)).status,403,path+' cross-site');
+   assert.equal(await stored()+await reminders(),path==='addresses'?0:1,path+' refused requests must not write');
+   const saved=await post(signedIn);assert.equal(saved.status,200,path+' save');assert.ok(saved.headers.get('ratelimit'),path+' rate limit');
+   assert.deepEqual(((await saved.json()) as {data:{id:string}[]}).data.map(row=>row.id),[savedId]);
+   const read=await fetch(base+path,{headers:{Cookie:signedIn.Cookie}});assert.equal(read.status,200);
+   assert.deepEqual(((await read.json()) as {data:{id:string}[]}).data.map(row=>row.id),[savedId]);
+   assert.equal((await fetch(base+path,{method:'HEAD',headers:{Cookie:signedIn.Cookie}})).status,200);
+   const getWithBody=await new Promise<number>((resolve,reject)=>{const call=request(base+path,{method:'GET',headers:{Cookie:signedIn.Cookie,'Content-Type':'application/json','Content-Length':'2'}},response=>{response.resume();resolve(response.statusCode!);});call.on('error',reject);call.end('{}');});
+   assert.equal(getWithBody,400,path+' GET body');
+   const wrongMethod=await fetch(base+path,{method:'PUT',headers:signedIn,body:'{}'});assert.equal(wrongMethod.status,405);assert.equal(wrongMethod.headers.get('allow'),'GET, HEAD, POST');
+  }
+  // Exhaust this and the next minute's bucket so a minute rollover cannot skip the check.
+  const minute=Math.floor(Date.now()/60000);
+  for(const bucket of [minute,minute+1])await db.collection<Document&{_id:string}>('customer_auth_limits').updateOne({_id:`customer:${customerId}:${bucket}`},{$set:{count:120,expiresAt:new Date(Date.now()+180000)}},{upsert:true});
+  for(const {path,body} of cases)assert.equal((await fetch(base+path,{method:'POST',headers:signedIn,body:JSON.stringify(body)})).status,429,path+' mutation quota');
+ }finally{
+  if(server.listening)await new Promise<void>(resolve=>server.close(()=>resolve()));
+  keys.forEach((key,index)=>{const value=previous[index];if(value===undefined)delete process.env[key];else process.env[key]=value;});
+  await db.dropDatabase();await client.close();
+ }
+});
