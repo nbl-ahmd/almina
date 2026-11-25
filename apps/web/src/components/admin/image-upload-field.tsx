@@ -12,6 +12,8 @@ export function ImageUploadField({ label, value, onChange, hint, size, disabled 
 }) {
   const id = useId();
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  // The pasted address is previewed only once it is a whole one: half-typed text is not an image.
+  const previewable = /^(https:\/\/[^/\s]+\/\S+|\/(?!\/)\S+)$/.test(value);
   async function upload(file: File) {
     setBusy(true); setError('');
     try {
@@ -30,7 +32,7 @@ export function ImageUploadField({ label, value, onChange, hint, size, disabled 
   return <div className="grid gap-1.5 text-sm font-medium">
     <label htmlFor={id + '-url'}>{label}{size ? <span className="ms-1 font-normal text-mute">({size})</span> : null}</label>
     <div className="flex flex-wrap items-center gap-3">
-      {value ? <span className="relative block h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-line bg-soft"><Image src={value} alt="" fill sizes="112px" className="object-contain" unoptimized /></span> : null}
+      {previewable ? <span className="relative block h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-line bg-soft"><Image src={value} alt="" fill sizes="112px" className="object-contain" unoptimized /></span> : null}
       <label className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-line bg-surface px-4 text-sm font-medium">
         {busy ? 'Uploading…' : value ? 'Replace image' : 'Upload image'}
         <input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled || busy} onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void upload(file); }} />

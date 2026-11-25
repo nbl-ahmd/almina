@@ -330,8 +330,9 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   // Homepage sections (Website & growth → Homepage). Public read returns the published layout or 404 (use built-in homepage).
   const layoutQuery=growthZ.object({locale:growthZ.enum(['en','ar']).default('en')}).strict();
   read('/growth/home-layout',async(req,res)=>{const query=validate(layoutQuery,req.query);const layout=await publishedHomeLayout(await getDb(),query.locale);if(!layout)throw new HttpError(404,'NOT_FOUND');send(res,homeLayoutSchema,layout);});
-  read('/admin/growth/home-layout',async(req,res)=>{await identity(req,true);const query=validate(layoutQuery,req.query);send(res,homeLayoutAdminSchema,await adminHomeLayout(await getDb(),query.locale));});
+  router.get('/admin/growth/home-layout',async(req,res)=>{noBody(req);await identity(req,true);const query=validate(layoutQuery,req.query);send(res,homeLayoutAdminSchema,await adminHomeLayout(await getDb(),query.locale));});
   router.post('/admin/growth/home-layout',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,homeLayoutAdminSchema,await saveHomeLayout(await getDb(),req.body,user.id));});
+  router.all('/admin/growth/home-layout',(_req,res,next)=>{res.set('Allow','GET, HEAD, POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   read('/growth/brands',async(req,res)=>{validate(emptyQuerySchema,req.query);res.set('Cache-Control','public, max-age=60, stale-while-revalidate=120');send(res,growthZ.array(growthZ.string()).max(2000),await publicBrandNames(await getDb()));});
   read('/admin/growth/brands',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);send(res,growthZ.array(growthZ.string()).max(2000),await catalogueBrandNames(await getDb()));});
   installMarketingRoutes(router,getDb,origins,identity);
