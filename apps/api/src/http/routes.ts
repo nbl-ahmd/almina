@@ -23,7 +23,7 @@ import { submitReview,publicReviews,moderateReview } from '../modules/growth/rev
 import { readDeliveryPolicy,saveDeliveryPolicy,previewDelivery } from '../modules/growth/delivery.js';
 import { branchDirectory,saveBranchDirectory,readServiceability,saveServiceability } from '../modules/growth/branches.js';
 import { branchDirectorySchema, serviceabilityPolicySchema } from '@almina/contracts';
-import { commercePolicySchema } from '@almina/contracts';
+import { commercePolicySchema, customerOrderDtoSchema } from '@almina/contracts';
 import { indexSearchBatch,suggestProducts } from '../modules/growth/search.js';
 import { customerAuthOptions,customerCookie,customerToken,requestEmailCode,verifyEmailCode,googleSignIn,customerIdentity,customerLogout,customerOrders,saveCustomerPreferences,customerAddresses,updateCustomerAddresses } from '../modules/growth/customers.js';
 import { growthPageSchema, pharmacyProfileSchema, growthKinds, growthSlug } from '@almina/contracts';
@@ -259,7 +259,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   const customerSchema=growthZ.object({id:growthZ.string(),email:growthZ.email(),marketingEmail:growthZ.boolean().optional(),marketingWhatsapp:growthZ.boolean().optional()});
   read('/customers/options',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,growthZ.object({googleClientId:growthZ.string().nullable(),emailEnabled:growthZ.boolean()}),customerAuthOptions());});
   read('/customers/me',async(req,res)=>{validate(emptyQuerySchema,req.query);send(res,customerSchema,await sessionCustomer(req));});
-  read('/customers/orders',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);const orders=await customerOrders(await getDb(),customer);send(res,growthZ.array(growthZ.object({channel:growthZ.literal('wholesale').optional(),orderId:growthZ.string(),status:growthZ.string(),createdAt:growthZ.coerce.date(),totals:growthZ.object({totalMinor:growthZ.number().int().nonnegative(),lines:growthZ.array(growthZ.object({productId:growthZ.string(),name:growthZ.string(),quantity:growthZ.number().int()}))})})),orders);});
+  read('/customers/orders',async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.array(customerOrderDtoSchema),await customerOrders(await getDb(),customer));});
   const addressDto=growthZ.object({coordinates:deliveryPointSchema.optional(),id:growthZ.string().uuid(),label:growthZ.string(),name:growthZ.string(),mobile:growthZ.string(),emirate:growthZ.string(),city:growthZ.string(),address:growthZ.string(),buildingname:growthZ.string(),flatno:growthZ.string(),note:growthZ.string(),maplink:growthZ.string(),isDefault:growthZ.boolean(),createdAt:growthZ.coerce.date()});
   router.get('/customers/addresses',(req,_res,next)=>{noBody(req);next();},async(req,res)=>{validate(emptyQuerySchema,req.query);const customer=await sessionCustomer(req);send(res,growthZ.array(addressDto),await customerAddresses(await getDb(),customer.id));});
   router.post('/customers/addresses',async(req,res)=>{verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);const customer=await limitedCustomer(req);send(res,growthZ.array(addressDto),await updateCustomerAddresses(await getDb(),customer.id,req.body));});
