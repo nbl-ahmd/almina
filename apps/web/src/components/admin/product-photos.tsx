@@ -7,7 +7,7 @@ import { CloudArrowUpIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { usePendingPhotos } from './photo-context';
 import { cn } from './cn';
 import { Button } from './shadcn/button';
-import { imageFiles, photoTypes, uploadWithReceipt } from '../../lib/admin/photo-upload';
+import { clearReceipt, imageFiles, photoTypes, uploadWithReceipt } from '../../lib/admin/photo-upload';
 
 const subscribe = () => () => {};
 const none: File[] = [];
@@ -79,6 +79,7 @@ export function ProductPhotos({ productId, revision = 0, current = [] }: { produ
       <input ref={input} id="product-photos" type="file" multiple accept={photoTypes} disabled={!ready || pending} className="sr-only" tabIndex={-1} aria-label="Choose product photos" onChange={event => { add(event.target.files); event.target.value = ''; }} />
       {files.length ? <p className="m-0 text-xs text-mute">{files.length} {files.length === 1 ? 'photo uploads' : 'photos upload'} when you save.</p> : null}
       {productId ? <Button variant="outline" disabled={!ready || pending || !files.length} onClick={() => void upload()}>{pending ? 'Preparing and uploading…' : 'Save product photos'}</Button> : null}
+      {productId ? <details className="text-[13px] text-mute"><summary className="cursor-pointer">Upload recovery</summary><p className="m-0 my-2">Use this only after checking the gallery following an interrupted upload.</p><Button size="sm" disabled={!ready || pending} onClick={() => { clearReceipt(productId); setFailure(''); setMessage('Local retry review cleared. Check the gallery before replacing it. All uploaded assets remain retained.'); }}>Clear local upload review</Button></details> : null}
       {failure ? <p role="alert" className="m-0 rounded-lg bg-bad-soft px-4 py-3 text-[13px] font-medium text-bad">{failure}</p> : null}
       {message ? <p role="status" className="m-0 rounded-lg bg-ok-soft px-4 py-3 text-[13px] font-medium text-ok">{message}</p> : null}
     </section>

@@ -110,6 +110,8 @@ async function changeCatalogVisibility(db: Db, collection: 'products' | 'categor
         if (live && (storePublicationIssues(document).length || moneyMinor(document.price) <= 0 || document.active === false)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
       }
       const target = live ?? Boolean(document.disabled);
+      // Prescription items are never sold online, whichever record or control asks.
+      if (collection === 'products' && target && document.productType === 'prescription') throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
       if (collection === 'products' && target && document.catalogManaged === true && storePublicationIssues(document).length) throw new HttpError(409,'CATALOG_REVIEW_REQUIRED');
       const goingLive = collection === 'products' && target;
       // Publishing is the reviewer's statement that what the record says is true: content, stock and image usage are recorded as

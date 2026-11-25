@@ -78,7 +78,7 @@ export function DataTable<T>({ caption, data, columns, empty, getRowId, selectab
               <tr key={row.id} data-selected={row.getIsSelected() || undefined} className="block border-b border-line px-4 py-2.5 last:border-0 data-[selected]:bg-fill md:table-row md:border-line md:p-0 md:hover:bg-fill/60 md:data-[selected]:hover:bg-fill">
                 {row.getVisibleCells().map(cell => (
                   <td key={cell.id} data-label={cell.column.id === 'select' || cell.column.id === 'actions' ? undefined : String(cell.column.columnDef.meta?.label ?? cell.column.id)}
-                    className={cn('flex items-center justify-between gap-4 py-0.5 text-[13.5px] before:text-xs before:font-medium before:text-mute before:content-[attr(data-label)] md:table-cell md:border-b md:border-line md:px-4 md:py-3 md:align-middle md:[overflow-wrap:normal] md:before:content-none', cell.column.columnDef.meta?.align === 'end' && 'md:text-right md:tabular-nums', cell.column.id === 'select' && 'justify-start md:w-10 md:pr-0')}>
+                    className={cn('flex items-center justify-between gap-4 py-0.5 text-[13.5px] before:text-xs before:font-medium before:text-mute before:content-[attr(data-label)] md:table-cell md:border-b md:border-line md:px-4 md:py-3 md:align-middle md:[overflow-wrap:normal] md:before:content-none', cell.column.columnDef.meta?.align === 'end' && 'md:text-right md:tabular-nums', cell.column.id === 'select' && 'justify-start md:w-10 md:pr-0', cell.column.columnDef.meta?.primary && 'max-md:!justify-start max-md:before:content-none [&>span]:max-md:!text-left')}>
                     <span className="min-w-0 text-right md:text-inherit">{flexRender(cell.column.columnDef.cell, cell.getContext())}</span>
                   </td>
                 ))}
@@ -117,5 +117,5 @@ export function selectColumn<T>(): ColumnDef<T, unknown> {
 
 declare module '@tanstack/react-table' {
   // Column metadata used by the shared DataTable.
-  interface ColumnMeta<TData, TValue> { label?: string; align?: 'end'; _types?: [TData, TValue] }
+  interface ColumnMeta<TData, TValue> { label?: string; align?: 'end'; primary?: boolean; _types?: [TData, TValue] }
 }

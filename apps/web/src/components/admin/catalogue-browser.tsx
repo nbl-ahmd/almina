@@ -38,10 +38,10 @@ export function CatalogueFiltersBar({ list, context, limit, categories }: {
       <form role="search" action="/admin/products" className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface p-3">
         <label htmlFor="q" className="sr-only">Search products</label>
         <input id="q" name="q" type="search" key={context.q ?? ''} defaultValue={context.q ?? ''} maxLength={80} placeholder="Search name, PD number, brand or barcode" className={cn(inputClass, 'min-w-0 flex-1 basis-64')} />
-        {categories.length ? <><label htmlFor="category" className="sr-only">Category</label>
-          <select id="category" name="category" key={context.category ?? ''} defaultValue={context.category ?? ''} className={cn(selectClass, 'w-52 max-sm:w-full')}>
+        {categories.length ? <div className="w-52 max-sm:w-full"><label htmlFor="category" className="sr-only">Category</label>
+          <select id="category" name="category" key={context.category ?? ''} defaultValue={context.category ?? ''} className={selectClass}>
             <option value="">All categories</option>{categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
-          </select></> : context.category ? <input type="hidden" name="category" value={context.category} /> : null}
+          </select></div> : context.category ? <input type="hidden" name="category" value={context.category} /> : null}
         {context.view !== 'all' ? <input type="hidden" name="view" value={context.view} /> : null}
         {context.filter !== 'all' ? <input type="hidden" name="filter" value={context.filter} /> : null}
         {limit !== 25 ? <input type="hidden" name="limit" value={limit} /> : null}

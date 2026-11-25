@@ -43,8 +43,7 @@ function PublishSwitch({ product }: { product: ProductRow }) {
   async function change(next: boolean) {
     setPending(next);
     try {
-      const { results } = await setVisibility([product._id], next);
-      if (!results[0]?.ok) throw new Error(results[0]?.reason ?? 'Could not change publishing.');
+      await withRateLimitRetry(() => adminRequest(`products/publish/${product._id}`, 'PUT'), pause);
       toast.success(next ? `${product.name} is live` : `${product.name} is hidden`); router.refresh();
     } catch (error) {
       setPending(null);
@@ -104,12 +103,12 @@ const types = [{ value: 'general', label: 'General' }, { value: 'otc', label: 'P
 function TypeSelect({ product, onChoose }: { product: ProductRow; onChoose: (type: string) => Promise<void> }) {
   const [pending, setPending] = useState<string | null>(null);
   const value = pending ?? (types.some(type => type.value === product.productType) ? product.productType : '');
-  return <select aria-label={`Type of ${product.name}`} disabled={pending !== null} value={value}
+  return <span className="inline-block w-44"><select aria-label={`Type of ${product.name}`} disabled={pending !== null} value={value}
     onChange={async event => { const next = event.target.value; setPending(next); try { await onChoose(next); } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not change the type.'); } finally { setPending(null); } }}
-    className={cn(selectClass, 'h-8 w-44 text-[13px]', !value && '!border-warn')}>
+    className={cn(selectClass, !value && '!border-warn')}>
     {value ? null : <option value="">Choose type…</option>}
     {types.map(type => <option key={type.value} value={type.value}>{type.label}</option>)}
-  </select>;
+  </select></span>;
 }
 
 function Status({ product }: { product: ProductRow }) {
@@ -217,7 +216,7 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
 
   const columns: ColumnDef<ProductRow, unknown>[] = [
     ...(admin ? [selectColumn<ProductRow>()] : []),
-    { accessorKey: 'name', header: 'Product', meta: { label: 'Product' },
+    { accessorKey: 'name', header: 'Product', meta: { label: 'Product', primary: true },
       cell: ({ row }) => (
         <span className="flex items-center gap-3">
           {admin ? <PhotoCell product={row.original} busy={uploading.includes(row.original._id)} onFiles={files => void addPhotos(row.original, files)} />
@@ -238,7 +237,7 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
     { accessorKey: 'stock', header: 'Stock', meta: { label: 'Stock', align: 'end' },
       cell: ({ row }) => {
         const stock = row.original.stock ?? 0;
-        const shown = stock <= 0 ? <Badge tone="danger">Out of stock</Badge> : stock <= 5 ? <span className="text-warn">{stock} left</span> : stock;
+        const shown = stock <= 0 ? <Badge tone="danger" className="normal-case">Out of stock</Badge> : stock <= 5 ? <span className="text-warn">{stock} left</span> : stock;
         return admin ? <QuickNumber value={stock} label={`stock for ${row.original.name}`} step="1" onSave={next => saveField(row.original, { stock: next, expectedStock: String(row.original.stock), stockReason: 'Quick edit', inventoryKey: crypto.randomUUID() }, 'Stock updated')}>{shown}</QuickNumber> : shown;
       } },
     { id: 'todo', accessorFn: row => (row.ready ? 0 : row.issues.length + (row.missingPhoto ? 1 : 0)), header: 'To do', meta: { label: 'To do' }, cell: ({ row }) => <Status product={row.original} /> },

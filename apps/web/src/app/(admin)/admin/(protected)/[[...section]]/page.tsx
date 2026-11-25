@@ -70,6 +70,12 @@ function thumbnail(image: string | null): string | null {
   return /^[A-Za-z0-9_.-]+$/.test(image) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${image}` : null;
 }
 const PAGE_SIZE = 25;
+function CategoryThumb({ image }: { image: string }) {
+  const filename = /^[A-Za-z0-9_.-]+\.[A-Za-z]{2,5}$/.test(image) ? image : "";
+  // eslint-disable-next-line @next/next/no-img-element -- legacy category media is served by the API origin.
+  return filename ? <img src={`${getWebEnvironment().LEGACY_API_ORIGIN}/api/category/images/${filename}`} alt="" width={40} height={40} loading="lazy" className="size-10 shrink-0 rounded-lg bg-fill object-cover" />
+    : <span aria-hidden="true" className="size-10 shrink-0 rounded-lg bg-fill" />;
+}
 /** Lists request one extra row so "Next" only appears when another page exists. */
 function lookahead(qs: URLSearchParams) {
   const next = new URLSearchParams(qs);
@@ -216,7 +222,7 @@ export default async function AdminPage({
             product={product}
             categories={categories}
             selectedCategory={selectedCategory}
-            queue={product ? context : undefined}
+            queue={product ? { context, nextId: queue?.nextId ?? null } : undefined}
           />
         </>
       );
@@ -348,7 +354,12 @@ export default async function AdminPage({
           caption="Categories"
           data={categories}
           columns={[
-            { key: "name", label: "Name" },
+            { key: "name", label: "Category", render: (item) => (
+              <span className="flex items-center gap-3">
+                <CategoryThumb image={display(item.image)} />
+                <Link className="font-medium text-ink no-underline hover:underline" href={`/admin/products?category=${display(item._id)}`}>{display(item.name)}</Link>
+              </span>
+            ) },
             {
               key: "disabled",
               label: "Availability",
@@ -363,7 +374,12 @@ export default async function AdminPage({
             },
           ]}
           actions={(item) => (
+            <>
+            <Link href={`/admin/products?category=${display(item._id)}&filter=missing-photo`} aria-label={`Products without a photo in ${display(item.name)}`}>Add photos</Link>
             <RowActions label={`Actions for ${display(item.name)}`}>
+              <Link href={`/admin/products?category=${display(item._id)}`}>
+                View products in {display(item.name)}
+              </Link>
               <Link href={`/admin/products/new?category=${display(item._id)}`}>
                 Create product in {display(item.name)}
               </Link>
@@ -382,6 +398,7 @@ export default async function AdminPage({
                 Archive category
               </Command>
             </RowActions>
+            </>
           )}
         />
         {pagination(section, query, categories.length, categoryPage.more)}
@@ -452,17 +469,14 @@ export default async function AdminPage({
           caption="Published banners"
           data={banners}
           columns={[
+            { key: "image", label: "Artwork", render: (item) => <MediaPreview item={item} kind="banners" origin={getWebEnvironment().LEGACY_API_ORIGIN} /> },
             { key: "name", label: "Name" },
-            { key: "link", label: "Destination" },
-            { key: "locale", label: "Language (blank = both)" },
+            { key: "link", label: "Destination", render: (item) => <span className="block max-w-[320px] break-all text-[13px] text-mute">{display(item.link)}</span> },
+            { key: "locale", label: "Shown on", render: (item) => <Badge className="normal-case">{item.locale === "en" ? "English" : item.locale === "ar" ? "Arabic" : "English and Arabic"}</Badge> },
           ]}
+          empty={{ title: "No banners yet", description: "Add a banner to fill the homepage carousel." }}
           actions={(item) => (
             <>
-              <MediaPreview
-                item={item}
-                kind="banners"
-                origin={getWebEnvironment().LEGACY_API_ORIGIN}
-              />
               <Command
                 path={`banners/${display(item._id)}`}
                 method="DELETE"
@@ -499,11 +513,23 @@ export default async function AdminPage({
             label: status.charAt(0).toUpperCase() + status.slice(1), href: `/admin/orders${status === "all" ? "" : `?status=${status}`}`, active: active === status,
           }))}
         />
-        <OrdersTable orders={orders.map(order => ({ _id: display(order._id), orderId: display(order.orderId), status: display(order.status), customer: { name: display(record(order.customer).name), city: display(record(order.customer).city), totalAmount: display(record(order.customer).totalAmount) }, routing: { branchName: display(record(order.routing).branchName), areaLabel: display(record(order.routing).areaLabel), needsReview: record(order.routing).needsReview === true } }))} />
+        <OrdersTable orders={orders.map(order => ({ _id: display(order._id), orderId: display(order.orderId), status: display(order.status), ...(typeof order.createdAt === 'string' ? { createdAt: order.createdAt } : {}), customer: { name: display(record(order.customer).name), city: display(record(order.customer).city), totalAmount: display(record(order.customer).totalAmount) }, routing: { branchName: display(record(order.routing).branchName), areaLabel: display(record(order.routing).areaLabel), needsReview: record(order.routing).needsReview === true } }))} />
         {pagination(section, query, orders.length, orderPage.more)}
       </>
     );
   }
+  const sessions = (
+    <Card title="Sessions" description="Sign out every device that is signed in to your account.">
+      <Command
+        path="auth/logout-all"
+        method="POST"
+        variant="danger"
+        confirm="Sign out all sessions for your account?"
+      >
+        Revoke all my sessions
+      </Command>
+    </Card>
+  );
   if (section === "users") {
     const users = rows(await adminRead("auth/users", qs));
     const workspace = await adminRead("auth/branches") as BranchWorkspace;
@@ -526,6 +552,7 @@ export default async function AdminPage({
           <Callout tone="warning"><p>Legacy staff retain catalogue viewing, marketing and image-review access, in addition to assigned orders. Assign their receiving branch or deactivate them after replacing their login. New store accounts have narrower fulfilment permissions.</p></Callout>
           <Table caption="Legacy staff accounts" data={users.filter(item=>item.role!=='admin')} columns={[{key:'name',label:'Name'},{key:'username',label:'Username'},{key:'role',label:'Access',render:()=> 'Legacy staff — broad access'},{key:'branchId',label:'Receiving branch',render:item=>routing.branches.find(branch=>branch.id===item.branchId)?.name??'Not assigned — review access'}]} actions={item=><><StaffBranchAssignment key={display(item._id)+display(item.branchId)} id={display(item._id)} branchId={typeof item.branchId==='string'?item.branchId:null} branches={routing.branches} /><Command path={`auth/users/${display(item._id)}`} method="DELETE" variant="danger" confirm="Deactivate this legacy account and revoke all sessions? History is retained.">Deactivate account</Command></>} />
         </Card>:null}
+        {sessions}
         {users.length === 25 ? (
           <nav className="mb-4 flex gap-2 [&_a]:inline-flex [&_a]:h-10 [&_a]:items-center [&_a]:rounded-lg [&_a]:bg-surface [&_a]:px-5 [&_a]:text-[13px] [&_a]:font-medium [&_a]:text-ink [&_a]:no-underline [&_a]:border border-line" aria-label="Pagination">
             <Link href={`/admin/users?before=${display(users.at(-1)?._id)}`}>
@@ -545,22 +572,26 @@ export default async function AdminPage({
           title="Store settings"
           description="Control storefront availability. Closing the store stops new checkout activity."
         />
-        <Card title="Storefront availability">
-          <p className="m-0 mb-4 flex items-center gap-3">
-            <span>Current status</span>
-            <Badge tone={open ? "success" : "danger"} dot>
-              {display(store.status)}
-            </Badge>
-          </p>
-          <Command
-            path="store/status"
-            body={{ status: store.status !== "open" }}
-            variant={open ? "danger" : "primary"}
-            confirm="Change store availability?"
-          >
-            {open ? "Close store" : "Open store"}
-          </Command>
-        </Card>
+        <div className="grid items-start gap-4 lg:grid-cols-2 [&>section]:mb-0">
+          <Card title="Storefront availability" aside={<Badge tone={open ? "success" : "danger"} dot>{display(store.status)}</Badge>}>
+            <p className="m-0 mb-4 text-sm text-ink-2">{open ? "Customers can browse and place orders." : "Customers can browse, but new orders are stopped."}</p>
+            <Command
+              path="store/status"
+              body={{ status: store.status !== "open" }}
+              variant={open ? "danger" : "primary"}
+              confirm={open ? "The store is open. Closing it stops new orders until you open it again. Existing orders are not changed." : "The store is closed. Opening it lets customers place orders again."}
+            >
+              {open ? "Close store" : "Open store"}
+            </Command>
+          </Card>
+          <Card title="Other settings">
+            <ul className="m-0 grid list-none gap-1 p-0">
+              {([["/admin/branches", "Branches & delivery", "Delivery areas, fees and branch logins"], ["/admin/users", "Team & access", "Administrators, store accounts and sessions"], ["/admin/notifications", "Notifications", "Order alerts on this device"], ["/admin/banners", "Banners", "Homepage carousel artwork"]] as const).map(([href, title, note]) => (
+                <li key={href}><Link href={href} className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-ink no-underline hover:bg-fill"><span className="grid"><span className="text-sm font-medium">{title}</span><span className="text-xs text-mute">{note}</span></span><span aria-hidden="true">›</span></Link></li>
+              ))}
+            </ul>
+          </Card>
+        </div>
       </>
     );
   }
@@ -572,7 +603,7 @@ export default async function AdminPage({
         <PageHeader
           title="Catalog import"
           description="Review prepared ERP files and import them as unpublished drafts."
-          actions={<Link href="/admin/products">Review imported products</Link>}
+          actions={<Link className={buttonVariants({ variant: "outline" })} href="/admin/products?view=hidden">Review imported products</Link>}
         />
         <CatalogImport categories={categories.map(category=>({id:String(category._id),name:String(category.name)}))} />
       </>
@@ -603,17 +634,7 @@ export default async function AdminPage({
           </p>
           <NotificationSettings publicKey={adminPushPublicKey()} />
         </Card>
-        <Card title="Sessions">
-          <p>Sign out every device that is signed in to your account.</p>
-          <Command
-            path="auth/logout-all"
-            method="POST"
-            variant="danger"
-            confirm="Sign out all sessions for your account?"
-          >
-            Revoke all my sessions
-          </Command>
-        </Card>
+        {user.role === "admin" ? <Callout><p>Signing out of every device is under <Link href="/admin/users">Team &amp; access</Link>.</p></Callout> : sessions}
       </>
     );
   if (section === "whatsapp") {
@@ -686,8 +707,10 @@ export default async function AdminPage({
           title="WhatsApp tools"
           description="Recipients, approved templates, posters and delivery reports."
         />
+        <Card title="Recipients" description="Open a conversation to read it and reply.">
         <Table
           caption="Recipients"
+          empty={{ title: "No recipients yet", description: "People appear here after they message the pharmacy on WhatsApp." }}
           data={recipientPage.items}
           columns={[
             { key: "name", label: "Name" },
@@ -712,6 +735,7 @@ export default async function AdminPage({
             </Link>
           )}
         />
+        </Card>
         {pagination(section, query, recipientPage.items.length, recipientPage.more)}
         <BulkTemplates
           recipients={recipientPage.items.map((item) => ({
@@ -757,8 +781,10 @@ export default async function AdminPage({
             />
           </Card>
         </div>
+        <Card title="Posters">
         <Table
           caption="Posters"
+          empty={{ title: "No posters uploaded" }}
           data={rows(posters)}
           columns={[{ key: "image", label: "Filename" }]}
           actions={(item) => (
@@ -779,8 +805,11 @@ export default async function AdminPage({
             </>
           )}
         />
+        </Card>
+        <Card title="Delivery reports">
         <Table
           caption="Delivery reports"
+          empty={{ title: "No delivery reports yet" }}
           data={rows(reports).flatMap((report) => rows(report.broadcast))}
           columns={[
             { key: "recipient", label: "Recipient" },
@@ -788,6 +817,7 @@ export default async function AdminPage({
             { key: "errorDetails", label: "Details" },
           ]}
         />
+        </Card>
       </>
     );
   }

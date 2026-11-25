@@ -470,8 +470,8 @@ export function AdminForm({
   publishDefault?: boolean;
   /** Whether the saved record is currently live. Defaults to publishDefault. */
   productLive?: boolean;
-  /** Product editor: the list being worked through, so "Save & next" can open the following product. */
-  queue?: CatalogueContext;
+  /** Product editor: the list being worked through and, when the page could read it, the product that follows. */
+  queue?: { context: CatalogueContext; nextId: string | null };
   /** Gallery revision of the product being edited, for uploading chosen photos with the save. */
   mediaRevision?: number;
 }) {
@@ -525,9 +525,10 @@ export function AdminForm({
     try { if (next) sessionStorage.setItem(keepPublishingKey, '1'); else sessionStorage.removeItem(keepPublishingKey); } catch { /* private browsing */ }
   }
   async function openNext(current: string) {
-    const context = queue ?? readCatalogueContext({});
+    const context = queue?.context ?? readCatalogueContext({});
     try {
-      const { nextId } = await nextInQueue(current, context, seconds => toast.message(`Pausing ${seconds} seconds before opening the next product.`));
+      // The following product does not change when this one is saved, so the page's answer is used when it has one.
+      const nextId = queue?.nextId ?? (await nextInQueue(current, context, seconds => toast.message(`Pausing ${seconds} seconds before opening the next product.`))).nextId;
       if (nextId) router.push(editorHref(nextId, context));
       else { toast.success('That was the last product in this list.'); router.push(listHref(context)); }
     } catch (failure) {
@@ -660,8 +661,9 @@ export function AdminForm({
     }
   }
   const saveControls = (
-      <div className="sticky bottom-20 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4 border border-line shadow-pop md:bottom-3">
-        <div className="min-w-0 flex-1 text-[13px] max-sm:[&>p:not([role=alert])]:hidden">
+      // Only the long product editor keeps its actions in view; a short form in a card places them after its fields.
+      <div className={productEditor ? "sticky bottom-20 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4 border border-line shadow-pop md:bottom-3" : "flex flex-wrap items-center justify-end gap-3"}>
+        <div className={`min-w-0 text-[13px] max-sm:[&>p:not([role=alert])]:hidden ${error ? 'basis-full' : 'flex-1'}`}>
           {error ? <p role="alert" className="m-0 rounded-lg bg-bad-soft px-3 py-2 text-[13px] font-medium text-bad">{error}</p> : null}
           {!error && !message && footerNote ? <p className="m-0 text-xs text-mute">{footerNote}</p> : null}
           {!error && !message && productEditor ? <p className="m-0 text-xs text-mute">{published ? 'Saving publishes this product to the storefront.' : 'Saving keeps this product hidden from customers.'}</p> : null}
@@ -690,7 +692,7 @@ export function AdminForm({
         {partialSave ? <Link href={`/admin/products/${partialSave.terms.productId}`}>Open saved product</Link> : null}
       </div>
   );
-  const ordinarySections = sections.map((section, index) => <section className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" key={`${section.title}-${index}`}>
+  const ordinarySections = sections.map((section, index) => <section className={`grid gap-4 ${index ? 'border-t border-line pt-4' : ''}`} key={`${section.title}-${index}`}>
     {!singleOpenSection ? <div className="[&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_p]:m-0 [&_p]:mt-0.5 [&_p]:text-[13px] [&_p]:text-mute"><div><h2>{section.title || 'Details'}</h2>{section.description ? <p>{section.description}</p> : null}</div></div> : null}
     <div className="grid gap-4 sm:grid-cols-2">{section.fields.map(renderField)}</div>
   </section>);
@@ -795,7 +797,7 @@ export function BulkTemplates({
           <p className="m-0 text-[13px] text-mute">Send one approved template to a reviewed recipient list. Delivery requires a provider report.</p>
         </div>
       </div>
-      <div className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6">
+      <div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2" htmlFor="recipient-csv">
             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
@@ -851,8 +853,8 @@ export function BulkTemplates({
           ) : null}
         </div>
       </div>
-      <fieldset disabled={pending}>
-        <legend>Recipients</legend>
+      <fieldset className="m-0 border-0 p-0" disabled={pending}>
+        <legend className="mb-1.5 text-[13px] font-medium">Recipients</legend>
         <div className="grid max-h-80 gap-1 overflow-y-auto rounded-lg bg-soft p-2 [&_label]:flex [&_label]:items-center [&_label]:gap-3 [&_label]:rounded-lg [&_label]:p-2.5 [&_label]:text-[13px]">
           {recipients.map((item) => {
             const eligible =
@@ -879,12 +881,12 @@ export function BulkTemplates({
           })}
         </div>
       </fieldset>
-      <div className="grid gap-3 rounded-xl bg-surface p-4 border border-line">
-        <label htmlFor="bulk-template">
+      <div className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <label className="grid gap-1.5 text-[13px] font-medium" htmlFor="bulk-template">
           Template name
           <input className={inputClass} id="bulk-template" name="template" required />
         </label>
-        <label htmlFor="bulk-link">
+        <label className="grid gap-1.5 text-[13px] font-medium" htmlFor="bulk-link">
           Image URL
           <input className={inputClass} id="bulk-link" name="link" type="url" required />
         </label>

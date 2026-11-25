@@ -1,6 +1,8 @@
 "use client";
-import { inputClass, selectClass } from './shadcn/styles';
-import { buttonVariants } from './ui';
+import { inputClass, selectClass, fileClass, labelClass as fieldLabel } from './shadcn/styles';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { Badge, Callout, Card, buttonVariants } from './ui';
+import { useConfirm } from './confirm-dialog';
 import Link from '../app-link';
 import { useSyncExternalStore, useState } from 'react';
 import { adminRequest } from './controls';
@@ -10,6 +12,7 @@ const importKey='almina.catalog-import.preview';
 function savedImport(){try{return localStorage.getItem(importKey)||'';}catch{return '';}}
 function subscribeImport(change:()=>void){window.addEventListener('storage',change);window.addEventListener('almina-catalog-import',change);return ()=>{window.removeEventListener('storage',change);window.removeEventListener('almina-catalog-import',change);};}
 export function CatalogImport({categories}:{categories:{id:string;name:string}[]}) {
+  const { ask, dialog } = useConfirm();
   const [file,setFile]=useState<File|null>(null),[namespace,setNamespace]=useState('erp-2026-10-15'),[mapping,setMapping]=useState<Record<string,string>>({});
   const savedId=useSyncExternalStore(subscribeImport,savedImport,()=> '');
   const [preview,setPreview]=useState<Preview|null>(null),[pending,setPending]=useState(false),[error,setError]=useState(''),[status,setStatus]=useState('');
@@ -35,16 +38,35 @@ export function CatalogImport({categories}:{categories:{id:string;name:string}[]
       const url=URL.createObjectURL(new Blob([JSON.stringify({...details,report:records},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`catalog-import-${previewId.slice(0,12)}.json`;a.click();URL.revokeObjectURL(url);
     }catch{setError('Report unavailable. Sign in with the account that created the preview.');}finally{setPending(false);}
   }
-  return <section className="mb-4 grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" aria-labelledby="catalog-import-title"><h2 id="catalog-import-title">Review and import drafts</h2><p>Use stable source keys and VAT-inclusive AED prices. Importing saves the approved 1–10 opening-stock estimates and keeps products hidden. Review stock and product details before publishing. Keep the same namespace and source keys for future updates; a new namespace creates new products. Repeated source keys update only reviewed draft changes; published products are never overwritten.</p>
-    <p><a href="/api/admin/catalog-import/template" download="catalog-import.csv">Download CSV template</a> · <Link href="/admin/categories">Manage category mappings</Link> · <Link href="/admin/products">Review imported products</Link></p>
-    <label>Source namespace<input className={inputClass} value={namespace} onChange={event=>{setNamespace(event.target.value);setPreview(null);}} disabled={pending} /></label>
-    <label>Prepared CSV or JSON<input type="file" className="mt-1 block w-full min-w-0 max-w-full text-xs" accept=".csv,.json,text/csv,application/json" disabled={pending} onChange={event=>{setFile(event.target.files?.[0]??null);setPreview(null);setMapping({});}} /></label>
-    {preview?.unmappedCategories?.map(name=><label key={name}>Map {name}<select className={selectClass} value={mapping[name]??''} onChange={event=>setMapping(value=>({...value,[name]:event.target.value}))}><option value="">Choose website category</option>{categories.map(category=><option key={category.id} value={category.id}>{category.name}</option>)}</select></label>)}
-    <div className="flex flex-wrap items-center gap-2"><button className={buttonVariants({ variant: "default" })} disabled={pending||!file} onClick={review}>Preview import</button><button className={`${buttonVariants({ variant: "outline" })}`} disabled={pending||!preview?.previewId} onClick={()=>execute('commit')}>Import reviewed drafts</button><button className={`${buttonVariants({ variant: "outline" })}`} disabled={pending||!savedId} onClick={()=>execute('commit')}>Resume saved import</button><button className={`${buttonVariants({ variant: "outline" })}`} disabled={pending||!(preview?.previewId||savedId)} onClick={report}>Download change report</button><button className={`${buttonVariants({ variant: "danger" })}`} disabled={pending||!(preview?.previewId||savedId)} onClick={()=>{if(window.confirm('Roll back unchanged drafts from this import? Edited or published products will be protected.'))void execute('rollback');}}>Roll back saved import</button></div>
-    {preview?.previewId||savedId?<p className="m-0 text-[13px] text-mute">Import reference: {(preview?.previewId||savedId).slice(0,12)}</p>:null}
-    {error?<p role="alert">{error}</p>:null}{status?<p role="status">{status}</p>:null}
-    {preview?.errors?.length?<div role="alert" className="rounded-lg bg-bad-soft p-4 text-[13px] text-bad"><div><h3>Fix these values before importing</h3><ul>{preview.errors.slice(0,50).map((issue,index)=><li key={index}>Row {issue.row} · {issue.field}: {issue.message}</li>)}</ul></div></div>:null}
-    {preview?.warnings?.length?<details><summary>{preview.warnings.length}{preview.warnings.length===500?'+':''} product review warnings</summary><ul>{preview.warnings.slice(0,30).map((issue,index)=><li key={index}>Row {issue.row}: {issue.message}</li>)}</ul><p>Draft import is allowed. Publishing still requires the missing reviews and information.</p></details>:null}
-    {preview?.rows?.length?<div className="mb-4 overflow-x-auto rounded-lg bg-surface border border-line"><h3>{preview.total??preview.rows.length} {(preview.total??preview.rows.length)===1?'product':'products'} · first 50 shown</h3><table className="min-w-[900px]" role="table"><thead role="rowgroup"><tr role="row">{['Source key','Product','Action','Gross AED','Proposed stock','Changed fields'].map(value=><th key={value} scope="col" role="columnheader">{value}</th>)}</tr></thead><tbody role="rowgroup">{preview.rows.slice(0,50).map(row=><tr key={row.sourceKey} role="row"><td role="cell">{row.sourceKey}</td><td role="cell" data-label="Product">{row.name}</td><td role="cell" data-label="Action">{row.action}</td><td role="cell" data-label="Gross AED">{row.previousPrice?`${row.previousPrice} → `:''}{row.price}</td><td role="cell" data-label="Proposed stock">{row.websiteStockProposed}</td><td role="cell" data-label="Changed fields" className="block max-w-xs truncate">{row.changedFields?.join(', ')}</td></tr>)}</tbody></table></div>:null}
-  </section>;
+  const reference=preview?.previewId||savedId;
+  const importable=preview?.total??preview?.rows?.length??0;
+  const step=(number:number,title:string)=><span className="flex items-center gap-2"><span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-ink text-xs font-semibold text-white">{number}</span>{title}</span>;
+  return <>
+    {dialog}
+    {error?<Callout tone="danger" role="alert"><p>{error}</p></Callout>:null}{status?<Callout tone="success" role="status"><p>{status}</p>{status.startsWith('Draft import complete')?<Link href="/admin/products?view=hidden">Review imported products</Link>:null}</Callout>:null}
+    <Card title={step(1,'Choose the prepared file')} description="Importing keeps every product hidden and saves the approved 1–10 opening-stock estimates. Published products are never overwritten."
+      aside={<a className={buttonVariants({ variant: "outline", size: "sm" })} href="/api/admin/catalog-import/template" download="catalog-import.csv"><ArrowDownTrayIcon className="size-4" aria-hidden="true" />Download CSV template</a>}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className={fieldLabel}>Source namespace<input className={inputClass} value={namespace} aria-describedby="namespace-hint" onChange={event=>{setNamespace(event.target.value);setPreview(null);}} disabled={pending} /></label>
+        <label className={fieldLabel}>Prepared CSV or JSON<input type="file" className={fileClass} accept=".csv,.json,text/csv,application/json" disabled={pending} onChange={event=>{setFile(event.target.files?.[0]??null);setPreview(null);setMapping({});}} /></label>
+      </div>
+      <p id="namespace-hint" className="m-0 mt-2 text-[13px] text-mute">Keep the same namespace and source keys for later updates; a new namespace creates new products. Use VAT-inclusive AED prices. Files up to 3 MB.</p>
+      {preview?.unmappedCategories?.length?<fieldset className="m-0 mt-4 grid gap-3 rounded-lg border-0 bg-warn-soft p-4"><legend className="float-left mb-1 w-full text-[13px] font-semibold text-warn">Match these file categories to website categories, then preview again. <Link className="underline" href="/admin/categories">Manage categories</Link></legend>
+        <div className="grid gap-3 md:grid-cols-2">{preview.unmappedCategories.map(name=><label key={name} className={fieldLabel}>Map {name}<select className={selectClass} value={mapping[name]??''} onChange={event=>setMapping(value=>({...value,[name]:event.target.value}))}><option value="">Choose website category</option>{categories.map(category=><option key={category.id} value={category.id}>{category.name}</option>)}</select></label>)}</div></fieldset>:null}
+      <div className="mt-4"><button className={buttonVariants({ variant: "default" })} disabled={pending||!file} onClick={review}>Preview import</button></div>
+    </Card>
+    <Card title={step(2,'Check the preview')} description={preview?.rows?.length?`${importable.toLocaleString('en-AE')} ${importable===1?'product':'products'} · first 50 shown`:'The changes appear here before anything is saved.'}>
+      {preview?.errors?.length?<div role="alert" className="mb-3 rounded-lg bg-bad-soft p-4 text-[13px] text-bad"><h3 className="m-0 text-sm font-semibold">Fix these values before importing</h3><ul className="m-0 mt-2 list-disc pl-5">{preview.errors.slice(0,50).map((issue,index)=><li key={index}>Row {issue.row} · {issue.field}: {issue.message}</li>)}</ul></div>:null}
+      {preview?.warnings?.length?<details className="mb-3 rounded-lg bg-warn-soft p-4 text-[13px] text-warn"><summary className="cursor-pointer font-semibold">{preview.warnings.length}{preview.warnings.length===500?'+':''} product review warnings</summary><ul className="m-0 mt-2 list-disc pl-5">{preview.warnings.slice(0,30).map((issue,index)=><li key={index}>Row {issue.row}: {issue.message}</li>)}</ul><p className="m-0 mt-2">Draft import is allowed. Publishing still requires the missing information.</p></details>:null}
+      {preview?.rows?.length?<div className="overflow-x-auto rounded-lg border border-line" tabIndex={0} role="region" aria-label="Import preview"><table className="w-full min-w-[820px] border-collapse text-[13px]"><thead><tr>{['Source key','Product','Action','Gross AED','Proposed stock','Changed fields'].map(value=><th key={value} scope="col" className="whitespace-nowrap bg-soft px-3 py-2 text-left text-xs font-semibold text-mute">{value}</th>)}</tr></thead><tbody>{preview.rows.slice(0,50).map(row=><tr key={row.sourceKey} className="border-t border-line"><td className="px-3 py-2 font-mono text-xs">{row.sourceKey}</td><td className="px-3 py-2">{row.name}</td><td className="px-3 py-2"><Badge tone={row.action==='create'?'success':'neutral'}>{row.action}</Badge></td><td className="px-3 py-2 tabular-nums">{row.previousPrice?`${row.previousPrice} → `:''}{row.price}</td><td className="px-3 py-2 tabular-nums">{row.websiteStockProposed}</td><td className="max-w-xs truncate px-3 py-2 text-mute">{row.changedFields?.join(', ')}</td></tr>)}</tbody></table></div>:null}
+    </Card>
+    <Card title={step(3,'Import, or undo')} description={reference?`Import reference: ${reference.slice(0,12)}`:'Preview a file to enable these actions.'}>
+      <div className="flex flex-wrap items-center gap-2">
+        <button className={buttonVariants({ variant: "default" })} disabled={pending||!preview?.previewId} onClick={()=>execute('commit')}>Import reviewed drafts</button>
+        <button className={buttonVariants({ variant: "outline" })} disabled={pending||!savedId} onClick={()=>execute('commit')}>Resume saved import</button>
+        <button className={buttonVariants({ variant: "outline" })} disabled={pending||!reference} onClick={report}>Download change report</button>
+        <button className={buttonVariants({ variant: "danger" })} disabled={pending||!reference} onClick={async()=>{if(await ask('Roll back unchanged drafts from this import? Edited or published products will be protected.',{action:'Roll back import',danger:true}))void execute('rollback');}}>Roll back saved import</button>
+      </div>
+    </Card>
+  </>;
 }

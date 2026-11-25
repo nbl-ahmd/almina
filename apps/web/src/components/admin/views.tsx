@@ -124,7 +124,7 @@ export function ProductForm({
   categories: AdminRecord[];
   selectedCategory?: string | undefined;
   /** The product list this editor is working through. */
-  queue?: CatalogueContext | undefined;
+  queue?: { context: CatalogueContext; nextId: string | null } | undefined;
 }) {
   const edit = !!product;
   const section = (
@@ -471,6 +471,11 @@ export function ProductForm({
     </div>
   );
 }
+/** Shop time, as staff read it. */
+function orderTime(value: unknown): string {
+  const time = typeof value === "string" ? Date.parse(value) : NaN;
+  return Number.isFinite(time) ? new Date(time).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Dubai" }) : display(value);
+}
 export function OrderDetail({
   order,
   admin,
@@ -500,11 +505,37 @@ export function OrderDetail({
         }
       />
 
-      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="mb-3 rounded-lg bg-bad-soft px-4 py-3 text-[13px] font-medium text-bad">Check this address before dispatch. The order remains visible to administrators.</p> : null}{!order.deliveryAssignment?<p className="text-sm">This older order has no saved polygon assignment. Verify the original address before dispatch. Administrators retain access.</p>:null}</Card>
-      {admin&&order.deliveryAssignment&&branches?<ZoneOrderReassignment orderId={id} branchId={String(record(order.deliveryAssignment).branchId)} branches={branches} />:null}
-      {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="m-0 grid gap-2 [&>div]:rounded-lg [&>div]:bg-soft [&>div]:px-4 [&>div]:py-3 [&_dt]:text-xs [&_dt]:text-mute [&_dd]:m-0 [&_dd]:mt-0.5 [&_dd]:break-words [&_dd]:text-sm [&_dd]:font-medium">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
       {stripePayment?.provider==='stripe'?<div className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0" role="status"><strong>{stripePayment.testMode?'Stripe test payment':'Stripe online payment'} · {display(stripePayment.state)}</strong><p>Only verified paid orders can be fulfilled. Paid-order cancellation requests a refund; cancellation finishes after Stripe confirms it. Dispatched goods are not automatically restocked.</p>{stripePayment.reference?<p>Stripe reference: {stripePayment.reference}</p>:null}{stripePayment.refundIssue?<p>{stripePayment.refundIssue}</p>:null}</div>:null}
-      <div className="mb-4 grid gap-4 lg:grid-cols-2 [&>section]:mb-0">
+      <Table
+        caption={
+          order.snapshotAvailable
+            ? "Recorded order lines"
+            : "Historical lines (current product labels; original snapshots unavailable)"
+        }
+        data={rows(order.cartItems).map((line) =>
+          orderLinePresentation(line, order.snapshotAvailable === true),
+        )}
+        columns={[
+          { key: "_id.name", label: "Product" },
+          { key: "variantLabel", label: "Selected option" },
+          { key: "quantity", label: "Quantity", align: "end" },
+          {
+            key: "displayedUnitPrice",
+            label: order.snapshotAvailable
+              ? "Charged unit price (AED)"
+              : "Current unit price (AED)",
+            align: "end",
+          },
+          {
+            key: "recordedLineTotal",
+            label: "Recorded line total (AED)",
+            align: "end",
+          },
+        ]}
+      />
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="grid min-w-0 content-start [&>section]:mb-4">
+      <div className="mb-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 [&>section]:mb-0">
         <Card
           title="Customer and delivery"
           description="Contact and address details supplied at checkout."
@@ -559,40 +590,17 @@ export function OrderDetail({
             ).map(([key, label]) => (
               <div key={key}>
                 <dt>{label}</dt>
-                <dd>{display(customer[key] ?? order[key])}</dd>
+                <dd>{key === "createdAt" ? orderTime(customer[key] ?? order[key]) : display(customer[key] ?? order[key])}</dd>
               </div>
             ))}
           </dl>
         </Card>
       </div>
-      <Table
-        caption={
-          order.snapshotAvailable
-            ? "Recorded order lines"
-            : "Historical lines (current product labels; original snapshots unavailable)"
-        }
-        data={rows(order.cartItems).map((line) =>
-          orderLinePresentation(line, order.snapshotAvailable === true),
-        )}
-        columns={[
-          { key: "_id.name", label: "Product" },
-          { key: "variantLabel", label: "Selected option" },
-          { key: "quantity", label: "Quantity", align: "end" },
-          {
-            key: "displayedUnitPrice",
-            label: order.snapshotAvailable
-              ? "Charged unit price (AED)"
-              : "Current unit price (AED)",
-            align: "end",
-          },
-          {
-            key: "recordedLineTotal",
-            label: "Recorded line total (AED)",
-            align: "end",
-          },
-        ]}
-      />
-      <Card title="Order actions">
+      {order.channel==='wholesale'?<Card title="Business at time of order" description="Recorded when the order was placed. Later account edits do not change these details."><dl className="m-0 grid gap-2 [&>div]:rounded-lg [&>div]:bg-soft [&>div]:px-4 [&>div]:py-3 [&_dt]:text-xs [&_dt]:text-mute [&_dd]:m-0 [&_dd]:mt-0.5 [&_dd]:break-words [&_dd]:text-sm [&_dd]:font-medium">{[['businessName','Business'],['typeId','Business type'],['contactName','Contact'],['phone','Business phone'],['tradeLicense','Trade licence'],['taxRegistrationNumber','Tax registration number']].map(([key,label])=><div key={key}><dt>{label}</dt><dd>{display(record(order.wholesale)[key!])}</dd></div>)}</dl></Card>:null}
+      {admin && order.schemaVersion===2?<details className="mb-4 rounded-xl bg-surface p-5 border border-line [&>summary]:cursor-pointer [&>summary]:text-sm [&>summary]:font-semibold [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[13px] [&_p]:text-[13px]"><summary>Contribution reporting · actual costs</summary><OrderCosts key={id} orderId={id}/></details>:null}
+        </div>
+        <div className="grid min-w-0 content-start max-xl:order-first [&>section]:mb-4 xl:sticky xl:top-20">
+      <Card title="Order actions" description={status === "pending" ? "Next step: check the address and payment, then confirm." : status === "confirmed" ? "Next step: pack and check every item." : status === "packed" ? "Next step: dispatch with the bill details." : undefined}>
         {!readyForFulfilment ? <p className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0">Payment is not ready for fulfilment. Await a verified live payment before confirming, packing or dispatching.</p> : null}
         {status === 'pending' && readyForFulfilment ? <div className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0"><p>Verify the delivery address and payment status, then accept this order for your pharmacy.</p><Command path={`orders/${id}/confirm`} method="POST" variant="primary">Confirm order</Command></div> : null}
         {status === 'confirmed' && readyForFulfilment ? <div className="mb-3 grid gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] [&_p]:m-0"><p>Prepare and check every item before marking the order ready for dispatch.</p><Command path={`orders/${id}/pack`} method="POST" variant="primary">Mark as packed</Command></div> : null}
@@ -653,7 +661,10 @@ export function OrderDetail({
           </>
         ) : null}
       </Card>
-      {admin && order.schemaVersion===2?<details className="mb-4 rounded-xl bg-surface p-5 border border-line [&>summary]:cursor-pointer [&>summary]:text-sm [&>summary]:font-semibold [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[13px] [&_p]:text-[13px]"><summary>Contribution reporting · actual costs</summary><OrderCosts key={id} orderId={id}/></details>:null}
+      <Card title="Receiving branch"><p><strong>{display(record(order.routing).branchName)}</strong> · {display(record(order.routing).areaLabel)}</p>{record(order.routing).needsReview ? <p className="mb-3 rounded-lg bg-bad-soft px-4 py-3 text-[13px] font-medium text-bad">Check this address before dispatch. The order remains visible to administrators.</p> : null}{!order.deliveryAssignment?<p className="text-sm">This older order has no saved polygon assignment. Verify the original address before dispatch. Administrators retain access.</p>:null}</Card>
+      {admin&&order.deliveryAssignment&&branches?<ZoneOrderReassignment orderId={id} branchId={String(record(order.deliveryAssignment).branchId)} branches={branches} />:null}
+        </div>
+      </div>
     </>
   );
 }
