@@ -44,7 +44,7 @@
   @scope (.storefront-shell) {
     .home-page { gap: 16px !important; }
     /* Hero runs edge to edge like Aster; the frame stays 2:1. */
-    .home-page .home-hero { margin-inline: calc(var(--qc-gutter) * -1); } /* beats the older .home-page section reset */
+    .home-page .home-hero { margin-inline: calc(var(--qc-gutter) * -1); contain: paint; } /* beats the older .home-page section reset; clip keeps its visually-hidden heading inside the page in RTL */
     .home-hero .qc-hero, .home-hero .fallback-campaign, .home-hero :is(img, a) { border-radius: 0; }
     /* Categories: one swipeable row of 64px tiles (about 4.6 visible) instead of two rows of large squares. */
     .home-page .home-categories { display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72px; gap: 10px;

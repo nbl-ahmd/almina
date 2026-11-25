@@ -56,3 +56,7 @@ and simply stop appearing.
 - **Browser:** the campaign, home, storefront, market-green, admin and coupon suites pass.
 - **Visual:** checked at 390 and 1280 with Cloudinary's public demo artwork on the local preview: overlay hero, image hero, home and
   listing strips, and the popup once per revision.
+
+**Superseded sizes (same day).** After measuring Aster, the frames changed: hero 1600 × 500 / 800 × 400, strips 1600 × 200 / 764 × 176,
+and a new top promo strip at 2220 × 120 / 764 × 88. Frames now contain-fit, so older art is never cropped. Phone artwork is uploaded
+separately, and a poster-style popup was added. See [STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md).

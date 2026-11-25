@@ -1,3 +1,22 @@
+## 2026-11-25 — Homepage section builder, brands, device artwork, sticky search
+
+Staff can now build the homepage in Website & growth → Homepage:
+
+- reorder or hide built-in sections;
+- add product rows (category, brand, offers or chosen products), category or brand cards, image tiles, carousels and banner strips;
+- set tints, schedules and a "View all" link per section;
+- preview the draft, then publish per language.
+
+Also:
+
+- **Brand pages:** staff pick a catalogue brand and upload a logo.
+- **Artwork:** banners take separate desktop and phone artwork at Aster's measured sizes, contain-fitted. There is a top promo strip
+  slot, a poster-style popup and a "Copy to Arabic draft" action.
+- **Storefront:** search stays sticky on scroll, and the phone homepage is more compact.
+- **Category cards:** they fall back to a product photo when no image is uploaded.
+
+See [STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md).
+
 ## 2026-11-25 — Coupons, managed banners and popups, category/brand SEO
 
 - **Coupons:** product and category scopes, customer-facing title and terms, and a public "Coupons & offers" list in the cart and

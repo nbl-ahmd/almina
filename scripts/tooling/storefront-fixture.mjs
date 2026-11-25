@@ -41,6 +41,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
   let failed = false;
   let homeStock = "normal";
   let homeCampaigns = false;
+  let homeLayout = false;
   const requests = [];
   const factory = tls ? handler => createSecureServer(tls, handler) : createServer;
   const server = factory((req, res) => {
@@ -53,6 +54,11 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       const mode = url.searchParams.get('mode');
       if (!['normal', 'empty', 'wide'].includes(mode)) { res.writeHead(400); res.end(); return; }
       homeStock = mode;
+      res.end('OK');
+      return;
+    }
+    if (url.pathname === '/__fixture/home-layout' && includePagination) {
+      homeLayout = url.searchParams.get('enabled') === '1';
       res.end('OK');
       return;
     }
@@ -116,6 +122,20 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     if (url.pathname === '/api/category') {
       const visualCategories = includePagination ? ['Baby Care','Oral Care','Hair Care','First Aid'].map((name,index)=>({_id:(200+index).toString(16).padStart(24,'0'),name,disabled:false})) : [];
       res.end(JSON.stringify([category,...visualCategories])); return;
+    }
+    if (url.pathname === '/api/v1/growth/home-layout') {
+      if (!homeLayout) { res.writeHead(404); res.end(JSON.stringify({ error: { code: 'NOT_FOUND' } })); return; }
+      const locale = url.searchParams.get('locale') === 'ar' ? 'ar' : 'en';
+      const common = { enabled: true, subtitle: 'Synthetic section.', background: 'blue', viewAllHref: '', banner: null, startsAt: null, endsAt: null };
+      res.end(JSON.stringify({ data: { locale, published: true, revision: 3, sections: [
+        { type: 'builtin', key: 'categories', id: 'categories', enabled: true },
+        { ...common, type: 'products', id: 'fixture-picks', title: 'Fixture picks', source: { kind: 'selected', productIds: [product._id] }, limit: 8 },
+        { ...common, type: 'strip', id: 'fixture-strip', title: '', background: 'none', strip: { image: 'https://cdn.alminapharmacy.com/cdn/banners/synthetic-strip.webp', mobileImage: '', alt: 'Synthetic strip offer', href: '/offers' } },
+        { type: 'builtin', key: 'essentials', id: 'essentials', enabled: true },
+        { type: 'builtin', key: 'brands', id: 'brands', enabled: false },
+        { ...common, type: 'products', id: 'fixture-later', title: 'Fixture later', startsAt: '2999-01-01T00:00:00.000Z', source: { kind: 'offers' }, limit: 8 },
+      ] } }));
+      return;
     }
     if (homeCampaigns && ['/api/v1/growth/campaigns', '/api/v1/growth/page'].includes(url.pathname)) {
       const locale = url.searchParams.get('locale') === 'ar' ? 'ar' : 'en';

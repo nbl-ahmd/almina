@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { campaignImageUrl, defaultHomeLayout, sectionLive, type HomeBuiltinKey } from '@almina/contracts';
-import { getGrowthPages, getHomeLayout } from '../../lib/server/growth';
+import { getGrowthPages, getHomeLayout, getHomeLayoutDraft } from '../../lib/server/growth';
 import { CustomHomeSection } from '../../components/home-sections';
 import { SectionStrips } from '../../components/hero-banner';
 import { getHomepageCampaigns } from '../../lib/server/growth';
@@ -55,10 +55,12 @@ export async function generateMetadata({
 const featuredProducts = cache(() => getProducts({ featured: true }));
 const homepageCampaigns = cache(async () => getHomepageCampaigns(await getLocale()).catch(() => []));
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<Query> }) {
+  // ?preview=layout shows the saved draft from Website & growth → Homepage, for signed-in admins only.
+  const preview = (await searchParams).preview === 'layout';
   return <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
     <Suspense fallback={<CatalogLoading />}><HomeLead /></Suspense>
-    <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent /></Suspense>
+    <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent preview={preview} /></Suspense>
   </div>;
 }
 async function HomeLead() {
@@ -81,7 +83,7 @@ function categoryRank(name: string) {
   ].findIndex((label) => name.toLowerCase().includes(label));
   return index < 0 ? 99 : index;
 }
-async function HomeContent() {
+async function HomeContent({ preview = false }: { preview?: boolean }) {
   const locale = await getLocale();
   const [catalogue, settledCollections, campaigns, layout, brandPages] = await Promise.all([
     Promise.allSettled([
@@ -94,7 +96,7 @@ async function HomeContent() {
       homeCollections.map((collection) => getCollectionProducts(collection)),
     ),
     homepageCampaigns(),
-    getHomeLayout(locale),
+    preview ? getHomeLayoutDraft(locale).then(draft => draft ?? getHomeLayout(locale)) : getHomeLayout(locale),
     getGrowthPages('brand', locale).then(result => result.items).catch(() => []),
   ]);
   const collectionResults = settledCollections.map((result) =>
@@ -193,5 +195,5 @@ async function HomeContent() {
     help: <HomeSupport />,
   };
   const sections = (layout ?? defaultHomeLayout(locale)).sections.filter(section => sectionLive(section));
-  return <>{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
+  return <>{preview && layout && !layout.published ? <p role="status" className="notice m-0 p-3 text-sm">Previewing the saved draft homepage. Customers still see the published version.</p> : null}{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
 }

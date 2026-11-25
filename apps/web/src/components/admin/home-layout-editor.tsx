@@ -47,6 +47,7 @@ export function HomeLayoutEditor() {
   const [locale, setLocale] = useState<'en' | 'ar'>('en');
   const [layout, setLayout] = useState<HomeLayout | null>(null);
   const [open, setOpen] = useState<string>('');
+  const [dragging, setDragging] = useState<number | null>(null);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [busy, setBusy] = useState(true), [message, setMessage] = useState(''), [issue, setIssue] = useState('');
@@ -85,10 +86,12 @@ export function HomeLayoutEditor() {
   const taken = sections.map(section => section.id);
   return <section className="grid gap-4" aria-labelledby="home-layout-title">
     <div className="flex flex-wrap items-end justify-between gap-3">
-      <div><h2 id="home-layout-title" className="mb-1 text-lg font-semibold">Homepage sections</h2><p className="m-0 max-w-prose text-sm text-mute">Order, hide or schedule sections, and add product rows, category or brand cards, image tiles, carousels and banner strips. The main carousel and promo strip stay at the top. {layout.published ? 'This layout is published.' : 'Nothing is published: the homepage uses the built-in order.'}</p></div>
+      <div><h2 id="home-layout-title" className="mb-1 text-lg font-semibold">Homepage sections</h2><p className="m-0 max-w-prose text-sm text-mute">Drag sections (or use the arrows) to order them; hide or schedule them, and add product rows, category or brand cards, image tiles, carousels and banner strips. The main carousel and promo strip stay at the top. {layout.published ? 'This layout is published.' : 'Nothing is published: the homepage uses the built-in order.'}</p></div>
       <label className={field}>Language<select className={selectClass} value={locale} onChange={event => { setBusy(true); setLayout(null); setLocale(event.target.value === 'ar' ? 'ar' : 'en'); }}><option value="en">English</option><option value="ar">Arabic</option></select></label>
     </div>
-    <ol className="m-0 grid list-none gap-2 p-0">{sections.map((section, index) => <li key={section.id} className="rounded-xl border border-line bg-surface">
+    <ol className="m-0 grid list-none gap-2 p-0">{sections.map((section, index) => <li key={section.id} className={`rounded-xl border bg-surface ${dragging === index ? 'border-ink opacity-60' : 'border-line'}`}
+      draggable onDragStart={event => { setDragging(index); event.dataTransfer.effectAllowed = 'move'; }} onDragEnd={() => setDragging(null)}
+      onDragOver={event => { if (dragging !== null) event.preventDefault(); }} onDrop={event => { event.preventDefault(); if (dragging !== null && dragging !== index) move(dragging, index - dragging); setDragging(null); }}>
       <div className="flex flex-wrap items-center gap-2 p-3">
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={section.enabled} onChange={event => update(index, { enabled: event.target.checked })} aria-label={`Show ${label(section)}`} /></label>
         <button type="button" className="min-h-11 flex-1 text-start text-sm font-medium" onClick={() => setOpen(open === section.id ? '' : section.id)} aria-expanded={open === section.id} disabled={section.type === 'builtin'}>{label(section)}{section.type !== 'builtin' ? <span className="ms-2 text-xs font-normal text-mute">{open === section.id ? 'Close' : 'Edit'}</span> : <span className="ms-2 text-xs font-normal text-mute">Built in</span>}</button>
@@ -127,7 +130,8 @@ export function HomeLayoutEditor() {
     </li>)}</ol>
     <datalist id="home-layout-brands">{brands.map(name => <option key={name} value={name} />)}</datalist>
     <div className="flex flex-wrap items-center gap-2"><label className={field}>Add a section<select className={selectClass} value="" onChange={event => { const type = event.target.value as CustomType; if (!type) return; const section = newSection(type, taken); set([...sections, section]); setOpen(section.id); }}><option value="">Choose a type…</option>{(Object.keys(typeNames) as CustomType[]).map(type => <option key={type} value={type}>{typeNames[type]}</option>)}</select></label></div>
-    <div className="flex flex-wrap gap-2"><button type="button" className={secondary} disabled={busy} onClick={() => void save(false)}>Save draft</button><button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white" disabled={busy} onClick={() => void save(true)}>Publish homepage</button>{layout.published ? <button type="button" className={secondary} disabled={busy} onClick={() => void save(false)}>Unpublish (use built-in homepage)</button> : null}</div>
+    <div className="flex flex-wrap gap-2"><button type="button" className={secondary} disabled={busy} onClick={() => void save(false)}>Save draft</button><a className={secondary + ' inline-flex items-center'} href="/?preview=layout" target="_blank" rel="noopener noreferrer" title={locale === 'ar' ? 'Switch the storefront to العربية to see the Arabic draft' : undefined}>Preview saved draft</a><button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white" disabled={busy} onClick={() => void save(true)}>Publish homepage</button>{layout.published ? <button type="button" className={secondary} disabled={busy} onClick={() => void save(false)}>Unpublish (use built-in homepage)</button> : null}</div>
+    <p className="m-0 text-xs text-mute">Preview shows the last saved draft to signed-in admins only{locale === 'ar' ? '; switch the storefront language to العربية first to see the Arabic layout' : ''}.</p>
     {issue ? <p role="alert" className="m-0 text-sm">{issue}</p> : null}
     {message ? <p role="status" className="m-0 text-sm">{message}</p> : null}
   </section>;
