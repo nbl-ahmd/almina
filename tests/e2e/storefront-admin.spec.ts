@@ -118,7 +118,7 @@ test('staff publish a banner for one language', async ({ page, request }) => {
   const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
   await page.getByLabel('Banner image', { exact: false }).first().setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: pixel });
   await page.locator('form').filter({ has: page.getByRole('combobox', { name: /^Show on/ }) }).locator('button[type=submit]').click();
-  await expect(page.getByRole('row').filter({ hasText: 'Synthetic Arabic banner' })).toContainText('ar');
+  await expect(page.getByRole('row').filter({ hasText: 'Synthetic Arabic banner' })).toContainText('Arabic');
 });
 
 test('staff limit a coupon to a category and publish an opening popup', async ({ page, request, context }) => {
