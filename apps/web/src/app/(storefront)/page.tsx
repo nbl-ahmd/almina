@@ -14,7 +14,6 @@ import {
   HomeRoutine,
   HomeCategories,
   HomeHero,
-  HomeProductCarousel,
   HomeShelf,
   HomeSupport,
 } from "../../components/homepage";
@@ -186,7 +185,6 @@ async function HomeContent() {
             href="/offers"
           />
         ) : null}
-        <HomeProductCarousel products={photoReady.filter(product => !shelf.some(item => item._id === product._id)).slice(0,4)} />
         <HomeCompactShelf
           title={u(locale,"Personal care for every day")}
           description={u(locale,"Discover body, hair and personal care essentials.")}

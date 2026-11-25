@@ -19,7 +19,9 @@ import { NativeSelect } from './ui/native-select';
 import { Field, FieldLabel, FieldDescription } from './ui/field';
 
 import { emirateLabel } from '../lib/i18n';
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { OrderPlacedCelebration } from './order-celebration';
+import { primeAudio } from '../lib/ui/celebration';
 import Link from './app-link';
 import { checkoutInputSchema, customerInputSchema, checkoutDtoSchema, stripeCheckoutDtoSchema, quoteDtoSchema, type CheckoutInput, type Quote } from '@almina/contracts';
 import { Icon } from './storefront-icon';
@@ -126,6 +128,8 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   const [manualOpen,setManualOpen]=useState(false);
   const [ready, setReady] = useState(false);
   const [working, setWorking] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
+  const endCelebration = useCallback(() => setCelebrating(false), []);
   const [error, setError] = useState('');
   const [reviewed, setReviewed] = useState<Reviewed | null>(null);
   const [attempt, setAttempt] = useState<CheckoutInput | null>(null);
@@ -342,6 +346,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
   function fieldIssue(name:DetailField){return fieldErrors[name]?<p id={`checkout-error-${name}`} className="field-error">{fieldErrors[name]}</p>:null;}
   async function place() {
     if (busy.current || locating || (!reviewed && !attempt)) return;
+    primeAudio(); // inside the tap, so the success chime may play once the order is confirmed
     busy.current = true; setWorking(true); setError('');
     let submitted = false;
     let stripeSubmission=attempt?.customer.payment==='stripe';
@@ -371,7 +376,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       if (input.couponCode) saveCoupon('');
       setReceipt({ lines: (reviewed?.quote.lines ?? []).map(line => ({ productId: line.productId, name: line.name, variantLabel: line.variantLabel, quantity: line.quantity, lineTotalMinor: line.lineTotalMinor, image: basket.find(item => item.id === line.productId)?.image ?? '/product-placeholder.svg' })),
         address: `${input.customer.address}, ${input.customer.city}`, payment: input.customer.payment, minutes: reviewed?.quote.delivery?.estimatedMinutes, customerName: input.customer.name });
-      setResult(committed); setAttempt(null); setReviewed(null);
+      setResult(committed); setCelebrating(true); setAttempt(null); setReviewed(null);
       recordCommerceEvent('checkout_confirmed');
       try { sessionStorage.removeItem(pendingKey); } catch { /* A replay is safe if storage fails. */ }
       try {
@@ -440,7 +445,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
     </li>)}</ul>;
   }
   if(!ready)return <div className="checkout-flow purchase-loading" role="status"><h1 className="sr-only">{t(locale,'checkoutTitle')}</h1><div className="skeleton h-10 w-48" /><p>{t(locale,'checkoutLoading')}</p></div>;
-  if(result)return <><GoogleCustomerReviews config={googleReviews??{merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} locale={locale} nonce={nonce}/><section className="checkout-flow checkout-completion mx-auto max-w-2xl" aria-labelledby="order-confirmation">
+  if(result)return <>{celebrating?<OrderPlacedCelebration locale={locale} orderId={result.orderId} onDone={endCelebration}/>:null}<GoogleCustomerReviews config={googleReviews??{merchantId:5884188879,deliveryBusinessDays:6,survey:false,widget:false}} receipt={reviewReceipt} locale={locale} nonce={nonce}/><section className="checkout-flow checkout-completion mx-auto max-w-2xl" aria-labelledby="order-confirmation">
     <CheckoutProgress stage="complete" locale={locale}/><div className="checkout-confirmation-panel grid gap-6">
       <div><ConfirmationMark/><h1 ref={confirmation} tabIndex={-1} className="mb-2 text-2xl font-semibold outline-none sm:text-3xl" id="order-confirmation">{t(locale,'checkoutOrderReceived')}</h1><p className="m-0 text-sm leading-6">{t(locale,'checkoutThankYou')}</p></div>
       <ol className="pf-tracker" aria-label={ar?'حالة الطلب':'Order status'}>

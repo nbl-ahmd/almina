@@ -847,3 +847,137 @@
   .qc-choice:active:not(:disabled) { opacity: 1; background: var(--qc-well); }
 }
 @media (min-width: 900px) { @scope (.storefront-shell) { .checkout-progress { justify-content: center; gap: 12px; } .checkout-progress li + li::before { inline-size: 40px; } } }
+
+/* ═══════════════════════════ Browsing refinement (home, listing, product) ═══════════════════════════ */
+@scope (.storefront-shell) {
+  /* Shelves (Talabat): one swipeable row on phones; a single row on desktop. */
+  .qc-rail { display: grid !important; grid-auto-flow: column; grid-template-columns: none !important; grid-auto-columns: minmax(148px, 42%); gap: 10px !important;
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--qc-gutter); scrollbar-width: none;
+    margin-inline: calc(var(--qc-gutter) * -1); padding-inline: var(--qc-gutter); padding-block: 2px 6px; }
+  .qc-rail::-webkit-scrollbar { display: none; }
+  .qc-rail > * { scroll-snap-align: start; min-inline-size: 0; }
+  /* Section headings: title and "View all"; descriptions stay off phones (Talabat). */
+  .section-heading { margin-block-end: 10px; }
+  /* Brands (Talabat "Big brands near you"). */
+  .qc-brand-rail { display: grid !important; grid-auto-flow: column; grid-auto-columns: 84px; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+    margin-inline: calc(var(--qc-gutter) * -1); padding: 2px var(--qc-gutter) 6px; }
+  .qc-brand-rail::-webkit-scrollbar { display: none; }
+  .qc-brand { display: grid; justify-items: center; gap: 6px; min-inline-size: 0; color: var(--qc-ink); text-align: center; text-decoration: none; scroll-snap-align: start; }
+  .qc-brand-mark { display: grid; place-items: center; inline-size: 84px; block-size: 84px; padding: 12px; overflow: hidden; border: 1px solid var(--qc-line); border-radius: var(--qc-r-lg); background: var(--qc-surface); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
+  .qc-brand-mark img { inline-size: 100%; block-size: 100%; object-fit: contain; mix-blend-mode: multiply; }
+  .qc-brand-initial { color: var(--qc-ink-2); background: var(--qc-well); font-size: var(--qc-fs-24); font-weight: 800; }
+  .qc-brand-name { max-inline-size: 100%; overflow: hidden; color: var(--qc-ink); font-size: var(--qc-fs-12); font-weight: 700; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+  .qc-brand:active .qc-brand-mark { transform: scale(.95); }
+  /* Help and routine: quiet blocks, no dark card, no uppercase labels. */
+  .home-help .cart-help-row { padding-inline: 16px; border: 1px solid var(--qc-line); border-radius: var(--qc-r-lg); background: var(--qc-surface); }
+  .home-routine { display: grid; gap: 4px; }
+  .home-routine-step { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 12px; padding: 10px 0; border-block-end: 1px solid var(--qc-line); }
+  .home-routine-step > a:first-child { inline-size: 64px !important; block-size: 64px !important; border-radius: var(--qc-r-md) !important; background: var(--qc-well) !important; }
+  .home-routine-label { margin: 0 0 2px; color: var(--qc-muted); font-size: var(--qc-fs-12); font-weight: 700; }
+  .home-routine h3 { font-size: var(--qc-fs-14) !important; font-weight: 600 !important; }
+  .home-routine h3 a { color: var(--qc-ink); }
+  /* Product photo fills its well (1mg / Talabat item page). */
+  .gallery-stage { block-size: auto !important; aspect-ratio: 1 / 1; max-block-size: 520px; }
+  .gallery-frame img { mix-blend-mode: multiply; }
+  .pdp-page section:has(> .product-grid) .product-grid, .pdp-page .product-grid { gap: 10px; }
+}
+@media (max-width: 899px) {
+  @scope (.storefront-shell) {
+    .section-description { display: none; }
+    /* Similar products on the product page swipe like a shelf. */
+    .pdp-page .product-grid { display: grid !important; grid-auto-flow: column; grid-template-columns: none !important; grid-auto-columns: minmax(148px, 42%); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(var(--qc-gutter) * -1); padding-inline: var(--qc-gutter); }
+    .pdp-page .product-grid > * { scroll-snap-align: start; }
+    .gallery-stage { max-block-size: min(100vw, 420px); }
+  }
+}
+@media (min-width: 900px) {
+  @scope (.storefront-shell) {
+    .qc-rail { grid-auto-flow: row; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; grid-auto-columns: auto; overflow: visible; margin-inline: 0; padding-inline: 0; }
+    .qc-brand-rail { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); grid-auto-columns: auto; margin-inline: 0; padding-inline: 0; overflow: visible; }
+    .qc-brand-mark { inline-size: 100%; block-size: auto; aspect-ratio: 1; }
+    /* Blinkit density: five to six tiles a row instead of four large ones. */
+    /* Grids without the filter sidebar (home, offers, brands, PDP) go denser; the sidebar listing keeps its 3/4 columns. */
+    .product-grid:not(.qc-rail):not(.catalog-layout .product-grid) { grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)) !important; }
+    .home-routine { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); column-gap: 24px; }
+  }
+}
+@media (min-width: 1200px) {
+  @scope (.storefront-shell) {
+    .qc-rail { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+    .qc-rail > :nth-child(n+7) { display: none; }
+  }
+}
+@media (min-width: 900px) and (max-width: 1199px) { @scope (.storefront-shell) { .qc-rail > :nth-child(n+6) { display: none; } } }
+@scope (.storefront-shell) {
+  .save-sticker { white-space: nowrap; }
+  .qc-brand-mark { min-block-size: 0; }
+  .qc-brand-mark > * { inline-size: 100%; block-size: 100%; }
+}
+@scope (.storefront-shell) { .qc-brand-rail { scroll-padding-inline: var(--qc-gutter); } }
+@scope (.storefront-shell) {
+  /* An unavailable tile shows one badge; a saving it cannot deliver is noise. */
+  .product-card:has(.add-to-cart:disabled) .save-sticker { display: none; }
+  /* Cart line problems read as problems. */
+  .cart-availability { color: var(--qc-danger) !important; font-size: var(--qc-fs-13); font-weight: 700; }
+  .cart-page .cart-item:has(.cart-availability) .pf-thumb { outline: 1.5px solid var(--qc-danger-tint); }
+}
+
+/* ═══════════════════════════ Success moments & micro-interactions (Swiggy / Instamart / Zomato) ═══════════════════════════
+   Celebration is reserved for the rare moments (order placed, coupon accepted); frequent actions get a nudge, never a show. */
+@scope (.storefront-shell) {
+  /* Order placed: full-screen green moment, then a fade that reveals the receipt. Never takes focus or pointer events. */
+  .qc-celebration {
+    position: fixed; inset: 0; z-index: var(--qc-z-toast); display: grid; place-content: center; justify-items: center; gap: 6px; pointer-events: none;
+    color: var(--qc-on-action); background: var(--qc-save-strong); text-align: center;
+    animation: qc-celebrate-in 260ms var(--qc-ease-out) both, qc-celebrate-out 360ms var(--qc-ease-out) 1740ms forwards;
+  }
+  .qc-celebration-mark { inline-size: 132px; block-size: 132px; }
+  .qc-celebration-mark svg { inline-size: 100%; block-size: 100%; overflow: visible; }
+  .qc-celebration-mark .ring { fill: none; stroke: color-mix(in srgb, var(--qc-surface) 35%, transparent); stroke-width: 3; transform-origin: center; animation: qc-ring 900ms var(--qc-ease-out) 120ms both; }
+  .qc-celebration-mark .disc { fill: var(--qc-surface); transform-origin: center; animation: qc-disc 420ms cubic-bezier(.34, 1.4, .64, 1) 60ms both; }
+  .qc-celebration-mark path { fill: none; stroke: var(--qc-save-strong); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 70; stroke-dashoffset: 70; animation: qc-tick 380ms var(--qc-ease-out) 380ms forwards; }
+  .qc-celebration-title { margin: 18px 0 0; font-size: var(--qc-fs-28, 1.75rem); font-weight: 800; letter-spacing: -.02em; animation: qc-rise 360ms var(--qc-ease-out) 520ms both; }
+  .qc-celebration-sub { margin: 0; font-size: var(--qc-fs-15); font-weight: 600; opacity: .9; animation: qc-rise 360ms var(--qc-ease-out) 600ms both; }
+
+  /* Savings strip (Swiggy "₹76 saved!"): one light sweep when it appears. */
+  .savings-strip { position: relative; overflow: hidden; animation: qc-pop-in var(--qc-t-base) var(--qc-ease-out); }
+  .savings-strip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .75) 50%, transparent 70%); transform: translateX(-100%); animation: qc-sweep 900ms var(--qc-ease-out) 250ms 1 forwards; pointer-events: none; }
+
+  /* Saving a product: the heart pops when it fills. */
+  [aria-pressed="true"] > svg, [aria-pressed="true"] > .icon { animation: qc-heart 360ms cubic-bezier(.34, 1.4, .64, 1); color: var(--qc-action); }
+
+  /* "Go to cart" replaces "Add to cart" with a small settle, so the state change reads. */
+  .go-to-cart { animation: qc-pop-in var(--qc-t-base) var(--qc-ease-out); }
+
+  /* Checkout steps: the next step's content rises in; the pay button shimmers while it works. */
+  .checkout-flow[data-stage="payment"] .checkout-payment-stage, .checkout-flow[data-stage="details"] .checkout-details-stage { animation: qc-step-in 280ms var(--qc-ease-out); }
+  :is(.pay-button, .checkout-mobile-action button, .checkout-order-panel button):has(.checkout-loader) { position: relative; overflow: hidden; }
+  :is(.pay-button, .checkout-mobile-action button, .checkout-order-panel button):has(.checkout-loader)::after {
+    content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / .28) 50%, transparent 80%);
+    transform: translateX(-100%); animation: qc-sweep 1100ms linear infinite; pointer-events: none;
+  }
+  .checkout-loader { inline-size: 16px; block-size: 16px; border: 2px solid rgb(255 255 255 / .45); border-top-color: currentColor; border-radius: 50%; animation: qc-spin 600ms linear infinite; }
+
+  /* Delivery and payment choices answer selection with a tick pop (already) and a soft settle of the card. */
+  .checkout-payment-choice[data-selected="true"] { animation: qc-settle 220ms var(--qc-ease-out); }
+}
+/* Confetti layer: fixed, above everything, never interactive. Pieces are placed and animated from TypeScript (WAAPI). */
+.qc-confetti { position: fixed; inset: 0; z-index: 80; overflow: hidden; pointer-events: none; }
+.qc-confetti > span { position: absolute; display: block; will-change: transform, opacity; }
+@keyframes qc-celebrate-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes qc-celebrate-out { to { opacity: 0; visibility: hidden; } }
+@keyframes qc-disc { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes qc-ring { from { transform: scale(.8); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
+@keyframes qc-tick { to { stroke-dashoffset: 0; } }
+@keyframes qc-sweep { to { transform: translateX(100%); } }
+@keyframes qc-heart { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@keyframes qc-step-in { from { transform: translateY(10px); } to { transform: none; } } /* movement only: text never sits half-transparent */
+@keyframes qc-settle { 0% { transform: scale(.985); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  /* Reduced motion: the order-placed screen still shows (it carries meaning), complete and still, then fades. */
+  @scope (.storefront-shell) {
+    .qc-celebration { animation: qc-celebrate-in 160ms linear both, qc-celebrate-out 200ms linear 900ms forwards !important; }
+    .qc-celebration-mark path { stroke-dashoffset: 0; }
+    .savings-strip::after { display: none; }
+  }
+}

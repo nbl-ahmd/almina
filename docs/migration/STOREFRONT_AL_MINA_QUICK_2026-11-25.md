@@ -159,3 +159,57 @@ issues:
 After the fix, the affected suites (telemetry, next-checkout, checkout design review, coupons; 38 tests) pass. Physical devices and the
 owner's visual acceptance are not verified.
 
+
+## Third owner review: browsing pages and full polish
+
+The owner asked for the same treatment on the home, listing and product pages, for a fix to layout overflow, and for a full
+`/impeccable` review.
+
+- **Overflow:** a scan of 10 routes at 13 widths (320–1280) and in Arabic at 6 widths found no horizontal overflow on the current code
+  (`.local-demo/redesign/overflow.mjs` reports any element that sticks out and is not inside a scroller). The owner's screenshot showed an
+  intermediate cart help row whose no-wrap "Contact the pharmacy" text pushed the page wider; that row had already been replaced.
+- **Home** (Talabat):
+  - shelves are one swipeable row on phones and one row of five or six tiles on desktop, instead of tall two-column grids;
+  - the compact shelves use the same product tiles;
+  - brands are square logo tiles with names below;
+  - the dark "conversation away" card became one help row;
+  - the "In the spotlight" slider was removed (no reference has it);
+  - the routine block lost its border and uppercase labels;
+  - section descriptions are hidden on phones.
+- **Listing:** desktop grids fit five to six tiles a row (176px minimum) instead of four large ones, and the lone "1" pager is hidden when
+  there is only one page.
+- **Product page:** the photo fills a square well (6% inset) instead of floating small in a tall box, and similar products swipe as a shelf
+  on phones.
+- **Polish batch:**
+  - unavailable tiles show only "Currently unavailable" (no save sticker on top);
+  - cart lines with a stock problem show the message in red;
+  - the 404 page lost its uppercase eyebrow label;
+  - the sale sticker never wraps in narrow tiles;
+  - brand rails snap at the gutter.
+
+## Success animations and micro-interactions
+
+The owner asked for interaction and success animations across the flows, including an animation with sound after an order is placed
+and before the confirmation screen, modelled on quick-commerce apps (Swiggy, Instamart, Zomato). Swiggy's published motion work pairs
+micro-interactions with haptics and sound, and e-commerce guidance favours quick, unambiguous add-to-cart feedback over flashy effects.
+
+- **Order placed:** a full-screen green celebration with a disc, ring, tick draw, confetti, chime and haptic, then it fades to the receipt
+  (`order-celebration.tsx`). It is verified frame by frame at 150/500/900/1400/1900/2500ms (`.local-demo/redesign/celebrate.mjs`).
+- **Coupon accepted:** a confetti burst, a two-note chime and a haptic.
+- **Add to cart:** on phones the basket bar bumps and gives a haptic tap.
+- **Smaller touches:** the savings strip sweeps once, the heart pops on save, "Go to cart" settles in, checkout steps rise in, and the pay
+  button shimmers while working.
+- **Shared helpers:** `lib/ui/celebration.ts`. The chime is synthesized (no asset); browsers without Web Audio or vibration simply skip it.
+- **Not verified:** the sound itself (headless capture has no audio output) and haptics on a physical Android phone. Stripe payments
+  redirect to the provider, so the celebration covers cash on delivery; the Stripe return page keeps its existing confirmation.
+
+Verification for both rounds (browsing redesign and motion): typecheck, lint, 330 unit tests and the foundation build pass. The full
+Playwright run passed 226 tests and found two real issues, both fixed:
+
+- **Contrast:** the checkout step entrance faded in, so the accessibility audit caught text mid-fade below 4.5:1. The entrance now only
+  moves.
+- **Listing grid:** the denser desktop grid broke the agreed three/four columns beside the filter sidebar. The sidebar listing is now
+  exempt.
+
+The affected suites (market-green, next-checkout, coupons, storefront; 51 tests) pass.
+

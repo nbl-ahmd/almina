@@ -1,6 +1,7 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { burst, haptic, playChime } from '../lib/ui/celebration';
 import { couponCodeSchema } from '@almina/contracts';
 import type { Locale } from '../lib/i18n';
 import { Button } from './ui/button';
@@ -20,6 +21,13 @@ export function CouponField({ locale, code, disabled = false, busy = false, erro
   const [entry, setEntry] = useState('');
   const [invalid, setInvalid] = useState(false);
   const ar = locale === 'ar';
+  const applied = useRef<HTMLDivElement>(null);
+  const previousCode = useRef(code);
+  // Zomato "coupon applied": a small burst, a two-note chime and a haptic, only when a code is newly accepted here.
+  useEffect(() => {
+    if (code && !previousCode.current) { burst(applied.current ?? document.body, { count: 18, spread: 1.4, power: .8 }); playChime('small'); haptic(12); }
+    previousCode.current = code;
+  }, [code]);
   const label = ar ? 'رمز الخصم' : 'Coupon code';
   const issue = invalid ? (ar ? 'أدخل رمزًا صالحًا من 3 إلى 32 حرفًا أو رقمًا.' : 'Enter a valid code with 3 to 32 letters, numbers or hyphens.') : error;
   function apply() {
@@ -28,7 +36,7 @@ export function CouponField({ locale, code, disabled = false, busy = false, erro
     if (parsed.success) onApply(parsed.data);
   }
   return <div className="coupon-field my-4 grid gap-2">
-    {code ? <div className="coupon-applied">
+    {code ? <div className="coupon-applied" ref={applied}>
       <TagIcon className="coupon-applied-icon" aria-hidden="true" /><span className="min-w-0"><bdi dir="ltr" className="coupon-applied-code">{code}</bdi><small>{ar ? 'تم تطبيق الرمز' : 'Coupon applied'}</small></span>
       <Button type="button" variant="ghost" className="coupon-remove min-h-11" disabled={disabled} onClick={() => { setEntry(''); setInvalid(false); onRemove(); }}>{ar ? 'إزالة الرمز' : 'Remove coupon'}</Button>
     </div> : <>

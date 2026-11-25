@@ -3,11 +3,13 @@
 Components: [components.md](components.md). Each screen copies the flow of the reference app noted.
 
 ## Home (Talabat pharmacy home)
-Header with plain "Deliver to" address text and search → campaign carousel (16px radius, coral pill action) → "Shop by care" category tiles (4 per row) →
-product shelves (2-column tile grid on phones, 4 on desktop) with coral "View all ›" → brands → help block → footer.
+Header with plain "Deliver to" address text and search → campaign carousel → "Shop by care" category tiles (4 per row on phones) →
+shelves (one swipeable row on phones, five or six across on desktop) with "View all ›" → skincare routine rows → brand tiles →
+one help row → footer. Section descriptions are hidden on phones. On phones a basket bar floats above the tabs once the cart has items.
 
 ## Listing, category, search (Talabat / Blinkit)
-Title and short description → filter pill + category chips (scrolling row) → result count and sort pill → tile grid → pagination pills.
+Title and short description → filter pill + category chips (scrolling row) → result count and sort pill → tile grid (two on phones,
+176px minimum on desktop: five to six a row) → pagination pills only when there is another page.
 Search shows the query chip and the same grid; empty results offer categories.
 
 ## Product detail (1mg)

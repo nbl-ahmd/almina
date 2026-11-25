@@ -29,6 +29,8 @@ Tokens: [tokens.md](tokens.md). Implementation: `storefront-system.css`. Each co
 | Product tile | White, 1px `line`, 16px radius, 8px padding. Square `well` with contain-fit pack. Lime `deal` "Save AED n" sticker top-start (real saving only); save heart top-end; round white "+" (40px, `e-2`) on the photo's bottom-end corner. Below: name (14/600, wraps), pack or brand (12 `muted`), price (15/800) with former price struck through | Talabat "You might also like" |
 | Tile stepper | Replaces "+" once in the cart: white pill, coral − and +, ink count; grows in from the corner (scale .85 + opacity → 1, 220ms); count slides on change | Talabat |
 | Unavailable tile | Pack greyed, "Currently unavailable" badge; the round control stays visible but muted (`well` fill, bag icon) and disabled, named "Out of stock: {name}" | — |
+| Shelf | Home sections hold one row of product tiles: on phones a swipeable rail (tiles ~42% wide, snap, bleeding to the screen edge); on desktop five (900–1199px) or six (≥1200px) across in one row | Talabat "You might also like" |
+| Brand tile | 84px white square with a 1px `line` border, the pack photo inside, the brand name (12/700) below, in one swipeable row; a grid on desktop | Talabat "Big brands near you" |
 | Category tile | Rounded 16px `well` square, pack inside, 12px 700 label below; 4 per row on phones | Med7 on Talabat "Shop by categories" |
 | Cart line | 64px thumb · name, price + struck former price + lime "Save n%" · unit price; stepper pill at the end with Remove under it | Talabat cart |
 | Header address | Plain text, no box or pin: "Deliver to" (12px `muted`) over the place (15px 800) and a chevron; the place truncates before it reaches the logo | Talabat "Deliver to Apartment" |
@@ -64,3 +66,23 @@ Tokens: [tokens.md](tokens.md). Implementation: `storefront-system.css`. Each co
 
 Default, hover (fine pointers only), pressed, focus-visible (2px `info` outline with white gap), selected, disabled, busy, error, and
 long-content (Arabic and long names wrap; nothing truncates on detail, cart or checkout).
+
+## Success moments and micro-interactions
+
+Shared helpers: `apps/web/src/lib/ui/celebration.ts` (`playChime`, `haptic`, `burst`, `bump`, `primeAudio`, `prefersReducedMotion`).
+Celebration is for rare moments; frequent actions get a nudge.
+
+| Moment | What happens | Frequency rule |
+|---|---|---|
+| Order placed (cash on delivery) | Full-screen green overlay: the white disc grows with a ring pulse, the tick draws, one confetti burst, "Order placed!" and the order number rise in, a three-note chime (G5 B5 E6, peak gain 0.12) and a short haptic; it fades at ~1.7s to the receipt. It takes no focus or pointer events; the receipt heading is already focused underneath | Once per order |
+| Coupon accepted | Applied row pops in, a small confetti burst, a two-note chime and a 12ms haptic | Only when a code is newly accepted, not on reload |
+| Add to cart | The "+" grows into the stepper; on phones the basket bar bumps (1.04) with an 8ms haptic; the badge pops | Every add: nudge only |
+| Savings strip | Pops in, then one light sweep | Once on appear |
+| Save product | The heart pops (1.3) and fills coral | Per toggle |
+| Go to cart | The new state settles in | Per add on the product page |
+| Checkout steps | The next step's content rises 8px; the pay button shimmers and its spinner turns while working; a chosen payment card settles | Per step |
+
+Audio is synthesized with the Web Audio API (no files) and unlocked inside the "Place order" tap, as browser autoplay rules require.
+Haptics use `navigator.vibrate` where supported (Android); iOS ignores it. Reduced motion: no confetti, no movement; the order
+screen shows complete and leaves after ~1s; sound still plays because it carries no motion.
+
