@@ -15,6 +15,7 @@ Also:
 - **Desktop:** paged product shelves, full-width category tiles and "View all" buttons.
 - **Fixed in verification:** saving the homepage layout from the admin failed with 405; signed-in browser tests now cover it.
 - **Rollback:** the previous API rejects pages and coupons saved by this release. Follow the steps in the builder document first.
+- **Customer saves:** saving addresses and reminders returned 405 over HTTP; both routes are fixed with an HTTP regression test.
 - **Artwork:** banners take separate desktop and phone artwork at Aster's measured sizes, contain-fitted. There is a top promo strip
   slot, a poster-style popup and a "Copy to Arabic draft" action.
 - **Storefront:** search stays sticky on scroll, and the phone homepage is more compact.
