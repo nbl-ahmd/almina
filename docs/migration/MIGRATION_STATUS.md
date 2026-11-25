@@ -1,4 +1,9 @@
-## 2026-11-25 — Admin catalogue workflows (branch, not deployed)
+## 2026-11-25 — Bulk product type for selected products (branch, not deployed)
+
+Administrators can set one confirmed type on selected products without a type. Existing types are never overwritten. See
+[admin workflows](ADMIN_WORKFLOWS_2026-11-25.md).
+
+## 2026-11-25 — Admin catalogue workflows (deployed, `32bce33`)
 
 - "Save & next" works for every product, following the list the editor was opened from (it previously stopped outside the first 100).
 - Needs action is merged into Products as views and filters, with counts, row photo upload, multi-photo upload by PD number or

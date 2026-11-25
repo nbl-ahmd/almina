@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
 import { adminCatalogue, adminCatalogueQueue } from '../apps/api/src/modules/catalog/admin-catalogue';
-import { setProductsVisibility, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
+import { setProductsType, setProductsVisibility, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
 
 const uri = process.env.COMMERCE_TEST_URI;
 const photo = 'https://res.cloudinary.com/synthetic/image/upload/v1/item.webp';
@@ -142,6 +142,47 @@ test('bulk visibility is idempotent, reports every refusal and never publishes p
     assert.equal((await db.collection('products').findOne({ _id: rows[0]!._id }))!.disabled, false);
     for (const raw of [{ ids: [], live: true }, { ids: [ids[0], ids[0]], live: true }, { ids: Array.from({ length: 51 }, () => String(new ObjectId())), live: true }, { ids: [ids[0]] }, { ids: [{ $ne: null }], live: true }, { ids: [ids[0]], live: 'yes' }]) {
       await assert.rejects(setProductsVisibility(db, raw, actor), { status: 400 });
+    }
+  } finally { await close(); }
+});
+
+test('bulk product type fills only missing types, never overwrites one, and hides what is marked prescription', { skip: !uri }, async () => {
+  const { db, close } = await database();
+  try {
+    const actor = String(new ObjectId());
+    const base = { price: 12, stock: 3, disabled: true, published: false };
+    const rows = [
+      { ...base, name: 'Missing type' },
+      { ...base, name: 'Unreviewed and live', productType: 'unreviewed', disabled: false, published: true },
+      { ...base, name: 'Already general', productType: 'general' },
+      { ...base, name: 'Pharmacist chose prescription', productType: 'prescription' },
+      { ...base, name: 'Archived', archivedAt: new Date() },
+    ].map(row => ({ ...row, _id: new ObjectId() }));
+    await db.collection('products').insertMany(rows);
+    const ids = [...rows.map(row => String(row._id)), String(new ObjectId())];
+    const first = await setProductsType(db, { ids, productType: 'general', confirmed: true }, actor);
+    assert.deepEqual(first.results.map(result => [result.ok, result.changed]), [[true, true], [true, true], [true, false], [false, false], [false, false], [false, false]]);
+    assert.match(first.results[3]!.reason!, /Already marked Prescription/);
+    const stored = await db.collection('products').find().sort({ _id: 1 }).toArray();
+    assert.deepEqual(stored.map(product => product.productType), ['general', 'general', 'general', 'prescription', undefined]);
+    // Classifying changes nothing else: visibility, price, stock and review stamps stay as they were.
+    assert.deepEqual([stored[0]!.disabled, stored[1]!.disabled, stored[0]!.price, stored[0]!.stock, stored[0]!.contentReviewed, stored[0]!.stockVerified], [true, false, 12, 3, undefined, undefined]);
+    assert.equal(await db.collection('catalog_audit').countDocuments({ actor, reason: 'Bulk product type, confirmed by administrator' }), 2);
+    const audit = (await db.collection('catalog_audit').findOne({ entityId: rows[1]!._id }))!;
+    assert.deepEqual([audit.before.productType, audit.after.productType], ['unreviewed', 'general']);
+    // A repeated request, as after a lost response, changes and records nothing.
+    const again = await setProductsType(db, { ids: [ids[0]!], productType: 'general', confirmed: true }, actor);
+    assert.deepEqual(again.results, [{ id: ids[0], ok: true, changed: false }]);
+    assert.equal(await db.collection('catalog_audit').countDocuments(), 2);
+    const live = new ObjectId();
+    await db.collection('products').insertOne({ ...base, _id: live, name: 'Live medicine', disabled: false, published: true });
+    await setProductsType(db, { ids: [String(live)], productType: 'prescription', confirmed: true }, actor);
+    const hidden = (await db.collection('products').findOne({ _id: live }))!;
+    assert.deepEqual([hidden.productType, hidden.disabled, hidden.published], ['prescription', true, false]);
+    const other = [ids[0]!];
+    for (const raw of [{ ids: other, productType: 'general' }, { ids: other, productType: 'general', confirmed: false }, { ids: other, productType: 'unreviewed', confirmed: true },
+      { ids: [], productType: 'otc', confirmed: true }, { ids: Array.from({ length: 51 }, () => String(new ObjectId())), productType: 'otc', confirmed: true }, { ids: other, productType: 'otc', confirmed: true, price: 1 }]) {
+      await assert.rejects(setProductsType(db, raw, actor), { status: 400 });
     }
   } finally { await close(); }
 });

@@ -30,7 +30,11 @@ needs the table's inline editing and bulk actions. `/admin/needs-action` redirec
 - Filters: Ready to go live, Missing photo, Type not chosen, Name incomplete, Brand or description missing, Prescription, Has photo.
 - Category and search; 25/50/100 per page with numbered pages and a total.
 - Row picture: click or drop files to add photos; optional "Go live after adding a photo".
-- Type is chosen row by row. There is deliberately no bulk classification.
+- Type is chosen per row, or for selected rows with **Set type** (added after the first release, 25 November). The dialog preselects
+  nothing, lists each selected product with its picture so any can be unticked, and requires the administrator to confirm they checked
+  the packs. It only fills in missing types: a product that already has one is skipped and changed on its own page. Prescription also
+  hides the product. Price, stock and review stamps are unchanged; each change is audited. At most the 100 rows of one page can be
+  selected. This exists because production showed 6,302 of 6,309 hidden products without a type.
 - **Upload many photos**: files named by PD number or barcode (`PD1234.jpg`, `PD1234_2.jpg`) are matched, reviewed and uploaded two at
   a time. Products that already have photos are not ticked. New photos replace a product's gallery; earlier assets stay in media history.
 - **Make live / Hide** for selected rows, and **Make all N live** in "Ready to go live".
@@ -54,6 +58,7 @@ Fixed: selecting table rows showed two bulk action bars.
 |---|---|---|
 | `GET /api/products/catalogue` | staff | Fixed view/filter names, bounded pages, counts, exact code lookup. |
 | `GET /api/products/queue` | admin | Previous/next/position inside the same filters. |
+| `POST /api/products/type` | admin | At most 50 IDs with `confirmed: true`; only fills missing types, audited, idempotent. |
 | `POST /api/products/visibility` | admin | At most 50 IDs, idempotent, one audited transaction per product. Going live requires a complete name, General or Pharmacy medicine type, price above zero and an active record. |
 
 The single publish switch keeps its previous behaviour, with one added refusal: a product typed `prescription` can no longer be made
@@ -109,3 +114,9 @@ at 360, 390, 768 and 1440 px.
 Not verified: any change in production (the admin was only viewed), real Cloudinary uploads, a bulk upload of hundreds of files, Render
 bandwidth for a large publication, catalogue timing on the production cluster, the original "after 4 or 5 products" reproduction, and
 Arabic or screen-reader review.
+
+## Release record
+
+Pull request 122 was merged and deployed on 25 November 2026 (`32bce33`). A read-only production check showed the new screens, the
+publish button enabled with the saved run not started, and the type counts above. Bulk type (`POST /api/products/type`) followed as a
+separate change; a new web build needs the matching API for that button.

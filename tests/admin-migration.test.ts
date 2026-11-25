@@ -224,6 +224,9 @@ test("the product list, editor queue and bulk visibility cross the gateway only 
   assert.equal(lookupPolicy("GET", "/api/products/catalogue").policy, "staff");
   assert.equal(lookupPolicy("GET", "/api/products/queue").policy, "admin");
   assert.equal(lookupPolicy("POST", "/api/products/visibility").policy, "admin");
+  assert.equal(accessPolicy("POST", "products/type"), "admin");
+  assert.equal(lookupPolicy("POST", "/api/products/type").policy, "admin");
+  assert.throws(() => projectAdminResponse("products/type", { results: [{ id: "a".repeat(24), ok: true, changed: true, actor: "private" }] }));
   const id = "a".repeat(24);
   const list = new URLSearchParams(upstreamQuery("products/catalogue", new URLSearchParams({ view: "hidden", filter: "missing-photo", offset: "6000" })));
   assert.deepEqual([list.get("view"), list.get("filter"), list.get("offset"), list.get("limit")], ["hidden", "missing-photo", "6000", "25"]);

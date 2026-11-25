@@ -4,8 +4,9 @@ import { useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
 import { toast } from 'sonner';
-import { ArchiveBoxIcon, ArrowDownTrayIcon, EllipsisHorizontalIcon, EyeIcon, EyeSlashIcon, PencilSquareIcon, PhotoIcon, PlusIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
-import type { CatalogueContext, CatalogueItem, CatalogueList, CatalogueVisibilityResult } from '@almina/contracts';
+import { ArchiveBoxIcon, ArrowDownTrayIcon, EllipsisHorizontalIcon, EyeIcon, EyeSlashIcon, PencilSquareIcon, PhotoIcon, PlusIcon, RocketLaunchIcon, TagIcon } from '@heroicons/react/24/outline';
+import { productTypeLabels, type CatalogueContext, type CatalogueItem, type CatalogueList, type CatalogueVisibilityResult, type ProductType } from '@almina/contracts';
+import { BulkTypeDialog } from './bulk-type-dialog';
 import Link from '../app-link';
 import { adminRequest } from './controls';
 import { useConfirm } from './confirm-dialog';
@@ -16,7 +17,7 @@ import { Switch } from './shadcn/switch';
 import { selectClass } from './shadcn/styles';
 import { DataTable, selectColumn } from './shadcn/data-table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './shadcn/dropdown-menu';
-import { editorHref } from '../../lib/admin/catalogue-links';
+import { editorHref, listHref } from '../../lib/admin/catalogue-links';
 import { withRateLimitRetry } from '../../lib/admin/catalogue-client';
 import { imageFiles, photoTypes, uploadWithReceipt } from '../../lib/admin/photo-upload';
 
@@ -99,7 +100,7 @@ function PhotoCell({ product, onFiles, busy }: { product: ProductRow; onFiles: (
 }
 
 const types = [{ value: 'general', label: 'General' }, { value: 'otc', label: 'Pharmacy medicine' }, { value: 'prescription', label: 'Prescription' }];
-/** Product type is a pharmacy decision, so it is always chosen product by product, never in bulk. */
+/** The type of one product, chosen in its row. Several products can be classified together only through the confirming dialog. */
 function TypeSelect({ product, onChoose }: { product: ProductRow; onChoose: (type: string) => Promise<void> }) {
   const [pending, setPending] = useState<string | null>(null);
   const value = pending ?? (types.some(type => type.value === product.productType) ? product.productType : '');
@@ -122,7 +123,11 @@ function Status({ product }: { product: ProductRow }) {
   return <span className="flex flex-wrap justify-end gap-1 md:justify-start">{tags.length ? tags.map(tag => <Badge key={tag.label} tone={tag.tone} className="normal-case">{tag.label}</Badge>) : <span className="text-xs text-mute">Complete</span>}</span>;
 }
 
-type Outcome = { changed: number; failed: { id: string; name: string; reason: string }[]; live: boolean; stopped: boolean };
+type Outcome = { changed: number; failed: { id: string; name: string; reason: string }[]; stopped: boolean } & ({ live: boolean } | { type: ProductType });
+const outcomeText = (outcome: Outcome) => {
+  const products = `${outcome.changed.toLocaleString('en-AE')} ${outcome.changed === 1 ? 'product is' : 'products are'}`;
+  return 'type' in outcome ? `${products} now marked ${productTypeLabels[outcome.type]}.` : `${products} now ${outcome.live ? 'live' : 'hidden'}.`;
+};
 
 export function ProductsTable({ products, admin, context, readyTotal }: { products: ProductRow[]; admin: boolean; context: CatalogueContext; readyTotal: number }) {
   const router = useRouter();
@@ -132,6 +137,7 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const stop = useRef(false);
+  const [classifying, setClassifying] = useState<{ rows: ProductRow[]; clear: () => void } | null>(null);
 
   async function saveField(product: ProductRow, body: Record<string, string>, done: string) {
     if (body.price !== undefined && !/^\d+(\.\d{1,2})?$/.test(body.price)) throw new Error('Enter a price like 12.50.');
@@ -170,17 +176,20 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
     if (failed) toast.error(`${failed} of ${rows.length} could not be archived.`); else toast.success(rows.length === 1 ? 'Product archived' : `${rows.length} products archived`);
     router.refresh();
   }
-  /** Changes visibility in server-sized batches, remembering why any product was left as it was. */
-  async function changeMany(nextBatch: () => Promise<{ _id: string; name: string }[]>, live: boolean, total: number) {
+  /** Applies one change in server-sized batches, remembering why any product was left as it was. */
+  async function changeMany(nextBatch: () => Promise<{ _id: string; name: string }[]>, change: { live: boolean } | { type: ProductType }, total: number) {
     stop.current = false; setOutcome(null); setProgress({ done: 0, total });
-    const result: Outcome = { changed: 0, failed: [], live, stopped: false };
+    const result: Outcome = { ...change, changed: 0, failed: [], stopped: false };
+    const send = (ids: string[]) => 'type' in change
+      ? withRateLimitRetry(() => adminRequest('products/type', 'POST', { ids, productType: change.type, confirmed: true }) as Promise<CatalogueVisibilityResult>, pause)
+      : setVisibility(ids, change.live);
     try {
       let done = 0;
       for (;;) {
         if (stop.current) { result.stopped = true; break; }
         const batch = await nextBatch();
         if (!batch.length) break;
-        const { results } = await setVisibility(batch.map(item => item._id), live);
+        const { results } = await send(batch.map(item => item._id));
         for (const row of results) {
           if (!row.ok) result.failed.push({ id: row.id, name: batch.find(item => item._id === row.id)?.name ?? row.id, reason: row.reason ?? 'Not changed.' });
           else if (row.changed) result.changed++;
@@ -196,9 +205,12 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
       ? `Make ${rows.length} ${rows.length === 1 ? 'product' : 'products'} live? Customers can buy them straight away, and their current price and stock are recorded as checked.${without ? ` ${without} ${without === 1 ? 'has' : 'have'} no photo.` : ''} Products missing a name, type or price stay hidden.`
       : `Hide ${rows.length} ${rows.length === 1 ? 'product' : 'products'} from the shop?`;
     if (!(await ask(question, { action: live ? 'Make live' : 'Hide', danger: !live }))) return false;
-    let offset = 0;
-    await changeMany(async () => { const batch = rows.slice(offset, offset + 50); offset += batch.length; return batch; }, live, rows.length);
+    await changeMany(inBatches(rows), { live }, rows.length);
     return true;
+  }
+  function inBatches(rows: { _id: string; name: string }[]) {
+    let offset = 0;
+    return async () => { const batch = rows.slice(offset, offset + 50); offset += batch.length; return batch; };
   }
   async function allReady() {
     if (!(await ask(`Make all ${readyTotal.toLocaleString('en-AE')} ready products${context.q ? ` matching “${context.q}”` : ''} live? Each has a photo, a complete name, a type and a price. Customers can buy them straight away, and their current price and stock are recorded as checked. You can stop part way.`, { action: 'Make all live' }))) return;
@@ -211,7 +223,7 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
         const batch = page.items.filter(item => !tried.has(item._id)).slice(0, 50);
         if (batch.length || page.items.length < 100) { batch.forEach(item => tried.add(item._id)); return batch; }
       }
-    }, true, readyTotal);
+    }, { live: true }, readyTotal);
   }
 
   const columns: ColumnDef<ProductRow, unknown>[] = [
@@ -262,9 +274,14 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
   return (
     <>
       {dialog}
+      {classifying ? <BulkTypeDialog products={classifying.rows} onClose={() => setClassifying(null)} onApply={(type, chosen) => {
+        const { clear } = classifying;
+        setClassifying(null); clear();
+        void changeMany(inBatches(chosen), { type }, chosen.length);
+      }} /> : null}
       {progress ? <Callout role="status"><p><strong className="tabular-nums">{progress.done.toLocaleString('en-AE')} of {progress.total.toLocaleString('en-AE')}</strong> processed. Keep this page open.</p><Button size="sm" onClick={() => { stop.current = true; }}>Stop</Button></Callout> : null}
       {outcome ? <div className="mb-4 grid gap-2 rounded-2xl bg-surface px-4 py-3 text-[13px] shadow-card" role="status">
-        <div className="flex flex-wrap items-center justify-between gap-2"><p className="m-0"><strong>{outcome.changed.toLocaleString('en-AE')} {outcome.changed === 1 ? 'product is' : 'products are'} now {outcome.live ? 'live' : 'hidden'}.</strong>{outcome.failed.length ? ` ${outcome.failed.length} not changed.` : ''}{outcome.stopped ? ' Stopped before the end.' : ''}</p><Button size="sm" variant="ghost" onClick={() => setOutcome(null)}>Dismiss</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="m-0"><strong>{outcomeText(outcome)}</strong>{outcome.failed.length ? ` ${outcome.failed.length} not changed.` : ''}{outcome.stopped ? ' Stopped before the end.' : ''}{'type' in outcome && outcome.type !== 'prescription' && outcome.changed ? <> <Link className="font-medium text-ink underline" href={listHref({ view: 'hidden', filter: 'ready' })}>See what is ready to go live</Link></> : null}</p><Button size="sm" variant="ghost" onClick={() => setOutcome(null)}>Dismiss</Button></div>
         {outcome.failed.length ? <details><summary className="cursor-pointer font-medium">Products not changed</summary><ul className="m-0 mt-2 grid max-h-48 list-none gap-1 overflow-y-auto p-0">{outcome.failed.map(item => <li key={item.id}><Link className="font-medium text-ink underline" href={editorHref(item.id, context)}>{item.name}</Link> · <span className="text-mute">{item.reason}</span></li>)}</ul></details> : null}
       </div> : null}
       {admin && context.filter === 'ready' && readyTotal > 0 ? <Callout><p><strong>{readyTotal.toLocaleString('en-AE')} hidden {readyTotal === 1 ? 'product has' : 'products have'} everything needed to go live.</strong></p><Button variant="primary" size="sm" disabled={progress !== null} onClick={() => void allReady()}><RocketLaunchIcon className="size-4" aria-hidden="true" />Make all {readyTotal.toLocaleString('en-AE')} live</Button></Callout> : null}
@@ -273,6 +290,7 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
         empty={{ title: 'No products match', description: 'Try another view, filter or search term.' }}
         bulk={(rows, clear) => (
           <>
+            <Button variant="outline" size="sm" disabled={progress !== null} onClick={() => setClassifying({ rows, clear })}><TagIcon className="size-4" aria-hidden="true" />Set type</Button>
             <Button variant="primary" size="sm" disabled={progress !== null} onClick={async () => { if (await bulkVisibility(rows, true)) clear(); }}><EyeIcon className="size-4" aria-hidden="true" />Make live</Button>
             <Button variant="outline" size="sm" disabled={progress !== null} onClick={async () => { if (await bulkVisibility(rows, false)) clear(); }}><EyeSlashIcon className="size-4" aria-hidden="true" />Hide</Button>
             <Button variant="outline" size="sm" onClick={() => { download('products.csv', ['Product ID,Name,Category,Price,Stock', ...rows.map(row => [row.productId, row.name, row.category, row.price, row.stock].map(csv).join(','))].join('\r\n')); clear(); }}><ArrowDownTrayIcon className="size-4" aria-hidden="true" />Export</Button>

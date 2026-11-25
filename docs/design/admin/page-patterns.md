@@ -20,7 +20,7 @@ Title and primary action, filter chips, search field, table with footer paginati
 - **Orders**: status chips, search by order number or customer, date range, export.
 - **Products**: view tabs with counts (All, Live, Hidden, Out of stock, On sale), filter chips for what needs work (ready to go live,
   missing photo, type, name, details, prescription), search and category, clickable thumbnail that accepts dropped photos, bulk
-  upload, bulk go-live, numbered pagination. The former Needs action screen is this list with filters.
+  upload, bulk go-live, bulk product type behind a confirming dialog, numbered pagination. The former Needs action screen is this list with filters.
 - **Categories and banners**: image thumbnail column; banners show which eight are live in the carousel.
 
 ## Detail and form page

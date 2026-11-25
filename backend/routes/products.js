@@ -78,6 +78,10 @@ productRouter.post('/visibility', async (req, res) => {
   if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   res.json(await catalogDomain().setProductsVisibility(await catalogDb(req), req.body, req.identity.id));
 });
+productRouter.post('/type', async (req, res) => {
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().setProductsType(await catalogDb(req), req.body, req.identity.id));
+});
 productRouter.get('/:id', async (req, res) => {
   if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { id: req.params.id }, staffRead(req)));

@@ -62,7 +62,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['POST', 'image-review/select', 'staff'], ['POST', 'image-review/decide', 'staff'],
   ...['stage', 'preview', 'import', 'publish', 'draft'].map(action => ['POST', `image-review/${action}`, 'admin'] as [string, string, 'admin']),
   ['GET', 'products/needs-action', 'admin'],
-  ['GET', 'products/catalogue', 'staff'], ['GET', 'products/queue', 'admin'], ['POST', 'products/visibility', 'admin'],
+  ['GET', 'products/catalogue', 'staff'], ['GET', 'products/queue', 'admin'], ['POST', 'products/visibility', 'admin'], ['POST', 'products/type', 'admin'],
   ['GET', 'operations', 'admin'],
   ['POST','media/marketing','staff'],
   ['GET','catalog-import/template','admin'],
@@ -362,7 +362,7 @@ export function projectAdminResponse(path: string, value: unknown): unknown {
   if (path === 'image-review' || path.startsWith('image-review/')) return projectImageReviewResponse(path, value);
   if (path === 'products/catalogue') return catalogueListSchema.parse(value);
   if (path === 'products/queue') return catalogueQueueSchema.parse(value);
-  if (path === 'products/visibility') return catalogueVisibilityResultSchema.parse(value);
+  if (path === 'products/visibility' || path === 'products/type') return catalogueVisibilityResultSchema.parse(value);
   return path === 'operations' ? operationsSnapshotSchema.parse(value) : project(value);
 }
 
