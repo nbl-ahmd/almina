@@ -42,3 +42,8 @@ White canvas, 65-character measure, h1 → sections; any actions use the same pi
 ## Shared rules
 One h1 per page, main landmark, skip link. One fixed bottom region at a time (tabs, purchase dock or pay bar). Existing URLs, metadata
 and structured data are unchanged.
+
+## Enclosed checkout (Baymard)
+On phones the checkout hides the store header, tabs and footer: a white sticky top bar (back circle, "Checkout", lock) is the only
+chrome; the cart hides the footer. Desktop keeps the logo bar and footer. The order-placed screen follows the "Order placed" component.
+

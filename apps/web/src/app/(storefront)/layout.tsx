@@ -4,6 +4,7 @@ import {googleCommerceConfiguration} from '../../lib/google/commerce';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';
 import { Navigation, Footer } from '../../components/navigation';
+import { CartBar } from '../../components/cart-bar';
 import { StructuredData } from '../../components/structured-data';
 import { organizationData, websiteData } from '../../lib/seo';
 import { getWebEnvironment } from '../../lib/server/env';
@@ -21,5 +22,5 @@ export default async function StorefrontLayout({ children }: { children: ReactNo
  const env = getWebEnvironment();
  const locale = await getLocale();
  const session = (await cookies()).has(env.APP_ENV === 'development' ? 'almina_customer' : '__Host-almina_customer');
- return <div lang={locale} dir={isRtl(locale) ? 'rtl' : 'ltr'} data-customer-session={session ? '1' : '0'} className={`storefront-shell ${storefrontFontVariables}`}><StructuredData data={organizationData(env.WEB_ORIGIN)} /><StructuredData data={websiteData(env.WEB_ORIGIN)} /><GoogleMerchantWidget config={googleCommerceConfiguration(process.env)} nonce={(await headers()).get('x-nonce')??undefined} /><Navigation locale={locale} /><main id="main-content" tabIndex={-1}>{children}</main><Footer telemetryEnabled={env.COMMERCE_TELEMETRY_ENABLED} locale={locale} /></div>;
+ return <div lang={locale} dir={isRtl(locale) ? 'rtl' : 'ltr'} data-customer-session={session ? '1' : '0'} className={`storefront-shell ${storefrontFontVariables}`}><StructuredData data={organizationData(env.WEB_ORIGIN)} /><StructuredData data={websiteData(env.WEB_ORIGIN)} /><GoogleMerchantWidget config={googleCommerceConfiguration(process.env)} nonce={(await headers()).get('x-nonce')??undefined} /><Navigation locale={locale} /><main id="main-content" tabIndex={-1}>{children}</main><CartBar locale={locale} /><Footer telemetryEnabled={env.COMMERCE_TELEMETRY_ENABLED} locale={locale} /></div>;
 }

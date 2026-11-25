@@ -37,7 +37,11 @@ Tokens: [tokens.md](tokens.md). Implementation: `storefront-system.css`. Each co
 | Info rows | Product page delivery and returns: icon, title, hint, chevron to the policy | 1mg product page |
 | Bill | Rows: item total, discounts in `save`, fees as returned (dotted underline explains), dashed rule, "To pay" 17/800 | Zomato "Bill summary" |
 | Savings strip | `save-tint` pill-cornered strip, green check, "You save AED n on this order" | 1mg |
-| Pay bar | Fixed on phones, `e-bar` shadow: "Item total" micro label + amount, 52px coral pill with the action name | 1mg, Zomato |
+| Pay button | Fixed on phones: one 56px coral pill holding the total (amount over a small "Total"/"Item total" label) on the start side and the action with a chevron on the end. The action name stays the accessible name | Zomato "₹297 TOTAL · Place Order ▸" |
+| Coupon box | One 52px field, "Enter coupon code" placeholder, coral "Apply" text inside the end of the box (disabled while empty). Applied: dashed green row on mint with a tag icon, the code and "Coupon applied", and a quiet "Remove coupon" | 1mg "Enter Coupon Code … Apply" |
+| Checkout progress | Three labelled steps on one line (Delivery · Payment · Confirmed), 22px number discs, coral current, green done, hairline connectors | Baymard: show every real step |
+| Order placed | 72px green disc whose tick draws once, title and thanks, then white cards on grey: tracker, number and total, items and delivery, next steps; coral "Continue shopping", ink "Contact pharmacy" link | Zomato / Talabat order placed |
+| Basket bar | Phones, browsing pages only: coral pill above the tabs with cart icon, count badge, "n items" and "View cart ›"; slides up once, badge pops on change. Count only, never prices | Talabat "View basket" |
 
 ## Navigation
 

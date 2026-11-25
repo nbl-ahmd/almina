@@ -114,3 +114,48 @@ Changes, each taken from the references (Talabat first, then 1mg and Zomato):
   - The delivery pin picker is one row with text actions. It is kept because delivery-zone pins depend on it.
 - **Checkout errors:** each error shows under its own field. The summary box is removed, and the first invalid field takes focus.
   A request-level error is one quiet line at the top of the form.
+
+## Second owner review: flow refinement
+
+The owner found the confirmation and pay bar still bare. They asked for a full critique of every flow screen with `/impeccable` and
+`/emil-design-eng`, closer adherence to Talabat, Zomato and 1mg, and the checkout guidance from Baymard and PageFlows. (The Medium article
+returned 403 and was not read.) The whole flow (home → listing → product → cart → address sheet → checkout → errors → review →
+confirmation → account) was captured at 390 and 1280 before and after (`.local-demo/redesign/flow.mjs`).
+
+Changes:
+
+- **Enclosed checkout on phones** (Baymard): the store header contents, tabs and footer step aside. The address sheet's dialog stays
+  mounted so "Change" still opens. The top bar is a sticky white "← Checkout 🔒". The cart hides the footer.
+- **Progress:** three labelled steps on one line (Delivery · Payment · Confirmed) instead of one label and two bare numbers.
+- **Pay button** (Zomato): the total sits inside the coral button with the action on the end. The duplicated total beside the button is
+  gone. Accessible names are unchanged ("Proceed to checkout", "Review order", "Place order — AED n").
+- **Coupon** (1mg): one box with "Apply" inside it; applied codes show as a dashed green row.
+- **Order placed** (Zomato/Talabat): a drawn green tick, then white cards for the tracker, number and total, items and delivery, and next
+  steps. "Contact pharmacy" is a quiet link. The redundant progress row is hidden.
+- **Bill:** a dashed rule above the total.
+- **Address sheet:** the saved place is a plain grey row, and "Use current location" / "Choose on map" are list rows.
+- **Cart:** help is one row with a chevron, and recommendations scroll sideways on phones.
+- **Basket bar** (Talabat "View basket"): on browsing pages on phones, a coral bar above the tabs shows the cart count and "View cart".
+  Count only, no prices.
+
+`/emil-design-eng` review:
+
+| Before | After | Why |
+|---|---|---|
+| Confirmation disc entered from `scale(.6)` | `scale(.8)` + opacity, then the tick draws (stroke-dashoffset, 360ms) | Nothing appears from almost nothing; the tick is the one authored moment |
+| Confirmation cards appeared at once | One short cascade (380–500ms, non-uniform delays) after the tick | A rare, once-per-order screen can carry a single orchestrated entrance |
+| Choice rows faded to 60% on press | A `well` wash on press | Fading the whole row reads as disabled |
+| No hover cue on pay buttons | The chevron nudges 2px on fine pointers only | Hover feedback without touch false positives |
+
+Kept: the basket bar slides up once on mount and its badge pops per change, and the coupon-applied row pops in. Reduced motion shows the
+tick complete and removes all movement.
+
+Verification: typecheck, lint, 330 unit tests and the foundation build pass. The full Playwright run passed 224 tests and found two real
+issues:
+
+- the pay button's small "Total" label was 4.35:1 at 85% opacity; it is now full white (AA);
+- hiding the footer on phones also hid the optional-usage consent controls; the footer's links hide, but its privacy controls stay.
+
+After the fix, the affected suites (telemetry, next-checkout, checkout design review, coupons; 38 tests) pass. Physical devices and the
+owner's visual acceptance are not verified.
+

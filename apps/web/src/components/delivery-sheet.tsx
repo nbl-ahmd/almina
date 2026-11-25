@@ -13,7 +13,7 @@ import { areaEvent, savedArea, saveArea, savedPoint, savePoint, clearPoint, skip
 import { browserEnvironment, guidanceFor, requestPosition, type Guidance } from '../lib/location/access';
 import type { MapSettle, MapTarget } from './location-pin-map';
 import { Icon } from './storefront-icon';
-import { ArrowLeftIcon, ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from './storefront-icons';
+import { ArrowLeftIcon, ArrowPathIcon, CheckCircleIcon, ChevronRightIcon, CrosshairIcon, ExclamationTriangleIcon, MapIcon, MapPinIcon } from './storefront-icons';
 const LocationPinMap = dynamic(() => import('./location-pin-map'), { ssr: false, loading: () => <div className="h-full min-h-60 w-full animate-pulse bg-surface motion-reduce:animate-none" aria-hidden="true" /> });
 const copy = (ar: boolean) => ({
   useLocation: ar ? 'استخدام موقعي الحالي' : 'Use current location',
@@ -232,16 +232,17 @@ export default function DeliverySheet({ locale = 'en', openSignal }: { locale?: 
         <div aria-hidden="true" className="qc-sheet-grabber" />
         <h2 id="delivery-area-heading" className="qc-sheet-title">{t(locale,'areaHeading')}</h2>
         <p className="mt-0 text-sm">{c.lede}</p>
-        {point ? <div className="mb-4 flex items-start gap-3 rounded-xl bg-surface p-3 text-sm"><span aria-hidden="true" className="mt-0.5 text-action-text"><Icon name="pin" /></span><span className="min-w-0"><span className="block text-xs text-muted">{c.saved}</span><strong className="block">{point.label ? `${c.labels[point.label]} · ` : ''}{point.city}</strong><span className="line-clamp-2 text-[13px] text-muted">{[point.building, point.flat].filter(Boolean).join(', ')}{point.building || point.flat ? ' · ' : ''}{point.address}</span></span></div> : null}
+        {point ? <div className="qc-place qc-sheet-current"><MapPinIcon className="qc-place-icon" aria-hidden="true" /><span className="min-w-0"><span className="block text-xs text-muted">{c.saved}</span><strong className="block">{point.label ? `${c.labels[point.label]} · ` : ''}{point.city}</strong><span className="line-clamp-2 text-[13px] text-muted">{[point.building, point.flat].filter(Boolean).join(', ')}{point.building || point.flat ? ' · ' : ''}{point.address}</span></span><span /></div> : null}
         {book.length ? <div className="mb-4 grid gap-2" role="group" aria-label={c.myAddresses}>
           <span className="text-xs font-semibold text-muted">{c.myAddresses}</span>
           {book.map(item => <button key={item.id} type="button" onClick={() => chooseBookAddress(item)} className="flex min-h-12 w-full items-start gap-3 rounded-xl border bg-white p-3 text-start text-sm">
             <span aria-hidden="true" className="mt-0.5 text-action-text"><Icon name="pin" /></span>
             <span className="min-w-0"><strong className="block">{item.label}</strong><span className="line-clamp-2 text-[13px] text-muted">{item.address}</span></span></button>)}
         </div> : null}
-        <div className="grid gap-2">
-          <Button type="button" className="min-h-12 w-full rounded-xl" onClick={() => { void locate(true); }} disabled={working} aria-busy={working}>{working ? <ArrowPathIcon className="size-5 shrink-0 motion-safe:animate-spin" aria-hidden="true" /> : <Icon name="pin" />}{working ? t(locale,'areaFindingButton') : c.useLocation}</Button>
-          <Button variant="outline" type="button" className="min-h-12 w-full rounded-xl" onClick={chooseOnMap} disabled={working}>{c.chooseOnMap}</Button>
+        {/* Zomato "Add Address": two list rows rather than a stack of large buttons. */}
+        <div className="qc-choices">
+          <button type="button" className="qc-choice" onClick={() => { void locate(true); }} disabled={working} aria-busy={working}>{working ? <ArrowPathIcon className="qc-choice-icon motion-safe:animate-spin" aria-hidden="true" /> : <CrosshairIcon className="qc-choice-icon" aria-hidden="true" />}<span className="qc-choice-text"><strong>{working ? t(locale,'areaFindingButton') : c.useLocation}</strong></span><ChevronRightIcon className="qc-choice-chevron rtl:rotate-180" aria-hidden="true" /></button>
+          <button type="button" className="qc-choice" onClick={chooseOnMap} disabled={working}><MapIcon className="qc-choice-icon" aria-hidden="true" /><span className="qc-choice-text"><strong>{c.chooseOnMap}</strong></span><ChevronRightIcon className="qc-choice-chevron rtl:rotate-180" aria-hidden="true" /></button>
         </div>
         <div className="mt-3">{guidancePanel}{message ? <p role="status" className="my-3 text-sm">{message}</p> : null}</div>
         <div className="my-4 flex items-center gap-3 text-xs text-muted" aria-hidden="true"><span className="h-px flex-1 bg-divider" />{c.orManual}<span className="h-px flex-1 bg-divider" /></div>

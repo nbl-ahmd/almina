@@ -35,7 +35,7 @@ export function UsagePreferences({locale='en'}:{locale?:'en'|'ar'}) {
     if (!chooseUsage(value)) { setError('Your preference could not be saved. Optional reports remain disabled.'); return; }
     setChoice(value); setEditing(false); setError('');
   }
-  return <section className="border-t py-6 text-sm" aria-label="Optional usage reports">
+  return <section className="usage-preferences border-t py-6 text-sm" aria-label="Optional usage reports">
     {!ready ? <p role="status">Loading usage preferences…</p> : choice === 'unset' || editing ? <>
       <h2 className="mb-2 text-base font-semibold">Optional usage reports</h2>
       <p className="max-w-[70ch] leading-6">Help improve shopping and checkout with optional usage reports. Reports count browsing, searches and checkout activity without product identities, search text, contact details or order details. Published campaign names may be included. Changing your preference stops future reports.</p>
