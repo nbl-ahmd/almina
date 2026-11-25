@@ -13,6 +13,7 @@ import type { AdminRecord } from '../../../../../lib/admin/policy';
 import { readCatalogueContext, catalogueContextParams, type CatalogueList, catalogueViewLabels, catalogueFilterLabels, type CatalogueQueue } from '@almina/contracts';
 import { editorHref, listHref, queueQuery } from '../../../../../lib/admin/catalogue-links';
 import { BulkPhotoUpload } from '../../../../../components/admin/bulk-photos';
+import { BrandManager } from '../../../../../components/admin/brand-manager';
 import { CatalogueFiltersBar, CataloguePager } from '../../../../../components/admin/catalogue-browser';
 import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
@@ -404,6 +405,9 @@ export default async function AdminPage({
         {pagination(section, query, categories.length, categoryPage.more)}
       </>
     );
+  }
+  if (section === "brands") {
+    return <BrandManager cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} initial={typeof query.brand === 'string' ? query.brand : undefined} />;
   }
   if (section === "banners") {
     const bannerPage = pageOf(rows(await adminRead("banners", lookahead(qs))));

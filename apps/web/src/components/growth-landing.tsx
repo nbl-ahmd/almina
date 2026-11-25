@@ -58,7 +58,9 @@ export async function GrowthLanding({kind,slug,locale='en'}:{kind:GrowthPage['ki
   const page=await resolve(kind,slug,locale);if(!page)notFound();
   const state=campaignState(page);
   const selected=await Promise.all(page.productIds.slice(0,40).map(id=>getProductById(id)));
-  const brandLabel=kind==='brand'?(brands[slug]||page.title.replace(/ at Al Mina Pharmacy$/,'')):'';
+  // Products carry the brand name as written in English, so a translated page looks them up by the English name.
+  const english=kind==='brand'&&locale!=='en'&&!brands[slug]?await getGrowthPage('brand',slug,'en'):null;
+  const brandLabel=kind==='brand'?(brands[slug]||(locale==='en'?page.title:english?.title||slug.replace(/-/g,' ')).replace(/ at Al Mina Pharmacy$/,'')):'';
   const searched=kind==='brand'&&!page.productIds.length?(await getProducts({q:brandLabel})).products:[];
   // A brand page lists that brand only; curated names whose products lack a brand field keep the search result.
   const exact=searched.filter(item=>brandSlug(brandName(item))===slug);

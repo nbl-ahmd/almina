@@ -13,6 +13,11 @@ export async function loadBrands(): Promise<string[]> {
     if (!response.ok) throw new Error('Brands could not be loaded. Type the brand and select it again.');
     const body = await response.json() as { data?: unknown };
     const found = Array.isArray(body.data) ? body.data.filter((brand): brand is string => typeof brand === 'string' && Boolean(brand.trim())).map(brand => brand.trim()) : [];
+    // Brands created under Catalogue → Brands are offered even before a product carries the name (best effort).
+    const created = await fetch('/api/growth/admin/pages?kind=brand&locale=en&merchandising=1', { cache: 'no-store' })
+      .then(async result => result.ok ? ((await result.json() as { data?: { items?: { title?: unknown }[] } }).data?.items ?? []) : []).catch(() => []);
+    const known = new Set(found.map(brand => brand.toLowerCase()));
+    for (const page of created) if (typeof page.title === 'string' && page.title.trim() && !known.has(page.title.trim().toLowerCase())) found.push(page.title.trim());
     brandCache = [...new Set(found)].sort((a, b) => a.localeCompare(b));
     return brandCache;
   })().finally(() => { brandLoad = null; });
