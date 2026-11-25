@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { MongoClient } from 'mongodb';
-import { adminHomeLayout, catalogueBrandNames, publishedHomeLayout, saveHomeLayout } from '../apps/api/src/modules/growth/home-layout';
+import { adminHomeLayout, catalogueBrandNames, publicBrandNames, publishedHomeLayout, saveHomeLayout } from '../apps/api/src/modules/growth/home-layout';
 
 const uri = process.env.COMMERCE_TEST_URI;
 test('homepage layouts save with revisions, publish per locale and fall back to the built-in homepage', { skip: !uri }, async () => {
@@ -51,6 +51,14 @@ test('homepage layouts save with revisions, publish per locale and fall back to 
     assert.equal(await publishedHomeLayout(db, 'en'), null);
     await db.collection('products').insertMany([{ brand: ' CeraVe ' }, { brand: 'CeraVe' }, { brand: 'Bioderma' }, { brand: '' }, { brand: 'Gone', archivedAt: new Date() }]);
     assert.deepEqual(await catalogueBrandNames(db), ['Bioderma', 'CeraVe']);
+    // The public list only names brands a shopper can see: published retail products in an active category.
+    const { ObjectId } = await import('mongodb');
+    const open = new ObjectId(), shut = new ObjectId();
+    await db.collection('categories').insertMany([{ _id: open }, { _id: shut, disabled: true }]);
+    await db.collection('products').deleteMany({});
+    await db.collection('products').insertMany([{ brand: 'Shown', category: open }, { familyBrand: 'Family', category: open }, { brand: 'Draft', category: open, published: false },
+      { brand: 'Trade', category: open, audience: 'wholesale' }, { brand: 'HiddenCategory', category: shut }, { brand: 'Archived', category: open, archivedAt: new Date() }]);
+    assert.deepEqual(await publicBrandNames(db), ['Family', 'Shown']);
   } finally {
     await db.dropDatabase(); await client.close();
   }

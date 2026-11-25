@@ -39,3 +39,13 @@ export async function getHomeLayoutDraft(locale:'en'|'ar'){
   return parsed.success?parsed.data:null;
  }catch{return null;}
 }
+
+/** Every brand shoppers can see, or null when the service cannot say (the caller then uses the brands on the current catalogue page). */
+export async function getCatalogueBrands(){try{return z.array(z.string().min(1)).max(2000).parse(await read('brands'));}catch{return null;}}
+
+/** All published brand pages (the list endpoint returns 50 at a time). */
+export async function getAllBrandPages(locale:'en'|'ar'){
+ const pages:GrowthPage[]=[];
+ for(let offset=0;offset<=1000;offset+=50){const result=await getGrowthPages('brand',locale,offset).catch(()=>null);if(!result)break;pages.push(...result.items);if(!result.hasNext)break;}
+ return pages;
+}

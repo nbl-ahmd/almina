@@ -1,6 +1,7 @@
 import { defaultHomeLayout, homeLayoutAdminSchema, homeLayoutSaveSchema, homeLayoutSchema, type HomeLayout, type HomeLayoutAdmin, type HomeSection } from '@almina/contracts';
 import type { Db } from 'mongodb';
 import { HttpError } from '../../errors.js';
+import { retailAudienceFilter } from '../catalog/audience.js';
 
 /** One row per language: `sections` is the draft the editor works on, `live` is the published copy customers see (null = built-in
  *  homepage). Rows saved before the two were separated have no `live` field; their `published` flag says whether `sections` is live. */
@@ -64,4 +65,17 @@ export async function saveHomeLayout(db: Db, raw: unknown, actor: string): Promi
 export async function catalogueBrandNames(db: Db) {
   const names = await db.collection('products').distinct('brand', { brand: { $type: 'string', $ne: '' }, archivedAt: { $exists: false } }, options);
   return [...new Set(names.filter((name): name is string => typeof name === 'string').map(name => name.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)).slice(0, 2000);
+}
+
+/** Brand names shoppers can actually see: published retail products in an active category. Safe to expose publicly. */
+export async function publicBrandNames(db: Db) {
+  const rows = await db.collection('products').aggregate<{ _id: string }>([
+    { $match: { $and: [retailAudienceFilter, { disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false }, archivedAt: { $exists: false } }] } },
+    { $project: { category: 1, name: { $trim: { input: { $convert: { input: { $cond: [{ $gt: [{ $ifNull: ['$brand', ''] }, ''] }, '$brand', { $ifNull: ['$familyBrand', ''] }] }, to: 'string', onError: '', onNull: '' } } } } } },
+    { $match: { name: { $ne: '' } } },
+    { $lookup: { from: 'categories', localField: 'category', foreignField: '_id', as: 'category', pipeline: [{ $match: { disabled: { $ne: true }, archivedAt: { $exists: false } } }, { $project: { _id: 1 } }] } },
+    { $match: { 'category.0': { $exists: true } } },
+    { $group: { _id: '$name' } }, { $sort: { _id: 1 } }, { $limit: 2000 },
+  ], options).toArray();
+  return [...new Map(rows.map(row => [row._id.toLowerCase(), row._id])).values()];
 }

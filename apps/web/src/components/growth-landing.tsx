@@ -61,7 +61,8 @@ export async function GrowthLanding({kind,slug,locale='en'}:{kind:GrowthPage['ki
   const searched=kind==='brand'&&!page.productIds.length?(await getProducts({q:brandLabel})).products:[];
   // A brand page lists that brand only; curated names whose products lack a brand field keep the search result.
   const exact=searched.filter(item=>brandSlug(brandName(item))===slug);
-  const products=page.productIds.length?selected.filter(item=>item!==null):kind==='brand'?(exact.length?exact:searched):[];
+  // Only built-in names fall back to plain search results; a brand staff added shows its own products or none.
+  const products=page.productIds.length?selected.filter(item=>item!==null):kind==='brand'?(exact.length?exact:brands[slug]?searched:[]):[];
   const facts=kind==='brand'&&products.length?brandFacts(brandLabel,products):null;
   const origin=getWebEnvironment().WEB_ORIGIN;
   return <GrowthActivity kind="campaign" campaign={kind==='campaign'&&state==='active'&&!page.healthContent?slug:undefined}><article lang={locale} dir={locale==='ar'?'rtl':'ltr'} className="space-y-6"><StructuredData data={breadcrumbData(origin,[{name:'Home',path:'/'},...(kind==='brand'?[{name:'Brands',path:'/brands'}]:[]),{name:page.title,path:growthPagePath(page)}])} />{kind==='brand'||kind==='category'||kind==='collection'?<StructuredData data={collectionData(origin,{name:page.title,description:page.description,path:growthPagePath(page)},products.map(item=>({name:item.name,href:productHref(item)})))} />:null}{faqData(page.faqs)?<StructuredData data={faqData(page.faqs)} />:null}<Breadcrumb title={page.title} /><StorefrontIntro title={page.title} description={page.description} />
