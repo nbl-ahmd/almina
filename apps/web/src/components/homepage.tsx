@@ -1,4 +1,5 @@
 import { HeroBanner } from './hero-banner';
+import { bannerPhoneMedia, heroArtwork } from '../lib/storefront/artwork';
 import { ProductShelf } from './product-shelf';
 import { brandSlug } from '../lib/catalog/merchandising';
 import { getWebEnvironment } from '../lib/server/env';
@@ -73,7 +74,7 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
         // Legacy banners from /admin/banners use the same fixed-height frame (finished artwork, cover-fitted).
         ...banners.slice(0, 8).map((banner, index) => {
           // Uploaded phone artwork (Banners admin, second image) is used below 768px; otherwise the desktop image is contained.
-          const artwork = <picture className="qc-banner-art">{banner.mobileImage ? <source media="(max-width: 767px)" srcSet={getImageProps({ src: banner.mobileImage, alt: '', width: 800, height: 400, sizes: '100vw' }).props.srcSet} /> : null}<Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} fetchPriority={index === 0 && !heroCampaigns.length ? 'high' : undefined} /></picture>;
+          const artwork = <picture className="qc-banner-art">{banner.mobileImage ? <source media={bannerPhoneMedia} srcSet={getImageProps({ src: banner.mobileImage, alt: '', ...heroArtwork.mobile, sizes: '100vw' }).props.srcSet} /> : null}<Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} fetchPriority={index === 0 && !heroCampaigns.length ? 'high' : undefined} /></picture>;
           return banner.href ? <Link href={banner.href} key={banner.image} className="qc-hero" data-layout="image" aria-label={banner.name}>{artwork}</Link> : <div key={banner.image} className="qc-hero" data-layout="image">{artwork}</div>;
         }),
         ...(!heroCampaigns.length && !banners.length ? [<div key="everyday" className="fallback-campaign">
@@ -303,9 +304,7 @@ export async function HomeRoutine({ products }: { products: Product[] }) {
         href="/collections/skin-essentials"
         link={u(locale,"Shop skincare")}
       />
-      <div
-        className={`grid gap-3 ${steps.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}
-      >
+      <div className="home-routine-steps">
         {steps.map(({ title, product }) => (
           <article
             key={product._id}
@@ -320,11 +319,8 @@ export async function HomeRoutine({ products }: { products: Product[] }) {
             </Link>
             <div className="min-w-0">
               <p className="home-routine-label">{u(locale,title)}</p>
-              <h3 className="mb-1.5 text-sm leading-5 font-medium">
-                <Link
-                  href={productHref(product)}
-
-                >
+              <h3 className="mb-1.5 line-clamp-3 text-sm leading-5 font-medium">
+                <Link href={productHref(product)}>
                   {product.name}
                 </Link>
               </h3>
@@ -335,7 +331,7 @@ export async function HomeRoutine({ products }: { products: Product[] }) {
           </article>
         ))}
       </div>
-      <p className="mt-4 mb-0 text-xs leading-5">
+      <p className="home-routine-note">
         {locale === "en" ? "Sold individually. Check each product’s details for suitability and directions." : "تُباع منفردة. تحقق من تفاصيل كل منتج للتأكد من ملاءمته وطريقة استخدامه."}
       </p>
     </section>

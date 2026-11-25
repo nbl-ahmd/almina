@@ -8,6 +8,7 @@ import { getLocale } from '../../lib/server/i18n';
 import { shopText as u } from '../../lib/i18n-storefront';
 import { getWebEnvironment } from '../../lib/server/env';
 import { RecentlyViewed } from '../../components/recently-viewed';
+import { WhatsAppButton } from '../../components/whatsapp-button';
 import { Suspense, cache } from "react";
 import Link from '../../components/app-link';
 import { CatalogLoading } from "../../components/catalog-loading";
@@ -61,6 +62,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   return <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
     <Suspense fallback={<CatalogLoading />}><HomeLead preview={preview} /></Suspense>
     <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent preview={preview} /></Suspense>
+    <Suspense fallback={null}><WhatsAppButton /></Suspense>
   </div>;
 }
 // The layout decides the order. Its leading carousel and promo entries render in the first boundary so the top of the page

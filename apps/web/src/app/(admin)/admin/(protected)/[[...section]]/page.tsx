@@ -1,4 +1,5 @@
 import { NotificationCenter } from '../../../../../components/admin/notification-center';
+import { heroArtwork, sizeLabel } from '../../../../../lib/storefront/artwork';
 import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
 import type { BranchWorkspace } from '@almina/contracts';
 import { cloudinaryImage } from '@almina/contracts';
@@ -454,7 +455,8 @@ export default async function AdminPage({
                 name: "image",
                 label: "Banner image",
                 type: "file",
-                hint: "Desktop artwork, 1600 × 500 pixels. The image is shown whole inside a fixed frame (never cropped); the newest eight banners appear in the homepage carousel.",
+                hint: `Desktop artwork, ${sizeLabel(heroArtwork.desktop)} pixels (16:5), for screens 900px and wider. A larger file of the same shape is sharper. The frame is fixed and the image is never cropped, so another shape leaves blank bands. The newest eight banners appear in the homepage carousel.`,
+                frame: heroArtwork.desktop,
                 required: true,
                 section: "Artwork",
               },
@@ -462,7 +464,8 @@ export default async function AdminPage({
                 name: "mobileImage",
                 label: "Phone banner image (optional)",
                 type: "file",
-                hint: "Phone artwork, 800 × 400 pixels, with larger text. Leave empty to show the desktop image on phones too.",
+                hint: `Phone and tablet artwork, ${sizeLabel(heroArtwork.mobile)} pixels (2:1) or 1200 × 600, for screens below 900px. Use larger text. Left empty, the desktop image shows with blank bands above and below.`,
+                frame: heroArtwork.mobile,
                 section: "Artwork",
               },
             ]}
