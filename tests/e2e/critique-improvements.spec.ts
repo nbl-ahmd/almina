@@ -26,7 +26,10 @@ test('active basket opens with one title, product count and editable line',async
   await page.evaluate(()=>document.fonts.ready);
   await expect(page.locator('main h1')).toHaveText('Your cart');
   await expect(page.locator('.cart-title-count')).toContainText('1 product');
-  await expect(page.locator('.cart-active-heading').getByRole('link')).toHaveCount(0);
+  // Talabat cart header (2026-11-25 redesign): a back circle and an "Add items" pill, both returning to the catalogue.
+  const headingLinks=page.locator('.cart-active-heading').getByRole('link');
+  await expect(headingLinks).toHaveCount(2);
+  for (const link of await headingLinks.all()) await expect(link).toHaveAttribute('href','/products');
   // The delivery row now sits above the basket, so the first line starts a little lower but still within the first screen.
   expect((await page.locator('.cart-item').boundingBox())!.y).toBeLessThan(420);
   await page.goto('/checkout');await expect(page.getByRole('heading',{name:'Checkout',exact:true})).toBeVisible();

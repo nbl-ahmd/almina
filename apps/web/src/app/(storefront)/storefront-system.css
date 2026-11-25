@@ -71,7 +71,7 @@
     transition: border-color var(--qc-t-fast) var(--qc-ease-out), box-shadow var(--qc-t-fast) var(--qc-ease-out);
   }
   :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([data-slot="header-search-input"]):hover { border-color: var(--qc-control); }
-  :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([data-slot="header-search-input"]):focus { border-color: var(--qc-ink); box-shadow: 0 0 0 1px var(--qc-ink); outline: none; }
+  :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([data-slot="header-search-input"]):focus { border-color: var(--qc-ink); box-shadow: 0 0 0 1px var(--qc-ink); outline: 2px solid var(--qc-info); outline-offset: 2px; }
   :is(input, textarea)::placeholder { color: var(--qc-muted); opacity: 1; }
   [aria-invalid="true"] { border-color: var(--qc-danger) !important; box-shadow: 0 0 0 1px var(--qc-danger) !important; }
   [data-slot="field-label"], label { color: var(--qc-ink); font-size: var(--qc-fs-14); font-weight: 700; }
@@ -136,6 +136,7 @@
   .header-departments :is(a, button) { color: var(--qc-ink); font-weight: 700; }
   .header-help { color: var(--qc-info); }
   .storefront-mega-panel { border: 0; border-radius: var(--qc-r-lg); box-shadow: var(--qc-e-3); transform-origin: top left; animation: qc-pop-in var(--qc-t-fast) var(--qc-ease-out); }
+  :scope[dir="rtl"] .storefront-mega-panel { transform-origin: top right; }
   /* Bottom tab bar: coral current tab, filled icon, badge pop. */
   .mobile-nav { background: var(--qc-surface); border-block-start: 1px solid var(--qc-line); box-shadow: var(--qc-e-bar); }
   .mobile-tab { color: var(--qc-muted); font-size: var(--qc-fs-11); font-weight: 700; transition: color var(--qc-t-fast) var(--qc-ease-out), transform var(--qc-t-tap) var(--qc-ease-out); }
@@ -232,7 +233,9 @@
   .product-card .add-to-cart .add-label-compact { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .product-card .add-to-cart :is(.icon, svg) { inline-size: 22px !important; block-size: 22px !important; }
   .product-card .add-to-cart:active:not(:disabled) { transform: scale(.88); }
-  .product-card .add-to-cart:disabled { display: none; }
+  /* Unavailable: the control stays (screen readers hear "Out of stock: name") but reads as inert. */
+  .product-card .add-to-cart:disabled { color: var(--qc-muted) !important; background: var(--qc-well) !important; box-shadow: none; }
+  .product-card .add-to-cart:disabled :is(.add-label-compact) { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
   .product-card .add-to-cart[aria-busy="true"] svg { animation: qc-spin 700ms linear infinite; }
   .product-card:has(.add-to-cart:disabled) .product-pack { opacity: .45; filter: grayscale(1); }
   .tile-options { display: inline-flex; align-items: center; min-block-size: 36px; padding: 0 12px; border: 1px solid var(--qc-action); border-radius: var(--qc-r-pill); color: var(--qc-action-text); background: var(--qc-surface); font-size: var(--qc-fs-12); font-weight: 800; }
@@ -275,7 +278,7 @@
     margin: 0; padding: 0; overflow: visible; border: 0; border-radius: var(--qc-r-xl) var(--qc-r-xl) 0 0;
     color: var(--qc-ink-2); background: var(--qc-surface); box-shadow: var(--qc-e-3);
     transform: translateY(100%);
-    transition: transform var(--qc-t-exit) ease-in, overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete;
+    transition: transform var(--qc-t-exit) var(--qc-ease-out), overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete;
   }
   dialog.qc-sheet[open] {
     transform: none; transition-duration: var(--qc-t-sheet); transition-timing-function: var(--qc-ease-drawer);
@@ -283,7 +286,7 @@
   }
   dialog.qc-sheet::backdrop, dialog.delivery-map-sheet::backdrop {
     background: var(--qc-scrim); opacity: 0;
-    transition: opacity var(--qc-t-exit) ease-in, overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete;
+    transition: opacity var(--qc-t-exit) var(--qc-ease-out), overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete;
   }
   dialog.qc-sheet[open]::backdrop, dialog.delivery-map-sheet[open]::backdrop { opacity: 1; transition-duration: var(--qc-t-sheet); @starting-style { opacity: 0; } }
   .qc-sheet-body {
@@ -302,20 +305,20 @@
   .qc-sheet-close:active { transform: scale(.92); }
   .qc-sheet-close .icon { inline-size: 20px; block-size: 20px; }
   .qc-sheet :is([data-slot="button"]:not([data-size^="icon"]), .button) { inline-size: 100%; min-block-size: 52px; }
-  dialog.delivery-map-sheet { transition: opacity var(--qc-t-exit) ease-in, overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete; opacity: 0; }
+  dialog.delivery-map-sheet { transition: opacity var(--qc-t-exit) var(--qc-ease-out), overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete; opacity: 0; }
   dialog.delivery-map-sheet[open] { opacity: 1; transition-duration: var(--qc-t-base); @starting-style { opacity: 0; } }
   /* Radix sheets (filters, menu) and the gallery use data-state keyframes. */
   .shop-filter-sheet { border-radius: var(--qc-r-xl) var(--qc-r-xl) 0 0; box-shadow: var(--qc-e-3); }
   .shop-filter-sheet[data-state="open"] { animation: qc-sheet-up var(--qc-t-sheet) var(--qc-ease-drawer); }
-  .shop-filter-sheet[data-state="closed"] { animation: qc-sheet-down var(--qc-t-exit) ease-in forwards; }
+  .shop-filter-sheet[data-state="closed"] { animation: qc-sheet-down var(--qc-t-exit) var(--qc-ease-out) forwards; }
   .storefront-menu-sheet { box-shadow: var(--qc-e-3); }
   .storefront-menu-sheet[data-state="open"] { animation: qc-in-start var(--qc-t-sheet) var(--qc-ease-drawer); }
-  .storefront-menu-sheet[data-state="closed"] { animation: qc-out-start var(--qc-t-exit) ease-in forwards; }
+  .storefront-menu-sheet[data-state="closed"] { animation: qc-out-start var(--qc-t-exit) var(--qc-ease-out) forwards; }
   :scope[dir="rtl"] .storefront-menu-sheet[data-state="open"] { animation-name: qc-in-end; }
   :scope[dir="rtl"] .storefront-menu-sheet[data-state="closed"] { animation-name: qc-out-end; }
   :is(.shop-modal-scrim, .menu-scrim) { background: var(--qc-scrim); }
   :is(.shop-modal-scrim, .menu-scrim)[data-state="open"] { animation: qc-fade-in var(--qc-t-sheet) var(--qc-ease-out); }
-  :is(.shop-modal-scrim, .menu-scrim)[data-state="closed"] { animation: qc-fade-out var(--qc-t-exit) ease-in forwards; }
+  :is(.shop-modal-scrim, .menu-scrim)[data-state="closed"] { animation: qc-fade-out var(--qc-t-exit) var(--qc-ease-out) forwards; }
   .gallery-dialog[data-state="open"] { animation: qc-dialog-in var(--qc-t-base) var(--qc-ease-out); }
 }
 @media (min-width: 600px) {
@@ -323,7 +326,7 @@
     dialog.qc-sheet {
       inset: 0; margin: auto; inline-size: min(480px, calc(100vw - 48px)); max-block-size: min(720px, calc(100dvh - 96px));
       border-radius: var(--qc-r-xl); transform: scale(.96); opacity: 0;
-      transition: transform var(--qc-t-exit) ease-in, opacity var(--qc-t-exit) ease-in, overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete;
+      transition: transform var(--qc-t-exit) var(--qc-ease-out), opacity var(--qc-t-exit) var(--qc-ease-out), overlay var(--qc-t-exit) allow-discrete, display var(--qc-t-exit) allow-discrete;
     }
     dialog.qc-sheet[open] { transform: none; opacity: 1; @starting-style { transform: scale(.96); opacity: 0; } }
     .qc-sheet-body { max-block-size: min(720px, calc(100dvh - 96px)); padding: 28px 28px 28px; }
@@ -479,7 +482,7 @@
    Only transform and opacity move. Entries ease out, exits are shorter and ease in. Nothing animates on its own. */
 @keyframes qc-pop-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
 @keyframes qc-badge-pop { 0% { transform: scale(1); } 45% { transform: scale(1.22); } 100% { transform: scale(1); } }
-@keyframes qc-stepper-in { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+@keyframes qc-stepper-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
 @keyframes qc-count { from { opacity: 0; transform: translateY(40%); } to { opacity: 1; transform: translateY(0); } }
 @keyframes qc-spin { to { transform: rotate(360deg); } }
 @keyframes qc-bar-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -493,7 +496,13 @@
 @keyframes qc-fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes qc-dialog-in { from { opacity: 0; transform: translate(-50%, -50%) scale(.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 @media (prefers-reduced-motion: reduce) {
-  @scope (.storefront-shell) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  /* Reduced motion: nothing moves; sheets and their scrim still fade so the change of context stays legible. */
+  @scope (.storefront-shell) {
+    *:not(dialog.qc-sheet):not(dialog.delivery-map-sheet), *::before, *::after { animation: none !important; transition: none !important; }
+    dialog:is(.qc-sheet, .delivery-map-sheet) { transform: none !important; transition: opacity 160ms linear, overlay 160ms allow-discrete, display 160ms allow-discrete !important; }
+    dialog.qc-sheet:not([open]) { opacity: 0; }
+    dialog.qc-sheet[open] { opacity: 1; @starting-style { opacity: 0; } }
+  }
 }
 
 /* Campaign carousel: every slide fills the track (the tallest slide no longer leaves a gap under shorter ones). */
@@ -558,4 +567,37 @@
   .purchase-quantity input { min-block-size: 0 !important; block-size: 40px; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: transparent; text-align: center; }
   .purchase-quantity { min-block-size: 52px; align-items: center; }
   .product-information .save-sticker { font-size: var(--qc-fs-12); padding: 3px 8px; }
+}
+
+/* ═══════════════════════════ Checkout review & payment (1mg / Zomato) ═══════════════════════════ */
+@scope (.storefront-shell) {
+  .checkout-payment-choice { display: grid; grid-template-columns: 40px minmax(0, 1fr) 24px; align-items: center; gap: 12px; min-block-size: 72px; padding: 14px 16px; border: 1px solid var(--qc-line-strong); background: var(--qc-surface); transition: border-color var(--qc-t-fast) var(--qc-ease-out), background-color var(--qc-t-fast) var(--qc-ease-out), transform var(--qc-t-tap) var(--qc-ease-out); }
+  .checkout-payment-choice:active { transform: scale(.99); }
+  .checkout-payment-choice { position: relative; }
+  .checkout-payment-choice > input { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .checkout-payment-icon { inline-size: 40px !important; block-size: 40px !important; padding: 9px; border-radius: var(--qc-r-md); color: var(--qc-ink); background: var(--qc-well); }
+  .checkout-payment-choice[data-selected="true"] { border-color: var(--qc-action); background: var(--qc-action-tint); box-shadow: 0 0 0 1px var(--qc-action); }
+  .checkout-payment-choice[data-selected="true"] .checkout-payment-icon { color: var(--qc-action-text); background: var(--qc-surface); }
+  .checkout-payment-choice:has(input:focus-visible) { outline: 2px solid var(--qc-info); outline-offset: 2px; }
+  .checkout-radio-mark { display: grid; place-items: center; inline-size: 22px; block-size: 22px; border: 1.5px solid var(--qc-control); border-radius: 50%; color: var(--qc-on-action); }
+  .checkout-payment-choice[data-selected="true"] .checkout-radio-mark { border-color: var(--qc-action); background: var(--qc-action); animation: qc-pop-in var(--qc-t-fast) var(--qc-ease-out); }
+  .checkout-payment-choices { display: grid; gap: 10px; }
+  .checkout-order-panel dl { color: var(--qc-ink-2); }
+  .checkout-order-panel dd { color: var(--qc-ink); font-weight: 700; }
+}
+@media (max-width: 899px) {
+  @scope (.storefront-shell) {
+    .checkout-order-panel { margin-inline: calc(var(--qc-gutter) * -1); padding-inline: var(--qc-gutter); border-radius: 0 !important; border-block-start: var(--qc-band) solid var(--qc-bg) !important; }
+  }
+}
+
+/* Polish pass fixes */
+@scope (.storefront-shell) {
+  /* The tile "+" icon must show at every width (an older ≥600px rule hid .add-mobile). */
+  .product-card .add-to-cart :is(.purchase-feedback, .add-mobile) { display: inline-flex; align-items: center; justify-content: center; }
+  /* Applied filter chips: coral on tint, never teal. */
+  nav[aria-label="Applied filters"] a, nav[aria-label="الفلاتر المطبقة"] a {
+    display: inline-flex; align-items: center; gap: 6px; min-block-size: 36px; padding: 6px 12px; border: 1px solid var(--qc-action); border-radius: var(--qc-r-pill);
+    color: var(--qc-action-text) !important; background: var(--qc-action-tint) !important; font-size: var(--qc-fs-13); font-weight: 700;
+  }
 }
