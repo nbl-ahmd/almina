@@ -1,3 +1,7 @@
+## 2026-11-25 — Storefront design system: Al Mina Quick
+
+Rebuilt the storefront tokens (`--qc-*`), component layer and store flow after the reference apps (Talabat, Tata 1mg, Zomato, Swiggy, Blinkit): pill actions, Talabat product tiles and steppers, full-width bottom sheets (fixes the narrow address sheet), 1mg sections, bill, savings strip and pay bar. Design docs were replaced (`DESIGN.md`, `docs/design/tokens.md`, components, page patterns). Commerce owners are unchanged. See the [design system record](STOREFRONT_AL_MINA_QUICK_2026-11-25.md). PR open; user visual acceptance pending.
+
 ## 2026-11-22 — Homepage detector follow-up
 
 - Retail coupons are documented in [Storefront coupon codes](STOREFRONT_COUPONS.md).

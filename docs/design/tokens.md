@@ -66,4 +66,4 @@ Inputs are always 16px. Arabic line height ≥ 1.6, natural tracking.
 | `ease-out` | cubic-bezier(.23,1,.32,1) | Entries and responses |
 | `ease-drawer` | cubic-bezier(.32,.72,0,1) | Sheets (iOS drawer) |
 
-Only `transform` and `opacity` animate. Hover effects only on fine pointers. `prefers-reduced-motion` removes all motion.
+Only `transform` and `opacity` animate. Hover effects only on fine pointers. `prefers-reduced-motion` removes movement; sheets and their scrim keep a 160ms opacity fade.

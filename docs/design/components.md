@@ -26,8 +26,8 @@ Tokens: [tokens.md](tokens.md). Implementation: `storefront-system.css`. Each co
 | Component | Anatomy | Reference |
 |---|---|---|
 | Product tile | White, 1px `line`, 16px radius, 8px padding. Square `well` with contain-fit pack. Lime `deal` "Save AED n" sticker top-start (real saving only); save heart top-end; round white "+" (40px, `e-2`) on the photo's bottom-end corner. Below: name (14/600, wraps), pack or brand (12 `muted`), price (15/800) with former price struck through | Talabat "You might also like" |
-| Tile stepper | Replaces "+" once in the cart: white pill, coral − and +, ink count; grows in from the corner (scale .6 → 1, 220ms); count slides on change | Talabat |
-| Unavailable tile | Pack greyed, "+" hidden, "Currently unavailable" badge | — |
+| Tile stepper | Replaces "+" once in the cart: white pill, coral − and +, ink count; grows in from the corner (scale .85 + opacity → 1, 220ms); count slides on change | Talabat |
+| Unavailable tile | Pack greyed, "Currently unavailable" badge; the round control stays visible but muted (`well` fill, bag icon) and disabled, named "Out of stock: {name}" | — |
 | Category tile | Rounded 16px `well` square, pack inside, 12px 700 label below; 4 per row on phones | Med7 on Talabat "Shop by categories" |
 | Cart line | 64px thumb · name, price + struck former price + lime "Save n%" · unit price; stepper pill at the end with Remove under it | Talabat cart |
 | Address pill | `well` pill, `brand` pin, place in 800, chevron | 1mg, Swiggy |

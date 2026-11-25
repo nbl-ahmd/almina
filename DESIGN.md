@@ -36,7 +36,7 @@ Admin follows `docs/design/admin/`.
 - **Type.** Manrope 500–800: 800 for headings and prices, 700 for labels and actions, 500 for body. Body 15px on phones, 16px desktop,
   inputs always 16px.
 - **Motion.** Taps answer in 100ms (scale 0.97); sheets rise on an iOS drawer curve (300ms) and leave faster (200ms); the "+" grows
-  into the stepper; cart badges pop. Only transform and opacity animate; reduced motion removes it all.
+  into the stepper; cart badges pop. Only transform and opacity animate; reduced motion removes movement and keeps a short fade on sheets.
 
 ## Rules that do not bend
 
