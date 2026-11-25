@@ -4,7 +4,7 @@ import { OrderCosts } from './order-costs';
 import { feedIssues } from '../../lib/catalog/feed';
 import { readProduct } from '../../lib/catalog/model';
 import { productImages } from '../../lib/server/catalog';
-import { storePublicationIssues, cloudinaryImage } from "@almina/contracts";
+import { storePublicationIssues, cloudinaryImage, type CatalogueContext } from "@almina/contracts";
 import { getWebEnvironment } from "../../lib/server/env";
 import { randomUUID } from "node:crypto";
 import { CloudinaryUpload } from "./cloudinary-upload";
@@ -111,12 +111,13 @@ export function ProductForm({
   product,
   categories,
   selectedCategory,
-  nextHref,
+  queue,
 }: {
   product?: AdminRecord | undefined;
   categories: AdminRecord[];
   selectedCategory?: string | undefined;
-  nextHref?: string | undefined;
+  /** The product list this editor is working through. */
+  queue?: CatalogueContext | undefined;
 }) {
   const edit = !!product;
   const section = (
@@ -449,7 +450,7 @@ export function ProductForm({
       label="Save & publish"
       publishDefault={edit ? product.disabled !== true : true}
       productLive={edit ? product.disabled !== true : true}
-      {...(nextHref ? { nextHref } : {})}
+      {...(queue ? { queue } : {})}
       productMedia={<aside className="grid content-start gap-4" aria-label="Product media">
           {edit ? <><div className="rounded-xl bg-surface p-4 border border-line empty:hidden"><MediaPreview item={product} kind="products" origin={getWebEnvironment().LEGACY_API_ORIGIN} /></div><CloudinaryUpload productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} /></> :
             <PhotoPicker />}

@@ -10,6 +10,8 @@ export const routePolicies = [
   ['POST', '/api/image-review/select', 'staff'], ['POST', '/api/image-review/decide', 'staff'],
   ...['stage', 'preview', 'import', 'publish', 'draft'].map(action => ['POST', `/api/image-review/${action}`, 'admin'] as [string, string, RetainedAccess]),
   ['GET', '/api/products/needs-action', 'admin'],
+  // Listed before '/api/products/:id' so these names are never read as an identifier.
+  ['GET', '/api/products/catalogue', 'staff'], ['GET', '/api/products/queue', 'admin'],
   ['GET', '/api/operations', 'admin'],
   ['GET','/api/catalog-export/state','public'],['GET','/api/catalog-export/products','public'],
   ['GET','/api/catalog-import/template','admin'],

@@ -1,6 +1,6 @@
 import { staffAlertQuerySchema,staffAlertFeedSchema,staffAlertPreferencesSchema,staffAlertRulesSchema } from '@almina/contracts';
 import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
-import { productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
+import { catalogueListQuerySchema, catalogueQueueQuerySchema, catalogueListSchema, catalogueQueueSchema, productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
 import { z } from "zod";
 import { branchLoginAvailabilitySchema,branchLoginAvailabilityQuerySchema,storeAccountRouteAllowed, operationsSnapshotSchema,branchWorkspaceSchema } from '@almina/contracts';
 export const identitySchema = z.object({
@@ -62,6 +62,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['POST', 'image-review/select', 'staff'], ['POST', 'image-review/decide', 'staff'],
   ...['stage', 'preview', 'import', 'publish', 'draft'].map(action => ['POST', `image-review/${action}`, 'admin'] as [string, string, 'admin']),
   ['GET', 'products/needs-action', 'admin'],
+  ['GET', 'products/catalogue', 'staff'], ['GET', 'products/queue', 'admin'],
   ['GET', 'operations', 'admin'],
   ['POST','media/marketing','staff'],
   ['GET','catalog-import/template','admin'],
@@ -138,6 +139,10 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
   if (path === 'image-review' || path === 'image-review/export') {
     const parsed = (path.endsWith('/export') ? imageReviewExportQuerySchema : imageReviewListQuerySchema).parse(values);
     return new URLSearchParams(Object.entries(parsed).map(([key, value]) => [key, String(value)])).toString();
+  }
+  if (path === 'products/catalogue' || path === 'products/queue') {
+    const parsed = (path === 'products/queue' ? catalogueQueueQuerySchema : catalogueListQuerySchema).parse(values);
+    return new URLSearchParams(Object.entries(parsed).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString();
   }
   if (path === 'products/needs-action') {
     const query = listQuery.extend({ q: z.string().trim().min(1).max(80).optional(),
@@ -355,6 +360,8 @@ export function projectAdminResponse(path: string, value: unknown): unknown {
   if(path==='search'||path==='search/test'){const body=z.object({data:path==='search'?searchAdminSchema:searchTestSchema,requestId:z.uuid()}).strict().parse(value);return body.data;}
   if(/^search\/(synonyms|rules|enrichment|query)$/.test(path))return z.object({data:z.object({saved:z.literal(true)}).strict(),requestId:z.uuid()}).strict().parse(value).data;
   if (path === 'image-review' || path.startsWith('image-review/')) return projectImageReviewResponse(path, value);
+  if (path === 'products/catalogue') return catalogueListSchema.parse(value);
+  if (path === 'products/queue') return catalogueQueueSchema.parse(value);
   return path === 'operations' ? operationsSnapshotSchema.parse(value) : project(value);
 }
 

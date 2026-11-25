@@ -17,6 +17,9 @@ import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { adminRequest } from "./controls";
 import { useConfirm } from "./confirm-dialog";
 import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';
+import { readCatalogueContext, type CatalogueContext } from '@almina/contracts';
+import { editorHref, listHref } from '../../lib/admin/catalogue-links';
+import { nextInQueue } from '../../lib/admin/catalogue-client';
 
 export type FieldKind =
   | "text"
@@ -448,7 +451,7 @@ export function AdminForm({
   productChecks,
   publishDefault = true,
   productLive,
-  nextHref,
+  queue,
 }: {
   path: string;
   method?: string;
@@ -464,8 +467,8 @@ export function AdminForm({
   publishDefault?: boolean;
   /** Whether the saved record is currently live. Defaults to publishDefault. */
   productLive?: boolean;
-  /** Product editor: where "Save & next" goes, for working through many products quickly. */
-  nextHref?: string;
+  /** Product editor: the list being worked through, so "Save & next" can open the following product. */
+  queue?: CatalogueContext;
 }) {
   const router = useRouter();
   const { ask, dialog } = useConfirm();
@@ -482,6 +485,8 @@ export function AdminForm({
   const [version, setVersion] = useState(0);
   const productEditor = path === 'products' || path.startsWith('products/');
   const productId = productEditor && path !== 'products' ? path.split('/')[1] : undefined;
+  // Opening the next product starts at its top, not where the previous one was scrolled to.
+  useEffect(() => { if (productId) window.scrollTo({ top: 0 }); }, [productId]);
   const pricing = useProductTrade(productId, productAudience);
   const formRef = useRef<HTMLFormElement>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
@@ -493,6 +498,18 @@ export function AdminForm({
   if (productEditor) sections.sort((a, b) => Number(a.advanced) - Number(b.advanced));
   const singleOpenSection = sections.length === 1 && !sections[0]!.title;
   const liveAtLoad = productLive ?? publishDefault;
+  async function openNext(current: string) {
+    const context = queue ?? readCatalogueContext({});
+    try {
+      const { nextId } = await nextInQueue(current, context, seconds => toast.message(`Pausing ${seconds} seconds before opening the next product.`));
+      if (nextId) router.push(editorHref(nextId, context));
+      else { toast.success('That was the last product in this list.'); router.push(listHref(context)); }
+    } catch (failure) {
+      // The product is saved; only the lookup failed. Stay here with the button available.
+      router.refresh();
+      setError(`Saved. The next product could not be opened: ${failure instanceof Error ? failure.message : 'the request failed.'} Select Save & next again.`);
+    }
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -584,7 +601,7 @@ export function AdminForm({
         saveMode.current = 'save';
         const state = publish ? 'published' : 'draft';
         toast.success(downgraded || (publish ? 'Saved and live' : 'Saved as draft'));
-        if (mode === 'next' && nextHref) router.push(nextHref);
+        if (mode === 'next' && productId) await openNext(productId);
         else if (mode === 'another') router.push('/admin/products/new');
         else if (path === 'products') router.push(`/admin/products/${savedProductId}`);
         else { setPublished(publish); router.refresh(); setVersion(value => value + 1); setStockChanged(false); }
@@ -630,7 +647,7 @@ export function AdminForm({
           } catch (failure) { setError(failure instanceof Error ? failure.message : 'Wholesale pricing could not be saved.'); }
           finally { setPending(false); }
         }}>{pending ? 'Retrying…' : 'Retry wholesale pricing'}</button> : <>
-          {productEditor && nextHref ? <button type="submit" onClick={() => { saveMode.current = 'next'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & next</button> : null}
+          {productId ? <button type="submit" onClick={() => { saveMode.current = 'next'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & next</button> : null}
           {productEditor && path === 'products' ? <button type="submit" onClick={() => { saveMode.current = 'another'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & add another</button> : null}
           <button type="submit" onClick={() => { saveMode.current = 'save'; }} className={buttonVariants({ variant: "default" })} disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : productEditor ? (published ? 'Save & publish' : 'Save draft') : label}</button>
         </>}

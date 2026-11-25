@@ -10,6 +10,8 @@ import { imageReviewListResponseSchema } from '@almina/contracts';
 import {MarketingManager} from '../../../../../components/admin/marketing-manager';
 import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
+import { readCatalogueContext, catalogueViewLabels, catalogueFilterLabels, type CatalogueQueue } from '@almina/contracts';
+import { editorHref, listHref, queueQuery } from '../../../../../lib/admin/catalogue-links';
 import { NeedsAction } from '../../../../../components/admin/needs-action';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
@@ -163,7 +165,10 @@ export default async function AdminPage({
       const categories = rows(
         await adminRead("category", new URLSearchParams({ limit: "100" })),
       );
+      // On a new product, ?category= preselects it. On an existing product the same parameter is only the list filter:
+      // it must never change which category the saved product has.
       const selectedCategory =
+        detail === "new" &&
         typeof query.category === "string" &&
         /^[a-f0-9]{24}$/i.test(query.category)
           ? query.category
@@ -179,17 +184,14 @@ export default async function AdminPage({
         detail === "new"
           ? undefined
           : record(await adminRead(`products/${detail}`));
-      // Neighbours in the current catalogue order, so many products can be edited without returning to the list.
-      let previousHref: string | undefined, nextHref: string | undefined, position = '';
-      if (product) {
-        const neighbours = rows(await adminRead("products", new URLSearchParams({ limit: "100" })).catch(() => []));
-        const index = neighbours.findIndex(item => display(item._id) === detail);
-        if (index >= 0) {
-          if (index > 0) previousHref = `/admin/products/${display(neighbours[index - 1]!._id)}`;
-          if (index < neighbours.length - 1) nextHref = `/admin/products/${display(neighbours[index + 1]!._id)}`;
-          position = `${index + 1} of ${neighbours.length >= 100 ? '100+' : neighbours.length}`;
-        }
-      }
+      // The list this editor was opened from. "Save & next" asks for the following product only after saving, so it
+      // works for every product and never depends on this page's lookup succeeding.
+      const context = readCatalogueContext(detail === "new" ? {} : query);
+      const queue = product
+        ? await adminRead("products/queue", queueQuery(detail, context)).then(value => value as CatalogueQueue).catch(() => null)
+        : null;
+      const filtered = context.view !== "all" || context.filter !== "all" || Boolean(context.q || context.category);
+      const queueLabel = [context.view !== "all" ? catalogueViewLabels[context.view] : "", context.filter !== "all" ? catalogueFilterLabels[context.filter] : "", context.q ? `“${context.q}”` : ""].filter(Boolean).join(" · ");
       return (
         <>
           <PageHeader
@@ -201,18 +203,19 @@ export default async function AdminPage({
             }
             actions={
               <>
-                {position ? <span className="text-xs text-mute" aria-live="polite">{position}</span> : null}
-                {previousHref ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={previousHref} aria-label="Previous product">‹ Previous</Link> : null}
-                {nextHref ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={nextHref} aria-label="Next product">Next ›</Link> : null}
-                <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href="/admin/products">All products</Link>
+                {queue ? <span className="text-xs text-mute tabular-nums" role="status">{queue.position ? `${queue.position.toLocaleString("en-AE")} of ${queue.total.toLocaleString("en-AE")}` : `${queue.total.toLocaleString("en-AE")} in this list`}{filtered && queueLabel ? ` · ${queueLabel}` : ""}</span> : null}
+                {queue?.previousId ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={editorHref(queue.previousId, context)} aria-label="Previous product">‹ Previous</Link> : null}
+                {queue?.nextId ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={editorHref(queue.nextId, context)} aria-label="Next product">Next ›</Link> : null}
+                <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href={listHref(context, queue?.position ? Math.floor((queue.position - 1) / PAGE_SIZE) * PAGE_SIZE : 0)}>{filtered ? "Back to list" : "All products"}</Link>
               </>
             }
           />
           <ProductForm
+            key={detail}
             product={product}
             categories={categories}
             selectedCategory={selectedCategory}
-            nextHref={nextHref}
+            queue={product ? context : undefined}
           />
         </>
       );
