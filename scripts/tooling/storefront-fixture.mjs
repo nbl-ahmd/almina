@@ -23,6 +23,9 @@ const cardSamples = [
   { ...product, _id: 'ccccccccccccccccccccccc6', product_id: 'PD9006', brand: 'Synthetic',
     name: 'Synthetic Card sample 64 ml', price: 987654.32, sale: false, images: ['fixture.svg'] },
 ];
+// Long skincare names, as on the live shop, for the homepage routine layout.
+const routineSamples = ['CeraVe Hydrating Cleanser 473 ml', 'CeraVe Moisturising Cream 454 g', 'CeraVe Hydrating Sunscreen SPF 50 75 ml']
+  .map((name, index) => ({ ...product, _id: `eeeeeeeeeeeeeeeeeeeeeee${index}`, product_id: `ROUTINE_${index}`, name, brand: 'CeraVe', images: ['fixture.svg'] }));
 export function createStorefrontFixture(tls, { includeRecovered = false, includePagination = false } = {}) {
   const products = includeRecovered ? [product, ...recoveredProducts] : [product];
   if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
@@ -42,6 +45,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
   let homeStock = "normal";
   let homeCampaigns = false;
   let homeLayout = false;
+  let homeRoutine = false;
   const requests = [];
   const factory = tls ? handler => createSecureServer(tls, handler) : createServer;
   const server = factory((req, res) => {
@@ -62,6 +66,11 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       res.end('OK');
       return;
     }
+    if (url.pathname === '/__fixture/home-routine' && includePagination) {
+      homeRoutine = url.searchParams.get('enabled') === '1';
+      res.end('OK');
+      return;
+    }
     if (url.pathname === '/__fixture/home-campaigns' && includePagination) {
       homeCampaigns = url.searchParams.get('enabled') === '1';
       res.end('OK');
@@ -78,7 +87,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     if (url.pathname === '/api/v1/search' || url.pathname === '/api/v1/search/suggest') {
       const send = () => {
         const sample = includePagination && url.pathname === '/api/v1/search' && url.searchParams.get('q') === 'Card sample';
-        const fixture = searchFixtureResponse(url, sample ? cardSamples : products, category);
+        const fixture = searchFixtureResponse(url, sample ? cardSamples : homeRoutine ? [...routineSamples, ...products] : products, category);
         // Simulate the exact identifier fallback while the main search is unavailable.
         if (includePagination && url.pathname === '/api/v1/search' && url.searchParams.get('q') === 'PD0001') {
           fixture.data.unavailable = true;
@@ -169,6 +178,8 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     }
     if (url.pathname === '/api/banners') { res.end('[]'); return; }
     if (url.pathname === '/api/store/status') { res.end(JSON.stringify({ status: closed ? 'closed' : 'open' })); return; }
+    const routineProduct = homeRoutine && routineSamples.find(value => url.pathname === `/api/products/${value._id}`);
+    if (routineProduct) { res.end(JSON.stringify({ ...routineProduct, category: category._id })); return; }
     const byMongoId = products.find(value => url.pathname === `/api/products/${value._id}`);
     if (byMongoId) { res.end(JSON.stringify({ ...byMongoId, category: category._id })); return; }
     const byBusinessId = products.find(value => url.pathname === `/api/products/details/${value.product_id}`);
@@ -178,8 +189,9 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     }
     if (url.pathname === '/api/products' || url.pathname === '/api/products/search') {
       const q = url.searchParams.get('q');
+      const listed = homeRoutine ? [...routineSamples, ...products] : products;
       const source = url.searchParams.get('inStock') !== 'true' || homeStock === 'normal'
-        ? products
+        ? listed
         : homeStock === 'empty' ? [] : products.slice(0, 5).map(item => ({ ...item, stock: 4 }));
       const matching = source.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
       const offset = Number(url.searchParams.get('offset')); const limit = Number(url.searchParams.get('limit') ?? '30');

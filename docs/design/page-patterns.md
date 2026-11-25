@@ -4,8 +4,12 @@ Components: [components.md](components.md). Each screen copies the flow of the r
 
 ## Home (Talabat pharmacy home)
 Header with plain "Deliver to" address text and search → campaign carousel → "Shop by care" category tiles (4 per row on phones) →
-shelves (one swipeable row on phones, five or six across on desktop) with "View all ›" → skincare routine rows → brand tiles →
-one help row → footer. Section descriptions are hidden on phones. On phones a basket bar floats above the tabs once the cart has items.
+shelves (one swipeable row on phones, five or six across on desktop) with "View all ›" → skincare routine (heading above; rows on
+phones, one card per step across the full width from 900px) → brand tiles → one help row → footer. Section descriptions are hidden on
+phones. On phones a basket bar floats above the tabs once the cart has items.
+
+The homepage alone has a floating WhatsApp button at the bottom right in both languages, above the tabs and basket bar and under
+sheets and popups. Carousel frames are 2:1 below 900px and 16:5 from 900px whatever the artwork's size.
 
 ## Listing, category, search (Talabat / Blinkit)
 Title and short description → filter pill + category chips (scrolling row) → result count and sort pill → tile grid (two on phones,
@@ -13,7 +17,7 @@ Title and short description → filter pill + category chips (scrolling row) →
 Search shows the query chip and the same grid; empty results offer categories.
 
 ## Product detail (1mg)
-Grey canvas. White section: gallery in a `well`, brand/category, name (h1), price + former price + lime save sticker, stock, quantity
+Grey canvas. White section: gallery in a `well` with save and share circles at its top end, brand/category, name (h1), price + former price + lime save sticker, stock, quantity
 stepper pill + coral "Add to cart" pill (no price inside it; "Go to cart" once added, no icon), then two info rows: delivery in
 Ras Al Khaimah and returns. No SKU line, no extra cart or contact links. Further white sections: overview/specifications tabs, help, reviews, related
 tiles. Phones: sections edge to edge between grey bands; a pay-bar style purchase dock appears when the inline action scrolls away.
@@ -34,9 +38,15 @@ Bottom sheet: grabber, "Where are we delivering?", current saved place card, sav
 "Choose on map" (secondary pill), "or enter your area", emirate + area fields, save. Map view is full screen with a fixed centre pin and
 a confirm pill.
 
-## Account (1mg sign-in)
-Grey canvas, one white sheet: title, short reason, email field, coral full-width "Continue", code step with resend timer. Signed in:
-sections for orders, addresses, rewards, reminders, preferences.
+## Account (1mg sign-in, Swiggy and Flipkart account)
+Sign-in: grey canvas, one white sheet: title, short reason, three benefit tiles (orders, ratings, faster checkout), email field, coral
+full-width "Continue", code step with resend timer.
+Account home: profile card → four shortcut tiles (orders, saved, addresses, help) → three recent orders → rewards, addresses,
+reminders, preferences → sign out.
+Orders (`/account/orders`): search, progress chips, order cards (status first, up to two lines, total, rate and buy again).
+Order (`/account/orders/<number>`): status and progress steps with recorded times, items with star rating, bill, buy again, help.
+Ratings are written only here, in a sheet with five labelled stars; the product page shows published reviews and links to My orders.
+Never claim delivery or an arrival time: the system records pending, confirmed, packed, dispatched, cancelled and refunded.
 
 ## Content pages
 White canvas, 65-character measure, h1 → sections; any actions use the same pills.

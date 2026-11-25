@@ -32,6 +32,7 @@ for (const width of [360, 390, 768, 1280]) test(`email account flow handles code
   await page.setViewportSize({ width, height: 900 }); await accountFixture(page);
   await page.goto(adminOrigin + '/account');
   await expect(page.getByRole('heading', { name: 'Welcome to Al Mina' })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'With an account' }).getByRole('listitem')).toHaveCount(3);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByLabel('Email address', { exact: true }).fill('shopper@example.invalid');
   await page.getByRole('button', { name: 'Continue with email', exact: true }).click();
@@ -75,6 +76,8 @@ test('provider failure keeps email available; missing setup offers honest guest 
   await expect(page.getByRole('button', { name: 'Continue with email', exact: true })).toBeEnabled();
   await page.unrouteAll({ behavior: 'wait' }); await accountFixture(page, 'unconfigured'); await page.reload();
   await expect(page.getByText('Account sign-in is not connected yet.', { exact: false })).toBeVisible();
+  // Account benefits are not advertised when nobody can sign in.
+  await expect(page.getByRole('list', { name: 'With an account' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Continue as a guest', exact: false })).toHaveAttribute('href', '/checkout');
   await page.getByRole('link', { name: 'account privacy notice', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Privacy policy', exact: true })).toBeVisible();
@@ -164,7 +167,7 @@ test('retail purchase history labels wholesale orders and does not send them to 
  await page.route('**/api/customer/orders',route=>route.fulfill({json:{data:[{orderId:'OD-TRADE',channel:'wholesale',status:'confirmed',createdAt:'2026-10-22',totals:{totalMinor:1400,lines:[{productId:'bbbbbbbbbbbbbbbbbbbbbbbb',name:'Trade hand wash',quantity:2}]}},{orderId:'OD-RETAIL',status:'confirmed',createdAt:'2026-10-22',totals:{totalMinor:2500,lines:[{productId:'bbbbbbbbbbbbbbbbbbbbbbbb',name:'Retail hand wash',quantity:1}]}}]}}));
  await page.goto(adminOrigin+'/account');await page.getByRole('button',{name:'Continue with Google',exact:true}).click();
  const trade=page.getByRole('article').filter({hasText:'OD-TRADE'}),retail=page.getByRole('article').filter({hasText:'OD-RETAIL'});
- await expect(trade).toContainText('Wholesale · confirmed');
+ await expect(trade).toContainText('Wholesale');await expect(trade).toContainText('Confirmed');
  await expect(trade.getByRole('button',{name:'Buy available items again'})).toHaveCount(0);
  await expect(retail.getByRole('button',{name:'Buy available items again'})).toBeVisible();
 });

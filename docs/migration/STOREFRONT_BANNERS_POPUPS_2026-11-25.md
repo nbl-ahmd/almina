@@ -60,3 +60,6 @@ need text to the text layout. Rolling back the API is **not** transparent: the p
 **Superseded sizes (same day).** After measuring Aster, the frames changed: hero 1600 × 500 / 800 × 400, strips 1600 × 200 / 764 × 176,
 and a new top promo strip at 2220 × 120 / 764 × 88. Frames now contain-fit, so older art is never cropped. Phone artwork is uploaded
 separately, and a poster-style popup was added. See [STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md).
+
+**Breakpoint and frame fix (same day, later).** Phone artwork and the 2:1 frame now both apply below 900px. Sizes and the upload
+warning come from one module. See [STOREFRONT_ACCOUNT_BRANDS_2026-11-25.md](STOREFRONT_ACCOUNT_BRANDS_2026-11-25.md).
