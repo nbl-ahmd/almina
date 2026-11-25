@@ -15,7 +15,7 @@ for (const width of [390, 1280]) test(`staff can preview, review and place a cam
   await page.getByLabel('Page content', { exact: false }).fill('Compare the current products and choose the pack that suits your routine.');
   await page.getByLabel('Desktop artwork URL', { exact: true }).fill('https://cdn.alminapharmacy.com/cdn/synthetic/desktop.webp');
   await page.getByLabel('Image description', { exact: true }).fill('Synthetic care selection');
-  await page.getByLabel('Mobile artwork URL', { exact: false }).fill('https://cdn.alminapharmacy.com/cdn/synthetic/mobile.webp');
+  await page.getByLabel('Phone artwork URL', { exact: true }).fill('https://cdn.alminapharmacy.com/cdn/synthetic/mobile.webp');
   await page.getByRole('combobox', { name: 'Homepage position', exact: true }).selectOption('hero');
   await page.getByRole('spinbutton', { name: /^Display priority/ }).fill('75');
   // Text over the artwork's safe zone; the default 'Finished image only' layout shows artwork alone.

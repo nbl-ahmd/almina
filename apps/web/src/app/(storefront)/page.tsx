@@ -1,3 +1,7 @@
+import { Fragment, type ReactNode } from 'react';
+import { campaignImageUrl, defaultHomeLayout, sectionLive, type HomeBuiltinKey } from '@almina/contracts';
+import { getGrowthPages, getHomeLayout } from '../../lib/server/growth';
+import { CustomHomeSection } from '../../components/home-sections';
 import { SectionStrips } from '../../components/hero-banner';
 import { getHomepageCampaigns } from '../../lib/server/growth';
 import { getLocale } from '../../lib/server/i18n';
@@ -64,7 +68,7 @@ async function HomeLead() {
   // Managed artwork needs no inventory search. Only the fallback hero uses a product.
   const featured = liveBanners.length || liveCampaigns.some(page => page.homepagePlacement === 'hero')
     ? [] : (await featuredProducts().catch(() => ({ products: [] }))).products;
-  return <HomeHero products={featured.filter(product => product.stock > 0)} banners={liveBanners} campaigns={liveCampaigns} />;
+  return <><SectionStrips pages={liveCampaigns} slot="home-promo" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} /><HomeHero products={featured.filter(product => product.stock > 0)} banners={liveBanners} campaigns={liveCampaigns} /></>;
 }
 function categoryRank(name: string) {
   const index = [
@@ -79,7 +83,7 @@ function categoryRank(name: string) {
 }
 async function HomeContent() {
   const locale = await getLocale();
-  const [catalogue, settledCollections, campaigns] = await Promise.all([
+  const [catalogue, settledCollections, campaigns, layout, brandPages] = await Promise.all([
     Promise.allSettled([
       getCategories(),
       featuredProducts(),
@@ -90,6 +94,8 @@ async function HomeContent() {
       homeCollections.map((collection) => getCollectionProducts(collection)),
     ),
     homepageCampaigns(),
+    getHomeLayout(locale),
+    getGrowthPages('brand', locale).then(result => result.items).catch(() => []),
   ]);
   const collectionResults = settledCollections.map((result) =>
     result.status === "fulfilled" ? result.value : [],
@@ -153,59 +159,39 @@ async function HomeContent() {
         (product) => productImage(product) !== "/product-placeholder.svg",
       ),
     }));
-  return (
-      <>
-        <HomeCategories
-          categories={[...categories].sort(
-            (a, b) => categoryRank(a.name) - categoryRank(b.name),
-          )}
-        />
-        <SectionStrips pages={campaigns} slot="home-top" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-        <HomeShelf
-          title={u(locale,"Your everyday essentials")}
-          description={u(locale,"Small essentials. A little more care, every day.")}
-          products={shelf}
-          href="/collections/daily-care"
-        />
-        {!all.length ? (
-          <section className="rounded-2xl border p-6">
-            <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
-            <p className="text-sm">
-              {u(locale,"You can try again or contact the pharmacy for product enquiries.")}
-            </p>
-            <Link className="button rounded-full text-sm" href="/">
-              {u(locale,"Try again")}
-            </Link>
-          </section>
-        ) : null}
-        <SectionStrips pages={campaigns} slot="home-middle" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-        <HomeCollectionTiles collections={collectionTiles} />
-        {offerShelf.length >= 2 ? (
-          <HomeShelf
-            title={u(locale,"A little more value")}
-            description={u(locale,"Current offers, with the savings shown upfront.")}
-            products={offerShelf}
-            href="/offers"
-          />
-        ) : null}
-        <HomeCompactShelf
-          title={u(locale,"Personal care for every day")}
-          description={u(locale,"Discover body, hair and personal care essentials.")}
-          products={daily}
-          href="/collections/daily-care"
-        />
-        <HomeRoutine products={skin} />
-        <HomeCompactShelf
-          title={u(locale,"AED 50 & under")}
-          description={u(locale,"Available essentials within your budget.")}
-          products={budgetShelf}
-          href="/collections/under-50"
-        />
-        <SectionStrips pages={campaigns} slot="home-bottom" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-        <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} />
-        <HomeManagedCampaigns campaigns={campaigns} />
-        <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-        <HomeSupport />
-      </>
-  );
+  const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
+  // Category cards: the admin's image first, else an in-stock product photo from that category, else an icon.
+  const categoryPhotos = new Map<string, string>();
+  for (const product of photoReady) if (!categoryPhotos.has(product.category._id)) categoryPhotos.set(product.category._id, productImage(product));
+  // Only approved artwork hosts reach next/image; anything else is ignored rather than breaking the page.
+  const brandLogos = new Map((brandPages ?? []).flatMap(page => { const logo = campaignImageUrl(page.image, cloudName); return logo ? [[page.slug, logo] as const] : []; }));
+  // Built-in sections by key. A published homepage layout (Website & growth → Homepage) orders, hides or interleaves them with
+  // custom sections; without one, the built-in order below is today's homepage.
+  const blocks: Record<HomeBuiltinKey, ReactNode> = {
+    categories: <HomeCategories categories={[...categories].sort((a, b) => categoryRank(a.name) - categoryRank(b.name))} photos={categoryPhotos} />,
+    'strip-top': <SectionStrips pages={campaigns} slot="home-top" cloudName={cloudName} />,
+    essentials: <>
+      <HomeShelf title={u(locale,"Your everyday essentials")} description={u(locale,"Small essentials. A little more care, every day.")} products={shelf} href="/collections/daily-care" />
+      {!all.length ? (
+        <section className="rounded-2xl border p-6">
+          <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
+          <p className="text-sm">{u(locale,"You can try again or contact the pharmacy for product enquiries.")}</p>
+          <Link className="button rounded-full text-sm" href="/">{u(locale,"Try again")}</Link>
+        </section>
+      ) : null}
+    </>,
+    'strip-middle': <SectionStrips pages={campaigns} slot="home-middle" cloudName={cloudName} />,
+    collections: <HomeCollectionTiles collections={collectionTiles} />,
+    offers: offerShelf.length >= 2 ? <HomeShelf title={u(locale,"A little more value")} description={u(locale,"Current offers, with the savings shown upfront.")} products={offerShelf} href="/offers" /> : null,
+    daily: <HomeCompactShelf title={u(locale,"Personal care for every day")} description={u(locale,"Discover body, hair and personal care essentials.")} products={daily} href="/collections/daily-care" />,
+    routine: <HomeRoutine products={skin} />,
+    budget: <HomeCompactShelf title={u(locale,"AED 50 & under")} description={u(locale,"Available essentials within your budget.")} products={budgetShelf} href="/collections/under-50" />,
+    'strip-bottom': <SectionStrips pages={campaigns} slot="home-bottom" cloudName={cloudName} />,
+    brands: <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} logos={brandLogos} />,
+    campaigns: <HomeManagedCampaigns campaigns={campaigns} />,
+    recent: <RecentlyViewed locale={locale} cloudName={cloudName} />,
+    help: <HomeSupport />,
+  };
+  const sections = (layout ?? defaultHomeLayout(locale)).sections.filter(section => sectionLive(section));
+  return <>{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
 }

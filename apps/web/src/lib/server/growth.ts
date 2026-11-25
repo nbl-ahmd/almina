@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { commercePolicySchema, growthPageSchema, pharmacyProfileSchema, branchDirectorySchema, type GrowthPage } from '@almina/contracts';
+import { commercePolicySchema, growthPageSchema, homeLayoutSchema, pharmacyProfileSchema, branchDirectorySchema, type GrowthPage } from '@almina/contracts';
 import { z } from 'zod';
 import { getWebEnvironment } from './env';
 import type { ShippingPolicy } from '../policies';
@@ -24,3 +24,6 @@ export async function getProductReviews(productId:string){
 }
 
 export async function getHomepageCampaigns(locale: 'en' | 'ar') { return z.array(growthPageSchema).max(24).parse(await read('campaigns?'+new URLSearchParams({locale}))??[]); }
+
+/** Published homepage layout, or null for the built-in homepage (no layout, unpublished, invalid or service unavailable). */
+export const getHomeLayout=cache(async(locale:'en'|'ar')=>{try{const row=await read('home-layout?'+new URLSearchParams({locale}));const parsed=row?homeLayoutSchema.safeParse(row):null;return parsed?.success?parsed.data:null;}catch{return null;}});

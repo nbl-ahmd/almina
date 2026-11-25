@@ -3,6 +3,9 @@ import { knownGrowthBrands } from '../../../components/growth-landing';
 import { StorefrontIntro } from '../../../components/storefront-intro';
 import { ProductPhoto } from '../../../components/product-card';
 import { metadataFor } from '../../../lib/server/seo';
+import Image from 'next/image';
+import { campaignImageUrl } from '@almina/contracts';
+import { getGrowthPages } from '../../../lib/server/growth';
 import { getWebEnvironment } from '../../../lib/server/env';
 import { collectionData } from '../../../lib/seo';
 import { StructuredData } from '../../../components/structured-data';
@@ -18,10 +21,14 @@ const brandOf = (product: Product) => (product.brand || product.familyBrand || '
 
 export default async function BrandsPage(){
   const locale = await getLocale(), ar = locale === 'ar';
-  const [curated, catalogue] = await Promise.all([
+  const [curated, catalogue, brandPages] = await Promise.all([
     Promise.all(Object.entries(knownGrowthBrands).map(async ([slug, name]) => ({ slug, name, available: (await getProducts({ q: name }).catch(() => ({ products: [] }))).products.length > 0 }))),
     getProducts({}).then(result => result.products).catch(() => [] as Product[]),
+    getGrowthPages('brand', locale).then(result => result.items).catch(() => []),
   ]);
+  // Logos staff uploaded on brand pages (approved hosts only).
+  const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
+  const logos = new Map(brandPages.flatMap(page => { const logo = campaignImageUrl(page.image, cloudName); return logo ? [[page.slug, logo] as const] : []; }));
   const pages = curated.filter(item => item.available);
   const curatedNames = new Set(pages.map(item => item.name.toLowerCase()));
   // Brands with stock on the current catalogue page, excluding those that already have a brand page.
@@ -34,12 +41,12 @@ export default async function BrandsPage(){
     <StorefrontIntro title={ar ? 'علامات تجارية تعرفها' : 'Find your familiar brands'} description={ar ? 'تصفح العلامات التجارية المتوفرة في المينا وقارن المنتجات والأحجام والأسعار.' : 'Explore the brands currently available at Al Mina. Compare products, pack sizes and prices.'} />
     {pages.length ? <section aria-labelledby="brand-pages-heading" className="mb-8">
       <h2 id="brand-pages-heading" className="section-title mb-3">{ar ? 'صفحات العلامات التجارية' : 'Brand pages'}</h2>
-      <div className="brand-grid">{pages.map(item => <Link key={item.slug} href={'/brands/' + item.slug} className="brand-tile"><span className="brand-tile-mark" aria-hidden="true">{item.name.slice(0, 1)}</span><span className="brand-tile-name">{item.name}</span><ChevronRightIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" /></Link>)}</div>
+      <div className="brand-grid">{pages.map(item => <Link key={item.slug} href={'/brands/' + item.slug} className="brand-tile"><span className="brand-tile-mark brand-tile-photo" aria-hidden="true">{logos.get(item.slug) ? <Image src={logos.get(item.slug)!} alt="" width={96} height={96} sizes="48px" /> : item.name.slice(0, 1)}</span><span className="brand-tile-name">{item.name}</span><ChevronRightIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" /></Link>)}</div>
     </section> : null}
     {inStock.length ? <section aria-labelledby="brands-in-stock-heading">
       <h2 id="brands-in-stock-heading" className="section-title mb-3">{ar ? 'علامات متوفرة الآن' : 'Brands in stock now'}</h2>
       <div className="brand-grid">{inStock.map(item => <Link key={item.name} href={`/brands/${brandSlug(item.name)}`} className="brand-tile">
-        <span className="brand-tile-mark brand-tile-photo" aria-hidden="true">{item.product ? <ProductPhoto product={item.product} /> : item.name.slice(0, 1)}</span>
+        <span className="brand-tile-mark brand-tile-photo" aria-hidden="true">{logos.get(brandSlug(item.name)) ? <Image src={logos.get(brandSlug(item.name))!} alt="" width={96} height={96} sizes="48px" /> : item.product ? <ProductPhoto product={item.product} /> : item.name.slice(0, 1)}</span>
         <span className="brand-tile-name">{item.name}</span><ChevronRightIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
       </Link>)}</div>
     </section> : null}

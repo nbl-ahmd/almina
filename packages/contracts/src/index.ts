@@ -75,3 +75,4 @@ export * from './staff-access';
 export * from './staff-notifications';
 
 export * from './image-review-identity';
+export * from './home-layout';

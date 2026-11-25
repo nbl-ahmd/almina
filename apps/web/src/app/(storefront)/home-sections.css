@@ -1,0 +1,65 @@
+/* Homepage sections managed in Website & growth → Homepage (Life Pharmacy / Aster patterns).
+   Tinted sections are full-bleed bands on phones and rounded panels on desktop; image tiles keep a fixed shape. */
+@scope (.storefront-shell) {
+  .qc-section { display: grid; gap: 10px; min-inline-size: 0; }
+  :is(.home-page, main) .qc-section[data-bg]:not([data-bg="none"]) { margin-inline: calc(var(--qc-gutter) * -1); padding: 16px var(--qc-gutter); }
+  .qc-section[data-bg="coral"] { background: var(--qc-section-coral); }
+  .qc-section[data-bg="green"] { background: var(--qc-section-green); }
+  .qc-section[data-bg="blue"] { background: var(--qc-section-blue); }
+  .qc-section[data-bg="yellow"] { background: var(--qc-section-yellow); }
+  .qc-section[data-bg="purple"] { background: var(--qc-section-purple); }
+  .qc-section[data-bg]:not([data-bg="none"]) .product-card { border-color: transparent; }
+  .qc-section > .qc-strip { margin-block-end: 2px; }
+  .qc-section .section-heading { margin-block-end: 0; }
+
+  .qc-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .qc-tiles[data-columns="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .qc-tiles[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .qc-tile { position: relative; display: block; overflow: hidden; aspect-ratio: 1; border-radius: var(--qc-r-lg); background: var(--qc-well); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
+  .qc-tiles[data-ratio="portrait"] .qc-tile { aspect-ratio: 3 / 4; }
+  .qc-tiles[data-ratio="landscape"] .qc-tile { aspect-ratio: 16 / 9; }
+  .qc-tile:active { transform: scale(.98); }
+  .qc-section-categories { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  @scope (.storefront-shell) {
+    .qc-section { gap: 14px; }
+    :is(.home-page, main) .qc-section[data-bg]:not([data-bg="none"]) { margin-inline: 0; padding: 20px 24px 24px; border-radius: var(--qc-r-xl); }
+    .qc-tiles { gap: 16px; }
+    /* Desktop: every tile in one row, each at most 360px (portrait 300px) wide, centred, like Life's image cards. */
+    .qc-tiles, .qc-tiles[data-columns] { grid-template-columns: repeat(var(--tiles, 4), minmax(0, 360px)); justify-content: center; }
+    .qc-tiles[data-ratio="portrait"] { grid-template-columns: repeat(var(--tiles, 4), minmax(0, 300px)); }
+    .qc-tiles[data-ratio="landscape"] { grid-template-columns: repeat(min(var(--tiles, 3), 3), minmax(0, 1fr)); }
+    .qc-section-categories { grid-template-columns: repeat(auto-fill, minmax(96px, 120px)); }
+  }
+}
+@scope (.storefront-shell) {
+  .brand-landing-logo { display: grid; place-items: center; inline-size: 120px; block-size: 120px; padding: 14px; border: 1px solid var(--qc-line); border-radius: var(--qc-r-lg); background: var(--qc-surface); }
+  .brand-landing-logo img { inline-size: 100%; block-size: 100%; object-fit: contain; }
+  .brand-tile-photo img { inline-size: 100%; block-size: 100%; object-fit: contain; }
+}
+
+/* ═══════════════════════════ Compact phone homepage (owner review; Talabat / Aster density) ═══════════════════════════ */
+@media (max-width: 599px) {
+  @scope (.storefront-shell) {
+    .home-page { gap: 16px !important; }
+    /* Hero runs edge to edge like Aster; the frame stays 2:1. */
+    .home-page .home-hero { margin-inline: calc(var(--qc-gutter) * -1); } /* beats the older .home-page section reset */
+    .home-hero .qc-hero, .home-hero .fallback-campaign, .home-hero :is(img, a) { border-radius: 0; }
+    /* Categories: one swipeable row of 64px tiles (about 4.6 visible) instead of two rows of large squares. */
+    .home-page .home-categories { display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72px; gap: 10px;
+      overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin-inline: calc(var(--qc-gutter) * -1); padding-inline: var(--qc-gutter); }
+    .home-page .home-categories .category-tile { gap: 5px; scroll-snap-align: start; }
+    .home-page .home-categories .category-media { padding: 10%; border-radius: var(--qc-r-md); }
+    .home-page .home-categories .category-label { font-size: var(--qc-fs-11); line-height: 1.2; }
+    /* Tighter headings and rails. */
+    .home-page .section-title, .home-page .section-heading h2 { font-size: var(--qc-fs-17, 1.0625rem); }
+    .home-page .section-heading { margin-block-end: 6px; }
+    .home-page .section-link { min-block-size: 40px; font-size: var(--qc-fs-13); }
+    .home-page .qc-rail { grid-auto-columns: minmax(136px, 38%); gap: 8px !important; }
+    .home-page .product-card { padding: 6px; gap: 4px; }
+    .home-page .qc-brand-rail { grid-auto-columns: 72px; gap: 10px; }
+    .home-page .qc-brand-mark { inline-size: 72px; block-size: 72px; padding: 10px; }
+    .home-page .qc-strip { border-radius: var(--qc-r-sm); }
+  }
+}

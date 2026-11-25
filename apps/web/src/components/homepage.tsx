@@ -6,7 +6,7 @@ import type { GrowthPage } from '@almina/contracts';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
 import { CategoryTile } from "./category-tile";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from './app-link';
 import {
   ChatBubbleLeftRightIcon,
@@ -26,7 +26,7 @@ import {
 } from "../lib/catalog/model";
 import { productImage } from "../lib/server/catalog";
 
-type Banner = { image: string; name: string; href: string | null };
+type Banner = { image: string; mobileImage?: string; name: string; href: string | null };
 
 /** Shared editorial heading: quiet type, pill link, consistent section rhythm. */
 async function SectionHeading({
@@ -72,7 +72,8 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
         ...heroCampaigns.map((page, index) => <HeroBanner cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),
         // Legacy banners from /admin/banners use the same fixed-height frame (finished artwork, cover-fitted).
         ...banners.slice(0, 8).map((banner, index) => {
-          const artwork = <picture className="qc-banner-art"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} fetchPriority={index === 0 && !heroCampaigns.length ? 'high' : undefined} /></picture>;
+          // Uploaded phone artwork (Banners admin, second image) is used below 768px; otherwise the desktop image is contained.
+          const artwork = <picture className="qc-banner-art">{banner.mobileImage ? <source media="(max-width: 767px)" srcSet={getImageProps({ src: banner.mobileImage, alt: '', width: 800, height: 400, sizes: '100vw' }).props.srcSet} /> : null}<Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} fetchPriority={index === 0 && !heroCampaigns.length ? 'high' : undefined} /></picture>;
           return banner.href ? <Link href={banner.href} key={banner.image} className="qc-hero" data-layout="image" aria-label={banner.name}>{artwork}</Link> : <div key={banner.image} className="qc-hero" data-layout="image">{artwork}</div>;
         }),
         ...(!heroCampaigns.length && !banners.length ? [<div key="everyday" className="fallback-campaign">
@@ -93,11 +94,11 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
   </section>;
 }
 
-export async function HomeCategories({ categories }: { categories: Category[] }) {
+export async function HomeCategories({ categories, photos }: { categories: Category[]; photos?: Map<string, string> }) {
   const locale=await getLocale();if(!categories.length)return null;
   return <section aria-label={u(locale, 'Shop by care')}>
     <SectionHeading title={u(locale, 'Shop by care')} href="/categories" link={u(locale, 'All categories')} />
-    <div className="home-categories">{categories.slice(0, 8).map(category => <CategoryTile key={category._id} category={category} />)}</div>
+    <div className="home-categories">{categories.slice(0, 8).map(category => <CategoryTile key={category._id} category={category} fallback={photos?.get(category._id)} />)}</div>
   </section>;
 }
 
@@ -248,7 +249,7 @@ export async function HomeCollectionTiles({
   );
 }
 
-export async function HomeBrandStrip({ brands, products }: { brands: string[]; products: Product[] }) {
+export async function HomeBrandStrip({ brands, products, logos }: { brands: string[]; products: Product[]; logos?: Map<string, string> }) {
   const locale = await getLocale();
   if (!brands.length) return null;
   return (
@@ -268,7 +269,7 @@ export async function HomeBrandStrip({ brands, products }: { brands: string[]; p
               key={brand}
               className="qc-brand"
             >
-              {match ? <span className="qc-brand-mark"><Photo product={match} /></span> : <span className="qc-brand-mark qc-brand-initial">{brand.slice(0,1).toUpperCase()}</span>}
+              {logos?.get(brandSlug(brand)) ? <span className="qc-brand-mark"><Image src={logos.get(brandSlug(brand))!} alt="" width={120} height={120} sizes="84px" /></span> : match ? <span className="qc-brand-mark"><Photo product={match} /></span> : <span className="qc-brand-mark qc-brand-initial">{brand.slice(0,1).toUpperCase()}</span>}
               <span className="qc-brand-name">{brand}</span>
             </Link>
           );

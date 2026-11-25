@@ -30,6 +30,8 @@
   --qc-save-tint: #e3f9ec;     /* 1mg savings strip */
   --qc-save-strong: #0e8045;   /* filled success (Zomato pay green): 5.0:1 with white */
   --qc-deal: #cfff00;          /* Talabat lime deal sticker, with ink text */
+  /* Section backgrounds chosen in Website & growth → Homepage (Life Pharmacy tinted sections); ink text stays AA on all. */
+  --qc-section-coral: #fff1ee; --qc-section-green: #e8f6ee; --qc-section-blue: #eaf2fd; --qc-section-yellow: #fff6da; --qc-section-purple: #f2edfb;
 
   /* ── Information & status ─────────────────────────────── */
   --qc-info: #0b6e6e;          /* Al Mina teal: delivery info, focus ring */

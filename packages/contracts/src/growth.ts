@@ -17,7 +17,9 @@ export const growthPageSchema = z.object({
   // over a safe zone the designer leaves empty. Existing campaigns default to 'image' so no text is drawn over finished artwork.
   heroLayout:z.enum(['image','overlay']).default('image'),textTone:z.enum(['dark','light']).default('dark'),
   ctaHref:z.union([z.literal(''),localLink]).default(''),
-  stripSlot:z.enum(['home-top','home-middle','home-bottom','listing']).default('home-middle'),
+  stripSlot:z.enum(['home-promo','home-top','home-middle','home-bottom','listing']).default('home-middle'),
+  // Popup: 'card' is artwork above a title and message; 'image' is a designed 3:4 poster (Life Pharmacy) with one button under it.
+  popupLayout:z.enum(['card','image']).default('card'),
   priority:z.number().int().min(0).max(100).default(0),
   ctaLabel:z.string().trim().max(60).default(''),
   productIds:z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(80).default([]),
@@ -36,6 +38,7 @@ export const growthPageSchema = z.object({
     if(page.published&&page.homepagePlacement==='popup'){
       if(!page.description&&!page.image)ctx.addIssue({code:'custom',path:['description'],message:'A popup needs a message or artwork.'});
       if(page.image&&!page.imageAlt)ctx.addIssue({code:'custom',path:['imageAlt'],message:'Describe the popup artwork.'});
+      if(page.popupLayout==='image'&&!page.image)ctx.addIssue({code:'custom',path:['image'],message:'An image popup needs its poster artwork.'});
     }else if(page.published){
       const needsButton=page.homepagePlacement==='secondary'||(page.homepagePlacement==='hero'&&page.heroLayout==='overlay');
       if(!page.image||!page.imageAlt||!page.terms||(needsButton&&!page.ctaLabel))ctx.addIssue({code:'custom',path:['image'],message:needsButton?'Homepage campaigns need desktop artwork, image description, button text and offer terms before publishing.':'Banners need artwork, an image description and offer terms before publishing.'});
@@ -97,6 +100,6 @@ export function campaignImageUrl(value: string, cloudName?: string): string | nu
 
 // Existing strict v1 clients must not receive fields they do not understand.
 export const legacyGrowthPageSchema=growthPageSchema.transform(page=>{
- const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,...legacy}=page;
- void [mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot];return legacy;
+ const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,...legacy}=page;
+ void [mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout];return legacy;
 });

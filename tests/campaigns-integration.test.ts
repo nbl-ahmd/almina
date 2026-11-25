@@ -29,7 +29,7 @@ test('campaign merchandising on disposable replica set',{skip:!uri},async t=>{
   await t.test('older admin payloads preserve merchandising, while stale edits still fail',async()=>{
    const current=(await homepageCampaigns(db,'en',now))[0]!;
    // An older admin client knows none of the merchandising fields, including the banner ones added later.
-   const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,...legacy}=current;void[mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot];
+   const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,...legacy}=current;void[mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout];
    const edited=await saveLegacyGrowthPage(db,{...legacy,body:'Legacy editor updates the useful description.'},actor);
    assert.equal(edited.homepagePlacement,'hero');assert.equal(edited.mobileImage,draft.mobileImage);assert.equal(edited.ctaLabel,draft.ctaLabel);
    await assert.rejects(saveLegacyGrowthPage(db,legacy,actor),{code:'IDEMPOTENCY_CONFLICT'});

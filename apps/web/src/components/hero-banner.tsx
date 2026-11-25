@@ -4,8 +4,10 @@ import { ArrowRightIcon } from './storefront-icons';
 import { campaignImageUrl, growthPagePath, type GrowthPage } from '@almina/contracts';
 
 // Fixed artwork sizes for designers (shown in the admin editor too). The frame never changes height with the artwork.
-export const heroArtwork = { desktop: { width: 1440, height: 400 }, mobile: { width: 800, height: 400 } } as const;
-export const stripArtwork = { desktop: { width: 1440, height: 200 }, mobile: { width: 800, height: 200 } } as const;
+// Measured from Aster's homepage (2026-11-25): hero 1600×500 desktop / 764×376 phone; section strips 2224×276 / 764×176; top promo
+// strip 2220×120 / 764×88. Frames contain-fit, so art at these sizes fills them and older art is never cropped.
+export const heroArtwork = { desktop: { width: 1600, height: 500 }, mobile: { width: 800, height: 400 } } as const;
+export const stripArtwork = { desktop: { width: 1600, height: 200 }, mobile: { width: 764, height: 176 } } as const;
 
 export function campaignHref(page: GrowthPage) { return page.ctaHref || growthPagePath(page); }
 
@@ -41,7 +43,7 @@ export function HeroBanner({ page, cloudName, eager = false, preview }: { page: 
 /** Thin, wide section banner (Life Pharmacy "Deals under AED 49" strips): finished artwork, one link, fixed height. */
 export function StripBanner({ page, cloudName, preview }: { page: GrowthPage; cloudName?: string | undefined; preview?: 'mobile' | 'desktop' }) {
   const body = <Art page={page} cloudName={cloudName} eager={false} preview={preview} size={stripArtwork} sizes="(max-width: 899px) 100vw, 1280px" />;
-  return preview ? <div className="qc-strip" data-preview={preview}>{body}</div> : <Link className="qc-strip" href={campaignHref(page)} aria-label={page.imageAlt || page.title}>{body}</Link>;
+  return preview ? <div className="qc-strip" data-slot={page.stripSlot} data-preview={preview}>{body}</div> : <Link className="qc-strip" data-slot={page.stripSlot} href={campaignHref(page)} aria-label={page.imageAlt || page.title}>{body}</Link>;
 }
 
 export function SectionStrips({ pages, slot, cloudName }: { pages: GrowthPage[]; slot: GrowthPage['stripSlot']; cloudName?: string | undefined }) {

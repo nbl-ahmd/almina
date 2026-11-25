@@ -1035,7 +1035,8 @@
 @scope (.storefront-shell) {
   .qc-hero { position: relative; display: block; overflow: hidden; inline-size: 100%; aspect-ratio: 2 / 1; border-radius: var(--qc-r-lg); background: var(--qc-well); color: var(--qc-ink); text-decoration: none; isolation: isolate; }
   .qc-banner-art { position: absolute; inset: 0; display: block; }
-  .qc-banner-art img { object-fit: cover; }
+  /* Contain, never crop: art made at the frame's size fills it exactly; older or off-size art (text baked in) letterboxes on the well. */
+  .qc-banner-art img { object-fit: contain; }
   .qc-banner-empty { display: grid; place-items: center; block-size: 100%; padding: 16px; color: var(--qc-muted); font-size: var(--qc-fs-13); }
   /* Overlay: the copy sits on the start side, inside the safe zone (about 45% of the width) the artwork leaves empty. */
   .qc-hero-copy { position: absolute; inset-block: 0; inset-inline-start: 0; z-index: 1; display: grid; align-content: center; justify-items: start; gap: 6px; inline-size: min(52%, 520px); padding: 16px 18px; }
@@ -1048,13 +1049,16 @@
   .qc-hero:active { transform: scale(.99); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
   @media (hover: hover) and (pointer: fine) { .qc-hero:hover .qc-hero-cta { background: var(--qc-action-hover); } .qc-hero[data-tone="light"]:hover .qc-hero-cta { background: var(--qc-well); } }
   .qc-hero[data-preview="mobile"] { aspect-ratio: 2 / 1; max-inline-size: 390px; }
-  .qc-hero[data-preview="desktop"] { aspect-ratio: 18 / 5; }
+  .qc-hero[data-preview="desktop"] { aspect-ratio: 16 / 5; }
 
   /* Section strips (Life Pharmacy "Deals under AED 49"): thin and wide, finished artwork. */
   .qc-strips { display: grid; gap: 10px; }
-  .qc-strip { position: relative; display: block; overflow: hidden; inline-size: 100%; aspect-ratio: 4 / 1; border-radius: var(--qc-r-md); background: var(--qc-well); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
+  .qc-strip { position: relative; display: block; overflow: hidden; inline-size: 100%; aspect-ratio: 191 / 44; border-radius: var(--qc-r-md); background: var(--qc-well); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
   .qc-strip:active { transform: scale(.99); }
-  .qc-strip[data-preview="desktop"] { aspect-ratio: 36 / 5; }
+  .qc-strip[data-preview="desktop"] { aspect-ratio: 8 / 1; }
+  /* Top promo strip (Aster coupon strip): 764 × 88 on phones, 2220 × 120 on desktop. */
+  .qc-strip[data-slot="home-promo"] { aspect-ratio: 191 / 22; border-radius: 0; }
+  .qc-strip[data-slot="home-promo"][data-preview="desktop"] { aspect-ratio: 37 / 2; }
   .catalog-results > .qc-strips { margin-block-end: 12px; }
 
   /* Popup: a bottom sheet on phones, a centred 420px card from 600px; artwork on top, message and one action below. */
@@ -1071,12 +1075,13 @@
 }
 @media (min-width: 900px) {
   @scope (.storefront-shell) {
-    .qc-hero { aspect-ratio: 18 / 5; }
+    .qc-hero { aspect-ratio: 16 / 5; }
     .qc-hero-copy { padding: 32px 48px; gap: 10px; }
     .qc-hero-cta { min-block-size: 44px; padding: 0 22px; font-size: var(--qc-fs-15); }
-    .qc-strip { aspect-ratio: 36 / 5; }
+    .qc-strip { aspect-ratio: 8 / 1; }
+    .qc-strip[data-slot="home-promo"] { aspect-ratio: 37 / 2; border-radius: var(--qc-r-md); }
     .qc-strips:has(> :nth-child(2)) { grid-template-columns: 1fr 1fr; }
-    .qc-strips:has(> :nth-child(2)) .qc-strip { aspect-ratio: 18 / 5; }
+    .qc-strips:has(> :nth-child(2)) .qc-strip { aspect-ratio: 4 / 1; }
   }
 }
 @media (min-width: 600px) { @scope (.storefront-shell) { dialog:is(.qc-popup, .coupon-offers-sheet) { inline-size: min(420px, calc(100vw - 48px)); block-size: fit-content; } dialog.qc-popup .qc-popup-art { border-radius: var(--qc-r-xl) var(--qc-r-xl) 0 0; } } }
@@ -1096,3 +1101,23 @@
   .qc-hero .qc-hero-copy { position: static; block-size: 100%; }
   .qc-hero .qc-stretched::after { z-index: 1; }
 }
+@scope (.storefront-shell) {
+  /* Poster popup (Life Pharmacy): the designed 3:4 artwork is the message; one full-width button sits under it. */
+  .qc-popup-poster { display: grid; gap: 10px; padding: 10px 10px calc(12px + env(safe-area-inset-bottom)); }
+  .qc-popup-poster-art { position: relative; display: block; inline-size: 100%; aspect-ratio: 3 / 4; max-block-size: calc(100dvh - 220px); overflow: hidden; border-radius: var(--qc-r-lg); background: var(--qc-well); }
+  .qc-popup-poster-art img { object-fit: contain; }
+  .qc-popup-poster-cta { inline-size: 100%; min-block-size: 52px; }
+  dialog.qc-popup:has(.qc-popup-poster) { background: var(--qc-surface); }
+}
+
+/* ═══════════════════════════ Sticky search (Talabat / Aster) ═══════════════════════════
+   The header sticks with a negative offset: on phones the logo row scrolls away and the search row stays (−54px of a 124px
+   header); on desktop the utility bar scrolls away and logo, search, cart and departments stay (−44px). Checkout has its own bar. */
+@scope (.storefront-shell) {
+  .storefront-header { position: sticky; inset-block-start: -54px; z-index: var(--qc-z-sticky); }
+  :scope:has(.checkout-flow) .storefront-header { position: static; }
+  .storefront-header .header-search { position: relative; }
+}
+@media (min-width: 900px) { @scope (.storefront-shell) { .storefront-header { inset-block-start: -44px; } } }
+html:has(.storefront-shell) { scroll-padding-block-start: 84px; }
+@media (min-width: 900px) { html:has(.storefront-shell) { scroll-padding-block-start: 152px; } }
