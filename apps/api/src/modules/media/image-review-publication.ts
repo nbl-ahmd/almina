@@ -10,7 +10,10 @@ import { reviewDigest } from './image-review-identity.js';
 
 type Job = Document & { _id: string; actor: string; phase: ImagePublication['phase']; resumePhase: 'preparing' | 'publishing'; createdAt: Date; updatedAt: Date;
   boundary: string | null; cursor: string | null; preparedImages: number; publishedImages: number; skippedImages: number; totalProducts: number; processedProducts: number;
-  error: ImagePublication['error']; leaseToken?: string; leaseUntil?: Date };
+  error: ImagePublication['error']; leaseToken?: string; leaseUntil?: Date;
+  /** Set only when an administrator starts or resumes the run with server publication on. The API worker ignores every other
+   *  run, so turning server publication on never starts a run that was saved for the operations computer. */
+  hosted?: boolean };
 type Group = Document & { _id: string; jobId: string; productId: string; approvalIds: string[]; images: number; state: 'pending' | 'holding' | 'skipped' | 'published'; manifestId?: string; reason?: string };
 type Entry = Document & { _id: string; groupId: string; itemId: string; approvalId: string; resolved: boolean };
 const options = { maxTimeMS: 3000 };
@@ -29,7 +32,7 @@ async function status(db: Db, job: Job | null): Promise<{ publication: ImagePubl
   if (!job) return { publication: null };
   const issues = await groups(db).find({ jobId: job._id, state: { $in: ['holding', 'skipped'] } }, options).sort({ _id: 1 }).limit(21).toArray();
   return { publication: { jobId: job._id, phase: job.phase, preparedImages: job.preparedImages, publishedImages: job.publishedImages,
-    skippedImages: job.skippedImages, totalProducts: job.totalProducts, processedProducts: job.processedProducts, error: job.error, updatedAt: job.updatedAt.toISOString(), canResume: job.phase === 'paused' && (!job.leaseUntil || job.leaseUntil <= new Date()),
+    skippedImages: job.skippedImages, totalProducts: job.totalProducts, processedProducts: job.processedProducts, error: job.error, updatedAt: job.updatedAt.toISOString(), started: job.hosted === true, canResume: job.phase === 'paused' && (!job.leaseUntil || job.leaseUntil <= new Date()),
     issues: issues.slice(0, 20).map(group => ({ productId: group.productId, images: group.images, reason: group.reason ?? 'Review the association again.' })), moreIssues: issues.length > 20 } };
 }
 export async function getImagePublication(db: Db, actor: string) {
@@ -37,7 +40,7 @@ export async function getImagePublication(db: Db, actor: string) {
   const current = await control(db).findOne({ _id: 'active' }, options);
   return status(db, current?.jobId ? await jobs(db).findOne({ _id: String(current.jobId) }, options) : null);
 }
-export async function startImagePublication(db: Db, raw: unknown, actor: string) {
+export async function startImagePublication(db: Db, raw: unknown, actor: string, hosted = false) {
   await authorizeImageReview(db, actor, true);
   const parsed = imagePublicationStartSchema.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
@@ -62,15 +65,24 @@ export async function startImagePublication(db: Db, raw: unknown, actor: string)
       const now = new Date();
       const last = await db.collection<Document & { _id: string }>('image_review_items').find({ status: 'approved', reviewedAt: { $lte: now } }, { session, projection: { _id: 1 }, ...options }).sort({ _id: -1 }).limit(1).next();
       await jobs(db).insertOne({ _id: id, actor, phase: 'preparing', resumePhase: 'preparing', createdAt: now, updatedAt: now, boundary: last?._id ?? null, cursor: null,
-        preparedImages: 0, publishedImages: 0, skippedImages: 0, totalProducts: 0, processedProducts: 0, error: null }, { session });
+        preparedImages: 0, publishedImages: 0, skippedImages: 0, totalProducts: 0, processedProducts: 0, error: null, ...(hosted ? { hosted: true } : {}) }, { session });
       await control(db).updateOne({ _id: 'active' }, { $set: { jobId: id } }, { session });
+    } else if (hosted && !current.hosted) {
+      // A run saved for the operations computer is waiting. This start moves it to the server. If nothing was ever prepared it
+      // also takes in everything approved since it was saved; a partly finished run keeps its captured approvals.
+      const now = new Date(), untouched = current.preparedImages === 0 && (!current.leaseUntil || current.leaseUntil <= now);
+      const last = untouched ? await db.collection<Document & { _id: string }>('image_review_items').find({ status: 'approved', reviewedAt: { $lte: now } }, { session, projection: { _id: 1 }, ...options }).sort({ _id: -1 }).limit(1).next() : null;
+      await jobs(db).updateOne({ _id: current._id }, { $set: { hosted: true, actor, error: null, updatedAt: now,
+        ...(untouched ? { phase: 'preparing' as const, resumePhase: 'preparing' as const, createdAt: now, boundary: last?._id ?? null, cursor: null }
+          : { phase: current.phase === 'paused' ? current.resumePhase : current.phase }) } }, { session });
+      await db.collection('image_review_publication_actions').insertOne({ jobId: current._id, actor, action: 'start-on-server', createdAt: now }, { session });
     }
     await requests.insertOne({ _id: requestId, actor, jobId: id!, createdAt: new Date() }, { session });
     return id!;
   });
   return status(db, await jobs(db).findOne({ _id: jobId }, options));
 }
-export async function changeImagePublication(db: Db, raw: unknown, actor: string, action: 'pause' | 'resume') {
+export async function changeImagePublication(db: Db, raw: unknown, actor: string, action: 'pause' | 'resume', hosted = false) {
   await authorizeImageReview(db, actor, true);
   const parsed = imagePublicationActionSchema.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
@@ -82,7 +94,7 @@ export async function changeImagePublication(db: Db, raw: unknown, actor: string
     if (action === 'resume' && job.leaseUntil && job.leaseUntil > new Date()) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
     await jobs(db).updateOne({ _id: job._id }, { $set: action === 'pause'
       ? { phase: 'paused', resumePhase: job.phase === 'preparing' ? 'preparing' : 'publishing', updatedAt: new Date() }
-      : { phase: job.resumePhase, actor, error: null, updatedAt: new Date() } }, { session });
+      : { phase: job.resumePhase, actor, error: null, updatedAt: new Date(), ...(hosted ? { hosted: true } : {}) } }, { session });
     await db.collection('image_review_publication_actions').insertOne({ jobId: job._id, actor, action, createdAt: new Date() }, { session });
   });
   return status(db, await jobs(db).findOne({ _id: parsed.data.jobId }, options));
@@ -139,8 +151,8 @@ function reviewFailure(error: unknown): string | null {
   return null;
 }
 /** One bounded, leased step. Multiple API instances may safely call this worker. */
-export async function processImagePublication(db: Db, cloudName?: string, transport: typeof fetch = fetch, jobId?: string) {
-  const job = await jobs(db).findOneAndUpdate({ ...(jobId ? { _id: jobId } : {}), phase: { $in: ['preparing', 'publishing'] }, $or: [{ leaseUntil: { $exists: false } }, { leaseUntil: { $lte: new Date() } }] },
+export async function processImagePublication(db: Db, cloudName?: string, transport: typeof fetch = fetch, jobId?: string, hostedOnly = false) {
+  const job = await jobs(db).findOneAndUpdate({ ...(jobId ? { _id: jobId } : {}), ...(hostedOnly ? { hosted: true } : {}), phase: { $in: ['preparing', 'publishing'] }, $or: [{ leaseUntil: { $exists: false } }, { leaseUntil: { $lte: new Date() } }] },
     { $set: { leaseToken: randomUUID(), leaseUntil: new Date(Date.now() + leaseMs) } }, { ...options, sort: { createdAt: 1 }, returnDocument: 'after' });
   if (!job) return false;
   try {
@@ -196,7 +208,7 @@ export function imagePublicationWorker(getDb: () => Promise<Db> | Db, configurat
   // Starting, resuming or pausing a run writes its job document, which wakes this worker; it then keeps going until nothing is queued.
   const worker = createEventWorker(async () => {
     if (configuration.enabled?.() === false) return false;
-    return (await processImagePublication(await getDb(), configuration.cloudName, configuration.transport)) !== false;
-  }, { local: configuration.local, collections: ['image_review_publications'], debounceMs: 250, drainMs: configuration.intervalMs ?? 1500 });
+    return (await processImagePublication(await getDb(), configuration.cloudName, configuration.transport, undefined, true)) !== false;
+  }, { local: configuration.local, collections: ['image_review_publications'], debounceMs: 250, drainMs: configuration.intervalMs ?? 400 });
   return { stop: () => worker.stop() };
 }

@@ -54,6 +54,7 @@ export * from './location';
 export { productFamilyFields, productFamilySchema, familyFieldNames, optionFields, optionLabels, familyProfile, validateProductFamily, variantLabel, sameFamilyIdentity, strengthSignature, type ProductFamilyFields } from './product-family';
 
 export * from './product-content';
+export * from './admin-catalogue';
 
 export * from "./growth";
 export * from './serviceability';

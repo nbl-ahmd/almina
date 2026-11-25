@@ -7,19 +7,13 @@ let brandLoad: Promise<string[]> | null = null;
 
 export async function loadBrands(): Promise<string[]> {
   if (brandCache) return brandCache;
+  // One request for every brand name, so opening the editor does not spend the staff request allowance page by page.
   brandLoad ??= (async () => {
-    const found = new Set<string>();
-    // Bounded scan: up to 1,000 products, 100 per request. New brands entered here are added to the cache directly.
-    for (let offset = 0; offset < 1000; offset += 100) {
-      const page = await adminRequest(`products?limit=100&offset=${offset}`);
-      const rows = Array.isArray(page) ? page : [];
-      for (const row of rows) {
-        const brand = (row as { brand?: unknown }).brand;
-        if (typeof brand === 'string' && brand.trim()) found.add(brand.trim());
-      }
-      if (rows.length < 100) break;
-    }
-    brandCache = [...found].sort((a, b) => a.localeCompare(b));
+    const response = await fetch('/api/growth/admin/brands', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Brands could not be loaded. Type the brand and select it again.');
+    const body = await response.json() as { data?: unknown };
+    const found = Array.isArray(body.data) ? body.data.filter((brand): brand is string => typeof brand === 'string' && Boolean(brand.trim())).map(brand => brand.trim()) : [];
+    brandCache = [...new Set(found)].sort((a, b) => a.localeCompare(b));
     return brandCache;
   })().finally(() => { brandLoad = null; });
   return brandLoad;

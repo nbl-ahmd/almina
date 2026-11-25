@@ -68,6 +68,16 @@ productRouter.get('/search', async (req, res) => {
 productRouter.get('/needs-action', async (req, res) => {
   res.json(await catalogDomain().catalogueNeedsAction(await catalogDb(req), req.query));
 });
+productRouter.get('/catalogue', async (req, res) => {
+  res.json(await catalogDomain().adminCatalogue(await catalogDb(req), req.query));
+});
+productRouter.get('/queue', async (req, res) => {
+  res.json(await catalogDomain().adminCatalogueQueue(await catalogDb(req), req.query));
+});
+productRouter.post('/visibility', async (req, res) => {
+  if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
+  res.json(await catalogDomain().setProductsVisibility(await catalogDb(req), req.body, req.identity.id));
+});
 productRouter.get('/:id', async (req, res) => {
   if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   res.json(await catalogDomain().retainedProductDetail(await catalogDb(req), { id: req.params.id }, staffRead(req)));

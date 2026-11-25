@@ -12,6 +12,7 @@ import type { Express } from 'express';
 import { migrateCommerce } from '../migrations/commerce.js';
 import { requestEmailCode } from '../../apps/api/src/modules/growth/customers.js';
 import { cloudinarySignature } from '../../apps/api/src/modules/media/cloudinary.js';
+import { processImagePublication } from '../../apps/api/src/modules/media/image-review-publication.js';
 
 const require = createRequire(import.meta.url);
 const express = require('../../backend/node_modules/express');
@@ -60,10 +61,21 @@ app.use(express.json({ limit: '128kb' }));
 app.post('/__fixture/products', async (req, res) => {
   const rows = Array.isArray(req.body?.products) ? req.body.products as Record<string, unknown>[] : [];
   const docs = rows.map((row, index) => ({ product_id: `PD${7000 + fixtureCase * 100 + index}`, category: new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa'), price: 12, stock: 5, productType: 'general',
-    catalogManaged: true, disabled: false, published: true, images: [], ...row }));
-  if (docs.length > 50) return res.status(400).end();
+    catalogManaged: true, disabled: false, published: true, images: [], ...row,
+    // A fixed identifier lets a test predict catalogue order.
+    ...(typeof (row._id as { $oid?: unknown } | undefined)?.$oid === 'string' ? { _id: new ObjectId((row._id as { $oid: string }).$oid) } : {}) }));
+  if (docs.length > 200) return res.status(400).end();
   await db.collection('products').insertMany(docs);
   res.json({ productIds: docs.map(doc => doc.product_id) });
+});
+// Runs a server publication an administrator started, standing in for the API worker. The original image bytes come from the test.
+app.post('/__fixture/publication-drain', async (req, res, next) => {
+  try {
+    const bytes = Buffer.from(String(req.body?.image ?? ''), 'base64');
+    let steps = 0;
+    while (steps < 200 && await processImagePublication(db, 'synthetic', async () => new Response(bytes), undefined, true)) steps++;
+    res.json({ steps });
+  } catch (error) { next(error); }
 });
 app.get('/__fixture/health', (_req, res) => res.send(fixtureHealth('almina-verification-commerce', process.env.AL_MINA_FIXTURE_RUN_ID)));
 // Stands in for a browser-direct Cloudinary upload: the test records that the asset now exists, as Cloudinary would.

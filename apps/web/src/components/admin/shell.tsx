@@ -14,7 +14,6 @@ import {
   GlobeAltIcon,
   ChatBubbleLeftRightIcon,
   ChevronRightIcon,
-  ClipboardDocumentCheckIcon,
   Cog6ToothIcon,
   CubeIcon,
   DocumentArrowUpIcon,
@@ -22,6 +21,7 @@ import {
   PhotoIcon,
   MagnifyingGlassIcon,
   RectangleGroupIcon,
+  ClipboardDocumentCheckIcon,
   ShoppingBagIcon,
   Squares2X2Icon,
   TableCellsIcon,
@@ -44,7 +44,6 @@ const groups: NavGroup[] = [
     items: [
       { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
       { id: 'orders', label: 'Orders', href: '/admin/orders', icon: ShoppingBagIcon },
-      { id: 'needs-action', label: 'Needs action', href: '/admin/needs-action', icon: ClipboardDocumentCheckIcon },
     ],
   },
   {
@@ -83,6 +82,15 @@ const groups: NavGroup[] = [
       { id: 'batch', label: 'Product recovery', href: '/admin/batch', icon: DocumentArrowUpIcon },
     ],
   },
+];
+
+/* Daily catalogue queues, one keystroke away from anywhere. */
+const shortcuts = [
+  { id: 'add-product', label: 'Add a product', href: '/admin/products/new', group: 'Shortcuts', icon: CubeIcon },
+  { id: 'missing-photo', label: 'Products missing a photo', href: '/admin/products?view=hidden&filter=missing-photo', group: 'Shortcuts', icon: PhotoIcon },
+  { id: 'ready', label: 'Products ready to go live', href: '/admin/products?view=hidden&filter=ready', group: 'Shortcuts', icon: CubeIcon },
+  { id: 'needs-type', label: 'Products without a type', href: '/admin/products?view=hidden&filter=classification', group: 'Shortcuts', icon: ClipboardDocumentCheckIcon },
+  { id: 'pending-orders', label: 'Pending orders', href: '/admin/orders?status=pending', group: 'Shortcuts', icon: ShoppingBagIcon },
 ];
 
 /* The phone tab bar keeps the four most-used destinations, then opens the full
@@ -241,9 +249,9 @@ export function AdminShell({ user, allowed, children }: {
               const active = current?.id === item.id;
               return (
                 <Link key={item.id} href={item.href} prefetch={false} aria-current={active ? 'page' : undefined}
-                  className={cn('flex min-h-14 min-w-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] font-medium no-underline', active ? 'bg-fill text-ink' : 'text-mute')}>
+                  className={cn('flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] font-medium no-underline', active ? 'bg-fill text-ink' : 'text-mute')}>
                   <Icon className="size-5" aria-hidden="true" />
-                  {item.label === 'Needs action' ? 'Review' : item.label}
+                  <span className="max-w-full truncate max-[380px]:text-[10px]">{item.label}</span>
                 </Link>
               );
             })}
@@ -300,7 +308,7 @@ export function AdminShell({ user, allowed, children }: {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} items={everyItem.map(item => ({ id: item.id, label: item.label, href: item.href, group: navGroups.find(group => group.items.includes(item))!.label, icon: item.icon }))} canSearchProducts={canSearch} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} items={[...everyItem.map(item => ({ id: item.id, label: item.label, href: item.href, group: navGroups.find(group => group.items.includes(item))!.label, icon: item.icon })), ...(user.role === 'admin' ? shortcuts : [])]} canSearchProducts={canSearch} />
       <div ref={setPortal} />
     </TipProvider>
   );

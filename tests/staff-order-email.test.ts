@@ -42,7 +42,9 @@ test('each new order is e-mailed once, history is not announced, and a failed se
     const fresh = await db.collection('orders').insertOne({ orderId: 'OD2', totals: { totalMinor: 2500 }, customer: { city: 'Ajman' }, lines: [{ name: 'Item', quantity: 1 }] });
     failNext = true;
     await db.collection('order_outbox').insertOne({ orderId: fresh.insertedId, state: 'pending', createdAt: new Date() });
-    await worker.tick(); assert.equal(failures, 1); assert.equal(sent.length, 0);
+    // The first call may join a background poll that began before this job existed; the second always starts after it.
+    // The failed job then waits out its retry delay, so a further run cannot send it.
+    await worker.tick(); await worker.tick(); assert.equal(failures, 1); assert.equal(sent.length, 0);
     await db.collection('order_outbox').updateOne({ orderId: fresh.insertedId }, { $unset: { staffEmailNextAttemptAt: '' } });
     await worker.tick(); await worker.tick(); await worker.tick();
     assert.equal(sent.length, 1); assert.match(sent[0]!, /OD2/);

@@ -408,7 +408,7 @@ test('background worker stops claiming work and waits for its active image read 
   const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_stop_' + randomUUID().replaceAll('-', ''));
   try {
     const { actor } = await publicationFixture(db, [{ id: 'PD_TEST', images: 1 }]);
-    await startImagePublication(db, { requestId: randomUUID() }, actor);
+    await startImagePublication(db, { requestId: randomUUID() }, actor, true);
     await processImagePublication(db, 'synthetic'); await processImagePublication(db, 'synthetic');
     let release!: () => void, entered!: () => void;
     const wait = new Promise<void>(resolve => { release = resolve; }), reading = new Promise<void>(resolve => { entered = resolve; });
@@ -444,6 +444,35 @@ test('local publication runs only the selected job and resumes without repeating
     await changeImagePublication(db, { jobId }, actor, 'resume');
     assert.equal(await runImagePublicationLocally(db, jobId, 'synthetic', ready, async () => assert.fail('already verified')), 'complete');
     assert.equal(await db.collection('media_history').countDocuments(), 1);
+  } finally { await db.dropDatabase(); await client.close(); }
+});
+test('the server worker never starts a run saved for the operations computer; one administrator start publishes everything approved', { skip: !uri }, async () => {
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_image_waiting_' + randomUUID().replaceAll('-', ''));
+  try {
+    const { actor, other, staff } = await publicationFixture(db, [{ id: 'PD_TEST', images: 1 }]);
+    // Production state before this change: a run queued in local mode that no operations computer ever picked up.
+    const waiting = (await startImagePublication(db, { requestId: randomUUID() }, actor)).publication!;
+    assert.equal(waiting.started, false); assert.equal(waiting.phase, 'preparing');
+    // Deploying turns the server worker on. It must not touch the saved run: publishing changes what customers see.
+    assert.equal(await processImagePublication(db, 'synthetic', async () => assert.fail('nothing may be published'), undefined, true), false);
+    const worker = imagePublicationWorker(() => db, { cloudName: 'synthetic', intervalMs: 10, transport: async () => assert.fail('nothing may be published') });
+    await worker.stop();
+    assert.equal((await db.collection('products').findOne({ product_id: 'PD_TEST' }))!.cloudinaryImages, undefined);
+    // Approved after the stale run was saved.
+    await db.collection('products').insertOne({ product_id: 'PD_LATER', name: 'Acme Skin Cream 50 g', brand: 'Acme', productForm: 'Cream', packLabel: '50 g', price: 9, stock: 1, published: true, disabled: false });
+    await stageImageReview(db, pack([source('later-approval', 'PD_LATER')]), actor, 'synthetic');
+    const pending = (await listImageReviews(db, { status: 'pending' }, actor)).items[0]!;
+    await decideImageReview(db, decision(await getImageReview(db, pending.itemId, staff)), staff);
+    await assert.rejects(startImagePublication(db, { requestId: randomUUID() }, staff, true), { status: 403 });
+    const started = (await startImagePublication(db, { requestId: randomUUID() }, other, true)).publication!;
+    assert.equal(started.jobId, waiting.jobId); assert.equal(started.started, true);
+    assert.equal(await db.collection('image_review_publication_actions').countDocuments({ action: 'start-on-server', actor: other }), 1);
+    for (let step = 0; step < 20; step++) if (!await processImagePublication(db, 'synthetic', async () => new Response(bytes), undefined, true)) break;
+    const done = (await getImagePublication(db, actor)).publication!;
+    assert.equal(done.phase, 'complete'); assert.equal(done.publishedImages, 2); assert.equal(done.processedProducts, 2);
+    // Photos only: neither product's visibility changes.
+    assert.equal((await db.collection('products').findOne({ product_id: 'PD_TEST' }))!.disabled, true);
+    assert.equal((await db.collection('products').findOne({ product_id: 'PD_LATER' }))!.disabled, false);
   } finally { await db.dropDatabase(); await client.close(); }
 });
 test('automatic holds preserve a newer pharmacist decision and original immutable evidence', { skip: !uri }, async () => {

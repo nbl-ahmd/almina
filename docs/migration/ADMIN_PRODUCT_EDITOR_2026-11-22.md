@@ -17,6 +17,9 @@ Goal: editing or adding many products quickly. Required to save: name, brand, ca
 - Product list: price and stock can be edited in place (Enter saves). A publish switch on each row. Selected rows can be exported or archived.
 - Edit page: Previous / Next through the catalogue, Save & next, Save & add another (new products), Ctrl/Cmd+S.
 
+- 25 November: Previous / Next / Save & next follow the originating list for every product. See
+  [admin workflows](ADMIN_WORKFLOWS_2026-11-25.md).
+
 ## Decisions to review
 - Defaulting product type to General means an OTC medicine saved without changing the type is classed as General. Pharmacist classification is still enforced for Prescription.
 - Whether description and pack size should remain required to publish is a server policy choice; relaxing it means changing `storePublicationIssues`.

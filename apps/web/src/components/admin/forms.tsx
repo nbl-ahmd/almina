@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { SwitchRow } from "./kit";
 import { OfferField } from "./offer-field";
 import { PendingPhotosContext } from "./photo-context";
-import { uploadProductPhotos } from "./direct-upload";
+import { uploadWithReceipt } from '../../lib/admin/photo-upload';
 import { Combobox, type ComboOption } from "./shadcn/combobox";
 import { createCategory, loadBrands, rememberBrand } from "../../lib/admin/catalogue-options";
 import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
@@ -17,6 +17,9 @@ import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { adminRequest } from "./controls";
 import { useConfirm } from "./confirm-dialog";
 import { whatsappRetryKey } from '../../lib/admin/whatsapp-retry';
+import { readCatalogueContext, type CatalogueContext } from '@almina/contracts';
+import { editorHref, listHref } from '../../lib/admin/catalogue-links';
+import { nextInQueue } from '../../lib/admin/catalogue-client';
 
 export type FieldKind =
   | "text"
@@ -435,6 +438,8 @@ function groups(fields: Field[]): Section[] {
   return sections;
 }
 
+const keepPublishingKey = 'almina-editor-keep-publishing';
+type SaveMode = 'save' | 'next' | 'another';
 export function AdminForm({
   path,
   method = "POST",
@@ -448,7 +453,9 @@ export function AdminForm({
   productChecks,
   publishDefault = true,
   productLive,
-  nextHref,
+  queue,
+  mediaRevision = 0,
+  typeUnconfirmed = false,
 }: {
   path: string;
   method?: string;
@@ -464,8 +471,12 @@ export function AdminForm({
   publishDefault?: boolean;
   /** Whether the saved record is currently live. Defaults to publishDefault. */
   productLive?: boolean;
-  /** Product editor: where "Save & next" goes, for working through many products quickly. */
-  nextHref?: string;
+  /** Product editor: the list being worked through and, when the page could read it, the product that follows. */
+  queue?: { context: CatalogueContext; nextId: string | null };
+  /** Gallery revision of the product being edited, for uploading chosen photos with the save. */
+  mediaRevision?: number;
+  /** The saved product has no confirmed type: it is never filled in or published without a person choosing one. */
+  typeUnconfirmed?: boolean;
 }) {
   const router = useRouter();
   const { ask, dialog } = useConfirm();
@@ -475,17 +486,23 @@ export function AdminForm({
   useEffect(() => { if (message) toast.success(message); }, [message]);
   useEffect(() => {
     if (!path.startsWith('products')) return;
-    const onKey = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); formRef.current?.requestSubmit(); } };
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      const submit = (mode: SaveMode) => { const button = formRef.current?.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`); if (button && !button.disabled) formRef.current?.requestSubmit(button); };
+      if (event.key.toLowerCase() === 's') { event.preventDefault(); submit('save'); }
+      else if (event.key === 'Enter' && path !== 'products') { event.preventDefault(); submit('next'); }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [path]);
   const [version, setVersion] = useState(0);
   const productEditor = path === 'products' || path.startsWith('products/');
   const productId = productEditor && path !== 'products' ? path.split('/')[1] : undefined;
+  // Opening the next product starts at its top, not where the previous one was scrolled to.
+  useEffect(() => { if (productId) window.scrollTo({ top: 0 }); }, [productId]);
   const pricing = useProductTrade(productId, productAudience);
   const formRef = useRef<HTMLFormElement>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-  const saveMode = useRef<'save' | 'next' | 'another'>('save');
   const [stockChanged, setStockChanged] = useState(false);
   const [published, setPublished] = useState(publishDefault);
   const [partialSave, setPartialSave] = useState<{ terms: TradeTerms; created: boolean } | null>(null);
@@ -493,9 +510,41 @@ export function AdminForm({
   if (productEditor) sections.sort((a, b) => Number(a.advanced) - Number(b.advanced));
   const singleOpenSection = sections.length === 1 && !sections[0]!.title;
   const liveAtLoad = productLive ?? publishDefault;
+  // Working through hidden products, an administrator can keep "publish" on for the following ones. It is an explicit
+  // choice for this browser tab, shown beside the switch.
+  const [keepPublishing, setKeepPublishing] = useState(false);
+  const wasHidden = Boolean(productId) && !liveAtLoad;
+  const prescription = fields.find(field => field.name === 'productType')?.value === 'prescription';
+  useEffect(() => {
+    if (!wasHidden || prescription || typeUnconfirmed) return;
+    let wanted = false;
+    try { wanted = sessionStorage.getItem(keepPublishingKey) === '1'; } catch { /* private browsing */ }
+    if (!wanted) return;
+    const timer = window.setTimeout(() => { setKeepPublishing(true); setPublished(true); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [wasHidden, prescription, typeUnconfirmed]);
+  function rememberPublishing(next: boolean) {
+    setKeepPublishing(next);
+    try { if (next) sessionStorage.setItem(keepPublishingKey, '1'); else sessionStorage.removeItem(keepPublishingKey); } catch { /* private browsing */ }
+  }
+  async function openNext(current: string) {
+    const context = queue?.context ?? readCatalogueContext({});
+    try {
+      // The following product does not change when this one is saved, so the page's answer is used when it has one.
+      const nextId = queue?.nextId ?? (await nextInQueue(current, context, seconds => toast.message(`Pausing ${seconds} seconds before opening the next product.`))).nextId;
+      if (nextId) router.push(editorHref(nextId, context));
+      else { toast.success('That was the last product in this list.'); router.push(listHref(context)); }
+    } catch (failure) {
+      // The product is saved; only the lookup failed. Stay here with the button available.
+      router.refresh();
+      setError(`Saved. The next product could not be opened: ${failure instanceof Error ? failure.message : 'the request failed.'} Select Save & next again.`);
+    }
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    // Which save button was used; pressing Enter in a field is a plain save.
+    const mode = ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('data-mode') ?? 'save') as SaveMode;
     if (confirm && !(await ask(confirm, { action: label ?? 'Save' }))) return;
     if (partialSave) return;
     let terms: TradeTerms | undefined;
@@ -523,7 +572,14 @@ export function AdminForm({
     if (productEditor) {
       // The sale price is the source of truth; the store derives "on sale" from it.
       data.set('sale', data.get('salePrice') ? 'true' : 'false');
-      if (!data.get('productType')) data.set('productType', 'general');
+      if (!data.get('productType')) {
+        if (!typeUnconfirmed) data.set('productType', 'general');
+        else if (publish && !liveAtLoad) {
+          setPending(false);
+          setError('Choose the product type before publishing, or switch to Draft to save without one.');
+          return;
+        } else data.delete('productType');
+      }
       const brand = String(data.get('brand') ?? '').trim();
       const category = String(data.get('category') ?? '').trim();
       const required = [!String(data.get('name') ?? '').trim() ? 'name' : '', !brand ? 'brand' : '', !category ? 'category' : '', data.get('price') === '' ? 'price' : '', data.get('stock') === '' ? 'stock' : ''].filter(Boolean);
@@ -574,21 +630,28 @@ export function AdminForm({
       setStockChanged(false);
       if (productEditor) {
         if (!savedProductId) throw new Error('Product saved, but its identifier was not returned. Reload Products to continue.');
-        if (publish !== liveAtLoad) await adminRequest(`products/publish/${savedProductId}`, 'PUT', {});
-        if (path === 'products' && photoFiles.length) {
+        // Photos go up before the product is published, so it never appears in the shop without them.
+        if (photoFiles.length) {
           try {
-            await uploadProductPhotos(savedProductId, photoFiles, { uploadKey: crypto.randomUUID(), expectedMediaRevision: 0 });
-          } catch (failure) { toast.error(`Product saved, but photos were not added: ${failure instanceof Error ? failure.message : 'upload failed'} Add them on the product page.`); }
+            await uploadWithReceipt(savedProductId, photoFiles, path === 'products' ? 0 : mediaRevision, seconds => toast.message(`Pausing ${seconds} seconds, then uploading.`));
+            setPhotoFiles([]);
+          } catch (failure) {
+            const reason = failure instanceof Error ? failure.message : 'upload failed.';
+            if (path !== 'products') {
+              // Stay on this product with the photos still chosen. Refresh issues a new save receipt for the retry.
+              router.refresh();
+              setError(`Details saved. The photos were not added, so nothing else changed: ${reason} Select Save again.`);
+              return;
+            }
+            toast.error(`Product saved, but photos were not added: ${reason} Add them on the product page.`);
+          }
         }
-        const mode = saveMode.current;
-        saveMode.current = 'save';
-        const state = publish ? 'published' : 'draft';
+        if (publish !== liveAtLoad) await adminRequest(`products/publish/${savedProductId}`, 'PUT', {});
         toast.success(downgraded || (publish ? 'Saved and live' : 'Saved as draft'));
-        if (mode === 'next' && nextHref) router.push(nextHref);
+        if (mode === 'next' && productId) await openNext(productId);
         else if (mode === 'another') router.push('/admin/products/new');
         else if (path === 'products') router.push(`/admin/products/${savedProductId}`);
         else { setPublished(publish); router.refresh(); setVersion(value => value + 1); setStockChanged(false); }
-        void state;
         return;
       }
       setMessage(
@@ -608,13 +671,15 @@ export function AdminForm({
     }
   }
   const saveControls = (
-      <div className="sticky bottom-20 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4 border border-line shadow-pop md:bottom-3">
-        <div className="min-w-0 flex-1 text-[13px] max-sm:[&>p:not([role=alert])]:hidden">
+      // Only the long product editor keeps its actions in view; a short form in a card places them after its fields.
+      <div className={productEditor ? "sticky bottom-20 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4 border border-line shadow-pop md:bottom-3" : "flex flex-wrap items-center justify-end gap-3"}>
+        <div className={`min-w-0 text-[13px] max-sm:[&>p:not([role=alert])]:hidden ${error ? 'basis-full' : 'flex-1'}`}>
           {error ? <p role="alert" className="m-0 rounded-lg bg-bad-soft px-3 py-2 text-[13px] font-medium text-bad">{error}</p> : null}
           {!error && !message && footerNote ? <p className="m-0 text-xs text-mute">{footerNote}</p> : null}
           {!error && !message && productEditor ? <p className="m-0 text-xs text-mute">{published ? 'Saving publishes this product to the storefront.' : 'Saving keeps this product hidden from customers.'}</p> : null}
         </div>
         {productEditor ? <SwitchRow className="border-0 px-0 py-0 max-sm:[&_span_span]:hidden sm:w-auto sm:min-w-56" checked={published} disabled={pending} onCheckedChange={setPublished} title={published ? 'Published' : 'Draft'} hint={published ? 'Visible in the storefront' : 'Hidden from customers'} /> : null}
+        {wasHidden && published ? <label className="flex items-center gap-2 text-xs text-ink-2"><input type="checkbox" checked={keepPublishing} disabled={pending} onChange={event => rememberPublishing(event.target.checked)} />Publish the next hidden ones too</label> : null}
         {partialSave ? <button className={buttonVariants({ variant: "default" })} type="button" disabled={pending} onClick={async () => {
           setPending(true);
           try {
@@ -630,14 +695,14 @@ export function AdminForm({
           } catch (failure) { setError(failure instanceof Error ? failure.message : 'Wholesale pricing could not be saved.'); }
           finally { setPending(false); }
         }}>{pending ? 'Retrying…' : 'Retry wholesale pricing'}</button> : <>
-          {productEditor && nextHref ? <button type="submit" onClick={() => { saveMode.current = 'next'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & next</button> : null}
-          {productEditor && path === 'products' ? <button type="submit" onClick={() => { saveMode.current = 'another'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & add another</button> : null}
-          <button type="submit" onClick={() => { saveMode.current = 'save'; }} className={buttonVariants({ variant: "default" })} disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : productEditor ? (published ? 'Save & publish' : 'Save draft') : label}</button>
+          {productId ? <button type="submit" data-mode="next" aria-keyshortcuts="Control+Enter Meta+Enter" className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>{published && !liveAtLoad ? 'Publish & next' : 'Save & next'}</button> : null}
+          {productEditor && path === 'products' ? <button type="submit" data-mode="another" className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & add another</button> : null}
+          <button type="submit" data-mode="save" className={buttonVariants({ variant: "default" })} disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : productEditor ? (published ? 'Save & publish' : 'Save draft') : label}</button>
         </>}
         {partialSave ? <Link href={`/admin/products/${partialSave.terms.productId}`}>Open saved product</Link> : null}
       </div>
   );
-  const ordinarySections = sections.map((section, index) => <section className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6" key={`${section.title}-${index}`}>
+  const ordinarySections = sections.map((section, index) => <section className={`grid gap-4 ${index ? 'border-t border-line pt-4' : ''}`} key={`${section.title}-${index}`}>
     {!singleOpenSection ? <div className="[&_h2]:m-0 [&_h2]:text-base [&_h2]:font-semibold [&_p]:m-0 [&_p]:mt-0.5 [&_p]:text-[13px] [&_p]:text-mute"><div><h2>{section.title || 'Details'}</h2>{section.description ? <p>{section.description}</p> : null}</div></div> : null}
     <div className="grid gap-4 sm:grid-cols-2">{section.fields.map(renderField)}</div>
   </section>);
@@ -742,7 +807,7 @@ export function BulkTemplates({
           <p className="m-0 text-[13px] text-mute">Send one approved template to a reviewed recipient list. Delivery requires a provider report.</p>
         </div>
       </div>
-      <div className="grid gap-4 rounded-xl bg-surface p-5 border border-line md:p-6">
+      <div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2" htmlFor="recipient-csv">
             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
@@ -798,8 +863,8 @@ export function BulkTemplates({
           ) : null}
         </div>
       </div>
-      <fieldset disabled={pending}>
-        <legend>Recipients</legend>
+      <fieldset className="m-0 border-0 p-0" disabled={pending}>
+        <legend className="mb-1.5 text-[13px] font-medium">Recipients</legend>
         <div className="grid max-h-80 gap-1 overflow-y-auto rounded-lg bg-soft p-2 [&_label]:flex [&_label]:items-center [&_label]:gap-3 [&_label]:rounded-lg [&_label]:p-2.5 [&_label]:text-[13px]">
           {recipients.map((item) => {
             const eligible =
@@ -826,12 +891,12 @@ export function BulkTemplates({
           })}
         </div>
       </fieldset>
-      <div className="grid gap-3 rounded-xl bg-surface p-4 border border-line">
-        <label htmlFor="bulk-template">
+      <div className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <label className="grid gap-1.5 text-[13px] font-medium" htmlFor="bulk-template">
           Template name
           <input className={inputClass} id="bulk-template" name="template" required />
         </label>
-        <label htmlFor="bulk-link">
+        <label className="grid gap-1.5 text-[13px] font-medium" htmlFor="bulk-link">
           Image URL
           <input className={inputClass} id="bulk-link" name="link" type="url" required />
         </label>

@@ -10,7 +10,11 @@ import { imageReviewListResponseSchema } from '@almina/contracts';
 import {MarketingManager} from '../../../../../components/admin/marketing-manager';
 import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
-import { NeedsAction } from '../../../../../components/admin/needs-action';
+import { readCatalogueContext, catalogueContextParams, type CatalogueList, catalogueViewLabels, catalogueFilterLabels, type CatalogueQueue } from '@almina/contracts';
+import { editorHref, listHref, queueQuery } from '../../../../../lib/admin/catalogue-links';
+import { BulkPhotoUpload } from '../../../../../components/admin/bulk-photos';
+import { CatalogueFiltersBar, CataloguePager } from '../../../../../components/admin/catalogue-browser';
+import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
 import { operationsSnapshotSchema } from '@almina/contracts';
@@ -35,6 +39,7 @@ import {
   Card,
   CreatePanel,
   FilterChips,
+  Note,
   PageHeader,
   Pager,
   buttonVariants,
@@ -58,13 +63,19 @@ import { ProductsTable } from '../../../../../components/admin/products-table';
 import { OrdersTable } from '../../../../../components/admin/orders-table';
 type Query = Record<string, string | string[] | undefined>;
 /** Thumbnail URL for the product list: catalogue CDN first, legacy media origin as the fallback. */
-function thumbnail(item: AdminRecord): string | null {
-  const cdn = Array.isArray(item.cloudinaryImages) ? cloudinaryImage(item.cloudinaryImages[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME) : null;
+function thumbnail(image: string | null): string | null {
+  if (!image) return null;
+  const cdn = cloudinaryImage(image, getWebEnvironment().CLOUDINARY_CLOUD_NAME);
   if (cdn) return cdn;
-  const first = item.image ?? (Array.isArray(item.images) ? item.images[0] : undefined);
-  return typeof first === 'string' && /^[A-Za-z0-9_.-]+$/.test(first) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${first}` : null;
+  return /^[A-Za-z0-9_.-]+$/.test(image) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${image}` : null;
 }
 const PAGE_SIZE = 25;
+function CategoryThumb({ image }: { image: string }) {
+  const filename = /^[A-Za-z0-9_.-]+\.[A-Za-z]{2,5}$/.test(image) ? image : "";
+  // eslint-disable-next-line @next/next/no-img-element -- legacy category media is served by the API origin.
+  return filename ? <img src={`${getWebEnvironment().LEGACY_API_ORIGIN}/api/category/images/${filename}`} alt="" width={40} height={40} loading="lazy" className="size-10 shrink-0 rounded-lg bg-fill object-cover" />
+    : <span aria-hidden="true" className="size-10 shrink-0 rounded-lg bg-fill" />;
+}
 /** Lists request one extra row so "Next" only appears when another page exists. */
 function lookahead(qs: URLSearchParams) {
   const next = new URLSearchParams(qs);
@@ -137,14 +148,12 @@ export default async function AdminPage({
       </>
     );
   }
-  if (section === 'needs-action') {
-    // Fixed page size keeps count labels and navigation consistent.
-    qs.set('limit', '25');
-    return <NeedsAction data={await adminRead('products/needs-action', qs)}
-      {...(typeof query.q === 'string' ? { q: query.q } : {})}
-      {...(typeof query.reason === 'string' ? { reason: query.reason } : {})}
-      {...(typeof query.status === 'string' ? { status: query.status } : {})} />;
-  }
+  // The review queue is now a set of filters on Products; old links and bookmarks keep working.
+  if (section === 'needs-action') redirect(listHref(readCatalogueContext({
+    view: query.status === 'published' ? 'live' : query.status === 'all' ? 'all' : 'hidden',
+    filter: query.reason === 'images' ? 'missing-photo' : query.reason,
+    q: query.q,
+  })));
   if (section === "dashboard") {
     return <AdminDashboard user={user} days={reportDays(query.days)} />;
   }
@@ -163,7 +172,10 @@ export default async function AdminPage({
       const categories = rows(
         await adminRead("category", new URLSearchParams({ limit: "100" })),
       );
+      // On a new product, ?category= preselects it. On an existing product the same parameter is only the list filter:
+      // it must never change which category the saved product has.
       const selectedCategory =
+        detail === "new" &&
         typeof query.category === "string" &&
         /^[a-f0-9]{24}$/i.test(query.category)
           ? query.category
@@ -179,17 +191,14 @@ export default async function AdminPage({
         detail === "new"
           ? undefined
           : record(await adminRead(`products/${detail}`));
-      // Neighbours in the current catalogue order, so many products can be edited without returning to the list.
-      let previousHref: string | undefined, nextHref: string | undefined, position = '';
-      if (product) {
-        const neighbours = rows(await adminRead("products", new URLSearchParams({ limit: "100" })).catch(() => []));
-        const index = neighbours.findIndex(item => display(item._id) === detail);
-        if (index >= 0) {
-          if (index > 0) previousHref = `/admin/products/${display(neighbours[index - 1]!._id)}`;
-          if (index < neighbours.length - 1) nextHref = `/admin/products/${display(neighbours[index + 1]!._id)}`;
-          position = `${index + 1} of ${neighbours.length >= 100 ? '100+' : neighbours.length}`;
-        }
-      }
+      // The list this editor was opened from. "Save & next" asks for the following product only after saving, so it
+      // works for every product and never depends on this page's lookup succeeding.
+      const context = readCatalogueContext(detail === "new" ? {} : query);
+      const queue = product
+        ? await adminRead("products/queue", queueQuery(detail, context)).then(value => value as CatalogueQueue).catch(() => null)
+        : null;
+      const filtered = context.view !== "all" || context.filter !== "all" || Boolean(context.q || context.category);
+      const queueLabel = [context.view !== "all" ? catalogueViewLabels[context.view] : "", context.filter !== "all" ? catalogueFilterLabels[context.filter] : "", context.q ? `“${context.q}”` : ""].filter(Boolean).join(" · ");
       return (
         <>
           <PageHeader
@@ -201,48 +210,49 @@ export default async function AdminPage({
             }
             actions={
               <>
-                {position ? <span className="text-xs text-mute" aria-live="polite">{position}</span> : null}
-                {previousHref ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={previousHref} aria-label="Previous product">‹ Previous</Link> : null}
-                {nextHref ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={nextHref} aria-label="Next product">Next ›</Link> : null}
-                <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href="/admin/products">All products</Link>
+                {queue ? <span className="text-xs text-mute tabular-nums" role="status">{queue.position ? `${queue.position.toLocaleString("en-AE")} of ${queue.total.toLocaleString("en-AE")}` : `${queue.total.toLocaleString("en-AE")} in this list`}{filtered && queueLabel ? ` · ${queueLabel}` : ""}</span> : null}
+                {queue?.previousId ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={editorHref(queue.previousId, context)} aria-label="Previous product">‹ Previous</Link> : null}
+                {queue?.nextId ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={editorHref(queue.nextId, context)} aria-label="Next product">Next ›</Link> : null}
+                <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href={listHref(context, queue?.position ? Math.floor((queue.position - 1) / PAGE_SIZE) * PAGE_SIZE : 0)}>{filtered ? "Back to list" : "All products"}</Link>
               </>
             }
           />
           <ProductForm
+            key={detail}
             product={product}
             categories={categories}
             selectedCategory={selectedCategory}
-            nextHref={nextHref}
+            queue={product ? { context, nextId: queue?.nextId ?? null } : undefined}
           />
         </>
       );
     }
-    const productPage = pageOf(rows(
-      await adminRead(qs.has("q") ? "products/search" : "products", lookahead(qs)),
-    ));
-    const products = productPage.items;
-    const view = typeof query.view === "string" ? query.view : "all";
+    const context = readCatalogueContext(query);
+    const limit = [50, 100].includes(Number(query.limit)) ? Number(query.limit) : 25;
+    const offset = typeof query.offset === "string" && /^[0-9]{1,5}$/.test(query.offset) ? Number(query.offset) : 0;
+    const params = catalogueContextParams(context);
+    params.set("limit", String(limit));
+    params.set("offset", String(offset));
+    const [list, categories] = await Promise.all([
+      adminRead("products/catalogue", params) as Promise<CatalogueList>,
+      user.role === "admin" ? adminRead("category", new URLSearchParams({ limit: "100" })).then(rows).catch(() => []) : Promise.resolve([]),
+    ]);
     return (
       <>
         <PageHeader
           title="Products"
-          description="Search inventory, review stock and publish changes. Staff accounts have read-only access."
+          description="Search the catalogue, add photos, fix what is missing and choose what customers see. Staff accounts have read-only access."
           actions={
-            <>
-              {user.role === "admin" ? (
-                <Link
-                  className={buttonVariants({ variant: "primary" })}
-                  href="/admin/products/new"
-                >
+            user.role === "admin" ? (
+              <>
+                <BulkPhotoUpload />
+                <Link className={buttonVariants({ variant: "primary" })} href="/admin/products/new">
                   Add product
                 </Link>
-              ) : (
-                <Badge tone="neutral">Read-only inventory</Badge>
-              )}
-              {user.role === 'admin' ? (
-                <Link className={buttonVariants({ variant: "outline" })} href="/admin/needs-action">Review needs action</Link>
-              ) : null}
-            </>
+              </>
+            ) : (
+              <Badge tone="neutral">Read-only inventory</Badge>
+            )
           }
         />
         {query.saved === 'published' || query.saved === 'draft' ? (
@@ -251,25 +261,15 @@ export default async function AdminPage({
             <Link href="/admin/products/new">Add another product</Link>
           </Callout>
         ) : null}
-        <FilterChips
-          label="Inventory views"
-          items={[['all', 'All products'], ['sale', 'On sale'], ['outofstock', 'Out of stock'], ['disabled', 'Disabled']].map(([value, label]) => {
-            const params = new URLSearchParams();
-            if (typeof query.q === 'string' && query.q) params.set('q', query.q);
-            if (value !== 'all') params.set('view', value!);
-            return { label: label!, href: `/admin/products${params.size ? `?${params}` : ''}`, active: view === value };
-          })}
-        />
-        <form role="search" className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-surface p-3 border border-line">
-          <label htmlFor="q" className="sr-only">Search products</label>
-          <input id="q" name="q" type="search" defaultValue={display(query.q ?? "")} maxLength={80} placeholder="Search by product name or PD number"
-            className="h-11 min-w-0 flex-1 basis-64 rounded-lg border-0 bg-fill px-5 text-sm text-ink outline-none placeholder:text-mute focus:bg-white focus:ring-2 focus:ring-ink" />
-          <input type="hidden" name="view" value={view} />
-          <button className={buttonVariants({ variant: "dark" })}>Search</button>
-          <Link className={buttonVariants({ variant: "outline" })} href="/admin/products">Reset</Link>
-        </form>
-        <ProductsTable admin={user.role === "admin"} products={products.map(item => ({ _id: display(item._id), name: display(item.name), product_id: display(item.product_id), category: display(record(item.category).name), image: thumbnail(item), price: display(item.price), salePrice: item.sale === true && item.salePrice ? display(item.salePrice) : null, stock: display(item.stock), disabled: item.disabled === true }))} />
-        {pagination(section, query, products.length, productPage.more)}
+        <CatalogueFiltersBar list={list} context={context} limit={limit} categories={categories.map(item => ({ id: display(item._id), name: display(item.name) }))} />
+        {context.filter === "classification" || context.filter === "prescription" ? (
+          <Note tone="warning" icon={<ClipboardDocumentCheckIcon />}>
+            <p><strong>Medicine classification needs pharmacy review.</strong> Confirm the exact product, strength and pack from its label. Choose Pharmacy medicine only after verification. Prescription products stay unpublished.</p>
+          </Note>
+        ) : null}
+        <ProductsTable key={`${params}`} admin={user.role === "admin"} context={context} readyTotal={list.counts.filters.ready}
+          products={list.items.map(item => ({ ...item, thumb: thumbnail(item.image) }))} />
+        <CataloguePager total={list.total} offset={list.offset} shown={list.items.length} limit={limit} context={context} />
       </>
     );
   }
@@ -354,7 +354,12 @@ export default async function AdminPage({
           caption="Categories"
           data={categories}
           columns={[
-            { key: "name", label: "Name" },
+            { key: "name", label: "Category", render: (item) => (
+              <span className="flex items-center gap-3">
+                <CategoryThumb image={display(item.image)} />
+                <Link className="font-medium text-ink no-underline hover:underline" href={`/admin/products?category=${display(item._id)}`}>{display(item.name)}</Link>
+              </span>
+            ) },
             {
               key: "disabled",
               label: "Availability",
@@ -369,7 +374,12 @@ export default async function AdminPage({
             },
           ]}
           actions={(item) => (
+            <>
+            <Link href={`/admin/products?category=${display(item._id)}&filter=missing-photo`} aria-label={`Products without a photo in ${display(item.name)}`}>Add photos</Link>
             <RowActions label={`Actions for ${display(item.name)}`}>
+              <Link href={`/admin/products?category=${display(item._id)}`}>
+                View products in {display(item.name)}
+              </Link>
               <Link href={`/admin/products/new?category=${display(item._id)}`}>
                 Create product in {display(item.name)}
               </Link>
@@ -388,6 +398,7 @@ export default async function AdminPage({
                 Archive category
               </Command>
             </RowActions>
+            </>
           )}
         />
         {pagination(section, query, categories.length, categoryPage.more)}
@@ -458,17 +469,14 @@ export default async function AdminPage({
           caption="Published banners"
           data={banners}
           columns={[
+            { key: "image", label: "Artwork", render: (item) => <MediaPreview item={item} kind="banners" origin={getWebEnvironment().LEGACY_API_ORIGIN} /> },
             { key: "name", label: "Name" },
-            { key: "link", label: "Destination" },
-            { key: "locale", label: "Language (blank = both)" },
+            { key: "link", label: "Destination", render: (item) => <span className="block max-w-[320px] break-all text-[13px] text-mute">{display(item.link)}</span> },
+            { key: "locale", label: "Shown on", render: (item) => <Badge className="normal-case">{item.locale === "en" ? "English" : item.locale === "ar" ? "Arabic" : "English and Arabic"}</Badge> },
           ]}
+          empty={{ title: "No banners yet", description: "Add a banner to fill the homepage carousel." }}
           actions={(item) => (
             <>
-              <MediaPreview
-                item={item}
-                kind="banners"
-                origin={getWebEnvironment().LEGACY_API_ORIGIN}
-              />
               <Command
                 path={`banners/${display(item._id)}`}
                 method="DELETE"
@@ -505,11 +513,23 @@ export default async function AdminPage({
             label: status.charAt(0).toUpperCase() + status.slice(1), href: `/admin/orders${status === "all" ? "" : `?status=${status}`}`, active: active === status,
           }))}
         />
-        <OrdersTable orders={orders.map(order => ({ _id: display(order._id), orderId: display(order.orderId), status: display(order.status), customer: { name: display(record(order.customer).name), city: display(record(order.customer).city), totalAmount: display(record(order.customer).totalAmount) }, routing: { branchName: display(record(order.routing).branchName), areaLabel: display(record(order.routing).areaLabel), needsReview: record(order.routing).needsReview === true } }))} />
+        <OrdersTable orders={orders.map(order => ({ _id: display(order._id), orderId: display(order.orderId), status: display(order.status), ...(typeof order.createdAt === 'string' ? { createdAt: order.createdAt } : {}), customer: { name: display(record(order.customer).name), city: display(record(order.customer).city), totalAmount: display(record(order.customer).totalAmount) }, routing: { branchName: display(record(order.routing).branchName), areaLabel: display(record(order.routing).areaLabel), needsReview: record(order.routing).needsReview === true } }))} />
         {pagination(section, query, orders.length, orderPage.more)}
       </>
     );
   }
+  const sessions = (
+    <Card title="Sessions" description="Sign out every device that is signed in to your account.">
+      <Command
+        path="auth/logout-all"
+        method="POST"
+        variant="danger"
+        confirm="Sign out all sessions for your account?"
+      >
+        Revoke all my sessions
+      </Command>
+    </Card>
+  );
   if (section === "users") {
     const users = rows(await adminRead("auth/users", qs));
     const workspace = await adminRead("auth/branches") as BranchWorkspace;
@@ -532,6 +552,7 @@ export default async function AdminPage({
           <Callout tone="warning"><p>Legacy staff retain catalogue viewing, marketing and image-review access, in addition to assigned orders. Assign their receiving branch or deactivate them after replacing their login. New store accounts have narrower fulfilment permissions.</p></Callout>
           <Table caption="Legacy staff accounts" data={users.filter(item=>item.role!=='admin')} columns={[{key:'name',label:'Name'},{key:'username',label:'Username'},{key:'role',label:'Access',render:()=> 'Legacy staff — broad access'},{key:'branchId',label:'Receiving branch',render:item=>routing.branches.find(branch=>branch.id===item.branchId)?.name??'Not assigned — review access'}]} actions={item=><><StaffBranchAssignment key={display(item._id)+display(item.branchId)} id={display(item._id)} branchId={typeof item.branchId==='string'?item.branchId:null} branches={routing.branches} /><Command path={`auth/users/${display(item._id)}`} method="DELETE" variant="danger" confirm="Deactivate this legacy account and revoke all sessions? History is retained.">Deactivate account</Command></>} />
         </Card>:null}
+        {sessions}
         {users.length === 25 ? (
           <nav className="mb-4 flex gap-2 [&_a]:inline-flex [&_a]:h-10 [&_a]:items-center [&_a]:rounded-lg [&_a]:bg-surface [&_a]:px-5 [&_a]:text-[13px] [&_a]:font-medium [&_a]:text-ink [&_a]:no-underline [&_a]:border border-line" aria-label="Pagination">
             <Link href={`/admin/users?before=${display(users.at(-1)?._id)}`}>
@@ -551,22 +572,26 @@ export default async function AdminPage({
           title="Store settings"
           description="Control storefront availability. Closing the store stops new checkout activity."
         />
-        <Card title="Storefront availability">
-          <p className="m-0 mb-4 flex items-center gap-3">
-            <span>Current status</span>
-            <Badge tone={open ? "success" : "danger"} dot>
-              {display(store.status)}
-            </Badge>
-          </p>
-          <Command
-            path="store/status"
-            body={{ status: store.status !== "open" }}
-            variant={open ? "danger" : "primary"}
-            confirm="Change store availability?"
-          >
-            {open ? "Close store" : "Open store"}
-          </Command>
-        </Card>
+        <div className="grid items-start gap-4 lg:grid-cols-2 [&>section]:mb-0">
+          <Card title="Storefront availability" aside={<Badge tone={open ? "success" : "danger"} dot>{display(store.status)}</Badge>}>
+            <p className="m-0 mb-4 text-sm text-ink-2">{open ? "Customers can browse and place orders." : "Customers can browse, but new orders are stopped."}</p>
+            <Command
+              path="store/status"
+              body={{ status: store.status !== "open" }}
+              variant={open ? "danger" : "primary"}
+              confirm={open ? "The store is open. Closing it stops new orders until you open it again. Existing orders are not changed." : "The store is closed. Opening it lets customers place orders again."}
+            >
+              {open ? "Close store" : "Open store"}
+            </Command>
+          </Card>
+          <Card title="Other settings">
+            <ul className="m-0 grid list-none gap-1 p-0">
+              {([["/admin/branches", "Branches & delivery", "Delivery areas, fees and branch logins"], ["/admin/users", "Team & access", "Administrators, store accounts and sessions"], ["/admin/notifications", "Notifications", "Order alerts on this device"], ["/admin/banners", "Banners", "Homepage carousel artwork"]] as const).map(([href, title, note]) => (
+                <li key={href}><Link href={href} className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-ink no-underline hover:bg-fill"><span className="grid"><span className="text-sm font-medium">{title}</span><span className="text-xs text-mute">{note}</span></span><span aria-hidden="true">›</span></Link></li>
+              ))}
+            </ul>
+          </Card>
+        </div>
       </>
     );
   }
@@ -578,7 +603,7 @@ export default async function AdminPage({
         <PageHeader
           title="Catalog import"
           description="Review prepared ERP files and import them as unpublished drafts."
-          actions={<Link href="/admin/products">Review imported products</Link>}
+          actions={<Link className={buttonVariants({ variant: "outline" })} href="/admin/products?view=hidden">Review imported products</Link>}
         />
         <CatalogImport categories={categories.map(category=>({id:String(category._id),name:String(category.name)}))} />
       </>
@@ -609,17 +634,7 @@ export default async function AdminPage({
           </p>
           <NotificationSettings publicKey={adminPushPublicKey()} />
         </Card>
-        <Card title="Sessions">
-          <p>Sign out every device that is signed in to your account.</p>
-          <Command
-            path="auth/logout-all"
-            method="POST"
-            variant="danger"
-            confirm="Sign out all sessions for your account?"
-          >
-            Revoke all my sessions
-          </Command>
-        </Card>
+        {user.role === "admin" ? <Callout><p>Signing out of every device is under <Link href="/admin/users">Team &amp; access</Link>.</p></Callout> : sessions}
       </>
     );
   if (section === "whatsapp") {
@@ -692,8 +707,10 @@ export default async function AdminPage({
           title="WhatsApp tools"
           description="Recipients, approved templates, posters and delivery reports."
         />
+        <Card title="Recipients" description="Open a conversation to read it and reply.">
         <Table
           caption="Recipients"
+          empty={{ title: "No recipients yet", description: "People appear here after they message the pharmacy on WhatsApp." }}
           data={recipientPage.items}
           columns={[
             { key: "name", label: "Name" },
@@ -718,6 +735,7 @@ export default async function AdminPage({
             </Link>
           )}
         />
+        </Card>
         {pagination(section, query, recipientPage.items.length, recipientPage.more)}
         <BulkTemplates
           recipients={recipientPage.items.map((item) => ({
@@ -763,8 +781,10 @@ export default async function AdminPage({
             />
           </Card>
         </div>
+        <Card title="Posters">
         <Table
           caption="Posters"
+          empty={{ title: "No posters uploaded" }}
           data={rows(posters)}
           columns={[{ key: "image", label: "Filename" }]}
           actions={(item) => (
@@ -785,8 +805,11 @@ export default async function AdminPage({
             </>
           )}
         />
+        </Card>
+        <Card title="Delivery reports">
         <Table
           caption="Delivery reports"
+          empty={{ title: "No delivery reports yet" }}
           data={rows(reports).flatMap((report) => rows(report.broadcast))}
           columns={[
             { key: "recipient", label: "Recipient" },
@@ -794,6 +817,7 @@ export default async function AdminPage({
             { key: "errorDetails", label: "Details" },
           ]}
         />
+        </Card>
       </>
     );
   }
