@@ -6,7 +6,7 @@ Scope: the staff console. No database migration, no schema change to existing re
 
 | Report | Cause found |
 |---|---|
-| "Save & next" disappears after a few products | The editor looked for neighbours inside the first 100 products of a stock-sorted list. A product outside that slice (or moved by a stock change) had no neighbours, so the buttons were not drawn. A failed lookup was swallowed with the same effect. Production showed "74 of 100+". The exact "after 4 or 5" path was not reproduced separately; both failure paths are removed. |
+| "Save & next" disappears after a few products | The editor looked for neighbours inside the first 100 products of a stock-sorted list. A product outside that slice (or moved by a stock change) had no neighbours, so the buttons were not drawn; production showed "74 of 100+". A failed lookup was also swallowed with the same effect, and the likely trigger of "after 4 or 5" is the request limit (the editor made up to ten brand requests plus the neighbour, price and product reads). Likely, not reproduced. The button no longer depends on either. |
 | "Publish all approved images" is disabled | Production ran publication in `local` mode. A run saved there waits for `npm run media:review:publish` on an operations computer. Nobody ran it, so the run stayed in Preparing (0 of 0) and the queued run disabled the button. Observed read-only on 25 November: 655 approved, 63 imported. |
 
 ## What changed
@@ -18,6 +18,9 @@ Scope: the staff console. No database migration, no schema change to existing re
 - Chosen, dropped or pasted photos upload with Save and Save & next, before the product is published.
 - Ctrl/Cmd+Enter saves and opens the next product. "Publish the next hidden ones too" is an opt-in, per browser tab.
 - Brand options load with one request instead of up to ten.
+- An existing product whose type was never confirmed opens with **no type selected** (previously General was preselected and saved).
+  Saving a draft or an already live product leaves the stored type unchanged; publishing a hidden one requires a choice, and
+  "keep publishing" does not apply to it. New products still start as General.
 
 ### Products (Needs action merged in)
 Merged rather than kept standalone: both screens listed the same records, and the work (add a photo, fix a name or type, publish)
@@ -69,6 +72,8 @@ live through it. `GET /api/products/needs-action` is unchanged and no longer use
 
 ## Known limits
 
+- Counts for the product tabs are computed on each load. On a local database with 8,000 products of about 8 KB text each, a list
+  page took 81 ms and a queue lookup 40 ms after narrowing documents before counting. Not measured on the production cluster.
 - The API allows 120 requests per minute per client address, and server-rendered admin pages reach it from the web host's addresses.
   Fast editing can still meet "Too many requests". Uploads and bulk actions wait and continue; page loads do not. Changing the limit is
   a security setting and was left to the owner.

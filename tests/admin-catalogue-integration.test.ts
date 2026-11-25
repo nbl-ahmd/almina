@@ -134,11 +134,37 @@ test('bulk visibility is idempotent, reports every refusal and never publishes p
     const hide = await setProductsVisibility(db, { ids: [ids[0]!, ids[1]!], live: false }, actor);
     assert.deepEqual(hide.results.map(result => [result.ok, result.changed]), [[true, true], [true, false]]);
     assert.equal((await db.collection('products').findOne({ _id: rows[0]!._id }))!.published, false);
+    // The single switch refuses prescription items too, including legacy records without the managed-catalogue flag.
+    await assert.rejects(toggleCatalogVisibility(db, 'products', ids[1]!, actor), { status: 409 });
+    assert.equal((await db.collection('products').findOne({ _id: rows[1]!._id }))!.disabled, true);
     // The single switch still flips whatever the product currently is.
     await toggleCatalogVisibility(db, 'products', ids[0]!, actor);
     assert.equal((await db.collection('products').findOne({ _id: rows[0]!._id }))!.disabled, false);
     for (const raw of [{ ids: [], live: true }, { ids: [ids[0], ids[0]], live: true }, { ids: Array.from({ length: 51 }, () => String(new ObjectId())), live: true }, { ids: [ids[0]] }, { ids: [{ $ne: null }], live: true }, { ids: [ids[0]], live: 'yes' }]) {
       await assert.rejects(setProductsVisibility(db, raw, actor), { status: 400 });
     }
+  } finally { await close(); }
+});
+
+test('the product list and queue answer quickly for a catalogue of production size', { skip: !uri }, async () => {
+  const { db, close } = await database();
+  try {
+    const categories = Array.from({ length: 40 }, (_, index) => ({ _id: new ObjectId(), name: `Category ${index}` }));
+    await db.collection('categories').insertMany(categories);
+    const description = 'Synthetic product information with usage, storage and ingredient notes. '.repeat(30); // about 2 KB
+    const products = Array.from({ length: 8000 }, (_, index) => ({ _id: new ObjectId(), product_id: `PD${index}`, name: `Synthetic catalogue product ${index} 500 mg tablets`, brand: `Brand ${index % 600}`,
+      category: categories[index % 40]!._id, price: 10 + (index % 90), stock: index % 12, productType: index % 3 ? 'general' : 'unreviewed', disabled: index % 10 !== 0, published: index % 10 === 0,
+      description, ingredients: description, usage: description, warnings: description, ...(index % 7 === 0 ? { cloudinaryImages: [photo] } : {}) }));
+    await db.collection('products').insertMany(products);
+    const timed = async <T>(work: () => Promise<T>) => { const start = performance.now(); const value = await work(); return { value, ms: Math.round(performance.now() - start) }; };
+    const list = await timed(() => adminCatalogue(db, { view: 'hidden', filter: 'missing-photo', offset: '5000' }));
+    const search = await timed(() => adminCatalogue(db, { q: 'product 7', limit: '100' }));
+    const queue = await timed(() => adminCatalogueQueue(db, { view: 'hidden', filter: 'missing-photo', id: String(products[6001]!._id) }));
+    console.log(JSON.stringify({ catalogueTimingMs: { list: list.ms, search: search.ms, queue: queue.ms, documents: products.length } }));
+    // View counts respect the chosen filter (1,143 products have a photo); filter counts respect the chosen view.
+    assert.equal(list.value.counts.views.all, 8000 - 1143); assert.equal(list.value.counts.filters.all, 7200); assert.equal(list.value.items.length, 25);
+    assert.equal(list.value.counts.filters.content, 0);
+    // Well inside the 5 second database limit even on a much slower shared cluster.
+    assert.ok(list.ms < 2000 && search.ms < 2000 && queue.ms < 2000, 'catalogue reads must stay fast');
   } finally { await close(); }
 });

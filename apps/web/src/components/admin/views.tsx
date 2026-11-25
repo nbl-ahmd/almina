@@ -425,13 +425,17 @@ export function ProductForm({
     : ['familyKey', 'familyName', 'familyBrand', 'familyForm', 'familyStrength', 'variantSize', 'variantFlavour', 'variantPackSize'].includes(name) ? 'Variants'
     : 'Catalogue feeds';
   const order = ['name', 'brand', 'category', 'productType', 'price', 'stock', 'stockReason', 'salePrice', 'packLabel', 'summary', 'description'];
-  const productTypeValue = typeof product?.productType === 'string' && ['general', 'otc', 'prescription'].includes(product.productType) ? product.productType : 'general';
+  // A new product starts as General. An existing product whose type was never confirmed starts with none selected, so no
+  // save or queue shortcut can classify it: a person has to choose.
+  const typeConfirmed = typeof product?.productType === 'string' && ['general', 'otc', 'prescription'].includes(product.productType);
+  const typeUnconfirmed = edit && !typeConfirmed;
+  const productTypeValue = typeConfirmed ? String(product.productType) : edit ? '' : 'general';
   const stockReasons = ['Stock count', 'Received stock', 'Damaged or expired', 'Correction'].map(value => ({ value, label: value }));
   const overrides: Record<string, Partial<Field>> = {
     name: { required: true, span: 'full', placeholder: 'e.g. Panadol Extra 500mg' },
     brand: { kind: 'combobox', creatable: 'brand', required: true, placeholder: 'Choose or add a brand' },
     category: { kind: 'combobox', creatable: 'category', required: true, placeholder: 'Choose or add a category', hint: '' },
-    productType: { kind: 'segmented', label: 'Type', required: true, span: 'full', value: productTypeValue, hint: 'Prescription items are never sold online.',
+    productType: { kind: 'segmented', label: 'Type', required: !typeUnconfirmed, span: 'full', value: productTypeValue, hint: typeUnconfirmed ? 'Not confirmed yet. Check the pack and choose a type before publishing. Prescription items are never sold online.' : 'Prescription items are never sold online.',
       options: [{ value: 'general', label: 'General' }, { value: 'otc', label: 'Pharmacy medicine (OTC)' }, { value: 'prescription', label: 'Prescription' }] },
     price: { label: 'Price (AED)', required: true, prefix: 'AED', min: 0, step: '0.01' },
     salePrice: { kind: 'offer', label: 'Offer', span: 'full' },
@@ -459,6 +463,7 @@ export function ProductForm({
       productLive={edit ? product.disabled !== true : true}
       {...(queue ? { queue } : {})}
       {...(edit ? { mediaRevision: Number(product.mediaRevision ?? 0) } : {})}
+      typeUnconfirmed={typeUnconfirmed}
       productMedia={<aside className="grid content-start gap-4" aria-label="Product media">
           {edit ? <ProductPhotos key={display(product._id)} productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} current={gallery(product)} /> :
             <ProductPhotos />}

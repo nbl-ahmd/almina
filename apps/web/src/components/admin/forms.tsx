@@ -455,6 +455,7 @@ export function AdminForm({
   productLive,
   queue,
   mediaRevision = 0,
+  typeUnconfirmed = false,
 }: {
   path: string;
   method?: string;
@@ -474,6 +475,8 @@ export function AdminForm({
   queue?: { context: CatalogueContext; nextId: string | null };
   /** Gallery revision of the product being edited, for uploading chosen photos with the save. */
   mediaRevision?: number;
+  /** The saved product has no confirmed type: it is never filled in or published without a person choosing one. */
+  typeUnconfirmed?: boolean;
 }) {
   const router = useRouter();
   const { ask, dialog } = useConfirm();
@@ -513,13 +516,13 @@ export function AdminForm({
   const wasHidden = Boolean(productId) && !liveAtLoad;
   const prescription = fields.find(field => field.name === 'productType')?.value === 'prescription';
   useEffect(() => {
-    if (!wasHidden || prescription) return;
+    if (!wasHidden || prescription || typeUnconfirmed) return;
     let wanted = false;
     try { wanted = sessionStorage.getItem(keepPublishingKey) === '1'; } catch { /* private browsing */ }
     if (!wanted) return;
     const timer = window.setTimeout(() => { setKeepPublishing(true); setPublished(true); }, 0);
     return () => window.clearTimeout(timer);
-  }, [wasHidden, prescription]);
+  }, [wasHidden, prescription, typeUnconfirmed]);
   function rememberPublishing(next: boolean) {
     setKeepPublishing(next);
     try { if (next) sessionStorage.setItem(keepPublishingKey, '1'); else sessionStorage.removeItem(keepPublishingKey); } catch { /* private browsing */ }
@@ -569,7 +572,14 @@ export function AdminForm({
     if (productEditor) {
       // The sale price is the source of truth; the store derives "on sale" from it.
       data.set('sale', data.get('salePrice') ? 'true' : 'false');
-      if (!data.get('productType')) data.set('productType', 'general');
+      if (!data.get('productType')) {
+        if (!typeUnconfirmed) data.set('productType', 'general');
+        else if (publish && !liveAtLoad) {
+          setPending(false);
+          setError('Choose the product type before publishing, or switch to Draft to save without one.');
+          return;
+        } else data.delete('productType');
+      }
       const brand = String(data.get('brand') ?? '').trim();
       const category = String(data.get('category') ?? '').trim();
       const required = [!String(data.get('name') ?? '').trim() ? 'name' : '', !brand ? 'brand' : '', !category ? 'category' : '', data.get('price') === '' ? 'price' : '', data.get('stock') === '' ? 'stock' : ''].filter(Boolean);

@@ -46,6 +46,9 @@ function contextMatch(context: Pick<CatalogueContext, 'view' | 'filter'>): Docum
 }
 const projection = { _id: 1, product_id: 1, name: 1, brand: 1, familyBrand: 1, category: 1, price: 1, salePrice: 1, sale: 1, stock: 1, disabled: 1,
   published: 1, active: 1, productType: 1, image: 1, images: 1, cloudinaryImages: 1, mediaRevision: 1, barcode: 1, gtin: 1 };
+/** Everything the filters, counts and rows read. Narrowing the documents before the counts keeps the whole catalogue
+ *  within the aggregation memory and time limits. */
+const counted = { ...projection, archivedAt: 1, description: { $cond: [{ $in: [{ $ifNull: ['$description', ''] }, ['']] }, '', 'present'] } };
 const text = (value: unknown) => typeof value === 'string' ? value : '';
 const amount = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null;
 const photoStrings = (value: unknown) => (Array.isArray(value) ? value : []).filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0 && !/^\s*\/?product-placeholder\.svg\s*$/.test(entry));
@@ -80,6 +83,7 @@ export async function adminCatalogue(db: Db, raw: unknown): Promise<CatalogueLis
     : baseMatch(query);
   const [result] = await db.collection('products').aggregate([
     { $match: match },
+    { $project: counted },
     { $facet: {
       items: [{ $match: contextMatch(query) }, { $sort: { _id: 1 } }, { $skip: query.offset }, { $limit: query.limit }, { $project: projection }, ...withCategory],
       total: countOf(contextMatch(query)),
@@ -105,6 +109,7 @@ export async function adminCatalogueQueue(db: Db, raw: unknown): Promise<Catalog
   const neighbour = (range: Document, direction: 1 | -1): Document[] => [{ $match: { $and: [inContext, { _id: range }] } }, { $sort: { _id: direction } }, { $limit: 1 }, { $project: { _id: 1 } }];
   const [result] = await db.collection('products').aggregate([
     { $match: baseMatch(query) },
+    { $project: counted },
     { $facet: {
       previous: neighbour({ $lt: id }, -1), next: neighbour({ $gt: id }, 1),
       total: countOf(inContext), before: countOf({ $and: [inContext, { _id: { $lt: id } }] }), current: countOf({ $and: [inContext, { _id: id }] }),

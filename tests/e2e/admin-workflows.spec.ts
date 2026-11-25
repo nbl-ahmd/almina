@@ -126,6 +126,33 @@ test('bulk go-live refuses what may not be sold and the pharmacist chooses the t
   await expect(page.getByRole('combobox', { name: `Type of ${rows[0]!.name}` })).toHaveCount(0);
 });
 
+test('keeping publish on never classifies or publishes a product whose type nobody confirmed', async ({ page, request }) => {
+  await login(page);
+  const rows = await seed(request, 3, { productType: 'unreviewed' });
+  await page.evaluate(() => sessionStorage.setItem('almina-editor-keep-publishing', '1'));
+  await page.goto(`${adminOrigin}/admin/products/${rows[0]!._id}?view=hidden&filter=classification`); await streamSettled(page);
+  const name = page.getByRole('textbox', { name: 'Product name', exact: true });
+  for (const index of [0, 1]) {
+    await expect(name).toHaveValue(rows[index]!.name);
+    await expect(page.getByRole('switch', { name: /^Draft/ })).not.toBeChecked();
+    await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
+    await name.press('ControlOrMeta+Enter');
+    await expect(name).toHaveValue(rows[index + 1]!.name);
+    const saved = await product(page, rows[index]!._id);
+    expect([saved.disabled, saved.productType]).toEqual([true, 'unreviewed']);
+  }
+  // Publishing asks for the type first, then records the choice that was made.
+  await page.getByRole('switch', { name: /^Draft/ }).click();
+  await page.getByRole('button', { name: 'Save & publish', exact: true }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Choose the product type before publishing' })).toBeVisible();
+  expect((await product(page, rows[2]!._id)).disabled).toBe(true);
+  await page.getByText('Pharmacy medicine (OTC)', { exact: true }).click();
+  await page.getByRole('button', { name: 'Save & publish', exact: true }).click();
+  await expect(page.getByText('Saved and live')).toBeVisible();
+  const published = await product(page, rows[2]!._id);
+  expect([published.disabled, published.productType]).toEqual([false, 'otc']);
+});
+
 test('Publish all approved images runs a saved publication from the admin', async ({ page, request }) => {
   await login(page);
   await page.route('https://res.cloudinary.com/**', route => route.fulfill({ contentType: 'image/png', body: png }));
@@ -168,7 +195,7 @@ test('staff see the product list without any way to change it', async ({ page })
 
 const screens = ['', '/products', '/products?view=hidden&filter=missing-photo', `/products/${productId}`, '/orders', '/categories', '/banners', '/image-review', '/catalog-import',
   '/growth', '/marketing', '/whatsapp', '/search', '/wholesale', '/branches', '/users', '/notifications', '/settings', '/operations', '/batch'];
-for (const width of [390, 1440]) test(`every administration screen fits without sideways scrolling at ${width}px`, async ({ page, request }) => {
+for (const width of [360, 390, 768, 1440]) test(`every administration screen fits without sideways scrolling at ${width}px`, async ({ page, request }) => {
   test.setTimeout(150000);
   await page.setViewportSize({ width, height: 900 });
   const created = await request.post(commerceOrigin + '/api/orders', { headers: { origin: commerceOrigin, 'x-csrf-protection': '1' }, data: { customer, items: [{ productId, quantity: 2 }], idempotencyKey: crypto.randomUUID() } });
