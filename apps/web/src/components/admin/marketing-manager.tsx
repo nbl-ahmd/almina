@@ -297,7 +297,7 @@ export function MarketingManager({
       {tab === "design" && template ? (
         <>
           <div className="space-y-4">
-            <aside className="grid gap-4 lg:grid-cols-3">
+            <aside className="grid grid-cols-1 gap-4 lg:grid-cols-3 [&_input]:min-w-0 [&_input]:max-w-full [&>section]:min-w-0">
               <section className="rounded-xl bg-surface p-5 border border-line md:p-6">
                 <h2 className="text-lg">Saved templates</h2>
                 <label className={field}>

@@ -249,9 +249,9 @@ export function AdminShell({ user, allowed, children }: {
               const active = current?.id === item.id;
               return (
                 <Link key={item.id} href={item.href} prefetch={false} aria-current={active ? 'page' : undefined}
-                  className={cn('flex min-h-14 min-w-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] font-medium no-underline', active ? 'bg-fill text-ink' : 'text-mute')}>
+                  className={cn('flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] font-medium no-underline', active ? 'bg-fill text-ink' : 'text-mute')}>
                   <Icon className="size-5" aria-hidden="true" />
-                  {item.label}
+                  <span className="max-w-full truncate max-[380px]:text-[10px]">{item.label}</span>
                 </Link>
               );
             })}

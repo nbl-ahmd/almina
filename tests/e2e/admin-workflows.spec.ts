@@ -135,7 +135,7 @@ test('keeping publish on never classifies or publishes a product whose type nobo
   for (const index of [0, 1]) {
     await expect(name).toHaveValue(rows[index]!.name);
     await expect(page.getByRole('switch', { name: /^Draft/ })).not.toBeChecked();
-    await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
+    await expect(page.getByRole('group', { name: /^Type/ }).getByRole('radio', { checked: true })).toHaveCount(0);
     await name.press('ControlOrMeta+Enter');
     await expect(name).toHaveValue(rows[index + 1]!.name);
     const saved = await product(page, rows[index]!._id);
@@ -208,6 +208,8 @@ for (const width of [360, 390, 768, 1440]) test(`every administration screen fit
     await page.goto(adminOrigin + '/admin' + path); await streamSettled(page);
     await expect(page.locator('main h1').first()).toBeVisible();
     await page.screenshot({ path: `.verification-results/admin-screens/${width}${(path || '/dashboard').replace(/[^a-z0-9]+/gi, '-')}.png`, fullPage: true });
+    // A product's name must stay readable beside its picture at every width.
+    if (path.startsWith('/products?')) expect((await page.getByRole('link', { name: /Queue item 001.*PDQ1000/ }).boundingBox())!.width, 'product name column').toBeGreaterThan(120);
     // Name the elements that stick out, ignoring regions that scroll on purpose.
     const offenders = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth ? [] : [...document.querySelectorAll('body *')]
       .filter(element => element.getBoundingClientRect().right > innerWidth + 1 && !element.closest('.overflow-x-auto, .overflow-auto'))

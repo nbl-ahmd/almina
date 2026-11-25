@@ -87,4 +87,25 @@ history, all ignored by the previous release. Set `IMAGE_REVIEW_HOSTED_PUBLICATI
 
 ## Verification
 
-See the pull request for the exact results.
+25 November 2026, disposable local databases and synthetic data only.
+
+| Check | Result |
+|---|---|
+| Typecheck, lint | pass |
+| Unit | 342 pass, 3 skipped, 0 fail |
+| API | 172 pass |
+| Release gate | 7 pass |
+| Database integration (full runner) | 250 pass |
+| Commerce adapter and isolated production build | pass |
+| Foundation, storefront and SEO smokes | pass |
+| Dependency audit | 0 high, 0 critical |
+| Browser (full Playwright suite on the final code) | 248 pass |
+
+Release gate, database integration and the dependency audit ran before the last screen-layout fixes, which changed web markup and
+browser tests only. Browser coverage walks Save & next across the old 100 product boundary, photo uploads (row, bulk, editor), bulk
+go-live refusals, unconfirmed product types, server publication, staff read-only access and the admin screens without sideways scroll
+at 360, 390, 768 and 1440 px.
+
+Not verified: any change in production (the admin was only viewed), real Cloudinary uploads, a bulk upload of hundreds of files, Render
+bandwidth for a large publication, catalogue timing on the production cluster, the original "after 4 or 5 products" reproduction, and
+Arabic or screen-reader review.

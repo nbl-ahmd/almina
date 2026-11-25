@@ -218,7 +218,7 @@ export function ProductsTable({ products, admin, context, readyTotal }: { produc
     ...(admin ? [selectColumn<ProductRow>()] : []),
     { accessorKey: 'name', header: 'Product', meta: { label: 'Product', primary: true },
       cell: ({ row }) => (
-        <span className="flex items-center gap-3">
+        <span className="flex items-center gap-3 md:w-[260px] xl:w-auto xl:min-w-[260px]">
           {admin ? <PhotoCell product={row.original} busy={uploading.includes(row.original._id)} onFiles={files => void addPhotos(row.original, files)} />
             : <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-fill text-faint">{row.original.thumb ? <img src={row.original.thumb} alt="" width={56} height={56} loading="lazy" className="size-full object-cover" /> : <PhotoIcon className="size-5" aria-hidden="true" />}</span>}
           <Link href={editorHref(row.original._id, context)} className="group grid min-w-0 text-left text-ink no-underline">
