@@ -23,11 +23,11 @@ Admin follows `docs/design/admin/`.
 
 - **Canvas.** White for browsing (home, listing, search). Purchase, product detail and account screens sit on grey `#F2F3F7` with white
   sections; on phones the sections run edge to edge, separated by 8px grey bands (1mg).
-- **One action colour.** Coral `#DA3729` (1mg's coral, darkened to 4.6:1 with white) fills every purchase action. Coral words use
-  `#C42F22`. The brighter brand coral `#FF5443` is for pins and icons only.
+- **One action colour, used sparingly.** Coral `#DA3729` (darkened to 4.6:1 with white) fills purchase actions. Coral words
+  (`#C42F22`) are only for Change/Edit, steppers and the current tab. Every other link is ink, as in Talabat. No teal in the storefront.
 - **Savings are green, deals are lime.** Mint strip `#E3F9EC` with green `#1B7A3E` for "You save"; Talabat lime `#CFFF00` stickers
   with ink text for "Save AED n".
-- **Everything you press is a pill.** Primary and secondary buttons, chips, steppers, search and the address pill are fully rounded
+- **Everything you press is a pill.** Primary and secondary buttons, chips, steppers, and search are fully rounded
   (Talabat). Fields are 12px, cards 16px, sheets 24px on top.
 - **Tiles.** White tile, square grey well, lime save sticker top-left, round white "+" on the photo's corner that turns into a
   "− n +" pill. Name, pack, price and former price below.

@@ -14,7 +14,8 @@ test('redesigned purchase stepper clamps stock and the header reflects the saved
   await page.getByRole('button', { name: 'Add to cart: Daily Care', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toHaveCount(1);
   await page.reload(); await expect(page.getByRole('link', { name: 'Your cart, 4 items', exact: true }).and(page.locator('.mobile-tab'))).toHaveCount(1);
-  await page.getByRole('link',{name:'View your cart',exact:true}).click();
+  // The product page no longer repeats a cart link; the header cart (or the bottom tab on phones) opens the basket.
+  await page.getByRole('link',{name:'Your cart, 4 items',exact:true}).locator('visible=true').first().click();
   await expect(page.locator('.quantity')).toHaveText('4');
   await page.getByRole('button', { name: 'Remove Daily Care from cart' }).click();
   await expect(page.getByRole('heading', { name: 'A little room for your everyday essentials.' })).toBeVisible();

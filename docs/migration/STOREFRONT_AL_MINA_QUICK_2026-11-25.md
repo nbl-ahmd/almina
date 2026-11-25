@@ -75,3 +75,42 @@ the tokens, design system, components and whole store flow to be rebuilt to copy
     asked for restores a back circle and "Add items". The spec now asserts exactly those two links, both to `/products`.
     This reverses the 2026-11-22 preference; the owner confirmed it on 2026-11-25 ("Keep it").
 - **Not verified:** physical devices and the owner's visual acceptance.
+
+## Owner review round (same day)
+
+The owner reviewed the running store and listed nine problems:
+
+- the address still sat in a box;
+- long place names ran into the logo;
+- the product page had a boxed delivery note with many links;
+- the "Go to cart" check icon looked generated;
+- old tokens leaked into several pages;
+- the location icon tile and badge looked generated;
+- errors appeared in a summary box;
+- the header had a "Contact our team" link;
+- the checkout address entry had a stack of buttons.
+
+There were too many coral links overall.
+
+Changes, each taken from the references (Talabat first, then 1mg and Zomato):
+
+- **Header:**
+  - "Contact our team" removed, including the checkout header.
+  - The address is now plain text: "Deliver to" above the place and a chevron, with no pill or pin. The place truncates.
+- **Links:** links are now ink. Coral text remains only for Change/Edit, steppers, the current tab and selected chips. Ghost buttons are ink.
+- **Old palette:** the legacy `teal`, `forest` and `lime` aliases now resolve to ink or grey, so the old palette no longer leaks into
+  older stylesheets or utilities. The last raw hex was replaced. The focus outline is ink.
+- **Product page:**
+  - the SKU line and the price inside the button are removed;
+  - the boxed delivery note and its link row are replaced with two 1mg info rows: delivery, and returns;
+  - "Go to cart" has no icon;
+  - tabs, gallery controls and specification links are ink;
+  - the disabled stepper button lost its extra ring.
+- **Delivering-to rows** (cart, checkout, payment, receipt): a small grey pin, "Delivering to **Home**", the address below, and
+  "Change". The tinted icon tile and the label badge are gone, and there is no yellow empty state.
+- **Checkout address:**
+  - "Use my current location" and "Choose on map" are now Zomato list rows.
+  - Location messages are a line of text.
+  - The delivery pin picker is one row with text actions. It is kept because delivery-zone pins depend on it.
+- **Checkout errors:** each error shows under its own field. The summary box is removed, and the first invalid field takes focus.
+  A request-level error is one quiet line at the top of the form.

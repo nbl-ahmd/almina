@@ -3,7 +3,7 @@
 Components: [components.md](components.md). Each screen copies the flow of the reference app noted.
 
 ## Home (Talabat pharmacy home)
-Header with address pill and search → campaign carousel (16px radius, coral pill action) → "Shop by care" category tiles (4 per row) →
+Header with plain "Deliver to" address text and search → campaign carousel (16px radius, coral pill action) → "Shop by care" category tiles (4 per row) →
 product shelves (2-column tile grid on phones, 4 on desktop) with coral "View all ›" → brands → help block → footer.
 
 ## Listing, category, search (Talabat / Blinkit)
@@ -12,7 +12,8 @@ Search shows the query chip and the same grid; empty results offer categories.
 
 ## Product detail (1mg)
 Grey canvas. White section: gallery in a `well`, brand/category, name (h1), price + former price + lime save sticker, stock, quantity
-stepper pill + coral "Add to cart" pill, delivery info row. Further white sections: overview/specifications tabs, help, reviews, related
+stepper pill + coral "Add to cart" pill (no price inside it; "Go to cart" once added, no icon), then two info rows: delivery in
+Ras Al Khaimah and returns. No SKU line, no extra cart or contact links. Further white sections: overview/specifications tabs, help, reviews, related
 tiles. Phones: sections edge to edge between grey bands; a pay-bar style purchase dock appears when the inline action scrolls away.
 
 ## Cart (Talabat)
@@ -21,7 +22,8 @@ savings strip, bill, coupon, note on when totals are final. Pay bar: item total 
 
 ## Checkout (1mg / Zomato)
 Back · "Checkout" · secure label; step indicator (coral current, green complete). "Your order" section. Delivery: "Delivering to" row
-when a place is known, otherwise location card → "or type the address" → address fields → building/flat/note. Contact section. Review &
+when a place is known (address fields behind "Edit address details"), otherwise two choice rows (current location, choose on map) →
+"or type the address" → address fields with a one-line delivery pin → building/flat/note. Errors under each field. Contact section. Review &
 payment: payment choice cards (selected = coral border on tint), bill with "To pay". Pay bar states the action ("Review order",
 "Place order").
 

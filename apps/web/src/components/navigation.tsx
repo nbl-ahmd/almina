@@ -33,7 +33,6 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
             <Image src="/logo.png" alt="Al Mina Pharmacy" width={2789} height={910} sizes="(max-width:899px) 120px, 152px" />
           </Link>
           <div className="header-search"><SearchBox locale={locale} /></div>
-          <Link href="/contact" className="checkout-header-help"><ChatBubbleLeftRightIcon aria-hidden="true" />{t(locale, 'linkContact')}</Link>
           <DeliveryLocation locale={locale} />
           <div className="header-menu"><StorefrontMenu categories={categories} locale={locale} mobile /></div>
           <Link href="/account" aria-label={t(locale, 'linkAccount')} className="header-account">
@@ -44,7 +43,6 @@ export async function Navigation({ locale = 'en' }: { locale?: Locale }) {
       </div>
       <div className="header-departments chrome-container">
         <StorefrontMenu categories={categories} locale={locale} />
-        <Link href="/contact" className="header-help"><ChatBubbleLeftRightIcon aria-hidden="true" />{t(locale, 'linkContact')}</Link>
       </div>
       <NavigationLinks locale={locale} />
     </header>

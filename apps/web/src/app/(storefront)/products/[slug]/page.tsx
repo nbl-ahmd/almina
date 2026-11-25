@@ -1,4 +1,5 @@
 import { CurrencyAmount } from '../../../../components/currency-amount';
+import { TruckIcon, ChevronRightIcon, ArrowReturnIcon } from '../../../../components/storefront-icons';
 import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
 import { GrowthActivity } from '../../../../components/growth-activity';
 import { getLocale } from '../../../../lib/server/i18n';
@@ -20,7 +21,7 @@ import { metadataFor } from '../../../../lib/server/seo';
 import { getWebEnvironment } from '../../../../lib/server/env';
 import { aggregateRatingData, breadcrumbData, productData, reviewListData, type Query } from '../../../../lib/seo';
 import { StructuredData } from '../../../../components/structured-data';
-import { categoryHref, productOptionLabel, productHref, money, displayPrice } from '../../../../lib/catalog/model';
+import { categoryHref, productOptionLabel, productHref, displayPrice } from '../../../../lib/catalog/model';
 import { ProductGrid, Breadcrumb, StockState } from '../../../../components/storefront';
 import { Icon } from '../../../../components/storefront-icon';
 import { AddToCart } from '../../../../components/cart-controls';
@@ -93,37 +94,25 @@ export default async function ProductPage({ params, searchParams }: Props) {
                 <span className="save-sticker">{locale === 'ar' ? `وفّر ${saving}%` : `Save ${saving}%`}</span>
               </>}
             </div>
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 [&_.stock-state]:m-0!">
+            <div className="mt-2 [&_.stock-state]:m-0!">
               <StockState stock={product.stock} />
-              <span className="text-xs text-muted">{locale === 'ar' ? 'رمز المنتج: ' : 'SKU: '}{product.product_id}</span>
             </div>
           </div>
           <ProductOptions product={product} variants={variants} />
           <ProductPurchaseDock>
             <div className="pdp-purchase">
-              <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker priceLabel={money(currentPrice, locale)} />
+              <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker />
             </div>
           </ProductPurchaseDock>
           {product.warnings && <p className="product-purchase-warnings text-sm leading-relaxed">{product.warnings}</p>}
           {product.summary && <p className="product-summary my-4 text-sm leading-relaxed">{product.summary}</p>}
 
-          <div className="mt-4 flex items-start gap-3 rounded-xl bg-subtle p-3">
-            <span className="mt-0.5 text-teal"><Icon name="pin" /></span>
-            <div className="min-w-0">
-              <h2 className="m-0 text-sm!">{u(locale, 'Delivery in Ras Al Khaimah')}</h2>
-              <p className="m-0 mt-1 text-xs leading-relaxed text-muted">{u(locale, 'Checkout confirms the delivery charge and final total before you place an order.')}</p>
-              <div className="flex flex-wrap gap-x-3">
-                <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/shipping">{u(locale, 'Delivery & shipping')}</Link>
-                <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/returns">{u(locale, 'Returns & refunds')}</Link>
-                <Link className="inline-flex min-h-11 items-center text-xs font-semibold" href="/contact#delivery">{u(locale, 'Delivery enquiries')}</Link>
-              </div>
-            </div>
-          </div>
+          {/* 1mg product page: delivery and returns as two quiet rows, each opening its policy. */}
+          <ul className="pdp-info-rows" aria-label={u(locale, 'Delivery & returns')}>
+            <li><Link href="/shipping"><TruckIcon className="pdp-info-icon" aria-hidden="true" /><span><strong>{u(locale, 'Delivery in Ras Al Khaimah')}</strong><small>{u(locale, 'Delivery fee and final total are confirmed at checkout.')}</small></span><ChevronRightIcon className="pdp-info-chevron rtl:rotate-180" aria-hidden="true" /></Link></li>
+            <li><Link href="/returns"><ArrowReturnIcon className="pdp-info-icon" aria-hidden="true" /><span><strong>{u(locale, 'Returns & refunds')}</strong><small>{u(locale, 'How returns work for pharmacy items.')}</small></span><ChevronRightIcon className="pdp-info-chevron rtl:rotate-180" aria-hidden="true" /></Link></li>
+          </ul>
           {product.productType === 'general' && product.contentReviewed === true && <ReminderSignup locale={locale} key={product._id} productId={product._id} stock={product.stock} />}
-          <div className="flex flex-wrap gap-x-5">
-            <Link className="product-contact" href="/cart"><Icon name="bag" />{u(locale, 'View your cart')}</Link>
-            <Link className="product-contact" href="/contact"><Icon name="phone" />{u(locale, 'Contact pharmacy')}</Link>
-          </div>
         </div>
       </div>
       <ProductInformation product={product} />

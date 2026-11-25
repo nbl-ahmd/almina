@@ -77,8 +77,8 @@
   --color-control: var(--qc-control); --color-brand: var(--qc-brand); --color-action: var(--qc-action); --color-action-text: var(--qc-action-text);
   --color-hover: var(--qc-action-hover); --color-pressed: var(--qc-action-pressed); --color-tint: var(--qc-action-tint);
   --color-save: var(--qc-save); --color-save-tint: var(--qc-save-tint); --color-success: var(--qc-save);
-  --color-teal: var(--qc-info); --color-teal-tint: var(--qc-info-tint); --color-forest: var(--qc-info); --color-lime: var(--qc-info-tint);
-  --color-focus: var(--qc-info); --color-warning: var(--qc-warning); --color-warning-tint: var(--qc-warning-tint); --color-error: var(--qc-danger);
+  --color-teal: var(--qc-ink); --color-teal-tint: var(--qc-well); --color-forest: var(--qc-ink); --color-lime: var(--qc-well);
+  --color-focus: var(--qc-ink); --color-warning: var(--qc-warning); --color-warning-tint: var(--qc-warning-tint); --color-error: var(--qc-danger);
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
   --radius-sticker: var(--qc-r-xs); --radius-badge: var(--qc-r-xs); --radius-control: var(--qc-r-md); --radius-well: var(--qc-r-md);
   --radius-card: var(--qc-r-lg); --radius-tile: var(--qc-r-md); --radius-sheet: var(--qc-r-lg); --radius-panel: var(--qc-r-lg); --radius-pay: var(--qc-r-md);
@@ -90,8 +90,8 @@
   --sf-app: var(--qc-bg); --sf-canvas: var(--qc-surface); --sf-muted: var(--qc-muted); --sf-line: var(--qc-line); --sf-well: var(--qc-well);
   --sf-surface: var(--qc-well); --sf-divider: var(--qc-line); --sf-control: var(--qc-control); --sf-brand: var(--qc-brand);
   --sf-action: var(--qc-action); --sf-action-text: var(--qc-action-text); --sf-hover: var(--qc-action-hover); --sf-pressed: var(--qc-action-pressed);
-  --sf-tint: var(--qc-action-tint); --sf-save: var(--qc-save); --sf-save-tint: var(--qc-save-tint); --sf-teal: var(--qc-info); --sf-teal-tint: var(--qc-info-tint);
-  --sf-forest: var(--qc-info); --sf-lime: var(--qc-info-tint); --sf-focus: var(--qc-info); --sf-success: var(--qc-save);
+  --sf-tint: var(--qc-action-tint); --sf-save: var(--qc-save); --sf-save-tint: var(--qc-save-tint); --sf-teal: var(--qc-ink); --sf-teal-tint: var(--qc-well);
+  --sf-forest: var(--qc-ink); --sf-lime: var(--qc-well); --sf-focus: var(--qc-ink); --sf-success: var(--qc-save);
   --sf-warning: var(--qc-warning); --sf-warning-tint: var(--qc-warning-tint); --sf-error: var(--qc-danger);
 }
 @media (min-width: 600px) { .storefront-shell { --qc-gutter: 24px; } }
