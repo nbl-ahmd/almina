@@ -17,8 +17,9 @@ const publication = operation => async (req, res) => {
   res.json({ ...result, execution: req.app.locals.imageReviewHostedPublication ? 'hosted' : 'local' });
 };
 router.get('/publication', publication((db, req) => domain().getImagePublication(db, req.identity.id)));
-router.post('/publication/start', publication((db, req) => domain().startImagePublication(db, req.body, req.identity.id)));
-router.post('/publication/resume', publication((db, req) => domain().changeImagePublication(db, req.body, req.identity.id, 'resume')));
+const hosted = req => req.app.locals.imageReviewHostedPublication;
+router.post('/publication/start', publication((db, req) => domain().startImagePublication(db, req.body, req.identity.id, hosted(req))));
+router.post('/publication/resume', publication((db, req) => domain().changeImagePublication(db, req.body, req.identity.id, 'resume', hosted(req))));
 router.post('/publication/pause', publication((db, req) => domain().changeImagePublication(db, req.body, req.identity.id, 'pause')));
 router.get('/uploads/:uploadId', async (req, res) => { emptyQuery(req); res.json(await domain().imageReviewUploadProgress(await req.app.locals.getCommerceDb(), req.params.uploadId, req.identity.id)); });
 router.get('/:reviewId', async (req, res) => { emptyQuery(req); res.json(await domain().getImageReview(await req.app.locals.getCommerceDb(), req.params.reviewId, req.identity.id)); });

@@ -91,6 +91,8 @@ export const imagePublicationSchema = z.object({
   preparedImages: z.number().int().nonnegative(), publishedImages: z.number().int().nonnegative(),
   skippedImages: z.number().int().nonnegative(), totalProducts: z.number().int().nonnegative(), processedProducts: z.number().int().nonnegative(),
   error: z.enum(['access', 'provider', 'service']).nullable(), updatedAt: z.string(), canResume: z.boolean(),
+  /** An administrator has started this run on the server. False for a run still waiting to be started. */
+  started: z.boolean().default(false),
   issues: z.array(z.object({ productId: businessId, images: z.number().int().nonnegative(), reason: z.string().max(200) })).max(20), moreIssues: z.boolean(),
 });
 export const imagePublicationResponseSchema = z.object({ publication: imagePublicationSchema.nullable(), execution: z.enum(['hosted', 'local']).optional() });

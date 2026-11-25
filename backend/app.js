@@ -92,7 +92,8 @@ function createLegacyApp(options) {
   } : undefined);
   app.locals.mediaTransport = options.mediaTransport;
   app.locals.imageReviewEnabled = options.imageReviewEnabled ?? process.env.IMAGE_REVIEW_ENABLED === 'true';
-  app.locals.imageReviewHostedPublication = options.imageReviewHostedPublication ?? process.env.IMAGE_REVIEW_HOSTED_PUBLICATION === 'true';
+  // Server publication is on unless switched off. It costs nothing while idle and only runs what an administrator starts.
+  app.locals.imageReviewHostedPublication = options.imageReviewHostedPublication ?? process.env.IMAGE_REVIEW_HOSTED_PUBLICATION !== 'false';
   app.locals.recoveryAllowed = options.recoveryAllowed ?? process.env.RECOVERY_CATALOG_ALLOWED === 'true';
   app.locals.recoveryCloudName = options.recoveryCloudName ?? process.env.CLOUDINARY_CLOUD_NAME;
   app.locals.getCommerceDb = getDb;

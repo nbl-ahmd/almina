@@ -29,6 +29,7 @@ const field = 'w-full rounded-lg border border-line-strong bg-surface text-sm te
 export const inputClass = `h-9 px-3 ${field}`;
 export const selectClass = `h-9 appearance-none bg-[url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2362626a'><path d='M5.2 7.5 10 12.3l4.8-4.8-1-1L10 10.3 6.2 6.5z'/></svg>")] bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat pl-3 pr-8 ${field}`;
 export const textareaClass = `min-h-24 px-3 py-2 ${field}`;
+export const fileClass = 'w-full min-w-0 text-[13px] text-mute file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-solid file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-ink hover:file:bg-fill';
 
 export const badgeVariants = cva('inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium', {
   variants: {
