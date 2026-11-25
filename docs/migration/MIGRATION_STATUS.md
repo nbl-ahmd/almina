@@ -1,3 +1,12 @@
+## 2026-11-25 — Admin catalogue workflows (branch, not deployed)
+
+- "Save & next" works for every product, following the list the editor was opened from (it previously stopped outside the first 100).
+- Needs action is merged into Products as views and filters, with counts, row photo upload, multi-photo upload by PD number or
+  barcode, bulk go-live (prescription, unclassified and unpriced products refused) and numbered pages.
+- Bulk image publication runs on the API again, started only by an administrator; the saved production run is not started by deploying.
+  This replaces the 19 November default of an operations-computer command. Check Render bandwidth before publishing the approved images.
+- The remaining console screens were restyled. See [admin workflows](ADMIN_WORKFLOWS_2026-11-25.md).
+
 ## 2026-11-25 — Homepage section builder, brands, device artwork, sticky search
 
 Staff can now build the homepage in Website & growth → Homepage:

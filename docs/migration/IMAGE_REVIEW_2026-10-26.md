@@ -49,6 +49,9 @@ Set `IMAGE_REVIEW_ENABLED=false` to disable the module while retaining evidence 
 
 ## Local bulk publication — 2026-11-19
 
+> **Superseded as the default on 2026-11-25:** the API publishes unless `IMAGE_REVIEW_HOSTED_PUBLICATION=false`. The steps below
+> apply only to that setting. See [admin workflows](ADMIN_WORKFLOWS_2026-11-25.md#image-publication).
+
 Prepare review packages on the pipeline computer as usual. The admin browser loads original images directly from Cloudinary. Signing in, recording pharmacist decisions, and queuing a bulk publication continue through the authenticated admin API. The bulk worker runs on demand from the operations computer by default. This moves the worker's Cloudinary checks and Atlas traffic off Render and eliminates its idle polling there. Publishing a selection of up to eight approved links remains available in admin.
 
 1. As an administrator, open the Approved queue and select **Publish all approved images**. Copy the saved run ID from the publication panel.
