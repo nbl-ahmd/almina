@@ -46,8 +46,8 @@ External and admin links are rejected. Schedules, priority, publishing, readines
 
 All fields are additive with defaults, so no migration is needed. Existing hero campaigns default to "Finished image only". They are
 no longer shown as an image card with text and a button below it, so **check live hero campaigns after deploy** and switch any that
-need text to the text layout. Rolling back the API ignores the new fields: strip and popup pages then fall outside the homepage query
-and simply stop appearing.
+need text to the text layout. Rolling back the API is **not** transparent: the previous API rejects the new fields. Follow
+[the rollback steps](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md#rolling-back-the-api).
 
 ## Verification
 

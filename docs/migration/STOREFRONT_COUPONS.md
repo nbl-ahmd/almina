@@ -35,8 +35,9 @@ Behaviour:
 
 Compatibility: the fields are additive with schema defaults. Rows saved before this change read as all-products, unlisted and untitled,
 and keep working unchanged. Older admin clients that omit the fields save all-products coupons. No migration or backfill is needed.
-Rollback: deploy the previous API and storefront together. Stored scope fields are then ignored, which widens scoped coupons to all
-eligible products, so disable scoped codes before rolling back.
+Rollback: the previous checkout ignores scope, which widens scoped coupons to all eligible products, and its admin list rejects rows
+that carry the new fields. Disable scoped codes and follow
+[the rollback steps](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md#rolling-back-the-api) before rolling back.
 
 Tests: `tests/coupon-scope.test.ts` (eligibility and legacy parsing). `tests/coupons-integration.test.ts` covers category and product
 scopes on a mixed basket, the minimum on the eligible subtotal, not-applicable rejection, a legacy row without new fields, and public

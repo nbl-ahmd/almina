@@ -2,18 +2,25 @@
 
 Staff can now build the homepage in Website & growth → Homepage:
 
-- reorder or hide built-in sections;
-- add product rows (category, brand, offers or chosen products), category or brand cards, image tiles, carousels and banner strips;
+- reorder or hide built-in sections, including the promo strip and main carousel;
+- add product rows (category, brand, offers, chosen or combined filters), category or brand cards, image tiles, carousels and strips;
 - set tints, schedules and a "View all" link per section;
-- preview the draft, then publish per language.
+- save a draft without changing the live page, preview it, copy it to Arabic, then publish or unpublish per language;
+- build custom pages from the same sections at `/pages/<slug>`.
 
 Also:
 
-- **Brand pages:** staff pick a catalogue brand and upload a logo.
+- **Brand pages:** staff pick or type a brand and upload a logo; the brands index lists every published brand page and brand.
+- **Banners:** each can show on English, Arabic or both.
+- **Desktop:** paged product shelves, full-width category tiles and "View all" buttons.
+- **Fixed in verification:** saving the homepage layout from the admin failed with 405; signed-in browser tests now cover it.
+- **Rollback:** the previous API rejects pages and coupons saved by this release. Follow the steps in the builder document first.
 - **Artwork:** banners take separate desktop and phone artwork at Aster's measured sizes, contain-fitted. There is a top promo strip
   slot, a poster-style popup and a "Copy to Arabic draft" action.
 - **Storefront:** search stays sticky on scroll, and the phone homepage is more compact.
 - **Category cards:** they fall back to a product photo when no image is uploaded.
+
+The full Playwright suite (238), 244 integration tests, 342 unit tests (3 skipped) and the smoke tests passed locally. Not deployed.
 
 See [STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md).
 
