@@ -981,3 +981,29 @@
     .savings-strip::after { display: none; }
   }
 }
+
+/* ═══════════════════════════ Purchase-page surfaces on phones (1mg) ═══════════════════════════
+   One rule on phones: full-width white sections, separated only by 8px grey bands. No grey above the first section,
+   no floating rounded cards mixed with bands. Desktop keeps white cards on the grey canvas. */
+@media (max-width: 899px) {
+  @scope (.storefront-shell) {
+    :scope:has(:is(.cart-page, .checkout-page, .pdp-page)) main { padding-block-start: 0 !important; }
+    .cart-page .cart-active-heading { margin: 0 calc(var(--qc-gutter) * -1); padding: 12px var(--qc-gutter); background: var(--qc-surface); }
+    .cart-page > .qc-place, .cart-page .cart-layout > .qc-place, .cart-page .qc-place { margin: 0 calc(var(--qc-gutter) * -1) var(--qc-band); padding-inline: var(--qc-gutter); border-radius: 0; border-block-start: 1px solid var(--qc-line); }
+    .pdp-page > .breadcrumb { margin: 0; padding-block: 10px; }
+    .pdp-page .product-detail { margin-block-start: 0; }
+    .checkout-flow .checkout-progress { border-block-end: 1px solid var(--qc-line); }
+    .checkout-flow > .pf-card:first-of-type { margin-block-start: 0; }
+  }
+}
+@media (max-width: 899px) {
+  @scope (.storefront-shell) {
+    .checkout-confirmation-panel { gap: var(--qc-band) !important; }
+    .checkout-confirmation-panel > :is(.pf-tracker, dl, div:not(:first-child):not(:last-child)) { margin-inline: calc(var(--qc-gutter) * -1); padding-inline: var(--qc-gutter) !important; border-radius: 0 !important; }
+    .checkout-confirmation-panel > div:last-child { padding-block-start: 8px !important; }
+    :scope:has(.checkout-completion) main { padding-block-start: 0 !important; }
+    .checkout-completion { padding-block-start: 16px; }
+    :scope:has(.account-page) main { padding-block-start: 0 !important; }
+    .account-page .customer-sign-in, .account-page > section, .account-page > article { margin-inline: calc(var(--qc-gutter) * -1); border-radius: 0 !important; }
+  }
+}
