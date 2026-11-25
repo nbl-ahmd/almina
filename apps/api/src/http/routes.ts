@@ -1,5 +1,5 @@
-import { appliedCouponSchema, couponListQuerySchema, couponListSchema, couponRecordSchema } from '@almina/contracts';
-import { listCoupons, saveCoupon } from '../modules/coupons/service.js';
+import { appliedCouponSchema, couponListQuerySchema, couponListSchema, couponRecordSchema, publicCouponListSchema } from '@almina/contracts';
+import { listCoupons, listPublicCoupons, saveCoupon } from '../modules/coupons/service.js';
 import { deliveryPointSchema } from '@almina/contracts';
 import {stripeCheckoutDtoSchema} from '@almina/contracts';
 import type {StripePayments} from '../modules/payments/stripe.js';
@@ -174,6 +174,12 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
     validate(emptyQuerySchema, req.query);
     verifyBrowserMutation(req, origins);
     send(res, appliedCouponSchema, await commerce.previewCoupon(req.body));
+  });
+  // Public "Coupons & offers": only codes staff marked as listed, live now. Short shared cache; prices are never in it.
+  router.get('/growth/coupons', async (req, res) => {
+    noBody(req); validate(emptyQuerySchema, req.query);
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    send(res, publicCouponListSchema, await listPublicCoupons(await getDb()));
   });
   router.get('/admin/growth/coupons', async (req, res) => {
     noBody(req);

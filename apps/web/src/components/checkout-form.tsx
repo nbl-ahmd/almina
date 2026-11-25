@@ -385,7 +385,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       } catch { /* Committed order remains successful; cart storage cannot undo it. */ }
     } catch (failure) {
       recordCommerceEvent('checkout_failed');
-      if (failure instanceof CheckoutFailure && failure.definite && (!stripeSubmission||['COUPON_UNAVAILABLE','COUPON_MINIMUM','COUPON_COMBINATION','COUPON_PAYMENT_MINIMUM','PRICE_CHANGED','INSUFFICIENT_STOCK','PRODUCT_UNAVAILABLE','MINIMUM_ORDER','INVALID_TRANSITION','COMMERCE_UNAVAILABLE'].includes(failure.code))) {
+      if (failure instanceof CheckoutFailure && failure.definite && (!stripeSubmission||['COUPON_UNAVAILABLE','COUPON_NOT_APPLICABLE','COUPON_MINIMUM','COUPON_COMBINATION','COUPON_PAYMENT_MINIMUM','PRICE_CHANGED','INSUFFICIENT_STOCK','PRODUCT_UNAVAILABLE','MINIMUM_ORDER','INVALID_TRANSITION','COMMERCE_UNAVAILABLE'].includes(failure.code))) {
         try { sessionStorage.removeItem(pendingKey); } catch { /* Same key still cannot duplicate a committed order. */ }
         setAttempt(null); setReviewed(null);
         setError(couponError(failure.code, locale) || errors[failure.code] || t(locale, 'checkoutErrorRejected'));

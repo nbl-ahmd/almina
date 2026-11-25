@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
-import { listCoupons, saveCoupon } from '../apps/api/src/modules/coupons/service';
+import { listCoupons, listPublicCoupons, saveCoupon } from '../apps/api/src/modules/coupons/service';
 import { createCommerceService, quoteHash } from '../apps/api/src/modules/orders/commerce';
 import { approvedPolicy } from '../scripts/migrations/commerce';
 
@@ -74,6 +74,44 @@ test('campaign coupon pricing, configuration and transactional usage', { skip: !
     await assert.rejects(service.quote(input), { code: 'COUPON_UNAVAILABLE' });
     await saveCoupon(db, { ...update, revision: expired.revision, minimumMinor: 0 }, actor);
     assert.equal((await service.quote(input)).coupon?.discountMinor, 5000);
+
+    // Scopes. A second reviewed product in another category lets a scope pick one line out of a mixed basket.
+    const otherCategory = new ObjectId(), lotion = new ObjectId();
+    await db.collection('categories').insertOne({ _id: otherCategory, name: 'Body' });
+    await db.collection('products').insertOne({ ...product, _id: lotion, category: otherCategory, name: 'Reviewed lotion', product_id: 'PD03', productType: 'general', price: 40 });
+    const mixed = [{ productId: String(care), quantity: 1 }, { productId: String(lotion), quantity: 1 }];
+    const categoryCoupon = { code: 'BODY-20', enabled: true, discount: { type: 'percent', basisPoints: 2000, capMinor: null }, minimumMinor: 3000,
+      maximumUses: null, startsAt: null, endsAt: null, revision: 0, title: '20% off body care', description: 'Body care only.',
+      scope: { type: 'categories', categoryIds: [String(otherCategory)] }, listed: true };
+    const savedScope = await saveCoupon(db, categoryCoupon, actor);
+    assert.deepEqual(savedScope.scope, categoryCoupon.scope);
+    // Only the lotion line (AED 40) is discounted: 20% = 800 fils, and the care line gets nothing.
+    const scoped = await service.quote({ items: mixed, customer, couponCode: 'BODY-20' });
+    assert.equal(scoped.coupon?.discountMinor, 800);
+    assert.equal(scoped.lines.find(line => line.productId === String(lotion))!.couponDiscountMinor, 800);
+    assert.equal(scoped.lines.find(line => line.productId === String(care))!.couponDiscountMinor, 0);
+    // The minimum is measured on the eligible subtotal: AED 40 meets AED 30, but a basket without body care does not apply at all.
+    await assert.rejects(service.previewCoupon({ couponCode: 'BODY-20', items: [{ productId: String(care), quantity: 2 }] }), { code: 'COUPON_NOT_APPLICABLE' });
+    await saveCoupon(db, { ...categoryCoupon, revision: savedScope.revision, minimumMinor: 5000 }, actor);
+    await assert.rejects(service.previewCoupon({ couponCode: 'BODY-20', items: mixed }), { code: 'COUPON_MINIMUM' });
+
+    const productCoupon = { ...categoryCoupon, code: 'CARE-ONLY', minimumMinor: 0, discount: { type: 'fixed', amountMinor: 700 }, scope: { type: 'products', productIds: [String(care)] }, listed: false };
+    await saveCoupon(db, productCoupon, actor);
+    const productQuote = await service.quote({ items: mixed, customer, couponCode: 'CARE-ONLY' });
+    assert.equal(productQuote.lines.find(line => line.productId === String(care))!.couponDiscountMinor, 700);
+    assert.equal(productQuote.lines.find(line => line.productId === String(lotion))!.couponDiscountMinor, 0);
+
+    // A row saved before scopes existed (no title, description, scope or listed) still reads and applies to everything eligible.
+    await db.collection('checkout_coupons').insertOne({ _id: 'LEGACY-5' as never, enabled: true, discount: { type: 'fixed', amountMinor: 500 }, minimumMinor: 0,
+      maximumUses: null, startsAt: null, endsAt: null, revision: 1, uses: 0, updatedBy: actor, updatedAt: new Date() });
+    assert.ok((await listCoupons(db)).items.some(item => item.code === 'LEGACY-5' && item.scope.type === 'all' && item.listed === false));
+    assert.equal((await service.previewCoupon({ couponCode: 'LEGACY-5', items: mixed })).discountMinor, 500);
+
+    // Only listed, live codes are public, and their product/category ids are not exposed.
+    const offers = await listPublicCoupons(db);
+    assert.deepEqual(offers.items.map(item => item.code), ['BODY-20']);
+    assert.equal(offers.items[0]!.scope, 'categories');
+    assert.ok(!JSON.stringify(offers).includes(String(otherCategory)));
   } finally {
     await db.dropDatabase();
     await client.close();

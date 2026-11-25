@@ -7,6 +7,7 @@ import type { Locale } from '../lib/i18n';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { TagIcon } from './storefront-icons';
+import { CouponOffers } from './coupon-offers';
 
 export function CouponField({ locale, code, disabled = false, busy = false, error = '', onApply, onRemove }: {
   locale: Locale;
@@ -49,6 +50,7 @@ export function CouponField({ locale, code, disabled = false, busy = false, erro
         <Button type="button" variant="ghost" className="coupon-apply min-h-11 shrink-0" disabled={disabled || !entry.trim()} onClick={apply}>{ar ? 'تطبيق' : 'Apply'}</Button>
       </div>
     </>}
+    {!code ? <CouponOffers locale={locale} disabled={disabled} onApply={next => { setEntry(next); setInvalid(false); onApply(next); }} /> : null}
     {busy && <p role="status" className="m-0 text-xs">{ar ? 'جارٍ التحقق من الرمز…' : 'Checking coupon…'}</p>}
     {issue && <p role="alert" id={id+'-error'} className="m-0 text-xs">{issue}</p>}
   </div>;
