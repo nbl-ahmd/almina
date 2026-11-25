@@ -268,6 +268,7 @@ const fields = new Set([
   "category",
   "color",
   "link",
+  "locale",
   "status",
   "orderId",
   "channel",

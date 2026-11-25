@@ -64,7 +64,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   </div>;
 }
 async function HomeLead() {
-  const [banners, campaigns] = await Promise.allSettled([getBanners(), homepageCampaigns()]);
+  const [banners, campaigns] = await Promise.allSettled([getBanners(await getLocale()), homepageCampaigns()]);
   const liveBanners = banners.status === 'fulfilled' ? banners.value : [];
   const liveCampaigns = campaigns.status === 'fulfilled' ? campaigns.value : [];
   // Managed artwork needs no inventory search. Only the fallback hero uses a product.

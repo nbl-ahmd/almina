@@ -425,6 +425,17 @@ export default async function AdminPage({
                 section: "Banner",
               },
               {
+                name: "locale",
+                label: "Show on",
+                options: [
+                  { value: "all", label: "English and Arabic" },
+                  { value: "en", label: "English storefront only" },
+                  { value: "ar", label: "Arabic storefront only" },
+                ],
+                hint: "For different Arabic artwork, add one banner for English and another for Arabic.",
+                section: "Banner",
+              },
+              {
                 name: "image",
                 label: "Banner image",
                 type: "file",
@@ -449,6 +460,7 @@ export default async function AdminPage({
           columns={[
             { key: "name", label: "Name" },
             { key: "link", label: "Destination" },
+            { key: "locale", label: "Language (blank = both)" },
           ]}
           actions={(item) => (
             <>

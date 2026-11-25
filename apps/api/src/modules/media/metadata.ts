@@ -24,12 +24,15 @@ export function categoryMetadataInput(raw: unknown, partial = false) {
 }
 export function mediaMetadataInput(collection: Collection, raw: unknown): Document {
   if (collection === 'categories') return categoryMetadataInput(raw);
-  const schema = collection === 'banners' ? z.object({ name, link }).strict()
+  const schema = collection === 'banners' ? z.object({ name, link, locale: z.enum(['all', 'en', 'ar']).optional() }).strict()
     : collection === 'whatsappposters' ? z.object({ name: z.string().max(500).optional(), link: z.string().max(2000).optional() }).strict() : null;
   const parsed = schema?.safeParse(raw);
   if (!parsed?.success) throw new HttpError(400, 'INVALID_REQUEST');
   // Legacy poster name/link fields are recognized compatibility input, never published destinations.
-  return collection === 'whatsappposters' ? {} : parsed.data;
+  if (collection === 'whatsappposters') return {};
+  // A banner with no language shows to everyone, which is also what every banner saved before languages existed does.
+  const { locale, ...fields } = parsed.data as { locale?: 'all' | 'en' | 'ar' } & Document;
+  return locale === 'en' || locale === 'ar' ? { ...fields, locale } : fields;
 }
 export async function createMediaMetadata(db: Db, collection: Collection, raw: unknown, actor: string, assets?: { image: string; gdriveFileId: string }) {
   const fields = mediaMetadataInput(collection, raw);

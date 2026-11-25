@@ -86,6 +86,23 @@ export function HomeLayoutEditor() {
     } catch { setIssue('Could not save. Check the sections and try again.'); }
     finally { setBusy(false); }
   }
+  // Copies the sections on screen into the Arabic draft only; the live Arabic homepage changes when someone publishes it.
+  async function copyToArabic() {
+    if (!layout) return;
+    setBusy(true); setIssue(''); setMessage('');
+    try {
+      const current = await fetch('/api/growth/admin/home-layout?locale=ar');
+      if (!current.ok) throw new Error();
+      const arabic = homeLayoutAdminSchema.parse((await current.json()).data);
+      if (arabic.revision > 0 && !window.confirm('Replace the saved Arabic draft with these sections? The live Arabic homepage is not changed.')) return;
+      const parsed = homeLayoutSaveSchema.safeParse({ locale: 'ar', revision: arabic.revision, sections: layout.sections, action: 'save' });
+      if (!parsed.success) { setIssue('Complete every section before copying it to Arabic.'); return; }
+      const response = await fetch('/api/growth/admin/home-layout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' }, body: JSON.stringify(parsed.data) });
+      if (!response.ok) throw new Error();
+      setMessage('Copied to the Arabic draft. Choose Arabic above to translate the titles, replace artwork, then publish.');
+    } catch { setIssue('Could not copy to Arabic. Try again.'); }
+    finally { setBusy(false); }
+  }
   const taken = sections.map(section => section.id);
   return <section className="grid gap-4" aria-labelledby="home-layout-title">
     <div className="flex flex-wrap items-end justify-between gap-3">
@@ -133,7 +150,7 @@ export function HomeLayoutEditor() {
     </li>)}</ol>
     <datalist id="home-layout-brands">{brands.map(name => <option key={name} value={name} />)}</datalist>
     <div className="flex flex-wrap items-center gap-2"><label className={field}>Add a section<select className={selectClass} value="" onChange={event => { const type = event.target.value as CustomType; if (!type) return; const section = newSection(type, taken); set([...sections, section]); setOpen(section.id); }}><option value="">Choose a type…</option>{(Object.keys(typeNames) as CustomType[]).map(type => <option key={type} value={type}>{typeNames[type]}</option>)}</select></label></div>
-    <div className="flex flex-wrap gap-2"><button type="button" className={secondary} disabled={busy} onClick={() => void save('save')}>Save draft</button><a className={secondary + ' inline-flex items-center'} href="/?preview=layout" target="_blank" rel="noopener noreferrer" title={locale === 'ar' ? 'Switch the storefront to العربية to see the Arabic draft' : undefined}>Preview saved draft</a><button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white" disabled={busy} onClick={() => void save('publish')}>Publish homepage</button>{layout.published ? <button type="button" className={secondary} disabled={busy} onClick={() => void save('unpublish')}>Unpublish (use built-in homepage)</button> : null}</div>
+    <div className="flex flex-wrap gap-2"><button type="button" className={secondary} disabled={busy} onClick={() => void save('save')}>Save draft</button>{locale === 'en' ? <button type="button" className={secondary} disabled={busy} onClick={() => void copyToArabic()}>Copy to Arabic draft</button> : null}<a className={secondary + ' inline-flex items-center'} href="/?preview=layout" target="_blank" rel="noopener noreferrer" title={locale === 'ar' ? 'Switch the storefront to العربية to see the Arabic draft' : undefined}>Preview saved draft</a><button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white" disabled={busy} onClick={() => void save('publish')}>Publish homepage</button>{layout.published ? <button type="button" className={secondary} disabled={busy} onClick={() => void save('unpublish')}>Unpublish (use built-in homepage)</button> : null}</div>
     <p className="m-0 text-xs text-mute">Preview shows the last saved draft to signed-in admins only{locale === 'ar' ? '; switch the storefront language to العربية first to see the Arabic layout' : ''}.</p>
     {issue ? <p role="alert" className="m-0 text-sm">{issue}</p> : null}
     {message ? <p role="status" className="m-0 text-sm">{message}</p> : null}
