@@ -155,6 +155,8 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
           categories: [{ label: 'Browse products', href: '/products' }],
           faqs: [{ question: 'Where can I browse?', answer: 'See the catalogue for available items.' }],
         }));
+        editorials.push({ kind: 'page', slug: 'fixture-page', locale, title: 'Fixture page', description: 'Synthetic page description.', published: true,
+          sections: [{ type: 'products', id: 'page-picks', enabled: true, title: 'Page picks', subtitle: '', background: 'green', viewAllHref: '', banner: null, startsAt: null, endsAt: null, source: { kind: 'selected', productIds: [product._id] }, limit: 8 }] });
         const page = [...campaigns, ...editorials].find(item =>
           item.kind === url.searchParams.get('kind') && item.slug === url.searchParams.get('slug'));
         if (!page) res.writeHead(404);

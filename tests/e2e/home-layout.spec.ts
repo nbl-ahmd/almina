@@ -39,3 +39,20 @@ test('without a published layout the built-in homepage and section pages behave 
   await expect(page.getByRole('heading', { name: 'Fixture picks', exact: true })).toHaveCount(0);
   expect((await page.goto('/sections/fixture-picks'))?.status()).toBe(404);
 });
+
+// A staff-built page (Website & growth → Pages, kind page) shows its own sections at /pages/<slug>.
+test('custom page renders its sections with live products', async ({ page, request }) => {
+  const toggle = 'http://127.0.0.1:4711/__fixture/home-campaigns';
+  expect((await request.get(toggle + '?enabled=1')).ok()).toBeTruthy();
+  try {
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect((await page.goto('/pages/fixture-page'))?.status()).toBe(200);
+    await expect(page.getByRole('heading', { name: 'Fixture page', level: 1 })).toBeVisible();
+    const picks = page.getByRole('region', { name: 'Page picks', exact: true });
+    await expect(picks.locator('.product-card')).toHaveCount(1);
+    await expect(picks.getByRole('link', { name: 'View all', exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  } finally {
+    expect((await request.get(toggle + '?enabled=0')).ok()).toBeTruthy();
+  }
+});

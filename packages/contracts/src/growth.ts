@@ -1,10 +1,12 @@
 import { cloudinaryImage } from './media';
 import { z } from 'zod';
+import { localLink } from './links';
+import { homeSectionSchema, maxDataSections } from './home-layout';
 const short = z.string().trim().max(200);
 const text = z.string().trim().max(12000);
 export const growthSlug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100);
-export const growthKinds = ['brand','category','guide','campaign','collection'] as const;
-export const localLink = z.string().max(250).refine(value => /^\/(?!\/)[a-zA-Z0-9/_?=&%-]*$/.test(value) && !value.startsWith('/api') && !value.startsWith('/admin'));
+export const growthKinds = ['brand','category','guide','campaign','collection','page'] as const;
+export { localLink };
 const safeImage = z.union([z.literal(''), z.url().refine(value => value.startsWith('https://') && !new URL(value).username && !new URL(value).password)]);
 export const growthPageSchema = z.object({
   kind:z.enum(growthKinds),slug:growthSlug,locale:z.enum(['en','ar']).default('en'),
@@ -30,7 +32,15 @@ export const growthPageSchema = z.object({
   // A curated bundle is a genuine, staff-chosen complementary set. No discount is implied.
   bundle:z.boolean().default(false),bundleReason:z.string().trim().max(600).default(''),
   terms:z.string().trim().max(3000).default(''),revision:z.number().int().nonnegative().default(0),
+  // Staff-built pages (kind 'page', at /pages/<slug>): the same sections the homepage builder offers.
+  sections:z.array(homeSectionSchema).max(20).default([]),
 }).strict().superRefine((page,ctx)=>{
+  if(page.sections.length){
+    if(page.kind!=='page')ctx.addIssue({code:'custom',path:['sections'],message:'Only a custom page can hold sections.'});
+    if(page.sections.some(section=>section.type==='builtin'))ctx.addIssue({code:'custom',path:['sections'],message:'Built-in homepage sections cannot be placed on a custom page.'});
+    if(new Set(page.sections.map(section=>section.id)).size!==page.sections.length)ctx.addIssue({code:'custom',path:['sections'],message:'Each section needs its own id.'});
+    if(page.sections.filter(section=>section.type==='products'||section.type==='categories').length>maxDataSections)ctx.addIssue({code:'custom',path:['sections'],message:`Use at most ${maxDataSections} product row and category card sections.`});
+  }
   if(page.homepagePlacement!=='none'){
     if(page.productIds.length>40)ctx.addIssue({code:'custom',path:['productIds'],message:'Homepage campaigns support up to 40 pinned products.'});
     if(page.kind!=='campaign')ctx.addIssue({code:'custom',path:['homepagePlacement'],message:'Only campaigns can appear in homepage campaign positions.'});
@@ -45,7 +55,7 @@ export const growthPageSchema = z.object({
     }
   }
   if(page.startsAt&&page.endsAt&&page.startsAt>=page.endsAt)ctx.addIssue({code:'custom',path:['endsAt'],message:'End must follow start.'});
-  if(page.published&&(!page.description||!page.body))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
+  if(page.published&&(!page.description||(!page.body&&!(page.kind==='page'&&page.sections.length))))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
   if(page.published&&page.healthContent&&!page.reviewer)ctx.addIssue({code:'custom',path:['reviewer'],message:'Health content needs a named pharmacy reviewer.'});
   if(page.bundle&&page.kind!=='collection')ctx.addIssue({code:'custom',path:['bundle'],message:'Only a curated collection can be a complementary bundle.'});
   if(page.bundle&&page.productIds.length<2)ctx.addIssue({code:'custom',path:['productIds'],message:'A curated bundle needs at least two chosen products.'});
@@ -66,7 +76,7 @@ export function campaignState(page:Pick<GrowthPage,'startsAt'|'endsAt'>,now=Date
 }
 export function growthPagePath(page:Pick<GrowthPage,'kind'|'slug'|'locale'>) {
   const prefix=page.locale==='ar'?'/ar':'';
-  return `${prefix}/${{brand:'brands',category:'shop',guide:'health-guides',campaign:'offers',collection:'routines'}[page.kind]}/${page.slug}`;
+  return `${prefix}/${{brand:'brands',category:'shop',guide:'health-guides',campaign:'offers',collection:'routines',page:'pages'}[page.kind]}/${page.slug}`;
 }
 
 // Points buy fixed-value vouchers. No reward is active until staff publish complete rules.
@@ -100,6 +110,6 @@ export function campaignImageUrl(value: string, cloudName?: string): string | nu
 
 // Existing strict v1 clients must not receive fields they do not understand.
 export const legacyGrowthPageSchema=growthPageSchema.transform(page=>{
- const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,...legacy}=page;
- void [mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout];return legacy;
+ const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,sections,...legacy}=page;
+ void [mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,sections];return legacy;
 });

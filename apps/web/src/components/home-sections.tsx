@@ -27,13 +27,22 @@ function Linked({ art, className, children, data }: { art: Art; className: strin
   return art.href ? <Link className={className} href={art.href} aria-label={art.alt} {...data}>{children}</Link> : <div className={className} {...data}>{children}</div>;
 }
 
+const ofBrand = (products: Product[], brand: string) => products.filter(product => brandSlug(product.brand || product.familyBrand || '') === brandSlug(brand));
+/** Every filter given must match; the catalogue applies them, and a brand is searched then matched exactly. */
+async function filteredProducts({ categoryId, brand, offers, inStock, minPrice, maxPrice, sort }: Extract<Extract<Custom, { type: 'products' }>['source'], { kind: 'filtered' }>) {
+  const { products } = await getProducts({ ...(brand ? { q: brand } : {}), ...(categoryId ? { category: categoryId } : {}), ...(offers ? { offers: true } : {}), ...(inStock ? { inStock: true } : {}),
+    ...(minPrice === undefined ? {} : { minPrice }), ...(maxPrice === undefined ? {} : { maxPrice }), ...(sort ? { sort } : {}) }).catch(() => ({ products: [] as Product[] }));
+  return brand ? ofBrand(products, brand) : products;
+}
+
 export async function sectionProducts(section: Extract<Custom, { type: 'products' }>, limit = section.limit): Promise<Product[]> {
   const source = section.source;
   const rows = source.kind === 'selected'
     ? (await Promise.allSettled(source.productIds.map(id => getProductById(id)))).flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : [])
-    : source.kind === 'category' ? (await getProducts({ category: source.categoryId }).catch(() => ({ products: [] }))).products
+    : source.kind === 'filtered' ? await filteredProducts(source)
+      : source.kind === 'category' ? (await getProducts({ category: source.categoryId }).catch(() => ({ products: [] }))).products
       : source.kind === 'offers' ? (await getProducts({ offers: true }).catch(() => ({ products: [] }))).products
-        : (await getProducts({ q: source.brand }).catch(() => ({ products: [] }))).products.filter(product => brandSlug(product.brand || product.familyBrand || '') === brandSlug(source.brand));
+        : ofBrand((await getProducts({ q: source.brand }).catch(() => ({ products: [] }))).products, source.brand);
   // In-stock first, keeping the source order; prices and stock are read live, never stored in the layout.
   return [...rows.filter(product => product.stock > 0), ...rows.filter(product => product.stock <= 0)].slice(0, limit);
 }
@@ -41,14 +50,14 @@ export async function sectionProducts(section: Extract<Custom, { type: 'products
 /** Life Pharmacy / Aster sections from the homepage layout: optional thin banner, heading with "View all", then the content. */
 export { Picture as SectionPicture };
 
-export async function CustomHomeSection({ section, locale, cloudName, categories, logos }: { section: Custom; locale: Locale; cloudName?: string | undefined; categories: Category[]; logos: Map<string, string> }) {
+export async function CustomHomeSection({ section, locale, cloudName, categories, logos, sectionPages = true }: { section: Custom; locale: Locale; cloudName?: string | undefined; categories: Category[]; logos: Map<string, string>; sectionPages?: boolean }) {
   const ar = locale === 'ar';
   let content: React.ReactNode = null, viewAll = section.viewAllHref;
   if (section.type === 'products') {
     const products = await sectionProducts(section);
     if (!products.length) return null;
     if (!viewAll) viewAll = section.source.kind === 'category' ? (() => { const category = categories.find(item => item._id === (section.source as { categoryId: string }).categoryId); return category ? categoryHref(category) : ''; })()
-      : section.source.kind === 'brand' ? '/brands/' + brandSlug(section.source.brand) : section.source.kind === 'offers' ? '/offers' : `/sections/${section.id}`;
+      : section.source.kind === 'brand' ? '/brands/' + brandSlug(section.source.brand) : section.source.kind === 'offers' ? '/offers' : sectionPages ? `/sections/${section.id}` : '';
     content = <div className="home-product-grid qc-rail">{products.map(product => <ProductCard key={product._id} product={product} />)}</div>;
   } else if (section.type === 'categories') {
     const chosen = section.categoryIds.flatMap(id => categories.filter(category => category._id === id && !category.disabled));

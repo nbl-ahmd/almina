@@ -19,7 +19,7 @@ export function hasDuplicateQuery(query: Query) {
 export function isPublicPath(path: string) {
   return ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', '/health-guides',
     ...Object.values(policyPaths)].includes(path)
-    || /^\/(products|categories|brands|shop|health-guides|offers|routines|collections)\/[^/]+$/.test(path) || /^\/ar\/(brands|shop|health-guides|offers|routines)\/[^/]+$/.test(path);
+    || /^\/(products|categories|brands|shop|health-guides|offers|routines|collections|pages)\/[^/]+$/.test(path) || /^\/ar\/(brands|shop|health-guides|offers|routines|pages)\/[^/]+$/.test(path);
 }
 export function catalogPageNumber(path:string,query:Query):number|null {
   if(!['/products','/offers'].includes(path)&&!/^\/categories\/[^/]+$/.test(path))return null;

@@ -24,8 +24,9 @@ export async function saveGrowthPage(db:Db,raw:unknown,actor:string) {
   } catch(error) { if(error instanceof Error&&'code' in error&&error.code===11000)throw new HttpError(409,'IDEMPOTENCY_CONFLICT');throw error; }
   return {...page,revision:page.revision+1};
 }
-export async function growthPages(db:Db,admin=false,kind?:string,locale='en',offset=0) {
-  const rows=await db.collection('growth_pages').find({...(!admin?{published:true}:{}),...(kind?{kind}:{}),locale},{maxTimeMS:3000,projection:{_id:0,updatedBy:0,updatedAt:0}}).sort({updatedAt:-1}).skip(offset).limit(51).toArray();
+export async function growthPages(db:Db,admin=false,kind?:string,locale='en',offset=0,customPages=true) {
+  // Older clients do not know custom pages, so their lists leave them out.
+  const rows=await db.collection('growth_pages').find({...(!admin?{published:true}:{}),...(kind?{kind}:customPages?{}:{kind:{$ne:'page'}}),locale},{maxTimeMS:3000,projection:{_id:0,updatedBy:0,updatedAt:0}}).sort({updatedAt:-1}).skip(offset).limit(51).toArray();
   return {items:rows.slice(0,50).map(row=>growthPageSchema.parse(row)),hasNext:rows.length>50};
 }
 export async function growthPage(db:Db,kind:string,slug:string,locale:string,admin=false) {
@@ -53,7 +54,7 @@ export async function savePharmacyProfile(db:Db,raw:unknown,actor:string) {
 /** Old admin tabs edit existing content without silently clearing new merchandising fields. */
 export async function saveLegacyGrowthPage(db:Db,raw:unknown,actor:string){
  const parsed=growthPageSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
- const fields=['mobileImage','homepagePlacement','priority','ctaLabel','heroLayout','textTone','ctaHref','stripSlot','popupLayout'] as const;
+ const fields=['mobileImage','homepagePlacement','priority','ctaLabel','heroLayout','textTone','ctaHref','stripSlot','popupLayout','sections'] as const;
  if(fields.some(field=>raw&&typeof raw==='object'&&field in raw))throw new HttpError(400,'INVALID_REQUEST');
  const row=await db.collection<Document&{_id:string}>('growth_pages').findOne({_id:key(parsed.data)},{maxTimeMS:3000,projection:Object.fromEntries(fields.map(field=>[field,1]))});
  const kept=Object.fromEntries(fields.flatMap(field=>row?.[field]===undefined?[]:[[field,row[field]]]));

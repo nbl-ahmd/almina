@@ -2,9 +2,10 @@ import { GrowthActivity } from './growth-activity';
 import Image from 'next/image';
 import Link from './app-link';
 import { notFound } from 'next/navigation';
-import { campaignImageUrl,campaignState,growthPagePath,type GrowthPage } from '@almina/contracts';
+import { campaignImageUrl,campaignState,growthPagePath,sectionLive,type GrowthPage } from '@almina/contracts';
 import { getGrowthPage } from '../lib/server/growth';
-import { getProductById, getProducts } from '../lib/server/catalog';
+import { getCategories, getProductById, getProducts } from '../lib/server/catalog';
+import { CustomHomeSection } from './home-sections';
 import { metadataFor } from '../lib/server/seo';
 import { getWebEnvironment } from '../lib/server/env';
 import { breadcrumbData, collectionData, faqData } from '../lib/seo';
@@ -42,7 +43,7 @@ async function resolve(kind:GrowthPage['kind'],slug:string,locale='en') {
   }
   if(!name)return null;
   if(!(await getProducts({q:name})).products.length)return null;
-  return {kind:'brand',slug,locale:'en',title:name,description:`Explore ${name} products, current AED prices and availability at Al Mina Pharmacy in Ras Al Khaimah.`,body:`Browse the available ${name} range below. Compare pack sizes and product details to find the option that suits your routine.\n\nEach product page includes its current price and available details. Check the packaging directions and ask the pharmacy if you need help choosing. Delivery charges and the final total are confirmed at checkout.`,image:'',imageAlt:'',mobileImage:'',homepagePlacement:'none',priority:0,ctaLabel:'',heroLayout:'image',textTone:'dark',ctaHref:'',stripSlot:'home-middle',popupLayout:'card',productIds:[],categories:[],faqs:[],published:true,healthContent:false,reviewer:'',startsAt:null,endsAt:null,bundle:false,bundleReason:'',terms:'',revision:0} satisfies GrowthPage;
+  return {kind:'brand',slug,locale:'en',title:name,description:`Explore ${name} products, current AED prices and availability at Al Mina Pharmacy in Ras Al Khaimah.`,body:`Browse the available ${name} range below. Compare pack sizes and product details to find the option that suits your routine.\n\nEach product page includes its current price and available details. Check the packaging directions and ask the pharmacy if you need help choosing. Delivery charges and the final total are confirmed at checkout.`,image:'',imageAlt:'',mobileImage:'',homepagePlacement:'none',priority:0,ctaLabel:'',heroLayout:'image',textTone:'dark',ctaHref:'',stripSlot:'home-middle',popupLayout:'card',productIds:[],categories:[],faqs:[],published:true,healthContent:false,reviewer:'',startsAt:null,endsAt:null,bundle:false,bundleReason:'',terms:'',revision:0,sections:[]} satisfies GrowthPage;
 }
 export async function growthMetadata(kind:GrowthPage['kind'],slug:string,locale='en') {
   const page=await resolve(kind,slug,locale);if(!page)notFound();
@@ -65,6 +66,9 @@ export async function GrowthLanding({kind,slug,locale='en'}:{kind:GrowthPage['ki
   const products=page.productIds.length?selected.filter(item=>item!==null):kind==='brand'?(exact.length?exact:brands[slug]?searched:[]):[];
   const facts=kind==='brand'&&products.length?brandFacts(brandLabel,products):null;
   const origin=getWebEnvironment().WEB_ORIGIN;
+  // Custom pages show the homepage builder's sections, with live products.
+  const sections=page.sections.filter(section=>sectionLive(section));
+  const categories=sections.length?await getCategories().catch(()=>[]):[];
   return <GrowthActivity kind="campaign" campaign={kind==='campaign'&&state==='active'&&!page.healthContent?slug:undefined}><article lang={locale} dir={locale==='ar'?'rtl':'ltr'} className="space-y-6"><StructuredData data={breadcrumbData(origin,[{name:'Home',path:'/'},...(kind==='brand'?[{name:'Brands',path:'/brands'}]:[]),{name:page.title,path:growthPagePath(page)}])} />{kind==='brand'||kind==='category'||kind==='collection'?<StructuredData data={collectionData(origin,{name:page.title,description:page.description,path:growthPagePath(page)},products.map(item=>({name:item.name,href:productHref(item)})))} />:null}{faqData(page.faqs)?<StructuredData data={faqData(page.faqs)} />:null}<Breadcrumb title={page.title} /><StorefrontIntro title={page.title} description={page.description} />
     {kind==='brand'&&page.image&&campaignImageUrl(page.image,getWebEnvironment().CLOUDINARY_CLOUD_NAME)?<span className="brand-landing-logo"><Image src={campaignImageUrl(page.image,getWebEnvironment().CLOUDINARY_CLOUD_NAME)!} alt={page.imageAlt||`${page.title} logo`} width={240} height={240} sizes="120px" /></span>
       :page.image?<Image src={page.image} alt={page.imageAlt} width={1400} height={500} sizes="100vw" className="h-auto max-h-96 w-full rounded-2xl object-contain" />:null}
@@ -74,6 +78,7 @@ export async function GrowthLanding({kind,slug,locale='en'}:{kind:GrowthPage['ki
     {facts&&page.revision===0?null:<div className="max-w-prose space-y-4 text-sm leading-7">{page.body.split(/\n\s*\n/).filter(Boolean).map((paragraph,index)=><p key={index} className="whitespace-pre-wrap">{paragraph}</p>)}</div>}
     {kind==='collection'&&page.bundle&&products.length?<section className="rounded-2xl p-5"><h2 className="mb-2 text-2xl">{locale==='ar'?'مجموعة مختارة':'Curated together'}</h2><p className="mb-4 text-sm leading-7">{page.bundleReason}</p><BundleAdd items={products.filter(item=>item.stock>0).map(item=>({id:item._id,name:item.name,stock:item.stock}))} /><p className="mb-0 mt-3 text-xs">{locale==='ar'?'اختيار فريق الصيدلية. تطبق الأسعار الحالية والتوفر عند الدفع.':'Chosen by the pharmacy team. Standard prices and current availability apply at checkout.'}</p></section>:null}
     {products.length&&(kind!=='campaign'||state==='active')?<section><h2 className="mb-4 text-2xl">{locale==='ar'?'تسوق المنتجات':'Shop the range'}</h2><ProductGrid products={products} headingLevel={3} /></section>:null}
+    {sections.map(section=>section.type==='builtin'?null:<CustomHomeSection key={section.id} section={section} locale={locale==='ar'?'ar':'en'} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} categories={categories} logos={new Map()} sectionPages={false} />)}
     {page.faqs.length?<section className="max-w-3xl"><h2 className="mb-4 text-2xl">{locale==='ar'?'أسئلة شائعة':'Helpful answers'}</h2>{page.faqs.map(faq=><details key={faq.question} className="border-b py-2"><summary className="min-h-11 cursor-pointer py-3 font-medium">{faq.question}</summary><p className="text-sm leading-7">{faq.answer}</p></details>)}</section>:null}
     {page.terms?<section className="rounded-2xl p-5"><h2 className="mb-3 text-lg">{locale==='ar'?'الشروط':'Offer terms'}</h2><p className="mb-0 whitespace-pre-wrap text-sm leading-6">{page.terms}</p></section>:null}
     {page.reviewer?<p className="text-xs">{locale==='ar'?'تمت المراجعة بواسطة':'Reviewed by'} {page.reviewer}</p>:null}

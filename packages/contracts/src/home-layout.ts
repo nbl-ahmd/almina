@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { localLink } from './growth';
+import { localLink } from './links';
 
 /** Homepage layout managed in Website & growth → Homepage (Life Pharmacy / Aster style sections).
  *  One document per locale. Built-in sections (categories, shelves, brands…) are listed by key so staff can reorder or hide them;
@@ -25,6 +25,10 @@ export const productSourceSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('brand'), brand: z.string().trim().min(1).max(100) }).strict(),
   z.object({ kind: z.literal('offers') }).strict(),
   z.object({ kind: z.literal('selected'), productIds: z.array(objectId).min(1).max(40) }).strict(),
+  // Combined filters: every condition given must match. Only filters the catalogue already supports.
+  z.object({ kind: z.literal('filtered'), categoryId: objectId.optional(), brand: z.string().trim().min(1).max(100).optional(), offers: z.boolean().optional(),
+    inStock: z.boolean().optional(), minPrice: z.number().min(0).max(100000).multipleOf(0.01).optional(), maxPrice: z.number().min(0).max(100000).multipleOf(0.01).optional(),
+    sort: z.enum(['relevance', 'price-asc', 'price-desc', 'name']).optional() }).strict(),
 ]);
 export const homeSectionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('builtin'), key: z.enum(homeBuiltinKeys), id, enabled: z.boolean().default(true) }).strict(),
@@ -35,6 +39,11 @@ export const homeSectionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('carousel'), ...common, slides: z.array(image.extend({ image: artwork.refine(Boolean) })).min(1).max(10) }).strict(),
   z.object({ type: z.literal('strip'), ...common, strip: image.extend({ image: artwork.refine(Boolean) }) }).strict(),
 ]).superRefine((section, ctx) => {
+  if (section.type === 'products' && section.source.kind === 'filtered') {
+    const { categoryId, brand, offers, inStock, minPrice, maxPrice } = section.source;
+    if (!categoryId && !brand && !offers && !inStock && minPrice === undefined && maxPrice === undefined) ctx.addIssue({ code: 'custom', path: ['source'], message: 'Choose at least one filter.' });
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) ctx.addIssue({ code: 'custom', path: ['source'], message: 'The minimum price is above the maximum.' });
+  }
   if (section.type !== 'builtin' && section.startsAt && section.endsAt && section.startsAt >= section.endsAt) ctx.addIssue({ code: 'custom', path: ['endsAt'], message: 'End must follow start.' });
   if (section.type !== 'builtin' && section.type !== 'strip' && section.type !== 'carousel' && !section.title) ctx.addIssue({ code: 'custom', path: ['title'], message: 'Give this section a title.' });
   const images = section.type === 'images' ? section.tiles : section.type === 'carousel' ? section.slides : section.type === 'strip' ? [section.strip] : [];

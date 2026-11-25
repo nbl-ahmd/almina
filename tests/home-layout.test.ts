@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultHomeLayout, homeBuiltinKeys, homeLayoutSchema, sectionLive, withTopSections } from '@almina/contracts';
+import { defaultHomeLayout, growthPagePath, growthPageSchema, homeBuiltinKeys, homeLayoutSchema, legacyGrowthPageSchema, sectionLive, withTopSections } from '@almina/contracts';
 
 const art = 'https://res.cloudinary.com/demo/image/upload/sample.jpg';
 const base = { enabled: true, subtitle: '', background: 'none', viewAllHref: '', banner: null, startsAt: null, endsAt: null };
@@ -44,4 +44,23 @@ test('layouts saved before the carousel could move keep it at the top; a saved p
   assert.deepEqual(withTopSections(old).slice(0, 3).map(section => section.id), ['promo', 'hero', 'categories']);
   const moved = [old[0]!, { type: 'builtin' as const, key: 'hero' as const, id: 'hero', enabled: true }, ...old.slice(1)];
   assert.deepEqual(withTopSections(moved).slice(0, 3).map(section => section.id), ['promo', 'categories', 'hero']);
+});
+
+test('combined filters need at least one condition and a sensible price range', () => {
+  const layout = (source: unknown) => homeLayoutSchema.safeParse({ locale: 'en', revision: 0, sections: [{ ...base, type: 'products', id: 'p', title: 'P', source }] }).success;
+  assert.equal(layout({ kind: 'filtered', categoryId: 'aaaaaaaaaaaaaaaaaaaaaaaa', brand: 'CeraVe', maxPrice: 50, inStock: true, sort: 'price-asc' }), true);
+  assert.equal(layout({ kind: 'filtered', sort: 'name' }), false);
+  assert.equal(layout({ kind: 'filtered', minPrice: 60, maxPrice: 50 }), false);
+  assert.equal(layout({ kind: 'filtered', inStock: true, filter: '{}' }), false);
+});
+
+test('a custom page holds homepage-style sections and publishes without body text', () => {
+  const page = { kind: 'page', slug: 'summer', title: 'Summer care', description: 'Seasonal picks.', published: true,
+    sections: [{ ...base, type: 'products', id: 'p', title: 'Picks', source: { kind: 'offers' } }] };
+  assert.equal(growthPageSchema.safeParse(page).success, true);
+  assert.equal(growthPagePath(growthPageSchema.parse(page)), '/pages/summer');
+  assert.equal(growthPageSchema.safeParse({ ...page, sections: [] }).success, false);
+  assert.equal(growthPageSchema.safeParse({ ...page, kind: 'guide' }).success, false);
+  assert.equal(growthPageSchema.safeParse({ ...page, sections: [{ type: 'builtin', key: 'brands', id: 'brands' }] }).success, false);
+  assert.ok(!('sections' in (legacyGrowthPageSchema.parse(page) as Record<string, unknown>)));
 });
