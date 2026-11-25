@@ -311,7 +311,7 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   const growthQuery=growthZ.object({kind:growthZ.enum(growthKinds).optional(),locale:growthZ.enum(['en','ar']).default('en'),offset:growthZ.coerce.number().int().min(0).max(10000).default(0),merchandising:growthZ.literal('1').optional()}).strict();
   const pageQuery=growthZ.object({kind:growthZ.enum(growthKinds),slug:growthSlug,locale:growthZ.enum(['en','ar']).default('en'),merchandising:growthZ.literal('1').optional()}).strict();
   const growthList=(modern:boolean)=>growthZ.object({items:growthZ.array(modern?growthPageSchema:legacyGrowthPageSchema),hasNext:growthZ.boolean()});
-  read('/growth/campaigns',async(req,res)=>{const query=validate(growthZ.object({locale:growthZ.enum(['en','ar']).default('en')}).strict(),req.query);send(res,growthZ.array(growthPageSchema).max(12),await homepageCampaigns(await getDb(),query.locale));});
+  read('/growth/campaigns',async(req,res)=>{const query=validate(growthZ.object({locale:growthZ.enum(['en','ar']).default('en')}).strict(),req.query);send(res,growthZ.array(growthPageSchema).max(24),await homepageCampaigns(await getDb(),query.locale));});
   router.post('/admin/growth/campaign-review',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);verifyBrowserMutation(req,origins);send(res,campaignReviewSchema,await reviewCampaign(await getDb(),req.body));});
   router.all('/admin/growth/campaign-review',(_req,res,next)=>{res.set('Allow','POST');next(new HttpError(405,'METHOD_NOT_ALLOWED'));});
   read('/growth/pages',async(req,res)=>{const query=validate(growthQuery,req.query);send(res,growthList(query.merchandising==='1'),await growthPages(await getDb(),false,query.kind,query.locale,query.offset));});

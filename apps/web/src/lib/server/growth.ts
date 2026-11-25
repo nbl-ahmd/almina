@@ -23,4 +23,4 @@ export async function getProductReviews(productId:string){
  try{return z.object({items:z.array(z.object({rating:z.number().int().min(1).max(5),displayName:z.string(),title:z.string(),body:z.string(),createdAt:z.string(),verifiedPurchase:z.literal(true)})),ratingCount:z.number().int().nonnegative(),average:z.number().nullable()}).parse(await read('reviews?productId='+encodeURIComponent(productId)));}catch{return null;}
 }
 
-export async function getHomepageCampaigns(locale: 'en' | 'ar') { return z.array(growthPageSchema).max(12).parse(await read('campaigns?'+new URLSearchParams({locale}))??[]); }
+export async function getHomepageCampaigns(locale: 'en' | 'ar') { return z.array(growthPageSchema).max(24).parse(await read('campaigns?'+new URLSearchParams({locale}))??[]); }

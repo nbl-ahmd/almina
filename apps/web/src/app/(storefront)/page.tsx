@@ -1,3 +1,4 @@
+import { SectionStrips } from '../../components/hero-banner';
 import { getHomepageCampaigns } from '../../lib/server/growth';
 import { getLocale } from '../../lib/server/i18n';
 import { shopText as u } from '../../lib/i18n-storefront';
@@ -124,7 +125,7 @@ async function HomeContent() {
   });
   const shelf = uniqueProducts([...varied, ...photoReady, ...available]).slice(
     0,
-    4,
+    8,
   );
   // Prefer new discoveries, but keep useful collections visible in a small catalogue.
   const offerShelf = offers.filter(
@@ -159,6 +160,7 @@ async function HomeContent() {
             (a, b) => categoryRank(a.name) - categoryRank(b.name),
           )}
         />
+        <SectionStrips pages={campaigns} slot="home-top" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
         <HomeShelf
           title={u(locale,"Your everyday essentials")}
           description={u(locale,"Small essentials. A little more care, every day.")}
@@ -176,6 +178,7 @@ async function HomeContent() {
             </Link>
           </section>
         ) : null}
+        <SectionStrips pages={campaigns} slot="home-middle" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
         <HomeCollectionTiles collections={collectionTiles} />
         {offerShelf.length >= 2 ? (
           <HomeShelf
@@ -198,6 +201,7 @@ async function HomeContent() {
           products={budgetShelf}
           href="/collections/under-50"
         />
+        <SectionStrips pages={campaigns} slot="home-bottom" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
         <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} />
         <HomeManagedCampaigns campaigns={campaigns} />
         <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />

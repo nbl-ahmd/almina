@@ -11,7 +11,13 @@ export const growthPageSchema = z.object({
   title:short.min(3),description:z.string().trim().max(320),body:text.default(''),
   image:safeImage.default(''),imageAlt:short.default(''),
   mobileImage:safeImage.default(''),
-  homepagePlacement:z.enum(['none','hero','secondary']).default('none'),
+  // hero: main carousel · secondary: paired campaign cards · strip: thin wide section banner · popup: storefront offer/info modal.
+  homepagePlacement:z.enum(['none','hero','secondary','strip','popup']).default('none'),
+  // Hero artwork: 'image' is a finished banner (the whole slide links); 'overlay' adds the title, text and button on the start side,
+  // over a safe zone the designer leaves empty. Existing campaigns default to 'image' so no text is drawn over finished artwork.
+  heroLayout:z.enum(['image','overlay']).default('image'),textTone:z.enum(['dark','light']).default('dark'),
+  ctaHref:z.union([z.literal(''),localLink]).default(''),
+  stripSlot:z.enum(['home-top','home-middle','home-bottom','listing']).default('home-middle'),
   priority:z.number().int().min(0).max(100).default(0),
   ctaLabel:z.string().trim().max(60).default(''),
   productIds:z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(80).default([]),
@@ -27,7 +33,13 @@ export const growthPageSchema = z.object({
     if(page.productIds.length>40)ctx.addIssue({code:'custom',path:['productIds'],message:'Homepage campaigns support up to 40 pinned products.'});
     if(page.kind!=='campaign')ctx.addIssue({code:'custom',path:['homepagePlacement'],message:'Only campaigns can appear in homepage campaign positions.'});
     if(new Set(page.productIds).size!==page.productIds.length)ctx.addIssue({code:'custom',path:['productIds'],message:'Choose each campaign product once.'});
-    if(page.published&&(!page.image||!page.imageAlt||!page.ctaLabel||!page.terms))ctx.addIssue({code:'custom',path:['image'],message:'Homepage campaigns need desktop artwork, image description, button text and offer terms before publishing.'});
+    if(page.published&&page.homepagePlacement==='popup'){
+      if(!page.description&&!page.image)ctx.addIssue({code:'custom',path:['description'],message:'A popup needs a message or artwork.'});
+      if(page.image&&!page.imageAlt)ctx.addIssue({code:'custom',path:['imageAlt'],message:'Describe the popup artwork.'});
+    }else if(page.published){
+      const needsButton=page.homepagePlacement==='secondary'||(page.homepagePlacement==='hero'&&page.heroLayout==='overlay');
+      if(!page.image||!page.imageAlt||!page.terms||(needsButton&&!page.ctaLabel))ctx.addIssue({code:'custom',path:['image'],message:needsButton?'Homepage campaigns need desktop artwork, image description, button text and offer terms before publishing.':'Banners need artwork, an image description and offer terms before publishing.'});
+    }
   }
   if(page.startsAt&&page.endsAt&&page.startsAt>=page.endsAt)ctx.addIssue({code:'custom',path:['endsAt'],message:'End must follow start.'});
   if(page.published&&(!page.description||!page.body))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
@@ -85,6 +97,6 @@ export function campaignImageUrl(value: string, cloudName?: string): string | nu
 
 // Existing strict v1 clients must not receive fields they do not understand.
 export const legacyGrowthPageSchema=growthPageSchema.transform(page=>{
- const {mobileImage,homepagePlacement,priority,ctaLabel,...legacy}=page;
- void [mobileImage,homepagePlacement,priority,ctaLabel];return legacy;
+ const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,...legacy}=page;
+ void [mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot];return legacy;
 });

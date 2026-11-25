@@ -18,6 +18,8 @@ for (const width of [390, 1280]) test(`staff can preview, review and place a cam
   await page.getByLabel('Mobile artwork URL', { exact: false }).fill('https://cdn.alminapharmacy.com/cdn/synthetic/mobile.webp');
   await page.getByRole('combobox', { name: 'Homepage position', exact: true }).selectOption('hero');
   await page.getByRole('spinbutton', { name: /^Display priority/ }).fill('75');
+  // Text over the artwork's safe zone; the default 'Finished image only' layout shows artwork alone.
+  await page.getByRole('combobox', { name: 'Carousel layout', exact: false }).selectOption('overlay');
   await page.getByLabel('Campaign button text', { exact: true }).fill('Explore synthetic care');
   await page.getByLabel('Campaign terms', { exact: true }).fill('Current prices apply. While stock is available. No additional discount.');
   await page.getByRole('button', { name: 'Mobile', exact: true }).click();

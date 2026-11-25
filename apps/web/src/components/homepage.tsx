@@ -1,3 +1,4 @@
+import { HeroBanner } from './hero-banner';
 import { getWebEnvironment } from '../lib/server/env';
 import { CampaignArtwork } from './campaign-artwork';
 import type { GrowthPage } from '@almina/contracts';
@@ -67,10 +68,11 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
     <h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
     <CampaignSlider locale={locale} label={u(locale, 'Pharmacy promotions')} controlLabel={u(locale, 'promotion')}>
       {[
-        ...heroCampaigns.map((page, index) => <CampaignArtwork cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),
+        ...heroCampaigns.map((page, index) => <HeroBanner cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),
+        // Legacy banners from /admin/banners use the same fixed-height frame (finished artwork, cover-fitted).
         ...banners.slice(0, 8).map((banner, index) => {
-          const artwork = <div className="catalog-banner-artwork"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} className="object-contain" /></div>;
-          return banner.href ? <Link href={banner.href} key={banner.image}>{artwork}</Link> : <div key={banner.image}>{artwork}</div>;
+          const artwork = <picture className="qc-banner-art"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} fetchPriority={index === 0 && !heroCampaigns.length ? 'high' : undefined} /></picture>;
+          return banner.href ? <Link href={banner.href} key={banner.image} className="qc-hero" data-layout="image" aria-label={banner.name}>{artwork}</Link> : <div key={banner.image} className="qc-hero" data-layout="image">{artwork}</div>;
         }),
         ...(!heroCampaigns.length && !banners.length ? [<div key="everyday" className="fallback-campaign">
           <div className="campaign-copy">

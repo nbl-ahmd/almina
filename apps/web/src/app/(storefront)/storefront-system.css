@@ -1029,3 +1029,70 @@
   .coupon-offer-code { padding: 3px 8px; border: 1px dashed var(--qc-line-strong); border-radius: var(--qc-r-xs); color: var(--qc-ink); background: var(--qc-well); font-weight: 800; letter-spacing: .04em; }
   .coupon-offers-sheet .qc-sheet-body { background: var(--qc-bg); }
 }
+
+/* ═══════════════════════════ Managed banners (hero, section strips, popup) ═══════════════════════════
+   Fixed frames so the page never shifts as artwork loads. Hero 800×400 on phones, 1440×400 on desktop; strips 800×200 / 1440×200. */
+@scope (.storefront-shell) {
+  .qc-hero { position: relative; display: block; overflow: hidden; inline-size: 100%; aspect-ratio: 2 / 1; border-radius: var(--qc-r-lg); background: var(--qc-well); color: var(--qc-ink); text-decoration: none; isolation: isolate; }
+  .qc-banner-art { position: absolute; inset: 0; display: block; }
+  .qc-banner-art img { object-fit: cover; }
+  .qc-banner-empty { display: grid; place-items: center; block-size: 100%; padding: 16px; color: var(--qc-muted); font-size: var(--qc-fs-13); }
+  /* Overlay: the copy sits on the start side, inside the safe zone (about 45% of the width) the artwork leaves empty. */
+  .qc-hero-copy { position: absolute; inset-block: 0; inset-inline-start: 0; z-index: 1; display: grid; align-content: center; justify-items: start; gap: 6px; inline-size: min(52%, 520px); padding: 16px 18px; }
+  .qc-hero-title { font-size: clamp(var(--qc-fs-18), .95rem + 1.6vw, 2.25rem); font-weight: 800; line-height: 1.12; letter-spacing: -.02em; text-wrap: balance; }
+  .qc-hero-text { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: clamp(var(--qc-fs-12), .7rem + .5vw, var(--qc-fs-16)); font-weight: 600; line-height: 1.4; opacity: .9; }
+  .qc-hero-cta { display: inline-flex; align-items: center; gap: 6px; min-block-size: 36px; margin-block-start: 6px; padding: 0 16px; border-radius: var(--qc-r-pill); color: var(--qc-on-action); background: var(--qc-action); font-size: var(--qc-fs-13); font-weight: 800; transition: background-color var(--qc-t-fast) var(--qc-ease-out); }
+  .qc-hero-cta svg { inline-size: 16px; block-size: 16px; }
+  .qc-hero[data-tone="light"] { color: var(--qc-surface); }
+  .qc-hero[data-tone="light"] .qc-hero-cta { color: var(--qc-ink); background: var(--qc-surface); }
+  .qc-hero:active { transform: scale(.99); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
+  @media (hover: hover) and (pointer: fine) { .qc-hero:hover .qc-hero-cta { background: var(--qc-action-hover); } .qc-hero[data-tone="light"]:hover .qc-hero-cta { background: var(--qc-well); } }
+  .qc-hero[data-preview="mobile"] { aspect-ratio: 2 / 1; max-inline-size: 390px; }
+  .qc-hero[data-preview="desktop"] { aspect-ratio: 18 / 5; }
+
+  /* Section strips (Life Pharmacy "Deals under AED 49"): thin and wide, finished artwork. */
+  .qc-strips { display: grid; gap: 10px; }
+  .qc-strip { position: relative; display: block; overflow: hidden; inline-size: 100%; aspect-ratio: 4 / 1; border-radius: var(--qc-r-md); background: var(--qc-well); transition: transform var(--qc-t-tap) var(--qc-ease-out); }
+  .qc-strip:active { transform: scale(.99); }
+  .qc-strip[data-preview="desktop"] { aspect-ratio: 36 / 5; }
+  .catalog-results > .qc-strips { margin-block-end: 12px; }
+
+  /* Popup: a bottom sheet on phones, a centred 420px card from 600px; artwork on top, message and one action below. */
+  dialog.qc-popup { max-block-size: calc(100dvh - 96px); }
+  .qc-popup-body { display: grid; max-block-size: calc(100dvh - 96px); overflow-y: auto; border-radius: inherit; }
+  .qc-popup-art { position: relative; inline-size: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--qc-r-xl) var(--qc-r-xl) 0 0; background: var(--qc-well); }
+  .qc-popup-art img { object-fit: cover; }
+  .qc-popup-copy { display: grid; gap: 8px; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); }
+  .qc-popup-copy h2 { margin: 0; font-size: var(--qc-fs-20); line-height: 1.25; }
+  .qc-popup-copy p { margin: 0; color: var(--qc-ink-2); font-size: var(--qc-fs-15); line-height: 1.5; }
+  .qc-popup-actions { display: grid; gap: 4px; margin-block-start: 8px; }
+  .qc-popup-actions .button { inline-size: 100%; min-block-size: 52px; }
+  .qc-popup-dismiss { min-block-size: 44px; border: 0; background: transparent; color: var(--qc-ink-2); font-weight: 700; }
+}
+@media (min-width: 900px) {
+  @scope (.storefront-shell) {
+    .qc-hero { aspect-ratio: 18 / 5; }
+    .qc-hero-copy { padding: 32px 48px; gap: 10px; }
+    .qc-hero-cta { min-block-size: 44px; padding: 0 22px; font-size: var(--qc-fs-15); }
+    .qc-strip { aspect-ratio: 36 / 5; }
+    .qc-strips:has(> :nth-child(2)) { grid-template-columns: 1fr 1fr; }
+    .qc-strips:has(> :nth-child(2)) .qc-strip { aspect-ratio: 18 / 5; }
+  }
+}
+@media (min-width: 600px) { @scope (.storefront-shell) { dialog:is(.qc-popup, .coupon-offers-sheet) { inline-size: min(420px, calc(100vw - 48px)); block-size: fit-content; } dialog.qc-popup .qc-popup-art { border-radius: var(--qc-r-xl) var(--qc-r-xl) 0 0; } } }
+@scope (.storefront-shell) {
+  /* Overlay hero: the button's hit area covers the whole slide; the copy stays above it for selection. */
+  .qc-hero .qc-stretched::after { content: ""; position: absolute; inset: 0; z-index: 0; }
+  .qc-hero-copy { pointer-events: none; }
+  .qc-hero-copy .qc-stretched { pointer-events: auto; }
+  .qc-hero-title { margin: 0; color: inherit; }
+  .qc-hero-text { margin: 0; }
+  article.qc-hero:has(.qc-stretched:active) { transform: scale(.99); }
+}
+@scope (.storefront-shell) {
+  /* The copy is in normal flow (not positioned), so the stretched button covers the whole slide, not just the text column.
+     The artwork sits behind it inside the slide's own stacking context. */
+  .qc-hero .qc-banner-art { z-index: -1; }
+  .qc-hero .qc-hero-copy { position: static; block-size: 100%; }
+  .qc-hero .qc-stretched::after { z-index: 1; }
+}

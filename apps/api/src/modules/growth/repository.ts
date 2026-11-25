@@ -53,7 +53,7 @@ export async function savePharmacyProfile(db:Db,raw:unknown,actor:string) {
 /** Old admin tabs edit existing content without silently clearing new merchandising fields. */
 export async function saveLegacyGrowthPage(db:Db,raw:unknown,actor:string){
  const parsed=growthPageSchema.safeParse(raw);if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');
- const fields=['mobileImage','homepagePlacement','priority','ctaLabel'] as const;
+ const fields=['mobileImage','homepagePlacement','priority','ctaLabel','heroLayout','textTone','ctaHref','stripSlot'] as const;
  if(fields.some(field=>raw&&typeof raw==='object'&&field in raw))throw new HttpError(400,'INVALID_REQUEST');
  const row=await db.collection<Document&{_id:string}>('growth_pages').findOne({_id:key(parsed.data)},{maxTimeMS:3000,projection:Object.fromEntries(fields.map(field=>[field,1]))});
  const kept=Object.fromEntries(fields.flatMap(field=>row?.[field]===undefined?[]:[[field,row[field]]]));
