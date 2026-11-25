@@ -83,6 +83,7 @@ export function catalogueContextParams(context: Partial<CatalogueContext>): URLS
 export function readCatalogueContext(source: Record<string, unknown>): CatalogueContext {
   const pick = <T extends z.ZodType>(schema: T, value: unknown): z.infer<T> | undefined => { const parsed = schema.safeParse(value); return parsed.success ? parsed.data : undefined; };
   const q = pick(listContext.q, source.q), category = pick(objectId, source.category);
-  return { view: pick(z.enum(catalogueViews), source.view) ?? 'all', filter: pick(z.enum(catalogueFilters), source.filter) ?? 'all',
+  // 'disabled' is the name older links use for hidden products.
+  return { view: pick(z.enum(catalogueViews), source.view === 'disabled' ? 'hidden' : source.view) ?? 'all', filter: pick(z.enum(catalogueFilters), source.filter) ?? 'all',
     ...(q ? { q } : {}), ...(category ? { category } : {}) };
 }

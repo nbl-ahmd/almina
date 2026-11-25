@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { SwitchRow } from "./kit";
 import { OfferField } from "./offer-field";
 import { PendingPhotosContext } from "./photo-context";
-import { uploadProductPhotos } from "./direct-upload";
+import { uploadWithReceipt } from '../../lib/admin/photo-upload';
 import { Combobox, type ComboOption } from "./shadcn/combobox";
 import { createCategory, loadBrands, rememberBrand } from "../../lib/admin/catalogue-options";
 import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
@@ -438,6 +438,8 @@ function groups(fields: Field[]): Section[] {
   return sections;
 }
 
+const keepPublishingKey = 'almina-editor-keep-publishing';
+type SaveMode = 'save' | 'next' | 'another';
 export function AdminForm({
   path,
   method = "POST",
@@ -452,6 +454,7 @@ export function AdminForm({
   publishDefault = true,
   productLive,
   queue,
+  mediaRevision = 0,
 }: {
   path: string;
   method?: string;
@@ -469,6 +472,8 @@ export function AdminForm({
   productLive?: boolean;
   /** Product editor: the list being worked through, so "Save & next" can open the following product. */
   queue?: CatalogueContext;
+  /** Gallery revision of the product being edited, for uploading chosen photos with the save. */
+  mediaRevision?: number;
 }) {
   const router = useRouter();
   const { ask, dialog } = useConfirm();
@@ -478,7 +483,12 @@ export function AdminForm({
   useEffect(() => { if (message) toast.success(message); }, [message]);
   useEffect(() => {
     if (!path.startsWith('products')) return;
-    const onKey = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); formRef.current?.requestSubmit(); } };
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      const submit = (mode: SaveMode) => { const button = formRef.current?.querySelector<HTMLButtonElement>(`button[data-mode="${mode}"]`); if (button && !button.disabled) formRef.current?.requestSubmit(button); };
+      if (event.key.toLowerCase() === 's') { event.preventDefault(); submit('save'); }
+      else if (event.key === 'Enter' && path !== 'products') { event.preventDefault(); submit('next'); }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [path]);
@@ -490,7 +500,6 @@ export function AdminForm({
   const pricing = useProductTrade(productId, productAudience);
   const formRef = useRef<HTMLFormElement>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-  const saveMode = useRef<'save' | 'next' | 'another'>('save');
   const [stockChanged, setStockChanged] = useState(false);
   const [published, setPublished] = useState(publishDefault);
   const [partialSave, setPartialSave] = useState<{ terms: TradeTerms; created: boolean } | null>(null);
@@ -498,6 +507,23 @@ export function AdminForm({
   if (productEditor) sections.sort((a, b) => Number(a.advanced) - Number(b.advanced));
   const singleOpenSection = sections.length === 1 && !sections[0]!.title;
   const liveAtLoad = productLive ?? publishDefault;
+  // Working through hidden products, an administrator can keep "publish" on for the following ones. It is an explicit
+  // choice for this browser tab, shown beside the switch.
+  const [keepPublishing, setKeepPublishing] = useState(false);
+  const wasHidden = Boolean(productId) && !liveAtLoad;
+  const prescription = fields.find(field => field.name === 'productType')?.value === 'prescription';
+  useEffect(() => {
+    if (!wasHidden || prescription) return;
+    let wanted = false;
+    try { wanted = sessionStorage.getItem(keepPublishingKey) === '1'; } catch { /* private browsing */ }
+    if (!wanted) return;
+    const timer = window.setTimeout(() => { setKeepPublishing(true); setPublished(true); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [wasHidden, prescription]);
+  function rememberPublishing(next: boolean) {
+    setKeepPublishing(next);
+    try { if (next) sessionStorage.setItem(keepPublishingKey, '1'); else sessionStorage.removeItem(keepPublishingKey); } catch { /* private browsing */ }
+  }
   async function openNext(current: string) {
     const context = queue ?? readCatalogueContext({});
     try {
@@ -513,6 +539,8 @@ export function AdminForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    // Which save button was used; pressing Enter in a field is a plain save.
+    const mode = ((event.nativeEvent as SubmitEvent).submitter?.getAttribute('data-mode') ?? 'save') as SaveMode;
     if (confirm && !(await ask(confirm, { action: label ?? 'Save' }))) return;
     if (partialSave) return;
     let terms: TradeTerms | undefined;
@@ -591,21 +619,28 @@ export function AdminForm({
       setStockChanged(false);
       if (productEditor) {
         if (!savedProductId) throw new Error('Product saved, but its identifier was not returned. Reload Products to continue.');
-        if (publish !== liveAtLoad) await adminRequest(`products/publish/${savedProductId}`, 'PUT', {});
-        if (path === 'products' && photoFiles.length) {
+        // Photos go up before the product is published, so it never appears in the shop without them.
+        if (photoFiles.length) {
           try {
-            await uploadProductPhotos(savedProductId, photoFiles, { uploadKey: crypto.randomUUID(), expectedMediaRevision: 0 });
-          } catch (failure) { toast.error(`Product saved, but photos were not added: ${failure instanceof Error ? failure.message : 'upload failed'} Add them on the product page.`); }
+            await uploadWithReceipt(savedProductId, photoFiles, path === 'products' ? 0 : mediaRevision, seconds => toast.message(`Pausing ${seconds} seconds, then uploading.`));
+            setPhotoFiles([]);
+          } catch (failure) {
+            const reason = failure instanceof Error ? failure.message : 'upload failed.';
+            if (path !== 'products') {
+              // Stay on this product with the photos still chosen. Refresh issues a new save receipt for the retry.
+              router.refresh();
+              setError(`Details saved. The photos were not added, so nothing else changed: ${reason} Select Save again.`);
+              return;
+            }
+            toast.error(`Product saved, but photos were not added: ${reason} Add them on the product page.`);
+          }
         }
-        const mode = saveMode.current;
-        saveMode.current = 'save';
-        const state = publish ? 'published' : 'draft';
+        if (publish !== liveAtLoad) await adminRequest(`products/publish/${savedProductId}`, 'PUT', {});
         toast.success(downgraded || (publish ? 'Saved and live' : 'Saved as draft'));
         if (mode === 'next' && productId) await openNext(productId);
         else if (mode === 'another') router.push('/admin/products/new');
         else if (path === 'products') router.push(`/admin/products/${savedProductId}`);
         else { setPublished(publish); router.refresh(); setVersion(value => value + 1); setStockChanged(false); }
-        void state;
         return;
       }
       setMessage(
@@ -632,6 +667,7 @@ export function AdminForm({
           {!error && !message && productEditor ? <p className="m-0 text-xs text-mute">{published ? 'Saving publishes this product to the storefront.' : 'Saving keeps this product hidden from customers.'}</p> : null}
         </div>
         {productEditor ? <SwitchRow className="border-0 px-0 py-0 max-sm:[&_span_span]:hidden sm:w-auto sm:min-w-56" checked={published} disabled={pending} onCheckedChange={setPublished} title={published ? 'Published' : 'Draft'} hint={published ? 'Visible in the storefront' : 'Hidden from customers'} /> : null}
+        {wasHidden && published ? <label className="flex items-center gap-2 text-xs text-ink-2"><input type="checkbox" checked={keepPublishing} disabled={pending} onChange={event => rememberPublishing(event.target.checked)} />Publish the next hidden ones too</label> : null}
         {partialSave ? <button className={buttonVariants({ variant: "default" })} type="button" disabled={pending} onClick={async () => {
           setPending(true);
           try {
@@ -647,9 +683,9 @@ export function AdminForm({
           } catch (failure) { setError(failure instanceof Error ? failure.message : 'Wholesale pricing could not be saved.'); }
           finally { setPending(false); }
         }}>{pending ? 'Retrying…' : 'Retry wholesale pricing'}</button> : <>
-          {productId ? <button type="submit" onClick={() => { saveMode.current = 'next'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & next</button> : null}
-          {productEditor && path === 'products' ? <button type="submit" onClick={() => { saveMode.current = 'another'; }} className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & add another</button> : null}
-          <button type="submit" onClick={() => { saveMode.current = 'save'; }} className={buttonVariants({ variant: "default" })} disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : productEditor ? (published ? 'Save & publish' : 'Save draft') : label}</button>
+          {productId ? <button type="submit" data-mode="next" aria-keyshortcuts="Control+Enter Meta+Enter" className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>{published && !liveAtLoad ? 'Publish & next' : 'Save & next'}</button> : null}
+          {productEditor && path === 'products' ? <button type="submit" data-mode="another" className={buttonVariants({ variant: "outline" })} disabled={pending || !pricing.trade.ready}>Save & add another</button> : null}
+          <button type="submit" data-mode="save" className={buttonVariants({ variant: "default" })} disabled={pending || (productEditor && !pricing.trade.ready)}>{pending ? "Saving…" : productEditor ? (published ? 'Save & publish' : 'Save draft') : label}</button>
         </>}
         {partialSave ? <Link href={`/admin/products/${partialSave.terms.productId}`}>Open saved product</Link> : null}
       </div>

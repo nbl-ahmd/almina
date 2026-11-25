@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { MongoClient, ObjectId } from 'mongodb';
 import { adminCatalogue, adminCatalogueQueue } from '../apps/api/src/modules/catalog/admin-catalogue';
+import { setProductsVisibility, toggleCatalogVisibility } from '../apps/api/src/modules/media/metadata';
 
 const uri = process.env.COMMERCE_TEST_URI;
 const photo = 'https://res.cloudinary.com/synthetic/image/upload/v1/item.webp';
@@ -96,5 +97,48 @@ test('the product list shares the queue filters, reports counts, finds photo fil
       await assert.rejects(adminCatalogue(db, raw), { status: 400 });
     }
     await assert.rejects(adminCatalogueQueue(db, { id: 'nope' }), { status: 400 });
+  } finally { await close(); }
+});
+
+test('bulk visibility is idempotent, reports every refusal and never publishes prescription, unclassified or unpriced products', { skip: !uri }, async () => {
+  const { db, close } = await database();
+  try {
+    const actor = String(new ObjectId());
+    const base = { category: new ObjectId(), price: 12, stock: 3, productType: 'general', disabled: true, published: false };
+    const rows = [
+      { ...base, name: 'Good bandage' },
+      { ...base, name: 'Rx item', productType: 'prescription' },
+      { ...base, name: 'Unclassified', productType: 'unreviewed' },
+      // Legacy products without the managed-catalogue flag are held to the same rules in bulk.
+      { ...base, name: '...Mxmn' },
+      { ...base, name: 'Free item', price: 0 },
+      { ...base, name: 'Broken offer', salePrice: 99 },
+      { ...base, name: 'Archived', archivedAt: new Date() },
+      { ...base, name: 'Retired record', active: false },
+      { ...base, name: 'Already live', disabled: false, published: true },
+    ].map(row => ({ ...row, _id: new ObjectId() }));
+    await db.collection('products').insertMany(rows);
+    const ids = [...rows.map(row => String(row._id)), String(new ObjectId())];
+    const first = await setProductsVisibility(db, { ids, live: true }, actor);
+    assert.deepEqual(first.results.map(result => [result.ok, result.changed]), [[true, true], [false, false], [false, false], [false, false], [false, false], [false, false], [false, false], [false, false], [true, false], [false, false]]);
+    assert.ok(first.results.filter(result => !result.ok).every(result => result.reason));
+    const stored = await db.collection('products').find().sort({ _id: 1 }).toArray();
+    assert.deepEqual(stored.filter(product => product.disabled === false).map(product => product.name), ['Good bandage', 'Already live']);
+    const good = stored.find(product => product.name === 'Good bandage')!;
+    assert.deepEqual([good.published, good.contentReviewed, good.stockVerified, good.imageRights, good.price, good.stock], [true, true, true, 'authorized', 12, 3]);
+    assert.equal(await db.collection('catalog_audit').countDocuments(), 1);
+    // Repeating the request changes nothing: a retry after a lost response can never hide what it just published.
+    const again = await setProductsVisibility(db, { ids: [ids[0]!], live: true }, actor);
+    assert.deepEqual(again.results, [{ id: ids[0], ok: true, changed: false }]);
+    assert.equal(await db.collection('catalog_audit').countDocuments(), 1);
+    const hide = await setProductsVisibility(db, { ids: [ids[0]!, ids[1]!], live: false }, actor);
+    assert.deepEqual(hide.results.map(result => [result.ok, result.changed]), [[true, true], [true, false]]);
+    assert.equal((await db.collection('products').findOne({ _id: rows[0]!._id }))!.published, false);
+    // The single switch still flips whatever the product currently is.
+    await toggleCatalogVisibility(db, 'products', ids[0]!, actor);
+    assert.equal((await db.collection('products').findOne({ _id: rows[0]!._id }))!.disabled, false);
+    for (const raw of [{ ids: [], live: true }, { ids: [ids[0], ids[0]], live: true }, { ids: Array.from({ length: 51 }, () => String(new ObjectId())), live: true }, { ids: [ids[0]] }, { ids: [{ $ne: null }], live: true }, { ids: [ids[0]], live: 'yes' }]) {
+      await assert.rejects(setProductsVisibility(db, raw, actor), { status: 400 });
+    }
   } finally { await close(); }
 });

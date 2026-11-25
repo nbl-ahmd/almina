@@ -10,9 +10,11 @@ import { imageReviewListResponseSchema } from '@almina/contracts';
 import {MarketingManager} from '../../../../../components/admin/marketing-manager';
 import {headers} from 'next/headers';
 import type { AdminRecord } from '../../../../../lib/admin/policy';
-import { readCatalogueContext, catalogueViewLabels, catalogueFilterLabels, type CatalogueQueue } from '@almina/contracts';
+import { readCatalogueContext, catalogueContextParams, type CatalogueList, catalogueViewLabels, catalogueFilterLabels, type CatalogueQueue } from '@almina/contracts';
 import { editorHref, listHref, queueQuery } from '../../../../../lib/admin/catalogue-links';
-import { NeedsAction } from '../../../../../components/admin/needs-action';
+import { BulkPhotoUpload } from '../../../../../components/admin/bulk-photos';
+import { CatalogueFiltersBar, CataloguePager } from '../../../../../components/admin/catalogue-browser';
+import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
 import { operationsSnapshotSchema } from '@almina/contracts';
@@ -37,6 +39,7 @@ import {
   Card,
   CreatePanel,
   FilterChips,
+  Note,
   PageHeader,
   Pager,
   buttonVariants,
@@ -60,11 +63,11 @@ import { ProductsTable } from '../../../../../components/admin/products-table';
 import { OrdersTable } from '../../../../../components/admin/orders-table';
 type Query = Record<string, string | string[] | undefined>;
 /** Thumbnail URL for the product list: catalogue CDN first, legacy media origin as the fallback. */
-function thumbnail(item: AdminRecord): string | null {
-  const cdn = Array.isArray(item.cloudinaryImages) ? cloudinaryImage(item.cloudinaryImages[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME) : null;
+function thumbnail(image: string | null): string | null {
+  if (!image) return null;
+  const cdn = cloudinaryImage(image, getWebEnvironment().CLOUDINARY_CLOUD_NAME);
   if (cdn) return cdn;
-  const first = item.image ?? (Array.isArray(item.images) ? item.images[0] : undefined);
-  return typeof first === 'string' && /^[A-Za-z0-9_.-]+$/.test(first) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${first}` : null;
+  return /^[A-Za-z0-9_.-]+$/.test(image) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${image}` : null;
 }
 const PAGE_SIZE = 25;
 /** Lists request one extra row so "Next" only appears when another page exists. */
@@ -139,14 +142,12 @@ export default async function AdminPage({
       </>
     );
   }
-  if (section === 'needs-action') {
-    // Fixed page size keeps count labels and navigation consistent.
-    qs.set('limit', '25');
-    return <NeedsAction data={await adminRead('products/needs-action', qs)}
-      {...(typeof query.q === 'string' ? { q: query.q } : {})}
-      {...(typeof query.reason === 'string' ? { reason: query.reason } : {})}
-      {...(typeof query.status === 'string' ? { status: query.status } : {})} />;
-  }
+  // The review queue is now a set of filters on Products; old links and bookmarks keep working.
+  if (section === 'needs-action') redirect(listHref(readCatalogueContext({
+    view: query.status === 'published' ? 'live' : query.status === 'all' ? 'all' : 'hidden',
+    filter: query.reason === 'images' ? 'missing-photo' : query.reason,
+    q: query.q,
+  })));
   if (section === "dashboard") {
     return <AdminDashboard user={user} days={reportDays(query.days)} />;
   }
@@ -220,32 +221,32 @@ export default async function AdminPage({
         </>
       );
     }
-    const productPage = pageOf(rows(
-      await adminRead(qs.has("q") ? "products/search" : "products", lookahead(qs)),
-    ));
-    const products = productPage.items;
-    const view = typeof query.view === "string" ? query.view : "all";
+    const context = readCatalogueContext(query);
+    const limit = [50, 100].includes(Number(query.limit)) ? Number(query.limit) : 25;
+    const offset = typeof query.offset === "string" && /^[0-9]{1,5}$/.test(query.offset) ? Number(query.offset) : 0;
+    const params = catalogueContextParams(context);
+    params.set("limit", String(limit));
+    params.set("offset", String(offset));
+    const [list, categories] = await Promise.all([
+      adminRead("products/catalogue", params) as Promise<CatalogueList>,
+      user.role === "admin" ? adminRead("category", new URLSearchParams({ limit: "100" })).then(rows).catch(() => []) : Promise.resolve([]),
+    ]);
     return (
       <>
         <PageHeader
           title="Products"
-          description="Search inventory, review stock and publish changes. Staff accounts have read-only access."
+          description="Search the catalogue, add photos, fix what is missing and choose what customers see. Staff accounts have read-only access."
           actions={
-            <>
-              {user.role === "admin" ? (
-                <Link
-                  className={buttonVariants({ variant: "primary" })}
-                  href="/admin/products/new"
-                >
+            user.role === "admin" ? (
+              <>
+                <BulkPhotoUpload />
+                <Link className={buttonVariants({ variant: "primary" })} href="/admin/products/new">
                   Add product
                 </Link>
-              ) : (
-                <Badge tone="neutral">Read-only inventory</Badge>
-              )}
-              {user.role === 'admin' ? (
-                <Link className={buttonVariants({ variant: "outline" })} href="/admin/needs-action">Review needs action</Link>
-              ) : null}
-            </>
+              </>
+            ) : (
+              <Badge tone="neutral">Read-only inventory</Badge>
+            )
           }
         />
         {query.saved === 'published' || query.saved === 'draft' ? (
@@ -254,25 +255,15 @@ export default async function AdminPage({
             <Link href="/admin/products/new">Add another product</Link>
           </Callout>
         ) : null}
-        <FilterChips
-          label="Inventory views"
-          items={[['all', 'All products'], ['sale', 'On sale'], ['outofstock', 'Out of stock'], ['disabled', 'Disabled']].map(([value, label]) => {
-            const params = new URLSearchParams();
-            if (typeof query.q === 'string' && query.q) params.set('q', query.q);
-            if (value !== 'all') params.set('view', value!);
-            return { label: label!, href: `/admin/products${params.size ? `?${params}` : ''}`, active: view === value };
-          })}
-        />
-        <form role="search" className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-surface p-3 border border-line">
-          <label htmlFor="q" className="sr-only">Search products</label>
-          <input id="q" name="q" type="search" defaultValue={display(query.q ?? "")} maxLength={80} placeholder="Search by product name or PD number"
-            className="h-11 min-w-0 flex-1 basis-64 rounded-lg border-0 bg-fill px-5 text-sm text-ink outline-none placeholder:text-mute focus:bg-white focus:ring-2 focus:ring-ink" />
-          <input type="hidden" name="view" value={view} />
-          <button className={buttonVariants({ variant: "dark" })}>Search</button>
-          <Link className={buttonVariants({ variant: "outline" })} href="/admin/products">Reset</Link>
-        </form>
-        <ProductsTable admin={user.role === "admin"} products={products.map(item => ({ _id: display(item._id), name: display(item.name), product_id: display(item.product_id), category: display(record(item.category).name), image: thumbnail(item), price: display(item.price), salePrice: item.sale === true && item.salePrice ? display(item.salePrice) : null, stock: display(item.stock), disabled: item.disabled === true }))} />
-        {pagination(section, query, products.length, productPage.more)}
+        <CatalogueFiltersBar list={list} context={context} limit={limit} categories={categories.map(item => ({ id: display(item._id), name: display(item.name) }))} />
+        {context.filter === "classification" || context.filter === "prescription" ? (
+          <Note tone="warning" icon={<ClipboardDocumentCheckIcon />}>
+            <p><strong>Medicine classification needs pharmacy review.</strong> Confirm the exact product, strength and pack from its label. Choose Pharmacy medicine only after verification. Prescription products stay unpublished.</p>
+          </Note>
+        ) : null}
+        <ProductsTable key={`${params}`} admin={user.role === "admin"} context={context} readyTotal={list.counts.filters.ready}
+          products={list.items.map(item => ({ ...item, thumb: thumbnail(item.image) }))} />
+        <CataloguePager total={list.total} offset={list.offset} shown={list.items.length} limit={limit} context={context} />
       </>
     );
   }

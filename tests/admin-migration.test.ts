@@ -7,7 +7,9 @@ import {
   upstreamQuery,
   project,
   identitySchema,
+  projectAdminResponse,
 } from "../apps/web/src/lib/admin/policy";
+import { readCatalogueContext } from "../packages/contracts/src/admin-catalogue";
 import { legacyAdminDestination } from "../apps/web/src/lib/admin/redirects";
 const require = createRequire(import.meta.url);
 import { catalogCreationInput } from '../apps/api/src/modules/catalog/creation';
@@ -211,4 +213,30 @@ test("category archive retains records and references without invoking destructi
 
 test('created product envelope retains the product identity while recursively removing private fields', () => {
   assert.deepEqual(project({ message: 'Created', product: { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Fixture', password: 'private', customerToken: 'private', category: { name: 'Category', password: 'private' } } }), { message: 'Created', product: { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Fixture', category: { name: 'Category' } } });
+});
+
+test("the product list, editor queue and bulk visibility cross the gateway only with fixed parameters and fields", () => {
+  assert.equal(accessPolicy("GET", "products/catalogue"), "staff");
+  assert.equal(accessPolicy("GET", "products/queue"), "admin");
+  assert.equal(accessPolicy("POST", "products/visibility"), "admin");
+  assert.equal(accessPolicy("PUT", "products/visibility"), undefined);
+  // The retained API lists these before /products/:id, which is public.
+  assert.equal(lookupPolicy("GET", "/api/products/catalogue").policy, "staff");
+  assert.equal(lookupPolicy("GET", "/api/products/queue").policy, "admin");
+  assert.equal(lookupPolicy("POST", "/api/products/visibility").policy, "admin");
+  const id = "a".repeat(24);
+  const list = new URLSearchParams(upstreamQuery("products/catalogue", new URLSearchParams({ view: "hidden", filter: "missing-photo", offset: "6000" })));
+  assert.deepEqual([list.get("view"), list.get("filter"), list.get("offset"), list.get("limit")], ["hidden", "missing-photo", "6000", "25"]);
+  assert.equal(new URLSearchParams(upstreamQuery("products/queue", new URLSearchParams({ id, filter: "ready" }))).get("id"), id);
+  for (const input of [{ view: "archived" }, { filter: "{}" }, { limit: "101" }, { sort: "$where" }, { codes: "a b" }])
+    assert.throws(() => upstreamQuery("products/catalogue", new URLSearchParams(input as unknown as Record<string, string>)));
+  assert.throws(() => upstreamQuery("products/queue", new URLSearchParams({ view: "hidden" })));
+  // Unknown upstream fields never reach the browser.
+  const queue = { previousId: null, nextId: id, position: 1, total: 2 };
+  assert.deepEqual(projectAdminResponse("products/queue", queue), queue);
+  assert.throws(() => projectAdminResponse("products/queue", { ...queue, passwordHash: "private" }));
+  assert.throws(() => projectAdminResponse("products/visibility", { results: [{ id, ok: true, changed: true, actor: "private" }] }));
+  assert.equal(legacyAdminDestination("/admin/disabled"), "/admin/products?view=disabled");
+  assert.equal(readCatalogueContext({ view: "disabled", filter: "$where", category: "x" }).view, "hidden");
+  assert.deepEqual(readCatalogueContext({ view: "disabled", filter: "$where", category: "x" }), { view: "hidden", filter: "all" });
 });

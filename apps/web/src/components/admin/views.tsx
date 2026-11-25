@@ -7,8 +7,7 @@ import { productImages } from '../../lib/server/catalog';
 import { storePublicationIssues, cloudinaryImage, type CatalogueContext } from "@almina/contracts";
 import { getWebEnvironment } from "../../lib/server/env";
 import { randomUUID } from "node:crypto";
-import { CloudinaryUpload } from "./cloudinary-upload";
-import { PhotoPicker } from "./photo-picker";
+import { ProductPhotos } from "./product-photos";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AdminRecord } from "../../lib/admin/policy";
@@ -106,6 +105,14 @@ export function Table({
       </div>
     </div>
   );
+}
+/** Every photo the product shows today, as addresses the browser can load. */
+function gallery(product: AdminRecord): string[] {
+  const environment = getWebEnvironment();
+  const cdn = Array.isArray(product.cloudinaryImages) ? product.cloudinaryImages.map(value => cloudinaryImage(value, environment.CLOUDINARY_CLOUD_NAME)).filter((value): value is string => Boolean(value)) : [];
+  if (cdn.length) return cdn.slice(0, 8);
+  const legacy = [product.image, ...(Array.isArray(product.images) ? product.images : [])].filter((value): value is string => typeof value === 'string' && /^[A-Za-z0-9_.-]+$/.test(value));
+  return [...new Set(legacy)].slice(0, 8).map(filename => `${environment.LEGACY_API_ORIGIN}/api/products/images/${filename}`);
 }
 export function ProductForm({
   product,
@@ -451,9 +458,10 @@ export function ProductForm({
       publishDefault={edit ? product.disabled !== true : true}
       productLive={edit ? product.disabled !== true : true}
       {...(queue ? { queue } : {})}
+      {...(edit ? { mediaRevision: Number(product.mediaRevision ?? 0) } : {})}
       productMedia={<aside className="grid content-start gap-4" aria-label="Product media">
-          {edit ? <><div className="rounded-xl bg-surface p-4 border border-line empty:hidden"><MediaPreview item={product} kind="products" origin={getWebEnvironment().LEGACY_API_ORIGIN} /></div><CloudinaryUpload productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} /></> :
-            <PhotoPicker />}
+          {edit ? <ProductPhotos key={display(product._id)} productId={display(product._id)} revision={Number(product.mediaRevision ?? 0)} current={gallery(product)} /> :
+            <ProductPhotos />}
         </aside>}
       productChecks={<div className="grid gap-4">
     {edit ? <details className="mb-4 rounded-xl bg-surface p-5 border border-line [&>summary]:cursor-pointer [&>summary]:text-sm [&>summary]:font-semibold [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-[13px] [&_p]:text-[13px]" open={readinessIssues.length > 0}><summary>{readinessIssues.length ? `${readinessIssues.length} details to complete before publishing` : 'Ready to publish'}</summary>{readinessIssues.length ? <ul>{readinessIssues.map(issue => <li key={issue}>{issue}</li>)}</ul> : <p>All required storefront details are present. Saving publishes this product.</p>}{product.catalogManaged === true && typeof product.websiteStockProposed === 'number' ? <p className="mt-3 text-xs text-mute">Imported stock estimate: {display(product.websiteStockProposed)}. Confirm the counted stock before saving.</p> : null}</details> : <p className="m-0 text-xs text-mute">The product publishes as soon as you save. Required fields are marked.</p>}

@@ -1,4 +1,4 @@
-import { cloudinaryImage, storePublicationIssues } from '@almina/contracts';
+import { catalogueVisibilitySchema, cloudinaryImage, storePublicationIssues, type CatalogueVisibilityResult } from '@almina/contracts';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
@@ -63,11 +63,37 @@ async function saveMediaMetadata<T extends Document>(db: Db, collection: Collect
     return document;
   } finally { await session.endSession(); }
 }
+/** Sets many products live or hidden in one request. Each product is its own transaction and repeating a request changes
+ *  nothing. Going live is stricter than the single switch: every product needs a complete name, a General or Pharmacy
+ *  medicine type and a price above zero, so prescription and unclassified items can never be published in bulk. */
+export async function setProductsVisibility(db: Db, raw: unknown, actor: string): Promise<CatalogueVisibilityResult> {
+  const parsed = catalogueVisibilitySchema.safeParse(raw);
+  if (!parsed.success || !ObjectId.isValid(actor)) throw new HttpError(400, 'INVALID_REQUEST');
+  const results: CatalogueVisibilityResult['results'] = [];
+  for (const id of parsed.data.ids) {
+    try { results.push({ id, ok: true, changed: await changeCatalogVisibility(db, 'products', id, actor, parsed.data.live) }); }
+    catch (error) {
+      // A product that cannot change is reported; a database failure stops the request.
+      if (!(error instanceof HttpError)) throw error;
+      results.push({ id, ok: false, changed: false, reason: error.code === 'NOT_FOUND' ? 'Product not found.' : error.code === 'PRODUCT_UNAVAILABLE' ? 'Product is archived.'
+        : error.code === 'CATALOG_REVIEW_REQUIRED' ? 'Needs a complete name, a General or Pharmacy medicine type and a price. Prescription items are never sold online.'
+        : 'Open the product and correct its price or offer.' });
+    }
+  }
+  return { results };
+}
 export async function toggleCatalogVisibility(db: Db, collection: 'products' | 'categories', id: string, actor: string) {
+  await changeCatalogVisibility(db, collection, id, actor);
+  return { message: collection === 'products' ? 'Product updated successfully' : 'category updated successfully' };
+}
+/** `live` undefined flips the current state (the single switch); a value sets that state and reports whether it changed. */
+async function changeCatalogVisibility(db: Db, collection: 'products' | 'categories', id: string, actor: string, live?: boolean): Promise<boolean> {
   if (!['products', 'categories'].includes(collection) || !ObjectId.isValid(id) || !ObjectId.isValid(actor)) throw new HttpError(400, 'INVALID_REQUEST');
   const session = db.client.startSession();
+  let changed = false;
   try {
     await session.withTransaction(async () => {
+      changed = false;
       const document = await db.collection(collection).findOne({ _id: new ObjectId(id) }, { session });
       if (!document) throw new HttpError(404, 'NOT_FOUND');
       if (document.archivedAt) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
@@ -78,8 +104,14 @@ export async function toggleCatalogVisibility(db: Db, collection: 'products' | '
         if (document.sale === true && document.salePrice === undefined) throw new HttpError(400, 'INVALID_REQUEST');
         if (document.sale !== undefined && typeof document.sale !== 'boolean') throw new HttpError(400, 'INVALID_REQUEST');
       }
-      if (collection === 'products' && document.disabled && document.catalogManaged === true && storePublicationIssues(document).length) throw new HttpError(409,'CATALOG_REVIEW_REQUIRED');
-      const goingLive = collection === 'products' && Boolean(document.disabled);
+      if (live !== undefined) {
+        const shown = document.disabled !== true && document.published !== false;
+        if (shown === live) return;
+        if (live && (storePublicationIssues(document).length || moneyMinor(document.price) <= 0 || document.active === false)) throw new HttpError(409, 'CATALOG_REVIEW_REQUIRED');
+      }
+      const target = live ?? Boolean(document.disabled);
+      if (collection === 'products' && target && document.catalogManaged === true && storePublicationIssues(document).length) throw new HttpError(409,'CATALOG_REVIEW_REQUIRED');
+      const goingLive = collection === 'products' && target;
       // Publishing is the reviewer's statement that what the record says is true: content, stock and image usage are recorded as
       // reviewed here, exactly as saving in the product editor does, so downstream features that rely on the stamps keep working.
       const reviewed = goingLive ? {
@@ -87,11 +119,12 @@ export async function toggleCatalogVisibility(db: Db, collection: 'products' | '
         ...(document.stockVerified === true ? {} : { stockVerified: true, stockReviewedAt: new Date(), stockReviewedBy: actor }),
         ...(document.imageRights === 'authorized' ? {} : { imageRights: 'authorized' }),
       } : {};
-      const fields = { disabled: !document.disabled, ...(collection === 'products' ? { published: Boolean(document.disabled) } : {}), ...reviewed };
+      const fields = { disabled: !target, ...(collection === 'products' ? { published: target } : {}), ...reviewed };
       await db.collection(collection).updateOne({ _id: document._id }, { $set: fields }, { session });
       await db.collection('catalog_audit').insertOne({ entityId: document._id, collection, actor, before: { disabled: document.disabled, published: document.published },
-        after: fields, reason: goingLive && Object.keys(reviewed).length ? 'Visibility toggle (marked reviewed)' : 'Visibility toggle', createdAt: new Date() }, { session });
+        after: fields, reason: `${live === undefined ? 'Visibility toggle' : 'Bulk visibility change'}${goingLive && Object.keys(reviewed).length ? ' (marked reviewed)' : ''}`, createdAt: new Date() }, { session });
+      changed = true;
     }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
-    return { message: collection === 'products' ? 'Product updated successfully' : 'category updated successfully' };
+    return changed;
   } finally { await session.endSession(); }
 }

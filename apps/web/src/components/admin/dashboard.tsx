@@ -1,8 +1,9 @@
 import Link from '../app-link';
-import { ArrowRightIcon, CheckCircleIcon, ClipboardDocumentCheckIcon, CubeIcon, ExclamationTriangleIcon, InboxIcon, MapPinIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon, CheckCircleIcon, ClipboardDocumentCheckIcon, CubeIcon, ExclamationTriangleIcon, InboxIcon, MapPinIcon, RocketLaunchIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { adminRead } from '../../lib/server/admin/gateway';
 import { readDashboardReport } from '../../lib/server/admin/reporting';
 import type { Identity } from '../../lib/admin/policy';
+import type { CatalogueList } from '@almina/contracts';
 import { changePercent, minorMoney, reportDate, type DashboardReport } from '../../lib/admin/dashboard';
 import { display, record, rows } from './views';
 import { Badge, Button, Card, EmptyState, PageHeader, cn, orderStatusTone, type Tone } from './ui';
@@ -24,18 +25,17 @@ function age(iso: unknown) {
   return minutes < 1440 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${Math.floor(minutes / 1440)} d`;
 }
 
-type Attention = { pending: number | null; oldest: unknown; review: number | null; outOfStock: number | null; drafts: number | null };
+type Attention = { pending: number | null; oldest: unknown; review: number | null; outOfStock: number | null; drafts: number | null; ready: number | null };
 
 /** Everything here is read through the same authorised admin reads as its destination list. */
 async function readAttention(admin: boolean): Promise<Attention> {
-  const [receiving, stock, drafts] = await Promise.all([
+  const [receiving, catalogue] = await Promise.all([
     adminRead('orders/receiving').then(record).catch(() => null),
-    admin ? adminRead('products', new URLSearchParams({ limit: '100', view: 'outofstock' })).then(rows).catch(() => null) : Promise.resolve(null),
-    admin ? adminRead('products/needs-action', new URLSearchParams({ limit: '1', status: 'drafts' })).then(record).catch(() => null) : Promise.resolve(null),
+    admin ? adminRead('products/catalogue', new URLSearchParams({ limit: '1' })).then(value => value as CatalogueList).catch(() => null) : Promise.resolve(null),
   ]);
   const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : null);
   return { pending: receiving ? count(receiving.pendingCount) : null, oldest: receiving?.oldestPendingAt, review: receiving ? count(receiving.reviewCount) : null,
-    outOfStock: stock ? stock.length : null, drafts: drafts ? count(drafts.total) : null };
+    outOfStock: catalogue?.counts.views.outofstock ?? null, drafts: catalogue?.counts.views.hidden ?? null, ready: catalogue?.counts.filters.ready ?? null };
 }
 
 function NeedsAttention({ data }: { data: Attention }) {
@@ -44,16 +44,17 @@ function NeedsAttention({ data }: { data: Attention }) {
     { key: 'pending', label: 'Pending orders', count: data.pending, note: waiting ? `Oldest waiting ${waiting}` : 'Waiting to be confirmed', href: '/admin/orders?status=pending', icon: <ClipboardDocumentCheckIcon />, urgent: (data.pending ?? 0) > 0 },
     { key: 'review', label: 'Addresses to review', count: data.review, note: 'Delivery area needs a check', href: '/admin/orders?status=pending&review=1', icon: <MapPinIcon />, urgent: (data.review ?? 0) > 0 },
     { key: 'stock', label: 'Out of stock', count: data.outOfStock, note: 'Hidden from ordering', href: '/admin/products?view=outofstock', icon: <ExclamationTriangleIcon />, urgent: false },
-    { key: 'drafts', label: 'Drafts to review', count: data.drafts, note: 'Products not yet published', href: '/admin/needs-action', icon: <CubeIcon />, urgent: false },
+    { key: 'ready', label: 'Ready to go live', count: data.ready, note: 'Hidden, with nothing missing', href: '/admin/products?view=hidden&filter=ready', icon: <RocketLaunchIcon />, urgent: false },
+    { key: 'drafts', label: 'Hidden products', count: data.drafts, note: 'Add photos or details to publish', href: '/admin/products?view=hidden', icon: <CubeIcon />, urgent: false },
   ].filter(tile => tile.count !== null);
   const open = tiles.filter(tile => (tile.count ?? 0) > 0);
   if (!open.length) return <p className="mb-4 flex items-center gap-2 rounded-lg bg-fill px-4 py-3 text-[13px] font-medium text-ok"><CheckCircleIcon className="size-5" aria-hidden="true" />{tiles.length ? 'All clear. Nothing is waiting on you right now.' : 'Attention counts are unavailable. Reload to try again.'}</p>;
   return <section aria-label="Needs attention" className="mb-4">
     <h2 className="sr-only">Needs attention</h2>
-    <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 xl:grid-cols-4">{open.map(tile => <li key={tile.key}>
+    <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">{open.map(tile => <li key={tile.key}>
       <Link href={tile.href} className={cn('flex min-h-16 items-center gap-2.5 rounded-lg px-3 py-3 sm:gap-3 sm:px-4 text-ink no-underline border border-line transition hover:-translate-y-px', tile.urgent ? 'bg-warn-soft' : 'bg-surface')}>
         <span aria-hidden="true" className="hidden size-10 shrink-0 place-items-center rounded-lg bg-white/80 sm:grid [&>svg]:size-5">{tile.icon}</span>
-        <span className="grid min-w-0 flex-1 text-[13px] leading-snug"><strong className="text-xl font-semibold tabular-nums">{tile.count === 100 && tile.key === 'stock' ? '100+' : tile.count}</strong>{tile.label}<small className="text-xs text-mute">{tile.note}</small></span>
+        <span className="grid min-w-0 flex-1 text-[13px] leading-snug"><strong className="text-xl font-semibold tabular-nums">{tile.count?.toLocaleString('en-AE')}</strong>{tile.label}<small className="text-xs text-mute">{tile.note}</small></span>
         <ArrowRightIcon className="hidden size-4 shrink-0 text-mute sm:block" aria-hidden="true" />
       </Link>
     </li>)}</ul>

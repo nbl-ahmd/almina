@@ -1,7 +1,7 @@
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { catalogueFilters, catalogueViews, catalogueListQuerySchema, catalogueQueueQuerySchema, hasProductPhoto, incompleteProductNamePattern,
   storePublicationIssues, type CatalogueContext, type CatalogueFilter, type CatalogueItem, type CatalogueList, type CatalogueQueue, type CatalogueView } from '@almina/contracts';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { HttpError } from '../../errors.js';
 
 function parse<T extends z.ZodType>(schema: T, raw: unknown): z.infer<T> {
