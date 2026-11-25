@@ -3,9 +3,12 @@ import { knownGrowthBrands } from '../../../components/growth-landing';
 import { StorefrontIntro } from '../../../components/storefront-intro';
 import { ProductPhoto } from '../../../components/product-card';
 import { metadataFor } from '../../../lib/server/seo';
+import { getWebEnvironment } from '../../../lib/server/env';
+import { collectionData } from '../../../lib/seo';
+import { StructuredData } from '../../../components/structured-data';
 import { getProducts, productImage } from '../../../lib/server/catalog';
 import { getLocale } from '../../../lib/server/i18n';
-import { catalogueBrands } from '../../../lib/catalog/merchandising';
+import { brandSlug, catalogueBrands } from '../../../lib/catalog/merchandising';
 import { ChevronRightIcon } from '../../../components/storefront-icons';
 import type { Product } from '../../../lib/catalog/model';
 
@@ -25,7 +28,9 @@ export default async function BrandsPage(){
   const inStock = catalogueBrands(catalogue).filter(name => !curatedNames.has(name.toLowerCase())).map(name => ({
     name, product: catalogue.find(product => brandOf(product) === name.toLowerCase() && productImage(product) !== '/product-placeholder.svg'),
   }));
+  const origin = getWebEnvironment().WEB_ORIGIN;
   return <>
+    <StructuredData data={collectionData(origin, { name: 'Shop pharmacy brands', description: 'Brands currently available at Al Mina Pharmacy in Ras Al Khaimah.', path: '/brands' }, [...pages.map(item => ({ name: item.name, href: '/brands/' + item.slug })), ...inStock.map(item => ({ name: item.name, href: '/brands/' + brandSlug(item.name) }))])} />
     <StorefrontIntro title={ar ? 'علامات تجارية تعرفها' : 'Find your familiar brands'} description={ar ? 'تصفح العلامات التجارية المتوفرة في المينا وقارن المنتجات والأحجام والأسعار.' : 'Explore the brands currently available at Al Mina. Compare products, pack sizes and prices.'} />
     {pages.length ? <section aria-labelledby="brand-pages-heading" className="mb-8">
       <h2 id="brand-pages-heading" className="section-title mb-3">{ar ? 'صفحات العلامات التجارية' : 'Brand pages'}</h2>
@@ -33,7 +38,7 @@ export default async function BrandsPage(){
     </section> : null}
     {inStock.length ? <section aria-labelledby="brands-in-stock-heading">
       <h2 id="brands-in-stock-heading" className="section-title mb-3">{ar ? 'علامات متوفرة الآن' : 'Brands in stock now'}</h2>
-      <div className="brand-grid">{inStock.map(item => <Link key={item.name} href={`/search?q=${encodeURIComponent(item.name)}`} className="brand-tile">
+      <div className="brand-grid">{inStock.map(item => <Link key={item.name} href={`/brands/${brandSlug(item.name)}`} className="brand-tile">
         <span className="brand-tile-mark brand-tile-photo" aria-hidden="true">{item.product ? <ProductPhoto product={item.product} /> : item.name.slice(0, 1)}</span>
         <span className="brand-tile-name">{item.name}</span><ChevronRightIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
       </Link>)}</div>

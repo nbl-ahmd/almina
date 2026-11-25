@@ -1,5 +1,6 @@
 import { CurrencyAmount } from '../../../../components/currency-amount';
 import { TruckIcon, ChevronRightIcon, ArrowReturnIcon } from '../../../../components/storefront-icons';
+import { brandSlug } from '../../../../lib/catalog/merchandising';
 import { ProductPurchaseDock } from '../../../../components/product-purchase-dock';
 import { GrowthActivity } from '../../../../components/growth-activity';
 import { getLocale } from '../../../../lib/server/i18n';
@@ -74,7 +75,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <div className="product-information min-w-0">
           <div className="mb-3">
             <div className="flex flex-wrap items-center gap-x-3 text-xs font-semibold">
-              {brand && <Link className="inline-flex min-h-11 items-center" href={`/search?q=${encodeURIComponent(brand)}`}>{brand}</Link>}
+              {brand && <Link className="inline-flex min-h-11 items-center" href={`/brands/${brandSlug(brand)}`}>{brand}</Link>}
               <Link className="inline-flex min-h-11 items-center text-muted" href={categoryHref(product.category)}>{product.category.name}</Link>
             </div>
             <h1 className="mb-2 wrap-anywhere">{product.name}</h1>

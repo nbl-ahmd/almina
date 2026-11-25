@@ -109,3 +109,8 @@ export function bannerDestination(value: unknown): string | null {
     return null;
   }
 }
+
+/** URL name for a brand landing page: "Dolce & Gabbana" → "dolce-gabbana". Stable for the same brand text. */
+export function brandSlug(name: string) {
+  return name.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+}

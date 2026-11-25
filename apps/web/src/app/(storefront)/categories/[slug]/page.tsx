@@ -11,7 +11,8 @@ type Props = { params: Promise<{ slug: string }>; searchParams: Promise<SearchPa
 export async function generateMetadata({ params, searchParams }: Props) {
   const category = await resolveCategory((await params).slug);
   if (!category) notFound();
-  return metadataFor(category.name, categoryContent(category.name).description, categoryHref(category), await searchParams);
+  // "Skin Care Products in Ras Al Khaimah | Al Mina Pharmacy": the query people type, the place, then the brand (about 55 characters).
+  return metadataFor(`${category.name} Products in Ras Al Khaimah`, categoryContent(category.name).description, categoryHref(category), await searchParams);
 }
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;

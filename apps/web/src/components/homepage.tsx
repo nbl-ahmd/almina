@@ -1,4 +1,5 @@
 import { HeroBanner } from './hero-banner';
+import { brandSlug } from '../lib/catalog/merchandising';
 import { getWebEnvironment } from '../lib/server/env';
 import { CampaignArtwork } from './campaign-artwork';
 import type { GrowthPage } from '@almina/contracts';
@@ -263,7 +264,7 @@ export async function HomeBrandStrip({ brands, products }: { brands: string[]; p
           const match = products.find(product => ((product.brand || product.familyBrand)?.toLowerCase() === brand.toLowerCase() || product.name.toLowerCase().startsWith(brand.toLowerCase())) && productImage(product) !== "/product-placeholder.svg");
           return (
             <Link
-              href={`/search?q=${encodeURIComponent(brand)}`}
+              href={`/brands/${brandSlug(brand)}`}
               key={brand}
               className="qc-brand"
             >
