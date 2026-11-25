@@ -1,4 +1,5 @@
 import { HeroBanner } from './hero-banner';
+import { ProductShelf } from './product-shelf';
 import { brandSlug } from '../lib/catalog/merchandising';
 import { getWebEnvironment } from '../lib/server/env';
 import { CampaignArtwork } from './campaign-artwork';
@@ -130,11 +131,11 @@ export async function HomeShelf({
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
       {/* Talabat shelves: one swipeable row of compact tiles on phones, a single six-across row on desktop. */}
-      <div className="home-product-grid qc-rail">
+      <ProductShelf locale={locale}>
         {products.slice(0, 8).map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
-      </div>
+      </ProductShelf>
     </section>
   );
 }
@@ -357,11 +358,11 @@ export async function HomeCompactShelf({
   return (
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
-      <div className="home-product-grid qc-rail">
+      <ProductShelf locale={locale}>
         {products.slice(0, 8).map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
-      </div>
+      </ProductShelf>
     </section>
   );
 }

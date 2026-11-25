@@ -892,7 +892,8 @@
 }
 @media (min-width: 900px) {
   @scope (.storefront-shell) {
-    .qc-rail { grid-auto-flow: row; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; grid-auto-columns: auto; overflow: visible; margin-inline: 0; padding-inline: 0; }
+    /* Desktop shelves (Life / Aster): a paged row with arrow buttons, five across here, six from 1200px, seven from 1440px. */
+    .qc-rail { grid-auto-columns: calc((100% - 4 * 12px) / 5); gap: 12px !important; margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; }
     .qc-brand-rail { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); grid-auto-columns: auto; margin-inline: 0; padding-inline: 0; overflow: visible; }
     .qc-brand-mark { inline-size: 100%; block-size: auto; aspect-ratio: 1; }
     /* Blinkit density: five to six tiles a row instead of four large ones. */
@@ -903,11 +904,10 @@
 }
 @media (min-width: 1200px) {
   @scope (.storefront-shell) {
-    .qc-rail { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
-    .qc-rail > :nth-child(n+7) { display: none; }
+    .qc-rail { grid-auto-columns: calc((100% - 5 * 12px) / 6); }
   }
 }
-@media (min-width: 900px) and (max-width: 1199px) { @scope (.storefront-shell) { .qc-rail > :nth-child(n+6) { display: none; } } }
+@media (min-width: 1440px) { @scope (.storefront-shell) { .qc-rail { grid-auto-columns: calc((100% - 6 * 12px) / 7); } } }
 @scope (.storefront-shell) {
   .save-sticker { white-space: nowrap; }
   .qc-brand-mark { min-block-size: 0; }

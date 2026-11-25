@@ -67,3 +67,29 @@
   /* The page heading is read, not seen. sr-only's negative margin would push it one pixel past the edge in Arabic. */
   .home-page > h1.sr-only { margin: 0; inset-inline-start: 0; }
 }
+
+/* ═══════════════════════════ Desktop composition (Life Pharmacy / Aster) ═══════════════════════════ */
+@scope (.storefront-shell) {
+  .qc-shelf { position: relative; min-inline-size: 0; }
+  .qc-shelf-arrow { display: none; }
+}
+@media (min-width: 900px) {
+  @scope (.storefront-shell) {
+    .qc-shelf-arrow { position: absolute; inset-block-start: 40%; z-index: 3; display: grid; place-items: center; inline-size: 44px; block-size: 44px; padding: 0;
+      border: 1px solid var(--qc-line); border-radius: 50%; color: var(--qc-ink); background: var(--qc-surface); box-shadow: var(--qc-e-2); cursor: pointer;
+      transition: transform var(--qc-t-tap) var(--qc-ease-out); }
+    .qc-shelf-arrow[hidden] { display: none; }
+    .qc-shelf-arrow[data-side="previous"] { inset-inline-start: -16px; }
+    .qc-shelf-arrow[data-side="next"] { inset-inline-end: -16px; }
+    .qc-shelf-arrow:active { transform: scale(.94); }
+    .qc-shelf-arrow svg { inline-size: 20px; block-size: 20px; }
+    .qc-shelf-arrow:dir(rtl) svg { transform: scaleX(-1); }
+    /* Category cards span the row as large tiles instead of small squares bunched to one side. */
+    .home-page .home-categories, .home-page .qc-section-categories { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
+    .home-page .category-media { padding: 16%; }
+    .home-page .category-label { font-size: var(--qc-fs-14); }
+    /* "View all" reads as a button beside the heading. */
+    .home-page .section-heading > a.section-link, .home-page .section-heading > a { padding: 0 16px; min-block-size: 40px; border: 1.5px solid var(--qc-line-strong); border-radius: var(--qc-r-pill); }
+    .home-page .section-heading > a:hover { background: var(--qc-well); }
+  }
+}

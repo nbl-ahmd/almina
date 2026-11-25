@@ -16,6 +16,7 @@ export {
   CheckCircle as CheckCircleIcon,
   Check as CheckIcon,
   CaretDown as ChevronDownIcon,
+  CaretLeft as ChevronLeftIcon,
   CaretRight as ChevronRightIcon,
   Clock as ClockIcon,
   CreditCard as CreditCardIcon,

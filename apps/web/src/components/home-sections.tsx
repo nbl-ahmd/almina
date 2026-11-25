@@ -5,6 +5,7 @@ import { categoryHref, type Category, type Product } from '../lib/catalog/model'
 import { getProductById, getProducts, productImage } from '../lib/server/catalog';
 import { brandSlug } from '../lib/catalog/merchandising';
 import { ProductCard } from './product-card';
+import { ProductShelf } from './product-shelf';
 import { CategoryTile } from './category-tile';
 import { CampaignSlider } from './campaign-slider';
 import { ChevronRightIcon } from './storefront-icons';
@@ -58,7 +59,7 @@ export async function CustomHomeSection({ section, locale, cloudName, categories
     if (!products.length) return null;
     if (!viewAll) viewAll = section.source.kind === 'category' ? (() => { const category = categories.find(item => item._id === (section.source as { categoryId: string }).categoryId); return category ? categoryHref(category) : ''; })()
       : section.source.kind === 'brand' ? '/brands/' + brandSlug(section.source.brand) : section.source.kind === 'offers' ? '/offers' : sectionPages ? `/sections/${section.id}` : '';
-    content = <div className="home-product-grid qc-rail">{products.map(product => <ProductCard key={product._id} product={product} />)}</div>;
+    content = <ProductShelf locale={locale}>{products.map(product => <ProductCard key={product._id} product={product} />)}</ProductShelf>;
   } else if (section.type === 'categories') {
     const chosen = section.categoryIds.flatMap(id => categories.filter(category => category._id === id && !category.disabled));
     if (!chosen.length) return null;
