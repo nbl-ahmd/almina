@@ -63,3 +63,7 @@
     .home-page .qc-strip { border-radius: var(--qc-r-sm); }
   }
 }
+@scope (.storefront-shell) {
+  /* The page heading is read, not seen. sr-only's negative margin would push it one pixel past the edge in Arabic. */
+  .home-page > h1.sr-only { margin: 0; inset-inline-start: 0; }
+}

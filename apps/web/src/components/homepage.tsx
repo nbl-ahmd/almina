@@ -66,7 +66,6 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
   void products;
   return <section className="home-hero" aria-label={u(locale, 'Discover Al Mina')}>
-    <h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
     <CampaignSlider locale={locale} label={u(locale, 'Pharmacy promotions')} controlLabel={u(locale, 'promotion')}>
       {[
         ...heroCampaigns.map((page, index) => <HeroBanner cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),

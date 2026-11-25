@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { homeLayoutAdminSchema, homeLayoutSaveSchema, sectionBackgrounds, type HomeLayoutAdmin, type HomeSection } from '@almina/contracts';
+import { homeLayoutAdminSchema, homeLayoutSaveSchema, sectionBackgrounds, withTopSections, type HomeLayoutAdmin, type HomeSection } from '@almina/contracts';
 import { inputClass, selectClass } from './shadcn/styles';
 import { ImageUploadField } from './image-upload-field';
 import { GrowthProductPicker } from './growth-product-picker';
@@ -9,6 +9,7 @@ import { GrowthProductPicker } from './growth-product-picker';
 const field = 'grid min-w-0 gap-1.5 text-sm font-medium text-ink';
 const secondary = 'min-h-11 rounded-full border border-line bg-surface px-4 text-sm font-medium text-ink';
 const builtinNames: Record<string, string> = {
+  promo: 'Thin promo strip (campaigns)', hero: 'Main carousel (campaigns and banners)',
   categories: 'Shop by care (category tiles)', 'strip-top': 'Campaign strips: under categories', essentials: 'Your everyday essentials (shelf)',
   'strip-middle': 'Campaign strips: between shelves', collections: 'Collection tiles', offers: 'A little more value (offers shelf)',
   daily: 'Personal care shelf', routine: 'Skincare routine', budget: 'AED 50 & under shelf', 'strip-bottom': 'Campaign strips: above brands',
@@ -60,7 +61,7 @@ export function HomeLayoutEditor() {
       fetch('/api/growth/admin/brands').then(response => response.ok ? response.json() : { data: [] }).catch(() => ({ data: [] })),
     ]).then(([saved, cats, names]) => {
       if (!active) return;
-      setLayout(homeLayoutAdminSchema.parse(saved.data)); setUnsaved(false); setCategories(Array.isArray(cats.data) ? cats.data : []); setBrands(Array.isArray(names.data) ? names.data : []);
+      const draft = homeLayoutAdminSchema.parse(saved.data); setLayout({ ...draft, sections: withTopSections(draft.sections) }); setUnsaved(false); setCategories(Array.isArray(cats.data) ? cats.data : []); setBrands(Array.isArray(names.data) ? names.data : []);
       setIssue('');
     }).catch(() => { if (active) setIssue('Could not load the homepage layout. Reload to try again.'); }).finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
@@ -80,7 +81,7 @@ export function HomeLayoutEditor() {
       if (response.status === 409) { setIssue('Someone else saved the homepage. Reload before editing again.'); return; }
       if (!response.ok) throw new Error();
       const next = homeLayoutAdminSchema.parse((await response.json()).data);
-      setLayout(next); setUnsaved(false);
+      setLayout({ ...next, sections: withTopSections(next.sections) }); setUnsaved(false);
       setMessage(action === 'publish' ? 'Published. The homepage shows this layout now.' : action === 'unpublish' ? 'Unpublished. Customers see the built-in homepage; your draft is kept.'
         : next.published ? 'Draft saved. The live homepage is unchanged until you publish.' : 'Draft saved. Customers see the built-in homepage until you publish.');
     } catch { setIssue('Could not save. Check the sections and try again.'); }
@@ -106,7 +107,7 @@ export function HomeLayoutEditor() {
   const taken = sections.map(section => section.id);
   return <section className="grid gap-4" aria-labelledby="home-layout-title">
     <div className="flex flex-wrap items-end justify-between gap-3">
-      <div><h2 id="home-layout-title" className="mb-1 text-lg font-semibold">Homepage sections</h2><p className="m-0 max-w-prose text-sm text-mute">Drag sections (or use the arrows) to order them; hide or schedule them, and add product rows, category or brand cards, image tiles, carousels and banner strips. The main carousel and promo strip stay at the top. {!layout.published ? 'Nothing is published: the homepage uses the built-in order.' : layout.unpublishedChanges ? 'A published version is live. This draft has changes customers cannot see yet.' : 'This layout is published.'}{unsaved ? ' You have unsaved edits.' : ''}</p></div>
+      <div><h2 id="home-layout-title" className="mb-1 text-lg font-semibold">Homepage sections</h2><p className="m-0 max-w-prose text-sm text-mute">Drag sections (or use the arrows) to order them; hide or schedule them, and add product rows, category or brand cards, image tiles, carousels and banner strips. {!layout.published ? 'Nothing is published: the homepage uses the built-in order.' : layout.unpublishedChanges ? 'A published version is live. This draft has changes customers cannot see yet.' : 'This layout is published.'}{unsaved ? ' You have unsaved edits.' : ''}</p></div>
       <label className={field}>Language<select className={selectClass} value={locale} onChange={event => { setBusy(true); setLayout(null); setLocale(event.target.value === 'ar' ? 'ar' : 'en'); }}><option value="en">English</option><option value="ar">Arabic</option></select></label>
     </div>
     <ol className="m-0 grid list-none gap-2 p-0">{sections.map((section, index) => <li key={section.id} className={`rounded-xl border bg-surface ${dragging === index ? 'border-ink opacity-60' : 'border-line'}`}

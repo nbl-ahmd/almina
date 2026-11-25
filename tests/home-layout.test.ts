@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultHomeLayout, homeBuiltinKeys, homeLayoutSchema, sectionLive } from '@almina/contracts';
+import { defaultHomeLayout, homeBuiltinKeys, homeLayoutSchema, sectionLive, withTopSections } from '@almina/contracts';
 
 const art = 'https://res.cloudinary.com/demo/image/upload/sample.jpg';
 const base = { enabled: true, subtitle: '', background: 'none', viewAllHref: '', banner: null, startsAt: null, endsAt: null };
@@ -37,4 +37,11 @@ test('schedules and the enabled switch decide what is live', () => {
   assert.equal(sectionLive({ ...section, enabled: false }, now), false);
   assert.equal(sectionLive({ ...section, startsAt: '2026-11-26T00:00:00.000Z' } as typeof section, now), false);
   assert.equal(sectionLive({ ...section, endsAt: '2026-11-25T00:00:00.000Z' } as typeof section, now), false);
+});
+
+test('layouts saved before the carousel could move keep it at the top; a saved position wins', () => {
+  const old = defaultHomeLayout('en').sections.filter(section => section.type === 'builtin' && !['promo', 'hero'].includes(section.key));
+  assert.deepEqual(withTopSections(old).slice(0, 3).map(section => section.id), ['promo', 'hero', 'categories']);
+  const moved = [old[0]!, { type: 'builtin' as const, key: 'hero' as const, id: 'hero', enabled: true }, ...old.slice(1)];
+  assert.deepEqual(withTopSections(moved).slice(0, 3).map(section => section.id), ['promo', 'categories', 'hero']);
 });

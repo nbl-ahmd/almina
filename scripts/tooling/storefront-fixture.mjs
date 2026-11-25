@@ -129,6 +129,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       const common = { enabled: true, subtitle: 'Synthetic section.', background: 'blue', viewAllHref: '', banner: null, startsAt: null, endsAt: null };
       res.end(JSON.stringify({ data: { locale, published: true, revision: 3, sections: [
         { type: 'builtin', key: 'categories', id: 'categories', enabled: true },
+        { type: 'builtin', key: 'hero', id: 'hero', enabled: true },
         { ...common, type: 'products', id: 'fixture-picks', title: 'Fixture picks', source: { kind: 'selected', productIds: [product._id] }, limit: 8 },
         { ...common, type: 'strip', id: 'fixture-strip', title: '', background: 'none', strip: { image: 'https://cdn.alminapharmacy.com/cdn/banners/synthetic-strip.webp', mobileImage: '', alt: 'Synthetic strip offer', href: '/offers' } },
         { type: 'builtin', key: 'essentials', id: 'essentials', enabled: true },

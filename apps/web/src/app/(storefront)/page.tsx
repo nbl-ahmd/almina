@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
-import { campaignImageUrl, defaultHomeLayout, sectionLive, type HomeBuiltinKey } from '@almina/contracts';
+import { campaignImageUrl, defaultHomeLayout, sectionLive, withTopSections, type HomeBuiltinKey } from '@almina/contracts';
 import { getGrowthPages, getHomeLayout, getHomeLayoutDraft } from '../../lib/server/growth';
 import { CustomHomeSection } from '../../components/home-sections';
 import { SectionStrips } from '../../components/hero-banner';
@@ -59,18 +59,38 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   // ?preview=layout shows the saved draft from Website & growth → Homepage, for signed-in admins only.
   const preview = (await searchParams).preview === 'layout';
   return <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
-    <Suspense fallback={<CatalogLoading />}><HomeLead /></Suspense>
+    <Suspense fallback={<CatalogLoading />}><HomeLead preview={preview} /></Suspense>
     <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent preview={preview} /></Suspense>
   </div>;
 }
-async function HomeLead() {
+// The layout decides the order. Its leading carousel and promo entries render in the first boundary so the top of the page
+// appears first; everything else follows with the catalogue.
+const homeSections = cache(async (preview: boolean) => {
+  const locale = await getLocale();
+  const layout = preview ? await getHomeLayoutDraft(locale).then(draft => draft ?? getHomeLayout(locale)) : await getHomeLayout(locale);
+  const sections = withTopSections((layout ?? defaultHomeLayout(locale)).sections).filter(section => sectionLive(section));
+  let lead = 0;
+  while (sections[lead]?.type === 'builtin' && ['promo', 'hero'].includes((sections[lead] as { key: string }).key)) lead++;
+  return { layout, lead: sections.slice(0, lead), rest: sections.slice(lead) };
+});
+async function HomeLead({ preview = false }: { preview?: boolean }) {
+  const [locale, { lead }] = await Promise.all([getLocale(), homeSections(preview)]);
+  return <>
+    <h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
+    {lead.map(section => section.type === 'builtin' && section.key === 'promo' ? <PromoBlock key={section.id} /> : <HeroBlock key={section.id} />)}
+  </>;
+}
+async function PromoBlock() {
+  return <SectionStrips pages={await homepageCampaigns()} slot="home-promo" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />;
+}
+async function HeroBlock() {
   const [banners, campaigns] = await Promise.allSettled([getBanners(await getLocale()), homepageCampaigns()]);
   const liveBanners = banners.status === 'fulfilled' ? banners.value : [];
   const liveCampaigns = campaigns.status === 'fulfilled' ? campaigns.value : [];
   // Managed artwork needs no inventory search. Only the fallback hero uses a product.
   const featured = liveBanners.length || liveCampaigns.some(page => page.homepagePlacement === 'hero')
     ? [] : (await featuredProducts().catch(() => ({ products: [] }))).products;
-  return <><SectionStrips pages={liveCampaigns} slot="home-promo" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} /><HomeHero products={featured.filter(product => product.stock > 0)} banners={liveBanners} campaigns={liveCampaigns} /></>;
+  return <HomeHero products={featured.filter(product => product.stock > 0)} banners={liveBanners} campaigns={liveCampaigns} />;
 }
 function categoryRank(name: string) {
   const index = [
@@ -85,7 +105,7 @@ function categoryRank(name: string) {
 }
 async function HomeContent({ preview = false }: { preview?: boolean }) {
   const locale = await getLocale();
-  const [catalogue, settledCollections, campaigns, layout, brandPages] = await Promise.all([
+  const [catalogue, settledCollections, campaigns, { layout, rest: sections }, brandPages] = await Promise.all([
     Promise.allSettled([
       getCategories(),
       featuredProducts(),
@@ -96,7 +116,7 @@ async function HomeContent({ preview = false }: { preview?: boolean }) {
       homeCollections.map((collection) => getCollectionProducts(collection)),
     ),
     homepageCampaigns(),
-    preview ? getHomeLayoutDraft(locale).then(draft => draft ?? getHomeLayout(locale)) : getHomeLayout(locale),
+    homeSections(preview),
     getGrowthPages('brand', locale).then(result => result.items).catch(() => []),
   ]);
   const collectionResults = settledCollections.map((result) =>
@@ -170,6 +190,8 @@ async function HomeContent({ preview = false }: { preview?: boolean }) {
   // Built-in sections by key. A published homepage layout (Website & growth → Homepage) orders, hides or interleaves them with
   // custom sections; without one, the built-in order below is today's homepage.
   const blocks: Record<HomeBuiltinKey, ReactNode> = {
+    promo: <PromoBlock />,
+    hero: <HeroBlock />,
     categories: <HomeCategories categories={[...categories].sort((a, b) => categoryRank(a.name) - categoryRank(b.name))} photos={categoryPhotos} />,
     'strip-top': <SectionStrips pages={campaigns} slot="home-top" cloudName={cloudName} />,
     essentials: <>
@@ -194,6 +216,5 @@ async function HomeContent({ preview = false }: { preview?: boolean }) {
     recent: <RecentlyViewed locale={locale} cloudName={cloudName} />,
     help: <HomeSupport />,
   };
-  const sections = (layout ?? defaultHomeLayout(locale)).sections.filter(section => sectionLive(section));
   return <>{preview && layout && 'unpublishedChanges' in layout && (layout.unpublishedChanges || !layout.published) ? <p role="status" className="notice m-0 p-3 text-sm">Previewing the saved draft homepage. Customers still see the published version.</p> : null}{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
 }

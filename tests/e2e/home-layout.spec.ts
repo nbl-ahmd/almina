@@ -16,6 +16,10 @@ for (const width of [390, 1280]) test(`published homepage layout renders custom 
     const order = await page.evaluate(() => [...document.querySelectorAll('.home-page h2')].map(h => h.textContent?.trim()));
     expect(order.indexOf('Fixture picks')).toBeGreaterThan(-1);
     expect(order.indexOf('Fixture picks')).toBeLessThan(order.indexOf('Your everyday essentials'));
+    // Staff moved the main carousel below the categories; the page keeps its single heading.
+    expect(await page.evaluate(() => Boolean(document.querySelector('.home-categories')!.compareDocumentPosition(document.querySelector('.home-hero')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+    await expect(page.locator('.home-hero')).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
     await expect(page.getByRole('heading', { name: 'Fixture later', exact: true })).toHaveCount(0);
     await expect(page.locator('.qc-brand-rail')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

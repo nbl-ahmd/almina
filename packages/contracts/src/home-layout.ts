@@ -9,7 +9,7 @@ const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
 const short = z.string().trim().max(80);
 const artwork = z.union([z.literal(''), z.url().refine(value => value.startsWith('https://') && !new URL(value).username && !new URL(value).password)]);
 const link = z.union([z.literal(''), localLink]);
-export const homeBuiltinKeys = ['categories', 'strip-top', 'essentials', 'strip-middle', 'collections', 'offers', 'daily', 'routine', 'budget', 'strip-bottom', 'brands', 'campaigns', 'recent', 'help'] as const;
+export const homeBuiltinKeys = ['promo', 'hero', 'categories', 'strip-top', 'essentials', 'strip-middle', 'collections', 'offers', 'daily', 'routine', 'budget', 'strip-bottom', 'brands', 'campaigns', 'recent', 'help'] as const;
 export const sectionBackgrounds = ['none', 'coral', 'green', 'blue', 'yellow', 'purple'] as const;
 const image = z.object({ image: artwork, mobileImage: artwork.default(''), alt: short.default(''), href: link.default('') }).strict();
 const common = {
@@ -67,6 +67,11 @@ export type HomeBuiltinKey = typeof homeBuiltinKeys[number];
 /** Today's homepage order, used when nothing is published (and as the starting point in the editor). */
 export function defaultHomeLayout(locale: 'en' | 'ar'): HomeLayout {
   return { locale, published: false, revision: 0, sections: homeBuiltinKeys.map(key => ({ type: 'builtin' as const, key, id: key, enabled: true })) };
+}
+/** Layouts saved before the main carousel and promo strip could be moved have no entry for them: they stay at the top, shown. */
+export function withTopSections(sections: HomeSection[]): HomeSection[] {
+  const missing = (['promo', 'hero'] as const).filter(key => !sections.some(section => section.type === 'builtin' && section.key === key));
+  return [...missing.map(key => ({ type: 'builtin' as const, key, id: key, enabled: true })), ...sections];
 }
 /** A custom section is live when enabled and inside its schedule. */
 export function sectionLive(section: HomeSection, now = Date.now()) {
