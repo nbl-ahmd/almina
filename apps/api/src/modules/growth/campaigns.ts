@@ -27,7 +27,7 @@ export async function reviewCampaign(db: Db, raw: unknown, now = new Date()): Pr
   for(const image of [page.image,page.mobileImage])if(image&&!campaignImageUrl(image,process.env.CLOUDINARY_CLOUD_NAME))warn('unapproved-artwork','Artwork must use the configured Cloudinary account or the pharmacy CDN.');
   if (!page.mobileImage) warn('missing-mobile-artwork', 'No mobile artwork selected. The desktop image will also be used on mobile.');
   if (!page.imageAlt) warn('missing-alt', 'Add a useful image description.');
-  if (!page.ctaLabel) warn('missing-cta', 'Add a clear button label.');
+  if (!page.ctaLabel && (page.homepagePlacement === 'secondary' || page.heroLayout === 'overlay')) warn('missing-cta', 'Add a clear button label.');
   if (!page.terms) warn('missing-terms', 'Add the campaign eligibility, dates and exclusions in the terms.');
   const state = campaignState(page, now.getTime());
   if (state === 'ended') warn('expired', 'This campaign has ended and will not appear on the homepage.');
@@ -45,11 +45,12 @@ export async function reviewCampaign(db: Db, raw: unknown, now = new Date()): Pr
 }
 /** Bounded, current, locale-specific homepage placements. Old documents opt out by default. */
 export async function homepageCampaigns(db: Db, locale: 'en' | 'ar', now = new Date()): Promise<GrowthPage[]> {
-  const rows = (await Promise.all((['hero', 'secondary'] as const).map(homepagePlacement => db.collection('growth_pages').find({
+  const limits = { hero: 8, secondary: 4, strip: 6, popup: 3 } as const;
+  const rows = (await Promise.all((['hero', 'secondary', 'strip', 'popup'] as const).map(homepagePlacement => db.collection('growth_pages').find({
     kind: 'campaign', locale, published: true, homepagePlacement,
     $and: [{ $or: [{ startsAt: null }, { startsAt: { $lte: now.toISOString() } }] }, { $or: [{ endsAt: null }, { endsAt: { $gt: now.toISOString() } }] }],
-  }, { maxTimeMS: 3000, projection: { _id: 0, updatedAt: 0, updatedBy: 0 } }).sort({ priority: -1, slug: 1 }).limit(homepagePlacement === 'hero' ? 8 : 4).toArray()))).flat();
-  const pages = rows.flatMap(row => { const value = growthPageSchema.safeParse(row); return value.success && value.data.image ? [value.data] : []; });
+  }, { maxTimeMS: 3000, projection: { _id: 0, updatedAt: 0, updatedBy: 0 } }).sort({ priority: -1, slug: 1 }).limit(limits[homepagePlacement]).toArray()))).flat();
+  const pages = rows.flatMap(row => { const value = growthPageSchema.safeParse(row); return value.success && (value.data.image || value.data.homepagePlacement === 'popup') ? [value.data] : []; });
   const products = await snapshots(db, pages.flatMap(page => page.productIds)), live = new Set(products.filter(row => available(row) && Number(row.stock) > 0).map(row => String(row._id)));
   // A selected-product promotion must still have something available to shop.
   return pages.filter(page => !page.productIds.length || page.productIds.some(id => live.has(id)));

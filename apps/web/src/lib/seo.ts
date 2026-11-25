@@ -19,7 +19,7 @@ export function hasDuplicateQuery(query: Query) {
 export function isPublicPath(path: string) {
   return ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands', '/health-guides',
     ...Object.values(policyPaths)].includes(path)
-    || /^\/(products|categories|brands|shop|health-guides|offers|routines|collections)\/[^/]+$/.test(path) || /^\/ar\/(brands|shop|health-guides|offers|routines)\/[^/]+$/.test(path);
+    || /^\/(products|categories|brands|shop|health-guides|offers|routines|collections|pages)\/[^/]+$/.test(path) || /^\/ar\/(brands|shop|health-guides|offers|routines|pages)\/[^/]+$/.test(path);
 }
 export function catalogPageNumber(path:string,query:Query):number|null {
   if(!['/products','/offers'].includes(path)&&!/^\/categories\/[^/]+$/.test(path))return null;
@@ -143,4 +143,17 @@ export function reviewListData(reviews: PublicReviews | null | undefined) {
     reviewBody: review.body,
     datePublished: review.createdAt,
   }));
+}
+
+/** Category and brand listings: a CollectionPage whose main entity lists the products shown on the page (real catalogue rows only). */
+export function collectionData(origin: string, page: { name: string; description: string; path: string }, products: { name: string; href: string }[]) {
+  return { '@context': 'https://schema.org', '@type': 'CollectionPage', '@id': origin + page.path + '#collection', name: page.name, description: page.description,
+    url: origin + page.path, isPartOf: { '@id': origin + '/#website' }, inLanguage: 'en-AE',
+    ...(products.length ? { mainEntity: { '@type': 'ItemList', numberOfItems: products.length,
+      itemListElement: products.slice(0, 48).map((product, index) => ({ '@type': 'ListItem', position: index + 1, url: origin + product.href, name: product.name })) } } : {}) };
+}
+
+/** Only for questions and answers that are visible on the same page. */
+export function faqData(faqs: { question: string; answer: string }[]) {
+  return faqs.length ? { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })) } : null;
 }

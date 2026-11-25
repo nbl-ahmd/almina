@@ -1,10 +1,13 @@
+import { HeroBanner } from './hero-banner';
+import { ProductShelf } from './product-shelf';
+import { brandSlug } from '../lib/catalog/merchandising';
 import { getWebEnvironment } from '../lib/server/env';
 import { CampaignArtwork } from './campaign-artwork';
 import type { GrowthPage } from '@almina/contracts';
 import { getLocale } from '../lib/server/i18n';
 import { shopText as u } from '../lib/i18n-storefront';
 import { CategoryTile } from "./category-tile";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from './app-link';
 import {
   ChatBubbleLeftRightIcon,
@@ -15,7 +18,6 @@ import {
   ProductPhoto as Photo,
   ProductPrice as Price,
   ProductCard,
-  CompactProductCard,
 } from "./product-card";
 import { CampaignSlider } from "./campaign-slider";
 import {
@@ -25,7 +27,7 @@ import {
 } from "../lib/catalog/model";
 import { productImage } from "../lib/server/catalog";
 
-type Banner = { image: string; name: string; href: string | null };
+type Banner = { image: string; mobileImage?: string; name: string; href: string | null };
 
 /** Shared editorial heading: quiet type, pill link, consistent section rhythm. */
 async function SectionHeading({
@@ -65,13 +67,14 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
   const heroCampaigns = campaigns.filter(page => page.homepagePlacement === 'hero');
   void products;
   return <section className="home-hero" aria-label={u(locale, 'Discover Al Mina')}>
-    <h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
     <CampaignSlider locale={locale} label={u(locale, 'Pharmacy promotions')} controlLabel={u(locale, 'promotion')}>
       {[
-        ...heroCampaigns.map((page, index) => <CampaignArtwork cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),
+        ...heroCampaigns.map((page, index) => <HeroBanner cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} key={page.slug} page={page} eager={index === 0} />),
+        // Legacy banners from /admin/banners use the same fixed-height frame (finished artwork, cover-fitted).
         ...banners.slice(0, 8).map((banner, index) => {
-          const artwork = <div className="catalog-banner-artwork"><Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} className="object-contain" /></div>;
-          return banner.href ? <Link href={banner.href} key={banner.image}>{artwork}</Link> : <div key={banner.image}>{artwork}</div>;
+          // Uploaded phone artwork (Banners admin, second image) is used below 768px; otherwise the desktop image is contained.
+          const artwork = <picture className="qc-banner-art">{banner.mobileImage ? <source media="(max-width: 767px)" srcSet={getImageProps({ src: banner.mobileImage, alt: '', width: 800, height: 400, sizes: '100vw' }).props.srcSet} /> : null}<Image src={banner.image} alt={banner.name} fill sizes="(max-width:899px) 100vw, 1280px" loading={index === 0 && !heroCampaigns.length ? 'eager' : 'lazy'} fetchPriority={index === 0 && !heroCampaigns.length ? 'high' : undefined} /></picture>;
+          return banner.href ? <Link href={banner.href} key={banner.image} className="qc-hero" data-layout="image" aria-label={banner.name}>{artwork}</Link> : <div key={banner.image} className="qc-hero" data-layout="image">{artwork}</div>;
         }),
         ...(!heroCampaigns.length && !banners.length ? [<div key="everyday" className="fallback-campaign">
           <div className="campaign-copy">
@@ -91,11 +94,11 @@ export async function HomeHero({ products, banners = [], campaigns = [] }: { pro
   </section>;
 }
 
-export async function HomeCategories({ categories }: { categories: Category[] }) {
+export async function HomeCategories({ categories, photos }: { categories: Category[]; photos?: Map<string, string> }) {
   const locale=await getLocale();if(!categories.length)return null;
   return <section aria-label={u(locale, 'Shop by care')}>
     <SectionHeading title={u(locale, 'Shop by care')} href="/categories" link={u(locale, 'All categories')} />
-    <div className="home-categories">{categories.slice(0, 8).map(category => <CategoryTile key={category._id} category={category} />)}</div>
+    <div className="home-categories">{categories.slice(0, 8).map(category => <CategoryTile key={category._id} category={category} fallback={photos?.get(category._id)} />)}</div>
   </section>;
 }
 
@@ -127,34 +130,26 @@ export async function HomeShelf({
   return (
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
-      <div className="home-product-grid">
-        {products.slice(0, 4).map((product) => (
+      {/* Talabat shelves: one swipeable row of compact tiles on phones, a single six-across row on desktop. */}
+      <ProductShelf locale={locale}>
+        {products.slice(0, 8).map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
-      </div>
+      </ProductShelf>
     </section>
   );
 }
 
 export async function HomeSupport() {
   const locale = await getLocale();
+  // 1mg-style help row: one quiet line to the pharmacy, not a dark campaign card.
   return (
-    <section className="home-support relative overflow-hidden rounded-2xl px-6 py-8 text-white md:px-10 md:py-12">
-      <div className="relative grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-end">
-        <div>
-          <span className="mb-5 flex size-11 items-center justify-center rounded-full bg-white/10">
-            <ChatBubbleLeftRightIcon className="size-5" />
-          </span>
-          <h2 className="mb-3 max-w-[26ch] text-2xl leading-[1.1] font-semibold tracking-[-0.03em] md:text-[34px]">
-            {locale === "en" ? <>Your neighbourhood pharmacy, just a conversation away.</> : <>صيدليتك القريبة، على بُعد محادثة.</>}
-          </h2>
-          <p className="mb-0 max-w-[44ch] text-sm leading-6 text-white/80">{u(locale,"Speak to Al Mina for product and order enquiries.")}</p>
-        </div>
-        <div className="flex flex-wrap md:justify-end">
-          <Link href="/contact" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold transition-colors hover:bg-white/90">{u(locale,"Let’s talk ")}<ArrowRightIcon className="rtl:rotate-180 size-4" />
-          </Link>
-        </div>
-      </div>
+    <section className="home-help" aria-label={u(locale,"Speak to Al Mina for product and order enquiries.")}>
+      <Link href="/contact" className="cart-help-row">
+        <ChatBubbleLeftRightIcon className="pdp-info-icon" aria-hidden="true" />
+        <span><strong>{locale === "en" ? "Questions about a product?" : "لديك سؤال عن منتج؟"}</strong><small>{u(locale,"Speak to Al Mina for product and order enquiries.")}</small></span>
+        <ChevronRightIcon className="pdp-info-chevron rtl:rotate-180" aria-hidden="true" />
+      </Link>
     </section>
   );
 }
@@ -254,7 +249,7 @@ export async function HomeCollectionTiles({
   );
 }
 
-export async function HomeBrandStrip({ brands, products }: { brands: string[]; products: Product[] }) {
+export async function HomeBrandStrip({ brands, products, logos }: { brands: string[]; products: Product[]; logos?: Map<string, string> }) {
   const locale = await getLocale();
   if (!brands.length) return null;
   return (
@@ -264,17 +259,18 @@ export async function HomeBrandStrip({ brands, products }: { brands: string[]; p
         href="/categories"
         link={u(locale,"Explore products")}
       />
-      <div className="brand-rail flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain pb-2 md:flex-wrap">
+      {/* Talabat "Big brands near you": square logo wells with the name underneath, in one swipeable row. */}
+      <div className="qc-brand-rail">
         {brands.map((brand) => {
           const match = products.find(product => ((product.brand || product.familyBrand)?.toLowerCase() === brand.toLowerCase() || product.name.toLowerCase().startsWith(brand.toLowerCase())) && productImage(product) !== "/product-placeholder.svg");
           return (
             <Link
-              href={`/search?q=${encodeURIComponent(brand)}`}
+              href={`/brands/${brandSlug(brand)}`}
               key={brand}
-              className="group flex min-h-14 min-w-[180px] shrink-0 snap-start items-center gap-3 rounded-xl border bg-white py-2 pr-3 pl-2 text-sm font-medium tracking-[-0.01em] transition-colors"
+              className="qc-brand"
             >
-              {match ? <span className="block size-10 shrink-0 overflow-hidden rounded-full p-1.5"><Photo product={match} /></span> : <span className="flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{brand.slice(0,1).toUpperCase()}</span>}
-              <span className="min-w-0 flex-1 truncate">{brand}</span><ArrowRightIcon className="size-3.5 shrink-0 transition-colors rtl:-scale-x-100" />
+              {logos?.get(brandSlug(brand)) ? <span className="qc-brand-mark"><Image src={logos.get(brandSlug(brand))!} alt="" width={120} height={120} sizes="84px" /></span> : match ? <span className="qc-brand-mark"><Photo product={match} /></span> : <span className="qc-brand-mark qc-brand-initial">{brand.slice(0,1).toUpperCase()}</span>}
+              <span className="qc-brand-name">{brand}</span>
             </Link>
           );
         })}
@@ -300,7 +296,7 @@ export async function HomeRoutine({ products }: { products: Product[] }) {
   });
   if (steps.length < 2) return null;
   return (
-    <section className="rounded-2xl border bg-white p-4 md:p-6">
+    <section className="home-routine">
       <SectionHeading
         title={u(locale,"Make space for daily skincare")}
         description={u(locale,"Explore individual products for your routine.")}
@@ -313,7 +309,7 @@ export async function HomeRoutine({ products }: { products: Product[] }) {
         {steps.map(({ title, product }) => (
           <article
             key={product._id}
-            className="grid grid-cols-[72px_1fr] items-center gap-3 rounded-2xl p-3"
+            className="home-routine-step"
           >
             <Link
               href={productHref(product)}
@@ -323,7 +319,7 @@ export async function HomeRoutine({ products }: { products: Product[] }) {
               <Photo product={product} />
             </Link>
             <div className="min-w-0">
-              <p className="mb-1 text-xs font-semibold tracking-[0.1em] uppercase">{u(locale,title)}</p>
+              <p className="home-routine-label">{u(locale,title)}</p>
               <h3 className="mb-1.5 text-sm leading-5 font-medium">
                 <Link
                   href={productHref(product)}
@@ -362,11 +358,11 @@ export async function HomeCompactShelf({
   return (
     <section>
       <SectionHeading title={u(locale,title)} description={u(locale,description)} href={href} />
-      <div className="home-compact-grid scrollbar-none flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain pb-1 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-4">
-        {products.slice(0, 4).map((product) => (
-          <CompactProductCard key={product._id} product={product} />
+      <ProductShelf locale={locale}>
+        {products.slice(0, 8).map((product) => (
+          <ProductCard key={product._id} product={product} />
         ))}
-      </div>
+      </ProductShelf>
     </section>
   );
 }

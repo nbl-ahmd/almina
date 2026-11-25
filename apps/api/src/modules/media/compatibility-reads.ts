@@ -34,7 +34,7 @@ export function retainedBannerQuery(raw: unknown) {
 }
 export async function retainedBannerList(db: Db, raw: unknown) {
   const page = retainedBannerQuery(raw);
-  return db.collection('banners').find({ archivedAt: { $exists: false } }, { ...queryOptions, projection: { _id: 1, name: 1, image: 1, link: 1, gdriveFileId: 1, cloudinaryImages: 1 } })
+  return db.collection('banners').find({ archivedAt: { $exists: false } }, { ...queryOptions, projection: { _id: 1, name: 1, image: 1, link: 1, locale: 1, gdriveFileId: 1, cloudinaryImages: 1 } })
     .sort({ _id: -1 }).skip(page.offset).limit(page.limit).toArray();
 }
 

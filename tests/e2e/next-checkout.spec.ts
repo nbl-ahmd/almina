@@ -123,7 +123,7 @@ for (const code of [1, 2, 3]) test(`GPS failure ${code} leaves manual checkout a
   await expect(page.getByText(code === 1 ? 'Location permission was denied.' : code === 3 ? 'Location timed out.' : 'Unable to find your location.', { exact: false })).toBeVisible();
   if (code === 1) await expect(page.locator('.checkout-location-status')).toContainText('lock icon');
   await expect(page.locator('input[name="maplink"]')).toHaveValue('');
-  await expect(page.locator('.checkout-locate + .checkout-location-status')).toHaveAttribute('data-tone', 'error');
+  await expect(page.locator('.qc-choices + .checkout-location-status')).toHaveAttribute('data-tone', 'error');
   await page.getByRole('button', { name: 'Review order', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Place order — AED 40.00', exact: true })).toBeVisible();
 });
@@ -202,9 +202,10 @@ test('header delivery selector saves an area, persists on reload and prefills ch
   await dialog.getByLabel('Delivery city / area', { exact: true }).fill('Al Barsha');
   await dialog.getByRole('button', { name: 'Save delivery area' }).click();
   await expect(dialog).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Al Barsha, Dubai');
+  // Talabat header: "Deliver to" above the area name; the emirate stays in the tooltip.
+  await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Deliver toAl Barsha');
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Al Barsha, Dubai');
+  await expect(page.getByRole('button', { name: 'Choose delivery area' })).toContainText('Deliver toAl Barsha');
   await expect(page.getByRole('complementary', { name: 'Choose your delivery area' })).toHaveCount(0);
   await page.evaluate(id => localStorage.setItem('almina.cart.v1', JSON.stringify([{id,quantity:1} ])), productId);
   await page.goto(origin + '/checkout');

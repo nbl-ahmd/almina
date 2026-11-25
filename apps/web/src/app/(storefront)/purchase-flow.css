@@ -37,7 +37,7 @@
   .pf-bill dd { margin: 0; text-align: end; }
   .pf-bill .pf-bill-free { color: var(--color-success); font-weight: 600; }
   .pf-bill .pf-bill-total { padding-block-start: 12px; border-block-start: 1px dashed var(--color-control); font-size: 1.0625rem; font-weight: 800; }
-  .pf-saved-banner { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 12px; background: #EEF8F1; color: var(--color-forest); font-size: .8125rem; font-weight: 600; }
+  .pf-saved-banner { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--color-save-tint); color: var(--color-forest); font-size: .8125rem; font-weight: 600; }
 
   /* Rows that open something: coupon, voucher */
   .pf-row-button { display: flex; align-items: center; gap: 12px; inline-size: 100%; min-block-size: 56px; padding: 8px 16px; border: 1px solid var(--color-divider); border-radius: 16px; background: var(--color-canvas); color: inherit; font: inherit; font-size: .9375rem; font-weight: 600; text-align: start; cursor: pointer; }

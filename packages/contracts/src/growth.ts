@@ -1,17 +1,27 @@
 import { cloudinaryImage } from './media';
 import { z } from 'zod';
+import { localLink } from './links';
+import { homeSectionSchema, maxDataSections } from './home-layout';
 const short = z.string().trim().max(200);
 const text = z.string().trim().max(12000);
 export const growthSlug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100);
-export const growthKinds = ['brand','category','guide','campaign','collection'] as const;
-export const localLink = z.string().max(250).refine(value => /^\/(?!\/)[a-zA-Z0-9/_?=&%-]*$/.test(value) && !value.startsWith('/api') && !value.startsWith('/admin'));
+export const growthKinds = ['brand','category','guide','campaign','collection','page'] as const;
+export { localLink };
 const safeImage = z.union([z.literal(''), z.url().refine(value => value.startsWith('https://') && !new URL(value).username && !new URL(value).password)]);
 export const growthPageSchema = z.object({
   kind:z.enum(growthKinds),slug:growthSlug,locale:z.enum(['en','ar']).default('en'),
   title:short.min(3),description:z.string().trim().max(320),body:text.default(''),
   image:safeImage.default(''),imageAlt:short.default(''),
   mobileImage:safeImage.default(''),
-  homepagePlacement:z.enum(['none','hero','secondary']).default('none'),
+  // hero: main carousel · secondary: paired campaign cards · strip: thin wide section banner · popup: storefront offer/info modal.
+  homepagePlacement:z.enum(['none','hero','secondary','strip','popup']).default('none'),
+  // Hero artwork: 'image' is a finished banner (the whole slide links); 'overlay' adds the title, text and button on the start side,
+  // over a safe zone the designer leaves empty. Existing campaigns default to 'image' so no text is drawn over finished artwork.
+  heroLayout:z.enum(['image','overlay']).default('image'),textTone:z.enum(['dark','light']).default('dark'),
+  ctaHref:z.union([z.literal(''),localLink]).default(''),
+  stripSlot:z.enum(['home-promo','home-top','home-middle','home-bottom','listing']).default('home-middle'),
+  // Popup: 'card' is artwork above a title and message; 'image' is a designed 3:4 poster (Life Pharmacy) with one button under it.
+  popupLayout:z.enum(['card','image']).default('card'),
   priority:z.number().int().min(0).max(100).default(0),
   ctaLabel:z.string().trim().max(60).default(''),
   productIds:z.array(z.string().regex(/^[a-f0-9]{24}$/i)).max(80).default([]),
@@ -22,15 +32,30 @@ export const growthPageSchema = z.object({
   // A curated bundle is a genuine, staff-chosen complementary set. No discount is implied.
   bundle:z.boolean().default(false),bundleReason:z.string().trim().max(600).default(''),
   terms:z.string().trim().max(3000).default(''),revision:z.number().int().nonnegative().default(0),
+  // Staff-built pages (kind 'page', at /pages/<slug>): the same sections the homepage builder offers.
+  sections:z.array(homeSectionSchema).max(20).default([]),
 }).strict().superRefine((page,ctx)=>{
+  if(page.sections.length){
+    if(page.kind!=='page')ctx.addIssue({code:'custom',path:['sections'],message:'Only a custom page can hold sections.'});
+    if(page.sections.some(section=>section.type==='builtin'))ctx.addIssue({code:'custom',path:['sections'],message:'Built-in homepage sections cannot be placed on a custom page.'});
+    if(new Set(page.sections.map(section=>section.id)).size!==page.sections.length)ctx.addIssue({code:'custom',path:['sections'],message:'Each section needs its own id.'});
+    if(page.sections.filter(section=>section.type==='products'||section.type==='categories').length>maxDataSections)ctx.addIssue({code:'custom',path:['sections'],message:`Use at most ${maxDataSections} product row and category card sections.`});
+  }
   if(page.homepagePlacement!=='none'){
     if(page.productIds.length>40)ctx.addIssue({code:'custom',path:['productIds'],message:'Homepage campaigns support up to 40 pinned products.'});
     if(page.kind!=='campaign')ctx.addIssue({code:'custom',path:['homepagePlacement'],message:'Only campaigns can appear in homepage campaign positions.'});
     if(new Set(page.productIds).size!==page.productIds.length)ctx.addIssue({code:'custom',path:['productIds'],message:'Choose each campaign product once.'});
-    if(page.published&&(!page.image||!page.imageAlt||!page.ctaLabel||!page.terms))ctx.addIssue({code:'custom',path:['image'],message:'Homepage campaigns need desktop artwork, image description, button text and offer terms before publishing.'});
+    if(page.published&&page.homepagePlacement==='popup'){
+      if(!page.description&&!page.image)ctx.addIssue({code:'custom',path:['description'],message:'A popup needs a message or artwork.'});
+      if(page.image&&!page.imageAlt)ctx.addIssue({code:'custom',path:['imageAlt'],message:'Describe the popup artwork.'});
+      if(page.popupLayout==='image'&&!page.image)ctx.addIssue({code:'custom',path:['image'],message:'An image popup needs its poster artwork.'});
+    }else if(page.published){
+      const needsButton=page.homepagePlacement==='secondary'||(page.homepagePlacement==='hero'&&page.heroLayout==='overlay');
+      if(!page.image||!page.imageAlt||!page.terms||(needsButton&&!page.ctaLabel))ctx.addIssue({code:'custom',path:['image'],message:needsButton?'Homepage campaigns need desktop artwork, image description, button text and offer terms before publishing.':'Banners need artwork, an image description and offer terms before publishing.'});
+    }
   }
   if(page.startsAt&&page.endsAt&&page.startsAt>=page.endsAt)ctx.addIssue({code:'custom',path:['endsAt'],message:'End must follow start.'});
-  if(page.published&&(!page.description||!page.body))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
+  if(page.published&&(!page.description||(!page.body&&!(page.kind==='page'&&page.sections.length))))ctx.addIssue({code:'custom',path:['body'],message:'Published pages need useful original content and a description.'});
   if(page.published&&page.healthContent&&!page.reviewer)ctx.addIssue({code:'custom',path:['reviewer'],message:'Health content needs a named pharmacy reviewer.'});
   if(page.bundle&&page.kind!=='collection')ctx.addIssue({code:'custom',path:['bundle'],message:'Only a curated collection can be a complementary bundle.'});
   if(page.bundle&&page.productIds.length<2)ctx.addIssue({code:'custom',path:['productIds'],message:'A curated bundle needs at least two chosen products.'});
@@ -51,7 +76,7 @@ export function campaignState(page:Pick<GrowthPage,'startsAt'|'endsAt'>,now=Date
 }
 export function growthPagePath(page:Pick<GrowthPage,'kind'|'slug'|'locale'>) {
   const prefix=page.locale==='ar'?'/ar':'';
-  return `${prefix}/${{brand:'brands',category:'shop',guide:'health-guides',campaign:'offers',collection:'routines'}[page.kind]}/${page.slug}`;
+  return `${prefix}/${{brand:'brands',category:'shop',guide:'health-guides',campaign:'offers',collection:'routines',page:'pages'}[page.kind]}/${page.slug}`;
 }
 
 // Points buy fixed-value vouchers. No reward is active until staff publish complete rules.
@@ -85,6 +110,6 @@ export function campaignImageUrl(value: string, cloudName?: string): string | nu
 
 // Existing strict v1 clients must not receive fields they do not understand.
 export const legacyGrowthPageSchema=growthPageSchema.transform(page=>{
- const {mobileImage,homepagePlacement,priority,ctaLabel,...legacy}=page;
- void [mobileImage,homepagePlacement,priority,ctaLabel];return legacy;
+ const {mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,sections,...legacy}=page;
+ void [mobileImage,homepagePlacement,priority,ctaLabel,heroLayout,textTone,ctaHref,stripSlot,popupLayout,sections];return legacy;
 });

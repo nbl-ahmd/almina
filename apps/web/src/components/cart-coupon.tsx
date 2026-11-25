@@ -34,7 +34,7 @@ export function CartCoupon({ lines, locale }: { lines: CartLine[]; locale: Local
         if (controller.signal.aborted) return;
         const error = cause instanceof Error ? cause.message : '';
         setChecked({ request: next, items, error });
-        if (error === 'COUPON_UNAVAILABLE' || error === 'COUPON_MINIMUM') saveCoupon('');
+        if (error === 'COUPON_UNAVAILABLE' || error === 'COUPON_NOT_APPLICABLE' || error === 'COUPON_MINIMUM') saveCoupon('');
       }
     }
     void validate(request);

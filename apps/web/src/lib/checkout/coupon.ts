@@ -17,6 +17,7 @@ export function couponError(code: string, locale: Locale) {
   const ar = locale === 'ar';
   switch (code) {
     case 'COUPON_MINIMUM': return ar ? 'أضف المزيد من المنتجات المؤهلة لاستخدام هذا الرمز.' : 'Add more eligible items to meet this coupon’s minimum spend.';
+    case 'COUPON_NOT_APPLICABLE': return ar ? 'هذا الرمز لا ينطبق على المنتجات في سلتك. راجع شروط العرض.' : 'This coupon doesn’t apply to the items in your cart. Check the offer’s terms.';
     case 'COUPON_UNAVAILABLE': return ar ? 'هذا الرمز غير متاح لهذه السلة. تحقق من الرمز أو جرّب رمزًا آخر.' : 'This coupon is unavailable for this basket. Check the code or try another.';
     case 'COUPON_COMBINATION': return ar ? 'استخدم رمز خصم واحدًا أو قسيمة مكافآت واحدة لكل طلب.' : 'Use one coupon or reward voucher per order.';
     case 'COUPON_PAYMENT_MINIMUM': return ar ? 'الإجمالي بعد الخصم أقل من الحد الأدنى للدفع الإلكتروني. اختر طريقة دفع أخرى أو أزل الرمز.' : 'The discounted total is below the online payment minimum. Change payment method or remove the coupon.';

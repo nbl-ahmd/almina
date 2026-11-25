@@ -43,11 +43,13 @@ test('Arabic catalogue and PDP localize controls while retaining product identit
   await expect(page).toHaveURL(/q=Daily/);
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.goto('/products/daily-care--PD0001');
-  await expect(page.getByRole('link', { name: 'استفسارات التوصيل', exact: true })).toBeVisible();
+  // The product page's delivery and returns rows (1mg) are localized.
+  await expect(page.getByRole('list', { name: 'التوصيل والإرجاع', exact: true }).getByRole('link')).toHaveCount(2);
+  await expect(page.getByText('التوصيل في رأس الخيمة', { exact: true })).toBeVisible();
   await expect(page.locator('main').getByRole('link', { name: 'Skin Care', exact: true }).first()).toBeVisible();
-  await expect(page.getByText('يتم تأكيد رسوم التوصيل والإجمالي النهائي عند الدفع قبل تقديم الطلب.', { exact: true })).toBeVisible();
+  await expect(page.getByText('تُؤكَّد رسوم التوصيل والإجمالي النهائي عند الدفع.', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'outputs/coral-redesign-2026-10-21/product-ar-390.png', fullPage: true });
-  await page.getByRole('heading', { name: 'التوصيل في رأس الخيمة', exact: true }).evaluate(el => el.scrollIntoView({ block: 'center' }));
+  await page.getByRole('list', { name: 'التوصيل والإرجاع', exact: true }).evaluate(el => el.scrollIntoView({ block: 'center' }));
   await page.screenshot({ path: 'outputs/coral-redesign-2026-10-21/product-ar-delivery-390.png' });
   await expect(page.getByRole('heading', { name: 'Daily Care', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'زيادة كمية الشراء', exact: true }).click();

@@ -103,11 +103,13 @@ export function categoryImage(image: string | undefined) {
   if (process.env.ALMINA_LOCAL_DEMO === '1' && name?.startsWith('demo-catalog-')) return `/demo-catalog/${name}`;
   return name ? `https://cdn.alminapharmacy.com/cdn/categories/${name}` : '/product-placeholder.svg';
 }
-export async function getBanners() {
+/** Homepage banners for a language: ones saved for it, and ones saved without a language. */
+export async function getBanners(locale?: 'en' | 'ar') {
   const { CLOUDINARY_CLOUD_NAME: cloudName } = getWebEnvironment();
   return array(await legacyRead('/api/banners', true)).flatMap(value => {
     if (!value || typeof value !== 'object') return [];
     const raw = value as Record<string, unknown>;
+    if (locale && (raw.locale === 'en' || raw.locale === 'ar') && raw.locale !== locale) return [];
     const filename = fileName(typeof raw.image === 'string' ? raw.image : undefined);
     const artwork: unknown[] = Array.isArray(raw.cloudinaryImages) ? raw.cloudinaryImages : [];
     const image = cloudinaryImage(artwork[0], cloudName)

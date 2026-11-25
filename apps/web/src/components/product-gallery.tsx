@@ -37,7 +37,7 @@ export function ProductGallery({ images, name, cloudName, actions, locale = 'en'
       if (Math.abs(dx) < 48 || Math.abs(dx) <= Math.abs(dy)) return;
       move((locale === 'ar' ? dx > 0 : dx < 0) ? 1 : -1);
     }}>
-      <div className="absolute inset-x-8 inset-y-4 grid min-h-0 grid-rows-[minmax(0,1fr)] place-items-center sm:inset-x-12 md:inset-y-6">
+      <div className="gallery-frame absolute inset-[6%] grid min-h-0 grid-rows-[minmax(0,1fr)] place-items-center">
         <ProductImage draggable={false} locale={locale} cloudName={cloudName} className="gallery-image" src={images[current]!} alt={name} width={560} height={560} loading="eager" fetchPriority="high" sizes="(max-width:899px) 90vw, 560px" />
       </div>
       {actions && <div className="absolute end-2 top-2" onPointerDown={event => event.stopPropagation()}>{actions}</div>}

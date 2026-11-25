@@ -425,11 +425,29 @@ export default async function AdminPage({
                 section: "Banner",
               },
               {
+                name: "locale",
+                label: "Show on",
+                options: [
+                  { value: "all", label: "English and Arabic" },
+                  { value: "en", label: "English storefront only" },
+                  { value: "ar", label: "Arabic storefront only" },
+                ],
+                hint: "For different Arabic artwork, add one banner for English and another for Arabic.",
+                section: "Banner",
+              },
+              {
                 name: "image",
                 label: "Banner image",
                 type: "file",
-                hint: "Use wide artwork, for example 1600 × 600 pixels. Keep text readable on mobile. The full image is shown without cropping; the newest eight banners appear in the homepage carousel.",
+                hint: "Desktop artwork, 1600 × 500 pixels. The image is shown whole inside a fixed frame (never cropped); the newest eight banners appear in the homepage carousel.",
                 required: true,
+                section: "Artwork",
+              },
+              {
+                name: "mobileImage",
+                label: "Phone banner image (optional)",
+                type: "file",
+                hint: "Phone artwork, 800 × 400 pixels, with larger text. Leave empty to show the desktop image on phones too.",
                 section: "Artwork",
               },
             ]}
@@ -442,6 +460,7 @@ export default async function AdminPage({
           columns={[
             { key: "name", label: "Name" },
             { key: "link", label: "Destination" },
+            { key: "locale", label: "Language (blank = both)" },
           ]}
           actions={(item) => (
             <>

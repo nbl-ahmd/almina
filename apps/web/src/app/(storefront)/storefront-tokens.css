@@ -1,91 +1,100 @@
-/* Quick Commerce Edition tokens (DESIGN.md, docs/design/colors.md). Scoped to the storefront surface.
-   Older names (surface, divider, forest, lime, success) are kept as aliases so retained selectors follow the new palette. */
+/* Al Mina Quick — design tokens (DESIGN.md, docs/design/tokens.md).
+   Values are sampled from the reference screens in docs/design/references/checkout flow (Tata 1mg, Talabat, Zomato, Swiggy,
+   Blinkit) and adjusted only where WCAG AA requires it. Scoped to the storefront surface; admin has its own system. */
 .storefront-shell {
-  --color-app: #f3f5f7;
-  --color-canvas: #ffffff;
-  --color-text: #20232e;
-  --color-muted: #5f6370;
-  --color-line: #e6e8ec;
-  --color-well: #f3f5f7;
-  --color-control: #858a96;
-  --color-brand: #ff6465;
-  --color-action: #d7303a;
-  /* Coral words (links, labels, outlined pills) use the deeper shade so they pass AA on white and on the grey canvas. */
-  --color-action-text: #c42a33;
-  --color-hover: #c42a33;
-  --color-pressed: #a9232b;
-  --color-tint: #fff0ee;
-  --color-save: #0e7a3e;
-  --color-save-tint: #e6f6ec;
-  --color-teal: #0b6e6e;
-  --color-teal-tint: #e4f4f3;
-  --color-warning: #8a5300;
-  --color-warning-tint: #fff5d6;
-  --color-error: #b8262f;
-  /* Aliases for retained selectors. */
-  --color-surface: var(--color-well);
-  --color-divider: var(--color-line);
-  --color-forest: var(--color-teal);
-  --color-lime: var(--color-teal-tint);
-  --color-focus: var(--color-teal);
-  --color-success: var(--color-save);
-  /* Utility bridge: @theme maps text-action, bg-app … to these names (see storefront.css). */
-  --sf-app: var(--color-app);
-  --sf-canvas: var(--color-canvas);
-  --sf-muted: var(--color-muted);
-  --sf-line: var(--color-line);
-  --sf-well: var(--color-well);
-  --sf-surface: var(--color-well);
-  --sf-divider: var(--color-line);
-  --sf-control: var(--color-control);
-  --sf-brand: var(--color-brand);
-  --sf-action: var(--color-action);
-  --sf-action-text: var(--color-action-text);
-  --sf-hover: var(--color-hover);
-  --sf-pressed: var(--color-pressed);
-  --sf-tint: var(--color-tint);
-  --sf-save: var(--color-save);
-  --sf-save-tint: var(--color-save-tint);
-  --sf-teal: var(--color-teal);
-  --sf-teal-tint: var(--color-teal-tint);
-  --sf-forest: var(--color-teal);
-  --sf-lime: var(--color-teal-tint);
-  --sf-focus: var(--color-teal);
-  --sf-success: var(--color-save);
-  --sf-warning: var(--color-warning);
-  --sf-warning-tint: var(--color-warning-tint);
-  --sf-error: var(--color-error);
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --radius-sticker: 6px;
-  --radius-badge: 6px;
-  --radius-control: 12px;
-  --radius-well: 12px;
-  --radius-card: 16px;
-  --radius-tile: 16px;
-  --radius-sheet: 20px;
-  --radius-panel: 20px;
-  --radius-pay: 14px;
-  --motion-press: 100ms;
-  --motion-feedback: 160ms;
-  --motion-sheet-enter: 240ms;
-  --motion-sheet-exit: 160ms;
-  --ease-out: cubic-bezier(.23, 1, .32, 1);
-  --ease-sheet: cubic-bezier(.32, .72, 0, 1);
-  --shadow-float: 0 2px 6px rgb(32 35 46 / 14%);
-  --shadow-bar: 0 -4px 16px rgb(32 35 46 / 8%);
-  --shadow-floating: 0 8px 28px rgb(32 35 46 / 16%);
-  --layer-sticky: 20;
-  --layer-popover: 30;
-  --layer-scrim: 40;
-  --layer-modal: 50;
-  --layer-toast: 60;
-  --layer-skip: 70;
+  /* ── Surfaces ─────────────────────────────────────────── */
+  --qc-bg: #f2f3f7;            /* app canvas behind sections (1mg #EFEFEF / Zomato #F5F6FB) */
+  --qc-surface: #ffffff;       /* sections, cards, sheets, bars */
+  --qc-well: #f5f6f8;          /* product image wells, inputs at rest, address pill */
+  --qc-line: #e8e9ed;          /* dividers, tile borders */
+  --qc-line-strong: #d4d5d9;   /* outlined buttons, quiet controls */
+  --qc-control: #8b8d97;       /* field and stepper boundaries (3:1 on white) */
+  --qc-scrim: rgb(28 28 30 / 50%);
+
+  /* ── Text ─────────────────────────────────────────────── */
+  --qc-ink: #1c1c1e;           /* headings, names, prices */
+  --qc-ink-2: #3d4152;         /* body copy (Swiggy) */
+  --qc-muted: #686b78;         /* secondary text: 5.3:1 on white, 4.8:1 on canvas */
+  --qc-on-action: #ffffff;
+
+  /* ── Action (1mg coral, darkened to 4.6:1 with white) ─── */
+  --qc-action: #da3729;
+  --qc-action-hover: #c42f22;
+  --qc-action-pressed: #a8261b;
+  --qc-action-text: #c42f22;   /* coral words: links, outlined buttons, steppers */
+  --qc-action-tint: #fff1ee;   /* selected chips, coral icon tiles */
+  --qc-brand: #ff5443;         /* accent icons only (pins, badges); never under white text */
+
+  /* ── Savings & deals ──────────────────────────────────── */
+  --qc-save: #1b7a3e;          /* "You saved", applied, discount rows */
+  --qc-save-tint: #e3f9ec;     /* 1mg savings strip */
+  --qc-save-strong: #0e8045;   /* filled success (Zomato pay green): 5.0:1 with white */
+  --qc-deal: #cfff00;          /* Talabat lime deal sticker, with ink text */
+  /* Section backgrounds chosen in Website & growth → Homepage (Life Pharmacy tinted sections); ink text stays AA on all. */
+  --qc-section-coral: #fff1ee; --qc-section-green: #e8f6ee; --qc-section-blue: #eaf2fd; --qc-section-yellow: #fff6da; --qc-section-purple: #f2edfb;
+
+  /* ── Information & status ─────────────────────────────── */
+  --qc-info: #0b6e6e;          /* Al Mina teal: delivery info, focus ring */
+  --qc-info-tint: #e4f4f3;
+  --qc-warning: #7a4a00;
+  --qc-warning-tint: #fff4d6;  /* 1mg yellow notice */
+  --qc-danger: #b3261e;
+  --qc-danger-tint: #fdecea;
+
+  /* ── Radius (by hierarchy) ────────────────────────────── */
+  --qc-r-xs: 6px;              /* stickers, badges */
+  --qc-r-sm: 8px;              /* inner buttons, thumbnails */
+  --qc-r-md: 12px;             /* buttons, fields, wells, tiles */
+  --qc-r-lg: 16px;             /* section cards */
+  --qc-r-xl: 24px;             /* bottom sheets (top corners) */
+  --qc-r-pill: 999px;          /* chips, steppers, address pill, search */
+
+  /* ── Space (4pt grid) ─────────────────────────────────── */
+  --qc-s-1: 4px; --qc-s-2: 8px; --qc-s-3: 12px; --qc-s-4: 16px; --qc-s-5: 20px; --qc-s-6: 24px; --qc-s-8: 32px; --qc-s-10: 40px; --qc-s-12: 48px;
+  --qc-gutter: 16px;           /* page gutter on phones (24px ≥600, 32px ≥900) */
+  --qc-band: 8px;              /* grey band between phone sections */
+
+  /* ── Elevation (one scale) ────────────────────────────── */
+  --qc-e-1: 0 1px 2px rgb(28 28 30 / 6%);
+  --qc-e-2: 0 4px 12px rgb(28 28 30 / 8%);
+  --qc-e-3: 0 12px 32px rgb(28 28 30 / 14%);
+  --qc-e-bar: 0 -4px 16px rgb(28 28 30 / 8%);
+
+  /* ── Type ─────────────────────────────────────────────── */
+  --qc-fs-11: .6875rem; --qc-fs-12: .75rem; --qc-fs-13: .8125rem; --qc-fs-14: .875rem; --qc-fs-15: .9375rem;
+  --qc-fs-16: 1rem; --qc-fs-18: 1.125rem; --qc-fs-20: 1.25rem; --qc-fs-24: 1.5rem; --qc-fs-28: 1.75rem; --qc-fs-32: 2rem;
+
+  /* ── Motion ───────────────────────────────────────────── */
+  --qc-t-tap: 100ms; --qc-t-fast: 160ms; --qc-t-base: 220ms; --qc-t-sheet: 300ms; --qc-t-exit: 200ms;
+  --qc-ease-out: cubic-bezier(.23, 1, .32, 1);
+  --qc-ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --qc-ease-drawer: cubic-bezier(.32, .72, 0, 1);
+
+  /* ── Layers ───────────────────────────────────────────── */
+  --qc-z-sticky: 20; --qc-z-popover: 30; --qc-z-scrim: 40; --qc-z-modal: 50; --qc-z-toast: 60; --qc-z-skip: 70;
+
+  /* ── Legacy aliases (structural stylesheets still read these names; new code uses --qc-*) ── */
+  --color-app: var(--qc-bg); --color-canvas: var(--qc-surface); --color-text: var(--qc-ink); --color-muted: var(--qc-muted);
+  --color-line: var(--qc-line); --color-well: var(--qc-well); --color-surface: var(--qc-well); --color-divider: var(--qc-line);
+  --color-control: var(--qc-control); --color-brand: var(--qc-brand); --color-action: var(--qc-action); --color-action-text: var(--qc-action-text);
+  --color-hover: var(--qc-action-hover); --color-pressed: var(--qc-action-pressed); --color-tint: var(--qc-action-tint);
+  --color-save: var(--qc-save); --color-save-tint: var(--qc-save-tint); --color-success: var(--qc-save);
+  --color-teal: var(--qc-ink); --color-teal-tint: var(--qc-well); --color-forest: var(--qc-ink); --color-lime: var(--qc-well);
+  --color-focus: var(--qc-ink); --color-warning: var(--qc-warning); --color-warning-tint: var(--qc-warning-tint); --color-error: var(--qc-danger);
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --radius-sticker: var(--qc-r-xs); --radius-badge: var(--qc-r-xs); --radius-control: var(--qc-r-md); --radius-well: var(--qc-r-md);
+  --radius-card: var(--qc-r-lg); --radius-tile: var(--qc-r-md); --radius-sheet: var(--qc-r-lg); --radius-panel: var(--qc-r-lg); --radius-pay: var(--qc-r-md);
+  --motion-press: var(--qc-t-tap); --motion-feedback: var(--qc-t-fast); --motion-sheet-enter: var(--qc-t-sheet); --motion-sheet-exit: var(--qc-t-exit);
+  --ease-out: var(--qc-ease-out); --ease-sheet: var(--qc-ease-drawer);
+  --shadow-float: var(--qc-e-2); --shadow-bar: var(--qc-e-bar); --shadow-floating: var(--qc-e-3);
+  --layer-sticky: 20; --layer-popover: 30; --layer-scrim: 40; --layer-modal: 50; --layer-toast: 60; --layer-skip: 70;
+  /* Tailwind theme bridge (storefront.css @theme inline). */
+  --sf-app: var(--qc-bg); --sf-canvas: var(--qc-surface); --sf-muted: var(--qc-muted); --sf-line: var(--qc-line); --sf-well: var(--qc-well);
+  --sf-surface: var(--qc-well); --sf-divider: var(--qc-line); --sf-control: var(--qc-control); --sf-brand: var(--qc-brand);
+  --sf-action: var(--qc-action); --sf-action-text: var(--qc-action-text); --sf-hover: var(--qc-action-hover); --sf-pressed: var(--qc-action-pressed);
+  --sf-tint: var(--qc-action-tint); --sf-save: var(--qc-save); --sf-save-tint: var(--qc-save-tint); --sf-teal: var(--qc-ink); --sf-teal-tint: var(--qc-well);
+  --sf-forest: var(--qc-ink); --sf-lime: var(--qc-well); --sf-focus: var(--qc-ink); --sf-success: var(--qc-save);
+  --sf-warning: var(--qc-warning); --sf-warning-tint: var(--qc-warning-tint); --sf-error: var(--qc-danger);
 }
+@media (min-width: 600px) { .storefront-shell { --qc-gutter: 24px; } }
+@media (min-width: 900px) { .storefront-shell { --qc-gutter: 32px; } }

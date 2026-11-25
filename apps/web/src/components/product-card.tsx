@@ -10,7 +10,7 @@ import { SaveProduct } from './save-product';
 import { productImage } from '../lib/server/catalog';
 import { getWebEnvironment } from '../lib/server/env';
 import { cartQuantities } from '../lib/server/cart-quantities';
-import { displayPrice, money, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
+import { displayPrice, productHref, productOptionLabel, type Product } from '../lib/catalog/model';
 
 export async function ProductPhoto({ product, eager = false }: { product: Product; eager?: boolean }) {
   const locale = await getLocale();
@@ -67,10 +67,8 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
       <div className="pointer-events-none absolute start-1 top-1 flex max-w-[calc(100%-52px)] flex-wrap items-start gap-1">
         {/* Availability badge only when it changes the decision; available stock is the default state. */}
         {product.stock <= 0 ? <span className="rounded-badge bg-canvas px-1.5 py-0.5 text-[11px] leading-tight font-semibold text-muted">{u(locale, 'Currently unavailable')}</span> : null}
-        {saving > 0 && <span className="save-sticker">
-          <span className="sr-only">{locale === 'ar' ? `وفّر ${money(saving, locale)}` : `Save ${money(saving, locale)}`}</span>
-          <span aria-hidden="true">{discount > 0 ? (locale === 'ar' ? `وفّر ${discount}٪` : `Save ${discount}%`) : u(locale, 'Offer')}</span>
-        </span>}
+        {/* Talabat-style deal sticker: the real saving in dirhams (sale price vs former price). */}
+        {saving > 0 && <span className="save-sticker" data-discount={discount > 0 ? discount : undefined}>{locale === 'ar' ? 'وفّر ' : 'Save '}<CurrencyAmount value={saving} locale={locale} /></span>}
       </div>
       <div className="absolute end-0 top-0">
         <SaveProduct id={product._id} name={product.name} locale={locale} iconOnly />

@@ -1,70 +1,51 @@
-# Storefront page patterns
+# Page patterns — Al Mina Quick
 
-> **2026-11-24 — Quick Commerce Edition.** `DESIGN.md` replaced the Market Green / Coral direction at the owner's request. Where this
-> document conflicts with `DESIGN.md`, `colors.md` or `typography.md` (palette, lime campaigns, forest accents, radii, card anatomy,
-> purchase-button silhouette), those win. Interaction, accessibility, RTL, data-honesty and ownership rules below still apply.
+Components: [components.md](components.md). Each screen copies the flow of the reference app noted.
 
+## Home (Talabat pharmacy home)
+Header with plain "Deliver to" address text and search → campaign carousel → "Shop by care" category tiles (4 per row on phones) →
+shelves (one swipeable row on phones, five or six across on desktop) with "View all ›" → skincare routine rows → brand tiles →
+one help row → footer. Section descriptions are hidden on phones. On phones a basket bar floats above the tabs once the cart has items.
 
-These compositions translate the approved direction and [component anatomy](components.md) into pages. Use the [responsive grid](responsive.md) for widths and the [type roles](typography.md) for hierarchy. Fixed rules cover identity order, accessibility and action semantics. Optional modules depend on real content and supported workflows.
+## Listing, category, search (Talabat / Blinkit)
+Title and short description → filter pill + category chips (scrolling row) → result count and sort pill → tile grid (two on phones,
+176px minimum on desktop: five to six a row) → pagination pills only when there is another page.
+Search shows the query chip and the same grid; empty results offer categories.
 
-## Homepage and merchandising
+## Product detail (1mg)
+Grey canvas. White section: gallery in a `well`, brand/category, name (h1), price + former price + lime save sticker, stock, quantity
+stepper pill + coral "Add to cart" pill (no price inside it; "Go to cart" once added, no icon), then two info rows: delivery in
+Ras Al Khaimah and returns. No SKU line, no extra cart or contact links. Further white sections: overview/specifications tabs, help, reviews, related
+tiles. Phones: sections edge to edge between grey bands; a pay-bar style purchase dock appears when the inline action scrolls away.
 
-Order is header/search → optional primary campaign → category shortcuts → first product shelf → contextual merchandising → service/help content → footer. Search remains available before the campaign. Omit empty shelves and unavailable service flows. Prioritize actual catalogue coverage over a prescribed section count.
+## Cart (Talabat)
+Back circle · "Your cart" + count · "Add items" pill. Delivery row (yellow when no area yet). Lines with steppers. "Order summary":
+savings strip, bill, coupon, note on when totals are final. Pay bar: item total + "Proceed to checkout". Help and recommendations below.
 
-The optional dominant campaign uses lime with forest copy and a 16px radius. Default padding is 20px on phones and 32px desktop. Desktop starts with a 55% text / 45% image grouping and a 32px gap in a 320–400px high panel that can grow for content. Phone reading order is copy, action, then imagery. A compact side-by-side arrangement can put the image alongside the copy when the headline and action retain their full measure. Use approximately 190–210px as a contextual height target for a short-copy phone campaign, growing freely for Arabic and enlarged text. Stack imagery only when its composition or copy requires it, with a 16px gap. Review the opening 390 × 844px composition so category access is visible and actual product cards enter the opening viewport. A campaign lacking suitable approved art may use concise type and a collection link on lime. Choose the crop per approved asset and keep the collection link beside the copy. Additional relevant promotions use neutral surfaces and distinct content without repeating the dominant lime treatment.
+## Checkout (1mg / Zomato)
+Back · "Checkout" · secure label; step indicator (coral current, green complete). "Your order" section. Delivery: "Delivering to" row
+when a place is known (address fields behind "Edit address details"), otherwise two choice rows (current location, choose on map) →
+"or type the address" → address fields with a one-line delivery pin → building/flat/note. Errors under each field. Contact section. Review &
+payment: payment choice cards (selected = coral border on tint), bill with "To pay". Pay bar states the action ("Review order",
+"Place order").
 
-Category shortcuts precede shelves. Each shelf places its heading and View all link on a shared row, 16px above products. Separate sections by 24px on phones and 40px desktop, allowing content-driven exceptions. Default to two to four useful shelves, with an editorial collection feature where it introduces a distinct shopping path. Use restrained brand discovery when actual brands are available. Add service actions, reviews or delivery claims only when supported and approved. Footer groups real support, account and policy destinations.
+## Address sheet (Zomato "Select an address")
+Bottom sheet: grabber, "Where are we delivering?", current saved place card, saved addresses, "Use current location" (coral pill),
+"Choose on map" (secondary pill), "or enter your area", emirate + area fields, save. Map view is full screen with a fixed centre pin and
+a confirm pill.
 
-## Department, listing and search
+## Account (1mg sign-in)
+Grey canvas, one white sheet: title, short reason, email field, coral full-width "Continue", code step with resend timer. Signed in:
+sections for orders, addresses, rewards, reminders, preferences.
 
-Department order is breadcrumb → H1/count → relevant subcategories → filters/sort and applied chips → products → existing pagination. Description is optional and limited to a short introduction. Desktop has the documented filter rail. Phone filters use a sheet with draft choices. Reset clears the draft, Apply commits it, and other dismissal restores committed choices and focus to Filter.
+## Content pages
+White canvas, 65-character measure, h1 → sections; any actions use the same pills.
 
-On phones, place the compact Filters trigger first in the category shortcuts row, with the pills scrolling independently on its inline end. Keep sort and the result count on the compact row below. Preserve the filter trigger when category shortcuts are absent.
+## Shared rules
+One h1 per page, main landmark, skip link. One fixed bottom region at a time (tabs, purchase dock or pay bar). Existing URLs, metadata
+and structured data are unchanged.
 
-Search leads with the submitted query and actual count, followed by filters/sort and products. Keep campaigns below direct results. Suggestions, corrections and no-match recovery reflect actual search responses. A correction offers the original query. An empty filtered result offers Clear filters while preserving context. A request failure retains the query and prior confirmed results with Retry. Preserve filters, sort and browsing position on return from detail. Retain the application's supported pagination mechanism.
+## Enclosed checkout (Baymard)
+On phones the checkout hides the store header, tabs and footer: a white sticky top bar (back circle, "Checkout", lock) is the only
+chrome; the cart hides the footer. Desktop keeps the logo bar and footer. The order-placed screen follows the "Order placed" component.
 
-## Product detail
-
-Order is breadcrumb → gallery and purchase block → verified product information → related shelf. Desktop uses equal gallery and purchase columns with a 32px gap. Phone places gallery first. The product name uses the page-title H1 role. Purchase order is complete identity/strength/pack → price and availability → required choices → quantity → accessible coral purchase action → relevant conditions.
-
-Give the gallery its own bounded stage so any image or fallback stays above the title on phones. Keep Save and Zoom as labeled icon controls with 44px touch targets. Show photo navigation only for multiple images, with a horizontal thumbnail strip on phones and a vertical strip alongside the stage on larger screens. Keep currency and stock close to the current price. On phones the purchase dock takes over only when the inline action scrolls out of view, so both actions never compete.
-
-Use 4px between identity lines, 16px before price and 24px between choice groups. Conditions sit 8px below the action. Retain real delivery, stock and purchase restrictions from existing data. Longer information follows available verified fields, such as overview, ingredients/specifications, directions, warnings and storage. Omit absent sections. Phone accordions can keep overview initially open. Important purchase warnings stay beside the action as well as in the full information. A related shelf follows the information.
-
-## Cart and checkout
-
-Cart leads with its title/count, followed by editable rows and a summary that identifies catalogue estimates and the point at which fees/final totals are confirmed. Use the existing pricing and quote semantics. Desktop uses a side summary, phone puts it after items and gives the continuation priority over browse navigation. Promotion-code entry stays secondary. Retain current cart persistence and server reconciliation behavior.
-
-Checkout uses a compact identity header, return-to-cart link and existing progress stages. Desktop puts the form beside its 300/360px summary. Phone order is stage content → summary → stage action. Use one dominant action for the active stage. Fees and the full authoritative amount appear before commitment. Supported payment choices remain labeled options. The final action states its actual commitment. Pending and unknown outcomes use the existing status/reconciliation flow before allowing another attempt.
-
-Confirmation leads with returned status/reference and actual next step, then items, totals and delivery details. Distinguish pending payment from confirmed order. Tracking is a readable timeline using known timestamps and current status. Help remains reachable alongside errors.
-
-## Account and information
-
-Sign-in groups existing authentication choices in a single readable column, default max width 440px. Account pages use clear sections for existing profile, addresses, saved items and order history. Keep transaction history and recovery actions easy to scan. Information and policy text stays within 65 characters per line with normal heading hierarchy. These pages use white/neutral surfaces and the same controls.
-
-## Shared page rules
-
-One H1, a main landmark and skip navigation identify each page. Preserve direct navigation, reload, existing URLs and route metadata. Supported tasks remain available in English and Arabic. Primitive libraries supply behavior while the approved typography, spacing, pack framing and purchase hierarchy give Al Mina its presentation. Use borders for controls and grouping, with flat shelves and purposeful surfaces.
-
-## Secondary merchandising compositions
-
-These contextual patterns elaborate the existing editorial/collection slots. Keep the optional lime campaign as the dominant promotional moment.
-
-| Pattern | Desktop | Phone | Content prerequisite |
-|---|---|---|---|
-| Editorial collection feature | Neutral surface, 16px radius, equal image/copy columns with 32px gap and 32px padding. Section-role heading, one short paragraph when needed and one collection link. | Copy/action before a 3:2 image region, 16px gap and 24px padding. Preserve the image subject in its crop. | A distinct collection with real products and approved editorial imagery. |
-| Paired collection features | Two equal-width neutral modules, 24px gap and 24px padding. Each has a short heading, one image grouping and one named collection link. | Stack in reading order with 16px between modules. | Two relevant shopping paths with distinct content and real destinations. |
-| Brand discovery | One compact row of proportionate brand marks and names with an all-brands link. Align marks optically within consistent wells. | Scrollable labeled row with a partial next item and a visible all-brands route. | Verified brands with valid assets and catalogue coverage. |
-
-Separate each module group from adjacent product shelves by the normal section rhythm. Omit a module when its content prerequisite is missing. Its heading remains subordinate to the primary campaign headline. Avoid consecutive decorative panels that delay product discovery.
-
-## Annotated hierarchy
-
-- **Shell.** Existing mark anchors identity → flexible search has the largest useful control area → account/cart remain compact named destinations. Keep delivery information readable without compressing search.
-- **Shelf.** Heading and View all identify the collection → consistent square packs and complete identity carry selection → price and coral action form the purchase row. Review repeated buttons as one shelf so their area and spacing leave packs and names dominant.
-- **Checkout summary.** Items and editable selection → labeled subtotal/discount/fees as supplied → emphasized final total → one stage continuation. Use normal text for intermediate amounts and the price role for the final amount. Keep unknown fees explicitly pending.
-
-## Composition after user correction
-
-The five supplied images govern composition over the first implementation’s box geometry. Category shortcuts use circular media and labels outside. PDP gallery/identity/price/purchase read as a connected sequence, with no filled price slab or outer details/reviews frame. Cart rows and totals use whitespace and selective dividers rather than enclosing every group. Listing discovery and filter/sort controls share a compact opening; do not repeat counts above and within the toolbar. Keep secondary actions named and un-underlined outside prose.

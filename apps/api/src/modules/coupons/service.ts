@@ -1,4 +1,4 @@
-import { couponRecordSchema, couponSaveSchema, type CouponRecord, type Quote } from '@almina/contracts';
+import { couponRecordSchema, couponSaveSchema, couponScopeSchema, publicCouponSchema, type CouponRecord, type Quote } from '@almina/contracts';
 import type { ClientSession, Db, Document } from 'mongodb';
 import { HttpError } from '../../errors.js';
 
@@ -49,14 +49,25 @@ function liveFilter(code: string) {
   };
 }
 
+/** Product ids a coupon may discount: reviewed general-sale products, narrowed by the coupon's scope.
+ *  A stored row without a valid scope (legacy, or hand-edited) is treated as "all". */
+export function eligibleProductIds(scopeValue: unknown, products: Document[]) {
+  const parsed = couponScopeSchema.safeParse(scopeValue ?? { type: 'all' });
+  const scope = parsed.success ? parsed.data : { type: 'all' as const };
+  const inScope = (product: Document) => scope.type === 'all' ? true
+    : scope.type === 'products' ? scope.productIds.some(id => id.toLowerCase() === String(product._id).toLowerCase())
+      : scope.categoryIds.some(id => id.toLowerCase() === String(product.category).toLowerCase());
+  return new Set(products.filter(product => product.productType === 'general' && product.contentReviewed === true && inScope(product)).map(product => String(product._id)));
+}
+
 export async function couponAllocation(db: Db, code: string, products: Document[], lines: Quote['lines'], session?: ClientSession) {
   const coupon = await coupons(db).findOne(liveFilter(code), { ...options, ...(session ? { session } : {}) });
   if (!coupon) throw new HttpError(409, 'COUPON_UNAVAILABLE');
-  const eligible = new Set(products.filter(product => product.productType === 'general' && product.contentReviewed === true).map(product => String(product._id)));
+  const eligible = eligibleProductIds(coupon.scope, products);
   const candidates = lines.filter(line => eligible.has(line.productId));
   const gross = (line: Quote['lines'][number]) => BigInt(line.salePriceMinor ?? line.unitPriceMinor) * BigInt(line.quantity);
   const subtotal = candidates.reduce((sum, line) => sum + gross(line), 0n);
-  if (subtotal === 0n) throw new HttpError(409, 'COUPON_UNAVAILABLE');
+  if (subtotal === 0n) throw new HttpError(409, scopeOf(coupon.scope) === 'all' ? 'COUPON_UNAVAILABLE' : 'COUPON_NOT_APPLICABLE');
   if (subtotal < BigInt(coupon.minimumMinor)) throw new HttpError(422, 'COUPON_MINIMUM');
   const { discount } = coupon;
   let value = discount.type === 'fixed' ? BigInt(discount.amountMinor) : (subtotal * BigInt(discount.basisPoints) + 5000n) / 10000n;
@@ -75,6 +86,29 @@ export async function couponAllocation(db: Db, code: string, products: Document[
     distributed = share;
   }
   return { allocation, discountMinor: Number(value) };
+}
+
+function scopeOf(value: unknown) {
+  const parsed = couponScopeSchema.safeParse(value ?? { type: 'all' });
+  return parsed.success ? parsed.data.type : 'all';
+}
+
+/** Live coupons staff chose to list, newest end date first; at most 20. */
+export async function listPublicCoupons(db: Db) {
+  const now = new Date().toISOString();
+  const rows = await coupons(db).find({
+    listed: true, enabled: true,
+    $and: [
+      { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] },
+      { $or: [{ endsAt: null }, { endsAt: { $gt: now } }] },
+      { $or: [{ maximumUses: null }, { $expr: { $lt: ['$uses', '$maximumUses'] } }] },
+    ],
+  }, options).sort({ endsAt: 1, _id: 1 }).limit(20).toArray();
+  return { items: rows.flatMap(row => {
+    const parsed = publicCouponSchema.safeParse({ code: row._id, title: row.title ?? '', description: row.description ?? '', discount: row.discount,
+      minimumMinor: row.minimumMinor, endsAt: row.endsAt, scope: scopeOf(row.scope) });
+    return parsed.success ? [parsed.data] : [];
+  }) };
 }
 
 export async function consumeCoupon(db: Db, session: ClientSession, code: string) {

@@ -1,3 +1,49 @@
+## 2026-11-25 — Homepage section builder, brands, device artwork, sticky search
+
+Staff can now build the homepage in Website & growth → Homepage:
+
+- reorder or hide built-in sections, including the promo strip and main carousel;
+- add product rows (category, brand, offers, chosen or combined filters), category or brand cards, image tiles, carousels and strips;
+- set tints, schedules and a "View all" link per section;
+- save a draft without changing the live page, preview it, copy it to Arabic, then publish or unpublish per language;
+- build custom pages from the same sections at `/pages/<slug>`.
+
+Also:
+
+- **Brand pages:** staff pick or type a brand and upload a logo; the brands index lists every published brand page and brand.
+- **Banners:** each can show on English, Arabic or both.
+- **Desktop:** paged product shelves, full-width category tiles and "View all" buttons.
+- **Fixed in verification:** saving the homepage layout from the admin failed with 405; signed-in browser tests now cover it.
+- **Rollback:** the previous API rejects pages and coupons saved by this release. Follow the steps in the builder document first.
+- **Customer saves:** saving addresses and reminders returned 405 over HTTP; both routes are fixed with an HTTP regression test.
+- **Artwork:** banners take separate desktop and phone artwork at Aster's measured sizes, contain-fitted. There is a top promo strip
+  slot, a poster-style popup and a "Copy to Arabic draft" action.
+- **Storefront:** search stays sticky on scroll, and the phone homepage is more compact.
+- **Category cards:** they fall back to a product photo when no image is uploaded.
+
+The full Playwright suite (238), 244 integration tests, 342 unit tests (3 skipped) and the smoke tests passed locally. Not deployed.
+
+See [STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md](STOREFRONT_HOMEPAGE_BUILDER_2026-11-25.md).
+
+## 2026-11-25 — Coupons, managed banners and popups, category/brand SEO
+
+- **Coupons:** product and category scopes, customer-facing title and terms, and a public "Coupons & offers" list in the cart and
+  checkout. The fields are additive with defaults, and unit and Mongo integration tests cover them. See
+  [STOREFRONT_COUPONS.md](STOREFRONT_COUPONS.md).
+- **Banners and popups:** campaigns can be placed as a fixed-height hero (image only, or text over the artwork), thin section strips
+  (home slots and listing pages), or a storefront popup. See [STOREFRONT_BANNERS_POPUPS_2026-11-25.md](STOREFRONT_BANNERS_POPUPS_2026-11-25.md).
+  **Existing hero campaigns default to image-only; review them after deploy.**
+- **SEO:** brand pages for every catalogue brand, brand links instead of search links, category titles, CollectionPage, ItemList and
+  FAQPage data, and brand pages in the sitemap. See [STOREFRONT_SEO_CATEGORIES_BRANDS_2026-11-25.md](STOREFRONT_SEO_CATEGORIES_BRANDS_2026-11-25.md).
+- **Phone purchase pages:** they share one surface rule, so there is no grey above the first section.
+
+The API and storefront must deploy together. The full Playwright suite (230), the smoke tests, 335 unit tests and 243 integration tests
+pass. PR #121 remains open.
+
+## 2026-11-25 — Storefront design system: Al Mina Quick
+
+Rebuilt the storefront tokens (`--qc-*`), component layer and store flow after the reference apps (Talabat, Tata 1mg, Zomato, Swiggy, Blinkit): pill actions, Talabat product tiles and steppers, full-width bottom sheets (fixes the narrow address sheet), 1mg sections, bill, savings strip and pay bar. Design docs were replaced (`DESIGN.md`, `docs/design/tokens.md`, components, page patterns). Commerce owners are unchanged. See the [design system record](STOREFRONT_AL_MINA_QUICK_2026-11-25.md). PR open; user visual acceptance pending.
+
 ## 2026-11-22 — Homepage detector follow-up
 
 - Retail coupons are documented in [Storefront coupon codes](STOREFRONT_COUPONS.md).

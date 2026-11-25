@@ -1,3 +1,8 @@
+import { Fragment, type ReactNode } from 'react';
+import { campaignImageUrl, defaultHomeLayout, sectionLive, withTopSections, type HomeBuiltinKey } from '@almina/contracts';
+import { getGrowthPages, getHomeLayout, getHomeLayoutDraft } from '../../lib/server/growth';
+import { CustomHomeSection } from '../../components/home-sections';
+import { SectionStrips } from '../../components/hero-banner';
 import { getHomepageCampaigns } from '../../lib/server/growth';
 import { getLocale } from '../../lib/server/i18n';
 import { shopText as u } from '../../lib/i18n-storefront';
@@ -14,7 +19,6 @@ import {
   HomeRoutine,
   HomeCategories,
   HomeHero,
-  HomeProductCarousel,
   HomeShelf,
   HomeSupport,
 } from "../../components/homepage";
@@ -51,14 +55,36 @@ export async function generateMetadata({
 const featuredProducts = cache(() => getProducts({ featured: true }));
 const homepageCampaigns = cache(async () => getHomepageCampaigns(await getLocale()).catch(() => []));
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<Query> }) {
+  // ?preview=layout shows the saved draft from Website & growth → Homepage, for signed-in admins only.
+  const preview = (await searchParams).preview === 'layout';
   return <div className="home-page flex flex-col gap-6 pb-2 [&_section]:mb-0 md:gap-10">
-    <Suspense fallback={<CatalogLoading />}><HomeLead /></Suspense>
-    <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent /></Suspense>
+    <Suspense fallback={<CatalogLoading />}><HomeLead preview={preview} /></Suspense>
+    <Suspense fallback={<CatalogLoading showHeading={false} />}><HomeContent preview={preview} /></Suspense>
   </div>;
 }
-async function HomeLead() {
-  const [banners, campaigns] = await Promise.allSettled([getBanners(), homepageCampaigns()]);
+// The layout decides the order. Its leading carousel and promo entries render in the first boundary so the top of the page
+// appears first; everything else follows with the catalogue.
+const homeSections = cache(async (preview: boolean) => {
+  const locale = await getLocale();
+  const layout = preview ? await getHomeLayoutDraft(locale).then(draft => draft ?? getHomeLayout(locale)) : await getHomeLayout(locale);
+  const sections = withTopSections((layout ?? defaultHomeLayout(locale)).sections).filter(section => sectionLive(section));
+  let lead = 0;
+  while (sections[lead]?.type === 'builtin' && ['promo', 'hero'].includes((sections[lead] as { key: string }).key)) lead++;
+  return { layout, lead: sections.slice(0, lead), rest: sections.slice(lead) };
+});
+async function HomeLead({ preview = false }: { preview?: boolean }) {
+  const [locale, { lead }] = await Promise.all([getLocale(), homeSections(preview)]);
+  return <>
+    <h1 className="sr-only">{u(locale, 'Al Mina Pharmacy — health, beauty and everyday care')}</h1>
+    {lead.map(section => section.type === 'builtin' && section.key === 'promo' ? <PromoBlock key={section.id} /> : <HeroBlock key={section.id} />)}
+  </>;
+}
+async function PromoBlock() {
+  return <SectionStrips pages={await homepageCampaigns()} slot="home-promo" cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />;
+}
+async function HeroBlock() {
+  const [banners, campaigns] = await Promise.allSettled([getBanners(await getLocale()), homepageCampaigns()]);
   const liveBanners = banners.status === 'fulfilled' ? banners.value : [];
   const liveCampaigns = campaigns.status === 'fulfilled' ? campaigns.value : [];
   // Managed artwork needs no inventory search. Only the fallback hero uses a product.
@@ -77,9 +103,9 @@ function categoryRank(name: string) {
   ].findIndex((label) => name.toLowerCase().includes(label));
   return index < 0 ? 99 : index;
 }
-async function HomeContent() {
+async function HomeContent({ preview = false }: { preview?: boolean }) {
   const locale = await getLocale();
-  const [catalogue, settledCollections, campaigns] = await Promise.all([
+  const [catalogue, settledCollections, campaigns, { layout, rest: sections }, brandPages] = await Promise.all([
     Promise.allSettled([
       getCategories(),
       featuredProducts(),
@@ -90,6 +116,8 @@ async function HomeContent() {
       homeCollections.map((collection) => getCollectionProducts(collection)),
     ),
     homepageCampaigns(),
+    homeSections(preview),
+    getGrowthPages('brand', locale).then(result => result.items).catch(() => []),
   ]);
   const collectionResults = settledCollections.map((result) =>
     result.status === "fulfilled" ? result.value : [],
@@ -125,7 +153,7 @@ async function HomeContent() {
   });
   const shelf = uniqueProducts([...varied, ...photoReady, ...available]).slice(
     0,
-    4,
+    8,
   );
   // Prefer new discoveries, but keep useful collections visible in a small catalogue.
   const offerShelf = offers.filter(
@@ -153,57 +181,40 @@ async function HomeContent() {
         (product) => productImage(product) !== "/product-placeholder.svg",
       ),
     }));
-  return (
-      <>
-        <HomeCategories
-          categories={[...categories].sort(
-            (a, b) => categoryRank(a.name) - categoryRank(b.name),
-          )}
-        />
-        <HomeShelf
-          title={u(locale,"Your everyday essentials")}
-          description={u(locale,"Small essentials. A little more care, every day.")}
-          products={shelf}
-          href="/collections/daily-care"
-        />
-        {!all.length ? (
-          <section className="rounded-2xl border p-6">
-            <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
-            <p className="text-sm">
-              {u(locale,"You can try again or contact the pharmacy for product enquiries.")}
-            </p>
-            <Link className="button rounded-full text-sm" href="/">
-              {u(locale,"Try again")}
-            </Link>
-          </section>
-        ) : null}
-        <HomeCollectionTiles collections={collectionTiles} />
-        {offerShelf.length >= 2 ? (
-          <HomeShelf
-            title={u(locale,"A little more value")}
-            description={u(locale,"Current offers, with the savings shown upfront.")}
-            products={offerShelf}
-            href="/offers"
-          />
-        ) : null}
-        <HomeProductCarousel products={photoReady.filter(product => !shelf.some(item => item._id === product._id)).slice(0,4)} />
-        <HomeCompactShelf
-          title={u(locale,"Personal care for every day")}
-          description={u(locale,"Discover body, hair and personal care essentials.")}
-          products={daily}
-          href="/collections/daily-care"
-        />
-        <HomeRoutine products={skin} />
-        <HomeCompactShelf
-          title={u(locale,"AED 50 & under")}
-          description={u(locale,"Available essentials within your budget.")}
-          products={budgetShelf}
-          href="/collections/under-50"
-        />
-        <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} />
-        <HomeManagedCampaigns campaigns={campaigns} />
-        <RecentlyViewed locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} />
-        <HomeSupport />
-      </>
-  );
+  const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
+  // Category cards: the admin's image first, else an in-stock product photo from that category, else an icon.
+  const categoryPhotos = new Map<string, string>();
+  for (const product of photoReady) if (!categoryPhotos.has(product.category._id)) categoryPhotos.set(product.category._id, productImage(product));
+  // Only approved artwork hosts reach next/image; anything else is ignored rather than breaking the page.
+  const brandLogos = new Map((brandPages ?? []).flatMap(page => { const logo = campaignImageUrl(page.image, cloudName); return logo ? [[page.slug, logo] as const] : []; }));
+  // Built-in sections by key. A published homepage layout (Website & growth → Homepage) orders, hides or interleaves them with
+  // custom sections; without one, the built-in order below is today's homepage.
+  const blocks: Record<HomeBuiltinKey, ReactNode> = {
+    promo: <PromoBlock />,
+    hero: <HeroBlock />,
+    categories: <HomeCategories categories={[...categories].sort((a, b) => categoryRank(a.name) - categoryRank(b.name))} photos={categoryPhotos} />,
+    'strip-top': <SectionStrips pages={campaigns} slot="home-top" cloudName={cloudName} />,
+    essentials: <>
+      <HomeShelf title={u(locale,"Your everyday essentials")} description={u(locale,"Small essentials. A little more care, every day.")} products={shelf} href="/collections/daily-care" />
+      {!all.length ? (
+        <section className="rounded-2xl border p-6">
+          <h2 className="text-xl">{u(locale,"The catalogue is taking a moment.")}</h2>
+          <p className="text-sm">{u(locale,"You can try again or contact the pharmacy for product enquiries.")}</p>
+          <Link className="button rounded-full text-sm" href="/">{u(locale,"Try again")}</Link>
+        </section>
+      ) : null}
+    </>,
+    'strip-middle': <SectionStrips pages={campaigns} slot="home-middle" cloudName={cloudName} />,
+    collections: <HomeCollectionTiles collections={collectionTiles} />,
+    offers: offerShelf.length >= 2 ? <HomeShelf title={u(locale,"A little more value")} description={u(locale,"Current offers, with the savings shown upfront.")} products={offerShelf} href="/offers" /> : null,
+    daily: <HomeCompactShelf title={u(locale,"Personal care for every day")} description={u(locale,"Discover body, hair and personal care essentials.")} products={daily} href="/collections/daily-care" />,
+    routine: <HomeRoutine products={skin} />,
+    budget: <HomeCompactShelf title={u(locale,"AED 50 & under")} description={u(locale,"Available essentials within your budget.")} products={budgetShelf} href="/collections/under-50" />,
+    'strip-bottom': <SectionStrips pages={campaigns} slot="home-bottom" cloudName={cloudName} />,
+    brands: <HomeBrandStrip brands={catalogueBrands(available)} products={photoReady} logos={brandLogos} />,
+    campaigns: <HomeManagedCampaigns campaigns={campaigns} />,
+    recent: <RecentlyViewed locale={locale} cloudName={cloudName} />,
+    help: <HomeSupport />,
+  };
+  return <>{preview && layout && 'unpublishedChanges' in layout && (layout.unpublishedChanges || !layout.published) ? <p role="status" className="notice m-0 p-3 text-sm">Previewing the saved draft homepage. Customers still see the published version.</p> : null}{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
 }

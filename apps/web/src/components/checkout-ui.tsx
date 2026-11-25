@@ -4,7 +4,7 @@ import { t, type Locale } from '../lib/i18n';
 
 export function CheckoutProgress({ stage, locale }: { stage: 'details' | 'payment' | 'complete'; locale: Locale }) {
   const active = ['details', 'payment', 'complete'].indexOf(stage);
-  const labels = locale === 'ar' ? ['تفاصيل التوصيل', 'المراجعة والدفع', 'اكتمل الطلب'] : ['Delivery details', 'Review & payment', 'Complete'];
+  const labels = locale === 'ar' ? ['التوصيل', 'الدفع', 'التأكيد'] : ['Delivery', 'Payment', 'Confirmed'];
   return <ol className="checkout-progress" aria-label={locale === 'ar' ? 'مراحل إتمام الطلب' : 'Checkout progress'}>{labels.map((label, index) => <li key={label} aria-current={index === active ? 'step' : undefined} data-complete={index < active}>
     <span className="checkout-step-number" aria-hidden="true">{index < active ? <CheckIcon className="size-4" /> : index + 1}</span><span>{label}</span>
   </li>)}</ol>;
@@ -33,6 +33,7 @@ export function SecureCheckoutLabel({ locale }: { locale: Locale }) {
   return <span className="inline-flex items-center gap-1.5 text-xs font-medium"><LockClosedIcon className="size-4" aria-hidden="true" />{locale === 'ar' ? 'إتمام الطلب بأمان' : 'Secure checkout'}</span>;
 }
 
+/** Zomato "Order placed": a green disc whose tick draws itself once. Reduced motion shows it complete. */
 export function ConfirmationMark() {
-  return <span aria-hidden="true"><CheckIcon strokeWidth={2} /></span>;
+  return <span className="confirm-mark" aria-hidden="true"><svg viewBox="0 0 56 56" focusable="false"><circle cx="28" cy="28" r="28" /><path d="M17 29.5l7.5 7.5L40 21" /></svg></span>;
 }

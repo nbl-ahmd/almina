@@ -18,6 +18,7 @@ export const errorMessages: Record<ErrorCode, string> = {
   REMINDER_LIMIT: 'You can have up to 20 active reminders. Cancel one in your account first.',
   COUPON_UNAVAILABLE: 'This coupon is unavailable for this basket.',
   COUPON_MINIMUM: 'The basket needs more eligible items to use this coupon.',
+  COUPON_NOT_APPLICABLE: 'This coupon does not apply to the items in this basket.',
   COUPON_COMBINATION: 'Use one coupon or reward voucher per order.',
   COUPON_PAYMENT_MINIMUM: 'The discounted total is below the online card payment minimum.',
   VOUCHER_UNAVAILABLE: 'This voucher is expired, already used or not available to this account.',
