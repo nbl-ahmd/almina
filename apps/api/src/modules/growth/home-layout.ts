@@ -1,49 +1,63 @@
-import { defaultHomeLayout, homeLayoutSchema, type HomeLayout } from '@almina/contracts';
+import { defaultHomeLayout, homeLayoutAdminSchema, homeLayoutSaveSchema, homeLayoutSchema, type HomeLayout, type HomeLayoutAdmin, type HomeSection } from '@almina/contracts';
 import type { Db } from 'mongodb';
 import { HttpError } from '../../errors.js';
 
-type Stored = HomeLayout & { _id: 'en' | 'ar'; updatedBy: string; updatedAt: Date };
+/** One row per language: `sections` is the draft the editor works on, `live` is the published copy customers see (null = built-in
+ *  homepage). Rows saved before the two were separated have no `live` field; their `published` flag says whether `sections` is live. */
+type Stored = { _id: 'en' | 'ar'; locale: 'en' | 'ar'; revision: number; sections: HomeSection[]; live?: HomeSection[] | null; published?: boolean; updatedBy: string; updatedAt: Date };
 const layouts = (db: Db) => db.collection<Stored>('home_layouts');
 const options = { maxTimeMS: 3000 };
 
-function clean(row: Stored | null, locale: 'en' | 'ar'): HomeLayout | null {
-  if (!row) return null;
-  const { _id: _key, updatedBy: _actor, updatedAt: _time, ...layout } = row;
-  void [_key, _actor, _time];
-  const parsed = homeLayoutSchema.safeParse({ ...layout, locale });
+const liveSections = (row: Stored) => row.live !== undefined ? row.live : row.published ? row.sections : null;
+
+function adminView(row: Stored, locale: 'en' | 'ar'): HomeLayoutAdmin | null {
+  const live = liveSections(row);
+  const parsed = homeLayoutAdminSchema.safeParse({ locale, revision: row.revision, sections: row.sections, published: live !== null,
+    unpublishedChanges: live !== null && JSON.stringify(live) !== JSON.stringify(row.sections) });
   return parsed.success ? parsed.data : null;
 }
 
-/** Storefront read: the published layout only; null means "use the built-in homepage". */
-export async function publishedHomeLayout(db: Db, locale: 'en' | 'ar') {
-  const layout = clean(await layouts(db).findOne({ _id: locale, published: true }, options), locale);
-  return layout?.published ? layout : null;
+/** Storefront read: the published copy only; null means "use the built-in homepage". */
+export async function publishedHomeLayout(db: Db, locale: 'en' | 'ar'): Promise<HomeLayout | null> {
+  const row = await layouts(db).findOne({ _id: locale }, options);
+  const live = row ? liveSections(row) : null;
+  if (!row || !live) return null;
+  const parsed = homeLayoutSchema.safeParse({ locale, published: true, revision: row.revision, sections: live });
+  return parsed.success ? parsed.data : null;
 }
 
-/** Admin read: the saved draft or published layout, else today's built-in order to start from. */
-export async function adminHomeLayout(db: Db, locale: 'en' | 'ar') {
-  return clean(await layouts(db).findOne({ _id: locale }, options), locale) ?? defaultHomeLayout(locale);
+/** Admin read: the draft, else today's built-in order to start from. A broken draft falls back to the built-in order but keeps the
+ *  row's revision, so staff can overwrite it. */
+export async function adminHomeLayout(db: Db, locale: 'en' | 'ar'): Promise<HomeLayoutAdmin> {
+  const row = await layouts(db).findOne({ _id: locale }, options);
+  const fallback = { ...defaultHomeLayout(locale), unpublishedChanges: false };
+  if (!row) return fallback;
+  return adminView(row, locale) ?? { ...fallback, revision: row.revision, published: liveSections(row) !== null };
 }
 
 /** Saves with the revision the editor loaded, so two staff editing at once cannot overwrite each other silently. */
-export async function saveHomeLayout(db: Db, raw: unknown, actor: string) {
-  const parsed = homeLayoutSchema.safeParse(raw);
+export async function saveHomeLayout(db: Db, raw: unknown, actor: string): Promise<HomeLayoutAdmin> {
+  const parsed = homeLayoutSaveSchema.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
-  const { revision, locale, ...layout } = parsed.data;
-  const update = { ...layout, locale, updatedBy: actor, updatedAt: new Date() };
+  const { revision, locale, sections, action } = parsed.data;
   const collection = layouts(db);
+  const stamp = { locale, sections, updatedBy: actor, updatedAt: new Date() };
   if (revision === 0) {
-    try { await collection.insertOne({ _id: locale, ...update, revision: 1 }); }
+    const row: Stored = { _id: locale, ...stamp, live: action === 'publish' ? sections : null, revision: 1 };
+    try { await collection.insertOne(row); }
     catch (error) {
       if (typeof error === 'object' && error !== null && 'code' in error && error.code === 11000) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
       throw error;
     }
-    return { ...parsed.data, revision: 1 };
+    return adminView(row, locale)!;
   }
-  const saved = await collection.findOneAndUpdate({ _id: locale, revision }, { $set: update, $inc: { revision: 1 } },
+  const current = await collection.findOne({ _id: locale, revision }, options);
+  if (!current) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
+  const live = action === 'publish' ? sections : action === 'unpublish' ? null : liveSections(current);
+  const saved = await collection.findOneAndUpdate({ _id: locale, revision }, { $set: { ...stamp, live }, $unset: { published: '' }, $inc: { revision: 1 } },
     { ...options, returnDocument: 'after', includeResultMetadata: false });
   if (!saved) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
-  return clean(saved, locale)!;
+  return adminView(saved, locale)!;
 }
 
 /** Distinct catalogue brand names for admin pickers (brand pages and brand sections), bounded. */

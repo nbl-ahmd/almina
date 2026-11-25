@@ -195,5 +195,5 @@ async function HomeContent({ preview = false }: { preview?: boolean }) {
     help: <HomeSupport />,
   };
   const sections = (layout ?? defaultHomeLayout(locale)).sections.filter(section => sectionLive(section));
-  return <>{preview && layout && !layout.published ? <p role="status" className="notice m-0 p-3 text-sm">Previewing the saved draft homepage. Customers still see the published version.</p> : null}{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
+  return <>{preview && layout && 'unpublishedChanges' in layout && (layout.unpublishedChanges || !layout.published) ? <p role="status" className="notice m-0 p-3 text-sm">Previewing the saved draft homepage. Customers still see the published version.</p> : null}{sections.map(section => <Fragment key={section.id}>{section.type === 'builtin' ? blocks[section.key] : <CustomHomeSection section={section} locale={locale} cloudName={cloudName} categories={categories} logos={brandLogos} />}</Fragment>)}</>;
 }

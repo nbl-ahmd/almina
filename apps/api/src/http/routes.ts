@@ -1,5 +1,5 @@
 import { adminHomeLayout, catalogueBrandNames, publishedHomeLayout, saveHomeLayout } from '../modules/growth/home-layout.js';
-import { homeLayoutSchema } from '@almina/contracts';
+import { homeLayoutAdminSchema, homeLayoutSchema } from '@almina/contracts';
 import { appliedCouponSchema, couponListQuerySchema, couponListSchema, couponRecordSchema, publicCouponListSchema } from '@almina/contracts';
 import { listCoupons, listPublicCoupons, saveCoupon } from '../modules/coupons/service.js';
 import { deliveryPointSchema } from '@almina/contracts';
@@ -330,8 +330,8 @@ export function apiRoutes(getDb: GetDb, webOrigin: string | readonly string[], d
   // Homepage sections (Website & growth → Homepage). Public read returns the published layout or 404 (use built-in homepage).
   const layoutQuery=growthZ.object({locale:growthZ.enum(['en','ar']).default('en')}).strict();
   read('/growth/home-layout',async(req,res)=>{const query=validate(layoutQuery,req.query);const layout=await publishedHomeLayout(await getDb(),query.locale);if(!layout)throw new HttpError(404,'NOT_FOUND');send(res,homeLayoutSchema,layout);});
-  read('/admin/growth/home-layout',async(req,res)=>{await identity(req,true);const query=validate(layoutQuery,req.query);send(res,homeLayoutSchema,await adminHomeLayout(await getDb(),query.locale));});
-  router.post('/admin/growth/home-layout',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,homeLayoutSchema,await saveHomeLayout(await getDb(),req.body,user.id));});
+  read('/admin/growth/home-layout',async(req,res)=>{await identity(req,true);const query=validate(layoutQuery,req.query);send(res,homeLayoutAdminSchema,await adminHomeLayout(await getDb(),query.locale));});
+  router.post('/admin/growth/home-layout',async(req,res)=>{const user=await identity(req,true);verifyBrowserMutation(req,origins);validate(emptyQuerySchema,req.query);send(res,homeLayoutAdminSchema,await saveHomeLayout(await getDb(),req.body,user.id));});
   read('/admin/growth/brands',async(req,res)=>{await identity(req,true);validate(emptyQuerySchema,req.query);send(res,growthZ.array(growthZ.string()).max(2000),await catalogueBrandNames(await getDb()));});
   installMarketingRoutes(router,getDb,origins,identity);
   installWholesaleRoutes(router,getDb,origins,req=>identity(req,true),req=>limitedCustomer(req),onOrderCreated);

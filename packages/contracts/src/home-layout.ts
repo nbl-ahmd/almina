@@ -40,16 +40,27 @@ export const homeSectionSchema = z.discriminatedUnion('type', [
   const images = section.type === 'images' ? section.tiles : section.type === 'carousel' ? section.slides : section.type === 'strip' ? [section.strip] : [];
   if (images.some(item => item.image && !item.alt)) ctx.addIssue({ code: 'custom', path: ['alt'], message: 'Describe every image.' });
 });
-export const homeLayoutSchema = z.object({
+/** Each product row or category-card section adds catalogue reads to every homepage view, so their number is bounded. */
+export const maxDataSections = 12;
+const layoutShape = {
   locale: z.enum(['en', 'ar']), published: z.boolean().default(false), revision: z.number().int().nonnegative().default(0),
   sections: z.array(homeSectionSchema).max(30),
-}).strict().superRefine((layout, ctx) => {
+};
+function checkLayout(layout: { sections: z.infer<typeof homeSectionSchema>[] }, ctx: z.RefinementCtx) {
+  if (layout.sections.filter(section => section.type === 'products' || section.type === 'categories').length > maxDataSections) ctx.addIssue({ code: 'custom', path: ['sections'], message: `Use at most ${maxDataSections} product row and category card sections.` });
   const ids = layout.sections.map(section => section.id);
   if (new Set(ids).size !== ids.length) ctx.addIssue({ code: 'custom', path: ['sections'], message: 'Each section needs its own id.' });
   const keys = layout.sections.flatMap(section => section.type === 'builtin' ? [section.key] : []);
   if (new Set(keys).size !== keys.length) ctx.addIssue({ code: 'custom', path: ['sections'], message: 'A built-in section can appear once.' });
-});
+}
+/** What the storefront reads: one layout. */
+export const homeLayoutSchema = z.object(layoutShape).strict().superRefine(checkLayout);
+/** What the editor reads: the draft, whether something is live (`published`), and whether the draft differs from it. */
+export const homeLayoutAdminSchema = z.object({ ...layoutShape, unpublishedChanges: z.boolean().default(false) }).strict().superRefine(checkLayout);
+/** Saving the draft never changes the live homepage; publishing and unpublishing are explicit. */
+export const homeLayoutSaveSchema = z.object({ ...layoutShape, unpublishedChanges: z.boolean().optional(), action: z.enum(['save', 'publish', 'unpublish']).default('save') }).strict().superRefine(checkLayout);
 export type HomeLayout = z.infer<typeof homeLayoutSchema>;
+export type HomeLayoutAdmin = z.infer<typeof homeLayoutAdminSchema>;
 export type HomeSection = z.infer<typeof homeSectionSchema>;
 export type HomeBuiltinKey = typeof homeBuiltinKeys[number];
 

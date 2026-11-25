@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { homeLayoutSchema, sectionBackgrounds, type HomeLayout, type HomeSection } from '@almina/contracts';
+import { homeLayoutAdminSchema, homeLayoutSaveSchema, sectionBackgrounds, type HomeLayoutAdmin, type HomeSection } from '@almina/contracts';
 import { inputClass, selectClass } from './shadcn/styles';
 import { ImageUploadField } from './image-upload-field';
 import { GrowthProductPicker } from './growth-product-picker';
@@ -45,7 +45,8 @@ function ArtFields({ value, onChange, size, phoneSize }: { value: { image: strin
 /** Website & growth → Homepage: order, hide and schedule homepage sections, and add Life Pharmacy / Aster style sections. */
 export function HomeLayoutEditor() {
   const [locale, setLocale] = useState<'en' | 'ar'>('en');
-  const [layout, setLayout] = useState<HomeLayout | null>(null);
+  const [layout, setLayout] = useState<HomeLayoutAdmin | null>(null);
+  const [unsaved, setUnsaved] = useState(false);
   const [open, setOpen] = useState<string>('');
   const [dragging, setDragging] = useState<number | null>(null);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
@@ -59,34 +60,36 @@ export function HomeLayoutEditor() {
       fetch('/api/growth/admin/brands').then(response => response.ok ? response.json() : { data: [] }).catch(() => ({ data: [] })),
     ]).then(([saved, cats, names]) => {
       if (!active) return;
-      setLayout(homeLayoutSchema.parse(saved.data)); setCategories(Array.isArray(cats.data) ? cats.data : []); setBrands(Array.isArray(names.data) ? names.data : []);
+      setLayout(homeLayoutAdminSchema.parse(saved.data)); setUnsaved(false); setCategories(Array.isArray(cats.data) ? cats.data : []); setBrands(Array.isArray(names.data) ? names.data : []);
       setIssue('');
     }).catch(() => { if (active) setIssue('Could not load the homepage layout. Reload to try again.'); }).finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [locale]);
   if (!layout) return <p className="text-sm text-mute">{busy ? 'Loading homepage…' : issue}</p>;
   const sections = layout.sections;
-  const set = (next: HomeSection[]) => { setLayout({ ...layout, sections: next }); setMessage(''); };
+  const set = (next: HomeSection[]) => { setLayout({ ...layout, sections: next }); setUnsaved(true); setMessage(''); };
   const update = (index: number, value: Partial<HomeSection>) => set(sections.map((item, at) => at === index ? { ...item, ...value } as HomeSection : item));
   const move = (index: number, by: number) => { const next = [...sections]; const [item] = next.splice(index, 1); next.splice(index + by, 0, item!); set(next); };
-  async function save(published: boolean) {
+  async function save(action: 'save' | 'publish' | 'unpublish') {
     if (!layout) return;
-    const parsed = homeLayoutSchema.safeParse({ ...layout, published });
+    const parsed = homeLayoutSaveSchema.safeParse({ ...layout, action });
     if (!parsed.success) { setIssue(parsed.error.issues[0]?.message.startsWith('Invalid') ? 'Check each section: titles, chosen items, images and their descriptions, and links starting with /.' : parsed.error.issues[0]?.message ?? 'Check the sections.'); return; }
     setBusy(true); setIssue(''); setMessage('');
     try {
       const response = await fetch('/api/growth/admin/home-layout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1' }, body: JSON.stringify(parsed.data) });
       if (response.status === 409) { setIssue('Someone else saved the homepage. Reload before editing again.'); return; }
       if (!response.ok) throw new Error();
-      setLayout(homeLayoutSchema.parse((await response.json()).data));
-      setMessage(published ? 'Published. The homepage shows this layout now.' : 'Saved as a draft. The live homepage is unchanged until you publish.');
+      const next = homeLayoutAdminSchema.parse((await response.json()).data);
+      setLayout(next); setUnsaved(false);
+      setMessage(action === 'publish' ? 'Published. The homepage shows this layout now.' : action === 'unpublish' ? 'Unpublished. Customers see the built-in homepage; your draft is kept.'
+        : next.published ? 'Draft saved. The live homepage is unchanged until you publish.' : 'Draft saved. Customers see the built-in homepage until you publish.');
     } catch { setIssue('Could not save. Check the sections and try again.'); }
     finally { setBusy(false); }
   }
   const taken = sections.map(section => section.id);
   return <section className="grid gap-4" aria-labelledby="home-layout-title">
     <div className="flex flex-wrap items-end justify-between gap-3">
-      <div><h2 id="home-layout-title" className="mb-1 text-lg font-semibold">Homepage sections</h2><p className="m-0 max-w-prose text-sm text-mute">Drag sections (or use the arrows) to order them; hide or schedule them, and add product rows, category or brand cards, image tiles, carousels and banner strips. The main carousel and promo strip stay at the top. {layout.published ? 'This layout is published.' : 'Nothing is published: the homepage uses the built-in order.'}</p></div>
+      <div><h2 id="home-layout-title" className="mb-1 text-lg font-semibold">Homepage sections</h2><p className="m-0 max-w-prose text-sm text-mute">Drag sections (or use the arrows) to order them; hide or schedule them, and add product rows, category or brand cards, image tiles, carousels and banner strips. The main carousel and promo strip stay at the top. {!layout.published ? 'Nothing is published: the homepage uses the built-in order.' : layout.unpublishedChanges ? 'A published version is live. This draft has changes customers cannot see yet.' : 'This layout is published.'}{unsaved ? ' You have unsaved edits.' : ''}</p></div>
       <label className={field}>Language<select className={selectClass} value={locale} onChange={event => { setBusy(true); setLayout(null); setLocale(event.target.value === 'ar' ? 'ar' : 'en'); }}><option value="en">English</option><option value="ar">Arabic</option></select></label>
     </div>
     <ol className="m-0 grid list-none gap-2 p-0">{sections.map((section, index) => <li key={section.id} className={`rounded-xl border bg-surface ${dragging === index ? 'border-ink opacity-60' : 'border-line'}`}
@@ -130,7 +133,7 @@ export function HomeLayoutEditor() {
     </li>)}</ol>
     <datalist id="home-layout-brands">{brands.map(name => <option key={name} value={name} />)}</datalist>
     <div className="flex flex-wrap items-center gap-2"><label className={field}>Add a section<select className={selectClass} value="" onChange={event => { const type = event.target.value as CustomType; if (!type) return; const section = newSection(type, taken); set([...sections, section]); setOpen(section.id); }}><option value="">Choose a type…</option>{(Object.keys(typeNames) as CustomType[]).map(type => <option key={type} value={type}>{typeNames[type]}</option>)}</select></label></div>
-    <div className="flex flex-wrap gap-2"><button type="button" className={secondary} disabled={busy} onClick={() => void save(false)}>Save draft</button><a className={secondary + ' inline-flex items-center'} href="/?preview=layout" target="_blank" rel="noopener noreferrer" title={locale === 'ar' ? 'Switch the storefront to العربية to see the Arabic draft' : undefined}>Preview saved draft</a><button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white" disabled={busy} onClick={() => void save(true)}>Publish homepage</button>{layout.published ? <button type="button" className={secondary} disabled={busy} onClick={() => void save(false)}>Unpublish (use built-in homepage)</button> : null}</div>
+    <div className="flex flex-wrap gap-2"><button type="button" className={secondary} disabled={busy} onClick={() => void save('save')}>Save draft</button><a className={secondary + ' inline-flex items-center'} href="/?preview=layout" target="_blank" rel="noopener noreferrer" title={locale === 'ar' ? 'Switch the storefront to العربية to see the Arabic draft' : undefined}>Preview saved draft</a><button type="button" className="min-h-11 rounded-full bg-ink px-5 text-sm font-semibold text-white" disabled={busy} onClick={() => void save('publish')}>Publish homepage</button>{layout.published ? <button type="button" className={secondary} disabled={busy} onClick={() => void save('unpublish')}>Unpublish (use built-in homepage)</button> : null}</div>
     <p className="m-0 text-xs text-mute">Preview shows the last saved draft to signed-in admins only{locale === 'ar' ? '; switch the storefront language to العربية first to see the Arabic layout' : ''}.</p>
     {issue ? <p role="alert" className="m-0 text-sm">{issue}</p> : null}
     {message ? <p role="status" className="m-0 text-sm">{message}</p> : null}

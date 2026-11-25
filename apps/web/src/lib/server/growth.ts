@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { commercePolicySchema, growthPageSchema, homeLayoutSchema, pharmacyProfileSchema, branchDirectorySchema, type GrowthPage } from '@almina/contracts';
+import { commercePolicySchema, growthPageSchema, homeLayoutAdminSchema, homeLayoutSchema, pharmacyProfileSchema, branchDirectorySchema, type GrowthPage } from '@almina/contracts';
 import { z } from 'zod';
 import { getWebEnvironment } from './env';
 import type { ShippingPolicy } from '../policies';
@@ -35,7 +35,7 @@ export async function getHomeLayoutDraft(locale:'en'|'ar'){
   if((await currentIdentity())?.role!=='admin')return null;
   const response=await fetch(new URL('/api/v1/admin/growth/home-layout?'+new URLSearchParams({locale}),getWebEnvironment().API_ORIGIN),{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(6000),headers:{cookie:await sessionHeader(),origin:getWebEnvironment().WEB_ORIGIN}});
   if(!response.ok)return null;
-  const parsed=homeLayoutSchema.safeParse((await response.json() as {data:unknown}).data);
+  const parsed=homeLayoutAdminSchema.safeParse((await response.json() as {data:unknown}).data);
   return parsed.success?parsed.data:null;
  }catch{return null;}
 }
