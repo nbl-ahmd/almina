@@ -73,5 +73,5 @@ the tokens, design system, components and whole store flow to be rebuilt to copy
   - Text fields dropped their focus outline. They now keep a 2px `info` outline as well as the ink border.
   - The critique spec asserted that the cart heading has no links (the confirmed 2026-11-22 preference). The Talabat header the owner
     asked for restores a back circle and "Add items". The spec now asserts exactly those two links, both to `/products`.
-    **This reverses the 2026-11-22 preference; the owner should confirm it.**
+    This reverses the 2026-11-22 preference; the owner confirmed it on 2026-11-25 ("Keep it").
 - **Not verified:** physical devices and the owner's visual acceptance.
