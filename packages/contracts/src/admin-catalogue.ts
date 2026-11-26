@@ -70,6 +70,17 @@ export const catalogueVisibilityResultSchema = z.object({
 }).strict();
 export type CatalogueVisibilityResult = z.infer<typeof catalogueVisibilityResultSchema>;
 
+/** Classifying several products at once. Only products still without a confirmed type can change, and the request must state
+ *  that a person checked them. */
+export const productTypes = ['general', 'otc', 'prescription'] as const;
+export type ProductType = (typeof productTypes)[number];
+export const productTypeLabels: Record<ProductType, string> = { general: 'General', otc: 'Pharmacy medicine', prescription: 'Prescription' };
+export const catalogueTypeSchema = z.object({
+  ids: z.array(objectId).min(1).max(catalogueVisibilityLimit).refine(ids => new Set(ids).size === ids.length),
+  productType: z.enum(productTypes),
+  confirmed: z.literal(true),
+}).strict();
+
 /** The list context as URL parameters, leaving defaults out so links stay short. */
 export function catalogueContextParams(context: Partial<CatalogueContext>): URLSearchParams {
   const params = new URLSearchParams();

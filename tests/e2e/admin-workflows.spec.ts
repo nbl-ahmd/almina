@@ -126,6 +126,50 @@ test('bulk go-live refuses what may not be sold and the pharmacist chooses the t
   await expect(page.getByRole('combobox', { name: `Type of ${rows[0]!.name}` })).toHaveCount(0);
 });
 
+test('selected products get one confirmed type together, then can go live', async ({ page, request }) => {
+  await login(page);
+  const rows = await seed(request, 4, { productType: 'unreviewed' });
+  await page.goto(adminOrigin + '/admin/products?view=hidden&filter=classification'); await streamSettled(page);
+  await page.getByRole('checkbox', { name: 'Select all rows' }).click();
+  await page.getByRole('toolbar', { name: 'Bulk actions' }).getByRole('button', { name: 'Set type' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Set product type' });
+  // Nothing is chosen in advance, and choosing is not enough without the check.
+  await expect(dialog.getByRole('radio', { checked: true })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: 'Choose a type' })).toBeDisabled();
+  await dialog.getByRole('radio', { name: 'General', exact: true }).check();
+  const confirm = dialog.getByRole('checkbox', { name: /^I checked the pack of every ticked product/ });
+  await expect(dialog.getByRole('button', { name: 'Mark 4 as General' })).toBeDisabled();
+  await confirm.check();
+  // Changing what is included asks for the check again.
+  await dialog.getByRole('checkbox', { name: `Include ${rows[3]!.name}` }).uncheck();
+  await expect(confirm).not.toBeChecked();
+  await confirm.check();
+  await page.screenshot({ path: '.verification-results/admin-screens/bulk-type-desktop.png' });
+  await dialog.getByRole('button', { name: 'Mark 3 as General' }).click();
+  await expect(page.getByText('3 products are now marked General.')).toBeVisible();
+  for (const [index, type] of ['general', 'general', 'general', 'unreviewed'].entries()) {
+    const saved = await product(page, rows[index]!._id);
+    expect([saved.productType, saved.disabled]).toEqual([type, true]);
+  }
+  await expect(page.getByRole('checkbox', { name: 'Select row' })).toHaveCount(1);
+  // The remaining product is prescription, chosen on a phone.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('checkbox', { name: 'Select row' }).click();
+  await page.getByRole('toolbar', { name: 'Bulk actions' }).getByRole('button', { name: 'Set type' }).click();
+  await dialog.getByRole('radio', { name: 'Prescription', exact: true }).check();
+  await confirm.check();
+  await page.screenshot({ path: '.verification-results/admin-screens/bulk-type-phone.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await dialog.getByRole('button', { name: 'Mark 1 as Prescription' }).click();
+  await expect(page.getByText('1 product is now marked Prescription.')).toBeVisible();
+  expect((await product(page, rows[3]!._id)).productType).toBe('prescription');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  // The classified products (they have no photo yet) are no longer waiting for a type; the API refuses to overwrite one.
+  const refused = await page.request.post(adminOrigin + '/api/admin/products/type', { headers, data: { ids: [rows[3]!._id], productType: 'general', confirmed: true } });
+  expect((await refused.json()).results[0].ok).toBe(false);
+  expect((await page.request.post(adminOrigin + '/api/admin/products/type', { headers, data: { ids: [rows[0]!._id], productType: 'otc' } })).ok()).toBe(false);
+});
+
 test('keeping publish on never classifies or publishes a product whose type nobody confirmed', async ({ page, request }) => {
   await login(page);
   const rows = await seed(request, 3, { productType: 'unreviewed' });
@@ -190,6 +234,7 @@ test('staff see the product list without any way to change it', async ({ page })
   await expect(page.getByRole('table', { name: 'Product inventory' })).toContainText('Synthetic care product');
   for (const control of [page.getByRole('switch'), page.getByRole('checkbox'), page.getByRole('button', { name: 'Upload many photos' }), page.getByLabel(/^Photos for/)]) await expect(control).toHaveCount(0);
   expect((await page.request.post(adminOrigin + '/api/admin/products/visibility', { headers, data: { ids: [productId], live: false } })).status()).toBe(403);
+  expect((await page.request.post(adminOrigin + '/api/admin/products/type', { headers, data: { ids: [productId], productType: 'general', confirmed: true } })).status()).toBe(403);
   expect((await page.request.get(`${adminOrigin}/api/admin/products/queue?id=${productId}`)).status()).toBe(403);
 });
 

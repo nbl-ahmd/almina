@@ -1,4 +1,4 @@
-import { catalogueVisibilitySchema, cloudinaryImage, storePublicationIssues, type CatalogueVisibilityResult } from '@almina/contracts';
+import { catalogueTypeSchema, catalogueVisibilitySchema, cloudinaryImage, productTypeLabels, productTypes, storePublicationIssues, type CatalogueVisibilityResult } from '@almina/contracts';
 import { ObjectId, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
@@ -79,6 +79,38 @@ export async function setProductsVisibility(db: Db, raw: unknown, actor: string)
         : error.code === 'CATALOG_REVIEW_REQUIRED' ? 'Needs a complete name, a General or Pharmacy medicine type and a price. Prescription items are never sold online.'
         : 'Open the product and correct its price or offer.' });
     }
+  }
+  return { results };
+}
+/** Records the type an administrator confirmed for selected products. A type already on a product is never overwritten here,
+ *  so a bulk choice cannot undo a pharmacist's decision; that is changed on the product itself. Marking Prescription also
+ *  hides the product, because prescription items are never sold online. Prices, stock and review stamps are untouched. */
+export async function setProductsType(db: Db, raw: unknown, actor: string): Promise<CatalogueVisibilityResult> {
+  const parsed = catalogueTypeSchema.safeParse(raw);
+  if (!parsed.success || !ObjectId.isValid(actor)) throw new HttpError(400, 'INVALID_REQUEST');
+  const { ids, productType } = parsed.data;
+  const results: CatalogueVisibilityResult['results'] = [];
+  for (const id of ids) {
+    const session = db.client.startSession();
+    let result: CatalogueVisibilityResult['results'][number] = { id, ok: false, changed: false };
+    try {
+      await session.withTransaction(async () => {
+        const product = await db.collection('products').findOne({ _id: new ObjectId(id) }, { session });
+        if (!product) { result = { id, ok: false, changed: false, reason: 'Product not found.' }; return; }
+        if (product.archivedAt) { result = { id, ok: false, changed: false, reason: 'Product is archived.' }; return; }
+        const current = productTypes.find(type => type === product.productType);
+        if (current && current !== productType) { result = { id, ok: false, changed: false, reason: `Already marked ${productTypeLabels[current]}. Open the product to change it.` }; return; }
+        const hide = productType === 'prescription' && product.disabled !== true && product.published !== false;
+        if (current && !hide) { result = { id, ok: true, changed: false }; return; }
+        const fields = { productType, ...(hide ? { disabled: true, published: false } : {}) };
+        await db.collection('products').updateOne({ _id: product._id }, { $set: fields }, { session });
+        await db.collection('catalog_audit').insertOne({ entityId: product._id, collection: 'products', actor,
+          before: { productType: product.productType, disabled: product.disabled, published: product.published }, after: fields,
+          reason: 'Bulk product type, confirmed by administrator', createdAt: new Date() }, { session });
+        result = { id, ok: true, changed: true };
+      }, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' } });
+    } finally { await session.endSession(); }
+    results.push(result);
   }
   return { results };
 }

@@ -26,6 +26,7 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 | POST | /api/catalog-import/rollback | admin | checksum-protected rollback of unchanged drafts; archives new drafts, preserves journal and inventory audits |
 | GET | /api/products/catalogue | staff | maintained catalog/admin-catalogue.ts; bounded admin product page with view/filter counts and exact code lookup; read-only (2026-11-25) |
 | GET | /api/products/queue | admin | maintained catalog/admin-catalogue.ts; previous/next product inside the same fixed list filters; read-only (2026-11-25) |
+| POST | /api/products/type | admin | maintained media/metadata.ts; confirmed product type for at most 50 products without one; never overwrites; prescription also hides; audit rows (2026-11-25) |
 | POST | /api/products/visibility | admin | maintained media/metadata.ts; idempotent live/hidden for at most 50 products with per-product refusals and audit rows (2026-11-25) |
 | GET | /api/orders/notifications | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
 | POST | /api/orders/notifications/read | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
