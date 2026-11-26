@@ -27,6 +27,10 @@ let shutdown;
 database.connect().then(async () => {
   if (app.locals.draining) return database.close();
   if (!await domain.retainedReadiness(() => database.getDb(), false)) throw new Error('Database unavailable');
+  // Says whether the database agreed to compress traffic; never blocks or fails startup.
+  domain.databaseCompression(database.getDb(), database.requestedCompression())
+    .then(report => console.info(JSON.stringify({ time: new Date().toISOString(), level: 'info', service: 'api', event: 'database_compression', ...report })))
+    .catch(() => undefined);
   if (app.locals.draining) return database.close();
   await domain.prepareStaffAlertStorage(database.getDb());
   // One change stream wakes the order workers, so they do not poll an idle database every second or five seconds.

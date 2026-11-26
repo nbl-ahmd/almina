@@ -20,6 +20,8 @@ function createLegacyApp(options) {
   // JSON compresses about 5:1 and Render bills outbound bytes. Event streams must stay unbuffered; images are already compressed.
   const compression = require('compression');
   app.use(compression({ threshold: 1024, filter: (req, res) => !/\/events(?:\/|$)/.test(req.path) && !String(res.getHeader('Content-Type') ?? '').includes('text/event-stream') && compression.filter(req, res) }));
+  // Database traffic is traced to route patterns in the `net_usage` log line; addresses and identifiers are never recorded.
+  app.use(domain.attributeTraffic(require('./security/policy.cjs').lookupPolicy));
   // External uptime ping: no authentication, database or provider work.
   app.get('/api/ping', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').type('text/plain').send('pong'));
   app.get('/health/live', healthHeaders, (_req, res) => res.set('Cache-Control', 'no-store').json({ status: 'live' }));

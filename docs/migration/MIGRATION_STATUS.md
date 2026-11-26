@@ -1,7 +1,9 @@
 ## 2026-11-26 — API bandwidth reductions
 
 Database traffic compression, a per-command traffic meter, compact browse records, bounded storefront caching (up to 60 seconds,
-`CATALOG_CACHE_SECONDS`) and direct artwork uploads for banners, categories, posters and campaigns. Not deployed or measured yet.
+`CATALOG_CACHE_SECONDS`) and direct artwork uploads for banners, categories, posters and campaigns. Deployed as `6bbde08`.
+**Database compression is not reducing traffic on the production cluster** (cause unconfirmed). A follow-up branch logs what was
+requested, agreed and offered, and traces database traffic to route patterns. No bandwidth saving has been measured yet.
 See [BANDWIDTH_OPTIMIZATION_2026-11-26.md](BANDWIDTH_OPTIMIZATION_2026-11-26.md).
 
 ## 2026-11-25 — Bulk product type for selected products (branch, not deployed)

@@ -4,7 +4,7 @@
  *  Every socket the process opens (database, Cloudinary, e-mail, push and so on, "client") or accepts (HTTP responses, "server") is counted
  *  from Node's own socket counters. Once in a while one summary line is logged with the busiest peers. Only host names and byte totals are
  *  recorded: no URLs, paths, headers, request bodies or customer data. It makes no network request, holds one unreferenced timer, and
- *  logs nothing when the window moved less than `minBytes`. `database` adds the busiest database commands (names and totals).
+ *  logs nothing when the window moved less than `minBytes`. `database` adds the busiest database commands and route patterns.
  *  Switch off with NET_USAGE_LOG=false. */
 const dc = require('node:diagnostics_channel');
 
@@ -36,11 +36,11 @@ function createNetworkMeter({ flushMs = 600000, minBytes = 1000000, log = line =
     const started = windowStart;
     rows = new Map(); windowStart = now();
     // Drained every window, logged or not, so each line describes the same period as its byte totals.
-    const commands = database?.() ?? [];
+    const traced = database?.() ?? {};
     if (Math.max(totalOut, totalIn) >= minBytes) {
       const mb = value => Math.round(value / 1048576 * 100) / 100;
       log({ time: new Date().toISOString(), level: 'info', service: 'api', event: 'net_usage', windowMinutes: Math.round((windowStart - started) / 60000),
-        outMB: mb(totalOut), inMB: mb(totalIn), ...(commands.length ? { db: commands } : {}),
+        outMB: mb(totalOut), inMB: mb(totalIn), ...(traced.db?.length ? { db: traced.db } : {}), ...(traced.routes?.length ? { routes: traced.routes } : {}),
         top: list.sort((a, b) => b.out + b.in - (a.out + a.in)).slice(0, 8).map(row => ({ kind: row.kind, peer: row.peer, outMB: mb(row.out), inMB: mb(row.in), sockets: row.sockets.size })) });
     }
     if (live.size) arm();

@@ -1,4 +1,5 @@
 import type { ChangeStream, Collection, Db, Document, Filter, MongoClient } from 'mongodb';
+import { outsideRequest } from '../operations/traffic-context.js';
 
 /** Event-driven wake-ups for background workers, so an idle system makes no database requests and runs no timers.
  *
@@ -43,7 +44,8 @@ export function createLocalWriteSignal(): LocalWriteSignal {
   const fire = (collection: string) => {
     for (const [listener, filter] of [...listeners]) {
       if (filter && !filter.has(collection) && !(collection.includes(':') && filter.has(collection.split(':')[0]!))) continue;
-      try { listener(collection); } catch { /* One worker must not stop the others. */ }
+      // The workers that react are background work, even though a request's write woke them.
+      try { outsideRequest(() => listener(collection)); } catch { /* One worker must not stop the others. */ }
     }
   };
   const label = (collection: string, command: Record<string, unknown>) => {

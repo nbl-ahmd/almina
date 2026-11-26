@@ -1,4 +1,5 @@
 import type { LocalWriteSignal } from '../notifications/wake.js';
+import { outsideRequest } from './traffic-context.js';
 
 const MAX_TIMER_MS = 2 ** 31 - 1;
 /** A background job that runs only because something happened. There is no polling interval.
@@ -15,7 +16,7 @@ export function createEventWorker(run: () => Promise<boolean | void>, options: {
   let stopped = false, active: Promise<void> | undefined, timer: ReturnType<typeof setTimeout> | undefined, queued = false;
   function arm(ms: number) {
     if (stopped || timer) return;
-    timer = setTimeout(() => { timer = undefined; void go(); }, Math.min(MAX_TIMER_MS, Math.max(0, ms)));
+    timer = outsideRequest(() => setTimeout(() => { timer = undefined; void go(); }, Math.min(MAX_TIMER_MS, Math.max(0, ms))));
     timer.unref?.();
   }
   async function rearm() {
@@ -27,7 +28,7 @@ export function createEventWorker(run: () => Promise<boolean | void>, options: {
   function go(): Promise<void> {
     if (stopped) return Promise.resolve();
     if (active) { queued = true; return active; }
-    active = (async () => {
+    active = outsideRequest(async () => {
       let more = false;
       try { more = (await run()) === true; } catch { onError?.(); }
       finally {
@@ -36,7 +37,7 @@ export function createEventWorker(run: () => Promise<boolean | void>, options: {
         else if (more) arm(drainMs);
         else if (!timer) void rearm();
       }
-    })();
+    });
     return active;
   }
   const unsubscribe = local?.subscribe(() => { if (active) queued = true; else arm(debounceMs); }, collections);

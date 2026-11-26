@@ -31,6 +31,9 @@ export function createPersistentDatabase(config: Pick<ReturnType<typeof retained
     }
     return pending;
   }
-  return { connect, getDb(): Db { if (!db || closed) throw unavailable(); return db; },
+  return { connect,
+    /** The compressors the connected client actually asks for, after any connection-string settings. */
+    requestedCompression(): unknown { return (client as { options?: { compressors?: unknown } } | undefined)?.options?.compressors ?? []; },
+    getDb(): Db { if (!db || closed) throw unavailable(); return db; },
     close(): Promise<void> { closed = true; db = undefined; closing ??= client?.close() ?? Promise.resolve(); return closing; } };
 }

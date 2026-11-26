@@ -15,21 +15,22 @@ test('the command meter totals bytes per command and collection and never keeps 
   client.emit('commandStarted', { requestId: 2, commandName: 'getMore', command: { getMore: 7, collection: 'products' } });
   client.emit('commandFailed', { requestId: 2 });
   client.emit('commandStarted', { requestId: 3, commandName: 'commitTransaction', command: { commitTransaction: 1 } });
-  const rows = meter.drain();
+  const rows = meter.drain().db;
   assert.deepEqual(rows[0], { command: 'find', collection: 'products', count: 1, sentMB: 0, receivedMB: 2 });
   assert.deepEqual(rows.map(row => `${row.command} ${row.collection}`).sort(), ['commitTransaction -', 'find products', 'getMore products']);
   assert.equal(JSON.stringify(rows).includes('private-shopper'), false);
-  assert.deepEqual(meter.drain(), [], 'each window starts again');
+  assert.deepEqual(meter.drain(), { db: [], routes: [] }, 'each window starts again');
 });
 
 test('the network line carries the busiest commands and drains them even for quiet windows', () => {
   const lines: Record<string, unknown>[] = [];
   let drains = 0;
   const meter = createNetworkMeter({ minBytes: 0, log: (line: Record<string, unknown>) => lines.push(line),
-    database: () => { drains++; return [{ command: 'find', collection: 'products', count: 1, sentMB: 0, receivedMB: 1 }]; } });
+    database: () => { drains++; return { db: [{ command: 'find', collection: 'products', count: 1, sentMB: 0, receivedMB: 1 }], routes: [{ route: 'worker', count: 1, sentMB: 0, receivedMB: 1 }] }; } });
   meter.flush(); meter.stop();
   assert.equal(drains, 1);
   assert.equal((lines[0]!.db as unknown[]).length, 1);
+  assert.equal((lines[0]!.routes as unknown[]).length, 1);
 });
 
 test('the production database client asks for compressed traffic', () => {
@@ -60,4 +61,18 @@ test('staff changes purge the storefront caches they affect', async () => {
   assert.deepEqual(catalogMutationTags('GET', 'products'), []);
   assert.deepEqual(catalogMutationTags('POST', `media/products/${id}/sign`), []);
   assert.deepEqual(catalogMutationTags('POST', 'orders'), []);
+});
+
+test('traffic is labelled with route patterns, never with identifiers, phone numbers or query strings', async () => {
+  const { trafficLabel } = await import('../apps/api/src/modules/operations/traffic-context');
+  const { lookupPolicy } = await import('../apps/api/src/modules/auth/retained-policy');
+  const id = 'abcdefabcdefabcdefabcdef';
+  assert.equal(trafficLabel('GET', `/api/products/${id}`, lookupPolicy), 'GET /api/products/:id');
+  assert.equal(trafficLabel('GET', '/api/products/details/PD4309', lookupPolicy), 'GET /api/products/details/:productId');
+  assert.equal(trafficLabel('GET', '/api/whatsapp/messages/971500000001', lookupPolicy), 'GET /api/whatsapp/messages/:recipient');
+  assert.equal(trafficLabel('GET', '/api/v1/growth/pages', lookupPolicy), 'GET /api/v1/growth/pages');
+  assert.equal(trafficLabel('PUT', `/api/v1/orders/${id}/status`, lookupPolicy), 'PUT /api/v1/orders/:x');
+  assert.equal(trafficLabel('GET', '/api/v1/products/PD4309', lookupPolicy), 'GET /api/v1/products/:x');
+  assert.equal(trafficLabel('GET', '/api/unknown/shopper@example.invalid', lookupPolicy), 'GET other');
+  assert.equal(trafficLabel('GET', '/anything/else', lookupPolicy), 'GET other');
 });
