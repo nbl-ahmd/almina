@@ -1,4 +1,5 @@
 import { isDataRequest, dataContentSecurityPolicy } from './lib/security/request-work';
+import { isSearchPage, refusedOnSearch } from './lib/security/search-bots';
 import {googleCommerceConfiguration} from './lib/google/commerce';
 import { readWebEnvironment } from '@almina/config/env';
 import { randomBytes } from 'node:crypto';
@@ -25,6 +26,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
   if (legacyMediaTarget(request.nextUrl.pathname)) return NextResponse.next();
+  // robots.txt asks crawlers to stay away; this refuses the ones that come anyway, before any search runs.
+  if (isSearchPage(request.nextUrl.pathname) && refusedOnSearch(request.headers.get('user-agent'))) {
+    return new NextResponse('Search is not available to automated clients.\n', { status: 403, headers: {
+      'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex, nofollow', 'X-Content-Type-Options': 'nosniff' } });
+  }
   const destination = legacyAdminDestination(request.nextUrl.pathname);
   if (destination) {
     const target = new URL(destination, request.url);

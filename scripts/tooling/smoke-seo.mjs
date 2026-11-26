@@ -27,7 +27,9 @@ try {
   // Short-lived synthetic loopback TLS only; Node trusts this certificate in the child.
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', join(directory, 'key.pem'),
     '-out', join(directory, 'cert.pem'), '-days', '1', '-subj', '/CN=localhost', '-addext', 'subjectAltName=IP:127.0.0.1'], { stdio: 'ignore' });
-  fixture = createStorefrontFixture({ key: await readFile(join(directory, 'key.pem')), cert: await readFile(join(directory, 'cert.pem')) }, { includeRecovered: true }).server;
+  const catalogue = createStorefrontFixture({ key: await readFile(join(directory, 'key.pem')), cert: await readFile(join(directory, 'cert.pem')) }, { includeRecovered: true });
+  const { requests } = catalogue;
+  fixture = catalogue.server;
   fixture.listen(0, '127.0.0.1'); await once(fixture, 'listening');
   const fixtureOrigin = `https://127.0.0.1:${fixture.address().port}`;
   const port = await freePort();
@@ -147,13 +149,23 @@ try {
   }
   const robots = await (await fetch(`${origin}/robots.txt`)).text();
   assert.ok(!robots.includes('Disallow: /_next/'));
-  assert.ok(robots.includes('Allow: /') && robots.includes(`Sitemap: ${canonical}/sitemap.xml`));
-  // Heavy crawlers are kept off the search page only; search engines and every other page are as open as before.
-  const groups = robots.split(/\n\s*\n/).map(block => ({ agents: [...block.matchAll(/^User-Agent: (.+)$/gm)].map(match => match[1]), blocked: [...block.matchAll(/^Disallow: (.+)$/gm)].map(match => match[1]) })).filter(group => group.agents.length);
-  assert.deepEqual(groups, [
-    { agents: ['*'], blocked: ['/api/'] },
-    { agents: ['GPTBot', 'ClaudeBot', 'Bytespider', 'MJ12bot', 'SERankingBacklinksBot', 'EDPCompanyIndex'], blocked: ['/api/', '/search'] },
-  ]);
+  assert.ok(robots.includes(`Sitemap: ${canonical}/sitemap.xml`));
+  // Every crawler is asked to stay off the search page, and nothing else public is closed to them.
+  assert.deepEqual([...robots.matchAll(/^User-Agent: (.+)$/gm)].map(match => match[1]), ['*']);
+  assert.deepEqual([...robots.matchAll(/^(?:Allow|Disallow): .+$/gm)].map(match => match[0]), ['Disallow: /api/', 'Disallow: /search']);
+  // One that comes anyway is refused before a search runs; shoppers, link previews and other pages are unaffected.
+  const searches = () => requests.filter(request => request.pathname === '/api/v1/search').length;
+  const before = searches();
+  for (const userAgent of ['Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 'Mozilla/5.0 (compatible; MJ12bot/v1.4.8; http://mj12bot.com/)', 'curl/8.7.1', '']) {
+    const response = await fetch(`${origin}/search?q=Daily`, { headers: { 'User-Agent': userAgent } });
+    assert.equal(response.status, 403, userAgent);
+    assert.equal(response.headers.get('cache-control'), 'private, no-store');
+    assert.equal((await fetch(`${origin}/products/daily-care--PD0001`, { headers: { 'User-Agent': userAgent } })).status, 200, userAgent);
+  }
+  assert.equal(searches(), before, 'a refused client never reaches the search service');
+  for (const userAgent of ['Mozilla/5.0', 'WhatsApp/2.23.20 A', 'facebookexternalhit/1.1'])
+    assert.equal((await fetch(`${origin}/search?q=Daily`, { headers: { 'User-Agent': userAgent } })).status, 200, userAgent);
+  assert.ok(searches() > before);
   const index = await (await fetch(`${origin}/sitemap.xml`)).text();
   const maps = [...index.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => new URL(match[1]).pathname);
   assert.deepEqual(maps.sort(), ['/sitemaps/categories/first.xml', '/sitemaps/products/first.xml', '/sitemaps/static/first.xml']);

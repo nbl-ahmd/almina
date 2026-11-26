@@ -250,10 +250,20 @@ stores, and [Shopify's current default file](https://help.shopify.com/en/manual/
 reported not to disallow `/search`. Our search results are `noindex`, so crawling them gives no search benefit.
 Google describes robots.txt blocking for [faceted and low-value URLs](https://developers.google.com/crawling/docs/faceted-navigation).
 
-**Change:** `robots.txt` now has a second group naming those six crawlers, which disallows `/search` (and `/api/`, as before).
-Search engines, including Google, Bing and `OAI-SearchBot`, are not named, and every other page stays open to the six. Shoppers'
-searches are unaffected. A blocked address linked from elsewhere can still be listed without content. Crawlers may take about a
-day to re-read the file and some may ignore it; a firewall rule would be a separate, approved change.
+**Change (owner decision: every automated client off the search page).**
+
+1. `robots.txt` disallows `/search` (and `/api/`) for all crawlers. This reverses, for search results only, the earlier choice to
+   let crawlers read excluded pages and see their `noindex`; a blocked address linked from elsewhere can still be listed without
+   content. Every other page stays open.
+2. The website refuses `/search` with 403, before any search runs, when the user agent names a crawler or script (or is empty).
+   Link previews that read one shared page (WhatsApp, Facebook, X, Telegram, Slack, LinkedIn, Discord, Skype) are allowed
+   through; those that obey `robots.txt` will still not fetch it. Shoppers' browsers and in-app browsers are unaffected.
+
+A client that copies a browser's user agent is not recognised by either measure. Plain Node requests (`node`) and headless
+Chrome are also allowed, because the release and browser checks send them. `/products?q=` and `/offers?q=` still run searches
+for any client. Limiting how fast one address may search needs a web-host firewall rule, an account configuration change that
+has not been made. The refusal still costs one small proxy run on the
+web host. Crawlers may take about a day to re-read `robots.txt`.
 
 ## Verify after deploy
 
@@ -263,10 +273,12 @@ day to re-read the file and some may ignore it; a firewall rule would be a separ
 2. Read the `db` entries to find the largest commands. About a day after the last full recheck, compare the `worker` route and
    count the `staff_stock_state` updates: they should be near the number of low-stock products.
 3. Upload one banner, one category picture and one poster, and send one WhatsApp template with the new poster address.
-4. After a day, count `/search` requests by user agent on the web host and compare a whole day's API bandwidth with 301–378 MB.
+4. After release, check that a browser gets `/search` and a crawler user agent gets 403. After a day, count `/search` requests by
+   user agent and status on the web host, look for browser-like clients searching unusually often, and compare a whole day's API
+   bandwidth with 301–378 MB.
 
 ## Not verified
 
 A whole day's production bandwidth saving, the effect of the lighter stock recheck in production, whether another database tier
-compresses, whether the named crawlers follow the new rule, real Cloudinary uploads for the new artwork kinds, WhatsApp
+compresses, whether crawlers follow the new rule, how much search traffic comes from disguised clients, real Cloudinary uploads for the new artwork kinds, WhatsApp
 accepting the new poster address, and web-host cache usage.
