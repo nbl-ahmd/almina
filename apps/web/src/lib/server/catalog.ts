@@ -9,14 +9,14 @@ import { bannerDestination } from '../catalog/merchandising';
 import { publicImage } from '../catalog/image-delivery';
 import { CatalogUnavailable, catalogArray, readCatalogResponse } from './catalog-response';
 
-export async function legacyRead(path: string, content = false, allowMissing = false, browse = false): Promise<unknown> {
+export async function legacyRead(path: string, content = false, allowMissing = false, browse = false, view?: 'card'): Promise<unknown> {
   const env = getWebEnvironment();
   const development = env.APP_ENV === 'development';
   let response: Response;
   try {
     const { headers: cacheHeaders, ...policy } = { headers: {}, ...(browse ? windowedReadPolicy(catalogContentTags.products) : catalogReadPolicy(path, content)) };
     response = await fetch(new URL(path, env.LEGACY_API_ORIGIN), {
-      ...policy, signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json', ...cacheHeaders },
+      ...policy, signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json', ...(view ? { 'x-catalog-view': view } : {}), ...cacheHeaders },
       redirect: 'error',
     });
   } catch { throw new CatalogUnavailable('connection', development); }
@@ -58,7 +58,7 @@ export async function getProducts(options: { page?: number; category?: string; o
   params.set('filter', JSON.stringify(filter));
   // The first pages of ordinary browsing are shared for a short window; narrow price filters and deep pages are always live.
   const browse = page <= 5 && options.minPrice === undefined && options.maxPrice === undefined;
-  const raw = array(await legacyRead(`/api/products?${params}`, false, false, browse));
+  const raw = array(await legacyRead(`/api/products?${params}`, false, false, browse, 'card'));
   return { products: raw.map(readProduct).filter(product => product !== null), hasNext: raw.length === 30, page,search:undefined as SearchMetadata|undefined,searchUnavailable:false };
 }
 const getProductDetail = cache(async (id: string) => {
