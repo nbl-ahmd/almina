@@ -219,6 +219,42 @@ One day-old sweep of 1,000 synthetic products, 100 of them low, on a disposable 
 
 The production saving depends on how many products are low and is not measured until this is deployed.
 
+### After release of the stock recheck
+
+Deployed as `1cd5c5e`. The window ending 08:01 UTC (includes the restart): `worker` ran 1,931 commands and sent 1.17 MB, and
+about 7 order checks sent 0.16 MB. The recheck saving cannot be seen before about 07:00 UTC on 27 November, when the products
+checked on 26 November come due again.
+
+Stock sweeps (about 0.6 MB sent per full pass) appeared in windows with staff activity and not in the quiet windows looked at.
+Product or order saves more than 30 seconds apart probably start them; the logs do not record the trigger.
+
+## Crawler traffic on the search page
+
+Website request counts by route (web host observability, UTC):
+
+| Period | `/search` | Homepage | Product pages |
+|---|---|---|---|
+| 16–22 November | 22,474 | – | – |
+| 23 November to 26 November 08:00 | 20,658 | 668 | 3,902 |
+
+About 99% of the second period's search requests carried crawler user agents: GPTBot 8,792, MJ12bot 7,836, EDPCompanyIndex
+2,073, Bytespider 987, SERankingBacklinksBot 497, ClaudeBot 226. Each request runs a live API search, and API search database
+commands rose with them. From two bursts, one crawler search costs up to about 11–12 KB of API outbound (database commands plus
+the compressed response), roughly 60–75 MB a day at that rate. This is an estimate from 10-minute windows that only roughly
+align. The route was also about half of the website's transfer (518 of 988 MB) and 44% of its function CPU in the second period.
+
+Many large shops keep crawlers out of their search results. `robots.txt` files read on 26 November that block them for all
+crawlers: Life Pharmacy, Aster, Boots, Walmart, Target, eBay, Etsy (keyword searches), iHerb and Gymshark. Amazon has no such
+general rule but blocks several AI crawlers entirely. It is not universal: no such rule was found for Best Buy or two Shopify
+stores, and [Shopify's current default file](https://help.shopify.com/en/manual/promoting-marketing/seo/editing-robots-txt) is
+reported not to disallow `/search`. Our search results are `noindex`, so crawling them gives no search benefit.
+Google describes robots.txt blocking for [faceted and low-value URLs](https://developers.google.com/crawling/docs/faceted-navigation).
+
+**Change:** `robots.txt` now has a second group naming those six crawlers, which disallows `/search` (and `/api/`, as before).
+Search engines, including Google, Bing and `OAI-SearchBot`, are not named, and every other page stays open to the six. Shoppers'
+searches are unaffected. A blocked address linked from elsewhere can still be listed without content. Crawlers may take about a
+day to re-read the file and some may ignore it; a firewall rule would be a separate, approved change.
+
 ## Verify after deploy
 
 1. Compare `net_usage` totals for similar periods before and after, and the `GET /api/v1/search` and
@@ -227,9 +263,10 @@ The production saving depends on how many products are low and is not measured u
 2. Read the `db` entries to find the largest commands. About a day after the last full recheck, compare the `worker` route and
    count the `staff_stock_state` updates: they should be near the number of low-stock products.
 3. Upload one banner, one category picture and one poster, and send one WhatsApp template with the new poster address.
+4. After a day, count `/search` requests by user agent on the web host and compare a whole day's API bandwidth with 301–378 MB.
 
 ## Not verified
 
 A whole day's production bandwidth saving, the effect of the lighter stock recheck in production, whether another database tier
-compresses, real Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address, and web-host cache
-usage.
+compresses, whether the named crawlers follow the new rule, real Cloudinary uploads for the new artwork kinds, WhatsApp
+accepting the new poster address, and web-host cache usage.

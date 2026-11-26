@@ -148,6 +148,12 @@ try {
   const robots = await (await fetch(`${origin}/robots.txt`)).text();
   assert.ok(!robots.includes('Disallow: /_next/'));
   assert.ok(robots.includes('Allow: /') && robots.includes(`Sitemap: ${canonical}/sitemap.xml`));
+  // Heavy crawlers are kept off the search page only; search engines and every other page are as open as before.
+  const groups = robots.split(/\n\s*\n/).map(block => ({ agents: [...block.matchAll(/^User-Agent: (.+)$/gm)].map(match => match[1]), blocked: [...block.matchAll(/^Disallow: (.+)$/gm)].map(match => match[1]) })).filter(group => group.agents.length);
+  assert.deepEqual(groups, [
+    { agents: ['*'], blocked: ['/api/'] },
+    { agents: ['GPTBot', 'ClaudeBot', 'Bytespider', 'MJ12bot', 'SERankingBacklinksBot', 'EDPCompanyIndex'], blocked: ['/api/', '/search'] },
+  ]);
   const index = await (await fetch(`${origin}/sitemap.xml`)).text();
   const maps = [...index.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => new URL(match[1]).pathname);
   assert.deepEqual(maps.sort(), ['/sitemaps/categories/first.xml', '/sitemaps/products/first.xml', '/sitemaps/static/first.xml']);

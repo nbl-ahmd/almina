@@ -10,6 +10,9 @@ The root layout sets `metadataBase` from validated `WEB_ORIGIN` and a reusable t
 
 Production robots allows crawling HTML so crawlers can observe `noindex`; robots disallow alone is not an indexing exclusion. It blocks API/framework paths and advertises the sitemap index. No crawler-user-agent bypass changes access control.
 
+**26 November 2026:** six AI-training, SEO-tool and index crawlers are now disallowed from `/search` only; the rule for search engines is
+unchanged. See [crawler traffic](BANDWIDTH_OPTIMIZATION_2026-11-26.md#crawler-traffic-on-the-search-page).
+
 ## Raw HTML and structured data
 
 `htmlLimitedBots: /.*/` deliberately disables metadata streaming for every user agent. Metadata and product/category not-found decisions resolve before HTTP headers are committed. This trades some time to first byte for reliable head metadata, HTTP 404s and HTTP 308s. Product names, categories, descriptions, displayed AED prices and images render on the server, without an effect-based catalog request. CSP nonces and uncached nonce-bearing HTML remain intact.
