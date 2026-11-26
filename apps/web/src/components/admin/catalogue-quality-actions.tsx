@@ -121,6 +121,7 @@ export function EnrichmentImport() {
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<EnrichmentApplyResult | null>(null);
+  const [progress, setProgress] = useState('');
   async function choose(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     setPreview(null); setResult(null); setConfirmed(false);
@@ -137,13 +138,20 @@ export function EnrichmentImport() {
   async function apply() {
     if (!preview) return;
     setBusy(true);
+    // Rounds of a few products, so a large file never runs into a request time limit; each round is complete on its own.
+    const groups = preview.rows.filter(row => row.changes.length).map(row => row.changes);
+    const total: EnrichmentApplyResult = { applied: 0, products: 0, skipped: [] };
     try {
-      const outcome = await adminRequest('products/enrichment/apply', 'POST', { changes: preview.rows.flatMap(row => row.changes), confirmed: true }) as EnrichmentApplyResult;
-      setResult(outcome); setPreview(null); setConfirmed(false);
-      toast.success(`${number(outcome.applied)} ${outcome.applied === 1 ? 'detail' : 'details'} saved on ${number(outcome.products)} ${outcome.products === 1 ? 'product' : 'products'}.`);
-      router.refresh();
-    } catch { toast.error('Nothing was saved. Try again.'); }
-    finally { setBusy(false); }
+      for (let start = 0; start < groups.length; start += 25) {
+        setProgress(`Saving ${number(Math.min(start + 25, groups.length))} of ${number(groups.length)} products…`);
+        const outcome = await adminRequest('products/enrichment/apply', 'POST', { changes: groups.slice(start, start + 25).flat(), confirmed: true }) as EnrichmentApplyResult;
+        total.applied += outcome.applied; total.products += outcome.products; total.skipped.push(...outcome.skipped);
+      }
+      setPreview(null); setConfirmed(false);
+      toast.success(`${number(total.applied)} ${total.applied === 1 ? 'detail' : 'details'} saved on ${number(total.products)} ${total.products === 1 ? 'product' : 'products'}.`);
+    } catch {
+      toast.error(total.products ? `Stopped after ${number(total.products)} ${total.products === 1 ? 'product' : 'products'}. Preview the file again to finish the rest.` : 'Nothing was saved. Try again.');
+    } finally { setResult(total.products || total.skipped.length ? total : null); setProgress(''); setBusy(false); router.refresh(); }
   }
   const withChanges = preview?.rows.filter(row => row.changes.length) ?? [];
   const withNotes = preview?.rows.filter(row => row.notes.length) ?? [];
@@ -179,7 +187,7 @@ export function EnrichmentImport() {
           <input type="checkbox" className="mt-0.5" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />
           <span>I checked these values against the pack, the manufacturer or an authorised supplier.{live ? ` ${number(live)} ${live === 1 ? 'product is' : 'products are'} live, so customers see the new details at once.` : ''} Products stay hidden or live as they are.</span>
         </label>
-        <div><Button variant="primary" disabled={!confirmed || busy} onClick={() => { void apply(); }}>{busy ? 'Saving…' : `Save ${number(preview.changeCount)} ${preview.changeCount === 1 ? 'change' : 'changes'}`}</Button></div>
+        <div><Button variant="primary" disabled={!confirmed || busy} onClick={() => { void apply(); }}>{busy ? progress || 'Saving…' : `Save ${number(preview.changeCount)} ${preview.changeCount === 1 ? 'change' : 'changes'}`}</Button></div>
       </> : null}
     </div> : null}
     {result ? <div role="status" className="rounded-lg bg-fill p-3 text-[13px]"><p className="m-0">Saved {number(result.applied)} {result.applied === 1 ? 'detail' : 'details'} on {number(result.products)} {result.products === 1 ? 'product' : 'products'}.</p>

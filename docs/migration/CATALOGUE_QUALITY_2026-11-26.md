@@ -60,7 +60,9 @@ Product structured data adds `manufacturer` when staff recorded one. Brand, GTIN
 
 ## Metrics: exact definitions
 
-All counts exclude archived products. "Live" means `published != false`, `disabled != true`, `active != false`.
+All counts exclude archived products. "Live" on the quality page means `published != false`, `disabled != true`, `active != false`
+and sold to retail customers (wholesale-only products are excluded), as the storefront and sitemap see it. The Products list "Live"
+view and the dashboard card use the list's existing definition, which does not look at the audience.
 
 | Metric | A product counts as **having** it when |
 |---|---|
@@ -103,11 +105,14 @@ the editor's Save & next covers the per-product decisions.
 - Columns: `product_id` (required) plus any of `brand`, `manufacturer`, `gtin`, `mpn`, `identifierStatus`, `packLabel`, `saleUnit`,
   `description`. The reference columns of the downloaded sheet (`name`, `barcode`, `category`, `priority`, `gaps`, `photo_file_name`) are
   ignored. Any other column refuses the file, so a misspelt heading cannot drop a column silently.
-- At most 4,000 rows and 1 MB per file. Empty cells change nothing; the file never clears a value.
+- At most 4,000 rows and 1 MB per file. Empty cells change nothing; the file never clears a value. A downloaded sheet holds the 2,000
+  highest-priority products of the current filter; larger gaps are worked through in rounds.
 - **Fills blanks by default.** Replacing a filled-in value needs "Replace filled-in values", and the preview shows before and after.
 - Refused per value: invalid GTIN, in-store or coupon codes, a GTIN another product already has (also within the file), over-long text,
   and any **description change for a Pharmacy medicine or Prescription product** (edited in the product editor only).
 - A row whose `product_id` matches no product, or more than one, is reported and skipped.
+- Preview checks every GTIN against the catalogue with one query. Apply writes one product per transaction, at most 50 products per
+  request; the console sends rounds of 25 and shows progress. If a round fails, the earlier rounds are kept and the message says so.
 - Apply re-validates everything and **skips any value changed since the preview**. It never publishes, hides, prices, stocks or marks
   anything reviewed, and writes one `catalog_audit` row per product ("Enrichment file, values confirmed by administrator").
 - Spreadsheet formula protection: cells starting with `= + @ -` are written with a leading apostrophe and restored on import.
@@ -120,7 +125,7 @@ the editor's Save & next covers the per-product decisions.
 | `GET /api/products/enrichment` | `scope` live/instock/all, `gap`, `limit` ≤100, `offset`. |
 | `GET /api/products/enrichment/export` | Same filters, CSV, up to 2,000 rows. |
 | `POST /api/products/enrichment/preview` | `{ content, overwrite }`. Writes nothing. 4 MB body limit on this route only. |
-| `POST /api/products/enrichment/apply` | `{ changes, confirmed: true }`. Audited; cache purge. |
+| `POST /api/products/enrichment/apply` | `{ changes, confirmed: true }`, at most 50 products. Audited; cache purge. |
 | `POST /api/products/gtin-from-barcode` | `{ ids ≤100, confirmed: true }`. Audited; cache purge. |
 
 Every read is bounded (20,000-row cap, `maxTimeMS`), runs only when an administrator opens the page, and keeps nothing to recompute:
@@ -140,8 +145,11 @@ no timers, workers or stored scores. The dashboard card reuses the Products list
 
 - Bulk GTIN and the enrichment file change live product data at once (storefront and structured data). Both require an explicit
   administrator confirmation and are audited; neither changes visibility.
-- The quality page reads the whole non-archived catalogue (projected fields) on each visit: about 6,300 small records today. It is
-  admin-only and never runs from the dashboard.
+- The quality page reads the non-archived catalogue on each visit with a light projection (descriptions reduced to a present/blank flag,
+  at most three photo entries), plus the full records of live products for the feed check. About 6,300 small records today. It is
+  admin-only and never runs from the dashboard. The work list checks shared barcodes only for the rows on the page.
+- Measured on a local disposable replica set: preview of a 3,000-row file 74 ms; apply in rounds of 25 products, slowest round 252 ms.
+  Production (Atlas) round trips are slower; each round still has wide margin under the 12-second gateway limit.
 
 ## Rollback
 
@@ -154,8 +162,10 @@ stay valid.
   validation, projections and cache tags, manufacturer in structured data).
 - Database (disposable replica set): `tests/catalogue-quality-integration.test.ts` (report counts through the real feed path,
   demand ranking excluding cancelled and old orders, barcode GTIN refusals and audit, enrichment preview/apply including stale rows,
-  fill-blanks, medicine descriptions, untouched visibility and review stamps).
+  fill-blanks, medicine descriptions, untouched visibility and review stamps; wholesale-only products not counted as live; Date fields
+  read as the storefront reads them; a 3,000-row file previewed in one call and applied in rounds, with more than 50 products refused).
 - API security: `npm run test:api`, where every admin route is exercised with unauthenticated and staff callers (181 pass).
 - Browser: `tests/e2e/catalogue-quality.spec.ts` against the built app (dashboard card, page, bulk GTIN dialog, enrichment preview and
-  apply, CSV download, phone width without horizontal overflow), plus the existing admin, admin-design, admin-workflows and
+  apply, a ~900 KB file through the gateway and API body limits, CSV download, phone width without horizontal overflow). The e2e
+  commerce fixture's own JSON parser now covers only its `/__fixture` routes, so API bodies meet the API's real limits as in production; plus the existing admin, admin-design, admin-workflows and
   admin-product-channels specs (32 pass).

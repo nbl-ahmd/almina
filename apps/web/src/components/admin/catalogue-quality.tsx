@@ -1,6 +1,6 @@
 import { ArrowDownTrayIcon, CheckBadgeIcon, ExclamationTriangleIcon, QrCodeIcon, ShoppingBagIcon, TableCellsIcon } from '@heroicons/react/24/outline';
 import {
-  catalogueGapLabels, catalogueGaps, enrichmentScopeLabels, enrichmentScopes,
+  catalogueGapLabels, catalogueGaps, enrichmentExportLimit, enrichmentScopeLabels, enrichmentScopes,
   type CatalogueFilter, type CatalogueGap, type EnrichmentQuery, type EnrichmentQueue, type QualityReport,
 } from '@almina/contracts';
 import Link from '../app-link';
@@ -82,7 +82,7 @@ function Identifiers({ report }: { report: QualityReport }) {
 export function CatalogueQualityPage({ report, queue, query }: { report: QualityReport | null; queue: (EnrichmentQueue & { items: QueueRow[] }) | null; query: Pick<EnrichmentQuery, 'scope' | 'gap' | 'limit'> }) {
   const exportHref = `/api/admin/products/enrichment/export?scope=${query.scope}&gap=${query.gap}`;
   return <>
-    <PageHeader title="Catalogue quality" description="See which product details are missing, fix the products that sell first, and bring supplier data in with a reviewed spreadsheet."
+    <PageHeader title="Catalogue quality" description={`See which product details are missing, fix the products that sell first, and bring supplier data in with a reviewed spreadsheet. The sheet holds the ${enrichmentExportLimit.toLocaleString('en-AE')} highest-priority products in the current filter.`}
       actions={<a className={buttonVariants({ variant: 'outline' })} href={exportHref} download="catalogue-enrichment.csv"><ArrowDownTrayIcon className="size-4" aria-hidden="true" />Download enrichment sheet</a>} />
     {report?.unreadableLiveTotal ? <Note tone="danger" icon={<ExclamationTriangleIcon />}>
       <p><strong>{number(report.unreadableLiveTotal)} live {report.unreadableLiveTotal === 1 ? 'product cannot' : 'products cannot'} be shown to customers.</strong> A stored value (often an invalid GTIN or an over-long field) fails validation, so the product page returns “not found”. Open each one and save it again with the value corrected:{' '}

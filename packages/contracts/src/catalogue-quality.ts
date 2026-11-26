@@ -101,6 +101,8 @@ export const enrichmentQuerySchema = z.object({
 }).strict();
 export type EnrichmentQuery = z.infer<typeof enrichmentQuerySchema>;
 export const enrichmentExportQuerySchema = enrichmentQuerySchema.omit({ limit: true, offset: true }).strict();
+/** Rows in one downloaded sheet, highest priority first. Larger gaps are worked through in several rounds. */
+export const enrichmentExportLimit = 2000;
 
 const count = z.number().int().min(0);
 export const enrichmentItemSchema = z.object({
@@ -168,6 +170,8 @@ export function unescapeEnrichmentCell(value: string): string {
   return /^'[=+@\-\t\r]/.test(value) ? value.slice(1) : value;
 }
 
+/** Products written per apply request; the console sends a larger file in rounds of this size or fewer. */
+export const enrichmentApplyProductLimit = 50;
 export const enrichmentPreviewSchema = z.object({
   content: z.string().min(1).max(1024 * 1024),
   /** Replace values that are already filled in. Off by default: the file only fills blanks. */
@@ -175,11 +179,12 @@ export const enrichmentPreviewSchema = z.object({
 }).strict();
 export const enrichmentChangeSchema = z.object({
   id: z.string().regex(/^[a-f0-9]{24}$/i), field: z.enum(enrichmentEditableColumns),
-  before: z.string().max(5000), after: z.string().min(1).max(5000),
+  // "before" is whatever is stored today, which can be longer than the file may write.
+  before: z.string().max(100000), after: z.string().min(1).max(5000),
 }).strict();
 export type EnrichmentChange = z.infer<typeof enrichmentChangeSchema>;
 export const enrichmentApplySchema = z.object({
-  changes: z.array(enrichmentChangeSchema).min(1).max(4000),
+  changes: z.array(enrichmentChangeSchema).min(1).max(enrichmentApplyProductLimit * enrichmentEditableColumns.length),
   /** The administrator confirmed the values come from the pack, the manufacturer or an authorised supplier. */
   confirmed: z.literal(true),
 }).strict();

@@ -2,7 +2,7 @@ import { ObjectId, type ClientSession, type Db, type Document } from 'mongodb';
 import { z } from 'zod';
 import {
   enrichmentApplySchema, enrichmentCsvColumns, enrichmentEditableColumns, enrichmentPreviewSchema, productContentFields, tradeGtin,
-  normalizeGtin, unescapeEnrichmentCell, type EnrichmentApplyResult, type EnrichmentChange, type EnrichmentField, type EnrichmentPreview,
+  enrichmentApplyProductLimit, normalizeGtin, unescapeEnrichmentCell, type EnrichmentApplyResult, type EnrichmentChange, type EnrichmentField, type EnrichmentPreview,
 } from '@almina/contracts';
 import { boundedCsvRecords } from '../imports/csv.js';
 import { HttpError } from '../../errors.js';
@@ -26,15 +26,28 @@ const blank = (field: EnrichmentField, value: string) => !value.trim() || (field
 const isMedicine = (product: Document) => product.productType === 'otc' || product.productType === 'prescription';
 
 /** Why a value cannot be stored for this product, or null when it can. Shared by preview and apply. */
-async function refusal(db: Db, product: Document, field: EnrichmentField, value: string, session?: ClientSession): Promise<string | null> {
+type Owners = Map<string, { id: string; productId: string }[]>;
+/** Which products already carry each of these GTINs (any spelling, barcode or GTIN field): one indexed query for a whole file. */
+async function gtinOwners(db: Db, values: string[], session?: ClientSession): Promise<Owners> {
+  const spellings = [...new Set(values.flatMap(value => { const code = tradeGtin(value); return code ? gtinSpellings(code) : []; }))];
+  const owners: Owners = new Map();
+  if (!spellings.length) return owners;
+  const rows = await db.collection('products').find({ archivedAt: { $exists: false }, $or: [{ barcode: { $in: spellings } }, { gtin: { $in: spellings } }] },
+    { projection: { product_id: 1, barcode: 1, gtin: 1 }, limit: 20000, maxTimeMS: 8000, ...(session ? { session } : {}) }).toArray();
+  for (const row of rows) for (const code of new Set([normalizeGtin(row.barcode), normalizeGtin(row.gtin)])) {
+    if (code) owners.set(code, [...(owners.get(code) ?? []), { id: String(row._id), productId: text(row.product_id) }]);
+  }
+  return owners;
+}
+
+function refusal(product: Document, field: EnrichmentField, value: string, owners: Owners): string | null {
   if (!fieldSchema[field].safeParse(value).success) return field === 'gtin' ? 'Not a valid GTIN (check digit).' : 'Value is not allowed here (too long or not an option).';
   if (field === 'description' && isMedicine(product)) return 'Medicine descriptions are changed in the product editor only.';
   if (field === 'gtin') {
     const code = tradeGtin(value);
     if (!code) return 'This is an in-store or coupon code, not a manufacturer GTIN.';
-    const other = await db.collection('products').findOne({ _id: { $ne: product._id }, archivedAt: { $exists: false },
-      $or: [{ barcode: { $in: gtinSpellings(code) } }, { gtin: { $in: gtinSpellings(code) } }] }, { projection: { product_id: 1 }, ...(session ? { session } : {}) });
-    if (other) return `Another product (${text(other.product_id) || 'unnamed'}) already uses this GTIN.`;
+    const other = (owners.get(code) ?? []).find(owner => owner.id !== String(product._id));
+    if (other) return `Another product (${other.productId || 'unnamed'}) already uses this GTIN.`;
   }
   return null;
 }
@@ -54,6 +67,7 @@ export async function previewEnrichmentImport(db: Db, raw: unknown): Promise<Enr
   const byId = new Map<string, Document[]>();
   for (const product of found) byId.set(text(product.product_id), [...(byId.get(text(product.product_id)) ?? []), product]);
 
+  const owners = editable.includes('gtin') ? await gtinOwners(db, rows.map(row => row.gtin ?? '')) : new Map() as Owners;
   const seen = new Set<string>(), fileGtins = new Map<string, string>();
   const result: EnrichmentPreview['rows'] = [];
   for (const [index, row] of rows.entries()) {
@@ -71,7 +85,7 @@ export async function previewEnrichmentImport(db: Db, raw: unknown): Promise<Enr
       const value = row[field] ?? '', current = text(product[field]);
       if (!value || value === current) continue;
       if (!blank(field, current) && !parsed.data.overwrite) { entry.notes.push(`${field}: kept the current value. Choose “Replace filled-in values” to change it.`); continue; }
-      const reason = await refusal(db, product, field, value);
+      const reason = refusal(product, field, value, owners);
       if (reason) { entry.notes.push(`${field}: ${reason}`); continue; }
       if (field === 'gtin') {
         const code = normalizeGtin(value)!, earlier = fileGtins.get(code);
@@ -97,7 +111,8 @@ export async function applyEnrichmentImport(db: Db, raw: unknown, actor: string)
   if (!parsed.success || !ObjectId.isValid(actor)) throw new HttpError(400, 'INVALID_REQUEST');
   const byProduct = new Map<string, EnrichmentChange[]>();
   for (const change of parsed.data.changes) byProduct.set(change.id.toLowerCase(), [...(byProduct.get(change.id.toLowerCase()) ?? []), change]);
-  if ([...byProduct.values()].some(changes => new Set(changes.map(change => change.field)).size !== changes.length)) throw new HttpError(400, 'INVALID_REQUEST');
+  // One product per transaction: a bounded number per request keeps each call well inside the gateway time limit.
+  if (byProduct.size > enrichmentApplyProductLimit || [...byProduct.values()].some(changes => new Set(changes.map(change => change.field)).size !== changes.length)) throw new HttpError(400, 'INVALID_REQUEST');
   const skipped: EnrichmentApplyResult['skipped'] = [];
   let applied = 0, products = 0;
   for (const [id, changes] of byProduct) {
@@ -112,7 +127,7 @@ export async function applyEnrichmentImport(db: Db, raw: unknown, actor: string)
         const fields: Record<string, string> = {}, before: Record<string, unknown> = {};
         for (const change of changes) {
           if (text(product[change.field]) !== change.before) { attempt.skipped.push({ id, field: change.field, reason: 'Changed since the preview. Preview the file again.' }); continue; }
-          const reason = await refusal(db, product, change.field, change.after, session);
+          const reason = refusal(product, change.field, change.after, change.field === 'gtin' ? await gtinOwners(db, [change.after], session) : new Map());
           if (reason) { attempt.skipped.push({ id, field: change.field, reason }); continue; }
           fields[change.field] = change.after.trim(); before[change.field] = product[change.field];
         }

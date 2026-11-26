@@ -21,7 +21,7 @@ async function seeded() {
   const reviewed = { contentReviewed: true, stockVerified: true, imageRights: 'authorized', condition: 'new', googleApproved: true };
   const complete = { category: skin, price: 20, stock: 3, productType: 'general', brand: 'Acme', manufacturer: 'Acme Labs', saleUnit: '1 tube',
     packLabel: '50 ml', description: 'A synthetic cream.', cloudinaryImages: [photo], published: true, disabled: false, ...reviewed };
-  const ids = { P1: new ObjectId(), P2: new ObjectId(), P3: new ObjectId(), P4: new ObjectId(), P5: new ObjectId(), P6: new ObjectId(), P7: new ObjectId(), P8: new ObjectId(), P9: new ObjectId() };
+  const ids = { P1: new ObjectId(), P2: new ObjectId(), P3: new ObjectId(), P4: new ObjectId(), P5: new ObjectId(), P6: new ObjectId(), P7: new ObjectId(), P8: new ObjectId(), P9: new ObjectId(), P10: new ObjectId(), P11: new ObjectId() };
   await db.collection('products').insertMany([
     // Selling, in stock, live; everything but a confirmed GTIN. Its barcode is a valid trade GTIN nobody else uses.
     { ...complete, _id: ids.P1, product_id: 'PD1', name: 'Selling cream', stock: 5, barcode: '6291000000020', identifierStatus: 'unknown' },
@@ -41,6 +41,11 @@ async function seeded() {
     { ...complete, _id: ids.P8, product_id: 'PD8', name: 'Broken GTIN cream', gtin: '1234', stock: 1 },
     // Archived: never counted, never blocks another product's code.
     { ...complete, _id: ids.P9, product_id: 'PD9', name: 'Archived', barcode: '6291000000020', archivedAt: new Date() },
+    // Wholesale only: not on the storefront, so not "live" in the report.
+    { ...complete, _id: ids.P10, product_id: 'PD10', name: 'Wholesale carton', audience: 'wholesale', gtin: '6291000000051', identifierStatus: 'assigned' },
+    // Ready, with Dates and wholesale settings stored: still readable, exactly as the storefront reads it over JSON.
+    { ...complete, _id: ids.P11, product_id: 'PD11', name: 'Ready lotion', gtin: '5012345678900', identifierStatus: 'assigned',
+      audience: 'all', wholesaleAudience: 'selected', wholesaleTypeIds: ['clinics'], createdAt: new Date(), updatedAt: new Date(), stockReviewedAt: new Date() },
   ]);
   const line = (product: ObjectId, quantity: number) => ({ productId: String(product), name: 'x', quantity, lineTotalMinor: 100 });
   await db.collection('orders').insertMany([
@@ -55,18 +60,19 @@ test('the quality report counts coverage, feed readiness, identifier problems an
   const { db, close } = await seeded();
   try {
     const report = await catalogueQualityReport(db, config, now);
-    assert.equal(report.all.total, 8, 'archived products are not counted');
-    assert.equal(report.live.total, 5);
+    assert.equal(report.all.total, 10, 'archived products are not counted');
+    assert.equal(report.live.total, 6, 'the wholesale-only product is not live on the storefront');
     assert.equal(report.live.missing.photo, 0, 'a legacy storefront photo is still a photo');
     assert.equal(report.live.missing.brand, 1);
     assert.equal(report.all.missing.category, 1);
-    assert.equal(report.instock.total, 5);
-    assert.equal(report.merchant.ready, 1);
+    assert.equal(report.instock.total, 7);
+    assert.equal(report.merchant.ready, 2);
     assert.equal(report.merchant.medicines, 1);
     assert.equal(report.merchant.legacyPhotoOnly, 1);
     assert.ok(report.merchant.reviewSteps.some(row => row.issue === 'Manufacturer identifier review' && row.products === 2));
     assert.ok(report.merchant.dataGaps.some(row => row.issue === 'Brand'));
     assert.ok(!report.merchant.dataGaps.some(row => row.issue === 'Channel approval'), 'approvals are review steps, not data gaps');
+    assert.ok(!report.merchant.dataGaps.some(row => row.issue === 'Retail visibility'), 'wholesale-only products are not reported as missing data');
     assert.equal(report.unreadableLiveTotal, 1);
     assert.equal(report.unreadableLive[0]!.productId, 'PD8');
     assert.equal(report.identifiers.barcodeGtinCandidates, 1);
@@ -175,4 +181,42 @@ test('the enrichment file previews every change, fills blanks only, skips stale 
     assert.equal(forced.applied, 0);
     await assert.rejects(applyEnrichmentImport(db, { changes: [{ id: String(ids.P4), field: 'price', before: '20', after: '0' }], confirmed: true }, actor), { status: 400 });
   } finally { await close(); }
+});
+
+const checkDigit = (body: string) => body + String((10 - [...body].reverse().reduce((sum, digit, index) => sum + Number(digit) * (index % 2 === 0 ? 3 : 1), 0) % 10) % 10);
+
+test('a 3,000-row enrichment file previews in one call and applies in bounded rounds', { skip: !uri }, async () => {
+  assert.match(uri!, /^mongodb:\/\/127\.0\.0\.1:\d+\/\?replicaSet=almina_test$/);
+  const client = await new MongoClient(uri!).connect(), db = client.db('almina_quality_large_' + randomUUID().replaceAll('-', ''));
+  try {
+    const category = new ObjectId();
+    await db.collection('categories').insertOne({ _id: category, name: 'Skincare' });
+    const count = 3000;
+    await db.collection('products').insertMany(Array.from({ length: count }, (_, index) => ({ _id: new ObjectId(), product_id: `PDL${index}`, name: `Large item ${index}`,
+      category, price: 5, stock: 1, productType: 'general', description: index % 2 ? 'x'.repeat(6000) : '' })));
+    const lines = ['product_id,brand,gtin,description', ...Array.from({ length: count }, (_, index) =>
+      [`PDL${index}`, `Brand ${index % 40}`, checkDigit(`629200${String(index).padStart(6, '0')}`), `Text ${index}`].map(enrichmentCsvCell).join(','))];
+    const content = lines.join('\r\n');
+    assert.ok(Buffer.byteLength(content) < 1024 * 1024);
+    let started = Date.now();
+    const preview = await previewEnrichmentImport(db, { content, overwrite: true });
+    const previewMs = Date.now() - started;
+    assert.equal(preview.productCount, count);
+    assert.equal(preview.errorCount, 0);
+    // Replacing a stored description longer than the file may write still previews (its "before" is the stored text).
+    assert.equal(preview.rows[1]!.changes.find(change => change.field === 'description')!.before.length, 6000);
+    const groups = preview.rows.map(row => row.changes);
+    await assert.rejects(applyEnrichmentImport(db, { changes: groups.slice(0, 51).flat(), confirmed: true }, actor), { status: 400 }, 'at most 50 products per request');
+    started = Date.now();
+    let applied = 0, slowest = 0;
+    for (let start = 0; start < groups.length; start += 25) {
+      const round = Date.now();
+      applied += (await applyEnrichmentImport(db, { changes: groups.slice(start, start + 25).flat(), confirmed: true }, actor)).applied;
+      slowest = Math.max(slowest, Date.now() - round);
+    }
+    console.log(`enrichment file: preview ${previewMs} ms for ${count} rows; apply ${Date.now() - started} ms in rounds of 25, slowest round ${slowest} ms`);
+    assert.equal(applied, count * 4, 'brand, gtin, description and identifier status on every product');
+    assert.equal(await db.collection('catalog_audit').countDocuments(), count);
+    assert.ok(previewMs < 8000, `preview took ${previewMs} ms`);
+  } finally { await db.dropDatabase(); await client.close(); }
 });

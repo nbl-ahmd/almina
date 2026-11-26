@@ -68,6 +68,13 @@ test('catalogue quality: completeness, ranked work list, confirmed barcode GTINs
   expect(enriched).toMatchObject({ brand: 'Bioderma', description: '- Gentle formula', disabled: false });
   expect(enriched.contentReviewed).not.toBe(true);
 
+  // A near-limit file (about 900 KB) passes the gateway and API body limits; unknown rows are reported, nothing is written.
+  const large = ['product_id,description', ...Array.from({ length: 3900 }, (_, index) => `PDZ${index},"${'Gentle daily care. '.repeat(11)}"`)].join('\r\n');
+  expect(Buffer.byteLength(large)).toBeGreaterThan(850_000);
+  const big = await page.request.post(`${adminOrigin}/api/admin/products/enrichment/preview`, { headers: { origin: adminOrigin, 'x-csrf-protection': '1' }, data: { content: large } });
+  expect(big.status(), await big.text()).toBe(200);
+  expect((await big.json() as { errorCount: number }).errorCount).toBe(3900);
+
   // The sourcing sheet downloads through the gateway.
   const download = await page.request.get(`${adminOrigin}/api/admin/products/enrichment/export?scope=all&gap=photo`);
   expect(download.headers()['content-type']).toContain('text/csv');

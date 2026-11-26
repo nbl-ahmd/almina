@@ -1,7 +1,7 @@
 import { ObjectId, type Db, type Document } from 'mongodb';
 import {
   catalogueGapLabels, enrichmentCsvCell, enrichmentCsvColumns, enrichmentExportQuerySchema, enrichmentPriority, enrichmentQuerySchema,
-  hasProductPhoto, normalizeGtin, productGaps, restrictedGtin, tradeGtin,
+  enrichmentExportLimit, hasProductPhoto, normalizeGtin, productGaps, restrictedGtin, tradeGtin, visibleToRetail,
   barcodeGtinSchema, type BarcodeGtinResult, type CatalogueGap, type EnrichmentItem, type EnrichmentQuery, type EnrichmentQueue, type QualityReport,
 } from '@almina/contracts';
 import type { z } from 'zod';
@@ -11,6 +11,7 @@ import { feedIssues } from '../../../../web/src/lib/catalog/feed.js';
 import { merchantImages, merchantInput } from './merchant.js';
 import { compatibilityProductProjection } from './compatibility-reads.js';
 import { HttpError } from '../../errors.js';
+import { retailAudienceFilter } from './audience.js';
 
 /**
  * Catalogue completeness for the staff console. Read-only. Every read is admin-triggered, bounded (row caps, maxTimeMS)
@@ -21,7 +22,8 @@ const options = { maxTimeMS: 8000, allowDiskUse: false };
 /** Hard cap on catalogue rows one request reads. Production holds about 6,300 products. */
 const catalogueCap = 20000;
 const demandDays = 90;
-const live: Document = { published: { $ne: false }, disabled: { $ne: true }, active: { $ne: false } };
+// "Live" as the storefront and sitemap see it: published, enabled and sold to retail customers.
+const live: Document = { published: { $ne: false }, disabled: { $ne: true }, active: { $ne: false }, ...retailAudienceFilter };
 const notArchived: Document = { archivedAt: { $exists: false } };
 
 function parse<T extends z.ZodType>(schema: T, raw: unknown): z.infer<T> {
@@ -30,7 +32,7 @@ function parse<T extends z.ZodType>(schema: T, raw: unknown): z.infer<T> {
   return result.data;
 }
 const text = (value: unknown) => typeof value === 'string' ? value : '';
-const isLive = (product: Document) => product.published !== false && product.disabled !== true && product.active !== false;
+const isLive = (product: Document) => product.published !== false && product.disabled !== true && product.active !== false && visibleToRetail(product);
 const scopeMatch = (scope: EnrichmentQuery['scope']): Document => scope === 'live' ? live : scope === 'instock' ? { stock: { $gt: 0 } } : {};
 
 /** Units ordered per product (Mongo id) in the last 90 days, from the current order system; cancelled orders excluded. */
@@ -46,9 +48,18 @@ export async function demandUnits(db: Db, now = new Date()): Promise<{ units: Ma
   return { units: new Map(rows.map(row => [String(row._id), Math.max(0, Number(row.units) || 0)])), since };
 }
 
-const queueProjection = { _id: 1, product_id: 1, name: 1, brand: 1, familyBrand: 1, manufacturer: 1, gtin: 1, barcode: 1, identifierStatus: 1,
-  packLabel: 1, variantPackSize: 1, variantSize: 1, saleUnit: 1, mpn: 1, productType: 1, category: 1, stock: 1, featured: 1, sale: 1,
-  published: 1, disabled: 1, active: 1, image: 1, images: 1, cloudinaryImages: 1, description: 1 };
+/** What gaps and ranking need, and no more: long text becomes a presence flag and photo lists keep their first few entries, so a
+ *  whole-catalogue read stays small. The spreadsheet export alone reads the full text values. */
+const lightProjection: Document = { _id: 1, product_id: 1, name: 1, brand: 1, familyBrand: 1, manufacturer: 1, gtin: 1, barcode: 1, identifierStatus: 1,
+  packLabel: 1, variantPackSize: 1, variantSize: 1, productType: 1, category: 1, stock: 1, featured: 1, sale: 1,
+  published: 1, disabled: 1, active: 1, audience: 1, image: 1,
+  images: { $cond: [{ $isArray: '$images' }, { $slice: ['$images', 3] }, '$$REMOVE'] },
+  cloudinaryImages: { $cond: [{ $isArray: '$cloudinaryImages' }, { $slice: ['$cloudinaryImages', 3] }, '$$REMOVE'] },
+  description: { $cond: [{ $and: [{ $eq: [{ $type: '$description' }, 'string'] }, { $regexMatch: { input: '$description', regex: '\\S' } }] }, 'present', ''] } };
+const exportProjection = { ...lightProjection, description: 1, mpn: 1, saleUnit: 1 };
+const catalogueRows = (db: Db, match: Document, projection: Document) => db.collection('products').aggregate<Document>([
+  { $match: match }, { $limit: catalogueCap }, { $project: projection },
+], options).toArray();
 
 async function categoryNames(db: Db) {
   const rows = await db.collection('categories').find({}, { projection: { name: 1 }, limit: 2000, maxTimeMS: 3000 }).toArray();
@@ -68,10 +79,10 @@ async function identifierOwners(db: Db) {
 const usedByOther = (owners: Map<string, Document[]>, code: string, id: string) => (owners.get(code) ?? []).some(owner => String(owner._id) !== id);
 
 type Ranked = { product: Document; gaps: CatalogueGap[]; units90: number; score: number; reasons: string[]; category: string };
-async function ranked(db: Db, query: Pick<EnrichmentQuery, 'scope' | 'gap'>, now: Date) {
+async function ranked(db: Db, query: Pick<EnrichmentQuery, 'scope' | 'gap'>, now: Date, fullText = false) {
   const [{ units, since }, categories, products] = await Promise.all([
     demandUnits(db, now), categoryNames(db),
-    db.collection('products').find({ $and: [notArchived, scopeMatch(query.scope)] }, { projection: queueProjection, limit: catalogueCap, maxTimeMS: 8000 }).toArray(),
+    catalogueRows(db, { $and: [notArchived, scopeMatch(query.scope)] }, fullText ? exportProjection : lightProjection),
   ]);
   const rows: Ranked[] = [];
   for (const product of products) {
@@ -90,15 +101,23 @@ async function ranked(db: Db, query: Pick<EnrichmentQuery, 'scope' | 'gap'>, now
 /** The prioritised list of products to enrich, one bounded page at a time. */
 export async function catalogueEnrichmentQueue(db: Db, raw: unknown, now = new Date()): Promise<EnrichmentQueue> {
   const query = parse(enrichmentQuerySchema, raw);
-  const [{ rows, since }, identifiers] = await Promise.all([ranked(db, query, now), identifierOwners(db)]);
-  const items: EnrichmentItem[] = rows.slice(query.offset, query.offset + query.limit).map(({ product, gaps, units90, score, reasons, category }) => {
+  const { rows, since } = await ranked(db, query, now);
+  const page = rows.slice(query.offset, query.offset + query.limit);
+  // Only this page's barcodes are checked for other owners: one indexed lookup, not a catalogue scan.
+  const codes = [...new Set(page.flatMap(({ product }) => { const code = tradeGtin(product.barcode); return code ? gtinSpellings(code) : []; }))];
+  const owners = new Map<string, Document[]>();
+  if (codes.length) for (const row of await db.collection('products').find({ ...notArchived, $or: [{ barcode: { $in: codes } }, { gtin: { $in: codes } }] },
+    { projection: { barcode: 1, gtin: 1 }, limit: 2000, maxTimeMS: 5000 }).toArray()) {
+    for (const code of new Set([normalizeGtin(row.barcode), normalizeGtin(row.gtin)])) if (code) owners.set(code, [...(owners.get(code) ?? []), row]);
+  }
+  const items: EnrichmentItem[] = page.map(({ product, gaps, units90, score, reasons, category }) => {
     const id = String(product._id), code = tradeGtin(product.barcode);
     const photos = [...(Array.isArray(product.cloudinaryImages) ? product.cloudinaryImages : []), product.image, ...(Array.isArray(product.images) ? product.images : [])];
     return {
       _id: id, productId: text(product.product_id), name: text(product.name), brand: text(product.brand) || text(product.familyBrand),
       barcode: text(product.barcode), category, image: hasProductPhoto(product) ? photos.find(value => typeof value === 'string' && value.trim()) ?? null : null,
       stock: Number(product.stock) || 0, live: isLive(product), units90, gaps, score, reasons,
-      barcodeGtin: gaps.includes('gtin') && !text(product.gtin).trim() && code !== null && !usedByOther(identifiers.owners, code, id),
+      barcodeGtin: gaps.includes('gtin') && !text(product.gtin).trim() && code !== null && !usedByOther(owners, code, id),
     };
   });
   return { items, total: rows.length, offset: query.offset, ordersSince: since.toISOString() };
@@ -107,8 +126,8 @@ export async function catalogueEnrichmentQueue(db: Db, raw: unknown, now = new D
 /** The same list as a spreadsheet for suppliers and staff: up to 2,000 rows, highest priority first. */
 export async function catalogueEnrichmentCsv(db: Db, raw: unknown, now = new Date()): Promise<string> {
   const query = parse(enrichmentExportQuerySchema, raw);
-  const { rows } = await ranked(db, query, now);
-  const lines = rows.slice(0, 2000).map(({ product, gaps, score, category }) => {
+  const { rows } = await ranked(db, query, now, true);
+  const lines = rows.slice(0, enrichmentExportLimit).map(({ product, gaps, score, category }) => {
     const value: Record<(typeof enrichmentCsvColumns)[number], string> = {
       product_id: text(product.product_id), name: text(product.name), barcode: text(product.barcode), category, priority: String(score),
       gaps: gaps.map(gap => catalogueGapLabels[gap]).join('; '), brand: text(product.brand), manufacturer: text(product.manufacturer),
@@ -131,7 +150,7 @@ const tally = (counts: Map<string, number>) => [...counts].sort((a, b) => b[1] -
 export async function catalogueQualityReport(db: Db, config: { cloudName: string; origin: string }, now = new Date()): Promise<QualityReport> {
   const [categories, scoped, liveProducts, identifiers] = await Promise.all([
     categoryNames(db),
-    db.collection('products').find(notArchived, { projection: queueProjection, limit: catalogueCap, maxTimeMS: 8000 }).toArray(),
+    catalogueRows(db, notArchived, lightProjection),
     // Live products with their category, exactly as the storefront and the feed read them.
     db.collection('products').aggregate<Document>([
       { $match: { ...notArchived, ...live } }, { $limit: catalogueCap },
@@ -156,8 +175,8 @@ export async function catalogueQualityReport(db: Db, config: { cloudName: string
   const unreadable: Document[] = [];
   for (const row of liveProducts) {
     if (!row.category) { unreadable.push(row); continue; }
-    // Database reads return ObjectIds; the storefront and the Merchant sync read string ids (same normalisation as the sync).
-    const raw = { ...row, _id: String(row._id), category: { ...row.category, _id: String(row.category._id) } };
+    // The storefront reads products as JSON over HTTP, where every ObjectId and Date is a string: read them the same way here.
+    const raw = JSON.parse(JSON.stringify(row)) as Document;
     const product = readProduct(raw);
     if (!product) { if (row.category.disabled !== true) unreadable.push(row); continue; }
     const images = merchantImages(product, config.cloudName);
