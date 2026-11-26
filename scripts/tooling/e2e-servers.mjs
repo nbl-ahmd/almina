@@ -17,7 +17,7 @@ const cleanEnvironment = Object.fromEntries(Object.entries({ PATH: process.env.P
   TEST_MONGOD_PATH: process.env.TEST_MONGOD_PATH, AL_MINA_ISOLATED_BUILD: process.env.AL_MINA_ISOLATED_BUILD, AL_MINA_VERIFICATION_TAG: process.env.AL_MINA_VERIFICATION_TAG,
   AL_MINA_FIXTURE_RUN_ID: runId, APP_ENV: 'development',
   // Browser tests reset their database between cases, so shared storefront caching is off here; the cache smoke covers it.
-  CATALOG_CACHE_SECONDS: '0', DATABASE_MODE: 'disabled', CLOUDINARY_CLOUD_NAME: 'synthetic', NEXT_TELEMETRY_DISABLED: '1', NODE_ENV: 'production',
+  CATALOG_CACHE_SECONDS: process.env.CATALOG_CACHE_SECONDS ?? '0', DATABASE_MODE: 'disabled', CLOUDINARY_CLOUD_NAME: 'synthetic', NEXT_TELEMETRY_DISABLED: '1', NODE_ENV: 'production',
 }).filter(([, value]) => value !== undefined));
 function launch(args, cwd, env = {}) {
   const child = spawn(process.execPath, args, { cwd: fileURLToPath(cwd), env: { ...cleanEnvironment, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
