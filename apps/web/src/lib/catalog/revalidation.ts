@@ -2,7 +2,7 @@ import { staffDtoSchema, successSchema } from '@almina/contracts';
 import { z } from 'zod';
 import { catalogContentTags } from './cache-policy';
 
-const inputSchema = z.object({ kind: z.enum(['categories', 'banners']) }).strict();
+const inputSchema = z.object({ kind: z.enum(['categories', 'banners', 'products', 'growth']) }).strict();
 export class RevalidationRejected extends Error {
   constructor(readonly status: number) { super('Catalog revalidation rejected'); }
 }

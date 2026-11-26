@@ -37,3 +37,27 @@ test('the production database client asks for compressed traffic', () => {
     AUTH_ALLOWED_ORIGINS: 'https://example.invalid', AUTH_TRUST_PROXY: '', PORT: '3000' });
   assert.deepEqual(runtime.mongoOptions.compressors, ['zlib']);
 });
+
+test('storefront caching is bounded by its window, can be switched off and never covers commerce reads', async () => {
+  const { catalogReadPolicy, storefrontCacheSeconds, windowedReadPolicy, catalogContentTags } = await import('../apps/web/src/lib/catalog/cache-policy');
+  assert.equal(storefrontCacheSeconds(undefined), 60);
+  assert.equal(storefrontCacheSeconds('0'), 0);
+  for (const invalid of ['-1', '301', 'soon', '1.5']) assert.equal(storefrontCacheSeconds(invalid), 60);
+  assert.deepEqual(windowedReadPolicy(catalogContentTags.products, 0), { cache: 'no-store' });
+  const first = windowedReadPolicy(catalogContentTags.products, 60, 120_000), later = windowedReadPolicy(catalogContentTags.products, 60, 179_999), next = windowedReadPolicy(catalogContentTags.products, 60, 180_000);
+  assert.deepEqual(first, { cache: 'force-cache', next: { revalidate: 60, tags: ['catalog:products'] }, headers: { 'x-almina-cache-window': '2' } });
+  assert.deepEqual(later, first);
+  assert.notDeepEqual(next, first, 'a new window is a new cache entry, so nothing older than the window is served');
+  // The default policy for a product, cart or store read is unchanged.
+  for (const path of ['/api/products', '/api/products/PD0001', '/api/store/status']) assert.deepEqual(catalogReadPolicy(path, true), { cache: 'no-store' });
+});
+
+test('staff changes purge the storefront caches they affect', async () => {
+  const { catalogMutationTags } = await import('../apps/web/src/lib/admin/gateway-policy');
+  const id = 'a'.repeat(24);
+  for (const path of ['products', `products/${id}`, `products/publish/${id}`, 'products/visibility', 'products/type', `media/products/${id}/commit`, 'catalog-import/commit', 'image-review/publish'])
+    assert.ok(catalogMutationTags('POST', path).includes('catalog:products'), path);
+  assert.deepEqual(catalogMutationTags('GET', 'products'), []);
+  assert.deepEqual(catalogMutationTags('POST', `media/products/${id}/sign`), []);
+  assert.deepEqual(catalogMutationTags('POST', 'orders'), []);
+});

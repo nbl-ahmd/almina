@@ -19,10 +19,11 @@ test('oversized declared uploads are refused without reading and chunked bodies 
 test('only reviewed successful mutation destinations affect presentation cache tags', () => {
   const id = 'a'.repeat(24);
   for (const path of ['category', `category/${id}`, `category/disable/${id}`, 'recovery/commit', 'batch']) {
-    assert.deepEqual(catalogMutationTags('POST', path), ['catalog:categories']);
+    assert.deepEqual(catalogMutationTags('POST', path), ['catalog:categories', 'catalog:products']);
   }
   assert.deepEqual(catalogMutationTags('DELETE', `banners/${id}`), ['catalog:banners']);
-  for (const path of ['orders', 'auth/login', 'products', 'category/../orders', 'banners/invalid']) assert.deepEqual(catalogMutationTags('PUT', path), []);
+  for (const path of ['products', `products/${id}`, `products/publish/${id}`]) assert.deepEqual(catalogMutationTags('PUT', path), ['catalog:products']);
+  for (const path of ['orders', 'auth/login', 'products/../orders', 'category/../orders', 'banners/invalid']) assert.deepEqual(catalogMutationTags('PUT', path), []);
   assert.deepEqual(catalogMutationTags('GET', 'category'), []);
 });
 test('sale order presentation uses its recorded charged unit price and preserves unknown historical totals', () => {

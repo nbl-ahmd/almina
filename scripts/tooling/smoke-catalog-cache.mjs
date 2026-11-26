@@ -30,7 +30,9 @@ try {
   const origin = `http://127.0.0.1:${port}`;
   web = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: fileURLToPath(new URL('apps/web/', root)), stdio: 'ignore',
-    env: { PATH: process.env.PATH, APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: origin, API_ORIGIN: `http://127.0.0.1:${fixture.address().port}`, NEXT_TELEMETRY_DISABLED: '1' },
+    env: { PATH: process.env.PATH, APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: origin, API_ORIGIN: `http://127.0.0.1:${fixture.address().port}`, NEXT_TELEMETRY_DISABLED: '1',
+      // A long window so this check never straddles a boundary.
+      CATALOG_CACHE_SECONDS: '300' },
   });
   for (let i = 0; i < 100; i++) {
     if (web.exitCode !== null) throw new Error('Compiled cache verification did not start');
@@ -43,9 +45,17 @@ try {
   assert.equal(count('/api/category'), 1, 'Category presentation should reuse the data cache across renders.');
   const html = await read('/'); await read('/');
   assert.equal(count('/api/banners'), 1);
-  assert.ok(count('/api/products') >= 4, 'Product requests must remain live.');
+  const listReads = count('/api/products');
+  assert.ok(listReads >= 1);
+  await read('/'); assert.equal(count('/api/products'), listReads, 'Browse lists are shared within the cache window.');
   assert.match(html, /AED 20\.00/);
   product.stock = 0; product.salePrice = 17;
+  assert.match(await read('/'), /AED 20\.00/, 'A browse list may be reused until its window ends or staff purge it.');
+  const detail = await read(`/products/daily-care--${product.product_id}`);
+  assert.match(detail, /AED 17\.00/, 'The product page always reads the current price and stock.');
+  const purgeProducts = await fetch(origin + '/api/catalog/revalidate', { method: 'POST', headers: { Origin: origin, 'X-CSRF-Protection': '1',
+    'Content-Type': 'application/json', Cookie: 'session=synthetic-admin' }, body: JSON.stringify({ kind: 'products' }) });
+  assert.equal(purgeProducts.status, 200);
   const updated = await read('/');
   assert.match(updated, /Temporarily out of stock/); assert.match(updated, /AED 17\.00/);
   category.name = 'Renamed synthetic category';
@@ -60,7 +70,7 @@ try {
   const hidden = await fetch(`${origin}/categories/renamed-synthetic-category--${category._id}`);
   assert.equal(hidden.status, 404, 'Identity visibility must bypass the presentation cache.');
   assert.ok(count('/api/category') >= 3);
-  console.log('Compiled cache checks passed: reuse, admin-only tagged purge, live stock/price reads and fresh category visibility.');
+  console.log('Compiled cache checks passed: reuse, admin-only tagged purge, shared browse lists, live product pages and fresh category visibility.');
 } finally {
   Object.assign(category, { name: original.name, disabled: original.disabled });
   Object.assign(product, { stock: original.stock, salePrice: original.salePrice });
