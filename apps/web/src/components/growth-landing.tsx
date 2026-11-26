@@ -42,7 +42,7 @@ async function resolve(kind:GrowthPage['kind'],slug:string,locale='en') {
     }
   }
   if(!name)return null;
-  if(!(await getProducts({q:name})).products.length)return null;
+  if(!(await getProducts({q:name,sharedSearch:true})).products.length)return null;
   return {kind:'brand',slug,locale:'en',title:name,description:`Explore ${name} products, current AED prices and availability at Al Mina Pharmacy in Ras Al Khaimah.`,body:`Browse the available ${name} range below. Compare pack sizes and product details to find the option that suits your routine.\n\nEach product page includes its current price and available details. Check the packaging directions and ask the pharmacy if you need help choosing. Delivery charges and the final total are confirmed at checkout.`,image:'',imageAlt:'',mobileImage:'',homepagePlacement:'none',priority:0,ctaLabel:'',heroLayout:'image',textTone:'dark',ctaHref:'',stripSlot:'home-middle',popupLayout:'card',productIds:[],categories:[],faqs:[],published:true,healthContent:false,reviewer:'',startsAt:null,endsAt:null,bundle:false,bundleReason:'',terms:'',revision:0,sections:[]} satisfies GrowthPage;
 }
 export async function growthMetadata(kind:GrowthPage['kind'],slug:string,locale='en') {
@@ -61,7 +61,7 @@ export async function GrowthLanding({kind,slug,locale='en'}:{kind:GrowthPage['ki
   // Products carry the brand name as written in English, so a translated page looks them up by the English name.
   const english=kind==='brand'&&locale!=='en'&&!brands[slug]?await getGrowthPage('brand',slug,'en'):null;
   const brandLabel=kind==='brand'?(brands[slug]||(locale==='en'?page.title:english?.title||slug.replace(/-/g,' ')).replace(/ at Al Mina Pharmacy$/,'')):'';
-  const searched=kind==='brand'&&!page.productIds.length?(await getProducts({q:brandLabel})).products:[];
+  const searched=kind==='brand'&&!page.productIds.length?(await getProducts({q:brandLabel,sharedSearch:true})).products:[];
   // A brand page lists that brand only; curated names whose products lack a brand field keep the search result.
   const exact=searched.filter(item=>brandSlug(brandName(item))===slug);
   // Only built-in names fall back to plain search results; a brand staff added shows its own products or none.

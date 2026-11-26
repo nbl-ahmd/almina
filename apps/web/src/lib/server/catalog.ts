@@ -36,14 +36,14 @@ export async function getCategory(identity: string) {
   // Identity/visibility and cart checks bypass the presentation cache.
   return (await getFreshCategories()).find(category => category._id === identity) ?? null;
 }
-export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string; inStock?: boolean; minPrice?: number; maxPrice?: number; sort?: 'relevance'|'price-asc'|'price-desc'|'name'; brand?:string;locale?:'en'|'ar';literal?:boolean;form?:string;size?:string;audience?:string;bodyArea?:string;concern?:string;feature?:string } = {}) {
+export async function getProducts(options: { page?: number; category?: string; offers?: boolean; featured?: boolean; q?: string; inStock?: boolean; minPrice?: number; maxPrice?: number; sort?: 'relevance'|'price-asc'|'price-desc'|'name'; brand?:string;locale?:'en'|'ar';literal?:boolean;form?:string;size?:string;audience?:string;bodyArea?:string;concern?:string;feature?:string; /** The storefront chose this search term, so its result may be shared for the browse cache window. */ sharedSearch?:boolean } = {}) {
   const page = Math.max(1, Math.min(options.q?10:1000, options.page ?? 1));
   if(options.q){
     try{return await searchProducts({q:options.q.slice(0,80),page,locale:options.locale??'en',sort:options.sort??'relevance',
       ...(options.category&&objectId.test(options.category)?{category:options.category}:{}),...(options.brand?{brand:options.brand}:{}),
       ...Object.fromEntries((['form','size','audience','bodyArea','concern','feature'] as const).flatMap(key=>options[key]?[[key,options[key]]]:[])),
       ...(options.featured?{featured:'true'}:{}),...(options.offers?{offers:'true'}:{}),...(options.inStock===undefined?{}:{inStock:String(options.inStock)}),
-      ...(options.minPrice===undefined?{}:{minPrice:options.minPrice}),...(options.maxPrice===undefined?{}:{maxPrice:options.maxPrice}),...(options.literal?{literal:'true'}:{})});}
+      ...(options.minPrice===undefined?{}:{minPrice:options.minPrice}),...(options.maxPrice===undefined?{}:{maxPrice:options.maxPrice}),...(options.literal?{literal:'true'}:{})},options.sharedSearch===true);}
     catch{return {products:[] as Product[],hasNext:false,page,search:undefined as SearchMetadata|undefined,searchUnavailable:true};}
   }
   const filter: Record<string, boolean | string> = { disabled: false };

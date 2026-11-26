@@ -1,12 +1,26 @@
 import 'server-only';
+import { cache } from 'react';
 import { searchQuerySchema,searchResponseSchema,searchSuggestionsSchema,type SearchResponse } from '@almina/contracts/search';
 import { getWebEnvironment } from './env';
 import { readProduct } from '../catalog/model';
-export async function searchProducts(raw:Record<string,unknown>){
+import { catalogContentTags, windowedReadPolicy } from '../catalog/cache-policy';
+async function requestSearch(url:string,shared:boolean){
+ const {headers:cacheHeaders,...policy}={headers:{},...(shared?windowedReadPolicy(catalogContentTags.products):{cache:'no-store' as const})};
+ const response=await fetch(url,{...policy,signal:AbortSignal.timeout(8000),redirect:'error',headers:{Accept:'application/json',...cacheHeaders}});
+ if(!response.ok)throw Error('Search unavailable');const body:unknown=await response.json();return searchResponseSchema.parse((body as {data?:unknown}).data);
+}
+/** One request for each distinct search in a render; the timeout signal turns off Next's own request memoization. */
+const readSearch=cache(async(url:string,shared:boolean)=>{
+ const result=await requestSearch(url,shared);
+ // A degraded answer is still a 200 and would be stored, so ask again live instead of repeating it for the window.
+ return shared&&result.unavailable?requestSearch(url,false):result;
+});
+/** `shared` is only for terms the storefront chose itself (collections, brand rows, brand pages): those are reused for the
+ *  browse cache window. What a shopper types is always searched live. */
+export async function searchProducts(raw:Record<string,unknown>,shared=false){
  const input=searchQuerySchema.parse(raw),env=getWebEnvironment(),params=new URLSearchParams();
  for(const [key,value] of Object.entries(input))if(value!==undefined)params.set(key,String(value));
- const response=await fetch(new URL('/api/v1/search?'+params,env.API_ORIGIN),{cache:'no-store',signal:AbortSignal.timeout(8000),redirect:'error',headers:{Accept:'application/json'}});
- if(!response.ok)throw Error('Search unavailable');const body:unknown=await response.json();const result=searchResponseSchema.parse((body as {data?:unknown}).data);
+ const result=await readSearch(new URL('/api/v1/search?'+params,env.API_ORIGIN).href,shared);
  return {products:result.products.map(readProduct).filter(p=>p!==null),hasNext:result.pagination.hasNext,page:result.pagination.page,searchUnavailable:false,search:result};
 }
 export async function searchSuggestions(q:string,locale='en'){

@@ -29,7 +29,7 @@ export default async function BrandsPage(){
   // One brand list answers which built-in names are stocked; searching for each one is only the fallback when it is unavailable.
   const stocked = allBrands ? new Set(allBrands.map(brandSlug)) : null;
   const curated = await Promise.all(Object.entries(knownGrowthBrands).map(async ([slug, name]) => ({ slug, name,
-    available: stocked ? stocked.has(brandSlug(name)) : (await getProducts({ q: name }).catch(() => ({ products: [] }))).products.length > 0 })));
+    available: stocked ? stocked.has(brandSlug(name)) : (await getProducts({ q: name, sharedSearch: true }).catch(() => ({ products: [] }))).products.length > 0 })));
   // Logos staff uploaded on brand pages (approved hosts only).
   const cloudName = getWebEnvironment().CLOUDINARY_CLOUD_NAME;
   const logos = new Map(brandPages.flatMap(page => { const logo = campaignImageUrl(page.image, cloudName); return logo ? [[page.slug, logo] as const] : []; }));

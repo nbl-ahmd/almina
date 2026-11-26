@@ -9,7 +9,7 @@ import {
 export const getCollectionProducts = cache(
   async (collection: HomeCollection) => {
     const results = await Promise.allSettled(
-      collection.queries.map((q) => getProducts({ q })),
+      collection.queries.map((q) => getProducts({ q, sharedSearch: true })),
     );
     if (
       results.some((result) => result.status === "rejected") &&
