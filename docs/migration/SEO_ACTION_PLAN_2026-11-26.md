@@ -13,7 +13,7 @@ Status: **done** = merged · **PR** = open pull request, not merged · **tool** 
 
 | Item | Status | Where |
 |---|---|---|
-| Brand sitemap listed 8 of 104 brand pages (`catalogueBrands().slice(0, 8)` reused by the sitemap) | PR | nbl-ahmd/almina#131: brands with ≥3 in-stock products |
+| Brand sitemap listed 8 of 104 brand pages (`catalogueBrands().slice(0, 8)` reused by the sitemap) | done | nbl-ahmd/almina#131 (merged, not yet deployed): brands with ≥3 in-stock products |
 | 574 of 784 live products (73%) without a photo | tool | This branch: Catalogue quality ranks them by demand; sourcing sheet with file names for Upload many photos. Photos themselves are manual: [catalogue quality](CATALOGUE_QUALITY_2026-11-26.md) |
 | Weak E-E-A-T for a health retailer: thin About page, no licence or pharmacist details, empty guides | open | Content work: licensed entity, licence numbers, pharmacist-in-charge, branches, how advice works |
 | Delivery-area sheet opens over every landing page on mobile (intrusive interstitial risk) | open | Show it inline or on add-to-cart instead of on landing |
@@ -22,7 +22,7 @@ Status: **done** = merged · **PR** = open pull request, not merged · **tool** 
 
 | Item | Status | Where |
 |---|---|---|
-| Empty or junk categories indexable and in the sitemap | PR | nbl-ahmd/almina#131 (sitemap and noindex). The stray "l" category still needs fixing in the admin |
+| Empty or junk categories indexable and in the sitemap | done | nbl-ahmd/almina#131 (merged, not yet deployed) (sitemap and noindex). The stray "l" category still needs fixing in the admin |
 | Brand missing on 449 and GTIN on 713 live products | tool | This branch: gap filters, bulk confirmed barcode → GTIN, enrichment spreadsheet. Data entry remains |
 | Manufacturer not emitted in Product structured data | PR | This branch (only when recorded) |
 | No catalogue completeness metric in the admin | PR | This branch: dashboard card and Catalogue quality page |
@@ -38,8 +38,8 @@ Status: **done** = merged · **PR** = open pull request, not merged · **tool** 
 
 | Item | Status | Where |
 |---|---|---|
-| Loading fallback added a second H1 and "Loading…" text | PR | nbl-ahmd/almina#131 |
-| SearchAction pointed at the robots-blocked /search | PR | nbl-ahmd/almina#131 |
+| Loading fallback added a second H1 and "Loading…" text | done | nbl-ahmd/almina#131 (merged, not yet deployed) |
+| SearchAction pointed at the robots-blocked /search | done | nbl-ahmd/almina#131 (merged, not yet deployed) |
 | Sitemaps have no `<lastmod>` | open | |
 | Internal links ending in a bare `?` | open | |
 | Category intros are boilerplate | open | |
@@ -56,7 +56,7 @@ Status: **done** = merged · **PR** = open pull request, not merged · **tool** 
 
 ## Next
 
-1. Merge nbl-ahmd/almina#131 and this branch after review; deploy; check Catalogue quality on production data and record the counts here.
+1. Review and merge this branch (nbl-ahmd/almina#131 is merged); deploy both; check Catalogue quality on production data and record the counts here.
 2. Clear unreadable live products, then confirm barcode GTINs in bulk.
 3. Start supplier photo requests from the Photo sheet, live products first.
 4. E-E-A-T content (About, pharmacist, licences) and the mobile delivery sheet.
