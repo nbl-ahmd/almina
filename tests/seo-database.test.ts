@@ -62,7 +62,11 @@ test('SEO sitemap pagination against a disposable real database', { skip: !uri }
     await client.connect();
     const category = new ObjectId();
     const hiddenCategory = new ObjectId();
-    await db.collection('categories').insertMany([{ _id: category, name: 'Synthetic care' }, { _id: hiddenCategory, name: 'Hidden', disabled: true }]);
+    const emptyCategory = new ObjectId(), hiddenOnlyCategory = new ObjectId();
+    await db.collection('categories').insertMany([{ _id: category, name: 'Synthetic care' }, { _id: hiddenCategory, name: 'Hidden', disabled: true },
+      { _id: emptyCategory, name: 'Empty shelf' }, { _id: hiddenOnlyCategory, name: 'Only hidden products' }]);
+    await db.collection('products').insertMany([{ name: 'Hidden only', product_id: 'HIDDENONLY1', category: hiddenOnlyCategory, price: 5, stock: 2, disabled: true },
+      { name: 'Unpublished only', product_id: 'HIDDENONLY2', category: hiddenOnlyCategory, price: 5, stock: 2, published: false }]);
     const base = { name: 'Synthetic product', category, price: 25, stock: 4 };
     await db.collection('products').insertMany(Array.from({ length: 1002 }, (_, i) => ({ ...base, product_id: `PD${i}` })));
     await db.collection('products').insertMany([
@@ -81,7 +85,8 @@ test('SEO sitemap pagination against a disposable real database', { skip: !uri }
     assert.equal(second.nextCursor, null);
     assert.equal(new Set([...first.items, ...second.items].map(item => item.productId)).size, 1002);
     assert.deepEqual(Object.keys(first.items[0]!).sort(), ['id', 'name', 'productId']);
-    assert.equal((await repo.sitemap({ kind: 'categories' })).items.length, 1);
+    // Categories without a publicly visible product (empty, or only hidden products) are soft 404s and stay out.
+    assert.deepEqual((await repo.sitemap({ kind: 'categories' })).items.map(item => item.id), [category.toHexString()]);
     await assert.rejects(repo.sitemap({ kind: 'categories', cursor: first.nextCursor! }), { status: 400 });
   } finally {
     await db.dropDatabase(); // Only this UUID-named database on our disposable loopback replica.

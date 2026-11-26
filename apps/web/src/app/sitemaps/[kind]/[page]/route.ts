@@ -1,6 +1,6 @@
 import { getGrowthPages } from '../../../../lib/server/growth';
 import { growthPagePath } from '@almina/contracts';
-import { homeCollections, collectionHref, catalogueBrands, brandSlug } from '../../../../lib/catalog/merchandising';
+import { homeCollections, collectionHref, sitemapBrands, brandSlug } from '../../../../lib/catalog/merchandising';
 import { getProducts } from '../../../../lib/server/catalog';
 import { getCollectionProducts } from '../../../../lib/server/collections';
 import { getWebEnvironment } from '../../../../lib/server/env';
@@ -24,16 +24,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ kin
       if (!growth.hasNext) break;
     }
     const hasGuides = editorial.some(path => path.includes('/health-guides/'));
-    // Brand landing pages for brands with stock, read from a bounded slice of the catalogue (20 pages of 30).
+    // Brand landing pages for brands with at least three in-stock products, read from the catalogue (bounded at 100 pages of 30).
     const brandPaths: string[] = [];
     if (staticKind) {
       const products = [];
-      for (let catalogPage = 1; catalogPage <= 20; catalogPage++) {
+      for (let catalogPage = 1; catalogPage <= 100; catalogPage++) {
         const result = await getProducts({ page: catalogPage }).catch(() => ({ products: [], hasNext: false }));
         products.push(...result.products);
         if (!result.hasNext) break;
       }
-      brandPaths.push(...catalogueBrands(products).map(name => '/brands/' + brandSlug(name)).filter(path => path !== '/brands/'));
+      brandPaths.push(...sitemapBrands(products).map(name => '/brands/' + brandSlug(name)).filter(path => path !== '/brands/'));
     }
     const staticPaths = ['/', '/products', '/categories', '/offers', '/about', '/contact', '/ras-al-khaimah', '/brands',
       ...(hasGuides ? ['/health-guides'] : []), policyPaths.returns, policyPaths.shipping, policyPaths.terms, policyPaths.privacy];

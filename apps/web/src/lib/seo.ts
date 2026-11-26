@@ -53,7 +53,8 @@ export function pageMetadata(origin: string, production: boolean, title: string,
 export function serializeJsonLd(value: unknown) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
-export function websiteData(origin:string){return {'@context':'https://schema.org','@type':'WebSite','@id':origin+'/#website',name:siteName,url:origin,inLanguage:'en-AE',publisher:{'@id':`${origin}/#organization`},potentialAction:{'@type':'SearchAction',target:{'@type':'EntryPoint',urlTemplate:origin+'/search?q={search_term_string}'},'query-input':'required name=search_term_string'}};}
+// No SearchAction: Google retired the sitelinks search box, and /search is disallowed in robots.txt.
+export function websiteData(origin:string){return {'@context':'https://schema.org','@type':'WebSite','@id':origin+'/#website',name:siteName,url:origin,inLanguage:'en-AE',publisher:{'@id':`${origin}/#organization`}};}
 export function organizationData(origin: string) {
   return { '@context': 'https://schema.org', '@type': ['Organization','Pharmacy'], '@id': `${origin}/#organization`, name: siteName, url: origin,
     description: siteDescription,

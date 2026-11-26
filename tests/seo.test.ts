@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { pageMetadata, hasDuplicateQuery, isPublicPath, productData, breadcrumbData, serializeJsonLd, aggregateRatingData, reviewListData } from '../apps/web/src/lib/seo';
+import { pageMetadata, hasDuplicateQuery, isPublicPath, productData, breadcrumbData, serializeJsonLd, aggregateRatingData, reviewListData, websiteData } from '../apps/web/src/lib/seo';
 import { formatAedMinor, lowestDeliveryFeeMinor, countryDeliveryFeeMinor, merchantReturnPolicyData, shippingDetailsData, type ShippingPolicy } from '../apps/web/src/lib/policies';
 import { readWebEnvironment } from '@almina/config/env';
 import { sitemapQuerySchema } from '@almina/contracts';
@@ -107,4 +107,11 @@ test('Merchant Center auto-tagging preserves indexability and a clean canonical'
   assert.deepEqual(tagged.alternates, {canonical:'https://shop.invalid/products/example--PD1'});
   assert.equal((tagged.robots as {index:boolean}).index, true);
   assert.equal(hasDuplicateQuery({srsltid:'synthetic-click', q:'private search'}), true);
+});
+
+test('WebSite schema names the site without a search action pointing at the robots-blocked /search page', () => {
+  const data = websiteData('https://shop.example.invalid');
+  assert.equal(data['@id'], 'https://shop.example.invalid/#website');
+  assert.ok(!('potentialAction' in data));
+  assert.ok(!serializeJsonLd(data).includes('/search'));
 });
