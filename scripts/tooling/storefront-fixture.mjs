@@ -6,6 +6,8 @@ import { createServer as createSecureServer } from 'node:https';
 import { pathToFileURL } from 'node:url';
 // Synthetic compatibility API only. No database, credentials or customer data.
 export const category = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Skin Care', disabled: false };
+/** Opt-in: a visible category with no products, for soft-404 indexing checks. */
+export const emptyCategory = { _id: 'eeeeeeeeeeeeeeeeeeeeeeee', name: 'Empty Shelf', disabled: false };
 export const product = { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', product_id: 'PD0001', name: 'Daily Care',
   category, price: 25, salePrice: 20, stock: 4, disabled: false, featured: true, sale: true,
   // Explicitly reviewed synthetic general-sale item exercises reminder consent UI.
@@ -26,7 +28,7 @@ const cardSamples = [
 // Long skincare names, as on the live shop, for the homepage routine layout.
 const routineSamples = ['CeraVe Hydrating Cleanser 473 ml', 'CeraVe Moisturising Cream 454 g', 'CeraVe Hydrating Sunscreen SPF 50 75 ml']
   .map((name, index) => ({ ...product, _id: `eeeeeeeeeeeeeeeeeeeeeee${index}`, product_id: `ROUTINE_${index}`, name, brand: 'CeraVe', images: ['fixture.svg'] }));
-export function createStorefrontFixture(tls, { includeRecovered = false, includePagination = false } = {}) {
+export function createStorefrontFixture(tls, { includeRecovered = false, includePagination = false, includeEmptyCategory = false } = {}) {
   const products = includeRecovered ? [product, ...recoveredProducts] : [product];
   if (includePagination) products.push(...Array.from({ length: 35 }, (_, index) => ({ ...product,
     _id: (index + 100).toString(16).padStart(24, '0'), product_id: `SYNTHETIC_${index}`, name: `Synthetic paged product ${index}`,
@@ -130,7 +132,7 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
     }
     if (url.pathname === '/api/category') {
       const visualCategories = includePagination ? ['Baby Care','Oral Care','Hair Care','First Aid'].map((name,index)=>({_id:(200+index).toString(16).padStart(24,'0'),name,disabled:false})) : [];
-      res.end(JSON.stringify([category,...visualCategories])); return;
+      res.end(JSON.stringify([category,...visualCategories,...(includeEmptyCategory?[emptyCategory]:[])])); return;
     }
     if (url.pathname === '/api/v1/growth/home-layout') {
       if (!homeLayout) { res.writeHead(404); res.end(JSON.stringify({ error: { code: 'NOT_FOUND' } })); return; }
@@ -193,6 +195,8 @@ export function createStorefrontFixture(tls, { includeRecovered = false, include
       const source = url.searchParams.get('inStock') !== 'true' || homeStock === 'normal'
         ? listed
         : homeStock === 'empty' ? [] : products.slice(0, 5).map(item => ({ ...item, stock: 4 }));
+      const listFilter = (() => { try { return JSON.parse(url.searchParams.get('filter') ?? '{}'); } catch { return {}; } })();
+      if (includeEmptyCategory && listFilter.category === emptyCategory._id) { res.end('[]'); return; }
       const matching = source.filter(value => !q || new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(value.name));
       const offset = Number(url.searchParams.get('offset')); const limit = Number(url.searchParams.get('limit') ?? '30');
       res.end(JSON.stringify(matching.slice(offset, offset + limit))); return;

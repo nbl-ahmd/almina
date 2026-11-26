@@ -27,7 +27,7 @@ try {
   // Short-lived synthetic loopback TLS only; Node trusts this certificate in the child.
   execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', join(directory, 'key.pem'),
     '-out', join(directory, 'cert.pem'), '-days', '1', '-subj', '/CN=localhost', '-addext', 'subjectAltName=IP:127.0.0.1'], { stdio: 'ignore' });
-  const catalogue = createStorefrontFixture({ key: await readFile(join(directory, 'key.pem')), cert: await readFile(join(directory, 'cert.pem')) }, { includeRecovered: true });
+  const catalogue = createStorefrontFixture({ key: await readFile(join(directory, 'key.pem')), cert: await readFile(join(directory, 'cert.pem')) }, { includeRecovered: true, includeEmptyCategory: true });
   const { requests } = catalogue;
   fixture = catalogue.server;
   fixture.listen(0, '127.0.0.1'); await once(fixture, 'listening');
@@ -105,7 +105,7 @@ try {
         assert.deepEqual(data.flatMap(item => item['@type']).sort(), ['BreadcrumbList', 'Organization', 'Pharmacy', 'Product', 'WebSite']);
         const website = data.find(item => item['@type'] === 'WebSite');
         assert.equal(website.url, canonical);
-        assert.equal(website.potentialAction.target.urlTemplate, `${canonical}/search?q={search_term_string}`);
+        assert.equal(website.potentialAction, undefined); // /search is robots-blocked; no sitelinks search action.
         const product = data.find(item => item['@type'] === 'Product');
         assert.equal(product.name, 'Daily Care'); assert.equal(product.sku, 'PD0001');
         assert.equal(product.offers.price, '20.00');
@@ -119,6 +119,11 @@ try {
         for (const match of html.matchAll(/<script\b([^>]*)>/g)) assert.ok(match[1].includes(`nonce="${nonce}"`));
       }
     }
+  }
+  // A category with nothing to list is a soft 404: it still renders, but asks not to be indexed.
+  {
+    const html = await (await fetch(`${origin}/categories/empty-shelf--eeeeeeeeeeeeeeeeeeeeeeee`)).text();
+    assert.match(html.match(/<head>([\s\S]*?)<\/head>/)?.[1] ?? '', /name="robots" content="noindex, follow"/);
   }
   for (const path of ['/cart', '/checkout', '/search?q=Daily', '/admin', '/login', '/register', '/auth/login', '/foundation/status', '/products?category=aaaaaaaaaaaaaaaaaaaaaaaa', '/products/daily-care--PD0001?sort=price', '/offers?q=Daily']) {
     const response = await fetch(`${origin}${path}`);

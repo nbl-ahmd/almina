@@ -1,6 +1,6 @@
 import { categoryContent } from '../../../../lib/catalog/category-content';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { resolveCategory } from '../../../../lib/server/catalog';
+import { getProducts, resolveCategory } from '../../../../lib/server/catalog';
 import { categoryHref } from '../../../../lib/catalog/model';
 import { getWebEnvironment } from '../../../../lib/server/env';
 import { CatalogList, type SearchParams } from '../../../../components/catalog-list';
@@ -12,7 +12,14 @@ export async function generateMetadata({ params, searchParams }: Props) {
   const category = await resolveCategory((await params).slug);
   if (!category) notFound();
   // "Skin Care Products in Ras Al Khaimah | Al Mina Pharmacy": the query people type, the place, then the brand (about 55 characters).
-  return metadataFor(`${category.name} Products in Ras Al Khaimah`, categoryContent(category.name).description, categoryHref(category), await searchParams);
+  const metadata = metadataFor(`${category.name} Products in Ras Al Khaimah`, categoryContent(category.name).description, categoryHref(category), await searchParams);
+  return await hasNoProducts(category._id) ? { ...metadata, robots: { index: false, follow: true } } : metadata;
+}
+/** A category with nothing to show is a soft 404: keep it out of the index (and the sitemap) until products are listed.
+ *  Reads the same first page the listing renders; if the catalogue cannot answer, the page keeps its normal indexing. */
+async function hasNoProducts(category: string) {
+  const first = await getProducts({ category, sort: 'relevance' }).catch(() => null);
+  return first !== null && first.products.length === 0;
 }
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
