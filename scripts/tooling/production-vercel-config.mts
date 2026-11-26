@@ -1,4 +1,5 @@
-export const productionApiOrigin = 'https://almina-5tse.onrender.com';
+// The production API moved to a separate Render account on 26 November 2026; the previous service (almina-5tse) is suspended.
+export const productionApiOrigin = 'https://almina-yhxk.onrender.com';
 
 export function requireProductionVercelEnvironment(env: Readonly<Record<string, string | undefined>>) {
   const expected = {
