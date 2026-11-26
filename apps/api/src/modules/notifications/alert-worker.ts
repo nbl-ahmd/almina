@@ -227,13 +227,15 @@ export async function notificationMaintenance(db: Db, reconcile = true): Promise
           product.published !== false &&
           product.disabled !== true &&
           !product.archivedAt;
+        // Only low stock needs a daily look: it keeps the open alert from expiring and restores a missing one. An unchanged
+        // product that is not low has nothing to update, and rechecking all of them cost a transaction each, billed.
+        const daily = low && (!prior?.checkedAt || prior.checkedAt.getTime() < Date.now() - 86400000);
         if (
           !prior ||
           prior.low !== low ||
-          prior.lastStock !== product.stock ||
+          prior.lastStock !== (product.stock ?? null) ||
           prior.rulesRevision !== rules.revision ||
-          !prior.checkedAt ||
-          prior.checkedAt.getTime() < Date.now() - 86400000
+          daily
         )
           await observeStock(db, product._id);
       }

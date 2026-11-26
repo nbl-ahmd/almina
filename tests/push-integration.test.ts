@@ -296,3 +296,49 @@ test('payment alert reconciliation recovers an interrupted push enqueue without 
   await notificationMaintenance(f.db);await notificationMaintenance(f.db);assert.equal(await f.db.collection('staff_alerts').countDocuments({kind:'payment'}),1);assert.equal(await f.db.collection('order_outbox').countDocuments(),1);
  }finally{await f.close();}
 });
+
+test('the daily recheck refreshes only low stock, and changes to other products are still noticed', { skip: !uri }, async () => {
+  const f = await fixture(true), admin = new ObjectId(), commands: string[] = [];
+  const [plenty, low, out, hidden, unset] = [new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()];
+  const products = f.db.collection('products'), states = f.db.collection<Document & { _id: string }>('staff_stock_state'), alerts = f.db.collection('staff_alerts');
+  const sweep = async () => { commands.length = 0; while (await notificationMaintenance(f.db)); return commands.filter(name => name === 'commitTransaction').length; };
+  const age = () => states.updateMany({}, { $set: { checkedAt: new Date(Date.now() - 2 * 86400000) } });
+  const checked = async (id: ObjectId) => (await states.findOne({ _id: String(id) }))!.checkedAt as Date;
+  try {
+    await prepareStaffAlertStorage(f.db);
+    await f.db.collection('users').insertOne({ _id: admin, role: 'admin' });
+    await products.insertMany([{ _id: plenty, stock: 40 }, { _id: low, stock: 2 }, { _id: out, stock: 0 }, { _id: hidden, stock: 1, disabled: true }, { _id: unset }]);
+    f.client.on('commandStarted', event => { if (event.databaseName === f.db.databaseName || event.commandName === 'commitTransaction') commands.push(event.commandName); });
+    assert.equal(await sweep(), 5, 'every product is observed once');
+    assert.equal(await sweep(), 0, 'an unchanged catalogue, including a product without a stock value, writes nothing');
+
+    // A day later only the two low products are looked at again: an expiring alert is extended and a missing one restored.
+    await age();
+    await alerts.updateOne({ entityId: String(low) }, { $set: { expiresAt: new Date(Date.now() + 86400000) } });
+    await alerts.deleteOne({ entityId: String(out) });
+    assert.equal(await sweep(), 2);
+    assert.ok((await alerts.findOne({ entityId: String(low) }))!.expiresAt.getTime() > Date.now() + 29 * 86400000);
+    assert.equal(await alerts.countDocuments({ entityId: String(out), resolved: false }), 1);
+    assert.ok((await checked(low)).getTime() > Date.now() - 60000);
+    for (const id of [plenty, hidden, unset]) assert.ok((await checked(id)).getTime() < Date.now() - 86400000, 'a product that is not low is left alone');
+    assert.equal(await f.db.collection('order_outbox').countDocuments({ kind: 'stock-alert' }), 0, 'the recheck never pushes');
+    assert.equal(await sweep(), 0);
+
+    // Real changes to products that were not rechecked are noticed at once, whatever the age of their record.
+    await age();
+    await products.updateOne({ _id: plenty }, { $set: { stock: 1 } });
+    await products.updateOne({ _id: hidden }, { $unset: { disabled: '' } });
+    await products.updateOne({ _id: unset }, { $set: { stock: 30 } });
+    assert.equal(await sweep(), 5, 'three changed products and the two due low ones');
+    assert.equal(await alerts.countDocuments({ entityId: { $in: [String(plenty), String(hidden)] }, resolved: false }), 2);
+    assert.equal(await f.db.collection('order_outbox').countDocuments({ kind: 'stock-alert' }), 2);
+    await products.updateOne({ _id: plenty }, { $set: { stock: 50 } });
+    assert.equal(await sweep(), 1);
+    assert.equal(await alerts.countDocuments({ entityId: String(plenty), resolved: false }), 0);
+    // A new threshold re-evaluates the whole catalogue.
+    await saveAlertRules(f.db, { lowStockThreshold: 35, revision: 0 }, String(admin));
+    assert.equal(await sweep(), 5);
+    assert.equal(await alerts.countDocuments({ entityId: String(unset), resolved: false }), 1);
+    assert.deepEqual((await products.find({}, { projection: { _id: 0, stock: 1 } }).sort({ _id: 1 }).toArray()).map(row => row.stock), [50, 2, 0, 1, 30], 'the sweep never changes stock');
+  } finally { await f.close(); }
+});

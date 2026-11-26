@@ -181,18 +181,55 @@ The same filter builds the address-review list, and with branch routing active i
 detail, status changes, card payment actions and notifications. `order-area-scope-integration` checks that it selects exactly the
 orders the previous filter and the JavaScript resolver select, for every area and several area sets, inside and outside the set.
 No data, index or schema change; reverting the commit restores the previous filter. Whether branch routing is active in
-production was not checked. The production saving is not measured until this is deployed.
+production was not checked.
+
+### After release of the order filter
+
+Deployed as `d23e0dc`. Production `net_usage` windows, six database commands to one administrator order check:
+
+| Window ending (UTC) | Order checks | Sent for `GET /api/orders/receiving` | Per check |
+|---|---|---|---|
+| 06:38, before | about 18 | 2.54 of 4.91 MB | about 141 KB |
+| 07:09, after (includes the restart) | about 4 | 0.09 of 14.31 MB | about 22 KB |
+| 07:19, after | about 9 | 0.20 of 4.50 MB | about 22 KB |
+
+Search was still the largest route at 07:19 (798 commands, 1.53 MB sent). Where those searches come from is not known.
+
+## Stock alert recheck
+
+In the 07:09 window background work (`worker`) sent 11.55 of 14.31 MB outbound: about 6,600 each of product, alert-rule and
+stock-state reads, stock-state writes and transaction commits. The stock sweep observed every product, one transaction each,
+when its last check was over 24 hours old, so a catalogue checked together came due together. On 25 November the 06:53 UTC
+window, about a day earlier, sent 32.39 MB to the database against 2.5–5.4 MB in the windows around it. The same recheck is the
+likely cause: the restarts at 05:16 and 06:08 UTC on 26 November, less than a day later, ran only about 700–800 `worker` commands,
+and the 07:19 window was back to 2,106. The size differs from 25 November and it is not confirmed.
+
+For a product that is not low and has not changed, that observation only moved its check time. The daily recheck now applies to
+low stock only, where it extends the open alert's expiry and restores a missing alert. A changed stock value, low state or alert
+rule is observed at once, as before. A product with no stock value is no longer seen as changed on every sweep. The sweep still
+only reads products; alerts, stock and prices behave as before.
+
+One day-old sweep of 1,000 synthetic products, 100 of them low, on a disposable local database:
+
+| | Before | After |
+|---|---|---|
+| Sent to the database | 1,910 KB | 339 KB |
+| Commands | 5,330 | 830 |
+| Transactions | 1,000 | 100 |
+
+The production saving depends on how many products are low and is not measured until this is deployed.
 
 ## Verify after deploy
 
 1. Compare `net_usage` totals for similar periods before and after, and the `GET /api/v1/search` and
    `GET /api/orders/receiving` routes against the windows above. None of the saving from compression is expected on this database.
    Open the admin order screen and confirm the pending and address-review counts are unchanged.
-2. Read the `db` entries to find the largest commands, including any burst like the unexplained 32 MB window at 06:53 UTC on
-   25 November.
+2. Read the `db` entries to find the largest commands. About a day after the last full recheck, compare the `worker` route and
+   count the `staff_stock_state` updates: they should be near the number of low-stock products.
 3. Upload one banner, one category picture and one poster, and send one WhatsApp template with the new poster address.
 
 ## Not verified
 
-Any production bandwidth saving, the effect of the order filter in production, whether another database tier compresses, real
-Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address, and web-host cache usage.
+A whole day's production bandwidth saving, the effect of the lighter stock recheck in production, whether another database tier
+compresses, real Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address, and web-host cache
+usage.
