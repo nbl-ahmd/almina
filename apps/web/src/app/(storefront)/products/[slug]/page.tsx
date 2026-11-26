@@ -9,6 +9,7 @@ import { RecordProductView } from '../../../../components/recently-viewed';
 import { ReminderSignup } from '../../../../components/customer-reminders';
 import { ProductReviews } from '../../../../components/product-reviews';
 import { SaveProduct } from '../../../../components/save-product';
+import { ShareProduct } from '../../../../components/share-product';
 import { ProductInformation } from '../../../../components/product-information';
 import { ProductOptions } from '../../../../components/product-options';
 import { ProductGallery } from '../../../../components/product-gallery';
@@ -68,7 +69,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
             images={images}
             name={product.name}
             cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME}
-            actions={<SaveProduct locale={locale} id={product._id} name={product.name} iconOnly />}
+            actions={<>
+              <SaveProduct locale={locale} id={product._id} name={product.name} iconOnly />
+              <ShareProduct locale={locale} name={product.name} url={origin + productHref(product)} />
+            </>}
           />
           {images.some(image => !image.startsWith('/')) && <PhotoCredit source={product.imageSource} />}
         </div>
@@ -117,7 +121,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         </div>
       </div>
       <ProductInformation product={product} />
-      <div id="product-reviews" className="scroll-mt-6"><ProductReviews locale={locale} productId={product._id} reviews={reviews} /></div>
+      <div id="product-reviews" className="scroll-mt-6"><ProductReviews locale={locale} reviews={reviews} /></div>
       {suggested.length > 0 && <section className="border-t border-x-0 border-b-0 border-solid border-border pt-6">
         <div className="section-heading">
           <h2>{u(locale, 'Similar products')}</h2>

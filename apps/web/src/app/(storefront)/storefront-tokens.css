@@ -60,6 +60,9 @@
   --qc-e-3: 0 12px 32px rgb(28 28 30 / 14%);
   --qc-e-bar: 0 -4px 16px rgb(28 28 30 / 8%);
 
+  /* WhatsApp's darker brand green: a white glyph keeps 3:1 contrast on it. */
+  --qc-whatsapp: #128c7e; --qc-whatsapp-hover: #0f766a;
+
   /* ── Type ─────────────────────────────────────────────── */
   --qc-fs-11: .6875rem; --qc-fs-12: .75rem; --qc-fs-13: .8125rem; --qc-fs-14: .875rem; --qc-fs-15: .9375rem;
   --qc-fs-16: 1rem; --qc-fs-18: 1.125rem; --qc-fs-20: 1.25rem; --qc-fs-24: 1.5rem; --qc-fs-28: 1.75rem; --qc-fs-32: 2rem;

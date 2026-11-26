@@ -2,21 +2,16 @@ import Image, { getImageProps } from 'next/image';
 import Link from './app-link';
 import { ArrowRightIcon } from './storefront-icons';
 import { campaignImageUrl, growthPagePath, type GrowthPage } from '@almina/contracts';
-
-// Fixed artwork sizes for designers (shown in the admin editor too). The frame never changes height with the artwork.
-// Measured from Aster's homepage (2026-11-25): hero 1600×500 desktop / 764×376 phone; section strips 2224×276 / 764×176; top promo
-// strip 2220×120 / 764×88. Frames contain-fit, so art at these sizes fills them and older art is never cropped.
-export const heroArtwork = { desktop: { width: 1600, height: 500 }, mobile: { width: 800, height: 400 } } as const;
-export const stripArtwork = { desktop: { width: 1600, height: 200 }, mobile: { width: 764, height: 176 } } as const;
+import { bannerPhoneMedia, heroArtwork, stripArtwork, type ArtworkFrames } from '../lib/storefront/artwork';
 
 export function campaignHref(page: GrowthPage) { return page.ctaHref || growthPagePath(page); }
 
-function Art({ page, cloudName, eager, sizes, size, preview }: { page: GrowthPage; cloudName?: string | undefined; eager: boolean; sizes: string; size: typeof heroArtwork | typeof stripArtwork; preview?: 'mobile' | 'desktop' | undefined }) {
+function Art({ page, cloudName, eager, sizes, size, preview }: { page: GrowthPage; cloudName?: string | undefined; eager: boolean; sizes: string; size: ArtworkFrames; preview?: 'mobile' | 'desktop' | undefined }) {
   const desktop = campaignImageUrl(page.image, cloudName), mobile = campaignImageUrl(page.mobileImage, cloudName) ?? desktop;
   const src = preview === 'mobile' ? mobile : desktop;
   if (!src) return <span className="qc-banner-empty">{page.locale === 'ar' ? 'أضف صورة لعرض المعاينة' : 'Add artwork to preview it here'}</span>;
   return <picture className="qc-banner-art">
-    {!preview && mobile && mobile !== desktop ? <source media="(max-width: 767px)" srcSet={getImageProps({ src: mobile, alt: '', width: size.mobile.width, height: size.mobile.height, sizes: '100vw' }).props.srcSet} /> : null}
+    {!preview && mobile && mobile !== desktop ? <source media={bannerPhoneMedia} srcSet={getImageProps({ src: mobile, alt: '', width: size.mobile.width, height: size.mobile.height, sizes: '100vw' }).props.srcSet} /> : null}
     <Image src={src} alt={page.imageAlt} fill sizes={sizes} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : undefined} />
   </picture>;
 }

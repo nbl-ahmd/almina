@@ -1,37 +1,54 @@
 'use client';
-import { useAccountCopy } from "./account-locale";
+import { useAccountCopy } from './account-locale';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
 import { Field, FieldLabel } from './ui/field';
-
 import Link from './app-link';
-import { resetSavedAccount,loadSavedAccount } from '../lib/catalog/saved-account';
 import { CustomerRewards } from './customer-rewards';
 import { CustomerAddressBook } from './customer-address-book';
 import { CustomerReminders } from './customer-reminders';
-import { CustomerSignIn, accountRequest, AccountRequestError } from './customer-sign-in';
-import { useEffect,useRef,useState } from 'react';
-import { checkAddition } from '../app/(storefront)/cart/actions';
-import { storedCart,saveCart } from '../lib/catalog/browser-cart';
-type Customer={id:string;email:string;marketingEmail?:boolean;marketingWhatsapp?:boolean};
-type Order={channel?:'wholesale';orderId:string;status:string;createdAt:string;totals:{totalMinor:number;lines:{productId:string;name:string;quantity:number}[]}};
-function BuyAgain({order}:{order:Order}){
- const {a}=useAccountCopy();
-const [busy,setBusy]=useState(false),[message,setMessage]=useState('');async function add(){setBusy(true);try{const before=storedCart(),available:{id:string;quantity:number}[]=[];for(const item of order.totals.lines.slice(0,30)){const current=before.find(line=>line.id===item.productId)?.quantity??0;if(!await checkAddition(item.productId,current+item.quantity))available.push({id:item.productId,quantity:current+item.quantity});}if(JSON.stringify(before)!==JSON.stringify(storedCart()))throw new Error('Your cart changed. Please try again.');saveCart([...before.filter(line=>!available.some(item=>item.id===line.id)),...available]);setMessage(`${available.length} available items added. Unavailable products were skipped. Current prices apply at checkout.`);}catch{setMessage('Unable to add these items. Please try again.');}finally{setBusy(false);}}return <><Button variant="outline" size="default" type="button" className="mt-3" disabled={busy} onClick={()=>void add()}>{busy?a("Checking stock…"):a("Buy available items again")}</Button><p role="status" className="mt-2 mb-0 text-xs">{a(message)}</p></>;}
-export function CustomerAccount({nonce}:{nonce?:string|undefined}){
- const {a}=useAccountCopy();
+import { accountRequest } from './customer-sign-in';
+import { ChatBubbleLeftRightIcon, HeartIcon, MapPinIcon, ShoppingBagIcon, ChevronRightIcon } from './storefront-icons';
+import { AccountGate, useAccountSession, type AccountState } from './account/account-session';
+import { OrderCard } from './account/order-card';
+import { useOrderProducts } from './account/use-order-products';
 
-const [user,setUser]=useState<Customer|null>(null),[orders,setOrders]=useState<Order[]>([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[loadFailed,setLoadFailed]=useState(false),[ordersFailed,setOrdersFailed]=useState(false);
-const generation=useRef(0);
-async function refresh(){
-  const current=++generation.current;
-  const me=await accountRequest('me') as Customer;if(current!==generation.current)return;
-  setUser(me);setOrders([]);setOrdersFailed(false);setLoadFailed(false);resetSavedAccount();void loadSavedAccount();
-  try{const rows=await accountRequest('orders') as Order[];if(current===generation.current)setOrders(rows);}catch{if(current===generation.current){setOrdersFailed(true);setMessage('Your account is signed in, but orders could not load. Please refresh to try again.');}}
+/** Account home (Swiggy / Flipkart account screens): who is signed in, four shortcuts, the latest orders, then saved details. */
+function AccountHome({ user, setUser, orders, ordersFailed, signOut, busy, message, setMessage, cloudName }: AccountState & { cloudName?: string | undefined }) {
+  const { a } = useAccountCopy();
+  const recent = (orders ?? []).slice(0, 3);
+  const products = useOrderProducts(recent);
+  const tiles = [
+    { href: '/account/orders', label: 'Orders', icon: ShoppingBagIcon },
+    { href: '/saved', label: 'Saved products', icon: HeartIcon },
+    { href: '#addresses', label: 'Addresses', icon: MapPinIcon },
+    { href: '/contact', label: 'Help', icon: ChatBubbleLeftRightIcon },
+  ];
+  return <div className="account-column">
+    <header className="account-card account-profile">
+      <span className="account-avatar" aria-hidden="true">{user.email.slice(0, 1).toUpperCase()}</span>
+      <div className="min-w-0"><h1 className="account-title">{a('Your Al Mina account')}</h1><p className="m-0 break-all text-sm">{a('Signed in as ')}<bdi>{user.email}</bdi></p></div>
+    </header>
+    {message ? <p role="status" className="account-card text-sm">{a(message)}</p> : null}
+    <nav className="account-tiles" aria-label={a('Account shortcuts')}>{tiles.map(tile => { const Icon = tile.icon; const content = <><Icon aria-hidden="true" /><span>{a(tile.label)}</span></>; return tile.href.startsWith('#') ? <a key={tile.href} href={tile.href}>{content}</a> : <Link key={tile.href} href={tile.href}>{content}</Link>; })}</nav>
+
+    <section aria-labelledby="account-orders" className="account-orders">
+      <div className="account-section-head"><h2 id="account-orders" className="account-heading">{a('Recent orders')}</h2>{recent.length ? <Link href="/account/orders">{a('View all orders')}<ChevronRightIcon className="size-4 rtl:rotate-180" aria-hidden="true" /></Link> : null}</div>
+      {ordersFailed ? <p role="alert" className="account-card m-0 text-sm">{a('Your account is signed in, but orders could not load. Please refresh to try again.')}</p>
+        : orders === null ? <p role="status" className="account-card m-0 text-sm">{a('Loading your orders…')}</p>
+          : recent.length ? <div className="order-list">{recent.map(order => <OrderCard key={order.orderId} order={order} products={products} cloudName={cloudName} />)}</div>
+            : <p className="account-card m-0 text-sm">{a('No matching online orders yet. Purchases made using your verified email will appear here.')}</p>}
+    </section>
+
+    <CustomerRewards />
+    <div id="addresses" className="scroll-mt-24"><CustomerAddressBook /></div>
+    <CustomerReminders />
+    <section className="account-card"><h2 className="account-heading">{a('Your communication preferences')}</h2><p className="m-0 text-sm">{a('Optional email offers are separate from essential order updates. You can change your choice at any time.')}</p><Field orientation="horizontal" className="min-h-11"><Checkbox id="customer-account-field-1" className="w-5" checked={user.marketingEmail === true} onCheckedChange={event => { const checked = (event === true); void accountRequest('preferences', { marketingEmail: checked, marketingWhatsapp: user.marketingWhatsapp === true }).then(() => setUser(current => current?.id === user.id ? { ...current, marketingEmail: checked } : current)).catch(error => setMessage(error.message)); }} /><FieldLabel htmlFor="customer-account-field-1" className="min-h-11 flex-1 cursor-pointer">{a('Email me eligible Al Mina offers and product updates')}</FieldLabel></Field></section>
+    <Link className="button button-secondary text-sm" href="/products">{a('Keep shopping')}</Link>
+    <Button variant="outline" size="default" type="button" className="account-signout" disabled={busy} onClick={signOut}>{a('Sign out')}</Button>
+  </div>;
 }
-useEffect(()=>{let active=true;const current=++generation.current;void accountRequest('me').then(async value=>{if(!active||current!==generation.current)return;setUser(value as Customer);try{const rows=await accountRequest('orders') as Order[];if(active&&current===generation.current)setOrders(rows);}catch{if(active&&current===generation.current){setOrdersFailed(true);setMessage('Orders could not load. Please refresh to try again.');}}}).catch(error=>{if(active&&current===generation.current&&!(error instanceof AccountRequestError&&error.status===401))setLoadFailed(true);}).finally(()=>{if(active&&current===generation.current)setLoading(false);});return()=>{active=false;};},[]);
-if(loading)return <div role="status" className="mx-auto max-w-4xl rounded-2xl border bg-white p-8 text-sm">{a("Loading your account…")}</div>;
-if(loadFailed)return <div className="mx-auto max-w-xl rounded-2xl border bg-white p-6"><h1 className="text-2xl">{a("We could not load your account")}</h1><p className="text-sm">{a("Your connection may have been interrupted. Please try again.")}</p><Button variant="outline" size="default" type="button" onClick={()=>window.location.reload()}>{a("Try again")}</Button><Link href="/checkout" className="ml-4 text-sm">{a("Guest checkout")}</Link></div>;
-if(!user)return <CustomerSignIn nonce={nonce} onSignedIn={refresh} />;
-return <div className="mx-auto max-w-5xl"><div className="mb-6"><h1 className="mb-2 text-3xl">{user?a("Your Al Mina account"):a("A little more care, all in one place.")}</h1><p className="text-sm">{user?a("Your purchases, preferences and everyday essentials."):a("Sign in to find previous purchases and manage your preferences. Guest checkout is always available.")}</p></div>{message?<p role="status" className="rounded-xl p-4 text-sm">{a(message)}</p>:null}{user?<><div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-5"><p className="m-0 min-w-0 break-all text-sm">{a("Signed in as ")}{user.email}</p><Button variant="outline" size="default" type="button" disabled={busy} onClick={()=>{generation.current++;setBusy(true);void accountRequest('logout',{}).then(()=>{setUser(null);setOrders([]);resetSavedAccount();}).catch(error=>setMessage(error.message)).finally(()=>setBusy(false));}}>{a("Sign out")}</Button></div><div className="mb-6 flex flex-wrap gap-3"><Link className="button button-secondary rounded-full text-sm" href="/saved">{a("Saved products")}</Link><Link className="button button-secondary rounded-full text-sm" href="/products">{a("Keep shopping")}</Link></div><CustomerRewards /><CustomerAddressBook /><CustomerReminders /><section><h2 className="mb-4 text-2xl">{a("Buy again")}</h2>{ordersFailed?<p className="rounded-2xl bg-white p-5 text-sm">{a("Your purchase history is temporarily unavailable. Your account is still signed in.")}</p>:orders.length?<div className="grid gap-4 md:grid-cols-2">{orders.map(order=><article className="rounded-2xl border bg-white p-5" key={order.orderId}><div className="mb-3 flex items-center justify-between gap-3"><h3 className="m-0 text-base">{order.orderId}</h3><span className="text-xs">{order.channel==='wholesale'?a("Wholesale · "):''}{a(order.status)}</span></div><ul className="m-0 space-y-2 pl-4 text-sm">{order.totals.lines.map(line=><li key={line.productId}>{line.name} × {line.quantity}</li>)}</ul><p className="mt-3 mb-0 text-sm font-medium">{a("AED ")}{(order.totals.totalMinor/100).toFixed(2)}{a(" · Original order total")}</p>{order.channel!=='wholesale'&&!['cancelled','refunded'].includes(order.status)?<BuyAgain order={order} />:null}</article>)}</div>:<p className="rounded-2xl bg-white p-5 text-sm">{a("No matching online orders yet. Purchases made using your verified email will appear here.")}</p>}</section><section className="rounded-2xl border bg-white p-5"><h2 className="mb-3 text-xl">{a("Your communication preferences")}</h2><p className="text-sm">{a("Optional email offers are separate from essential order updates. You can change your choice at any time.")}</p><Field orientation="horizontal" className="min-h-11"><Checkbox id="customer-account-field-1" className="w-5" checked={user.marketingEmail===true} onCheckedChange={event=>{const checked=(event === true);void accountRequest('preferences',{marketingEmail:checked,marketingWhatsapp:user.marketingWhatsapp===true}).then(()=>setUser(current=>current?.id===user.id?{...current,marketingEmail:checked}:current)).catch(error=>setMessage(error.message));}} /><FieldLabel htmlFor="customer-account-field-1" className="min-h-11 flex-1 cursor-pointer">{a("Email me eligible Al Mina offers and product updates")}</FieldLabel></Field></section></>:null}</div>;
+export function CustomerAccount({ nonce, cloudName }: { nonce?: string | undefined; cloudName?: string | undefined }) {
+  const { account, ...session } = useAccountSession();
+  return account ? <AccountHome key={account.user.id} {...account} cloudName={cloudName} /> : <AccountGate {...session} nonce={nonce} />;
 }

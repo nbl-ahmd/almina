@@ -8,9 +8,10 @@ import { Field, FieldLabel, FieldDescription, FieldGroup } from './ui/field';
 import Link from './app-link';
 import { accountErrorMessage } from '../lib/account/errors';
 import { setSessionHint } from '../lib/account/session-hint';
+import { signInPath } from '../lib/account/signin-path';
 import Script from 'next/script';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowLeftIcon, ArrowRightIcon, ArrowPathIcon, CheckCircleIcon, PencilSquareIcon } from './storefront-icons';
+import { ArrowLeftIcon, ArrowRightIcon, ArrowPathIcon, CheckCircleIcon, PencilSquareIcon, TruckIcon, StarIcon, MapPinIcon } from './storefront-icons';
 
 export class AccountRequestError extends Error {
   constructor(readonly status: number, message: string) { super(message); }
@@ -95,6 +96,13 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
     try { const value = await accountRequest('options') as Options; setOptions(value); } catch { setOptionsFailed(true); }
   }
   useEffect(() => { let active=true; void accountRequest('options').then(value=>{if(active)setOptions(value as Options);}).catch(()=>{if(active)setOptionsFailed(true);});return()=>{active=false;}; }, []);
+  // Arriving by in-app navigation keeps the previous page's security policy, which blocks Google's button; load afresh once.
+  useEffect(() => {
+    if (!options?.googleClientId) return;
+    const [entry] = performance.getEntriesByType('navigation');
+    // Reload only onto a sign-in address, so the fresh document always satisfies this check and cannot loop.
+    if (entry && signInPath.test(window.location.pathname) && !signInPath.test(new URL(entry.name).pathname)) window.location.reload();
+  }, [options]);
   useEffect(() => { if (challenge) codeInput.current?.focus(); else if(previousChallenge.current)emailInput.current?.focus(); previousChallenge.current=challenge; }, [challenge]);
   useEffect(() => { if (!cooldown) return; const timer = setTimeout(() => setCooldown(value => Math.max(0, value - 1)), 1000); return () => clearTimeout(timer); }, [cooldown]);
   async function perform(action: () => Promise<void>) {
@@ -123,7 +131,12 @@ export function CustomerSignIn({ nonce, onSignedIn, purpose='retail' }: { nonce?
           <h1 id="sign-in-heading" className="mb-2 text-[28px] font-semibold leading-tight tracking-[-0.025em]">{challenge ? a("Check your email") : purpose === 'wholesale' ? a("Business sign-in") : a("Welcome to Al Mina")}</h1>
           <p className="m-0 text-sm leading-6">{challenge ? a("Enter your six-digit sign-in code.") : purpose === 'wholesale' ? a("Use the email address on your pharmacy invitation.") : optionsFailed || (options && !options.emailEnabled && !options.googleClientId) ? a("Continue as a guest") : a("Sign in or create your account.")}</p>
         </div>
-        {challenge ? <div className="mb-6 flex min-w-0 items-center gap-2 rounded-xl py-2 pl-3 pr-1"><span className="min-w-0 flex-1 break-all text-sm font-medium">{email.trim()}</span><Button variant="ghost" size="icon" type="button" className="shrink-0" disabled={busy} onClick={changeEmail} aria-label={a("Change email")}><PencilSquareIcon className="size-4" /></Button></div> : null}
+        {!challenge && purpose === 'retail' && (options?.emailEnabled || options?.googleClientId) ? <ul className="signin-benefits" aria-label={a("With an account")}>
+          <li><TruckIcon aria-hidden="true" /><span>{a("Follow every order")}</span></li>
+          <li><StarIcon aria-hidden="true" /><span>{a("Rate what you bought")}</span></li>
+          <li><MapPinIcon aria-hidden="true" /><span>{a("Check out faster")}</span></li>
+        </ul> : null}
+        {challenge ? <div className="mb-6 flex min-w-0 items-center gap-2 rounded-xl py-2 ps-3 pe-1"><span className="min-w-0 flex-1 break-all text-sm font-medium">{email.trim()}</span><Button variant="ghost" size="icon" type="button" className="shrink-0" disabled={busy} onClick={changeEmail} aria-label={a("Change email")}><PencilSquareIcon className="size-4" /></Button></div> : null}
         {!options && !optionsFailed ? <div role="status" className="grid min-h-40 content-center gap-3 text-sm"><div className="h-12 rounded-full motion-safe:animate-pulse" /><span className="text-center">{a("Loading sign-in options…")}</span></div> : null}
         {optionsFailed ? <div role="alert" className="mb-4 rounded-xl p-4 text-sm"><p>{a("Sign-in is temporarily unavailable.")}</p><Button variant="outline" type="button" onClick={() => { setOptionsFailed(false); void loadOptions(); }}>{a("Try again")}</Button></div> : null}
         {!challenge && options?.googleClientId ? <>

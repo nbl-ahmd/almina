@@ -44,6 +44,7 @@ export const mongoIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/);
 export * from './api';
 
 export * from './commerce';
+export * from './customer-orders';
 export * from './coupons';
 
 export { cloudinaryImage } from './media';

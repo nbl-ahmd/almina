@@ -1,4 +1,4 @@
-import { deliveryPointSchema } from '@almina/contracts';
+import { deliveryPointSchema, orderStatusSchema, stripePaymentStateSchema } from '@almina/contracts';
 import { customerOrderFilter } from './ownership.js';
 import { randomBytes,randomInt,createHash,createHmac,timingSafeEqual } from 'node:crypto';
 import { ObjectId,type Db,type Document } from 'mongodb';
@@ -7,6 +7,7 @@ import nodemailer from 'nodemailer';
 import { customerEmailReady, usesResend, sendApplicationEmail } from '../notifications/provider.js';
 import { z } from 'zod';
 import { HttpError } from '../../errors.js';
+const orderStatuses=new Set<unknown>(orderStatusSchema.options),paymentStates=new Set<unknown>(stripePaymentStateSchema.options),paymentMethods=new Set<unknown>(['cash','card','stripe']),reviewStates=new Set<unknown>(['pending','approved','rejected']);
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
 const emailSchema=z.string().trim().pipe(z.email().max(254)).transform(value=>value.toLowerCase());
 const tokenSchema=z.string().regex(/^[A-Za-z0-9_-]{43}$/);
@@ -49,7 +50,20 @@ export async function verifyEmailCode(db:Db,raw:unknown){const parsed=z.object({
 export async function googleSignIn(db:Db,raw:unknown,keySet:JWTVerifyGetKey=jwks){const parsed=z.object({idToken:z.string().min(100).max(10000)}).strict().safeParse(raw);const clientId=customerAuthOptions().googleClientId;if(!parsed.success)throw new HttpError(400,'INVALID_REQUEST');if(!clientId)throw new HttpError(503,'SERVICE_UNAVAILABLE');const payload=await verifyGoogleCredential(parsed.data.idToken,clientId,keySet);if(!googleEmailIsAuthoritative(payload))throw new HttpError(403,'FORBIDDEN');return startSession(db,emailSchema.parse(payload.email),'google',payload.sub);}
 export async function customerIdentity(db:Db,token:string|undefined){if(!token)throw new HttpError(401,'UNAUTHORIZED');const session=await db.collection<Document&{_id:string}>('customer_sessions').findOne({_id:hash(token),expiresAt:{$gt:new Date()}},{maxTimeMS:3000});if(!session)throw new HttpError(401,'UNAUTHORIZED');const user=await db.collection('customers').findOne({_id:session.customerId,disabled:{$ne:true}},{maxTimeMS:3000});if(!user)throw new HttpError(401,'UNAUTHORIZED');return {id:String(user._id),email:String(user.email),marketingEmail:user.marketingEmail===true,marketingWhatsapp:user.marketingWhatsapp===true};}
 export async function customerLogout(db:Db,token:string|undefined){if(token)await db.collection<Document&{_id:string}>('customer_sessions').deleteOne({_id:hash(token)});}
-export async function customerOrders(db:Db,customer:{email:string}){return db.collection('orders').find({...customerOrderFilter(customer.email),schemaVersion:2},{maxTimeMS:3000,projection:{channel:1,orderId:1,status:1,createdAt:1,'totals.totalMinor':1,'totals.lines.productId':1,'totals.lines.name':1,'totals.lines.quantity':1}}).sort({_id:-1}).limit(30).toArray().then(rows=>rows.map(row=>{if(row.channel!=='wholesale')delete row.channel;return row;}));}
+/** The signed-in shopper's own orders for the account screens. Staff identities, addresses and contact details never leave:
+ *  only statuses with their times, the shopper's payment choice, bill lines and their own review of each product. */
+export async function customerOrders(db:Db,customer:{email:string;id?:string}):Promise<Document[]>{
+ const rows=await db.collection('orders').find({...customerOrderFilter(customer.email),schemaVersion:2},{maxTimeMS:3000,projection:{channel:1,orderId:1,status:1,createdAt:1,'statusHistory.status':1,'statusHistory.at':1,'customer.payment':1,'payment.state':1,
+  'totals.totalMinor':1,'totals.deliveryFeeMinor':1,'totals.discountMinor':1,'totals.lines.productId':1,'totals.lines.name':1,'totals.lines.quantity':1,'totals.lines.variantLabel':1,'totals.lines.lineTotalMinor':1}}).sort({_id:-1}).limit(30).toArray();
+ const reviewIds=customer.id?[...new Set(rows.flatMap(row=>(row.totals?.lines??[]).map((line:Document)=>customer.id+':'+String(line.productId))))] as string[]:[];
+ const reviews=new Map(reviewIds.length?(await db.collection<Document&{_id:string}>('product_reviews').find({_id:{$in:reviewIds}},{maxTimeMS:3000,projection:{rating:1,moderation:1}}).toArray()).map(review=>[review._id,review]):[]);
+ return rows.map(stored=>{
+  const {customer:contact,payment,statusHistory,channel,...row}:Document=stored;delete row._id;
+  const timeline=Array.isArray(statusHistory)?statusHistory.flatMap((entry:Document)=>orderStatuses.has(entry?.status)&&entry.at instanceof Date?[{status:String(entry.status),at:entry.at}]:[]):[];
+  const own=[...new Set((row.totals?.lines??[]).map((line:Document)=>String(line.productId)))].flatMap(productId=>{const review=reviews.get(customer.id+':'+productId);return review&&reviewStates.has(review.moderation)?[{productId:String(productId),rating:Number(review.rating),moderation:String(review.moderation)}]:[];});
+  return {...row,...(channel==='wholesale'?{channel}:{}),...(timeline.length?{timeline}:{}),...(paymentMethods.has(contact?.payment)?{paymentMethod:String(contact!.payment)}:{}),...(paymentStates.has(payment?.state)?{paymentState:String(payment!.state)}:{}),...(own.length?{reviews:own}:{})};
+ });
+}
 export async function saveCustomerPreferences(db:Db,id:string,raw:unknown){const input=z.object({marketingEmail:z.boolean(),marketingWhatsapp:z.boolean()}).strict().safeParse(raw);if(!input.success)throw new HttpError(400,'INVALID_REQUEST');await db.collection('customers').updateOne({_id:new ObjectId(id)},{$set:{...input.data,consentUpdatedAt:new Date(),consentVersion:'growth-v1'}});return input.data;}
 
 const addressSchema=z.object({coordinates:deliveryPointSchema.optional(),label:z.string().trim().min(1).max(40),name:z.string().trim().min(1).max(200),mobile:z.string().regex(/^\+?[0-9]{9,15}$/),emirate:z.string().trim().min(1).max(200),city:z.string().trim().min(1).max(200),address:z.string().trim().min(1).max(1000),buildingname:z.string().trim().max(200).default(''),flatno:z.string().trim().max(200).default(''),note:z.string().trim().max(1000).default(''),maplink:z.union([z.literal(''),z.url().max(2048).refine(value=>value.startsWith('https://'))]).default(''),isDefault:z.boolean().default(false)}).strict();

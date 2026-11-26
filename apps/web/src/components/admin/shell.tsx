@@ -25,6 +25,7 @@ import {
   ShoppingBagIcon,
   Squares2X2Icon,
   TableCellsIcon,
+  TagIcon,
   UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -51,6 +52,7 @@ const groups: NavGroup[] = [
     items: [
       { id: 'products', label: 'Products', href: '/admin/products', icon: CubeIcon },
       { id: 'categories', label: 'Categories', href: '/admin/categories', icon: RectangleGroupIcon },
+      { id: 'brands', label: 'Brands', href: '/admin/brands', icon: TagIcon },
       { id: 'banners', label: 'Banners', href: '/admin/banners', icon: PhotoIcon },
       { id: 'image-review', label: 'Image review', href: '/admin/image-review', icon: CameraIcon },
       { id: 'catalog-import', label: 'Catalog import', href: '/admin/catalog-import', icon: TableCellsIcon },

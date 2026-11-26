@@ -9,6 +9,7 @@ import { PendingPhotosContext } from "./photo-context";
 import { uploadWithReceipt } from '../../lib/admin/photo-upload';
 import { Combobox, type ComboOption } from "./shadcn/combobox";
 import { createCategory, loadBrands, rememberBrand } from "../../lib/admin/catalogue-options";
+import { artworkShapeWarning, type ArtworkSize } from "../../lib/storefront/artwork";
 import { ProductChannels, WholesalePrices, useProductTrade, productTradeTerms, type TradeTerms } from './product-pricing';
 import { wholesaleRequest } from '../wholesale/request';
 import { useRouter } from "next/navigation";
@@ -64,6 +65,8 @@ export type Field = {
   creatable?: "brand" | "category";
   accept?: string;
   disabled?: boolean;
+  /** File fields: the fixed storefront frame the image fills; a differently shaped file gets a warning before upload. */
+  frame?: ArtworkSize;
 };
 
 function isBooleanOptions(field: Field) {
@@ -251,8 +254,19 @@ function TagsField({ id, field }: { id: string; field: Field }) {
 }
 
 function FileField({ id, field }: { id: string; field: Field }) {
+  const [shape, setShape] = useState('');
+  async function check(file: File | undefined) {
+    setShape('');
+    if (!field.frame || !file) return;
+    try {
+      const picture = await createImageBitmap(file);
+      setShape(artworkShapeWarning(picture, field.frame) ?? '');
+      picture.close();
+    } catch { /* An unreadable file is rejected by the server. */ }
+  }
   return (
-    <label htmlFor={id} className="flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill sm:col-span-2">
+    <div className="grid min-w-0 gap-1.5 sm:col-span-2">
+    <label htmlFor={id} className="flex min-w-0 cursor-pointer items-center gap-3 overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-soft p-4 hover:bg-fill">
       <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-fill [&>svg]:size-5" aria-hidden="true">
         <CloudArrowUpIcon />
       </span>
@@ -269,8 +283,11 @@ function FileField({ id, field }: { id: string; field: Field }) {
         disabled={field.disabled}
         aria-label={field.label}
         accept={field.accept ?? (field.name === "file" ? ".csv,text/csv" : "image/jpeg,image/png,image/webp,image/avif")}
+        onChange={(event) => void check(event.target.files?.[0])}
       />
     </label>
+    {shape ? <p role="status" className="m-0 rounded-lg bg-warn-soft p-2 text-xs text-warn">{shape}</p> : null}
+    </div>
   );
 }
 
