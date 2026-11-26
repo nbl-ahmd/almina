@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { legacyAdminDestination } from './lib/admin/redirects';
 import { hasDuplicateQuery, indexingQuery, isPublicPath } from './lib/seo';
 import { stylesheetPolicy } from './lib/security/stylesheet-policy';
+import { signInPath } from './lib/account/signin-path';
 import { legacyMediaTarget } from './lib/catalog/legacy-media';
 import { mediaOrigin, mediaTarget } from './lib/catalog/image-delivery';
 export function proxy(request: NextRequest) {
@@ -52,14 +53,15 @@ export function proxy(request: NextRequest) {
   const googleCommerce = googleCommerceConfiguration(process.env);
   const googlePage = googleCommerce.survey && ['/checkout','/checkout/stripe'].includes(request.nextUrl.pathname) || googleCommerce.widget && ['/','/categories','/brands'].includes(request.nextUrl.pathname);
   const googleConnections = googlePage ? ' https://apis.google.com https://www.google.com https://www.gstatic.com' : '';
-  const frameOrigins = [...(['/account','/wholesale'].includes(request.nextUrl.pathname) ? ['https://accounts.google.com'] : []), ...(googlePage ? ['https://www.google.com', 'https://apis.google.com'] : [])];
+  const signInPage = signInPath.test(request.nextUrl.pathname);
+  const frameOrigins = [...(signInPage ? ['https://accounts.google.com'] : []), ...(googlePage ? ['https://www.google.com', 'https://apis.google.com'] : [])];
   const policy = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ''}`,
-    stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV, request.nextUrl.pathname === '/admin/marketing', request.nextUrl.pathname.startsWith('/admin'))+(['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com/gsi/style':''),
+    stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV, request.nextUrl.pathname === '/admin/marketing', request.nextUrl.pathname.startsWith('/admin'))+(signInPage?' https://accounts.google.com/gsi/style':''),
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
     `img-src 'self' data: blob: https://tile.openstreetmap.org https://cdn.alminapharmacy.com ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
-    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(frameOrigins.length ? [`frame-src ${frameOrigins.join(' ')}`] : []), `connect-src 'self'${request.nextUrl.pathname.startsWith('/admin') ? ` ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ' https://api.cloudinary.com' : ''}` : ''}${googleConnections}${['/account','/wholesale'].includes(request.nextUrl.pathname)?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
+    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(frameOrigins.length ? [`frame-src ${frameOrigins.join(' ')}`] : []), `connect-src 'self'${request.nextUrl.pathname.startsWith('/admin') ? ` ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ' https://api.cloudinary.com' : ''}` : ''}${googleConnections}${signInPage?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),
   ].join('; ');
@@ -71,7 +73,7 @@ export function proxy(request: NextRequest) {
   headers.set('Content-Security-Policy', policy);
   const response = NextResponse.next({ request: { headers } });
   response.headers.set('Content-Security-Policy', policy);
-  if(['/account','/wholesale'].includes(request.nextUrl.pathname))response.headers.set('Cross-Origin-Opener-Policy','same-origin-allow-popups');
+  if(signInPage)response.headers.set('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   response.headers.set('Cache-Control', 'private, no-store');
   const indexable = environment.APP_ENV === 'production' && isPublicPath(request.nextUrl.pathname)
     && !hasDuplicateQuery(indexingQuery(request.nextUrl.pathname,Object.fromEntries(request.nextUrl.searchParams)));

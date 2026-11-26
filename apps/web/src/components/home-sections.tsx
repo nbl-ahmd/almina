@@ -4,6 +4,7 @@ import { campaignImageUrl, type HomeSection } from '@almina/contracts';
 import { categoryHref, type Category, type Product } from '../lib/catalog/model';
 import { getProductById, getProducts, productImage } from '../lib/server/catalog';
 import { brandSlug } from '../lib/catalog/merchandising';
+import { bannerPhoneMedia } from '../lib/storefront/artwork';
 import { ProductCard } from './product-card';
 import { ProductShelf } from './product-shelf';
 import { CategoryTile } from './category-tile';
@@ -14,13 +15,13 @@ import type { Locale } from '../lib/i18n';
 type Custom = Exclude<HomeSection, { type: 'builtin' }>;
 type Art = { image: string; mobileImage: string; alt: string; href: string };
 
-/** Responsive picture for managed artwork: phone art below 768px when uploaded, contain-fit in a fixed frame.
+/** Responsive picture for managed artwork: phone art below 900px when uploaded, contain-fit in a fixed frame.
  *  Only approved hosts render; anything else is skipped rather than breaking the homepage. */
 function Picture({ art, cloudName, sizes, width, height, eager = false }: { art: Art; cloudName?: string | undefined; sizes: string; width: number; height: number; eager?: boolean }) {
   const desktop = campaignImageUrl(art.image, cloudName), mobile = campaignImageUrl(art.mobileImage, cloudName);
   if (!desktop) return null;
   return <picture className="qc-banner-art">
-    {mobile && mobile !== desktop ? <source media="(max-width: 767px)" srcSet={getImageProps({ src: mobile, alt: '', width, height, sizes: '100vw' }).props.srcSet} /> : null}
+    {mobile && mobile !== desktop ? <source media={bannerPhoneMedia} srcSet={getImageProps({ src: mobile, alt: '', width, height, sizes: '100vw' }).props.srcSet} /> : null}
     <Image src={desktop} alt={art.href ? '' : art.alt} fill sizes={sizes} loading={eager ? 'eager' : 'lazy'} />
   </picture>;
 }

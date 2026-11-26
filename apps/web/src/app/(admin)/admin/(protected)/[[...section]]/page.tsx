@@ -1,4 +1,5 @@
 import { NotificationCenter } from '../../../../../components/admin/notification-center';
+import { heroArtwork, sizeLabel } from '../../../../../lib/storefront/artwork';
 import { BranchWorkspaceView } from '../../../../../components/admin/branch-workspace';
 import type { BranchWorkspace } from '@almina/contracts';
 import { cloudinaryImage } from '@almina/contracts';
@@ -13,6 +14,7 @@ import type { AdminRecord } from '../../../../../lib/admin/policy';
 import { readCatalogueContext, catalogueContextParams, type CatalogueList, catalogueViewLabels, catalogueFilterLabels, type CatalogueQueue } from '@almina/contracts';
 import { editorHref, listHref, queueQuery } from '../../../../../lib/admin/catalogue-links';
 import { BulkPhotoUpload } from '../../../../../components/admin/bulk-photos';
+import { BrandManager } from '../../../../../components/admin/brand-manager';
 import { CatalogueFiltersBar, CataloguePager } from '../../../../../components/admin/catalogue-browser';
 import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
@@ -405,6 +407,9 @@ export default async function AdminPage({
       </>
     );
   }
+  if (section === "brands") {
+    return <BrandManager cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} initial={typeof query.brand === 'string' ? query.brand : undefined} />;
+  }
   if (section === "banners") {
     const bannerPage = pageOf(rows(await adminRead("banners", lookahead(qs))));
     const banners = bannerPage.items;
@@ -450,7 +455,8 @@ export default async function AdminPage({
                 name: "image",
                 label: "Banner image",
                 type: "file",
-                hint: "Desktop artwork, 1600 × 500 pixels. The image is shown whole inside a fixed frame (never cropped); the newest eight banners appear in the homepage carousel.",
+                hint: `Desktop artwork, ${sizeLabel(heroArtwork.desktop)} pixels (16:5), for screens 900px and wider. A larger file of the same shape is sharper. The frame is fixed and the image is never cropped, so another shape leaves blank bands. The newest eight banners appear in the homepage carousel.`,
+                frame: heroArtwork.desktop,
                 required: true,
                 section: "Artwork",
               },
@@ -458,7 +464,8 @@ export default async function AdminPage({
                 name: "mobileImage",
                 label: "Phone banner image (optional)",
                 type: "file",
-                hint: "Phone artwork, 800 × 400 pixels, with larger text. Leave empty to show the desktop image on phones too.",
+                hint: `Phone and tablet artwork, ${sizeLabel(heroArtwork.mobile)} pixels (2:1) or 1200 × 600, for screens below 900px. Use larger text. Left empty, the desktop image shows with blank bands above and below.`,
+                frame: heroArtwork.mobile,
                 section: "Artwork",
               },
             ]}

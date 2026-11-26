@@ -40,7 +40,7 @@ export function ProductGallery({ images, name, cloudName, actions, locale = 'en'
       <div className="gallery-frame absolute inset-[6%] grid min-h-0 grid-rows-[minmax(0,1fr)] place-items-center">
         <ProductImage draggable={false} locale={locale} cloudName={cloudName} className="gallery-image" src={images[current]!} alt={name} width={560} height={560} loading="eager" fetchPriority="high" sizes="(max-width:899px) 90vw, 560px" />
       </div>
-      {actions && <div className="absolute end-2 top-2" onPointerDown={event => event.stopPropagation()}>{actions}</div>}
+      {actions && <div className="absolute end-2 top-2 flex flex-col gap-2" onPointerDown={event => event.stopPropagation()}>{actions}</div>}
       {images[current] !== '/product-placeholder.svg' && (
         <button
           ref={zoomTrigger}

@@ -21,6 +21,7 @@ export const sections = [
   "products",
   "needs-action",
   "categories",
+  "brands",
   "banners",
   "orders",
   "whatsapp",

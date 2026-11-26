@@ -23,6 +23,11 @@ Title and primary action, filter chips, search field, table with footer paginati
   upload, bulk go-live, bulk product type behind a confirming dialog, numbered pagination. The former Needs action screen is this list with filters.
 - **Categories and banners**: image thumbnail column; banners show which eight are live in the carousel.
 
+## Brands
+List with logo thumbnail, address, one status pill per language and "Edit" or "Set up page"; search and "Show more". "Create brand"
+asks for the name only, then opens the editor: language switch; brand, content, products and questions cards on the left; publishing
+card on the right. Brands are unpublished, never deleted.
+
 ## Detail and form page
 Two columns on desktop: main form cards left, side panel right (media, category, status, save actions). Sticky action bar with Save draft and Save or Publish. Section cards named by task (General information, Pricing and stock, Care and usage). Unsaved changes prompt on leave.
 
@@ -31,7 +36,7 @@ Group by task, never by technical area. Security actions such as revoking sessio
 
 ## Navigation groups
 - Today: Dashboard, Orders
-- Catalogue: Products, Categories, Banners, Image review, Catalog import
+- Catalogue: Products, Categories, Brands, Banners, Image review, Catalog import
 - Customers & growth: Coupons, Website & growth, Email marketing, WhatsApp, Search, Wholesale
 - Delivery: Branches & delivery, Notifications
 - Administration: Team & access, Store settings, Operations, Product recovery

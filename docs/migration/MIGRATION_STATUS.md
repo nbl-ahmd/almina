@@ -3,6 +3,15 @@
 Administrators can set one confirmed type on selected products without a type. Existing types are never overwritten. See
 [admin workflows](ADMIN_WORKFLOWS_2026-11-25.md).
 
+## 2026-11-25 — Brands section, account orders and ratings, banner frames (deployed, `cddf731`)
+
+- Catalogue → **Brands** in the admin creates brands, uploads logos and publishes English and Arabic brand pages (same records as before).
+- Account home, **My orders** and order pages show status steps, bills and buy-again; ratings are written from an order.
+- The orders API adds status times, payment choice, bill lines and the shopper's own review state. Additive; no data migration.
+- Homepage skincare layout fixed, WhatsApp button added, product page share added.
+- Carousel frames and phone artwork switch together at 900px. **The live hero banner (2048 × 768) needs new artwork at 1600 × 500 and
+  800 × 400** to fill its frames. See [storefront, account and brands](STOREFRONT_ACCOUNT_BRANDS_2026-11-25.md).
+
 ## 2026-11-25 — Admin catalogue workflows (deployed, `32bce33`)
 
 - "Save & next" works for every product, following the list the editor was opened from (it previously stopped outside the first 100).
