@@ -1,3 +1,9 @@
+## 2026-11-26 — API bandwidth reductions
+
+Database traffic compression, a per-command traffic meter, compact browse records, bounded storefront caching (up to 60 seconds,
+`CATALOG_CACHE_SECONDS`) and direct artwork uploads for banners, categories, posters and campaigns. Not deployed or measured yet.
+See [BANDWIDTH_OPTIMIZATION_2026-11-26.md](BANDWIDTH_OPTIMIZATION_2026-11-26.md).
+
 ## 2026-11-25 — Bulk product type for selected products (branch, not deployed)
 
 Administrators can set one confirmed type on selected products without a type. Existing types are never overwritten. See
