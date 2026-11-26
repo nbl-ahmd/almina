@@ -47,7 +47,7 @@ Rollback: disable branch routing to restore legacy city permissions, then revert
 
 ## Verification and discovered regressions
 
-Focused coverage checks every saved OSM alias against both JavaScript and the historical MongoDB expression, plus unique area ownership, unknown/other-emirate fallback, administrator visibility, staff isolation, current push recipients, audited correction, concurrent configuration edits, idempotent confirmation, last-staff protection and repeatable metadata backfill. Unit, API/security and disposable MongoDB/payment regressions run without production connections or provider sends.
+Focused coverage checks every saved OSM alias against both JavaScript and the historical MongoDB area query, plus unique area ownership, unknown/other-emirate fallback, administrator visibility, staff isolation, current push recipients, audited correction, concurrent configuration edits, idempotent confirmation, last-staff protection and repeatable metadata backfill. Unit, API/security and disposable MongoDB/payment regressions run without production connections or provider sends.
 
 Browser coverage exercises setup and branch assignment at 360/390/768/1280px, current-role login, live attention counts, opt-in sound, address-review filtering, confirmation/packing, denial of another branch's order and administrator correction preserving the original address. Run the multi-account routing scenario in its own fixture session (`playwright test tests/e2e/order-routing.spec.ts`), separately from the existing admin batch: the real retained ingress deliberately limits the gateway IP to ten logins per fifteen minutes. Do not relax production limits to accommodate a combined synthetic run.
 

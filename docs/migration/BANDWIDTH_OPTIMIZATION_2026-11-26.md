@@ -153,15 +153,46 @@ opposed to shoppers' own searches, is not known until the windows after release 
 Sharing page searches changes only the website: no data or API change. `CATALOG_CACHE_SECONDS=0` switches it off with the other
 storefront caching, or revert the change.
 
+### After release of the shared page searches
+
+Deployed as `3d7f756`. The pages checked returned 200 with their products. From one computer on the same morning, the homepage
+took a median of about 2.7 s over six loads before the release and about 1.1 s after. Search traffic is **not shown to be
+lower**: the first window without a restart or verification requests (06:28 UTC) had 38 search commands (0.07 MB sent), while
+the three windows before release had 185, 36 and 523 (0.38, 0.06 and 1.04 MB). Compare whole days.
+
+## Staff order queries
+
+The 06:18 UTC window (it includes the restart) showed `GET /api/orders/receiving`, the admin screens' order check, sending
+0.85 MB of 2.51 MB outbound, more than search; the 05:45 window showed 0.42 of 0.84 MB. The cause was the delivery-area filter
+for orders saved before area metadata: it repeated the whole name normalisation once for each of 182 areas.
+
+The filter now normalises the typed name once and tests it against the names of the requested areas. A name shared by several
+areas still matches none. Bytes one order check sends, measured on a disposable local database (the branch cases use a synthetic
+routing setup with ten areas on one branch):
+
+| Who is checking | Before | After |
+|---|---|---|
+| Administrator | 144.5 KB | 23.2 KB |
+| Branch staff, routing off | 145.8 KB | 24.5 KB |
+| Branch staff, routing on | 798.8 KB | 35.6 KB |
+| Fallback branch staff, routing on | 1449.6 KB | 43.1 KB |
+
+The same filter builds the address-review list, and with branch routing active it also scopes branch staff's order list, order
+detail, status changes, card payment actions and notifications. `order-area-scope-integration` checks that it selects exactly the
+orders the previous filter and the JavaScript resolver select, for every area and several area sets, inside and outside the set.
+No data, index or schema change; reverting the commit restores the previous filter. Whether branch routing is active in
+production was not checked. The production saving is not measured until this is deployed.
+
 ## Verify after deploy
 
-1. Compare `net_usage` totals for similar periods before and after, and the `GET /api/v1/search` route against the two windows
-   above. No saving has been measured yet, and none from compression is expected on this database.
+1. Compare `net_usage` totals for similar periods before and after, and the `GET /api/v1/search` and
+   `GET /api/orders/receiving` routes against the windows above. None of the saving from compression is expected on this database.
+   Open the admin order screen and confirm the pending and address-review counts are unchanged.
 2. Read the `db` entries to find the largest commands, including any burst like the unexplained 32 MB window at 06:53 UTC on
    25 November.
 3. Upload one banner, one category picture and one poster, and send one WhatsApp template with the new poster address.
 
 ## Not verified
 
-Any production saving, the effect of sharing page searches in production, whether another database tier compresses, real
+Any production bandwidth saving, the effect of the order filter in production, whether another database tier compresses, real
 Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address, and web-host cache usage.

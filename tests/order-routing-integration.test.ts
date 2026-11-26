@@ -6,7 +6,7 @@ import { rakDeliveryAreas, resolveDeliveryArea, type Staff } from '@almina/contr
 import { saveOrderRouting } from '../apps/api/src/modules/orders/routing-admin';
 import { assignStaffBranch } from '../apps/api/src/modules/auth/administration';
 import { retainedOrderList, retainedOrderDetail } from '../apps/api/src/modules/orders/compatibility-reads';
-import { repairOrderArea, routingRecipients, legacyAreaExpression } from '../apps/api/src/modules/orders/routing';
+import { repairOrderArea, routingRecipients } from '../apps/api/src/modules/orders/routing';
 import { createCommerceService } from '../apps/api/src/modules/orders/commerce';
 import { backfillOrderAreas } from '../scripts/migrations/order-routing';
 import { deactivateStaff } from '../apps/api/src/modules/auth/administration';
@@ -32,10 +32,6 @@ test('branch routing partitions typed and GPS areas, sends every unknown to fall
     await assert.rejects(assignStaffBranch(db, local.id, { branchId: b, expectedBranchId: null, reason: 'Stale assignment must fail' }, admin.id), { code: 'IDEMPOTENCY_CONFLICT' });
     await assert.rejects(saveOrderRouting(db, { active: true, revision: 1, branches, fallbackBranchId: b }, local.id), { code: 'FORBIDDEN' });
     await saveOrderRouting(db, { active: true, revision: 1, branches, fallbackBranchId: b }, admin.id);
-    const resolverSamples = rakDeliveryAreas.flatMap(area => [area.name, ...area.aliases].map(city => ({ customer: { city, emirate: 'RAK' } })));
-    await db.collection('routing_resolver_samples').insertMany(resolverSamples);
-    const projected = await db.collection('routing_resolver_samples').aggregate<{ customer: { city: string; emirate: string }; resolved: string | null }>([{ $project: { customer: 1, resolved: legacyAreaExpression() } }]).toArray();
-    for (const sample of projected) assert.equal(sample.resolved, resolveDeliveryArea(sample.customer), sample.customer.city);
     const customers = [
       { city: first.name, emirate: 'Ras al-Khaimah' },
       { city: first.name.toUpperCase().replaceAll(' ', '-'), emirate: 'RAK' },
