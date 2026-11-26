@@ -1,4 +1,4 @@
-import { artworkResultSchema, artworkTicketSchema, qualityReportSchema, enrichmentQueueSchema, enrichmentQuerySchema, enrichmentExportQuerySchema } from '@almina/contracts';
+import { artworkResultSchema, artworkTicketSchema, qualityReportSchema, enrichmentQueueSchema, enrichmentQuerySchema, enrichmentExportQuerySchema, barcodeGtinResultSchema, enrichmentPreviewResultSchema, enrichmentApplyResultSchema } from '@almina/contracts';
 import { staffAlertQuerySchema,staffAlertFeedSchema,staffAlertPreferencesSchema,staffAlertRulesSchema } from '@almina/contracts';
 import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
 import { catalogueListQuerySchema, catalogueQueueQuerySchema, catalogueListSchema, catalogueQueueSchema, catalogueVisibilityResultSchema, productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
@@ -32,6 +32,7 @@ export const sections = [
   "batch",
   "catalog-import",
   "image-review",
+  "catalogue-quality",
   "growth",
   "search",
   "wholesale",
@@ -363,6 +364,9 @@ export function projectAdminResponse(path: string, value: unknown): unknown {
       timestamp:z.string().regex(/^[0-9]{10}$/),type:z.literal('upload'),api_key:z.string().regex(/^[0-9]{1,100}$/),signature:z.string().regex(/^[a-f0-9]{64}$/)}).strict()}).strict()).min(1).max(5)}).strict().parse(value);
   if(path==='products/quality')return qualityReportSchema.parse(value);
   if(path==='products/enrichment')return enrichmentQueueSchema.parse(value);
+  if(path==='products/gtin-from-barcode')return barcodeGtinResultSchema.parse(value);
+  if(path==='products/enrichment/preview')return enrichmentPreviewResultSchema.parse(value);
+  if(path==='products/enrichment/apply')return enrichmentApplyResultSchema.parse(value);
   if(path==='media/artwork/sign')return artworkTicketSchema.parse(value);
   if(path==='media/artwork/commit')return artworkResultSchema.parse(value);
   if(path==='auth/branch-login-availability')return branchLoginAvailabilitySchema.parse(value);

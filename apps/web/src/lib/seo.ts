@@ -86,6 +86,8 @@ function baseProductData(origin: string, product: Product, images: string[], shi
     category: product.category.name,
     ...(product.brand||product.familyBrand?{brand:{'@type':'Brand',name:product.brand||product.familyBrand}}:{}),
     ...(product.gtin?{gtin:product.gtin}:{}),...(product.mpn?{mpn:product.mpn}:{}),
+    // Only what staff recorded; never inferred from the brand.
+    ...(product.manufacturer?{manufacturer:{'@type':'Organization',name:product.manufacturer}}:{}),
     ...(product.condition?{itemCondition:`https://schema.org/${{new:'NewCondition',used:'UsedCondition',refurbished:'RefurbishedCondition'}[product.condition]}`}:{}) ,
     ...(product.description ? { description: product.description } : {}),
     // Keep the visible missing-photo state, but never present a placeholder to

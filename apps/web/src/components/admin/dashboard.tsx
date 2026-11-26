@@ -3,7 +3,7 @@ import { ArrowRightIcon, CheckCircleIcon, ClipboardDocumentCheckIcon, CubeIcon, 
 import { adminRead } from '../../lib/server/admin/gateway';
 import { readDashboardReport } from '../../lib/server/admin/reporting';
 import type { Identity } from '../../lib/admin/policy';
-import type { CatalogueList } from '@almina/contracts';
+import type { CatalogueFilter, CatalogueList } from '@almina/contracts';
 import { changePercent, minorMoney, reportDate, type DashboardReport } from '../../lib/admin/dashboard';
 import { display, record, rows } from './views';
 import { Badge, Button, Card, EmptyState, PageHeader, cn, orderStatusTone, type Tone } from './ui';
@@ -135,12 +135,33 @@ function RecentOrders({ orders }: { orders: Record<string, unknown>[] }) {
   </>;
 }
 
+const completeness: { filter: CatalogueFilter; label: string }[] = [
+  { filter: 'missing-photo', label: 'Photo' }, { filter: 'missing-brand', label: 'Brand' }, { filter: 'missing-gtin', label: 'GTIN' },
+  { filter: 'missing-pack', label: 'Pack size' }, { filter: 'missing-description', label: 'Description' },
+];
+/** Live-catalogue completeness from the Products list counts: one bounded read, no catalogue scan on the dashboard. */
+function CatalogueCompleteness({ live }: { live: CatalogueList | null }) {
+  const total = live?.counts.views.live ?? 0;
+  return <Card title="Live catalogue completeness" description={live ? `${total.toLocaleString('en-AE')} live products. Share with each detail.` : 'Counts are unavailable. Reload to try again.'} className="mb-0"
+    aside={<Link href="/admin/catalogue-quality" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-fill px-4 text-[13px] font-medium text-ink no-underline hover:bg-line">Catalogue quality <ArrowRightIcon className="size-3.5" aria-hidden="true" /></Link>}>
+    {live ? <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-5">{completeness.map(({ filter, label }) => {
+      const missing = live.counts.filters[filter], share = total ? Math.round(((total - missing) / total) * 100) : 100;
+      return <li key={filter} className="grid gap-1.5">
+        <span className="flex items-baseline justify-between text-[13px]"><span>{label}</span><strong className="tabular-nums">{share}%</strong></span>
+        <span className="h-1.5 overflow-hidden rounded-full bg-line" aria-hidden="true"><span className={cn('block h-full rounded-full', share >= 90 ? 'bg-ok' : share >= 50 ? 'bg-ink' : 'bg-warn')} style={{ width: `${share}%` }} /></span>
+        {missing ? <Link href={`/admin/products?view=live&filter=${filter}`} className="text-xs">{missing.toLocaleString('en-AE')} missing</Link> : <span className="text-xs text-ok">Complete</span>}
+      </li>;
+    })}</ul> : null}
+  </Card>;
+}
+
 export async function AdminDashboard({ user, days = 30 }: { user: Identity; days?: 7 | 30 | 90 }) {
   const admin = user.role === 'admin';
-  const [orderData, report, attention] = await Promise.all([
+  const [orderData, report, attention, liveCatalogue] = await Promise.all([
     adminRead('orders', new URLSearchParams({ limit: '25' })),
     admin ? readDashboardReport(days).catch(() => null) : Promise.resolve(null),
     readAttention(admin),
+    admin ? adminRead('products/catalogue', new URLSearchParams({ view: 'live', limit: '1' })).then(value => value as CatalogueList).catch(() => null) : Promise.resolve(null),
   ]);
   const recent = rows(orderData);
   if (!admin) return <>
@@ -172,6 +193,7 @@ export async function AdminDashboard({ user, days = 30 }: { user: Identity; days
       <Card title="Recent orders" description="The latest orders across all dates" className="mb-0" flush aside={<Link href="/admin/orders" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-fill px-4 text-[13px] font-medium text-ink no-underline hover:bg-line">View all <ArrowRightIcon className="size-3.5" aria-hidden="true" /></Link>}><RecentOrders orders={recent.slice(0, 5)} /></Card>
       <TopProducts report={report} />
     </div>
+    <div className="mb-4"><CatalogueCompleteness live={liveCatalogue} /></div>
     <p className="text-xs text-mute">Period reporting includes online orders recorded with the current order system. Legacy orders remain in Recent orders. Values are before cancellation or refund adjustments; dates use UTC.</p>
   </div>;
 }

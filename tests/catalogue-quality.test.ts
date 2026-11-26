@@ -7,6 +7,7 @@ import {
 import { accessPolicy, projectAdminResponse, upstreamQuery } from '../apps/web/src/lib/admin/policy';
 import { catalogMutationTags } from '../apps/web/src/lib/admin/gateway-policy';
 import { lookupPolicy } from '../apps/api/src/modules/auth/retained-policy';
+import { productData } from '../apps/web/src/lib/seo';
 
 test('GTINs compare by value, not spelling, and only valid check digits count', () => {
   assert.equal(normalizeGtin('036000291452'), '00036000291452'); // UPC-A
@@ -88,4 +89,20 @@ test('new gap filters are labelled, and the gateway allows, validates, projects 
   assert.throws(() => upstreamQuery('products/enrichment/export', new URLSearchParams({ limit: '5' })));
   assert.throws(() => projectAdminResponse('products/enrichment', { items: [], total: 0, offset: 0, ordersSince: 'x', extra: 'private' }));
   assert.equal(enrichmentQuerySchema.parse({}).gap, 'any');
+  // Write responses keep their shape through the gateway (the generic field filter would drop them) and nothing extra.
+  assert.deepEqual(projectAdminResponse('products/gtin-from-barcode', { results: [{ id: 'a', ok: true, changed: true }] }), { results: [{ id: 'a', ok: true, changed: true }] });
+  assert.throws(() => projectAdminResponse('products/gtin-from-barcode', { results: [{ id: 'a', ok: true, changed: true, actor: 'private' }] }));
+  assert.equal((projectAdminResponse('products/enrichment/apply', { applied: 2, products: 1, skipped: [] }) as { applied: number }).applied, 2);
+  assert.equal((projectAdminResponse('products/enrichment/preview', { rows: [], changeCount: 0, productCount: 0, errorCount: 0 }) as { changeCount: number }).changeCount, 0);
+});
+
+test('product structured data carries recorded identifiers and manufacturer, and nothing that was not recorded', () => {
+  const product = { _id: 'b'.repeat(24), product_id: 'PD1', name: 'Daily care', productType: 'general' as const, price: 25, stock: 2,
+    category: { _id: 'a'.repeat(24), name: 'Skin care' } };
+  const bare = productData('https://shop.example.invalid', product, []);
+  for (const key of ['gtin', 'mpn', 'brand', 'manufacturer']) assert.ok(!(key in bare), key);
+  const full = productData('https://shop.example.invalid', { ...product, brand: 'CeraVe', manufacturer: "L'Oréal", gtin: '3337875597388' }, []);
+  assert.deepEqual(full.manufacturer, { '@type': 'Organization', name: "L'Oréal" });
+  assert.equal(full.gtin, '3337875597388');
+  assert.deepEqual(full.brand, { '@type': 'Brand', name: 'CeraVe' });
 });

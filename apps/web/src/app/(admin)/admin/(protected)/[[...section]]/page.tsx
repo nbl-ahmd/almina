@@ -18,6 +18,8 @@ import { BrandManager } from '../../../../../components/admin/brand-manager';
 import { CatalogueFiltersBar, CataloguePager } from '../../../../../components/admin/catalogue-browser';
 import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { CatalogImport } from '../../../../../components/admin/catalog-import';
+import { CatalogueQualityPage } from '../../../../../components/admin/catalogue-quality';
+import { catalogueGaps, enrichmentScopes, type EnrichmentQueue, type QualityReport } from '@almina/contracts';
 import { RecoveryImport } from "../../../../../components/admin/recovery-import";
 import { operationsSnapshotSchema } from '@almina/contracts';
 import { OperationsView } from '../../../../../components/admin/operations-view';
@@ -607,6 +609,17 @@ export default async function AdminPage({
         </div>
       </>
     );
+  }
+  if (section === 'catalogue-quality') {
+    const scope = enrichmentScopes.find(value => value === query.scope) ?? 'live';
+    const gap = (['any', ...catalogueGaps] as const).find(value => value === query.gap) ?? 'any';
+    const offset = typeof query.offset === 'string' && /^[0-9]{1,5}$/.test(query.offset) ? Number(query.offset) : 0;
+    const [report, queue] = await Promise.all([
+      adminRead('products/quality').then(value => value as QualityReport).catch(() => null),
+      adminRead('products/enrichment', new URLSearchParams({ scope, gap, limit: String(PAGE_SIZE), offset: String(offset) })).then(value => value as EnrichmentQueue).catch(() => null),
+    ]);
+    return <CatalogueQualityPage report={report} query={{ scope, gap, limit: PAGE_SIZE }}
+      queue={queue ? { ...queue, items: queue.items.map(item => ({ ...item, thumb: thumbnail(item.image) })) } : null} />;
   }
   if (section === 'catalog-import') {
     const categories: AdminRecord[]=[];

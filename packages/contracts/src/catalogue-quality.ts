@@ -148,7 +148,8 @@ export const barcodeGtinSchema = z.object({
   /** The administrator confirmed each barcode against the product's pack. */
   confirmed: z.literal(true),
 }).strict();
-export type BarcodeGtinResult = { results: { id: string; ok: boolean; changed: boolean; reason?: string }[] };
+export const barcodeGtinResultSchema = z.object({ results: z.array(z.object({ id: z.string(), ok: z.boolean(), changed: z.boolean(), reason: z.string().optional() }).strict()).max(100) }).strict();
+export type BarcodeGtinResult = z.infer<typeof barcodeGtinResultSchema>;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Enrichment CSV
@@ -182,8 +183,12 @@ export const enrichmentApplySchema = z.object({
   /** The administrator confirmed the values come from the pack, the manufacturer or an authorised supplier. */
   confirmed: z.literal(true),
 }).strict();
-export type EnrichmentPreview = {
-  rows: { line: number; productId: string; id: string | null; name: string; live: boolean; changes: EnrichmentChange[]; notes: string[] }[];
-  changeCount: number; productCount: number; errorCount: number;
-};
-export type EnrichmentApplyResult = { applied: number; products: number; skipped: { id: string; field: string; reason: string }[] };
+export const enrichmentPreviewResultSchema = z.object({
+  rows: z.array(z.object({ line: count, productId: z.string(), id: z.string().nullable(), name: z.string(), live: z.boolean(),
+    changes: z.array(enrichmentChangeSchema), notes: z.array(z.string()) }).strict()).max(4000),
+  changeCount: count, productCount: count, errorCount: count,
+}).strict();
+export type EnrichmentPreview = z.infer<typeof enrichmentPreviewResultSchema>;
+export const enrichmentApplyResultSchema = z.object({ applied: count, products: count,
+  skipped: z.array(z.object({ id: z.string(), field: z.string(), reason: z.string() }).strict()) }).strict();
+export type EnrichmentApplyResult = z.infer<typeof enrichmentApplyResultSchema>;
