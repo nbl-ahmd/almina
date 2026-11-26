@@ -24,20 +24,22 @@ function mongoKey(field: string): Document {
   for (const [find, replacement] of areaReplacements) expression = { $replaceAll: { input: expression, find, replacement } };
   return expression;
 }
-// Same exact-alias resolver for pre-migration orders. No fuzzy authorization and no external lookups.
-export function legacyAreaExpression(): Document {
-  const aliases = new Map<string, string[]>();
+// Same exact-alias resolver as resolveDeliveryArea, for pre-migration orders. No fuzzy authorization and no external lookups.
+// A name shared by several areas resolves to none, so it never grants access.
+function unambiguousAreaKeys(areaIds: string[]): string[] {
+  const owners = new Map<string, Set<string>>(), wanted = new Set(areaIds);
   for (const area of rakDeliveryAreas) for (const name of [area.name, ...area.aliases]) {
-    const key = areaKey(name); aliases.set(key, [...new Set([...(aliases.get(key) ?? []), area.id])]);
+    const key = areaKey(name); owners.set(key, (owners.get(key) ?? new Set<string>()).add(area.id));
   }
-  return { $cond: [{ $in: [mongoKey('$customer.emirate'), rakEmirateKeys] }, { $switch: {
-    branches: rakDeliveryAreas.map(area => ({ case: { $in: [mongoKey('$customer.city'), [...aliases].filter(([, ids]) => ids.length === 1 && ids[0] === area.id).map(([key]) => key)] }, then: area.id })), default: null,
-  } }, null] };
+  return [...owners].flatMap(([key, ids]) => ids.size === 1 && wanted.has([...ids][0]!) ? [key] : []);
 }
+/** Whether an order's area is in the set (or outside it, with `complement`). The legacy branch tests the typed name against
+ *  the set's names, normalising it once: repeating that per area made each query over 130 KB, billed on every staff read. */
 export function areaScope(areaIds: string[], complement = false): Filter<Document> {
+  const typed: Document = { $and: [{ $in: [mongoKey('$customer.emirate'), rakEmirateKeys] }, { $in: [mongoKey('$customer.city'), unambiguousAreaKeys(areaIds)] }] };
   return { $or: [
     { 'routing.version': 1, 'routing.areaId': { [complement ? '$nin' : '$in']: areaIds } },
-    { 'routing.version': { $ne: 1 }, $expr: complement ? { $not: [{ $in: [legacyAreaExpression(), areaIds] }] } : { $in: [legacyAreaExpression(), areaIds] } },
+    { 'routing.version': { $ne: 1 }, $expr: complement ? { $not: [typed] } : typed },
   ] };
 }
 export function addressReviewScope(): Filter<Document> {

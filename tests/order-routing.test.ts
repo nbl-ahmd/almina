@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { orderRoutingSchema, resolveDeliveryArea, routingDecision, rakDeliveryAreas } from '@almina/contracts';
+import { BSON } from 'mongodb';
+import { addressReviewScope, areaScope } from '../apps/api/src/modules/orders/routing';
 import { lookupPolicy } from '../apps/api/src/modules/auth/retained-policy';
 import { accessPolicy, upstreamQuery } from '../apps/web/src/lib/admin/policy';
 test('routing requires one owner per area, a real fallback, unique stable branches and exact safe aliases', () => {
@@ -35,4 +37,10 @@ test('paused named-area branches stop receiving new routing decisions and fall b
  const policy=orderRoutingSchema.parse({active:true,fallbackBranchId:second,branches:[{id:first,name:'Paused',enabled:false,areaIds:[area.id]},{id:second,name:'Receiving',enabled:true,areaIds:[]}]});
  assert.equal(routingDecision(area.id,policy).branchId,second);
  assert.equal(routingDecision(area.id,{...policy,branches:policy.branches.map(branch=>({...branch,enabled:false}))}).branchId,null);
+});
+
+// The query is sent to the database, and billed, on every staff order read: it must not repeat work for each area.
+test('area filters stay small however many delivery areas there are', () => {
+  assert.ok(BSON.calculateObjectSize(areaScope([rakDeliveryAreas[0]!.id])) < 2 * 1024);
+  assert.ok(BSON.calculateObjectSize(addressReviewScope()) < 25 * 1024);
 });
