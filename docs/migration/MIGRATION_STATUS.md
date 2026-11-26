@@ -1,3 +1,10 @@
+## 2026-11-26 — Production API moved to a separate Render account
+
+The original Render service (`almina-5tse`) was suspended for billing at about 12:07 UTC, so storefront product and category pages
+returned 500. The owner started the API on a separate Render account at `https://almina-yhxk.onrender.com` and set Vercel's
+`API_ORIGIN` to it. The frontend deploy guard (`scripts/tooling/production-vercel-config.mts`) pins the approved origin, so it now
+names the new host; both `API_ORIGIN` and `LEGACY_API_ORIGIN` must point there for a production deploy to run.
+
 ## 2026-11-26 — Catalogue quality and enrichment (branch `claude/catalogue-quality`, not deployed)
 
 Catalogue → **Catalogue quality** shows completeness (photo, brand, GTIN, manufacturer, pack, description, type, category) for live,

@@ -15,6 +15,8 @@ const pull = { merged_at: '2026-10-23', merge_commit_sha: commit, base: { ref: '
 test('production deployment requires both API settings to match the approved origin', () => {
   const env = { APP_ENV: 'production', CHECKOUT_ENABLED: 'true', WEB_ORIGIN: 'https://alminapharmacy.com', API_ORIGIN: productionApiOrigin, LEGACY_API_ORIGIN: productionApiOrigin };
   assert.doesNotThrow(() => requireProductionVercelEnvironment(env));
+  assert.equal(productionApiOrigin, 'https://almina-yhxk.onrender.com');
+  assert.throws(() => requireProductionVercelEnvironment({ ...env, API_ORIGIN: 'https://almina-5tse.onrender.com' }), /API_ORIGIN/, 'the suspended service is no longer approved');
   for (const key of Object.keys(env)) {
     const value = 'synthetic-unexpected-value';
     assert.throws(() => requireProductionVercelEnvironment({ ...env, [key]: value }), { message: `Frontend production configuration requires review: ${key}` });
