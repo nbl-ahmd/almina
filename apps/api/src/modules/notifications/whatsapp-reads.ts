@@ -12,7 +12,7 @@ export async function retainedWhatsappList(db: Db, kind: 'recipients' | 'posters
   const page = whatsappReadPage(raw);
   const name = kind === 'recipients' ? 'conversations' : kind === 'posters' ? 'whatsappposters' : 'whatsappbulkreports';
   const projection: Document = kind === 'recipients' ? { _id: 1, from: 1, name: 1, promotionStatus: 1 }
-    : kind === 'posters' ? { _id: 1, image: 1, gdriveFileId: 1, createdAt: 1 }
+    : kind === 'posters' ? { _id: 1, image: 1, cloudinaryImages: 1, gdriveFileId: 1, createdAt: 1 }
     : { _id: 1, broadcast: { $slice: -100 } };
   return db.collection(name).find(kind === 'posters' ? { archivedAt: { $exists: false } } : {}, { ...query, projection })
     .sort({ _id: -1 }).skip(page.offset).limit(page.limit).toArray();

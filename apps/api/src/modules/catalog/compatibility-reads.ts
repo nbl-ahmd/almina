@@ -11,7 +11,7 @@ const page = z.string().regex(/^\d{1,5}$/).transform(Number);
 const fields = z.object({ disabled: z.boolean().optional(), featured: z.boolean().optional(), sale: z.boolean().optional(),
   category: mongo.optional(), stock: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional() }).strict();
 const options = { maxTimeMS: 3000, allowDiskUse: false };
-const categoryProjection = { _id: 1, name: 1, image: 1, gdriveFileId: 1, color: 1, disabled: 1, createdAt: 1 };
+const categoryProjection = { _id: 1, name: 1, image: 1, cloudinaryImages: 1, gdriveFileId: 1, color: 1, disabled: 1, createdAt: 1 };
 export const compatibilityProductProjection = { ...Object.fromEntries([...familyFieldNames,...productContentNames,'catalogManaged','stockReviewedAt','websiteStockProposed'].map(key=>[key,1])), _id: 1, product_id: 1, category: 1, name: 1, barcode: 1, image: 1, images: 1, cloudinaryImages: 1,
   gdriveFileId: 1, gdriveFileIds: 1, price: 1, stock: 1, vat: 1, sale: 1, featured: 1, disabled: 1, published: 1,
   salePrice: 1, salePercent: 1, saleBadge: 1, saleType: 1, description: 1, familyOptionCount:1,familyPriceVaries:1, createdAt: 1, updatedAt: 1, mediaRevision: 1 };

@@ -5,6 +5,8 @@ export function catalogMutationTags(method: string, path: string): string[] {
   if (/^category(?:\/(?:disable\/)?[a-f0-9]{24})?$/i.test(path)) return [catalogContentTags.categories];
   if (/^banners(?:\/[a-f0-9]{24})?$/i.test(path)) return [catalogContentTags.banners];
   if (['batch', 'recovery/commit'].includes(path)) return [catalogContentTags.categories];
+  // A direct artwork upload may have saved a banner or a category.
+  if (path === 'media/artwork/commit') return [catalogContentTags.categories, catalogContentTags.banners];
   return [];
 }
 export class GatewayBodyTooLarge extends Error {}

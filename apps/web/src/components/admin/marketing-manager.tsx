@@ -5,7 +5,7 @@ import { useConfirm } from './confirm-dialog';
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { Editor } from "grapesjs";
-import { prepareProductImages } from "../../lib/admin/product-images";
+import { uploadArtwork } from "../../lib/admin/artwork-upload";
 import { readProduct, productHref } from "../../lib/catalog/model";
 const Designer = dynamic(() => import("./marketing-designer"), {
   ssr: false,
@@ -439,25 +439,7 @@ export function MarketingManager({
                       const file = event.target.files?.[0];
                       if (file)
                         void perform(async () => {
-                          const [prepared] = await prepareProductImages([file]);
-                          if (!prepared) throw Error("Photo unavailable");
-                          const body = new FormData();
-                          body.set("image", prepared);
-                          const response = await fetch(
-                            "/api/admin/media/marketing",
-                            {
-                              method: "POST",
-                              headers: { "X-CSRF-Protection": "1" },
-                              body,
-                            },
-                          );
-                          if (!response.ok)
-                            throw Error(
-                              "Artwork upload failed. Check image storage configuration.",
-                            );
-                          const result = (await response.json()) as {
-                            image: string;
-                          };
+                          const result = await uploadArtwork('marketing', [file]);
                           editor.current
                             ?.getWrapper()
                             ?.findType("mj-body")[0]

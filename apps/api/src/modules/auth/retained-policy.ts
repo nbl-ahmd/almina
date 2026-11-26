@@ -19,6 +19,7 @@ export const routePolicies = [
   ['POST', '/api/media/products/:id', 'admin'],
   ['POST', '/api/media/products/:id/sign', 'admin'], ['POST', '/api/media/products/:id/commit', 'admin'],
   ['POST','/api/media/marketing','staff'],
+  ['POST','/api/media/artwork/sign','staff'], ['POST','/api/media/artwork/commit','staff'],
   ['GET', '/api/recovery/template', 'admin'], ['POST', '/api/recovery/preview', 'admin'], ['POST', '/api/recovery/commit', 'admin'],
   ['POST', '/api/auth/login', 'login'], ['POST', '/api/auth/logout', 'staff'],
   ['POST', '/api/auth/logout-all', 'staff'], ['GET', '/api/auth/me', 'staff'],

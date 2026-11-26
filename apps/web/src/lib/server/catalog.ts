@@ -98,7 +98,9 @@ export function productImage(product: Product) {
   const legacy = fileName(product.images?.[0]);
   return legacy ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${legacy}` : '/product-placeholder.svg';
 }
-export function categoryImage(image: string | undefined) {
+export function categoryImage(image: string | undefined, stored?: string) {
+  const direct = publicImage(stored, getWebEnvironment().CLOUDINARY_CLOUD_NAME, getWebEnvironment().APP_ENV === 'production');
+  if (direct) return direct;
   const name = fileName(image);
   if (process.env.ALMINA_LOCAL_DEMO === '1' && name?.startsWith('demo-catalog-')) return `/demo-catalog/${name}`;
   return name ? `https://cdn.alminapharmacy.com/cdn/categories/${name}` : '/product-placeholder.svg';

@@ -10,6 +10,11 @@ export async function uploadProductPhotos(productId: string, files: File[], rece
   const request = { uploadKey: receipt.uploadKey, expectedMediaRevision: receipt.expectedMediaRevision, count: prepared.length };
   const ticket = await adminRequest(`media/products/${productId}/sign`, 'POST', request) as Ticket;
   if (!ticket || !/^[A-Za-z0-9_-]{1,100}$/.test(ticket.cloudName) || ticket.uploads?.length !== prepared.length) throw new Error('Photo storage is unavailable. Try again shortly.');
+  await sendToStorage(ticket, prepared);
+  return adminRequest(`media/products/${productId}/commit`, 'POST', request);
+}
+/** Posts each prepared file to storage with its signed fields. */
+export async function sendToStorage(ticket: Ticket | { cloudName: string; uploads: { fields: Record<string, string> }[] }, prepared: File[]) {
   await Promise.all(prepared.map(async (file, index) => {
     const form = new FormData();
     for (const [name, value] of Object.entries(ticket.uploads[index]!.fields)) form.set(name, value);
@@ -20,5 +25,4 @@ export async function uploadProductPhotos(productId: string, files: File[], rece
     // The server checks every photo again before attaching it, so a repeated upload of the same photo is harmless.
     if (!response.ok && response.status !== 409) throw new Error('Photo storage rejected a photo. Retry with the same files.');
   }));
-  return adminRequest(`media/products/${productId}/commit`, 'POST', request);
 }

@@ -1,3 +1,4 @@
+import { artworkResultSchema, artworkTicketSchema } from '@almina/contracts';
 import { staffAlertQuerySchema,staffAlertFeedSchema,staffAlertPreferencesSchema,staffAlertRulesSchema } from '@almina/contracts';
 import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
 import { catalogueListQuerySchema, catalogueQueueQuerySchema, catalogueListSchema, catalogueQueueSchema, catalogueVisibilityResultSchema, productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
@@ -66,6 +67,7 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ['GET', 'products/catalogue', 'staff'], ['GET', 'products/queue', 'admin'], ['POST', 'products/visibility', 'admin'], ['POST', 'products/type', 'admin'],
   ['GET', 'operations', 'admin'],
   ['POST','media/marketing','staff'],
+  ['POST','media/artwork/sign','staff'],['POST','media/artwork/commit','staff'],
   ['GET','catalog-import/template','admin'],
   ...['preview','commit','report','rollback'].map(action=>['POST',`catalog-import/${action}`,'admin'] as [string,string,'admin']),
   ["POST", "auth/login", "login"],
@@ -352,6 +354,8 @@ export function projectAdminResponse(path: string, value: unknown): unknown {
   if(/^media\/products\/[a-fA-F0-9]{24}\/sign$/.test(path))return z.object({cloudName:z.string().regex(/^[A-Za-z0-9_-]{1,100}$/),apiKey:z.string().regex(/^[0-9]{1,100}$/),
     uploads:z.array(z.object({publicId:z.string().regex(/^almina\/products\/[a-f0-9-]{36}-[0-4]$/),fields:z.object({allowed_formats:z.literal('webp'),overwrite:z.literal('false'),public_id:z.string().regex(/^almina\/products\/[a-f0-9-]{36}-[0-4]$/),
       timestamp:z.string().regex(/^[0-9]{10}$/),type:z.literal('upload'),api_key:z.string().regex(/^[0-9]{1,100}$/),signature:z.string().regex(/^[a-f0-9]{64}$/)}).strict()}).strict()).min(1).max(5)}).strict().parse(value);
+  if(path==='media/artwork/sign')return artworkTicketSchema.parse(value);
+  if(path==='media/artwork/commit')return artworkResultSchema.parse(value);
   if(path==='auth/branch-login-availability')return branchLoginAvailabilitySchema.parse(value);
   if(path==='orders/notifications')return staffAlertFeedSchema.parse(value);
   if(path==='orders/notifications/preferences')return staffAlertPreferencesSchema.parse(value);

@@ -34,6 +34,8 @@ export function mediaMetadataInput(collection: Collection, raw: unknown): Docume
   const { locale, ...fields } = parsed.data as { locale?: 'all' | 'en' | 'ar' } & Document;
   return locale === 'en' || locale === 'ar' ? { ...fields, locale } : fields;
 }
+/** Saves a record whose picture was uploaded straight to storage. The caller has verified every address with the provider. */
+export function saveDirectMedia(db: Db, collection: Collection, fields: Document, actor: string) { return saveMediaMetadata(db, collection, fields, actor); }
 export async function createMediaMetadata(db: Db, collection: Collection, raw: unknown, actor: string, assets?: { image: string; gdriveFileId: string }) {
   const fields = mediaMetadataInput(collection, raw);
   if (!collections.includes(collection) || !ObjectId.isValid(actor)

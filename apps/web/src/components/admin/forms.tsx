@@ -7,6 +7,7 @@ import { SwitchRow } from "./kit";
 import { OfferField } from "./offer-field";
 import { PendingPhotosContext } from "./photo-context";
 import { uploadWithReceipt } from '../../lib/admin/photo-upload';
+import { uploadArtwork } from '../../lib/admin/artwork-upload';
 import { Combobox, type ComboOption } from "./shadcn/combobox";
 import { createCategory, loadBrands, rememberBrand } from "../../lib/admin/catalogue-options";
 import { artworkShapeWarning, type ArtworkSize } from "../../lib/storefront/artwork";
@@ -473,8 +474,11 @@ export function AdminForm({
   queue,
   mediaRevision = 0,
   typeUnconfirmed = false,
+  artwork,
 }: {
   path: string;
+  /** Chosen picture files go straight to storage; only their details are sent to the server. */
+  artwork?: { kind: 'banner' | 'category' | 'poster'; files: string[]; categoryId?: string };
   method?: string;
   fields: Field[];
   label?: string;
@@ -629,7 +633,12 @@ export function AdminForm({
     try {
       const isWhatsapp = ['whatsapp/text', 'whatsapp/s'].includes(path);
       const key = isWhatsapp ? await whatsappRetryKey(path, json) : undefined;
-      const result = await adminRequest(path, method, multipart ? data : json, key);
+      const pictures = artwork ? artwork.files.map(name => data.get(name)).filter((value): value is File => value instanceof File) : [];
+      const result = artwork && pictures.length
+        ? await uploadArtwork(artwork.kind, pictures, {
+          ...Object.fromEntries([...data].filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1] !== '' && !artwork.files.includes(entry[0]))),
+          ...(artwork.categoryId ? { categoryId: artwork.categoryId } : {}) })
+        : await adminRequest(path, method, multipart ? data : json, key);
       let savedProductId = productId;
       if (path === 'products' && result && typeof result === 'object' && 'product' in result) {
         const created = result.product as { _id?: unknown };
