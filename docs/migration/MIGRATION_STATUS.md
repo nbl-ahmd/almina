@@ -5,7 +5,9 @@ Database traffic compression, a per-command traffic meter, compact browse record
 **The production database offers no compression** (startup report after `ccb14ee`). Route tracing showed search as the largest
 database traffic; searches the storefront runs for its own pages are now shared for the same bounded window, while shoppers'
 searches stay live (deployed as `3d7f756`). The staff order check was then found to send about 141 KB of delivery-area filter
-each time; a smaller equivalent filter is on branch `claude/smaller-order-area-query`. No bandwidth saving has been measured yet.
+each time; the smaller equivalent filter (`d23e0dc`) cut a check to about 22 KB in production logs. The stock alert sweep's daily
+recheck of the whole catalogue is limited to low-stock products on branch `claude/lighter-stock-recheck`. A whole day's bandwidth
+saving has not been measured yet.
 See [BANDWIDTH_OPTIMIZATION_2026-11-26.md](BANDWIDTH_OPTIMIZATION_2026-11-26.md).
 
 ## 2026-11-25 — Bulk product type for selected products (branch, not deployed)
