@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
-import { createCommandMeter } from '../apps/api/src/modules/operations/command-meter';
+import { createCommandMeter, databaseCompression } from '../apps/api/src/modules/operations/command-meter';
 import { createPersistentDatabase } from '../apps/api/src/modules/operations/persistent-database';
 import { retainedRuntimeConfiguration } from '../apps/api/src/modules/operations/runtime';
 import { retainedCatalogQuery, retainedProductList } from '../apps/api/src/modules/catalog/compatibility-reads';
@@ -16,6 +16,10 @@ test('the production client negotiates compression with a real server and the me
   await database.connect();
   const db = database.getDb();
   try {
+    assert.deepEqual(await databaseCompression(db), ['zlib'], 'the server reports what it agreed to');
+    const plain = await new MongoClient(uri!).connect();
+    try { assert.deepEqual(await databaseCompression(plain.db(db.databaseName)), [], 'nothing is reported when nothing was agreed'); }
+    finally { await plain.close(); }
     const compressed = async () => (await db.admin().command({ serverStatus: 1 })).network.compression?.zlib as { compressor: { bytesIn: number }; decompressor: { bytesIn: number; bytesOut: number } };
     const before = await compressed();
     const rows = Array.from({ length: 200 }, (_, index) => ({ index, description: 'Synthetic product description. '.repeat(100) }));

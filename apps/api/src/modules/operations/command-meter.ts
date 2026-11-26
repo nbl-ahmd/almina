@@ -1,4 +1,4 @@
-import { BSON, type MongoClient } from 'mongodb';
+import { BSON, type Db, type MongoClient } from 'mongodb';
 
 /** Says which database commands move the most data, so heavy queries and bursts can be traced to a collection.
  *
@@ -48,3 +48,10 @@ export function createCommandMeter(limit = 8) {
   };
 }
 export type CommandMeter = ReturnType<typeof createCommandMeter>;
+
+/** The compression the server agreed to for this connection. Asking for compression is not enough: the driver sends plain
+ *  traffic, without any error, when the server does not agree, so the outcome is reported once at startup. */
+export async function databaseCompression(db: Db): Promise<string[]> {
+  const agreed: unknown = (await db.admin().command({ hello: 1 })).compression;
+  return Array.isArray(agreed) ? agreed.filter((name): name is string => typeof name === 'string' && /^[a-z]{1,20}$/.test(name)) : [];
+}

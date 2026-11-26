@@ -9,8 +9,9 @@ suspension; that was never established.
 
 ## Changes
 
-1. **Database compression.** The production client (`operations/runtime.ts`) and the standalone client negotiate `zlib`, which is
-   built into the driver. It compresses traffic in both directions.
+1. **Database compression.** The production client (`operations/runtime.ts`) and the standalone client ask for `zlib`, which is
+   built into the driver. It compresses traffic in both directions **only if the server agrees. On the production cluster it has not
+   reduced traffic** ([observation below](#production-observation-26-november)).
 2. **Command meter.** Each `net_usage` line also carries `db`: the commands and collections that moved the most bytes in that
    window (names, counts and totals only; sizes are measured before compression). `NET_USAGE_LOG=false` turns off both.
 3. **Compact browse records.** Shopper list requests send `x-catalog-view: card`. The API then leaves out description,
@@ -71,14 +72,39 @@ the new storage address.
 - Rolling back: pictures for categories and posters added after this release will not show on the previous release (it looks for a
   legacy file or Drive entry). Re-upload them there. Banners, products and marketing artwork are unaffected.
 
+## Production observation (26 November)
+
+Deployed as `6bbde08`. In the first two `net_usage` windows, bytes on the wire to and from Atlas matched the size of the commands
+and replies before compression:
+
+| Window ending (UTC) | Wire out / in | Size before compression, eight busiest commands (sent / received) |
+|---|---|---|
+| 04:13 (includes startup work) | 1.63 / 10.70 MB | 1.42 / 10.54 MB |
+| 04:23 | 1.36 / 4.83 MB | 1.31 / 4.75 MB |
+
+Compressed catalogue data would be several times smaller. A local check over TLS shows the meter counts compressed bytes (2.24 MB
+of documents arrived as 0.03 MB), so this is not a measurement error. **The cause is unconfirmed.** The likeliest is that the
+production server does not agree to compression; the Atlas tier pages read on 26 November neither promise nor exclude it. Leaving
+the setting in place costs nothing, because the driver then sends plain traffic.
+
+The API now logs one `database_compression` line at startup with the algorithms the server reports as agreed (checked against a
+local MongoDB server only). An empty list together with uncompressed windows confirms that nothing was agreed. If it lists `zlib`
+while traffic stays uncompressed, investigate the path between the server and Atlas.
+
+No bandwidth saving from compression should be assumed until that line and later windows show otherwise. In the second window,
+422 product `aggregate` commands sent about 1.15 MB of the 2.07 MB total outbound (about 56%, roughly 2.7 KB each), so the
+number and size of those queries is the largest billed item seen so far. Replies are inbound: free on Render, but counted against
+the Atlas weekly transfer limit. Which requests drive the queries is not yet known.
+
 ## Verify after deploy
 
-1. Compare `net_usage` totals for similar periods before and after. No saving has been measured yet.
+1. Compare `net_usage` totals for similar periods before and after. No saving has been measured yet, and none from compression
+   is expected until the server agrees to it. Read the `database_compression` startup line.
 2. Read the `db` entries to find the largest commands, including any burst like the unexplained 32 MB window at 06:53 UTC on
    25 November.
 3. Upload one banner, one category picture and one poster, and send one WhatsApp template with the new poster address.
 
 ## Not verified
 
-Production compression and savings, real Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address,
+Any production saving, the reason compression is not applied, real Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address,
 and web-host cache usage.
