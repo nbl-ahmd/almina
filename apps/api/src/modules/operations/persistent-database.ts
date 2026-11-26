@@ -2,11 +2,12 @@ import { MongoClient, type Db, type MongoClientOptions } from 'mongodb';
 import { HttpError } from '../../errors.js';
 import type { LocalWriteSignal } from '../notifications/wake.js';
 import type { retainedRuntimeConfiguration } from './runtime.js';
+import type { CommandMeter } from './command-meter.js';
 type Connection = { connect: () => Promise<unknown>; db: () => Db; close: () => Promise<void> };
 // Explicit startup owns one pool. Request handlers can neither construct a client nor reopen a closed service.
 export function createPersistentDatabase(config: Pick<ReturnType<typeof retainedRuntimeConfiguration>, 'mongoUri' | 'mongoOptions'>,
   factory: (uri: string, options: MongoClientOptions) => Connection = (uri, options) => new MongoClient(uri, options),
-  hooks: { localWrites?: LocalWriteSignal } = {}) {
+  hooks: { localWrites?: LocalWriteSignal; commandMeter?: CommandMeter | undefined } = {}) {
   let client: Connection | undefined, db: Db | undefined, pending: Promise<Db> | undefined, closed = false, closing: Promise<void> | undefined;
   function unavailable() { return new HttpError(503, 'SERVICE_UNAVAILABLE'); }
   async function connect(): Promise<Db> {
@@ -15,7 +16,10 @@ export function createPersistentDatabase(config: Pick<ReturnType<typeof retained
       try { client = factory(config.mongoUri, { ...config.mongoOptions, appName: 'almina-persistent-api' }); }
       catch { throw unavailable(); }
       const connection = client;
-      if (hooks.localWrites && 'on' in connection && typeof connection.on === 'function') hooks.localWrites.attach(connection as unknown as MongoClient);
+      if ('on' in connection && typeof connection.on === 'function') {
+        hooks.localWrites?.attach(connection as unknown as MongoClient);
+        hooks.commandMeter?.attach(connection as unknown as MongoClient);
+      }
       pending = Promise.resolve().then(() => {
         if (closed) throw unavailable();
         return connection.connect();

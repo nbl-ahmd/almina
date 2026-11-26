@@ -6,11 +6,13 @@ try {
   runtime = retainedRuntimeConfiguration(process.env);
 } catch { console.error('Retained runtime configuration invalid'); process.exit(1); }
 const domain = require('./commerce/dist/service.cjs');
-// Logs one `net_usage` line per busy window naming the peers that received the most bytes, so a Render bandwidth spike can be attributed.
-if (process.env.NET_USAGE_LOG !== 'false') require('./diagnostics/network-usage.cjs').createNetworkMeter();
+// Logs one `net_usage` line per busy window naming the peers that received the most bytes and the busiest database commands,
+// so a Render bandwidth spike can be attributed.
+const commandMeter = process.env.NET_USAGE_LOG !== 'false' ? domain.createCommandMeter() : undefined;
+if (commandMeter) require('./diagnostics/network-usage.cjs').createNetworkMeter({ database: () => commandMeter.drain() });
 // The API process makes every order and notification write, so the driver's own command events wake the workers instantly.
 const localWrites = domain.createLocalWriteSignal();
-const database = domain.createPersistentDatabase(runtime, undefined, { localWrites });
+const database = domain.createPersistentDatabase(runtime, undefined, { localWrites, commandMeter });
 const { createLegacyApp } = require('./app');
 const { secureRealtime } = require('./security/realtime.cjs');
 const { development, origins, trustProxy } = runtime;
