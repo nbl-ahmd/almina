@@ -76,7 +76,15 @@ const knownBrands = [
   "Chicco",
   "Johnson",
 ];
+/** The first eight in-stock brands, alphabetically: a short shelf for browsing, not a complete list. */
 export function catalogueBrands(products: Product[]) {
+  return [...brandProductCounts(products).keys()].sort((a, b) => a.localeCompare(b)).slice(0, 8);
+}
+/** Brands worth submitting for search: those with at least `minimum` in-stock products. Thinner brand pages stay reachable by link. */
+export function sitemapBrands(products: Product[], minimum = 3) {
+  return [...brandProductCounts(products)].filter(([, count]) => count >= minimum).map(([name]) => name).sort((a, b) => a.localeCompare(b));
+}
+function brandProductCounts(products: Product[]) {
   const counts = new Map<string, number>();
   for (const product of uniqueProducts(products).filter(
     (item) => item.stock > 0,
@@ -89,7 +97,7 @@ export function catalogueBrands(products: Product[]) {
       );
     if (brand) counts.set(brand, (counts.get(brand) ?? 0) + 1);
   }
-  return [...counts.keys()].sort((a, b) => a.localeCompare(b)).slice(0, 8);
+  return counts;
 }
 export function bannerDestination(value: unknown): string | null {
   if (

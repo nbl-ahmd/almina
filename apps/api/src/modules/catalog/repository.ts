@@ -50,7 +50,12 @@ export function createCatalogRepository(getDb: GetDb, observe?: CatalogQueryObse
           { $lookup: { from: 'categories', localField: 'category', foreignField: '_id',
             pipeline: [{ $match: { archivedAt: { $exists: false }, disabled: { $ne: true }, name: { $type: 'string', $ne: '' } } }, { $project: { _id: 1 } }], as: 'visibleCategory' } },
           { $match: { 'visibleCategory.0': { $exists: true } } },
-        ] : []),
+        ] : [
+          // A category page with no shoppable products is a soft 404, so it is not submitted.
+          { $lookup: { from: 'products', localField: '_id', foreignField: 'category',
+            pipeline: [{ $match: { archivedAt: { $exists: false }, ...retailAudienceFilter, disabled: { $ne: true }, published: { $ne: false }, active: { $ne: false } } }, { $limit: 1 }, { $project: { _id: 1 } }], as: 'visibleProduct' } },
+          { $match: { 'visibleProduct.0': { $exists: true } } },
+        ]),
         { $limit: 1001 }, { $project: { _id: 1, name: 1, ...(product ? { product_id: 1 } : {}) } },
       ], { ...queryOptions, allowDiskUse: false }).toArray(), observe);
       const items = docs.slice(0, 1000);
