@@ -12,6 +12,7 @@ export { SERVER_SOCKET_TIMEOUT_MS, STREAM_HEARTBEAT_MS } from './modules/orders/
 export { issueStreamTicket, consumeStreamTicket, STREAM_MAX_LIFETIME_MS } from './modules/orders/stream-tickets.js';
 export { artworkTickets, commitArtwork } from './modules/media/artwork.js';
 export { createCommandMeter, databaseCompression } from './modules/operations/command-meter.js';
+export { attributeTraffic, trafficLabel, trafficContext } from './modules/operations/traffic-context.js';
 export { createOutboxWake, createLocalWriteSignal, wakeLoop, type Wake, type LocalWriteSignal } from './modules/notifications/wake.js';
 export * from './modules/media/retention.js';
 export * from './modules/media/cloudinary.js';
