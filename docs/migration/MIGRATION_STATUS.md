@@ -1,3 +1,12 @@
+## 2026-11-26 — Catalogue quality and enrichment (branch `claude/catalogue-quality`, not deployed)
+
+Catalogue → **Catalogue quality** shows completeness (photo, brand, GTIN, manufacturer, pack, description, type, category) for live,
+in-stock or all products, Google Merchant readiness through the feed's own rules, barcode health and live products the storefront
+cannot read, and ranks incomplete products by 90-day order units, stock and visibility. Administrators can confirm barcodes as GTINs
+in bulk and bring details in from a reviewed spreadsheet (fills blanks by default, audited, never publishes). Products gains five gap
+filters; the dashboard shows live completeness. No migration. See [catalogue quality](CATALOGUE_QUALITY_2026-11-26.md) and the
+[SEO action plan](SEO_ACTION_PLAN_2026-11-26.md).
+
 ## 2026-11-26 — API bandwidth reductions
 
 Database traffic compression, a per-command traffic meter, compact browse records, bounded storefront caching (up to 60 seconds,

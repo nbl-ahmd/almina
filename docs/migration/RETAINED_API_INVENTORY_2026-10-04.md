@@ -27,6 +27,12 @@ Current ownership reviewed on 2026-10-05 after #41 and the consent telemetry can
 | GET | /api/products/catalogue | staff | maintained catalog/admin-catalogue.ts; bounded admin product page with view/filter counts and exact code lookup; read-only (2026-11-25) |
 | GET | /api/products/queue | admin | maintained catalog/admin-catalogue.ts; previous/next product inside the same fixed list filters; read-only (2026-11-25) |
 | POST | /api/products/type | admin | maintained media/metadata.ts; confirmed product type for at most 50 products without one; never overwrites; prescription also hides; audit rows (2026-11-25) |
+| GET | /api/products/quality | admin | maintained catalog/quality.ts; catalogue completeness, Google feed readiness, identifier health, unreadable live products; bounded read-only (2026-11-26) |
+| GET | /api/products/enrichment | admin | maintained catalog/quality.ts; incomplete products ranked by 90-day order units, stock and visibility; fixed query, paged, read-only (2026-11-26) |
+| GET | /api/products/enrichment/export | admin | maintained catalog/quality.ts; the same list as CSV, up to 2,000 rows, formula-safe cells; read-only (2026-11-26) |
+| POST | /api/products/enrichment/preview | admin | maintained catalog/enrichment-import.ts; parses an enrichment CSV (≤1 MB, ≤4,000 rows) and lists changes; writes nothing (2026-11-26) |
+| POST | /api/products/enrichment/apply | admin | maintained catalog/enrichment-import.ts; confirmed content fields only, re-validated, stale rows skipped, never publishes; audit rows (2026-11-26) |
+| POST | /api/products/gtin-from-barcode | admin | maintained catalog/quality.ts; confirmed, ≤100 products; fills an empty GTIN from a valid, unique trade-GTIN barcode; audit rows (2026-11-26) |
 | POST | /api/products/visibility | admin | maintained media/metadata.ts; idempotent live/hidden for at most 50 products with per-product refusals and audit rows (2026-11-25) |
 | GET | /api/orders/notifications | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
 | POST | /api/orders/notifications/read | staff | maintained notifications/center.ts; scoped persistent staff alerts, personal reads/preferences, rate-limited device test, administrator stock rules |
