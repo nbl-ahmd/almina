@@ -1,4 +1,4 @@
-import { artworkResultSchema, artworkTicketSchema } from '@almina/contracts';
+import { artworkResultSchema, artworkTicketSchema, qualityReportSchema, enrichmentQueueSchema, enrichmentQuerySchema, enrichmentExportQuerySchema } from '@almina/contracts';
 import { staffAlertQuerySchema,staffAlertFeedSchema,staffAlertPreferencesSchema,staffAlertRulesSchema } from '@almina/contracts';
 import {searchQuerySchema,searchAdminSchema,searchTestSchema} from '@almina/contracts/search';
 import { catalogueListQuerySchema, catalogueQueueQuerySchema, catalogueListSchema, catalogueQueueSchema, catalogueVisibilityResultSchema, productContentNames, imageReviewListQuerySchema, imageReviewExportQuerySchema, projectImageReviewResponse } from '@almina/contracts';
@@ -65,6 +65,8 @@ const rules: [string, string, "admin" | "staff" | "login"][] = [
   ...['stage', 'preview', 'import', 'publish', 'draft'].map(action => ['POST', `image-review/${action}`, 'admin'] as [string, string, 'admin']),
   ['GET', 'products/needs-action', 'admin'],
   ['GET', 'products/catalogue', 'staff'], ['GET', 'products/queue', 'admin'], ['POST', 'products/visibility', 'admin'], ['POST', 'products/type', 'admin'],
+  ['GET', 'products/quality', 'admin'], ['GET', 'products/enrichment', 'admin'], ['GET', 'products/enrichment/export', 'admin'],
+  ['POST', 'products/enrichment/preview', 'admin'], ['POST', 'products/enrichment/apply', 'admin'], ['POST', 'products/gtin-from-barcode', 'admin'],
   ['GET', 'operations', 'admin'],
   ['POST','media/marketing','staff'],
   ['POST','media/artwork/sign','staff'],['POST','media/artwork/commit','staff'],
@@ -143,6 +145,11 @@ export function upstreamQuery(path: string, input: URLSearchParams): string {
     const parsed = (path.endsWith('/export') ? imageReviewExportQuerySchema : imageReviewListQuerySchema).parse(values);
     return new URLSearchParams(Object.entries(parsed).map(([key, value]) => [key, String(value)])).toString();
   }
+  if (path === 'products/enrichment' || path === 'products/enrichment/export') {
+    const parsed = (path.endsWith('/export') ? enrichmentExportQuerySchema : enrichmentQuerySchema).parse(values);
+    return new URLSearchParams(Object.entries(parsed).map(([key, value]) => [key, String(value)])).toString();
+  }
+  if (path === 'products/quality') { if (input.size) throw new Error('Invalid query'); return ''; }
   if (path === 'products/catalogue' || path === 'products/queue') {
     const parsed = (path === 'products/queue' ? catalogueQueueQuerySchema : catalogueListQuerySchema).parse(values);
     return new URLSearchParams(Object.entries(parsed).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString();
@@ -354,6 +361,8 @@ export function projectAdminResponse(path: string, value: unknown): unknown {
   if(/^media\/products\/[a-fA-F0-9]{24}\/sign$/.test(path))return z.object({cloudName:z.string().regex(/^[A-Za-z0-9_-]{1,100}$/),apiKey:z.string().regex(/^[0-9]{1,100}$/),
     uploads:z.array(z.object({publicId:z.string().regex(/^almina\/products\/[a-f0-9-]{36}-[0-4]$/),fields:z.object({allowed_formats:z.literal('webp'),overwrite:z.literal('false'),public_id:z.string().regex(/^almina\/products\/[a-f0-9-]{36}-[0-4]$/),
       timestamp:z.string().regex(/^[0-9]{10}$/),type:z.literal('upload'),api_key:z.string().regex(/^[0-9]{1,100}$/),signature:z.string().regex(/^[a-f0-9]{64}$/)}).strict()}).strict()).min(1).max(5)}).strict().parse(value);
+  if(path==='products/quality')return qualityReportSchema.parse(value);
+  if(path==='products/enrichment')return enrichmentQueueSchema.parse(value);
   if(path==='media/artwork/sign')return artworkTicketSchema.parse(value);
   if(path==='media/artwork/commit')return artworkResultSchema.parse(value);
   if(path==='auth/branch-login-availability')return branchLoginAvailabilitySchema.parse(value);

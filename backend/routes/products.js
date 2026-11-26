@@ -76,6 +76,32 @@ productRouter.get('/catalogue', async (req, res) => {
 productRouter.get('/queue', async (req, res) => {
   res.json(await catalogDomain().adminCatalogueQueue(await catalogDb(req), req.query));
 });
+// Catalogue quality and enrichment (administrators; enforced by the retained access policy).
+const noQuery = req => { if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST'); };
+const qualityConfig = () => ({ cloudName: process.env.CLOUDINARY_CLOUD_NAME || '', origin: process.env.GROWTH_WEB_ORIGIN || process.env.WEB_ORIGIN || 'https://alminapharmacy.com' });
+productRouter.get('/quality', async (req, res) => {
+  noQuery(req);
+  res.json(await catalogDomain().catalogueQualityReport(await catalogDb(req), qualityConfig()));
+});
+productRouter.get('/enrichment', async (req, res) => {
+  res.json(await catalogDomain().catalogueEnrichmentQueue(await catalogDb(req), req.query));
+});
+productRouter.get('/enrichment/export', async (req, res) => {
+  const csv = await catalogDomain().catalogueEnrichmentCsv(await catalogDb(req), req.query);
+  res.type('text/csv').attachment('catalogue-enrichment.csv').send(csv);
+});
+productRouter.post('/enrichment/preview', async (req, res) => {
+  noQuery(req);
+  res.json(await catalogDomain().previewEnrichmentImport(await catalogDb(req), req.body));
+});
+productRouter.post('/enrichment/apply', async (req, res) => {
+  noQuery(req);
+  res.json(await catalogDomain().applyEnrichmentImport(await catalogDb(req), req.body, req.identity.id));
+});
+productRouter.post('/gtin-from-barcode', async (req, res) => {
+  noQuery(req);
+  res.json(await catalogDomain().useBarcodesAsGtin(await catalogDb(req), req.body, req.identity.id));
+});
 productRouter.post('/visibility', async (req, res) => {
   if (Object.keys(req.query).length) throw require('../security/boundary.cjs').fail(400, 'INVALID_REQUEST');
   res.json(await catalogDomain().setProductsVisibility(await catalogDb(req), req.body, req.identity.id));

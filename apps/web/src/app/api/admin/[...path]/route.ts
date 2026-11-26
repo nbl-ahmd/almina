@@ -58,7 +58,7 @@ async function handle(
       !type.startsWith("multipart/form-data; boundary=")
     )
       throw new AdminError(415);
-    if (type.startsWith("application/json") && body && body.length > (["recovery/preview","catalog-import/preview"].includes(path) ? 4 * 1024 * 1024 : 128 * 1024))
+    if (type.startsWith("application/json") && body && body.length > (["recovery/preview","catalog-import/preview","products/enrichment/preview","products/enrichment/apply"].includes(path) ? 4 * 1024 * 1024 : 128 * 1024))
       throw new AdminError(413);
     const result = await upstream(path + (query ? `?${query}` : ""), {
       method: request.method,
@@ -82,6 +82,9 @@ async function handle(
       }
       throw new AdminError(result.status >= 400 ? result.status : 502);
     }
+    if (path === "products/enrichment/export") return new NextResponse(await result.text(), {
+      headers: { ...headers, "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": 'attachment; filename="catalogue-enrichment.csv"' },
+    });
     if (["recovery/template","catalog-import/template"].includes(path)) return new NextResponse(await result.text(), {
       headers: { ...headers, "Content-Type": "text/csv", "Content-Disposition": 'attachment; filename="recovery-products.csv"' },
     });

@@ -48,6 +48,8 @@ function createLegacyApp(options) {
   installBoundary(app, { ...options, auth });
   app.use('/api/recovery', express.json({ limit: '4mb', inflate: false }));
   app.use('/api/catalog-import', express.json({ limit: '4mb', inflate: false }));
+  // Enrichment files: up to 1 MB of CSV inside JSON on preview, and the confirmed change list on apply.
+  app.use(['/api/products/enrichment/preview', '/api/products/enrichment/apply'], express.json({ limit: '4mb', inflate: false }));
   app.get('/api/catalog-export/state', wrap(async(_req,res)=>res.json(await domain.catalogExportState(await getDb()))));
   app.get('/api/catalog-export/products', wrap(async(req,res)=>res.json(await domain.catalogExportPage(await getDb(),req.query))));
   app.use(express.json({ limit: '128kb', inflate: false, verify(req, _res, buffer) {
