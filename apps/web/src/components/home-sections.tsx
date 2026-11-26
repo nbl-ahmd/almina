@@ -32,7 +32,7 @@ function Linked({ art, className, children, data }: { art: Art; className: strin
 const ofBrand = (products: Product[], brand: string) => products.filter(product => brandSlug(product.brand || product.familyBrand || '') === brandSlug(brand));
 /** Every filter given must match; the catalogue applies them, and a brand is searched then matched exactly. */
 async function filteredProducts({ categoryId, brand, offers, inStock, minPrice, maxPrice, sort }: Extract<Extract<Custom, { type: 'products' }>['source'], { kind: 'filtered' }>) {
-  const { products } = await getProducts({ ...(brand ? { q: brand } : {}), ...(categoryId ? { category: categoryId } : {}), ...(offers ? { offers: true } : {}), ...(inStock ? { inStock: true } : {}),
+  const { products } = await getProducts({ ...(brand ? { q: brand, sharedSearch: true } : {}), ...(categoryId ? { category: categoryId } : {}), ...(offers ? { offers: true } : {}), ...(inStock ? { inStock: true } : {}),
     ...(minPrice === undefined ? {} : { minPrice }), ...(maxPrice === undefined ? {} : { maxPrice }), ...(sort ? { sort } : {}) }).catch(() => ({ products: [] as Product[] }));
   return brand ? ofBrand(products, brand) : products;
 }
@@ -44,7 +44,7 @@ export async function sectionProducts(section: Extract<Custom, { type: 'products
     : source.kind === 'filtered' ? await filteredProducts(source)
       : source.kind === 'category' ? (await getProducts({ category: source.categoryId }).catch(() => ({ products: [] }))).products
       : source.kind === 'offers' ? (await getProducts({ offers: true }).catch(() => ({ products: [] }))).products
-        : ofBrand((await getProducts({ q: source.brand }).catch(() => ({ products: [] }))).products, source.brand);
+        : ofBrand((await getProducts({ q: source.brand, sharedSearch: true }).catch(() => ({ products: [] }))).products, source.brand);
   // In-stock first, keeping the source order; prices and stock are read live, never stored in the layout.
   return [...rows.filter(product => product.stock > 0), ...rows.filter(product => product.stock <= 0)].slice(0, limit);
 }

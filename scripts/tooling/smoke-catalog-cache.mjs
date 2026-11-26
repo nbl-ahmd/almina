@@ -6,12 +6,24 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createStorefrontFixture, product, category } from './storefront-fixture.mjs';
+import { searchFixtureResponse } from './search-fixture.mjs';
 
 const root = new URL('../../', import.meta.url);
 const require = createRequire(new URL('apps/web/package.json', root));
 const { server: source, requests } = createStorefrontFixture();
 const handler = source.listeners('request')[0];
+const searches = [];
+let degradedTerm = '';
 const fixture = createServer((req, res) => {
+  const url = new URL(req.url, 'http://fixture.invalid');
+  if (url.pathname === '/api/v1/search') {
+    searches.push(url.searchParams.get('q'));
+    if (url.searchParams.get('q') === degradedTerm) {
+      const body = searchFixtureResponse(url, [product], category);
+      body.data.unavailable = true;
+      res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); return;
+    }
+  }
   if (req.url === '/api/v1/auth/me') {
     if (!req.headers.cookie?.includes('synthetic-admin')) { res.writeHead(401); res.end('{}'); return; }
     res.setHeader('Content-Type', 'application/json');
@@ -48,6 +60,12 @@ try {
   const listReads = count('/api/products');
   assert.ok(listReads >= 1);
   await read('/'); assert.equal(count('/api/products'), listReads, 'Browse lists are shared within the cache window.');
+  // The homepage collections ask for twelve terms, nine of them different; two renders must cost nine searches in all.
+  const builtIn = new Set(searches).size;
+  assert.equal(builtIn, 9);
+  assert.equal(searches.length, builtIn, 'Each built-in search runs once per window, even when two collections share it.');
+  await read('/search?q=cerave'); await read('/search?q=cerave');
+  assert.equal(searches.length, builtIn + 2, 'What a shopper types is always searched live, even a term a collection uses.');
   assert.match(html, /AED 20\.00/);
   product.salePrice = 17;
   assert.match(await read('/'), /AED 20\.00/, 'A browse list may be reused until its window ends or staff purge it.');
@@ -55,7 +73,17 @@ try {
   const purgeProducts = await fetch(origin + '/api/catalog/revalidate', { method: 'POST', headers: { Origin: origin, 'X-CSRF-Protection': '1',
     'Content-Type': 'application/json', Cookie: 'session=synthetic-admin' }, body: JSON.stringify({ kind: 'products' }) });
   assert.equal(purgeProducts.status, 200);
+  searches.length = 0;
   assert.match(await read('/'), /AED 17\.00/, 'A purged browse list shows the new price.');
+  assert.equal(searches.length, builtIn, 'A staff purge also refreshes the shared searches.');
+  // A degraded answer is never reused: while it is the stored one, that term is asked for again.
+  degradedTerm = 'cerave';
+  assert.equal((await fetch(origin + '/api/catalog/revalidate', { method: 'POST', headers: { Origin: origin, 'X-CSRF-Protection': '1',
+    'Content-Type': 'application/json', Cookie: 'session=synthetic-admin' }, body: JSON.stringify({ kind: 'products' }) })).status, 200);
+  await read('/');
+  degradedTerm = ''; searches.length = 0;
+  await read('/');
+  assert.deepEqual(searches, ['cerave'], 'Only the degraded search is retried, so recovery does not wait for the window.');
   product.stock = 0;
   assert.match(await read(`/products/daily-care--${product.product_id}`), /out of stock|unavailable/i, 'The product page always reads the current stock.');
   category.name = 'Renamed synthetic category';
@@ -70,7 +98,7 @@ try {
   const hidden = await fetch(`${origin}/categories/renamed-synthetic-category--${category._id}`);
   assert.equal(hidden.status, 404, 'Identity visibility must bypass the presentation cache.');
   assert.ok(count('/api/category') >= 3);
-  console.log('Compiled cache checks passed: reuse, admin-only tagged purge, shared browse lists, live product pages and fresh category visibility.');
+  console.log('Compiled cache checks passed: reuse, admin-only tagged purge, shared browse lists and page searches, live shopper searches and product pages and fresh category visibility.');
 } finally {
   Object.assign(category, { name: original.name, disabled: original.disabled });
   Object.assign(product, { stock: original.stock, salePrice: original.salePrice });

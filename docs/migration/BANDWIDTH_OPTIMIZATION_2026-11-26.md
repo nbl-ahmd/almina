@@ -31,15 +31,18 @@ suspension; that was never established.
 | Browse lists: first five pages, no price filter | Up to `CATALOG_CACHE_SECONDS` (default 60) |
 | Published storefront content: homepage layout, campaigns, custom and brand pages, pharmacy details, shipping policy, brand list | Up to the same window |
 | Public offer popup and coupon list | Up to the same window |
+| Searches the storefront runs itself: collections, brand rows in homepage sections, brand pages, the sitemap's collection check | Up to the same window, same product tag |
 | Categories and banners | 60 seconds with tag purge (unchanged) |
-| Product page, search, price-filtered and deep list pages, cart lines, checkout, store status, staff and customer reads | Never |
+| Product page, searches and suggestions from what a shopper types, price-filtered and deep list pages, cart lines, checkout, store status, staff and customer reads | Never |
 
 - The current window number is part of the cache key, so an entry is **never older than the window**. There is no
   stale-while-revalidate: a quiet page cannot show hours-old stock.
 - Staff changes saved through the website purge the product or content tag at once. Changes the API makes on its own (orders
   reducing stock, background image publication) appear within the window.
-- A browse list (including the cart's suggestion row) can therefore show a price or stock up to one window old. The product page,
-  cart lines and checkout always read current values, and order creation validates price and stock on the server as before.
+- A shared search is asked for once per distinct term in a render. A degraded answer (`unavailable`) is not reused: the term is
+  searched again live. Looking up a brand name from a visitor-typed `/brands/…` address stays live, so addresses cannot fill the cache.
+- A browse list (including the cart's suggestion row) or a shared search can therefore show a price or stock up to one window
+  old. The product page, cart lines and checkout always read current values, and order creation validates price and stock on the server as before.
 - `CATALOG_CACHE_SECONDS=0` on the web host turns the new caching off (allowed 0–300). Browser tests run with it off;
   `smoke:catalog-cache` covers it on.
 - The cache uses the web host's data cache; watch its usage there.
@@ -129,15 +132,36 @@ field list about 0.9 KB), and each product-page query 2.0–2.6 KB. Shrinking th
 Responses need no change: the API compresses when asked (a 30-product list: 38.5 KB to 4.4 KB). Plain Node `fetch` asks for
 `gzip`, and the website's server `fetch` is built on it (not observed on the hosted website).
 
+## Production result and page searches (26 November)
+
+Deployed as `ccb14ee`. The startup line reported `requested: ["zlib"]`, `agreed: []`, `offered: []`: **the production database
+offers no compression**, so this setting cannot reduce traffic there. It is left in place because the driver then sends plain
+traffic. Whether another Atlas tier compresses is not verified.
+
+Route totals (search is `GET /api/v1/search`):
+
+| Window ending (UTC) | All: sent / received | Search: commands, sent / received |
+|---|---|---|
+| 05:25 (includes startup and verification requests) | 1.68 / 7.83 MB | 241, 0.49 / 5.01 MB |
+| 05:35 | 1.31 / 4.81 MB | 185, 0.38 / 3.70 MB |
+
+Code reading explains a large part: the website searched live for terms it chose itself. One homepage render asked for twelve
+collection terms (nine distinct), and collection pages, brand pages, homepage brand rows and the static sitemap did the same.
+These searches are now shared as described in the cache policy. How much of the logged search traffic they account for, as
+opposed to shoppers' own searches, is not known until the windows after release are read.
+
+Sharing page searches changes only the website: no data or API change. `CATALOG_CACHE_SECONDS=0` switches it off with the other
+storefront caching, or revert the change.
+
 ## Verify after deploy
 
-1. Compare `net_usage` totals for similar periods before and after. No saving has been measured yet, and none from compression
-   is expected until the server agrees to it. Read the `database_compression` startup line.
+1. Compare `net_usage` totals for similar periods before and after, and the `GET /api/v1/search` route against the two windows
+   above. No saving has been measured yet, and none from compression is expected on this database.
 2. Read the `db` entries to find the largest commands, including any burst like the unexplained 32 MB window at 06:53 UTC on
    25 November.
 3. Upload one banner, one category picture and one poster, and send one WhatsApp template with the new poster address.
 
 ## Not verified
 
-Any production saving, the reason compression is not applied, real Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address,
-and web-host cache usage.
+Any production saving, the effect of sharing page searches in production, whether another database tier compresses, real
+Cloudinary uploads for the new artwork kinds, WhatsApp accepting the new poster address, and web-host cache usage.
