@@ -57,7 +57,8 @@ async function reset() {
 }
 await reset();
 const app = express() as Express;
-app.use(express.json({ limit: '128kb' }));
+// Only the fixture's own routes: /api bodies reach the API's parsers and their per-route limits, as in production.
+app.use('/__fixture', express.json({ limit: '128kb' }));
 app.post('/__fixture/products', async (req, res) => {
   const rows = Array.isArray(req.body?.products) ? req.body.products as Record<string, unknown>[] : [];
   const docs = rows.map((row, index) => ({ product_id: `PD${7000 + fixtureCase * 100 + index}`, category: new ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa'), price: 12, stock: 5, productType: 'general',

@@ -12,6 +12,8 @@ export const routePolicies = [
   ['GET', '/api/products/needs-action', 'admin'],
   // Listed before '/api/products/:id' so these names are never read as an identifier.
   ['GET', '/api/products/catalogue', 'staff'], ['GET', '/api/products/queue', 'admin'], ['POST', '/api/products/visibility', 'admin'], ['POST', '/api/products/type', 'admin'],
+  ['GET', '/api/products/quality', 'admin'], ['GET', '/api/products/enrichment', 'admin'], ['GET', '/api/products/enrichment/export', 'admin'],
+  ['POST', '/api/products/enrichment/preview', 'admin'], ['POST', '/api/products/enrichment/apply', 'admin'], ['POST', '/api/products/gtin-from-barcode', 'admin'],
   ['GET', '/api/operations', 'admin'],
   ['GET','/api/catalog-export/state','public'],['GET','/api/catalog-export/products','public'],
   ['GET','/api/catalog-import/template','admin'],

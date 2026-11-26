@@ -7,7 +7,8 @@ import { buttonVariants, focusRing, inputClass, selectClass } from './shadcn/sty
    worked through from the editor. */
 
 const number = (value: number) => value.toLocaleString('en-AE');
-const toolOrder: CatalogueFilter[] = ['ready', 'missing-photo', 'classification', 'identity', 'content', 'prescription', 'has-photo'];
+const toolOrder: CatalogueFilter[] = ['ready', 'missing-photo', 'classification', 'identity', 'content', 'prescription', 'has-photo',
+  'missing-brand', 'missing-gtin', 'missing-pack', 'missing-manufacturer', 'missing-description'];
 
 
 export function CatalogueFiltersBar({ list, context, limit, categories }: {

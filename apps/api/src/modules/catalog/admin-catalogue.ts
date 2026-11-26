@@ -12,6 +12,7 @@ function parse<T extends z.ZodType>(schema: T, raw: unknown): z.infer<T> {
 
 const options = { maxTimeMS: 5000, allowDiskUse: false };
 const photoValue = { $type: 'string', $regex: '\\S', $not: /^\s*\/?product-placeholder\.svg\s*$/ };
+const filled = { $type: 'string', $regex: '\\S' };
 const hasPhoto: Document = { $or: [{ image: photoValue }, { images: { $elemMatch: photoValue } }, { cloudinaryImages: { $elemMatch: photoValue } }] };
 const live: Document = { published: { $ne: false }, disabled: { $ne: true }, active: { $ne: false } };
 const hidden: Document = { $or: [{ published: false }, { disabled: true }, { active: false }] };
@@ -30,6 +31,12 @@ const filterMatch: Record<CatalogueFilter, Document> = {
   classification: { productType: { $nin: ['general', 'otc', 'prescription'] } },
   prescription: { productType: 'prescription' },
   content: { $or: [{ brand: { $in: [null, ''] }, familyBrand: { $in: [null, ''] } }, { description: { $in: [null, ''] } }] },
+  // One missing detail each, matching productGaps() in @almina/contracts (a GTIN is not missing when none is assigned).
+  'missing-brand': { $and: [{ $nor: [{ brand: filled }] }, { $nor: [{ familyBrand: filled }] }] },
+  'missing-gtin': { $and: [{ identifierStatus: { $ne: 'not-assigned' } }, { $nor: [{ gtin: { $type: 'string', $regex: '^(\\d{8}|\\d{12,14})$' } }] }] },
+  'missing-pack': { $nor: [{ packLabel: filled }, { variantPackSize: filled }, { variantSize: filled }] },
+  'missing-manufacturer': { $nor: [{ manufacturer: filled }] },
+  'missing-description': { description: { $in: [null, ''] } },
 };
 const literal = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -48,7 +55,8 @@ const projection = { _id: 1, product_id: 1, name: 1, brand: 1, familyBrand: 1, c
   published: 1, active: 1, productType: 1, image: 1, images: 1, cloudinaryImages: 1, mediaRevision: 1, barcode: 1, gtin: 1 };
 /** Everything the filters, counts and rows read. Narrowing the documents before the counts keeps the whole catalogue
  *  within the aggregation memory and time limits. */
-const counted = { ...projection, archivedAt: 1, description: { $cond: [{ $in: [{ $ifNull: ['$description', ''] }, ['']] }, '', 'present'] } };
+const counted = { ...projection, archivedAt: 1, description: { $cond: [{ $in: [{ $ifNull: ['$description', ''] }, ['']] }, '', 'present'] },
+  manufacturer: 1, packLabel: 1, variantPackSize: 1, variantSize: 1, identifierStatus: 1 };
 const text = (value: unknown) => typeof value === 'string' ? value : '';
 const amount = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null;
 const photoStrings = (value: unknown) => (Array.isArray(value) ? value : []).filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0 && !/^\s*\/?product-placeholder\.svg\s*$/.test(entry));

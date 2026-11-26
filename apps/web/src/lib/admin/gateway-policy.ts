@@ -9,7 +9,7 @@ export function catalogMutationTags(method: string, path: string): string[] {
   // A direct artwork upload may have saved a banner or a category.
   if (path === 'media/artwork/commit') return [catalogContentTags.categories, catalogContentTags.banners];
   // Anything staff change about products shows on browse lists at once.
-  if (/^(?:products(?:\/(?:visibility|type|publish\/[a-f0-9]{24}|[a-f0-9]{24}))?|media\/products\/[a-f0-9]{24}(?:\/commit)?|catalog-import\/(?:commit|rollback)|image-review\/(?:import|publish|draft))$/i.test(path)) return [catalogContentTags.products];
+  if (/^(?:products(?:\/(?:visibility|type|publish\/[a-f0-9]{24}|[a-f0-9]{24}))?|media\/products\/[a-f0-9]{24}(?:\/commit)?|catalog-import\/(?:commit|rollback)|products\/(?:enrichment\/apply|gtin-from-barcode)|image-review\/(?:import|publish|draft))$/i.test(path)) return [catalogContentTags.products];
   return [];
 }
 export class GatewayBodyTooLarge extends Error {}

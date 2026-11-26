@@ -3,7 +3,8 @@ import { z } from 'zod';
 /** The admin product list and the editor's "Save & next" queue share one definition of "which products", so the next product is
  *  always the next row of the list the administrator came from. Fixed names only: no database filter ever crosses the boundary. */
 export const catalogueViews = ['all', 'live', 'hidden', 'outofstock', 'sale'] as const;
-export const catalogueFilters = ['all', 'missing-photo', 'has-photo', 'ready', 'identity', 'classification', 'prescription', 'content'] as const;
+export const catalogueFilters = ['all', 'missing-photo', 'has-photo', 'ready', 'identity', 'classification', 'prescription', 'content',
+  'missing-brand', 'missing-gtin', 'missing-pack', 'missing-manufacturer', 'missing-description'] as const;
 export type CatalogueView = (typeof catalogueViews)[number];
 export type CatalogueFilter = (typeof catalogueFilters)[number];
 
@@ -13,6 +14,7 @@ export const catalogueViewLabels: Record<CatalogueView, string> = {
 export const catalogueFilterLabels: Record<CatalogueFilter, string> = {
   all: 'Everything', 'missing-photo': 'Missing photo', 'has-photo': 'Has photo', ready: 'Ready to go live',
   identity: 'Name incomplete', classification: 'Type not chosen', prescription: 'Prescription', content: 'Brand or description missing',
+  'missing-brand': 'No brand', 'missing-gtin': 'No GTIN', 'missing-pack': 'No pack size', 'missing-manufacturer': 'No manufacturer', 'missing-description': 'No description',
 };
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);

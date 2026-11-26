@@ -9,7 +9,8 @@ Title (24), one-sentence description, right-aligned actions. Content in 16px-gap
 2. Four metric cards (order value, orders, average order, dispatched) with period selector and export.
 3. Sales chart (wide) beside fulfilment donut.
 4. Recent orders table beside most-ordered products.
-5. Scope note at the bottom: what the period report covers and its date basis.
+5. Live catalogue completeness (photo, brand, GTIN, pack size, description), each linking to the filtered Products list.
+6. Scope note at the bottom: what the period report covers and its date basis.
 
 ## Dashboard (staff and branch)
 Status counts with the real total, not the size of a sample. Recent orders. No sales figures.
@@ -22,6 +23,11 @@ Title and primary action, filter chips, search field, table with footer paginati
   missing photo, type, name, details, prescription), search and category, clickable thumbnail that accepts dropped photos, bulk
   upload, bulk go-live, bulk product type behind a confirming dialog, numbered pagination. The former Needs action screen is this list with filters.
 - **Categories and banners**: image thumbnail column; banners show which eight are live in the carousel.
+
+## Catalogue quality
+Completeness meters with a scope switch (live, in stock, whole catalogue), Google readiness and barcode health side by side, then the
+ranked work list (thumbnail, missing details as pills, the reason it ranks, stock, units sold) with one confirmed bulk action, then the
+enrichment sheet (upload, preview table, confirmation checkbox, save) and a short numbered workflow.
 
 ## Brands
 List with logo thumbnail, address, one status pill per language and "Edit" or "Set up page"; search and "Show more". "Create brand"
@@ -36,7 +42,7 @@ Group by task, never by technical area. Security actions such as revoking sessio
 
 ## Navigation groups
 - Today: Dashboard, Orders
-- Catalogue: Products, Categories, Brands, Banners, Image review, Catalog import
+- Catalogue: Products, Categories, Brands, Banners, Image review, Catalogue quality, Catalog import
 - Customers & growth: Coupons, Website & growth, Email marketing, WhatsApp, Search, Wholesale
 - Delivery: Branches & delivery, Notifications
 - Administration: Team & access, Store settings, Operations, Product recovery
