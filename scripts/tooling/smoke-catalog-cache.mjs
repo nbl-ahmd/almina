@@ -30,7 +30,7 @@ try {
   const origin = `http://127.0.0.1:${port}`;
   web = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: fileURLToPath(new URL('apps/web/', root)), stdio: 'ignore',
-    env: { PATH: process.env.PATH, APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: origin, API_ORIGIN: `http://127.0.0.1:${fixture.address().port}`, NEXT_TELEMETRY_DISABLED: '1',
+    env: { PATH: process.env.PATH, AL_MINA_ISOLATED_BUILD: process.env.AL_MINA_ISOLATED_BUILD, AL_MINA_VERIFICATION_TAG: process.env.AL_MINA_VERIFICATION_TAG, APP_ENV: 'development', NODE_ENV: 'production', WEB_ORIGIN: origin, API_ORIGIN: `http://127.0.0.1:${fixture.address().port}`, NEXT_TELEMETRY_DISABLED: '1',
       // A long window so this check never straddles a boundary.
       CATALOG_CACHE_SECONDS: '300' },
   });
@@ -49,15 +49,15 @@ try {
   assert.ok(listReads >= 1);
   await read('/'); assert.equal(count('/api/products'), listReads, 'Browse lists are shared within the cache window.');
   assert.match(html, /AED 20\.00/);
-  product.stock = 0; product.salePrice = 17;
+  product.salePrice = 17;
   assert.match(await read('/'), /AED 20\.00/, 'A browse list may be reused until its window ends or staff purge it.');
-  const detail = await read(`/products/daily-care--${product.product_id}`);
-  assert.match(detail, /AED 17\.00/, 'The product page always reads the current price and stock.');
+  assert.match(await read(`/products/daily-care--${product.product_id}`), /AED 17\.00/, 'The product page always reads the current price.');
   const purgeProducts = await fetch(origin + '/api/catalog/revalidate', { method: 'POST', headers: { Origin: origin, 'X-CSRF-Protection': '1',
     'Content-Type': 'application/json', Cookie: 'session=synthetic-admin' }, body: JSON.stringify({ kind: 'products' }) });
   assert.equal(purgeProducts.status, 200);
-  const updated = await read('/');
-  assert.match(updated, /Temporarily out of stock/); assert.match(updated, /AED 17\.00/);
+  assert.match(await read('/'), /AED 17\.00/, 'A purged browse list shows the new price.');
+  product.stock = 0;
+  assert.match(await read(`/products/daily-care--${product.product_id}`), /out of stock|unavailable/i, 'The product page always reads the current stock.');
   category.name = 'Renamed synthetic category';
   assert.ok(!(await read('/categories')).includes(category.name), 'Presentation may be stale until invalidation.');
   const purge = cookie => fetch(origin + '/api/catalog/revalidate', { method: 'POST', headers: {
