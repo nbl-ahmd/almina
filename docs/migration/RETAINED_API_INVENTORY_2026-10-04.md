@@ -149,6 +149,8 @@ Marketing artwork (2026-10-23): staff may upload a bounded, decoded raster throu
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
 | POST | /api/media/marketing | staff | Upload reviewed campaign artwork; server validation, signed storage and retained asset record |
+| POST | /api/media/artwork/sign | staff | Signs direct tickets for marketing (staff) or banner, category and poster (admin) artwork; no image bytes reach the API |
+| POST | /api/media/artwork/commit | staff | Verifies each uploaded asset with storage and records it once; the domain enforces the role per kind |
 
 | Method | Route | Access |
 | --- | --- | --- |

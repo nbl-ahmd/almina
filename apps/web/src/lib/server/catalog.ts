@@ -4,18 +4,19 @@ import {searchProducts,type SearchMetadata} from './search';
 import { cache } from 'react';
 import { getWebEnvironment } from './env';
 import { readCategory, readProduct, objectId, publicId, slugIdentity, type Product } from '../catalog/model';
-import { catalogReadPolicy } from '../catalog/cache-policy';
+import { catalogContentTags, catalogReadPolicy, windowedReadPolicy } from '../catalog/cache-policy';
 import { bannerDestination } from '../catalog/merchandising';
 import { publicImage } from '../catalog/image-delivery';
 import { CatalogUnavailable, catalogArray, readCatalogResponse } from './catalog-response';
 
-export async function legacyRead(path: string, content = false, allowMissing = false): Promise<unknown> {
+export async function legacyRead(path: string, content = false, allowMissing = false, browse = false, view?: 'card'): Promise<unknown> {
   const env = getWebEnvironment();
   const development = env.APP_ENV === 'development';
   let response: Response;
   try {
+    const { headers: cacheHeaders, ...policy } = { headers: {}, ...(browse ? windowedReadPolicy(catalogContentTags.products) : catalogReadPolicy(path, content)) };
     response = await fetch(new URL(path, env.LEGACY_API_ORIGIN), {
-      ...catalogReadPolicy(path, content), signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json' },
+      ...policy, signal: AbortSignal.timeout(8000), headers: { Accept: 'application/json', ...(view ? { 'x-catalog-view': view } : {}), ...cacheHeaders },
       redirect: 'error',
     });
   } catch { throw new CatalogUnavailable('connection', development); }
@@ -55,7 +56,9 @@ export async function getProducts(options: { page?: number; category?: string; o
   if (options.maxPrice !== undefined) params.set('maxPrice', String(options.maxPrice));
   if (options.sort) params.set('sort', options.sort);
   params.set('filter', JSON.stringify(filter));
-  const raw = array(await legacyRead(`/api/products?${params}`));
+  // The first pages of ordinary browsing are shared for a short window; narrow price filters and deep pages are always live.
+  const browse = page <= 5 && options.minPrice === undefined && options.maxPrice === undefined;
+  const raw = array(await legacyRead(`/api/products?${params}`, false, false, browse, 'card'));
   return { products: raw.map(readProduct).filter(product => product !== null), hasNext: raw.length === 30, page,search:undefined as SearchMetadata|undefined,searchUnavailable:false };
 }
 const getProductDetail = cache(async (id: string) => {
@@ -98,7 +101,9 @@ export function productImage(product: Product) {
   const legacy = fileName(product.images?.[0]);
   return legacy ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${legacy}` : '/product-placeholder.svg';
 }
-export function categoryImage(image: string | undefined) {
+export function categoryImage(image: string | undefined, stored?: string) {
+  const direct = publicImage(stored, getWebEnvironment().CLOUDINARY_CLOUD_NAME, getWebEnvironment().APP_ENV === 'production');
+  if (direct) return direct;
   const name = fileName(image);
   if (process.env.ALMINA_LOCAL_DEMO === '1' && name?.startsWith('demo-catalog-')) return `/demo-catalog/${name}`;
   return name ? `https://cdn.alminapharmacy.com/cdn/categories/${name}` : '/product-placeholder.svg';

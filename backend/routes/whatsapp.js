@@ -27,6 +27,9 @@ whatsappRouter.get('/image', async (req, res) => {
   res.json(await require('../commerce/dist/service.cjs').retainedWhatsappList(await getDb(req), 'posters', req.query));
 });
 whatsappRouter.get('/image/:filename', async (req, res) => {
+  const stored = await require('../commerce/dist/service.cjs').retainedStoredArtwork(await getDb(req), 'whatsappposters', req.params.filename, req.query,
+    req.app.locals.cloudinaryUploads?.cloudName ?? process.env.CLOUDINARY_CLOUD_NAME);
+  if (stored) { res.redirect(stored); return; }
   const fileId = await require('../commerce/dist/service.cjs').retainedWhatsappPoster(await getDb(req), req.params.filename, req.query);
   const asset = await driveMedia(req).read(fileId);
   res.type(asset.contentType).send(asset.bytes);

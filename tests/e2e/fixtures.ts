@@ -121,3 +121,19 @@ export async function chooseBrand(page: Page, value = 'Synthetic Brand') {
   if ((await trigger.textContent())?.includes('Choose or add')) await pickCombo(page, 'Brand', value);
 }
 export const chooseCategory = (page: Page, value = 'Synthetic category') => pickCombo(page, 'Category', value);
+/** Stands in for Cloudinary: the browser uploads straight to it and the fixture records that each asset exists. Also records
+ *  any request that carries a file to the admin gateway, which must never happen for pictures. */
+export async function storage(page: Page, request: APIRequestContext) {
+  const uploads: string[] = [], viaServer: string[] = [];
+  page.on('request', sent => {
+    if (sent.method() === 'GET' || !sent.url().startsWith(adminOrigin + '/api/')) return;
+    if (/filename="[^"]+"\r\nContent-Type: image\//.test(sent.postDataBuffer()?.toString('latin1') ?? '')) viaServer.push(sent.url());
+  });
+  await page.route('https://api.cloudinary.com/**', async route => {
+    const publicId = /name="public_id"\r\n\r\n([^\r]+)/.exec(route.request().postDataBuffer()?.toString('latin1') ?? '')?.[1] ?? '';
+    uploads.push(publicId);
+    await request.post(`${commerceOrigin}/__fixture/media-asset?publicId=${encodeURIComponent(publicId)}`);
+    await route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: '{}' });
+  });
+  return { uploads, viaServer };
+}

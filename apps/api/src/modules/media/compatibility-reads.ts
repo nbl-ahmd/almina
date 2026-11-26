@@ -18,6 +18,13 @@ export async function retainedCatalogAsset(db: Db, collection: 'products' | 'cat
   const fileId = typeof id === 'string' && id ? id : await resolveRetainedAsset(db, collection, filename);
   if (!fileId) throw new HttpError(404, 'NOT_FOUND'); return fileId;
 }
+/** Pictures uploaded straight to storage have no Drive file: their old address redirects there, so no bytes pass through. */
+export async function retainedStoredArtwork(db: Db, collection: 'categories' | 'whatsappposters', raw: unknown, query: unknown, cloudName: string | undefined) {
+  const parsed = filenameSchema.safeParse(raw);
+  if (!parsed.success || !z.object({}).strict().safeParse(query).success) return null;
+  const current = await db.collection(collection).findOne({ image: parsed.data }, { ...queryOptions, projection: { cloudinaryImages: 1 } });
+  return cloudinaryImage(current?.cloudinaryImages?.[0], cloudName);
+}
 export async function catalogUploadTarget(db: Db, collection: 'products' | 'categories', raw: unknown, creation = false) {
   const parsed = z.string().regex(/^[a-f0-9]{24}$/i).safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');

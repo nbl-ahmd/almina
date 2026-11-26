@@ -38,8 +38,10 @@ export async function resolveRetainedAsset(db: Db, collection: MediaCollection, 
 }
 export async function replaceCategory(db: Db, id: string, fields: Document, actor: string) {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(actor)
-    || Object.keys(fields).some(key => !['name', 'color', 'image', 'gdriveFileId'].includes(key))
-    || Object.values(fields).some(value => typeof value !== 'string' || value.length > 500)) throw new HttpError(400, 'INVALID_REQUEST');
+    || Object.keys(fields).some(key => !['name', 'color', 'image', 'gdriveFileId', 'cloudinaryImages'].includes(key))
+    || Object.entries(fields).some(([key, value]) => key === 'cloudinaryImages'
+      ? !Array.isArray(value) || value.length !== 1 || !String(value[0]).startsWith('https://res.cloudinary.com/')
+      : typeof value !== 'string' || value.length > 500)) throw new HttpError(400, 'INVALID_REQUEST');
   const session = db.client.startSession(); let saved: Document | undefined;
   try {
     await session.withTransaction(async () => {
@@ -47,8 +49,11 @@ export async function replaceCategory(db: Db, id: string, fields: Document, acto
       if (!previous) throw new HttpError(404, 'NOT_FOUND');
       if (previous.archivedAt) throw new HttpError(409, 'PRODUCT_UNAVAILABLE');
       saved = { ...previous, ...fields };
+      // A new picture replaces the other storage's reference, so no read can serve the old picture under the new name.
+      const stale = fields.cloudinaryImages ? 'gdriveFileId' : fields.image ? 'cloudinaryImages' : undefined;
+      if (stale) delete saved[stale];
       if (fields.image) await recordMediaHistory(db, 'categories', previous, saved, actor, 'Reviewed category media replacement', session);
-      await db.collection('categories').updateOne({ _id: previous._id }, { $set: fields }, { session });
+      await db.collection('categories').updateOne({ _id: previous._id }, { $set: fields, ...(stale ? { $unset: { [stale]: '' } } : {}) }, { session });
     }); return saved;
   } finally { await session.endSession(); }
 }

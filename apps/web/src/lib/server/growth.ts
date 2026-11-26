@@ -3,9 +3,11 @@ import { cache } from 'react';
 import { commercePolicySchema, growthPageSchema, homeLayoutAdminSchema, homeLayoutSchema, pharmacyProfileSchema, branchDirectorySchema, type GrowthPage } from '@almina/contracts';
 import { z } from 'zod';
 import { getWebEnvironment } from './env';
+import { catalogContentTags, windowedReadPolicy } from '../catalog/cache-policy';
 import type { ShippingPolicy } from '../policies';
+// Published storefront content is shared for a short window and purged when staff save through the website.
 async function read(path:string) {
-  const response=await fetch(new URL('/api/v1/growth/'+path,getWebEnvironment().API_ORIGIN),{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(6000)});
+  const response=await fetch(new URL('/api/v1/growth/'+path,getWebEnvironment().API_ORIGIN),{...windowedReadPolicy(catalogContentTags.growth),redirect:'error',signal:AbortSignal.timeout(6000)});
   if(response.status===404)return null;
   if(!response.ok)throw new Error('Content service unavailable');
   return (await response.json() as {data:unknown}).data;

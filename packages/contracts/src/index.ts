@@ -56,6 +56,7 @@ export { productFamilyFields, productFamilySchema, familyFieldNames, optionField
 
 export * from './product-content';
 export * from './admin-catalogue';
+export * from './artwork';
 
 export * from "./growth";
 export * from './serviceability';

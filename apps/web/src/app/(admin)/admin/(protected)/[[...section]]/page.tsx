@@ -72,7 +72,10 @@ function thumbnail(image: string | null): string | null {
   return /^[A-Za-z0-9_.-]+$/.test(image) ? `${getWebEnvironment().LEGACY_API_ORIGIN}/api/products/images/${image}` : null;
 }
 const PAGE_SIZE = 25;
-function CategoryThumb({ image }: { image: string }) {
+function CategoryThumb({ image, stored }: { image: string; stored?: unknown }) {
+  const direct = Array.isArray(stored) ? cloudinaryImage(stored[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME) : null;
+  // eslint-disable-next-line @next/next/no-img-element -- a 40 px thumbnail served by storage with a size transformation.
+  if (direct) return <img src={direct.replace('/image/upload/', '/image/upload/c_fill,w_80,h_80,f_auto,q_auto/')} alt="" width={40} height={40} loading="lazy" className="size-10 shrink-0 rounded-lg bg-fill object-cover" />;
   const filename = /^[A-Za-z0-9_.-]+\.[A-Za-z]{2,5}$/.test(image) ? image : "";
   // eslint-disable-next-line @next/next/no-img-element -- legacy category media is served by the API origin.
   return filename ? <img src={`${getWebEnvironment().LEGACY_API_ORIGIN}/api/category/images/${filename}`} alt="" width={40} height={40} loading="lazy" className="size-10 shrink-0 rounded-lg bg-fill object-cover" />
@@ -290,6 +293,7 @@ export default async function AdminPage({
               path={`category/${detail}`}
               method="PUT"
               multipart
+              artwork={{ kind: 'category', files: ['image'], categoryId: detail }}
               fields={[
                 {
                   name: "name",
@@ -333,6 +337,7 @@ export default async function AdminPage({
           <AdminForm
             path="category"
             multipart
+            artwork={{ kind: 'category', files: ['image'] }}
             fields={[
               {
                 name: "name",
@@ -358,7 +363,7 @@ export default async function AdminPage({
           columns={[
             { key: "name", label: "Category", render: (item) => (
               <span className="flex items-center gap-3">
-                <CategoryThumb image={display(item.image)} />
+                <CategoryThumb image={display(item.image)} stored={item.cloudinaryImages} />
                 <Link className="font-medium text-ink no-underline hover:underline" href={`/admin/products?category=${display(item._id)}`}>{display(item.name)}</Link>
               </span>
             ) },
@@ -424,6 +429,7 @@ export default async function AdminPage({
           <AdminForm
             path="banners"
             multipart
+            artwork={{ kind: 'banner', files: ['image', 'mobileImage'] }}
             fields={[
               {
                 name: "name",
@@ -777,6 +783,7 @@ export default async function AdminPage({
             <AdminForm
               path="whatsapp/image"
               multipart
+              artwork={{ kind: 'poster', files: ['image'] }}
               fields={[
                 {
                   name: "image",
@@ -793,7 +800,10 @@ export default async function AdminPage({
           caption="Posters"
           empty={{ title: "No posters uploaded" }}
           data={rows(posters)}
-          columns={[{ key: "image", label: "Filename" }]}
+          columns={[{ key: "image", label: "Filename" }, { key: "cloudinaryImages", label: "Template image URL", render: (item) => {
+            const url = Array.isArray(item.cloudinaryImages) ? cloudinaryImage(item.cloudinaryImages[0], getWebEnvironment().CLOUDINARY_CLOUD_NAME) : null;
+            return url ? <span className="block max-w-md select-all break-all text-xs">{url}</span> : <span className="text-xs text-mute">Older poster</span>;
+          } }]}
           actions={(item) => (
             <>
               <MediaPreview

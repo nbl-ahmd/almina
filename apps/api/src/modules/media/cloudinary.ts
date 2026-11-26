@@ -22,14 +22,14 @@ async function responseJson(response: Response) {
   } finally { await reader.cancel().catch(() => undefined); }
 }
 const asset = z.object({ public_id: z.string(), version: z.number().int().positive(), resource_type: z.literal('image'),
-  type: z.literal('upload'), format: z.literal('webp'), width: z.number().int().min(1).max(5000), height: z.number().int().min(1).max(5000),
+  type: z.literal('upload'), format: z.enum(['webp', 'jpg']), width: z.number().int().min(1).max(5000), height: z.number().int().min(1).max(5000),
   bytes: z.number().int().positive().max(5 * 1024 * 1024), secure_url: z.string(), signature: z.string().optional() });
-function verifyAsset(raw: unknown, publicId: string, config: CloudinaryConfig, signedResponse: boolean) {
+function verifyAsset(raw: unknown, publicId: string, config: CloudinaryConfig, signedResponse: boolean, format: 'webp' | 'jpg' = 'webp') {
   const parsed = asset.safeParse(raw);
-  if (!parsed.success || parsed.data.public_id !== publicId || parsed.data.width * parsed.data.height > 20000000
+  if (!parsed.success || parsed.data.public_id !== publicId || parsed.data.format !== format || parsed.data.width * parsed.data.height > 20000000
     || !cloudinaryImage(parsed.data.secure_url, config.cloudName)) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
   const result = parsed.data;
-  const expectedUrl = `https://res.cloudinary.com/${config.cloudName}/image/upload/v${result.version}/${publicId}.webp`;
+  const expectedUrl = `https://res.cloudinary.com/${config.cloudName}/image/upload/v${result.version}/${publicId}.${format}`;
   if (result.secure_url !== expectedUrl) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
   if (signedResponse) {
     const signature = result.signature ?? '';
@@ -66,11 +66,24 @@ export function directUploadTickets(config: CloudinaryConfig, raw: unknown, nowS
   const parsed = uploadRequest.safeParse(raw);
   if (!parsed.success) throw new HttpError(400, 'INVALID_REQUEST');
   const { uploadKey, count } = parsed.data;
-  return { cloudName: config.cloudName, apiKey: config.apiKey, uploads: Array.from({ length: count }, (_, index) => {
-    const publicId = `almina/products/${uploadKey}-${index}`;
-    const parameters = { allowed_formats: 'webp', overwrite: 'false', public_id: publicId, timestamp: String(nowSeconds), type: 'upload' };
+  return signedTickets(config, Array.from({ length: count }, (_, index) => `almina/products/${uploadKey}-${index}`), 'webp', nowSeconds);
+}
+/** One ticket per public id, each pinned to that id, the format and "never overwrite". Callers choose the ids; a browser never does. */
+export function signedTickets(config: CloudinaryConfig, publicIds: string[], format: 'webp' | 'jpg', nowSeconds = Math.floor(Date.now() / 1000)) {
+  configured(config);
+  return { cloudName: config.cloudName, apiKey: config.apiKey, uploads: publicIds.map(publicId => {
+    const parameters = { allowed_formats: format, overwrite: 'false', public_id: publicId, timestamp: String(nowSeconds), type: 'upload' };
     return { publicId, fields: { ...parameters, api_key: config.apiKey, signature: cloudinarySignature(parameters, config.apiSecret) } };
   }) };
+}
+/** Confirms with Cloudinary's authenticated API that a directly uploaded asset arrived as signed, and returns its address. */
+export async function lookupDirectAsset(config: CloudinaryConfig, publicId: string, format: 'webp' | 'jpg', signal: AbortSignal, transport: typeof fetch = fetch) {
+  configured(config);
+  const found = await transport(`https://api.cloudinary.com/v1_1/${config.cloudName}/resources/image/upload/${encodeURIComponent(publicId)}`,
+    { headers: { authorization: 'Basic ' + Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64') }, signal, redirect: 'error' });
+  if (found.status === 404) { await found.body?.cancel().catch(() => undefined); throw new HttpError(400, 'INVALID_REQUEST'); }
+  if (!found.ok) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
+  return verifyAsset(await responseJson(found), publicId, config, false, format);
 }
 async function claimUpload(db: Db, id: string, actor: string, uploadKey: string, digest: string) {
   const receipts = db.collection<Document & { _id: string }>('media_uploads');
@@ -112,14 +125,7 @@ export async function commitDirectCloudinaryImages(db: Db, id: string, actor: st
   if (!product || product.archivedAt) throw new HttpError(404, 'NOT_FOUND');
   if ((product.mediaRevision ?? 0) !== expectedMediaRevision) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT');
   const signal = AbortSignal.timeout(15000);
-  const urls = await Promise.all(Array.from({ length: count }, async (_, index) => {
-    const publicId = `almina/products/${uploadKey}-${index}`;
-    const found = await transport(`https://api.cloudinary.com/v1_1/${config.cloudName}/resources/image/upload/${encodeURIComponent(publicId)}`,
-      { headers: { authorization: 'Basic ' + Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64') }, signal, redirect: 'error' });
-    if (found.status === 404) { await found.body?.cancel().catch(() => undefined); throw new HttpError(400, 'INVALID_REQUEST'); }
-    if (!found.ok) throw new HttpError(503, 'SERVICE_UNAVAILABLE');
-    return verifyAsset(await responseJson(found), publicId, config, false);
-  }));
+  const urls = await Promise.all(Array.from({ length: count }, (_, index) => lookupDirectAsset(config, `almina/products/${uploadKey}-${index}`, 'webp', signal, transport)));
   return attachProductImages(db, id, actor, uploadKey, expectedMediaRevision, urls, 'Reviewed direct Cloudinary replacement');
 }
 export async function replaceCloudinaryImages(db: Db, id: string, actor: string, raw: unknown,

@@ -74,6 +74,7 @@ export async function adminRequest(
   if (path === 'banners' && method === 'POST' && result.status === 503) {
     throw new Error('Banner storage is unavailable. Reload Banners to check whether it was published before retrying.');
   }
+  if (path.startsWith('media/artwork/') && result.status === 503) throw new Error('Image storage is unavailable or not configured on this server. Retry shortly; an approved image URL can be pasted instead where the field allows it.');
   if (!result.ok)
     throw new Error(
       result.status === 401

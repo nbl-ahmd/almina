@@ -46,6 +46,7 @@ test('legacy media bridge rejects upstream HTML, errors and oversized bodies wit
   assert.equal(head.status, 200); assert.equal(await head.text(), '');
 });
 
+// Browse lists have their own short windowed policy (tests/database-traffic.test.ts); this default stays fresh.
 test('persistent cache is restricted to category/banner presentation; commerce and visibility reads remain fresh', () => {
   for (const path of ['/api/products', '/api/products/details/PD0001', '/api/products/aaaaaaaaaaaaaaaaaaaaaaaa', '/api/store/status', '/api/orders', '/api/category?filter=x']) {
     assert.deepEqual(catalogReadPolicy(path, true), { cache: 'no-store' });
@@ -83,7 +84,7 @@ test('tag purge requires current server admin identity, same origin and CSRF hea
   await assert.rejects(authorizeCatalogRevalidation(request(), environment, async () => Response.json({ role: 'admin' })), { status: 503 });
 });
 test('cache purge rejects arbitrary tags, oversized streamed bodies and caller-supplied roles', async () => {
-  for (const body of ['{"kind":"products"}', '{"kind":"categories","role":"admin"}', 'not-json']) {
+  for (const body of ['{"kind":"orders"}', '{"kind":"categories","role":"admin"}', 'not-json']) {
     await assert.rejects(authorizeCatalogRevalidation(request({}, body), environment, identity('admin')), { status: 400 });
   }
   await assert.rejects(authorizeCatalogRevalidation(request({}, ' '.repeat(1025)), environment, identity('admin')), { status: 413 });

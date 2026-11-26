@@ -58,7 +58,9 @@ const staffRead = req => ['admin', 'user'].includes(req.identity?.role);
 productRouter.get('/', async (req, res) => {
   const domain = catalogDomain();
   const query = domain.retainedCatalogQuery(req.query, 'products');
-  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req)));
+  // A header, so an older server simply ignores it and returns full records while both sides deploy.
+  res.vary('x-catalog-view');
+  res.json(await domain.retainedProductList(await catalogDb(req), query, staffRead(req), req.get('x-catalog-view') === 'card'));
 });
 productRouter.get('/search', async (req, res) => {
   const domain = catalogDomain();

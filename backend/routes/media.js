@@ -31,6 +31,20 @@ router.post('/products/:id/commit', async (req, res) => {
   res.json(await require('../commerce/dist/service.cjs').commitDirectCloudinaryImages(db, req.params.id, req.identity.id, req.body,
     req.app.locals.cloudinaryUploads, req.app.locals.mediaTransport));
 });
+// Banners, categories, posters and marketing artwork also go straight to storage; the domain checks the role for each kind.
+function artworkStorage(req) {
+  if (Object.keys(req.query).length) throw fail(400, 'INVALID_REQUEST');
+  const config = req.app.locals.cloudinaryUploads;
+  if (!config) throw fail(503, 'SERVICE_UNAVAILABLE');
+  return config;
+}
+router.post('/artwork/sign', async (req, res) => {
+  res.json(require('../commerce/dist/service.cjs').artworkTickets(artworkStorage(req), req.body, req.identity.role));
+});
+router.post('/artwork/commit', async (req, res) => {
+  const config = artworkStorage(req);
+  res.json(await require('../commerce/dist/service.cjs').commitArtwork(await req.app.locals.getCommerceDb(), req.body, req.identity.id, req.identity.role, config, req.app.locals.mediaTransport));
+});
 router.post('/marketing', upload.single('image'), validateImageUploads, async (req,res)=>{
   if(!req.file||Object.keys(req.query).length)throw fail(400,'INVALID_REQUEST');
   if(!req.app.locals.cloudinaryUploads)throw fail(503,'SERVICE_UNAVAILABLE');

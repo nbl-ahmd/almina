@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { test, expect, reset, login, adminOrigin } from './fixtures';
+import { test, expect, reset, login, adminOrigin, storage } from './fixtures';
 
 const art = 'https://cdn.alminapharmacy.com/cdn/synthetic/strip.webp';
 const artRoute = (page: Page) => page.route('**/_next/image?**', route => route.fulfill({ contentType: 'image/svg+xml',
@@ -110,6 +110,7 @@ test('staff create a custom page and a brand page from the signed-in screens', a
 
 test('staff publish a banner for one language', async ({ page, request }) => {
   await reset(request); await artRoute(page); await login(page);
+  const direct = await storage(page, request);
   await page.goto(adminOrigin + '/admin/banners');
   await page.locator('summary').filter({ hasText: 'Add banner' }).click();
   await page.getByLabel('Banner name', { exact: false }).fill('Synthetic Arabic banner');
@@ -119,6 +120,37 @@ test('staff publish a banner for one language', async ({ page, request }) => {
   await page.getByLabel('Banner image', { exact: false }).first().setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: pixel });
   await page.locator('form').filter({ has: page.getByRole('combobox', { name: /^Show on/ }) }).locator('button[type=submit]').click();
   await expect(page.getByRole('row').filter({ hasText: 'Synthetic Arabic banner' })).toContainText('Arabic');
+  expect(direct.uploads).toHaveLength(1); expect(direct.uploads[0]).toMatch(/^almina\/banners\/[a-f0-9-]{36}-desktop$/);
+  expect(direct.viaServer, 'no banner bytes go through the web gateway').toEqual([]);
+});
+
+test('category, poster and artwork pictures go straight to storage', async ({ page, request }) => {
+  test.setTimeout(90000);
+  await reset(request); await artRoute(page); await login(page);
+  const direct = await storage(page, request);
+  const pixel = { name: 'synthetic.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64') };
+  const submit = (field: string) => page.locator('form').filter({ has: page.getByLabel(field, { exact: false }) }).locator('button[type=submit]').click();
+
+  await page.goto(adminOrigin + '/admin/categories');
+  await page.locator('summary').filter({ hasText: 'Create category' }).click();
+  await page.getByLabel('Category name', { exact: false }).fill('Synthetic pictured category');
+  await page.getByLabel('Category image', { exact: false }).setInputFiles(pixel);
+  await submit('Category name');
+  await expect(page.getByRole('row').filter({ hasText: 'Synthetic pictured category' }).locator('img'))
+    .toHaveAttribute('src', /res\.cloudinary\.com\/synthetic\/image\/upload\/c_fill,w_80,h_80,f_auto,q_auto\/v1\/almina\/categories\//);
+
+  await page.goto(adminOrigin + '/admin/whatsapp');
+  await page.getByLabel('Poster image', { exact: false }).setInputFiles(pixel);
+  await submit('Poster image');
+  await expect(page.getByText(/res\.cloudinary\.com\/synthetic\/image\/upload\/v1\/almina\/posters\/[a-f0-9-]{36}\.jpg/)).toBeVisible();
+
+  await page.goto(adminOrigin + '/admin/growth');
+  await page.getByRole('combobox', { name: 'Page type', exact: true }).selectOption('campaign');
+  await page.locator('input[type=file]').first().setInputFiles(pixel);
+  await expect(page.getByRole('textbox', { name: 'Desktop artwork URL', exact: true })).toHaveValue(/\/almina\/products\/[a-f0-9-]{36}-0\.webp$/);
+
+  expect(direct.uploads.map(id => id.split('/')[1])).toEqual(['categories', 'posters', 'products']);
+  expect(direct.viaServer, 'no picture bytes go through the web gateway').toEqual([]);
 });
 
 test('staff limit a coupon to a category and publish an opening popup', async ({ page, request, context }) => {

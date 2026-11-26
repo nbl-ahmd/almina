@@ -2,11 +2,11 @@
 import { useId, useState } from 'react';
 import Image from 'next/image';
 import { inputClass } from './shadcn/styles';
-import { prepareProductImages } from '../../lib/admin/product-images';
+import { uploadArtwork } from '../../lib/admin/artwork-upload';
 import { artworkShapeWarning, type ArtworkSize } from '../../lib/storefront/artwork';
 
 /** One image field for storefront artwork (campaigns, sections, brand logos): upload a file or paste an approved URL.
- *  Uploads go to the existing image endpoint, which stores the picture on the configured Cloudinary account and returns its URL.
+ *  Uploads go from the browser straight to the configured Cloudinary account; the server only signs and verifies them.
  *  Images are shrunk to fit 2000 × 2000 and saved as WebP; proportions and transparency are kept, nothing is cropped. */
 export function ImageUploadField({ label, value, onChange, hint, size, frame, disabled = false }: {
   label: string; value: string; onChange: (url: string) => void; hint?: string | undefined; size?: string | undefined; disabled?: boolean;
@@ -23,15 +23,7 @@ export function ImageUploadField({ label, value, onChange, hint, size, frame, di
   async function upload(file: File) {
     setBusy(true); setError('');
     try {
-      const [prepared] = await prepareProductImages([file]);
-      if (!prepared) throw new Error('This image could not be read.');
-      const body = new FormData(); body.set('image', prepared);
-      const response = await fetch('/api/admin/media/marketing', { method: 'POST', headers: { 'X-CSRF-Protection': '1' }, body });
-      if (response.status === 503) throw new Error('Image storage is not configured on this server. Paste an approved image URL instead.');
-      if (!response.ok) throw new Error('Upload failed. Try again, or paste an approved image URL.');
-      const result = await response.json() as { image?: unknown };
-      if (typeof result.image !== 'string') throw new Error('Upload failed. Try again.');
-      onChange(result.image);
+      onChange((await uploadArtwork('marketing', [file])).image);
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Upload failed.'); }
     finally { setBusy(false); }
   }

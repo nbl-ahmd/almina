@@ -39,6 +39,9 @@ categoryRouter.get('/:id', async (req, res) => {
 });
 
 categoryRouter.get('/images/:filename', async (req, res) => {
+  const stored = await catalogDomain().retainedStoredArtwork(await catalogDb(req), 'categories', req.params.filename, req.query,
+    req.app.locals.cloudinaryUploads?.cloudName ?? process.env.CLOUDINARY_CLOUD_NAME);
+  if (stored) { res.redirect(stored); return; }
   const fileId = await catalogDomain().retainedCatalogAsset(await catalogDb(req), 'categories', req.params.filename, req.query);
   const asset = await driveMedia(req).read(fileId);
   res.type(asset.contentType).send(asset.bytes);

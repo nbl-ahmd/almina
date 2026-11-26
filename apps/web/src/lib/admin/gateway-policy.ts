@@ -2,9 +2,14 @@ import { catalogContentTags } from '../catalog/cache-policy';
 import { adminBodyLimit } from './upload-limits';
 export function catalogMutationTags(method: string, path: string): string[] {
   if (!['POST', 'PUT', 'DELETE'].includes(method)) return [];
-  if (/^category(?:\/(?:disable\/)?[a-f0-9]{24})?$/i.test(path)) return [catalogContentTags.categories];
+  // Hiding a category also changes which products browse lists show.
+  if (/^category(?:\/(?:disable\/)?[a-f0-9]{24})?$/i.test(path)) return [catalogContentTags.categories, catalogContentTags.products];
   if (/^banners(?:\/[a-f0-9]{24})?$/i.test(path)) return [catalogContentTags.banners];
-  if (['batch', 'recovery/commit'].includes(path)) return [catalogContentTags.categories];
+  if (['batch', 'recovery/commit'].includes(path)) return [catalogContentTags.categories, catalogContentTags.products];
+  // A direct artwork upload may have saved a banner or a category.
+  if (path === 'media/artwork/commit') return [catalogContentTags.categories, catalogContentTags.banners];
+  // Anything staff change about products shows on browse lists at once.
+  if (/^(?:products(?:\/(?:visibility|type|publish\/[a-f0-9]{24}|[a-f0-9]{24}))?|media\/products\/[a-f0-9]{24}(?:\/commit)?|catalog-import\/(?:commit|rollback)|image-review\/(?:import|publish|draft))$/i.test(path)) return [catalogContentTags.products];
   return [];
 }
 export class GatewayBodyTooLarge extends Error {}
