@@ -55,7 +55,7 @@ const groups: { title: MessageKey; aria: MessageKey; links: [MessageKey, string]
   { title: 'footerAccount', aria: 'footerAccountAria', links: [['linkSaved', '/saved'], ['linkAccount', '/account'], ['linkCart', '/cart']] },
 ];
 
-export function Footer({ telemetryEnabled = false, locale = 'en' }: { telemetryEnabled?: boolean; locale?: Locale }) {
+export function Footer({ telemetryEnabled = false, analytics, locale = 'en' }: { telemetryEnabled?: boolean; analytics?: { cookieless: boolean } | undefined; locale?: Locale }) {
   return <footer className="storefront-footer">
     <div className="chrome-container footer-content">
       <div className="footer-intro">
@@ -84,7 +84,7 @@ export function Footer({ telemetryEnabled = false, locale = 'en' }: { telemetryE
         <LanguageSwitcher locale={locale} label={t(locale, 'language')} />
         <a href="#top"><ArrowUpIcon aria-hidden="true" />{t(locale, 'backToTop')}</a>
       </div>
-      {telemetryEnabled ? <UsagePreferences locale={locale} /> : null}
+      {telemetryEnabled || analytics ? <UsagePreferences locale={locale} reporting={telemetryEnabled} analytics={analytics} /> : null}
     </div>
   </footer>;
 }

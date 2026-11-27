@@ -5,6 +5,14 @@ returned 500. The owner started the API on a separate Render account at `https:/
 `API_ORIGIN` to it. The frontend deploy guard (`scripts/tooling/production-vercel-config.mts`) pins the approved origin, so it now
 names the new host; both `API_ORIGIN` and `LEGACY_API_ORIGIN` must point there for a production deploy to run.
 
+## 2026-11-27 — Storefront analytics with PostHog (branch `claude/analytics-posthog`, not deployed)
+
+Consent-aware PostHog EU analytics for the storefront: first-visit Allow/Decline bar, purchase funnel, checkout refusal reasons,
+general-sale product interest, contact taps, campaign tags and web vitals. Medicines, search words, contact and order details are
+never sent; staff and wholesale screens are excluded. Off until `POSTHOG_PROJECT_KEY` is set; anonymous cookieless counting also
+needs `POSTHOG_COOKIELESS_ENABLED=true` after a legal check. Earlier usage permission is asked again (key v2). Delivery to a real
+project is unverified. See [analytics](ANALYTICS_2026-11-27.md).
+
 ## 2026-11-26 — Catalogue quality and enrichment (branch `claude/catalogue-quality`, not deployed)
 
 Catalogue → **Catalogue quality** shows completeness (photo, brand, GTIN, manufacturer, pack, description, type, category) for live,

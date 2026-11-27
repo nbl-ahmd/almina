@@ -1283,3 +1283,28 @@ html:has(.storefront-shell) { scroll-padding-block-start: 84px; }
   .order-card-actions > :only-child { grid-column: 1 / -1; }
   .review-dialog { inset: 50% auto auto 50%; translate: -50% -50%; inline-size: min(520px, calc(100vw - 48px)); border-radius: var(--qc-r-xl); padding: 16px 24px 24px; }
 } }
+@scope (.storefront-shell) {
+  /* First-visit analytics choice: a small bar, never a modal, with two equally weighted answers.
+     It sits under dialogs and sheets, clear of the phone tabs and basket bar, and steps aside for purchase docks. */
+  .consent-banner {
+    position: fixed; inset-inline: 8px; inset-block-end: calc(72px + env(safe-area-inset-bottom)); z-index: var(--qc-z-popover);
+    display: grid; gap: 10px; max-block-size: 55dvh; overflow-y: auto; padding: 14px; border: 1px solid var(--qc-line-strong); border-radius: var(--qc-r-lg);
+    background: var(--qc-surface); box-shadow: var(--qc-e-2);
+  }
+  .consent-banner h2 { margin: 0 0 4px; font-size: var(--qc-fs-15); }
+  .consent-banner p { margin: 0; font-size: var(--qc-fs-13); line-height: 1.45; }
+  .consent-banner p a { text-decoration: underline; text-underline-offset: 3px; }
+  .consent-banner-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .consent-banner-actions button {
+    min-block-size: 44px; padding: 8px 16px; border: 1px solid var(--qc-ink); border-radius: var(--qc-r-pill);
+    color: var(--qc-ink); background: var(--qc-surface); font-size: var(--qc-fs-14); font-weight: 800; cursor: pointer;
+  }
+  .consent-banner-actions button:hover { background: var(--qc-well); }
+  :scope:has(.qc-cart-bar) .consent-banner { inset-block-end: calc(136px + env(safe-area-inset-bottom)); }
+  /* One question at a time: wait while the delivery sheet or any other dialog is open. */
+  :scope:has(dialog[open], [role="dialog"][data-state="open"]) .consent-banner { display: none; }
+}
+@media (max-width: 899px) { @scope (.storefront-shell) { :scope:has(.purchase-dock-controls.is-docked, .cart-mobile-bar) .consent-banner { display: none; } } }
+@media (min-width: 900px) { @scope (.storefront-shell) {
+  .consent-banner, :scope:has(.qc-cart-bar) .consent-banner { inset-inline: auto 24px; inset-block-end: 96px; inline-size: min(420px, calc(100vw - 48px)); }
+} }

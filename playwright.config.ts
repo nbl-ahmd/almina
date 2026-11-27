@@ -16,7 +16,7 @@ export default defineConfig({
   use: { browserName: 'chromium', viewport: { width: 1280, height: 900 },
     baseURL: 'http://127.0.0.1:4710', actionTimeout: 10000, navigationTimeout: 15000,
     trace: 'retain-on-failure', screenshot: 'only-on-failure', serviceWorkers: 'block',
-    storageState: { cookies: [], origins: [4710, 4730, 4740].map(port => ({ origin: `http://127.0.0.1:${port}`, localStorage: [skippedPrompt] })) } },
+    storageState: { cookies: [], origins: [4710, 4730, 4740, 4750].map(port => ({ origin: `http://127.0.0.1:${port}`, localStorage: [skippedPrompt] })) } },
   webServer: { command: 'node scripts/tooling/e2e-servers.mjs', url: 'http://127.0.0.1:4709',
     reuseExistingServer: false, timeout: 180000, gracefulShutdown: { signal: 'SIGTERM', timeout: 15000 } },
 });

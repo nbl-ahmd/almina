@@ -6,6 +6,7 @@ import Link from './app-link';
 import { ArrowRightIcon, ShoppingBagIcon } from './storefront-icons';
 import { ProductImage } from './product-image';
 import { AddToCart } from './cart-controls';
+import { productSignal } from '../lib/analytics/policy';
 import { SaveProduct } from './save-product';
 import { productImage } from '../lib/server/catalog';
 import { getWebEnvironment } from '../lib/server/env';
@@ -82,7 +83,7 @@ export async function ProductCard({ product, headingLevel = 3, className }: {
     <div className="product-card-purchase mt-auto pt-1">
       <div className="product-card-buy-row">
         <ProductPrice product={product} />
-        {options ? <Link className="tile-options" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} id={product._id} stock={product.stock} name={product.name} compact initialInCart={(await cartQuantities()).get(product._id) ?? 0} />}
+        {options ? <Link className="tile-options" href={productHref(product)}>{u(locale, 'Choose options')}</Link> : <AddToCart locale={locale} signal={productSignal(product, displayPrice(product))} id={product._id} stock={product.stock} name={product.name} compact initialInCart={(await cartQuantities()).get(product._id) ?? 0} />}
       </div>
     </div>
   </article>;

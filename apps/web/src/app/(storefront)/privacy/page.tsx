@@ -16,14 +16,14 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default function PrivacyPage() {
-  const origin = getWebEnvironment().WEB_ORIGIN;
+  const { WEB_ORIGIN: origin, POSTHOG_PROJECT_KEY: analytics, POSTHOG_COOKIELESS_ENABLED: cookieless } = getWebEnvironment();
   return <>
     <StructuredData data={breadcrumbData(origin, [{ name: 'Home', path: '/' }, { name: 'Privacy policy', path: policyPaths.privacy }])} />
     <Breadcrumb title="Privacy policy" />
     <article className="policy-page mx-auto max-w-3xl rounded-2xl border bg-white p-6 md:p-9">
       <p className="mb-2 text-xs font-semibold tracking-wide uppercase">Store policy</p>
       <h1 className="mb-3 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">Privacy policy</h1>
-      <p className="text-sm leading-7">Last updated 2026-11-06. This policy explains what information Al Mina Pharmacy collects when you use this website, create an account or place an order, why we use it and the choices you have. You can shop and check out as a guest without creating an account.</p>
+      <p className="text-sm leading-7">Last updated {analytics ? '2026-11-27' : '2026-11-06'}. This policy explains what information Al Mina Pharmacy collects when you use this website, create an account or place an order, why we use it and the choices you have. You can shop and check out as a guest without creating an account.</p>
 
       <h2 className="mt-8 text-xl font-semibold">Delivery location and maps</h2>
       <p className="mt-2 text-sm leading-7">When you choose a delivery pin, we use its latitude and longitude to check delivery coverage, select a pharmacy with available stock and fulfil your order. The pin is stored with your order and with an address you choose to save. Device location is requested only when you select “Use my current location”; you may instead place a pin manually. Where location-based delivery is enabled, a delivery pin is required to check coverage.</p>
@@ -52,6 +52,13 @@ export default function PrivacyPage() {
       <p className="mt-2 text-sm leading-7">We share only what is needed with service providers who help us run the store, such as hosting, database, media delivery, email delivery, payment processing, location lookup and pharmacy operations. These providers process information for the services they supply. We may also share information when required by law, a regulator, a court or a pharmacy authority, or to protect the safety and rights of customers and the pharmacy. We do not sell your personal information.</p>
 
       <p className="mt-2 text-sm leading-7">If you choose online card payment, you provide billing and payment information directly to Stripe. Read <a href="https://stripe.com/privacy">Stripe’s privacy policy</a> for how Stripe handles that information.</p>
+
+      {analytics ? <>
+        <h2 className="mt-8 text-xl font-semibold">Shop analytics</h2>
+        <p className="mt-2 text-sm leading-7">We use PostHog, an analytics service that stores data in the European Union, to understand how the shop is used and to improve it. If you allow analytics{cookieless ? ', and in the anonymous form described below if you do not' : ''}, your browser sends PostHog the type of page you visit (not its full address), the website that referred you, campaign tags in the link you followed, device and browser details, page speed, cart and checkout steps, the reason a checkout was refused, order value, item count and payment method, and whether you tapped our phone, WhatsApp or email links. For general-sale products only, it also sends the product name, category, brand and price when you view the product or add it to your cart. PostHog receives your network address when your browser connects to it.</p>
+        <p className="mt-2 text-sm leading-7">We do not send PostHog the names of medicines or unclassified products, your search words, name, contact details, delivery address or order number, and we do not record your screen.</p>
+        <p className="mt-2 text-sm leading-7">If you allow analytics, a random identifier is stored in your browser so that return visits can be recognised, and it is removed when you withdraw permission. {cookieless ? 'If you decline or have not chosen, nothing is stored on your device for analytics; PostHog counts visits using a privacy-preserving code calculated on its servers.' : 'If you decline or have not chosen, nothing is sent to PostHog.'} Your browser’s Do Not Track or Global Privacy Control setting turns analytics off completely. You can change your choice at any time in the usage preferences at the bottom of any page.</p>
+      </> : null}
 
       <h2 className="mt-8 text-xl font-semibold">Optional search improvement reports</h2>
       <p className="mt-2 text-sm leading-7">Search improvement reports have a separate, optional control in Usage preferences. When enabled, they record search phrases, result positions, product clicks, cart activity and anonymous purchase attribution. Query text expires after seven days; anonymous event totals expire after thirty days. These reports do not include your name, contact details, account identifier or order number. Popular searches are shown only from approved vocabulary after at least ten searches. Search works when reporting is off. Your browser’s Do Not Track or Global Privacy Control preference disables optional reporting, and withdrawing consent stops future reports.</p>

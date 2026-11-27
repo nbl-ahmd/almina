@@ -4,6 +4,7 @@ import {GoogleCustomerReviews} from './google-customer-reviews';
 import type {GoogleCommerceConfiguration, ReviewReceipt} from '../lib/google/commerce';
 import {readCoupon, saveCoupon} from '../lib/checkout/coupon';
 import {reconcilePaidCart} from '../lib/payments/paid-cart';
+import {trackCardPurchase} from '../lib/analytics/purchase';
 import {useEffect,useState} from 'react';
 import {stripeCheckoutDtoSchema,checkoutInputSchema} from '@almina/contracts';
 import type {z} from 'zod';
@@ -28,6 +29,7 @@ export function StripeReturn({locale,cancelled,testMode=true,googleReviews,nonce
       const confirmed=stripeCheckoutDtoSchema.parse(await response.json());
       if(!confirmed.testMode&&confirmed.paymentReceived){try{await reconcilePaidCart(confirmed.orderId,confirmed.totals.lines);}catch{/* Payment success is durable even if browser cart storage fails. */}}
       if (!confirmed.testMode && confirmed.paymentReceived && confirmed.totals.coupon?.code === readCoupon()) saveCoupon('');
+      if (!confirmed.testMode && confirmed.state === 'paid' && confirmed.paymentReceived) trackCardPurchase(confirmed.orderId, confirmed.totals);
       if (!confirmed.testMode && confirmed.state==='paid' && confirmed.paymentReceived && confirmed.createdAt) setReviewReceipt({orderId:confirmed.orderId,email:pending.customer.email,createdAt:confirmed.createdAt,deliveryCountry:'AE'}); else setReviewReceipt(null);
       setPayment(confirmed);
     }catch{setError(ar?'تعذر التحقق من الدفع. أعد المحاولة من المتصفح الذي بدأت منه.':'We could not verify this payment. Retry in the browser where you started checkout.');}
