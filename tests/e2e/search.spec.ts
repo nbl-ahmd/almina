@@ -26,7 +26,7 @@ test('mobile, Arabic, loading and suggestion failure preserve accessible search'
 
 test('existing usage consent does not enable query reports; separate consent batches impressions and stops on withdrawal',async({page})=>{
  const events:{event:string;items:{productId:string;position:number}[];query?:string}[]=[];
- await page.addInitScript(()=>localStorage.setItem('almina.optional-usage.v1','allowed'));
+ await page.addInitScript(()=>localStorage.setItem('almina.optional-usage.v2','allowed'));
  await page.route('**/api/search/events',async route=>{events.push(route.request().postDataJSON());await route.fulfill({status:204});});
  await page.goto('/search?q=Daily+Care');await expect(page.locator('.product-card')).toHaveCount(1);await page.waitForTimeout(500);expect(events).toEqual([]);
  await page.evaluate(()=>{localStorage.setItem('almina.optional-search-usage.v1','allowed');window.dispatchEvent(new Event('almina-usage-change'));});

@@ -68,7 +68,7 @@ function stop() {
 }
 for (const signal of ['SIGTERM', 'SIGINT']) process.once(signal, () => { void stop().then(() => process.exit(process.exitCode ?? 0)); });
 try {
-  await assertExclusiveLoopbackPorts([4709, 4710, 4711, 4720, 4730, 4740]);
+  await assertExclusiveLoopbackPorts([4709, 4710, 4711, 4720, 4730, 4740, 4750]);
   const catalog = launch(['scripts/tooling/storefront-fixture.mjs'], root, { PORT: '4711', PAGINATED_FIXTURE: '1' });
   const commerce = launch(['--import', 'tsx', 'scripts/tooling/e2e-commerce-fixture.mts'], root, { COMMERCE_TELEMETRY_ENABLED: 'true' });
   await Promise.all([wait('http://127.0.0.1:4711/__fixture/health', catalog, fixtureHealth('almina-synthetic-catalog', runId)),
@@ -80,10 +80,16 @@ try {
   const admin = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4720'], new URL('apps/web/', root), {
     WEB_ORIGIN: 'http://127.0.0.1:4720', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CLOUDINARY_CLOUD_NAME: 'synthetic',
   });
+  // The only server with analytics configured; its provider host does not resolve and tests intercept it.
+  const analytics = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4750'], new URL('apps/web/', root), {
+    WEB_ORIGIN: 'http://127.0.0.1:4750', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CHECKOUT_ENABLED: 'true',
+    POSTHOG_PROJECT_KEY: 'phc_syntheticSyntheticSynthetic000', POSTHOG_HOST: 'https://analytics.example.invalid', POSTHOG_COOKIELESS_ENABLED: 'true',
+  });
   const checkout = launch([next, 'start', '--hostname', '127.0.0.1', '--port', '4740'], new URL('apps/web/', root), {
     WEB_ORIGIN: 'http://127.0.0.1:4740', API_ORIGIN: 'http://127.0.0.1:4730', LEGACY_API_ORIGIN: 'http://127.0.0.1:4730', CHECKOUT_ENABLED: 'true', STRIPE_TEST_ENABLED:'true', COMMERCE_TELEMETRY_ENABLED: 'true',
   });
-  await Promise.all([wait('http://127.0.0.1:4710/cart', storefront), wait('http://127.0.0.1:4720/admin/login', admin), wait('http://127.0.0.1:4740/checkout', checkout)]);
+  await Promise.all([wait('http://127.0.0.1:4710/cart', storefront), wait('http://127.0.0.1:4720/admin/login', admin), wait('http://127.0.0.1:4740/checkout', checkout),
+    wait('http://127.0.0.1:4750/cart', analytics)]);
   ready = createServer((_req, res) => res.end('almina-e2e-ready'));
   await new Promise((resolve, reject) => { ready.once('error', reject); ready.listen(4709, '127.0.0.1', resolve); });
 } catch (error) { console.error(error.message); await stop(); process.exitCode = 1; }

@@ -1,5 +1,5 @@
 import { test, expect, checkoutOrigin, nextCheckoutPage, reset, state, commerceOrigin } from './fixtures';
-const key = 'almina.optional-usage.v1';
+const key = 'almina.optional-usage.v2';
 test.beforeEach(async ({ request }) => { await reset(request); });
 for (const width of [360, 390, 768, 1280]) test(`optional usage at ${width}px requires consent and withdrawal stops reports`, async ({ page, request }) => {
   await page.setViewportSize({ width, height: 900 });

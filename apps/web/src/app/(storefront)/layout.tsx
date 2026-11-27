@@ -1,5 +1,6 @@
 import {cookies, headers} from 'next/headers';
 import {GoogleMerchantWidget} from '../../components/google-merchant-widget';
+import {Analytics} from '../../components/analytics';
 import {googleCommerceConfiguration} from '../../lib/google/commerce';
 import type { ReactNode } from 'react';
 import type { Viewport } from 'next';
@@ -23,6 +24,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, view
 export default async function StorefrontLayout({ children }: { children: ReactNode }) {
  const env = getWebEnvironment();
  const locale = await getLocale();
+ const analytics = env.POSTHOG_PROJECT_KEY ? { key: env.POSTHOG_PROJECT_KEY, host: env.POSTHOG_HOST, cookieless: env.POSTHOG_COOKIELESS_ENABLED } : undefined;
  const session = (await cookies()).has(env.APP_ENV === 'development' ? 'almina_customer' : '__Host-almina_customer');
- return <div lang={locale} dir={isRtl(locale) ? 'rtl' : 'ltr'} data-customer-session={session ? '1' : '0'} className={`storefront-shell ${storefrontFontVariables}`}><StructuredData data={organizationData(env.WEB_ORIGIN)} /><StructuredData data={websiteData(env.WEB_ORIGIN)} /><GoogleMerchantWidget config={googleCommerceConfiguration(process.env)} nonce={(await headers()).get('x-nonce')??undefined} /><Navigation locale={locale} /><main id="main-content" tabIndex={-1}>{children}</main><CartBar locale={locale} /><OfferPopup locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} /><Footer telemetryEnabled={env.COMMERCE_TELEMETRY_ENABLED} locale={locale} /></div>;
+ return <div lang={locale} dir={isRtl(locale) ? 'rtl' : 'ltr'} data-customer-session={session ? '1' : '0'} className={`storefront-shell ${storefrontFontVariables}`}><StructuredData data={organizationData(env.WEB_ORIGIN)} /><StructuredData data={websiteData(env.WEB_ORIGIN)} /><GoogleMerchantWidget config={googleCommerceConfiguration(process.env)} nonce={(await headers()).get('x-nonce')??undefined} /><Navigation locale={locale} /><main id="main-content" tabIndex={-1}>{children}</main><CartBar locale={locale} /><OfferPopup locale={locale} cloudName={getWebEnvironment().CLOUDINARY_CLOUD_NAME} /><Footer telemetryEnabled={env.COMMERCE_TELEMETRY_ENABLED} analytics={analytics && { cookieless: analytics.cookieless }} locale={locale} />{analytics ? <Analytics config={analytics} locale={locale} /> : null}</div>;
 }

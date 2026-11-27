@@ -30,6 +30,7 @@ import { browserEnvironment, guidanceFor, type Guidance } from '../lib/location/
 import { z } from 'zod';
 import { storedCart, saveCart } from '../lib/catalog/browser-cart';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
+import { purchaseDetails } from '../lib/analytics/purchase';
 import { deliveryEmirates, reverseLocationDtoSchema } from '@almina/contracts';
 import { t, tf, itemCountText, type Locale } from '../lib/i18n';
 
@@ -80,6 +81,9 @@ async function send(path: string, body: unknown) {
   }
   return data;
 }
+/** Analytics receives the refusal reason only, never what was typed. */
+const failureDetails = (failure: unknown) => failure instanceof CheckoutFailure ? { error_code: failure.code } : {};
+
 export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=true, googleReviews, nonce }: { locale?: Locale; stripeMode?:'off'|'test'|'live';stripeTestMode?:boolean; googleReviews?: GoogleCommerceConfiguration; nonce?: string | undefined }) {
   const stripeEnabled=stripeMode!=='off';
   const ar=locale==='ar';
@@ -329,7 +333,7 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       if(JSON.stringify(input.items)!==JSON.stringify(storedCart().map(line=>({productId:line.id,quantity:line.quantity}))))throw new InputError('CART_CHANGED');
       setReviewed({...response,...input});setOrderExpanded(true);
       recordCommerceEvent('checkout_reviewed');return true;
-    }catch(failure){recordCommerceEvent('checkout_failed');setError(failure instanceof CheckoutFailure?(couponError(failure.code, locale) || errors[failure.code] || t(locale,'checkoutErrorReviewGeneric')):failure instanceof InputError?inputs[failure.code]:t(locale,'checkoutErrorCheckDetails'));return false;}
+    }catch(failure){recordCommerceEvent('checkout_failed',undefined,failureDetails(failure));setError(failure instanceof CheckoutFailure?(couponError(failure.code, locale) || errors[failure.code] || t(locale,'checkoutErrorReviewGeneric')):failure instanceof InputError?inputs[failure.code]:t(locale,'checkoutErrorCheckDetails'));return false;}
     finally{busy.current=false;setWorking(false);}
   }
   async function review(event:FormEvent<HTMLFormElement>){
@@ -377,14 +381,14 @@ export function CheckoutForm({ locale = 'en', stripeMode='off',stripeTestMode=tr
       setReceipt({ lines: (reviewed?.quote.lines ?? []).map(line => ({ productId: line.productId, name: line.name, variantLabel: line.variantLabel, quantity: line.quantity, lineTotalMinor: line.lineTotalMinor, image: basket.find(item => item.id === line.productId)?.image ?? '/product-placeholder.svg' })),
         address: `${input.customer.address}, ${input.customer.city}`, payment: input.customer.payment, minutes: reviewed?.quote.delivery?.estimatedMinutes, customerName: input.customer.name });
       setResult(committed); setCelebrating(true); setAttempt(null); setReviewed(null);
-      recordCommerceEvent('checkout_confirmed');
+      recordCommerceEvent('checkout_confirmed',undefined,purchaseDetails(committed.totals,input.customer.payment));
       try { sessionStorage.removeItem(pendingKey); } catch { /* A replay is safe if storage fails. */ }
       try {
         const purchased = new Map(input.items.map(item => [item.productId, item.quantity]));
         saveCart(storedCart().map(line => ({ id: line.id, quantity: Math.max(0, line.quantity - (purchased.get(line.id) ?? 0)) })).filter(line => line.quantity > 0));
       } catch { /* Committed order remains successful; cart storage cannot undo it. */ }
     } catch (failure) {
-      recordCommerceEvent('checkout_failed');
+      recordCommerceEvent('checkout_failed',undefined,failureDetails(failure));
       if (failure instanceof CheckoutFailure && failure.definite && (!stripeSubmission||['COUPON_UNAVAILABLE','COUPON_NOT_APPLICABLE','COUPON_MINIMUM','COUPON_COMBINATION','COUPON_PAYMENT_MINIMUM','PRICE_CHANGED','INSUFFICIENT_STOCK','PRODUCT_UNAVAILABLE','MINIMUM_ORDER','INVALID_TRANSITION','COMMERCE_UNAVAILABLE'].includes(failure.code))) {
         try { sessionStorage.removeItem(pendingKey); } catch { /* Same key still cannot duplicate a committed order. */ }
         setAttempt(null); setReviewed(null);

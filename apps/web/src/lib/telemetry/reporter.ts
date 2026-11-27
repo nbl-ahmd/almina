@@ -1,6 +1,7 @@
 import { commerceEvents, type CommerceEvent } from '@almina/contracts/commerce-events';
 export type Choice = 'allowed' | 'declined' | 'unset';
-export const consentKey = 'almina.optional-usage.v1';
+// v2: permission now also covers third-party analytics and general-product details, so earlier approval is asked again.
+export const consentKey = 'almina.optional-usage.v2';
 export function createCommerceReporter(options: {
   allowed: () => boolean; send: (body: { event: CommerceEvent; consent: true; campaign?: string }, signal: AbortSignal) => Promise<unknown>; now?: () => number;
 }) {

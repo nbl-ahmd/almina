@@ -8,6 +8,8 @@ import { Button } from './ui/button';
 import Link from './app-link';
 import { checkAddition } from '../app/(storefront)/cart/actions';
 import { attributeCart } from '../lib/search/attribution';
+import { track } from '../lib/analytics/client';
+import type { ProductSignal } from '../lib/analytics/policy';
 import { recordCommerceEvent } from '../lib/telemetry/browser';
 import { ArrowPathIcon } from './storefront-icons';
 /** `compact` is the product-tile control: a small outlined "Add" pill with the same accessible names and checks. */
@@ -19,7 +21,7 @@ function subscribeCart(callback: () => void) {
 function useLineQuantity(id: string, serverQuantity: number) {
   return useSyncExternalStore(subscribeCart, () => { try { return storedCart().find(line => line.id === id)?.quantity ?? 0; } catch { return 0; } }, () => serverQuantity);
 }
-export function AddToCart({ id, stock, quantityPicker = false, compact = false, initialInCart = 0, name, priceLabel, locale = 'en' }: { id: string; stock: number; quantityPicker?: boolean; compact?: boolean; initialInCart?: number; name?: string; priceLabel?: string; locale?: Locale }) {
+export function AddToCart({ id, stock, quantityPicker = false, compact = false, initialInCart = 0, name, priceLabel, locale = 'en', signal }: { signal?: ProductSignal | undefined; id: string; stock: number; quantityPicker?: boolean; compact?: boolean; initialInCart?: number; name?: string; priceLabel?: string; locale?: Locale }) {
   const [quantity, setQuantity] = useState(1);
   const inCart = useLineQuantity(id, initialInCart);
   const [pending, setPending] = useState(false);
@@ -40,6 +42,7 @@ export function AddToCart({ id, stock, quantityPicker = false, compact = false, 
       if (JSON.stringify(lines) !== JSON.stringify(storedCart())) { setMessage(u(locale,"Your cart changed. Please try again.")); return; }
       saveCart([...lines.filter(line => line.id !== id), { id, quantity: previous + quantity }]);
       recordCommerceEvent('cart_updated');
+      track('product_added_to_cart', { ...signal, quantity });
       attributeCart(id);
       setMessage(ADDED);
     } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
@@ -55,7 +58,7 @@ export function AddToCart({ id, stock, quantityPicker = false, compact = false, 
       if (JSON.stringify(lines) !== JSON.stringify(storedCart())) { setMessage(u(locale,"Your cart changed. Please try again.")); return; }
       saveCart(next > 0 ? lines.map(line => line.id === id ? { id, quantity: next } : line) : lines.filter(line => line.id !== id));
       recordCommerceEvent('cart_updated');
-      if (next > inCart) attributeCart(id);
+      if (next > inCart) { track('product_added_to_cart', { ...signal, quantity: next - inCart }); attributeCart(id); }
     } catch { setMessage(u(locale,"Unable to save your cart in this browser.")); }
     finally { setPending(false); }
   }

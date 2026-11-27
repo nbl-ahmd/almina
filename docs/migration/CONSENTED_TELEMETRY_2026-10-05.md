@@ -1,5 +1,8 @@
 # Optional consented commerce reporting
 
+> Since 27 November 2026 the storefront can also use PostHog, with a new consent version. Statements below about third-party SDKs,
+> identifiers and the consent key describe the first-party counters only. See [analytics](ANALYTICS_2026-11-27.md).
+
 This held candidate finishes the repository analytics/client-error gap. Hosting is the owner's responsibility; no production deployment, merge, provider send or data migration occurred.
 
 `COMMERCE_TELEMETRY_ENABLED=false` is the default for both Next and Express. Enable it on both services to display equal Allow/Decline controls. No reporting occurs before opt-in. Only the versioned preference string is persisted; withdrawal cancels active reports and discards pending dispatches. Storage failures, DNT and Global Privacy Control keep reporting off. Other tabs observe preference changes. Admin pages have no reporter.

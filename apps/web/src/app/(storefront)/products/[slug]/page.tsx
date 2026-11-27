@@ -27,6 +27,7 @@ import { categoryHref, productOptionLabel, productHref, displayPrice } from '../
 import { ProductGrid, Breadcrumb, StockState } from '../../../../components/storefront';
 import { Icon } from '../../../../components/storefront-icon';
 import { AddToCart } from '../../../../components/cart-controls';
+import { productSignal } from '../../../../lib/analytics/policy';
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Query> };
 export async function generateMetadata({ params, searchParams }: Props) {
   const product = await resolveProductRoute((await params).slug);
@@ -50,6 +51,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const [related,variants,reviews,shippingPolicy] = await Promise.all([getProductRecommendations(product),getProductVariants(product),getProductReviews(product._id),getShippingPolicy()]);
   const origin = getWebEnvironment().WEB_ORIGIN;
   const currentPrice = displayPrice(product);
+  const signal = productSignal(product, currentPrice);
   const images = productImages(product);
   const brand = product.brand || product.familyBrand;
   const pack = [...new Set([product.strength, product.packLabel, productOptionLabel(product)].filter(Boolean))].join(' · ');
@@ -106,7 +108,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <ProductOptions product={product} variants={variants} />
           <ProductPurchaseDock>
             <div className="pdp-purchase">
-              <AddToCart locale={locale} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker />
+              <AddToCart locale={locale} signal={signal} key={product._id} id={product._id} name={product.name} stock={product.stock} quantityPicker />
             </div>
           </ProductPurchaseDock>
           {product.warnings && <p className="product-purchase-warnings text-sm leading-relaxed">{product.warnings}</p>}
@@ -130,6 +132,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <ProductGrid headingLevel={3} products={suggested} />
       </section>}
     </div>
-    <GrowthActivity kind="product" />
+    <GrowthActivity key={product._id} kind="product" product={signal} />
   </>;
 }

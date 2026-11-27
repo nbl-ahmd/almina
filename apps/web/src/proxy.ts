@@ -60,6 +60,8 @@ export function proxy(request: NextRequest) {
   const googlePage = googleCommerce.survey && ['/checkout','/checkout/stripe'].includes(request.nextUrl.pathname) || googleCommerce.widget && ['/','/categories','/brands'].includes(request.nextUrl.pathname);
   const googleConnections = googlePage ? ' https://apis.google.com https://www.google.com https://www.gstatic.com' : '';
   const signInPage = signInPath.test(request.nextUrl.pathname);
+  // Analytics is a storefront connection only; staff and wholesale screens cannot reach the provider.
+  const analyticsOrigin = environment.POSTHOG_PROJECT_KEY && !/^\/(admin|wholesale)(\/|$)/.test(request.nextUrl.pathname) ? ` ${environment.POSTHOG_HOST}` : '';
   const frameOrigins = [...(signInPage ? ['https://accounts.google.com'] : []), ...(googlePage ? ['https://www.google.com', 'https://apis.google.com'] : [])];
   const policy = [
     "default-src 'self'",
@@ -67,7 +69,7 @@ export function proxy(request: NextRequest) {
     stylesheetPolicy(nonce, environment.APP_ENV, process.env.NODE_ENV, request.nextUrl.pathname === '/admin/marketing', request.nextUrl.pathname.startsWith('/admin'))+(signInPage?' https://accounts.google.com/gsi/style':''),
     "style-src-attr 'unsafe-inline'", // next/image uses generated style attributes; scripts retain strict nonces.
     `img-src 'self' data: blob: https://tile.openstreetmap.org https://cdn.alminapharmacy.com ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ` https://res.cloudinary.com/${environment.CLOUDINARY_CLOUD_NAME}/image/upload/` : ''}`,
-    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(frameOrigins.length ? [`frame-src ${frameOrigins.join(' ')}`] : []), `connect-src 'self'${request.nextUrl.pathname.startsWith('/admin') ? ` ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ' https://api.cloudinary.com' : ''}` : ''}${googleConnections}${signInPage?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
+    "font-src 'self'", ...(request.nextUrl.pathname.startsWith("/admin") ? ["worker-src 'self'"] : []), ...(frameOrigins.length ? [`frame-src ${frameOrigins.join(' ')}`] : []), `connect-src 'self'${request.nextUrl.pathname.startsWith('/admin') ? ` ${apiMediaOrigin}${environment.CLOUDINARY_CLOUD_NAME ? ' https://api.cloudinary.com' : ''}` : ''}${googleConnections}${analyticsOrigin}${signInPage?' https://accounts.google.com':''}${development ? ' ws://localhost:* ws://127.0.0.1:*' : ''}`,
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
     ...(process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging' ? ['upgrade-insecure-requests'] : []),
   ].join('; ');
